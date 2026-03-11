@@ -16,9 +16,12 @@ A single address string (if all nodes need the same) or a named
   list of per-node addresses.
 }
 \description{
-Queries the local SuperLink status for the fleet port, then queries each
-Opal's capabilities to determine if it runs in Docker. Docker nodes get
-\code{host.docker.internal:<port>}; non-Docker nodes get the researcher's
-local IP.
+Resolution strategy per node:
+\enumerate{
+  \item If the node is in a container, try \code{host.docker.internal}.
+  \item If bare-metal, detect the researcher's routable IP via UDP socket.
+  \item Verify connectivity from the Opal to the candidate address.
+  \item If verification fails, error with guidance.
+}
 }
 \keyword{internal}

@@ -157,10 +157,13 @@ ds.flower.superlink.status <- function() {
 
 #' Auto-resolve SuperLink address for each Opal node
 #'
-#' Queries the local SuperLink status for the fleet port, then queries each
-#' Opal's capabilities to determine if it runs in Docker. Docker nodes get
-#' \code{host.docker.internal:<port>}; non-Docker nodes get the researcher's
-#' local IP.
+#' Resolution strategy per node:
+#' \enumerate{
+#'   \item If the node is in a container, try \code{host.docker.internal}.
+#'   \item If bare-metal, detect the researcher's routable IP via UDP socket.
+#'   \item Verify connectivity from the Opal to the candidate address.
+#'   \item If verification fails, error with guidance.
+#' }
 #'
 #' @param conns DSI connections object.
 #' @param symbol Character; handle symbol name.
@@ -181,15 +184,51 @@ ds.flower.superlink.status <- function() {
   )
 
   addresses <- list()
-  local_ip <- NULL
+  local_ip <- NULL  # lazily detected
+
   for (srv in names(caps)) {
     if (isTRUE(caps[[srv]]$is_docker)) {
-      addresses[[srv]] <- paste0("host.docker.internal:", fleet_port)
+      candidate <- paste0("host.docker.internal:", fleet_port)
     } else {
-      # Lazily detect local IP (only once)
       if (is.null(local_ip)) local_ip <- .detect_local_ip()
-      addresses[[srv]] <- paste0(local_ip, ":", fleet_port)
+      candidate <- paste0(local_ip, ":", fleet_port)
     }
+    addresses[[srv]] <- candidate
+  }
+
+  # Verify connectivity from each Opal to its candidate address
+  failed <- character(0)
+  for (srv in names(addresses)) {
+    check <- .check_node_connectivity(conns, srv, addresses[[srv]])
+
+    if (isTRUE(check$reachable)) {
+      message("  ", srv, ": SuperLink reachable at ", addresses[[srv]])
+    } else {
+      failed <- c(failed, srv)
+      warning(
+        srv, " cannot reach SuperLink at ", addresses[[srv]],
+        if (!is.null(check$error)) paste0(" (", check$error, ")"),
+        call. = FALSE
+      )
+    }
+  }
+
+  if (length(failed) > 0 && length(failed) == length(addresses)) {
+    stop(
+      "No Opal node can reach the SuperLink. ",
+      "Tried: ", paste(unique(unlist(addresses)), collapse = ", "), ". ",
+      "Provide superlink_address explicitly (see ?ds.flower.nodes.ensure).",
+      call. = FALSE
+    )
+  }
+
+  if (length(failed) > 0) {
+    warning(
+      "Some nodes failed connectivity check: ",
+      paste(failed, collapse = ", "), ". ",
+      "Consider providing per-node superlink_address for those nodes.",
+      call. = FALSE
+    )
   }
 
   # If all same -> return single string; otherwise named list
@@ -198,34 +237,89 @@ ds.flower.superlink.status <- function() {
   addresses
 }
 
-#' Detect the researcher's local LAN IP address
+#' Detect the researcher's routable local IP address
 #'
-#' Tries \code{hostname -I} (Linux), then \code{ipconfig getifaddr en0}
-#' (macOS). Stops with a helpful error if neither works.
+#' Opens a UDP socket toward a public DNS server (no data is sent) to let the
+#' OS routing table choose the correct outgoing interface. Falls back to
+#' \code{hostname -I} (Linux) and \code{ipconfig getifaddr} (macOS) if the
+#' socket approach fails.
 #'
-#' @return Character; the local IP address.
+#' @return Character; an IPv4 address string.
 #' @keywords internal
 .detect_local_ip <- function() {
-  # Linux: hostname -I returns space-separated IPs
-  ip <- tryCatch({
-    out <- system2("hostname", "-I", stdout = TRUE, stderr = TRUE)
-    trimws(strsplit(out[1], "\\s+")[[1]][1])
-  }, error = function(e) NULL,
-     warning = function(w) NULL)
+  ip <- NULL
 
-  if (is.null(ip) || !nzchar(ip)) {
-    # macOS: ipconfig getifaddr en0
+  # Strategy 1: Python UDP socket (works on any OS, respects routing table)
+  if (is.null(ip) || !nzchar(ip %||% "")) {
     ip <- tryCatch({
-      out <- system2("ipconfig", c("getifaddr", "en0"),
-                     stdout = TRUE, stderr = TRUE)
-      trimws(out[1])
+      out <- system2("python3", c("-c",
+        shQuote("import socket; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.connect(('8.8.8.8',80)); print(s.getsockname()[0]); s.close()")),
+        stdout = TRUE, stderr = TRUE)
+      addr <- trimws(out[1])
+      if (grepl("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", addr)) addr else NULL
     }, error = function(e) NULL,
        warning = function(w) NULL)
   }
 
-  if (is.null(ip) || !nzchar(ip)) {
+  # Strategy 3: hostname -I (Linux)
+  if (is.null(ip) || !nzchar(ip %||% "")) {
+    ip <- tryCatch({
+      out <- system2("hostname", "-I", stdout = TRUE, stderr = TRUE)
+      addr <- trimws(strsplit(out[1], "\\s+")[[1]][1])
+      if (grepl("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", addr)) addr else NULL
+    }, error = function(e) NULL,
+       warning = function(w) NULL)
+  }
+
+  # Strategy 4: macOS — try all active interfaces, not just en0
+  if (is.null(ip) || !nzchar(ip %||% "")) {
+    ip <- tryCatch({
+      # List active network services, try each
+      services <- system2("networksetup", "-listallhardwareports",
+                          stdout = TRUE, stderr = TRUE)
+      devs <- grep("^Device:", services, value = TRUE)
+      devs <- gsub("^Device:\\s*", "", devs)
+      addr <- NULL
+      for (dev in devs) {
+        out <- tryCatch(
+          system2("ipconfig", c("getifaddr", dev),
+                  stdout = TRUE, stderr = TRUE),
+          error = function(e) "",
+          warning = function(w) ""
+        )
+        if (length(out) > 0 && grepl("^[0-9]+\\.[0-9]+", out[1])) {
+          addr <- trimws(out[1])
+          break
+        }
+      }
+      addr
+    }, error = function(e) NULL,
+       warning = function(w) NULL)
+  }
+
+  if (is.null(ip) || !nzchar(ip %||% "")) {
     stop("Could not auto-detect local IP. ",
-         "Please provide superlink_address explicitly.", call. = FALSE)
+         "Please provide superlink_address explicitly.",
+         call. = FALSE)
   }
   ip
+}
+
+#' Check connectivity from a single Opal node to a candidate address
+#'
+#' @param conns DSI connections object.
+#' @param srv Character; server name.
+#' @param address Character; "host:port" to test.
+#' @return Named list with \code{reachable} and \code{error}.
+#' @keywords internal
+.check_node_connectivity <- function(conns, srv, address) {
+  tryCatch({
+    res <- DSI::datashield.aggregate(
+      conns[srv],
+      expr = call("flowerCheckConnectivityDS", address)
+    )
+    res[[srv]]
+  }, error = function(e) {
+    list(reachable = FALSE, error = conditionMessage(e))
+  })
 }

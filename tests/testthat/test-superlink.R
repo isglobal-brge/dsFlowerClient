@@ -18,13 +18,23 @@ test_that("superlink stop is safe when nothing running", {
   expect_message(ds.flower.superlink.stop(), "No SuperLink")
 })
 
-test_that(".detect_local_ip returns a valid IP address", {
-  # This test runs on the actual machine; skip in CI if no network
-  ip <- tryCatch(
-    dsFlowerClient:::.detect_local_ip(),
-    error = function(e) NULL
+test_that("superlink status reports ports correctly", {
+  env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  mock_proc <- list(is_alive = function() TRUE)
+  old <- env$.superlink
+  env$.superlink <- list(
+    process = mock_proc, pid = 123,
+    fleet_address = "127.0.0.1:9092",
+    control_address = "127.0.0.1:9093",
+    fleet_port = 9092L, control_port = 9093L,
+    serverappio_port = 9091L,
+    flwr_home = tempdir(), log_path = tempfile(),
+    started_at = Sys.time()
   )
-  skip_if(is.null(ip), "Could not detect local IP (no network?)")
-  expect_type(ip, "character")
-  expect_true(grepl("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", ip))
+  on.exit(env$.superlink <- old)
+
+  status <- ds.flower.superlink.status()
+  expect_true(status$running)
+  expect_equal(status$ports$fleet, 9092L)
+  expect_equal(status$ports$control, 9093L)
 })

@@ -2,15 +2,17 @@
 % Please edit documentation in R/superlink.R
 \name{.detect_local_ip}
 \alias{.detect_local_ip}
-\title{Detect the researcher's local LAN IP address}
+\title{Detect the researcher's routable local IP address}
 \usage{
 .detect_local_ip()
 }
 \value{
-Character; the local IP address.
+Character; an IPv4 address string.
 }
 \description{
-Tries \code{hostname -I} (Linux), then \code{ipconfig getifaddr en0}
-(macOS). Stops with a helpful error if neither works.
+Opens a UDP socket toward a public DNS server (no data is sent) to let the
+OS routing table choose the correct outgoing interface. Falls back to
+\code{hostname -I} (Linux) and \code{ipconfig getifaddr} (macOS) if the
+socket approach fails.
 }
 \keyword{internal}
