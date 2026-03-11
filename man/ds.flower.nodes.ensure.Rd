@@ -4,18 +4,25 @@
 \alias{ds.flower.nodes.ensure}
 \title{Ensure SuperNodes are running on all servers}
 \usage{
-ds.flower.nodes.ensure(conns, symbol = "flower", superlink_address)
+ds.flower.nodes.ensure(conns, symbol = "flower", superlink_address = NULL)
 }
 \arguments{
 \item{conns}{DSI connections object.}
 
 \item{symbol}{Character; symbol name of the handle.}
 
-\item{superlink_address}{Character; the SuperLink address (host:port).}
+\item{superlink_address}{Character, named list, or NULL.
+\itemize{
+  \item \code{NULL} (default): auto-detect per node.
+  \item Single string: broadcast to all nodes.
+  \item Named list: per-node addresses (names must match connection names).
+}}
 }
 \value{
 A \code{dsflower_result} with per-site status.
 }
 \description{
-Calls \code{flowerEnsureSuperNodeDS} on each server.
+Calls \code{flowerEnsureSuperNodeDS} on each server. If
+\code{superlink_address} is \code{NULL}, auto-detects the correct address
+per node by querying each Opal's environment (Docker vs bare metal).
 }

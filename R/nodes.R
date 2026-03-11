@@ -77,20 +77,45 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 
 #' Ensure SuperNodes are running on all servers
 #'
-#' Calls \code{flowerEnsureSuperNodeDS} on each server.
+#' Calls \code{flowerEnsureSuperNodeDS} on each server. If
+#' \code{superlink_address} is \code{NULL}, auto-detects the correct address
+#' per node by querying each Opal's environment (Docker vs bare metal).
 #'
 #' @param conns DSI connections object.
 #' @param symbol Character; symbol name of the handle.
-#' @param superlink_address Character; the SuperLink address (host:port).
+#' @param superlink_address Character, named list, or NULL.
+#'   \itemize{
+#'     \item \code{NULL} (default): auto-detect per node.
+#'     \item Single string: broadcast to all nodes.
+#'     \item Named list: per-node addresses (names must match connection names).
+#'   }
 #' @return A \code{dsflower_result} with per-site status.
 #' @export
 ds.flower.nodes.ensure <- function(conns, symbol = "flower",
-                                    superlink_address) {
-  DSI::datashield.assign.expr(
-    conns,
-    symbol = symbol,
-    expr = call("flowerEnsureSuperNodeDS", symbol, superlink_address)
-  )
+                                    superlink_address = NULL) {
+  # Auto-detect if not provided
+  if (is.null(superlink_address)) {
+    superlink_address <- .auto_resolve_superlink(conns, symbol)
+  }
+
+  if (is.character(superlink_address) && length(superlink_address) == 1L) {
+    # Single address for all nodes
+    DSI::datashield.assign.expr(
+      conns,
+      symbol = symbol,
+      expr = call("flowerEnsureSuperNodeDS", symbol, superlink_address)
+    )
+  } else if (is.list(superlink_address)) {
+    # Per-node addresses
+    for (srv in names(superlink_address)) {
+      DSI::datashield.assign.expr(
+        conns[srv],
+        symbol = symbol,
+        expr = call("flowerEnsureSuperNodeDS", symbol,
+                    superlink_address[[srv]])
+      )
+    }
+  }
 
   code <- .build_code("ds.flower.nodes.ensure",
     symbol = symbol,

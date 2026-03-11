@@ -152,3 +152,80 @@ ds.flower.superlink.status <- function() {
     started_at      = info$started_at
   )
 }
+
+# --- Auto-discovery helpers ---
+
+#' Auto-resolve SuperLink address for each Opal node
+#'
+#' Queries the local SuperLink status for the fleet port, then queries each
+#' Opal's capabilities to determine if it runs in Docker. Docker nodes get
+#' \code{host.docker.internal:<port>}; non-Docker nodes get the researcher's
+#' local IP.
+#'
+#' @param conns DSI connections object.
+#' @param symbol Character; handle symbol name.
+#' @return A single address string (if all nodes need the same) or a named
+#'   list of per-node addresses.
+#' @keywords internal
+.auto_resolve_superlink <- function(conns, symbol) {
+  status <- ds.flower.superlink.status()
+  if (!status$running) {
+    stop("No SuperLink running. Start one with ds.flower.superlink.start() ",
+         "or provide superlink_address explicitly.", call. = FALSE)
+  }
+  fleet_port <- status$ports$fleet
+
+  # Query each Opal's environment
+  caps <- .ds_safe_aggregate(
+    conns, expr = call("flowerGetCapabilitiesDS", symbol)
+  )
+
+  addresses <- list()
+  local_ip <- NULL
+  for (srv in names(caps)) {
+    if (isTRUE(caps[[srv]]$is_docker)) {
+      addresses[[srv]] <- paste0("host.docker.internal:", fleet_port)
+    } else {
+      # Lazily detect local IP (only once)
+      if (is.null(local_ip)) local_ip <- .detect_local_ip()
+      addresses[[srv]] <- paste0(local_ip, ":", fleet_port)
+    }
+  }
+
+  # If all same -> return single string; otherwise named list
+  unique_addrs <- unique(unlist(addresses))
+  if (length(unique_addrs) == 1L) return(unique_addrs)
+  addresses
+}
+
+#' Detect the researcher's local LAN IP address
+#'
+#' Tries \code{hostname -I} (Linux), then \code{ipconfig getifaddr en0}
+#' (macOS). Stops with a helpful error if neither works.
+#'
+#' @return Character; the local IP address.
+#' @keywords internal
+.detect_local_ip <- function() {
+  # Linux: hostname -I returns space-separated IPs
+  ip <- tryCatch({
+    out <- system2("hostname", "-I", stdout = TRUE, stderr = TRUE)
+    trimws(strsplit(out[1], "\\s+")[[1]][1])
+  }, error = function(e) NULL,
+     warning = function(w) NULL)
+
+  if (is.null(ip) || !nzchar(ip)) {
+    # macOS: ipconfig getifaddr en0
+    ip <- tryCatch({
+      out <- system2("ipconfig", c("getifaddr", "en0"),
+                     stdout = TRUE, stderr = TRUE)
+      trimws(out[1])
+    }, error = function(e) NULL,
+       warning = function(w) NULL)
+  }
+
+  if (is.null(ip) || !nzchar(ip)) {
+    stop("Could not auto-detect local IP. ",
+         "Please provide superlink_address explicitly.", call. = FALSE)
+  }
+  ip
+}
