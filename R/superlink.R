@@ -69,6 +69,12 @@ ds.flower.superlink.start <- function(insecure = TRUE,
   fleet_address   <- paste0("127.0.0.1:", fleet_port)
   control_address <- paste0("127.0.0.1:", control_port)
 
+  # Unique federation ID for this SuperLink instance — used to verify
+
+  # all nodes connected to the same SuperLink after ensure.
+  federation_id <- paste0("fl-",
+    paste(sample(c(letters, 0:9), 12, replace = TRUE), collapse = ""))
+
   info <- list(
     process          = proc,
     pid              = proc$get_pid(),
@@ -79,6 +85,7 @@ ds.flower.superlink.start <- function(insecure = TRUE,
     serverappio_port = serverappio_port,
     flwr_home        = flwr_home,
     log_path         = log_path,
+    federation_id    = federation_id,
     started_at       = Sys.time()
   )
 
@@ -149,6 +156,7 @@ ds.flower.superlink.status <- function() {
       control     = info$control_port,
       serverappio = info$serverappio_port
     ),
+    federation_id   = info$federation_id,
     started_at      = info$started_at
   )
 }

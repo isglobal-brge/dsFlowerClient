@@ -127,3 +127,45 @@ test_that(".detect_local_ip returns a valid IPv4 address", {
   expect_type(ip, "character")
   expect_true(grepl("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", ip))
 })
+
+# --- Federation verification ---
+
+test_that(".verify_federation passes when all IDs match", {
+  results <- list(
+    opal1 = list(federation_id = "fl-abc123"),
+    opal2 = list(federation_id = "fl-abc123")
+  )
+  expect_silent(dsFlowerClient:::.verify_federation(results, "fl-abc123"))
+})
+
+test_that(".verify_federation warns on mismatch", {
+  results <- list(
+    opal1 = list(federation_id = "fl-abc123"),
+    opal2 = list(federation_id = "fl-DIFFERENT")
+  )
+  expect_warning(
+    dsFlowerClient:::.verify_federation(results, "fl-abc123"),
+    "Federation ID mismatch"
+  )
+})
+
+test_that(".verify_federation warns on missing IDs (mixed versions)", {
+  results <- list(
+    opal1 = list(federation_id = "fl-abc123"),
+    opal2 = list(federation_id = NULL)
+  )
+  expect_warning(
+    dsFlowerClient:::.verify_federation(results, "fl-abc123"),
+    "did not report a federation_id"
+  )
+})
+
+test_that(".verify_federation is silent when expected ID is NULL", {
+  results <- list(
+    opal1 = list(federation_id = "fl-abc123"),
+    opal2 = list(federation_id = "fl-DIFFERENT")
+  )
+  # When researcher didn't start SuperLink via our API, federation_id is NULL
+  # -> skip verification entirely
+  expect_silent(dsFlowerClient:::.verify_federation(results, NULL))
+})

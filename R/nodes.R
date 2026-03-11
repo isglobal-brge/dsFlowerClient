@@ -98,12 +98,16 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
     superlink_address <- .auto_resolve_superlink(conns, symbol)
   }
 
+  # Get federation_id from the local SuperLink (if we started it)
+  fed_id <- ds.flower.superlink.status()$federation_id
+
   if (is.character(superlink_address) && length(superlink_address) == 1L) {
     # Single address for all nodes
     DSI::datashield.assign.expr(
       conns,
       symbol = symbol,
-      expr = call("flowerEnsureSuperNodeDS", symbol, superlink_address)
+      expr = call("flowerEnsureSuperNodeDS", symbol,
+                  superlink_address, fed_id)
     )
   } else if (is.list(superlink_address)) {
     # Per-node addresses
@@ -112,7 +116,7 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
         conns[srv],
         symbol = symbol,
         expr = call("flowerEnsureSuperNodeDS", symbol,
-                    superlink_address[[srv]])
+                    superlink_address[[srv]], fed_id)
       )
     }
   }
@@ -124,10 +128,56 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
 
   results <- .ds_safe_aggregate(conns, expr = call("flowerStatusDS", symbol))
 
+  # Verify all nodes joined the same federation
+  .verify_federation(results, fed_id)
+
   dsflower_result(
     per_site = results,
     meta = list(call_code = code, scope = "per_site")
   )
+}
+
+#' Verify all nodes joined the same federation
+#'
+#' Compares the \code{federation_id} reported by each node against the
+#' expected value from the local SuperLink. Warns if any mismatch is found.
+#'
+#' @param results Named list of per-node status results.
+#' @param expected_fed_id Character or NULL; expected federation ID.
+#' @return Invisible NULL. Emits warnings on mismatches.
+#' @keywords internal
+.verify_federation <- function(results, expected_fed_id) {
+  if (is.null(expected_fed_id)) return(invisible(NULL))
+
+  reported_ids <- vapply(results, function(st) {
+    st$federation_id %||% NA_character_
+  }, character(1))
+
+  mismatched <- names(reported_ids)[
+    !is.na(reported_ids) & reported_ids != expected_fed_id
+  ]
+  missing <- names(reported_ids)[is.na(reported_ids)]
+
+  if (length(mismatched) > 0) {
+    warning(
+      "Federation ID mismatch! These nodes may be connected to a different ",
+      "SuperLink: ", paste(mismatched, collapse = ", "), ". ",
+      "Expected '", expected_fed_id, "' but got: ",
+      paste(unique(reported_ids[mismatched]), collapse = ", "), ".",
+      call. = FALSE
+    )
+  }
+
+  if (length(missing) > 0 && length(missing) < length(reported_ids)) {
+    warning(
+      "Some nodes did not report a federation_id: ",
+      paste(missing, collapse = ", "), ". ",
+      "They may be running an older version of dsFlower.",
+      call. = FALSE
+    )
+  }
+
+  invisible(NULL)
 }
 
 #' Clean up training run on all servers
