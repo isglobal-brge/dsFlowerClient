@@ -1,0 +1,34 @@
+Package: dsFlowerClient
+Type: Package
+Title: DataSHIELD Client for Flower Federated Learning
+Version: 0.1.0
+Authors@R: c(
+    person("David", "Sarrat González", role = c("aut", "cre"), email = "david.sarrat@isglobal.org"),
+    person("Ramón", "Mateo Navarro", role = "aut", email = "ramon.mateo@isglobal.org"),
+    person("Juan R", "González", role = "aut", email = "juanr.gonzalez@isglobal.org"))
+Description: Client-side DataSHIELD package for orchestrating Flower federated
+    learning experiments. Provides composable specification objects (task, model,
+    strategy, privacy) that combine into recipes, manages SuperLink lifecycle via
+    processx, generates Flower App bundles from templates, and controls runs via
+    the flwr CLI. Includes result objects with metrics, plotting, and comparison.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Depends:
+    R (>= 4.1.0)
+Imports:
+    DSI,
+    jsonlite,
+    processx
+Suggests:
+    DSLite,
+    testthat (>= 3.0.0),
+    withr,
+    shiny,
+    bslib,
+    DT,
+    plotly,
+    clipr,
+    knitr,
+    rmarkdown
+Config/testthat/edition: 3
+RoxygenNote: 7.3.3
