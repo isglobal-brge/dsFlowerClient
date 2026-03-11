@@ -1,6 +1,143 @@
 # Module: SuperLink Lifecycle
 # Manages the Flower SuperLink process on the researcher's machine.
 
+# --- TLS certificate generation helpers ---
+
+#' Run an openssl command with error checking
+#'
+#' @param openssl_path Character; path to the openssl binary.
+#' @param args Character vector; arguments to pass.
+#' @param stdin Character or NULL; optional stdin input.
+#' @return Character vector of stdout lines (invisible).
+#' @keywords internal
+.run_openssl <- function(openssl_path, args, stdin = NULL) {
+  result <- suppressWarnings(
+    system2(openssl_path, args,
+            stdout = TRUE, stderr = TRUE,
+            input = stdin)
+  )
+  status <- attr(result, "status")
+  if (!is.null(status) && status != 0L) {
+    stop("openssl command failed (exit ", status, "): ",
+         paste(c(openssl_path, args), collapse = " "), "\n",
+         paste(result, collapse = "\n"),
+         call. = FALSE)
+  }
+  invisible(result)
+}
+
+#' Generate ephemeral TLS certificates for SuperLink
+#'
+#' Creates a CA and server certificate using EC P-256 via the system openssl
+#' CLI. SANs are auto-populated with localhost, host.docker.internal, 127.0.0.1,
+#' and the detected local IP.
+#'
+#' @param cert_dir Character; directory to write certificate files.
+#' @param extra_sans Character vector or NULL; additional SANs to include.
+#' @return A named list with ca_cert_path, ca_key_path, srv_cert_path,
+#'   srv_key_path, and ca_cert_pem.
+#' @keywords internal
+.generate_tls_certs <- function(cert_dir, extra_sans = NULL) {
+  openssl_path <- Sys.which("openssl")
+  if (!nzchar(openssl_path)) {
+    stop("openssl CLI not found on PATH. ",
+         "Install OpenSSL to use TLS (insecure = FALSE).",
+         call. = FALSE)
+  }
+
+  # Probe EC support
+  tryCatch(
+    .run_openssl(openssl_path, c("ecparam", "-name", "prime256v1", "-check")),
+    error = function(e) {
+      stop("openssl does not support EC prime256v1: ", conditionMessage(e),
+           call. = FALSE)
+    }
+  )
+
+  dir.create(cert_dir, recursive = TRUE, showWarnings = FALSE)
+
+  # Build SANs
+  sans <- c("DNS:localhost", "DNS:host.docker.internal", "IP:127.0.0.1")
+  local_ip <- tryCatch(.detect_local_ip(), error = function(e) NULL)
+  if (!is.null(local_ip) && !local_ip %in% c("127.0.0.1")) {
+    sans <- c(sans, paste0("IP:", local_ip))
+  }
+  if (!is.null(extra_sans)) {
+    sans <- c(sans, extra_sans)
+  }
+
+  # Write SAN config file (LibreSSL compatible — no -addext)
+  san_cnf_path <- file.path(cert_dir, "san.cnf")
+  san_cnf <- paste0(
+    "[v3_req]\n",
+    "subjectAltName = ", paste(sans, collapse = ","), "\n"
+  )
+  writeLines(san_cnf, san_cnf_path)
+
+  # File paths
+  ca_key_path  <- file.path(cert_dir, "ca.key")
+  ca_cert_path <- file.path(cert_dir, "ca.pem")
+  srv_key_path <- file.path(cert_dir, "server.key")
+  srv_csr_path <- file.path(cert_dir, "server.csr")
+  srv_cert_path <- file.path(cert_dir, "server.pem")
+
+  # 1. Generate CA key
+  .run_openssl(openssl_path, c(
+    "ecparam", "-genkey", "-name", "prime256v1",
+    "-out", ca_key_path
+  ))
+
+  # 2. Generate CA certificate (self-signed, 1 day)
+  .run_openssl(openssl_path, c(
+    "req", "-new", "-x509",
+    "-key", ca_key_path,
+    "-out", ca_cert_path,
+    "-days", "1",
+    "-subj", "/CN=dsFlower-CA"
+  ))
+
+  # 3. Generate server key
+  .run_openssl(openssl_path, c(
+    "ecparam", "-genkey", "-name", "prime256v1",
+    "-out", srv_key_path
+  ))
+
+  # 4. Generate server CSR
+  .run_openssl(openssl_path, c(
+    "req", "-new",
+    "-key", srv_key_path,
+    "-out", srv_csr_path,
+    "-subj", "/CN=dsFlower-SuperLink"
+  ))
+
+  # 5. Sign server cert with CA, applying SANs
+  .run_openssl(openssl_path, c(
+    "x509", "-req",
+    "-in", srv_csr_path,
+    "-CA", ca_cert_path,
+    "-CAkey", ca_key_path,
+    "-CAcreateserial",
+    "-out", srv_cert_path,
+    "-days", "1",
+    "-extfile", san_cnf_path,
+    "-extensions", "v3_req"
+  ))
+
+  # 6. Restrict CA key permissions
+  Sys.chmod(ca_key_path, "0600")
+
+  # 7. Read CA cert PEM for distribution
+  ca_cert_pem <- paste(readLines(ca_cert_path, warn = FALSE), collapse = "\n")
+
+  list(
+    ca_cert_path  = ca_cert_path,
+    ca_key_path   = ca_key_path,
+    srv_cert_path = srv_cert_path,
+    srv_key_path  = srv_key_path,
+    ca_cert_pem   = ca_cert_pem
+  )
+}
+
 #' Start a Flower SuperLink
 #'
 #' Spawns a \code{flower-superlink} process using processx with a private
@@ -33,9 +170,24 @@ ds.flower.superlink.start <- function(insecure = TRUE,
   flwr_home <- file.path(tempdir(), "dsflower_superlink")
   dir.create(flwr_home, recursive = TRUE, showWarnings = FALSE)
 
+  # TLS certificate generation when insecure = FALSE
+  tls_info <- NULL
+  if (!insecure) {
+    cert_dir <- file.path(flwr_home, "certs")
+    tls_info <- .generate_tls_certs(cert_dir)
+  }
+
   # Build args for flower-superlink
   args <- character(0)
-  if (insecure) args <- c(args, "--insecure")
+  if (insecure) {
+    args <- c(args, "--insecure")
+  } else {
+    args <- c(args,
+      "--ssl-certfile", tls_info$srv_cert_path,
+      "--ssl-keyfile", tls_info$srv_key_path,
+      "--ssl-ca-certfile", tls_info$ca_cert_path
+    )
+  }
   args <- c(args,
     "--fleet-api-address", paste0("0.0.0.0:", fleet_port),
     "--control-api-address", paste0("0.0.0.0:", control_port),
@@ -57,13 +209,23 @@ ds.flower.superlink.start <- function(insecure = TRUE,
   )
 
   # Write config.toml so flwr run can find this SuperLink
-  config_toml <- paste0(
-    "[superlink]\n",
-    'default = "dsflower"\n\n',
-    "[superlink.dsflower]\n",
-    'address = "127.0.0.1:', control_port, '"\n',
-    "insecure = true\n"
-  )
+  if (insecure) {
+    config_toml <- paste0(
+      "[superlink]\n",
+      'default = "dsflower"\n\n',
+      "[superlink.dsflower]\n",
+      'address = "127.0.0.1:', control_port, '"\n',
+      "insecure = true\n"
+    )
+  } else {
+    config_toml <- paste0(
+      "[superlink]\n",
+      'default = "dsflower"\n\n',
+      "[superlink.dsflower]\n",
+      'address = "127.0.0.1:', control_port, '"\n',
+      'root-certificates = "', tls_info$ca_cert_path, '"\n'
+    )
+  }
   writeLines(config_toml, file.path(flwr_home, "config.toml"))
 
   fleet_address   <- paste0("127.0.0.1:", fleet_port)
@@ -86,6 +248,8 @@ ds.flower.superlink.start <- function(insecure = TRUE,
     flwr_home        = flwr_home,
     log_path         = log_path,
     federation_id    = federation_id,
+    insecure         = insecure,
+    ca_cert_pem      = if (!is.null(tls_info)) tls_info$ca_cert_pem else NULL,
     started_at       = Sys.time()
   )
 
@@ -142,6 +306,8 @@ ds.flower.superlink.status <- function() {
       fleet_address   = NULL,
       control_address = NULL,
       ports           = NULL,
+      insecure        = NULL,
+      ca_cert_pem     = NULL,
       started_at      = NULL
     ))
   }
@@ -157,6 +323,8 @@ ds.flower.superlink.status <- function() {
       serverappio = info$serverappio_port
     ),
     federation_id   = info$federation_id,
+    insecure        = info$insecure,
+    ca_cert_pem     = info$ca_cert_pem,
     started_at      = info$started_at
   )
 }

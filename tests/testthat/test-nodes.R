@@ -160,6 +160,102 @@ test_that(".verify_federation warns on missing IDs (mixed versions)", {
   )
 })
 
+# --- CA cert passthrough ---
+
+test_that("nodes.ensure passes ca_cert_pem when TLS is enabled", {
+  env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old <- env$.superlink
+
+  mock_proc <- list(is_alive = function() TRUE)
+  ca_pem <- "-----BEGIN CERTIFICATE-----\nMOCK\n-----END CERTIFICATE-----"
+  env$.superlink <- list(
+    process = mock_proc, pid = 999,
+    fleet_address = "127.0.0.1:9092",
+    control_address = "127.0.0.1:9093",
+    fleet_port = 9092L, control_port = 9093L,
+    serverappio_port = 9091L,
+    flwr_home = tempdir(), log_path = tempfile(),
+    federation_id = "fl-test",
+    insecure = FALSE,
+    ca_cert_pem = ca_pem,
+    started_at = Sys.time()
+  )
+  on.exit(env$.superlink <- old)
+
+  captured_expr <- NULL
+  local_mocked_bindings(
+    .auto_resolve_superlink = function(conns, symbol) "127.0.0.1:9092",
+    .ds_safe_aggregate = function(conns, expr) {
+      list(opal1 = list(prepared = TRUE, node_ensured = TRUE,
+                         federation_id = "fl-test"))
+    }
+  )
+
+  # Mock DSI::datashield.assign.expr to capture the call
+  local_mocked_bindings(
+    datashield.assign.expr = function(conns, symbol, expr) {
+      captured_expr <<- expr
+    },
+    .package = "DSI"
+  )
+
+  suppressMessages(
+    ds.flower.nodes.ensure(conns = list(opal1 = NULL), symbol = "flower",
+                            superlink_address = "127.0.0.1:9092")
+  )
+
+  # The 4th argument should be the B64-encoded ca_cert_pem
+  expect_true(length(captured_expr) >= 5)  # fn + 3 args + ca_cert
+  fourth_arg <- captured_expr[[5]]
+  expect_true(startsWith(fourth_arg, "B64:"))
+})
+
+test_that("nodes.ensure passes NULL ca_cert when insecure", {
+  env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old <- env$.superlink
+
+  mock_proc <- list(is_alive = function() TRUE)
+  env$.superlink <- list(
+    process = mock_proc, pid = 999,
+    fleet_address = "127.0.0.1:9092",
+    control_address = "127.0.0.1:9093",
+    fleet_port = 9092L, control_port = 9093L,
+    serverappio_port = 9091L,
+    flwr_home = tempdir(), log_path = tempfile(),
+    federation_id = "fl-test",
+    insecure = TRUE,
+    ca_cert_pem = NULL,
+    started_at = Sys.time()
+  )
+  on.exit(env$.superlink <- old)
+
+  captured_expr <- NULL
+  local_mocked_bindings(
+    .auto_resolve_superlink = function(conns, symbol) "127.0.0.1:9092",
+    .ds_safe_aggregate = function(conns, expr) {
+      list(opal1 = list(prepared = TRUE, node_ensured = TRUE,
+                         federation_id = "fl-test"))
+    }
+  )
+
+  local_mocked_bindings(
+    datashield.assign.expr = function(conns, symbol, expr) {
+      captured_expr <<- expr
+    },
+    .package = "DSI"
+  )
+
+  suppressMessages(
+    ds.flower.nodes.ensure(conns = list(opal1 = NULL), symbol = "flower",
+                            superlink_address = "127.0.0.1:9092")
+  )
+
+  # The 4th argument should be NULL (no TLS)
+  expect_true(length(captured_expr) >= 5)
+  fourth_arg <- captured_expr[[5]]
+  expect_null(fourth_arg)
+})
+
 test_that(".verify_federation is silent when expected ID is NULL", {
   results <- list(
     opal1 = list(federation_id = "fl-abc123"),

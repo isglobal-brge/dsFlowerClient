@@ -98,8 +98,16 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
     superlink_address <- .auto_resolve_superlink(conns, symbol)
   }
 
-  # Get federation_id from the local SuperLink (if we started it)
-  fed_id <- ds.flower.superlink.status()$federation_id
+  # Get federation_id and ca_cert_pem from the local SuperLink (if we started it)
+  sl_status <- ds.flower.superlink.status()
+  fed_id <- sl_status$federation_id
+
+  # B64-encode ca_cert_pem for DSI transport (if TLS is enabled)
+  ca_cert_b64 <- NULL
+  if (!is.null(sl_status$ca_cert_pem)) {
+    ca_cert_json <- jsonlite::toJSON(sl_status$ca_cert_pem, auto_unbox = TRUE)
+    ca_cert_b64 <- .ds_encode(list(pem = sl_status$ca_cert_pem))
+  }
 
   if (is.character(superlink_address) && length(superlink_address) == 1L) {
     # Single address for all nodes
@@ -107,7 +115,7 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
       conns,
       symbol = symbol,
       expr = call("flowerEnsureSuperNodeDS", symbol,
-                  superlink_address, fed_id)
+                  superlink_address, fed_id, ca_cert_b64)
     )
   } else if (is.list(superlink_address)) {
     # Per-node addresses
@@ -116,7 +124,7 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
         conns[srv],
         symbol = symbol,
         expr = call("flowerEnsureSuperNodeDS", symbol,
-                    superlink_address[[srv]], fed_id)
+                    superlink_address[[srv]], fed_id, ca_cert_b64)
       )
     }
   }
