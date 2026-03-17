@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Secure Connections: TLS Auto-Certificates</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Secure Connections: TLS
+Auto-Certificates</h1>
+
+
+
+<div id="why-tls-matters" class="section level2">
+<h2>Why TLS matters</h2>
+<p>The Flower gRPC channel between the SuperLink (your machine) and the
+SuperNodes (Opal/Rock servers) carries model parameters, gradients, and
+evaluation metrics. Without encryption, anyone on the network path
+could:</p>
+<ul>
+<li><strong>Eavesdrop</strong> on gradient updates (gradient inversion
+attacks can leak training data)</li>
+<li><strong>Redirect</strong> a SuperNode to a rogue SuperLink that
+sends back a poisoned model</li>
+<li><strong>Tamper</strong> with gradient updates in transit, degrading
+model quality</li>
+</ul>
+<p>The DataSHIELD/Opal control channel is already HTTPS, but the Flower
+gRPC training channel is separate. By default it runs unencrypted.
+Setting <code>insecure = FALSE</code> enables TLS.</p>
+</div>
+<div id="how-certificate-generation-works" class="section level2">
+<h2>How certificate generation works</h2>
+<p>When <code>insecure = FALSE</code>, dsFlowerClient auto-generates
+ephemeral TLS certificates using the system <code>openssl</code> CLI.
+Let’s see what it produces:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(dsFlowerClient)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a>cert_dir <span class="ot">&lt;-</span> <span class="fu">tempfile</span>(<span class="st">&quot;dsflower_certs_&quot;</span>)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a>certs <span class="ot">&lt;-</span> dsFlowerClient<span class="sc">:::</span><span class="fu">.generate_tls_certs</span>(cert_dir)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Generated files:</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" tabindex="-1"></a><span class="co">#&gt; Generated files:</span></span>
+<span id="cb1-8"><a href="#cb1-8" tabindex="-1"></a><span class="cf">for</span> (f <span class="cf">in</span> <span class="fu">list.files</span>(cert_dir)) {</span>
+<span id="cb1-9"><a href="#cb1-9" tabindex="-1"></a>  sz <span class="ot">&lt;-</span> <span class="fu">file.size</span>(<span class="fu">file.path</span>(cert_dir, f))</span>
+<span id="cb1-10"><a href="#cb1-10" tabindex="-1"></a>  <span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  %-15s  %d bytes</span><span class="sc">\n</span><span class="st">&quot;</span>, f, sz))</span>
+<span id="cb1-11"><a href="#cb1-11" tabindex="-1"></a>}</span>
+<span id="cb1-12"><a href="#cb1-12" tabindex="-1"></a><span class="co">#&gt;   ca.key           302 bytes</span></span>
+<span id="cb1-13"><a href="#cb1-13" tabindex="-1"></a><span class="co">#&gt;   ca.pem           444 bytes</span></span>
+<span id="cb1-14"><a href="#cb1-14" tabindex="-1"></a><span class="co">#&gt;   ca.srl           17 bytes</span></span>
+<span id="cb1-15"><a href="#cb1-15" tabindex="-1"></a><span class="co">#&gt;   san.cnf          95 bytes</span></span>
+<span id="cb1-16"><a href="#cb1-16" tabindex="-1"></a><span class="co">#&gt;   server.csr       367 bytes</span></span>
+<span id="cb1-17"><a href="#cb1-17" tabindex="-1"></a><span class="co">#&gt;   server.key       302 bytes</span></span>
+<span id="cb1-18"><a href="#cb1-18" tabindex="-1"></a><span class="co">#&gt;   server.pem       538 bytes</span></span></code></pre></div>
+<p>Seven files. Let’s look at each important one.</p>
+<div id="the-ca-certificate-root-of-trust" class="section level3">
+<h3>The CA certificate (root of trust)</h3>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>ca_lines <span class="ot">&lt;-</span> <span class="fu">readLines</span>(certs<span class="sc">$</span>ca_cert_path)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(ca_lines, <span class="at">collapse =</span> <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a><span class="co">#&gt; -----</span><span class="re">BEGIN</span><span class="co"> CERTIFICATE-----</span></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a><span class="co">#&gt; MIIBHDCBwgIJAP8Dhl9mBAfrMAoGCCqGSM49BAMCMBYxFDASBgNVBAMMC2RzRmxv</span></span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a><span class="co">#&gt; d2VyLUNBMB4XDTI2MDMxNzE3NTgyMVoXDTI2MDMxODE3NTgyMVowFjEUMBIGA1UE</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a><span class="co">#&gt; AwwLZHNGbG93ZXItQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAQCIZkmgcT0</span></span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a><span class="co">#&gt; VVDB+ar+Y9ZRuOvKuQrYry8dP3hA2YaeevCH4i00Seyj2l8jzQUvLYoUwa2XLamu</span></span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a><span class="co">#&gt; oKC8/2eGJ+0dMAoGCCqGSM49BAMCA0kAMEYCIQDXg+6cOyB2lqRHkqTq4f4l8xeC</span></span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a><span class="co">#&gt; Sw2D1WNLwrAQGl0CzgIhAJ3pcgML5iwREUgt0lE41Xyv3f6neSc3bZCDfaqCvvPE</span></span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="co">#&gt; -----</span><span class="re">END</span><span class="co"> CERTIFICATE-----</span></span></code></pre></div>
+<p>This CA certificate gets distributed to every Opal. The CA private
+key (<code>ca.key</code>) never leaves your machine:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;CA key permissions:&quot;</span>, <span class="fu">format</span>(<span class="fu">file.info</span>(certs<span class="sc">$</span>ca_key_path)<span class="sc">$</span>mode), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="co">#&gt; CA key permissions: 600</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;(0600 = owner read/write only)</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co">#&gt; (0600 = owner read/write only)</span></span></code></pre></div>
+</div>
+<div id="the-san-configuration" class="section level3">
+<h3>The SAN configuration</h3>
+<p>Subject Alternative Names determine which hostnames/IPs the server
+certificate is valid for:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">readLines</span>(<span class="fu">file.path</span>(cert_dir, <span class="st">&quot;san.cnf&quot;</span>)), <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; [v3_req]</span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; subjectAltName = DNS:localhost,DNS:host.docker.internal,IP:127.0.0.1,IP:192.168.1.89</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th align="left">SAN</th>
+<th align="left">Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>DNS:localhost</code></td>
+<td align="left">SuperNode on the same machine</td>
+</tr>
+<tr class="even">
+<td align="left"><code>DNS:host.docker.internal</code></td>
+<td align="left">SuperNode inside Docker</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>IP:127.0.0.1</code></td>
+<td align="left">Loopback connections</td>
+</tr>
+<tr class="even">
+<td align="left"><code>IP:&lt;LAN IP&gt;</code></td>
+<td align="left">SuperNode on the local network</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="the-server-certificate" class="section level3">
+<h3>The server certificate</h3>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>srv_lines <span class="ot">&lt;-</span> <span class="fu">readLines</span>(certs<span class="sc">$</span>srv_cert_path)</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">paste</span>(srv_lines, <span class="at">collapse =</span> <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; -----</span><span class="re">BEGIN</span><span class="co"> CERTIFICATE-----</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; MIIBYTCCAQmgAwIBAgIJAOe3RG7MAOUnMAkGByqGSM49BAEwFjEUMBIGA1UEAwwL</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; ZHNGbG93ZXItQ0EwHhcNMjYwMzE3MTc1ODIxWhcNMjYwMzE4MTc1ODIxWjAdMRsw</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; GQYDVQQDDBJkc0Zsb3dlci1TdXBlckxpbmswWTATBgcqhkjOPQIBBggqhkjOPQMB</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; BwNCAASMk/OCuae4gTsodLlBKSc3bndCc2Do/iJm5D0VdVEhJe+lDVJjJ/OREzhO</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; Y+1oz7UmN1Bd4kb0azMdCpdnIEzTozowODA2BgNVHREELzAtgglsb2NhbGhvc3SC</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; FGhvc3QuZG9ja2VyLmludGVybmFshwR/AAABhwTAqAFZMAkGByqGSM49BAEDRwAw</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; RAIgSksCkjUm1arBRBbMwuz+3P9Mu76EbIYAnmQxx/B1CDYCIAnaN9KQHB7PmExh</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; erqkaOJ04Fw7Z/q0oPt1aFx+GXAn</span></span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a><span class="co">#&gt; -----</span><span class="re">END</span><span class="co"> CERTIFICATE-----</span></span></code></pre></div>
+<p>This is what the SuperLink presents during the TLS handshake.
+SuperNodes verify it against the CA certificate.</p>
+</div>
+<div id="the-generation-sequence" class="section level3">
+<h3>The generation sequence</h3>
+<p>All seven steps take roughly 5 milliseconds total (EC P-256 is
+fast):</p>
+<pre><code>1. Sys.which(&quot;openssl&quot;)          → find the binary
+2. ecparam -name prime256v1      → probe EC support
+3. Write san.cnf                 → SAN configuration
+4. ecparam -genkey + req -x509   → CA key + self-signed cert (1-day expiry)
+5. ecparam -genkey + req + x509  → server key + CSR + sign with CA
+6. Sys.chmod(&quot;ca.key&quot;, &quot;0600&quot;)   → restrict permissions
+7. readLines(&quot;ca.pem&quot;)           → load PEM for distribution</code></pre>
+<p>We use <code>-extfile san.cnf</code> instead of <code>-addext</code>
+because <code>-addext</code> is not supported by LibreSSL (the default
+on macOS).</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;OpenSSL version:&quot;</span>, <span class="fu">system2</span>(<span class="st">&quot;openssl&quot;</span>, <span class="st">&quot;version&quot;</span>, <span class="at">stdout =</span> <span class="cn">TRUE</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; OpenSSL version: LibreSSL 3.3.6</span></span></code></pre></div>
+</div>
+</div>
+<div id="live-demo-insecure-vs-tls" class="section level2">
+<h2>Live demo: insecure vs TLS</h2>
+<p>Let’s connect to three real Opal servers and compare both modes.</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="fu">library</span>(DSI)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="co">#&gt; Loading required package: progress</span></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="co">#&gt; Loading required package: R6</span></span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="fu">library</span>(DSOpal)</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a><span class="co">#&gt; Loading required package: opalr</span></span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a><span class="co">#&gt; Loading required package: httr</span></span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>builder <span class="ot">&lt;-</span> DSI<span class="sc">::</span><span class="fu">newDSLoginBuilder</span>()</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>builder<span class="sc">$</span><span class="fu">append</span>(<span class="at">server =</span> <span class="st">&quot;site_a&quot;</span>, <span class="at">url =</span> <span class="st">&quot;https://localhost:8443&quot;</span>,</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a>               <span class="at">user =</span> <span class="st">&quot;administrator&quot;</span>, <span class="at">password =</span> <span class="st">&quot;admin123&quot;</span>,</span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>               <span class="at">driver =</span> <span class="st">&quot;OpalDriver&quot;</span>,</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>               <span class="at">options =</span> <span class="st">&quot;list(ssl_verifyhost=0, ssl_verifypeer=0)&quot;</span>)</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>builder<span class="sc">$</span><span class="fu">append</span>(<span class="at">server =</span> <span class="st">&quot;site_b&quot;</span>, <span class="at">url =</span> <span class="st">&quot;https://localhost:8444&quot;</span>,</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a>               <span class="at">user =</span> <span class="st">&quot;administrator&quot;</span>, <span class="at">password =</span> <span class="st">&quot;admin123&quot;</span>,</span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>               <span class="at">driver =</span> <span class="st">&quot;OpalDriver&quot;</span>,</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>               <span class="at">options =</span> <span class="st">&quot;list(ssl_verifyhost=0, ssl_verifypeer=0)&quot;</span>)</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>builder<span class="sc">$</span><span class="fu">append</span>(<span class="at">server =</span> <span class="st">&quot;site_c&quot;</span>, <span class="at">url =</span> <span class="st">&quot;https://localhost:8445&quot;</span>,</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>               <span class="at">user =</span> <span class="st">&quot;administrator&quot;</span>, <span class="at">password =</span> <span class="st">&quot;admin123&quot;</span>,</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a>               <span class="at">driver =</span> <span class="st">&quot;OpalDriver&quot;</span>,</span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a>               <span class="at">options =</span> <span class="st">&quot;list(ssl_verifyhost=0, ssl_verifypeer=0)&quot;</span>)</span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a>conns <span class="ot">&lt;-</span> DSI<span class="sc">::</span><span class="fu">datashield.login</span>(<span class="at">logins =</span> builder<span class="sc">$</span><span class="fu">build</span>(), <span class="at">assign =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb8-23"><a href="#cb8-23" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb8-24"><a href="#cb8-24" tabindex="-1"></a><span class="co">#&gt; Logging into the collaborating servers</span></span>
+<span id="cb8-25"><a href="#cb8-25" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Connected to:&quot;</span>, <span class="fu">paste</span>(<span class="fu">names</span>(conns), <span class="at">collapse =</span> <span class="st">&quot;, &quot;</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb8-26"><a href="#cb8-26" tabindex="-1"></a><span class="co">#&gt; Connected to: site_a, site_b, site_c</span></span></code></pre></div>
+<div id="insecure-mode" class="section level3">
+<h3>Insecure mode</h3>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.init</span>(conns, <span class="at">resource =</span> <span class="st">&quot;dsflower_test.flower_node&quot;</span>))</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.prepare</span>(conns, <span class="at">target_column =</span> <span class="st">&quot;target&quot;</span>,</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>                               <span class="at">feature_columns =</span> <span class="fu">c</span>(<span class="st">&quot;f1&quot;</span>, <span class="st">&quot;f2&quot;</span>, <span class="st">&quot;f3&quot;</span>, <span class="st">&quot;f4&quot;</span>, <span class="st">&quot;f5&quot;</span>)))</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.superlink.start</span>(<span class="at">insecure =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="fu">Sys.sleep</span>(<span class="dv">2</span>)</span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>status_insecure <span class="ot">&lt;-</span> <span class="fu">ds.flower.superlink.status</span>()</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;Insecure mode:</span><span class="sc">\n</span><span class="st">&quot;</span>))</span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; Insecure mode:</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  Running:       %s</span><span class="sc">\n</span><span class="st">&quot;</span>, status_insecure<span class="sc">$</span>running))</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt;   Running:       TRUE</span></span>
+<span id="cb9-12"><a href="#cb9-12" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  Insecure:      %s</span><span class="sc">\n</span><span class="st">&quot;</span>, status_insecure<span class="sc">$</span>insecure))</span>
+<span id="cb9-13"><a href="#cb9-13" tabindex="-1"></a><span class="co">#&gt;   Insecure:      TRUE</span></span>
+<span id="cb9-14"><a href="#cb9-14" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  TLS cert:      %s</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" tabindex="-1"></a>    <span class="fu">ifelse</span>(<span class="fu">is.null</span>(status_insecure<span class="sc">$</span>ca_cert_pem), <span class="st">&quot;none&quot;</span>, <span class="st">&quot;present&quot;</span>)))</span>
+<span id="cb9-16"><a href="#cb9-16" tabindex="-1"></a><span class="co">#&gt;   TLS cert:      none</span></span>
+<span id="cb9-17"><a href="#cb9-17" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  Federation ID: %s</span><span class="sc">\n</span><span class="st">&quot;</span>, status_insecure<span class="sc">$</span>federation_id))</span>
+<span id="cb9-18"><a href="#cb9-18" tabindex="-1"></a><span class="co">#&gt;   Federation ID: fl-ybc88w5vltyc</span></span>
+<span id="cb9-19"><a href="#cb9-19" tabindex="-1"></a></span>
+<span id="cb9-20"><a href="#cb9-20" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.ensure</span>(conns, <span class="at">symbol =</span> <span class="st">&quot;flower&quot;</span>))</span>
+<span id="cb9-21"><a href="#cb9-21" tabindex="-1"></a><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092 (There are</span></span>
+<span id="cb9-22"><a href="#cb9-22" tabindex="-1"></a><span class="co">#&gt; some DataSHIELD errors, list them with datashield.errors())</span></span>
+<span id="cb9-23"><a href="#cb9-23" tabindex="-1"></a><span class="co">#&gt; Warning: Some nodes failed connectivity check: site_c. Consider providing</span></span>
+<span id="cb9-24"><a href="#cb9-24" tabindex="-1"></a><span class="co">#&gt; per-node superlink_address for those nodes.</span></span>
+<span id="cb9-25"><a href="#cb9-25" tabindex="-1"></a><span class="fu">Sys.sleep</span>(<span class="dv">10</span>)</span>
+<span id="cb9-26"><a href="#cb9-26" tabindex="-1"></a></span>
+<span id="cb9-27"><a href="#cb9-27" tabindex="-1"></a>recipe <span class="ot">&lt;-</span> <span class="fu">ds.flower.recipe</span>(</span>
+<span id="cb9-28"><a href="#cb9-28" tabindex="-1"></a>  <span class="at">task     =</span> <span class="fu">ds.flower.task.classification</span>(),</span>
+<span id="cb9-29"><a href="#cb9-29" tabindex="-1"></a>  <span class="at">model    =</span> <span class="fu">ds.flower.model.sklearn_logreg</span>(<span class="at">C =</span> <span class="fl">1.0</span>),</span>
+<span id="cb9-30"><a href="#cb9-30" tabindex="-1"></a>  <span class="at">strategy =</span> <span class="fu">ds.flower.strategy.fedavg</span>(</span>
+<span id="cb9-31"><a href="#cb9-31" tabindex="-1"></a>    <span class="at">min_fit_clients =</span> <span class="dv">3</span><span class="dt">L</span>, <span class="at">min_available_clients =</span> <span class="dv">3</span><span class="dt">L</span>),</span>
+<span id="cb9-32"><a href="#cb9-32" tabindex="-1"></a>  <span class="at">num_rounds      =</span> <span class="dv">3</span><span class="dt">L</span>,</span>
+<span id="cb9-33"><a href="#cb9-33" tabindex="-1"></a>  <span class="at">target_column   =</span> <span class="st">&quot;target&quot;</span>,</span>
+<span id="cb9-34"><a href="#cb9-34" tabindex="-1"></a>  <span class="at">feature_columns =</span> <span class="fu">c</span>(<span class="st">&quot;f1&quot;</span>, <span class="st">&quot;f2&quot;</span>, <span class="st">&quot;f3&quot;</span>, <span class="st">&quot;f4&quot;</span>, <span class="st">&quot;f5&quot;</span>)</span>
+<span id="cb9-35"><a href="#cb9-35" tabindex="-1"></a>)</span>
+<span id="cb9-36"><a href="#cb9-36" tabindex="-1"></a></span>
+<span id="cb9-37"><a href="#cb9-37" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Training (insecure, 3 sites, 3 rounds)...</span><span class="sc">\n\n</span><span class="st">&quot;</span>)</span>
+<span id="cb9-38"><a href="#cb9-38" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-39"><a href="#cb9-39" tabindex="-1"></a><span class="co">#&gt; Training (insecure, 3 sites, 3 rounds)...</span></span>
+<span id="cb9-40"><a href="#cb9-40" tabindex="-1"></a>run_insecure <span class="ot">&lt;-</span> <span class="fu">ds.flower.run.start</span>(recipe, <span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-41"><a href="#cb9-41" tabindex="-1"></a><span class="co">#&gt; Flower App configuration warnings in &#39;/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmpqj5ofc/dsflower_app/sklearn_logreg/pyproject.toml&#39;:</span></span>
+<span id="cb9-42"><a href="#cb9-42" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;description&quot; missing in [project]</span></span>
+<span id="cb9-43"><a href="#cb9-43" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;license&quot; missing in [project]</span></span>
+<span id="cb9-44"><a href="#cb9-44" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully started run 6858314056034708697</span></span>
+<span id="cb9-45"><a href="#cb9-45" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Start `flwr-serverapp` process</span></span>
+<span id="cb9-46"><a href="#cb9-46" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmpqj5ofc/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
+<span id="cb9-47"><a href="#cb9-47" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting Flower ServerApp, config: num_rounds=3, no round_timeout</span></span>
+<span id="cb9-48"><a href="#cb9-48" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb9-49"><a href="#cb9-49" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [INIT]</span></span>
+<span id="cb9-50"><a href="#cb9-50" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Requesting initial parameters from one random client</span></span>
+<span id="cb9-51"><a href="#cb9-51" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Received initial parameters from one random client</span></span>
+<span id="cb9-52"><a href="#cb9-52" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting evaluation of initial global parameters</span></span>
+<span id="cb9-53"><a href="#cb9-53" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Evaluation returned no results (`None`)</span></span>
+<span id="cb9-54"><a href="#cb9-54" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb9-55"><a href="#cb9-55" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 1]</span></span>
+<span id="cb9-56"><a href="#cb9-56" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb9-57"><a href="#cb9-57" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
+<span id="cb9-58"><a href="#cb9-58" tabindex="-1"></a><span class="co">#&gt; [93mWARNING [0m:   No fit_metrics_aggregation_fn provided</span></span>
+<span id="cb9-59"><a href="#cb9-59" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb9-60"><a href="#cb9-60" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
+<span id="cb9-61"><a href="#cb9-61" tabindex="-1"></a><span class="co">#&gt; [93mWARNING [0m:   No evaluate_metrics_aggregation_fn provided</span></span>
+<span id="cb9-62"><a href="#cb9-62" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb9-63"><a href="#cb9-63" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 2]</span></span>
+<span id="cb9-64"><a href="#cb9-64" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb9-65"><a href="#cb9-65" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
+<span id="cb9-66"><a href="#cb9-66" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb9-67"><a href="#cb9-67" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
+<span id="cb9-68"><a href="#cb9-68" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb9-69"><a href="#cb9-69" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 3]</span></span>
+<span id="cb9-70"><a href="#cb9-70" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb9-71"><a href="#cb9-71" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
+<span id="cb9-72"><a href="#cb9-72" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb9-73"><a href="#cb9-73" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
+<span id="cb9-74"><a href="#cb9-74" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb9-75"><a href="#cb9-75" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [SUMMARY]</span></span>
+<span id="cb9-76"><a href="#cb9-76" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Run finished 3 round(s) in 51.23s</span></span>
+<span id="cb9-77"><a href="#cb9-77" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:          History (loss, distributed):</span></span>
+<span id="cb9-78"><a href="#cb9-78" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 1: 0.14106420993565436</span></span>
+<span id="cb9-79"><a href="#cb9-79" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 2: 0.14103147463155039</span></span>
+<span id="cb9-80"><a href="#cb9-80" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 3: 0.14103127348483888</span></span>
+<span id="cb9-81"><a href="#cb9-81" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb9-82"><a href="#cb9-82" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:</span></span>
+<span id="cb9-83"><a href="#cb9-83" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting logstream for run_id `6858314056034708697`</span></span>
+<span id="cb9-84"><a href="#cb9-84" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Exit status: %s</span><span class="sc">\n</span><span class="st">&quot;</span>, run_insecure<span class="sc">$</span>status))</span>
+<span id="cb9-85"><a href="#cb9-85" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-86"><a href="#cb9-86" tabindex="-1"></a><span class="co">#&gt; Exit status: 0</span></span>
+<span id="cb9-87"><a href="#cb9-87" tabindex="-1"></a></span>
+<span id="cb9-88"><a href="#cb9-88" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.cleanup</span>(conns, <span class="at">symbol =</span> <span class="st">&quot;flower&quot;</span>))</span>
+<span id="cb9-89"><a href="#cb9-89" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.superlink.stop</span>())</span></code></pre></div>
+</div>
+<div id="tls-mode" class="section level3">
+<h3>TLS mode</h3>
+<p>Now the same thing with encryption. Only one line changes:
+<code>insecure = FALSE</code>.</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.init</span>(conns, <span class="at">resource =</span> <span class="st">&quot;dsflower_test.flower_node&quot;</span>))</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.prepare</span>(conns, <span class="at">target_column =</span> <span class="st">&quot;target&quot;</span>,</span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>                               <span class="at">feature_columns =</span> <span class="fu">c</span>(<span class="st">&quot;f1&quot;</span>, <span class="st">&quot;f2&quot;</span>, <span class="st">&quot;f3&quot;</span>, <span class="st">&quot;f4&quot;</span>, <span class="st">&quot;f5&quot;</span>)))</span>
+<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a></span>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.superlink.start</span>(<span class="at">insecure =</span> <span class="cn">FALSE</span>))</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a><span class="fu">Sys.sleep</span>(<span class="dv">2</span>)</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>status_tls <span class="ot">&lt;-</span> <span class="fu">ds.flower.superlink.status</span>()</span>
+<span id="cb10-8"><a href="#cb10-8" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;TLS mode:</span><span class="sc">\n</span><span class="st">&quot;</span>))</span>
+<span id="cb10-9"><a href="#cb10-9" tabindex="-1"></a><span class="co">#&gt; TLS mode:</span></span>
+<span id="cb10-10"><a href="#cb10-10" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  Running:       %s</span><span class="sc">\n</span><span class="st">&quot;</span>, status_tls<span class="sc">$</span>running))</span>
+<span id="cb10-11"><a href="#cb10-11" tabindex="-1"></a><span class="co">#&gt;   Running:       TRUE</span></span>
+<span id="cb10-12"><a href="#cb10-12" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  Insecure:      %s</span><span class="sc">\n</span><span class="st">&quot;</span>, status_tls<span class="sc">$</span>insecure))</span>
+<span id="cb10-13"><a href="#cb10-13" tabindex="-1"></a><span class="co">#&gt;   Insecure:      FALSE</span></span>
+<span id="cb10-14"><a href="#cb10-14" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  TLS cert:      %s</span><span class="sc">\n</span><span class="st">&quot;</span>,</span>
+<span id="cb10-15"><a href="#cb10-15" tabindex="-1"></a>    <span class="fu">ifelse</span>(<span class="fu">is.null</span>(status_tls<span class="sc">$</span>ca_cert_pem), <span class="st">&quot;none&quot;</span>,</span>
+<span id="cb10-16"><a href="#cb10-16" tabindex="-1"></a>           <span class="fu">paste0</span>(<span class="fu">substr</span>(status_tls<span class="sc">$</span>ca_cert_pem, <span class="dv">1</span>, <span class="dv">27</span>), <span class="st">&quot;... (&quot;</span>,</span>
+<span id="cb10-17"><a href="#cb10-17" tabindex="-1"></a>                  <span class="fu">nchar</span>(status_tls<span class="sc">$</span>ca_cert_pem), <span class="st">&quot; chars)&quot;</span>))))</span>
+<span id="cb10-18"><a href="#cb10-18" tabindex="-1"></a><span class="co">#&gt;   TLS cert:      -----</span><span class="re">BEGIN</span><span class="co"> CERTIFICATE-----... (443 chars)</span></span>
+<span id="cb10-19"><a href="#cb10-19" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;  Federation ID: %s</span><span class="sc">\n</span><span class="st">&quot;</span>, status_tls<span class="sc">$</span>federation_id))</span>
+<span id="cb10-20"><a href="#cb10-20" tabindex="-1"></a><span class="co">#&gt;   Federation ID: fl-b6uc5dc6u9dy</span></span>
+<span id="cb10-21"><a href="#cb10-21" tabindex="-1"></a></span>
+<span id="cb10-22"><a href="#cb10-22" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.ensure</span>(conns, <span class="at">symbol =</span> <span class="st">&quot;flower&quot;</span>))</span>
+<span id="cb10-23"><a href="#cb10-23" tabindex="-1"></a><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092 (There are</span></span>
+<span id="cb10-24"><a href="#cb10-24" tabindex="-1"></a><span class="co">#&gt; some DataSHIELD errors, list them with datashield.errors())</span></span>
+<span id="cb10-25"><a href="#cb10-25" tabindex="-1"></a><span class="co">#&gt; Warning: Some nodes failed connectivity check: site_c. Consider providing</span></span>
+<span id="cb10-26"><a href="#cb10-26" tabindex="-1"></a><span class="co">#&gt; per-node superlink_address for those nodes.</span></span>
+<span id="cb10-27"><a href="#cb10-27" tabindex="-1"></a><span class="fu">Sys.sleep</span>(<span class="dv">10</span>)</span>
+<span id="cb10-28"><a href="#cb10-28" tabindex="-1"></a></span>
+<span id="cb10-29"><a href="#cb10-29" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Training (TLS encrypted, 3 sites, 3 rounds)...</span><span class="sc">\n\n</span><span class="st">&quot;</span>)</span>
+<span id="cb10-30"><a href="#cb10-30" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-31"><a href="#cb10-31" tabindex="-1"></a><span class="co">#&gt; Training (TLS encrypted, 3 sites, 3 rounds)...</span></span>
+<span id="cb10-32"><a href="#cb10-32" tabindex="-1"></a>run_tls <span class="ot">&lt;-</span> <span class="fu">ds.flower.run.start</span>(recipe, <span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-33"><a href="#cb10-33" tabindex="-1"></a><span class="co">#&gt; Flower App configuration warnings in &#39;/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmpqj5ofc/dsflower_app/sklearn_logreg/pyproject.toml&#39;:</span></span>
+<span id="cb10-34"><a href="#cb10-34" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;description&quot; missing in [project]</span></span>
+<span id="cb10-35"><a href="#cb10-35" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;license&quot; missing in [project]</span></span>
+<span id="cb10-36"><a href="#cb10-36" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully started run 6137507963781416004</span></span>
+<span id="cb10-37"><a href="#cb10-37" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Start `flwr-serverapp` process</span></span>
+<span id="cb10-38"><a href="#cb10-38" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmpqj5ofc/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
+<span id="cb10-39"><a href="#cb10-39" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting Flower ServerApp, config: num_rounds=3, no round_timeout</span></span>
+<span id="cb10-40"><a href="#cb10-40" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb10-41"><a href="#cb10-41" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [INIT]</span></span>
+<span id="cb10-42"><a href="#cb10-42" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Requesting initial parameters from one random client</span></span>
+<span id="cb10-43"><a href="#cb10-43" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Received initial parameters from one random client</span></span>
+<span id="cb10-44"><a href="#cb10-44" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting evaluation of initial global parameters</span></span>
+<span id="cb10-45"><a href="#cb10-45" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Evaluation returned no results (`None`)</span></span>
+<span id="cb10-46"><a href="#cb10-46" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb10-47"><a href="#cb10-47" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 1]</span></span>
+<span id="cb10-48"><a href="#cb10-48" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb10-49"><a href="#cb10-49" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
+<span id="cb10-50"><a href="#cb10-50" tabindex="-1"></a><span class="co">#&gt; [93mWARNING [0m:   No fit_metrics_aggregation_fn provided</span></span>
+<span id="cb10-51"><a href="#cb10-51" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb10-52"><a href="#cb10-52" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
+<span id="cb10-53"><a href="#cb10-53" tabindex="-1"></a><span class="co">#&gt; [93mWARNING [0m:   No evaluate_metrics_aggregation_fn provided</span></span>
+<span id="cb10-54"><a href="#cb10-54" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb10-55"><a href="#cb10-55" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 2]</span></span>
+<span id="cb10-56"><a href="#cb10-56" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb10-57"><a href="#cb10-57" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
+<span id="cb10-58"><a href="#cb10-58" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb10-59"><a href="#cb10-59" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
+<span id="cb10-60"><a href="#cb10-60" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb10-61"><a href="#cb10-61" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 3]</span></span>
+<span id="cb10-62"><a href="#cb10-62" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb10-63"><a href="#cb10-63" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
+<span id="cb10-64"><a href="#cb10-64" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
+<span id="cb10-65"><a href="#cb10-65" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
+<span id="cb10-66"><a href="#cb10-66" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb10-67"><a href="#cb10-67" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [SUMMARY]</span></span>
+<span id="cb10-68"><a href="#cb10-68" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Run finished 3 round(s) in 45.26s</span></span>
+<span id="cb10-69"><a href="#cb10-69" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:          History (loss, distributed):</span></span>
+<span id="cb10-70"><a href="#cb10-70" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 1: 0.14109970773484848</span></span>
+<span id="cb10-71"><a href="#cb10-71" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 2: 0.14103161567624484</span></span>
+<span id="cb10-72"><a href="#cb10-72" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 3: 0.14103127456124395</span></span>
+<span id="cb10-73"><a href="#cb10-73" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
+<span id="cb10-74"><a href="#cb10-74" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:</span></span>
+<span id="cb10-75"><a href="#cb10-75" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting logstream for run_id `6137507963781416004`</span></span>
+<span id="cb10-76"><a href="#cb10-76" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Exit status: %s</span><span class="sc">\n</span><span class="st">&quot;</span>, run_tls<span class="sc">$</span>status))</span>
+<span id="cb10-77"><a href="#cb10-77" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb10-78"><a href="#cb10-78" tabindex="-1"></a><span class="co">#&gt; Exit status: 0</span></span>
+<span id="cb10-79"><a href="#cb10-79" tabindex="-1"></a></span>
+<span id="cb10-80"><a href="#cb10-80" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.cleanup</span>(conns, <span class="at">symbol =</span> <span class="st">&quot;flower&quot;</span>))</span>
+<span id="cb10-81"><a href="#cb10-81" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.superlink.stop</span>())</span></code></pre></div>
+<p>The loss values are comparable. TLS is transparent to the training
+protocol: the only difference is that all gRPC traffic was
+encrypted.</p>
+</div>
+</div>
+<div id="how-the-ca-cert-reaches-the-opals" class="section level2">
+<h2>How the CA cert reaches the Opals</h2>
+<p>The CA certificate travels through the DataSHIELD HTTPS channel
+(which is already secure). Here is the encoding chain:</p>
+<pre><code>Your machine                        Opal/Rock
+-----------                         ---------
+
+1. ca_cert_pem (string, ~500 bytes)
+   |
+2. .ds_encode(list(pem = ca_cert_pem))
+   → JSON → Base64 → URL-safe → &quot;B64:...&quot; prefix
+   |
+3. flowerEnsureSuperNodeDS(         ──[HTTPS]──&gt;  4. .ds_arg() decodes
+      symbol, address,                                → Base64 → JSON
+      fed_id, &quot;B64:eyJw...&quot;)                          → list(pem = &quot;-----BEGIN...&quot;)
+                                                  |
+                                               5. writeLines(pem, &quot;ca.pem&quot;)
+                                                  |
+                                               6. flower-supernode
+                                                    --root-certificates ca.pem</code></pre>
+</div>
+<div id="certificate-lifecycle" class="section level2">
+<h2>Certificate lifecycle</h2>
+<table>
+<colgroup>
+<col width="33%" />
+<col width="66%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th align="left">Event</th>
+<th align="left">What happens</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>superlink.start(insecure=FALSE)</code></td>
+<td align="left">Certs generated in temp dir (~5ms)</td>
+</tr>
+<tr class="even">
+<td align="left"><code>nodes.ensure()</code></td>
+<td align="left">CA public cert sent to each Opal via HTTPS</td>
+</tr>
+<tr class="odd">
+<td align="left">SuperNode connects</td>
+<td align="left">gRPC TLS handshake verifies server cert</td>
+</tr>
+<tr class="even">
+<td align="left">Training runs</td>
+<td align="left">All gRPC traffic encrypted</td>
+</tr>
+<tr class="odd">
+<td align="left"><code>superlink.stop()</code></td>
+<td align="left">Entire temp dir deleted (certs included)</td>
+</tr>
+<tr class="even">
+<td align="left">24 hours</td>
+<td align="left">Certs expire (safety net if stop was not called)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="known-limitations" class="section level2">
+<h2>Known limitations</h2>
+<ul>
+<li><strong>No <code>extra_sans</code> in the public API</strong>:
+<code>.generate_tls_certs()</code> accepts extra SANs but
+<code>superlink.start()</code> does not expose it yet.</li>
+<li><strong>No certificate renewal</strong>: certs expire after 24
+hours. Very long training runs may need manually generated
+certificates.</li>
+<li><strong>Opal method registration</strong>: reinstalling dsFlower on
+Rock requires re-registering methods through Opal’s admin UI.</li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

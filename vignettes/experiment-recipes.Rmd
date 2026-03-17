@@ -1,0 +1,325 @@
+---
+title: "Composing Experiments with Recipes"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Composing Experiments with Recipes}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  cache = TRUE
+)
+quiet <- function(expr) invisible(capture.output(suppressMessages(expr)))
+```
+
+## The recipe system
+
+A recipe in dsFlowerClient is a composition of four building blocks:
+
+- **Task**: classification or regression
+- **Model**: the learning algorithm and its hyperparameters
+- **Strategy**: how the server aggregates updates from the nodes
+- **Privacy**: whether to apply differential privacy
+
+Each block is an independent S3 object. You can mix and match them freely.
+The recipe itself is just a specification. Nothing runs until you call
+`ds.flower.run.start()`.
+
+```{r load}
+library(dsFlowerClient)
+```
+
+## Available models
+
+### Logistic Regression
+
+A solid default for binary classification. Converges fast in federated
+settings because the model is small (one weight per feature).
+
+```{r logreg}
+model_lr <- ds.flower.model.sklearn_logreg(
+  penalty  = "l2",
+  C        = 1.0,
+  max_iter = 200L
+)
+model_lr
+```
+
+### SGD Classifier
+
+Supports several loss functions and learning rate schedules. The
+`"log_loss"` loss function gives logistic regression with SGD optimization.
+
+```{r sgd}
+model_sgd <- ds.flower.model.sklearn_sgd(
+  loss        = "log_loss",
+  alpha       = 0.0001,
+  lr_schedule = "optimal"
+)
+model_sgd
+```
+
+### Ridge Classifier
+
+L2-regularized linear classifier. Good for high-dimensional data.
+
+```{r ridge}
+model_ridge <- ds.flower.model.sklearn_ridge(alpha = 1.0)
+model_ridge
+```
+
+### PyTorch MLP
+
+For problems where a linear model is not expressive enough:
+
+```{r mlp}
+model_mlp <- ds.flower.model.pytorch_mlp(
+  hidden_layers = c(128L, 64L),
+  learning_rate = 0.001,
+  batch_size    = 32L,
+  local_epochs  = 2L
+)
+model_mlp
+```
+
+`local_epochs` controls how many passes over the local data each node
+makes per round. More epochs can speed up convergence but risk local model
+drift (especially with non-IID data).
+
+## Aggregation strategies
+
+### FedAvg
+
+The standard algorithm. Each node trains, sends updated weights, and the
+server computes a weighted average proportional to dataset size.
+
+```{r fedavg}
+strat_avg <- ds.flower.strategy.fedavg(
+  fraction_fit          = 1.0,
+  fraction_evaluate     = 1.0,
+  min_fit_clients       = 2L,
+  min_available_clients = 2L
+)
+strat_avg
+```
+
+### FedProx
+
+Adds a proximal term to keep local models closer to the global model.
+Helps with heterogeneous (non-IID) data.
+
+```{r fedprox}
+strat_prox <- ds.flower.strategy.fedprox(
+  proximal_mu           = 0.1,
+  min_fit_clients       = 2L,
+  min_available_clients = 2L
+)
+strat_prox
+```
+
+## Privacy settings
+
+### Research mode
+
+No privacy enhancements. Suitable for trusted environments.
+
+```{r privacy-research}
+priv <- ds.flower.privacy.research()
+priv
+```
+
+### Differential privacy
+
+Clips gradient norms and adds calibrated noise. Smaller epsilon = stronger
+privacy but noisier model.
+
+```{r privacy-dp}
+priv_dp <- ds.flower.privacy.dp(
+  epsilon       = 1.0,
+  delta         = 1e-5,
+  clipping_norm = 1.0
+)
+priv_dp
+```
+
+## Putting it together
+
+```{r recipe}
+recipe_cls <- ds.flower.recipe(
+  task            = ds.flower.task.classification(),
+  model           = model_lr,
+  strategy        = strat_avg,
+  privacy         = ds.flower.privacy.research(),
+  num_rounds      = 10L,
+  target_column   = "diagnosis",
+  feature_columns = c("age", "bmi", "glucose", "insulin")
+)
+recipe_cls
+```
+
+Regression works the same way:
+
+```{r regression}
+recipe_reg <- ds.flower.recipe(
+  task            = ds.flower.task.regression(),
+  model           = ds.flower.model.sklearn_sgd(loss = "squared_error"),
+  strategy        = strat_avg,
+  num_rounds      = 10L,
+  target_column   = "price",
+  feature_columns = c("sqft", "bedrooms", "bathrooms")
+)
+recipe_reg
+```
+
+## Live demo: training different models across 3 sites
+
+Let's run real federated training with different model configurations
+against three Opal servers.
+
+```{r connect-recipes, cache = FALSE}
+library(DSI)
+library(DSOpal)
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = "site_a", url = "https://localhost:8443",
+               user = "administrator", password = "admin123",
+               driver = "OpalDriver",
+               options = "list(ssl_verifyhost=0, ssl_verifypeer=0)")
+builder$append(server = "site_b", url = "https://localhost:8444",
+               user = "administrator", password = "admin123",
+               driver = "OpalDriver",
+               options = "list(ssl_verifyhost=0, ssl_verifypeer=0)")
+builder$append(server = "site_c", url = "https://localhost:8445",
+               user = "administrator", password = "admin123",
+               driver = "OpalDriver",
+               options = "list(ssl_verifyhost=0, ssl_verifypeer=0)")
+
+conns <- DSI::datashield.login(logins = builder$build(), assign = FALSE)
+cat("Connected to:", paste(names(conns), collapse = ", "), "\n")
+```
+
+### Experiment 1: Logistic Regression with FedAvg
+
+```{r exp1-logreg}
+quiet(ds.flower.nodes.init(conns, resource = "dsflower_test.flower_node"))
+quiet(ds.flower.nodes.prepare(conns, target_column = "target",
+                               feature_columns = c("f1", "f2", "f3", "f4", "f5")))
+quiet(ds.flower.superlink.start(insecure = TRUE))
+Sys.sleep(2)
+quiet(ds.flower.nodes.ensure(conns, symbol = "flower"))
+Sys.sleep(10)
+
+recipe_exp1 <- ds.flower.recipe(
+  task     = ds.flower.task.classification(),
+  model    = ds.flower.model.sklearn_logreg(C = 1.0, max_iter = 200L),
+  strategy = ds.flower.strategy.fedavg(
+    min_fit_clients = 3L, min_available_clients = 3L),
+  num_rounds      = 5L,
+  target_column   = "target",
+  feature_columns = c("f1", "f2", "f3", "f4", "f5")
+)
+
+cat("=== Logistic Regression + FedAvg (5 rounds) ===\n\n")
+run_exp1 <- ds.flower.run.start(recipe_exp1, verbose = TRUE)
+cat(sprintf("\nExit status: %s\n", run_exp1$status))
+
+quiet(ds.flower.nodes.cleanup(conns, symbol = "flower"))
+quiet(ds.flower.superlink.stop())
+```
+
+### Experiment 2: SGD Classifier with FedAvg
+
+```{r exp2-sgd}
+quiet(ds.flower.nodes.init(conns, resource = "dsflower_test.flower_node"))
+quiet(ds.flower.nodes.prepare(conns, target_column = "target",
+                               feature_columns = c("f1", "f2", "f3", "f4", "f5")))
+quiet(ds.flower.superlink.start(insecure = TRUE))
+Sys.sleep(2)
+quiet(ds.flower.nodes.ensure(conns, symbol = "flower"))
+Sys.sleep(10)
+
+recipe_exp2 <- ds.flower.recipe(
+  task     = ds.flower.task.classification(),
+  model    = ds.flower.model.sklearn_sgd(loss = "log_loss", alpha = 0.0001),
+  strategy = ds.flower.strategy.fedavg(
+    min_fit_clients = 3L, min_available_clients = 3L),
+  num_rounds      = 5L,
+  target_column   = "target",
+  feature_columns = c("f1", "f2", "f3", "f4", "f5")
+)
+
+cat("=== SGD Classifier + FedAvg (5 rounds) ===\n\n")
+run_exp2 <- ds.flower.run.start(recipe_exp2, verbose = TRUE)
+cat(sprintf("\nExit status: %s\n", run_exp2$status))
+
+quiet(ds.flower.nodes.cleanup(conns, symbol = "flower"))
+quiet(ds.flower.superlink.stop())
+```
+
+### Experiment 3: Ridge Classifier with FedAvg
+
+```{r exp3-ridge}
+quiet(ds.flower.nodes.init(conns, resource = "dsflower_test.flower_node"))
+quiet(ds.flower.nodes.prepare(conns, target_column = "target",
+                               feature_columns = c("f1", "f2", "f3", "f4", "f5")))
+quiet(ds.flower.superlink.start(insecure = TRUE))
+Sys.sleep(2)
+quiet(ds.flower.nodes.ensure(conns, symbol = "flower"))
+Sys.sleep(10)
+
+recipe_exp3 <- ds.flower.recipe(
+  task     = ds.flower.task.classification(),
+  model    = ds.flower.model.sklearn_ridge(alpha = 1.0),
+  strategy = ds.flower.strategy.fedavg(
+    min_fit_clients = 3L, min_available_clients = 3L),
+  num_rounds      = 5L,
+  target_column   = "target",
+  feature_columns = c("f1", "f2", "f3", "f4", "f5")
+)
+
+cat("=== Ridge Classifier + FedAvg (5 rounds) ===\n\n")
+run_exp3 <- ds.flower.run.start(recipe_exp3, verbose = TRUE)
+cat(sprintf("\nExit status: %s\n", run_exp3$status))
+
+quiet(ds.flower.nodes.cleanup(conns, symbol = "flower"))
+quiet(ds.flower.superlink.stop())
+```
+
+## Under the hood: from recipe to Flower App
+
+When you call `ds.flower.run.start(recipe)`, the recipe is converted into
+a Flower App:
+
+1. `.build_flower_app()` copies a Python template from
+   `inst/flower_templates/<model_template>/` containing `client_app.py`
+   (local training) and `server_app.py` (aggregation strategy).
+
+2. `.write_pyproject_toml()` serializes all recipe parameters into TOML:
+   ```
+   [tool.flwr.app.config]
+   num-server-rounds = 5
+   task-type = "classification"
+   C = 1.0
+   strategy = "FedAvg"
+   ```
+
+3. `flwr run` installs the app, starts a ServerApp, and orchestrates
+   training through the SuperLink.
+
+## Server-side constraints
+
+| Option | Default | Effect |
+|:-------|:--------|:-------|
+| `nfilter.subset` | 3 | Minimum rows per node |
+| `dsflower.max_rounds` | 500 | Maximum training rounds |
+| `dsflower.allow_custom_config` | FALSE | Custom run configs? |
+| `dsflower.allow_supernode_spawn` | TRUE | Can SuperNodes start? |
+| `dsflower.max_concurrent_runs` | 5 | Simultaneous runs |
+
+```{r final-cleanup-recipes, include = FALSE, cache = FALSE}
+DSI::datashield.logout(conns)
+```

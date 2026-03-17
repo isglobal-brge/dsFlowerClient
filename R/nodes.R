@@ -105,7 +105,6 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
   # B64-encode ca_cert_pem for DSI transport (if TLS is enabled)
   ca_cert_b64 <- NULL
   if (!is.null(sl_status$ca_cert_pem)) {
-    ca_cert_json <- jsonlite::toJSON(sl_status$ca_cert_pem, auto_unbox = TRUE)
     ca_cert_b64 <- .ds_encode(list(pem = sl_status$ca_cert_pem))
   }
 

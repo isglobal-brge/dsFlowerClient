@@ -1,0 +1,107 @@
+url: ~
+
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  includes:
+    in_header: ""
+footer:
+  structure:
+    left: package
+    right: built_with
+
+navbar:
+  structure:
+    left:  [intro, articles, reference]
+    right: [search, github]
+  components:
+    articles:
+      text: Guides
+      menu:
+        - text: "Getting Started"
+          href: articles/getting-started.html
+        - text: "Experiment Recipes"
+          href: articles/experiment-recipes.html
+        - text: "Secure Connections (TLS)"
+          href: articles/secure-connections.html
+
+articles:
+  - title: Guides
+    navbar: ~
+    contents:
+      - getting-started
+      - experiment-recipes
+      - secure-connections
+
+reference:
+  - title: "Lifecycle: Node Management"
+    desc: "Connect, prepare, and manage federated nodes on Opal servers."
+    contents:
+      - ds.flower.nodes.init
+      - ds.flower.nodes.prepare
+      - ds.flower.nodes.ensure
+      - ds.flower.nodes.cleanup
+
+  - title: "Lifecycle: SuperLink"
+    desc: "Start, monitor, and stop the local Flower SuperLink process."
+    contents:
+      - ds.flower.superlink.start
+      - ds.flower.superlink.status
+      - ds.flower.superlink.stop
+
+  - title: "Lifecycle: Training Runs"
+    desc: "Launch and manage federated training runs."
+    contents:
+      - ds.flower.run.start
+      - ds.flower.run.stop
+      - ds.flower.run.list
+      - ds.flower.run.logs
+
+  - title: "Specification: Models"
+    desc: "Model specification objects for federated learning."
+    contents:
+      - ds.flower.model.sklearn_logreg
+      - ds.flower.model.sklearn_ridge
+      - ds.flower.model.sklearn_sgd
+      - ds.flower.model.pytorch_mlp
+
+  - title: "Specification: Strategies"
+    desc: "Federated aggregation strategy specifications."
+    contents:
+      - ds.flower.strategy.fedavg
+      - ds.flower.strategy.fedprox
+
+  - title: "Specification: Tasks & Privacy"
+    desc: "Task types and privacy enhancement specifications."
+    contents:
+      - ds.flower.task.classification
+      - ds.flower.task.regression
+      - ds.flower.privacy.research
+      - ds.flower.privacy.dp
+
+  - title: "Specification: Recipe"
+    desc: "Combine task, model, strategy, and privacy into a recipe."
+    contents:
+      - ds.flower.recipe
+
+  - title: "Results & Metrics"
+    desc: "Collect, compare, and visualize training results."
+    contents:
+      - ds.flower.metrics
+      - ds.flower.compare
+      - ds.flower.plot
+      - ds.flower.log
+      - dsflower_result
+      - ds.flower.code
+      - ds.flower.copy_code
+
+  - title: "Print Methods"
+    contents:
+      - print.dsflower_model
+      - print.dsflower_strategy
+      - print.dsflower_task
+      - print.dsflower_privacy
+      - print.dsflower_recipe
+      - print.dsflower_result
+      - as.data.frame.dsflower_result
+      - "`$.dsflower_result`"
