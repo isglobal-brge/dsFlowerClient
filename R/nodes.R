@@ -72,7 +72,15 @@ ds.flower.nodes.init <- function(conns, data, symbol = "flower") {
 #' @export
 ds.flower.nodes.prepare <- function(conns, symbol = "flower",
                                      target_column, feature_columns = NULL,
-                                     run_config = list()) {
+                                     run_config = list(), privacy = NULL) {
+  # Inject privacy settings into run_config if a privacy spec is provided
+  if (!is.null(privacy) && inherits(privacy, "dsflower_privacy")) {
+    run_config[["privacy-mode"]] <- privacy$mode
+    for (nm in names(privacy$params)) {
+      run_config[[paste0("privacy-", nm)]] <- privacy$params[[nm]]
+    }
+  }
+
   feat_enc <- .ds_encode(feature_columns)
   config_enc <- .ds_encode(run_config)
 

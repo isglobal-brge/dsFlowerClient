@@ -23,10 +23,27 @@ test_that("dp mode accepts overrides", {
   expect_equal(p$params$clipping_norm, 2.0)
 })
 
+test_that("secure mode has correct structure", {
+  p <- ds.flower.privacy.secure()
+  expect_s3_class(p, "dsflower_privacy")
+  expect_equal(p$mode, "secure")
+  expect_equal(length(p$params), 0)
+})
+
+test_that("dp mode rejects invalid params", {
+  expect_error(ds.flower.privacy.dp(epsilon = -1), "positive")
+  expect_error(ds.flower.privacy.dp(delta = 0), "\\(0, 1\\)")
+  expect_error(ds.flower.privacy.dp(delta = 1), "\\(0, 1\\)")
+  expect_error(ds.flower.privacy.dp(clipping_norm = 0), "positive")
+})
+
 test_that("privacy prints correctly", {
   p <- ds.flower.privacy.research()
   expect_output(print(p), "research")
 
   p2 <- ds.flower.privacy.dp()
   expect_output(print(p2), "dp")
+
+  p3 <- ds.flower.privacy.secure()
+  expect_output(print(p3), "secure")
 })
