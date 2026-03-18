@@ -4,12 +4,14 @@
 \alias{.write_pyproject_toml}
 \title{Generate pyproject.toml for a Flower App}
 \usage{
-.write_pyproject_toml(app_dir, recipe)
+.write_pyproject_toml(app_dir, recipe, results_dir = NULL)
 }
 \arguments{
 \item{app_dir}{Character; path to the app directory.}
 
 \item{recipe}{A \code{dsflower_recipe} object.}
+
+\item{results_dir}{Character or NULL; directory for model/metrics output.}
 }
 \value{
 Invisible NULL.

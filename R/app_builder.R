@@ -8,9 +8,10 @@
 #'
 #' @param recipe A \code{dsflower_recipe} object.
 #' @param app_dir Character; directory to create the app in (default: tempdir).
+#' @param results_dir Character; directory for the strategy to save weights/metrics.
 #' @return Character; path to the created app directory.
 #' @keywords internal
-.build_flower_app <- function(recipe, app_dir = NULL) {
+.build_flower_app <- function(recipe, app_dir = NULL, results_dir = NULL) {
   template_name <- recipe$model$template
 
   # Locate template in inst
@@ -36,7 +37,7 @@
   }
 
   # Generate pyproject.toml
-  .write_pyproject_toml(app_dir, recipe)
+  .write_pyproject_toml(app_dir, recipe, results_dir = results_dir)
 
   app_dir
 }
@@ -45,9 +46,10 @@
 #'
 #' @param app_dir Character; path to the app directory.
 #' @param recipe A \code{dsflower_recipe} object.
+#' @param results_dir Character or NULL; directory for model/metrics output.
 #' @return Invisible NULL.
 #' @keywords internal
-.write_pyproject_toml <- function(app_dir, recipe) {
+.write_pyproject_toml <- function(app_dir, recipe, results_dir = NULL) {
   template_name <- recipe$model$template
 
   # Build run_config section
@@ -55,6 +57,11 @@
     paste0('num-server-rounds = ', recipe$num_rounds),
     paste0('task-type = "', recipe$task$type, '"')
   )
+
+  if (!is.null(results_dir)) {
+    config_lines <- c(config_lines,
+      paste0('results-dir = "', results_dir, '"'))
+  }
 
   # Add model params
   for (nm in names(recipe$model$params)) {

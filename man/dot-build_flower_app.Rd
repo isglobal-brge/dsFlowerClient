@@ -4,12 +4,14 @@
 \alias{.build_flower_app}
 \title{Build a Flower App from a recipe}
 \usage{
-.build_flower_app(recipe, app_dir = NULL)
+.build_flower_app(recipe, app_dir = NULL, results_dir = NULL)
 }
 \arguments{
 \item{recipe}{A \code{dsflower_recipe} object.}
 
 \item{app_dir}{Character; directory to create the app in (default: tempdir).}
+
+\item{results_dir}{Character; directory for the strategy to save weights/metrics.}
 }
 \value{
 Character; path to the created app directory.
