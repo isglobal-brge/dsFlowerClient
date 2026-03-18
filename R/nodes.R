@@ -128,7 +128,8 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 #' @return A \code{dsflower_result} with per-site status.
 #' @export
 ds.flower.nodes.ensure <- function(conns, symbol = "flower",
-                                    superlink_address = NULL) {
+                                    superlink_address = NULL,
+                                    template_name = NULL) {
   # Auto-detect if not provided
   if (is.null(superlink_address)) {
     superlink_address <- .auto_resolve_superlink(conns, symbol)
@@ -150,7 +151,7 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
       conns,
       symbol = symbol,
       expr = call("flowerEnsureSuperNodeDS", symbol,
-                  superlink_address, fed_id, ca_cert_b64)
+                  superlink_address, fed_id, ca_cert_b64, template_name)
     )
   } else if (is.list(superlink_address)) {
     # Per-node addresses
