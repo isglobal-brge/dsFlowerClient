@@ -407,125 +407,92 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>status <span class="ot">&lt;-</span> <span class="fu">ds.flower.superlink.status</span>()</span>
 <span id="cb3-15"><a href="#cb3-15" tabindex="-1"></a>status[<span class="fu">c</span>(<span class="st">&quot;pid&quot;</span>, <span class="st">&quot;fleet_address&quot;</span>, <span class="st">&quot;federation_id&quot;</span>)]</span>
 <span id="cb3-16"><a href="#cb3-16" tabindex="-1"></a><span class="co">#&gt; $pid</span></span>
-<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; [1] 17239</span></span>
+<span id="cb3-17"><a href="#cb3-17" tabindex="-1"></a><span class="co">#&gt; [1] 24625</span></span>
 <span id="cb3-18"><a href="#cb3-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb3-19"><a href="#cb3-19" tabindex="-1"></a><span class="co">#&gt; $fleet_address</span></span>
 <span id="cb3-20"><a href="#cb3-20" tabindex="-1"></a><span class="co">#&gt; [1] &quot;127.0.0.1:9092&quot;</span></span>
 <span id="cb3-21"><a href="#cb3-21" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb3-22"><a href="#cb3-22" tabindex="-1"></a><span class="co">#&gt; $federation_id</span></span>
-<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt; [1] &quot;fl-d44kkeo3ocxq&quot;</span></span></code></pre></div>
+<span id="cb3-23"><a href="#cb3-23" tabindex="-1"></a><span class="co">#&gt; [1] &quot;fl-pw6m67vzne7w&quot;</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="fu">system2</span>(<span class="st">&quot;ps&quot;</span>, <span class="fu">c</span>(<span class="st">&quot;-p&quot;</span>, status<span class="sc">$</span>pid, <span class="st">&quot;-o&quot;</span>, <span class="st">&quot;pid,command&quot;</span>), <span class="at">stdout =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;  PID COMMAND&quot;                                                                                                                                                                                                                                                                                 </span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; [2] &quot;17239 /opt/homebrew/Cellar/python@3.11/3.11.14_1/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python /opt/homebrew/bin/flower-superlink --insecure --fleet-api-address 0.0.0.0:9092 --control-api-address 0.0.0.0:9093 --serverappio-api-address 0.0.0.0:9091&quot;</span></span></code></pre></div>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="co">#&gt; [1] &quot;  PID COMMAND&quot;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    </span></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="co">#&gt; [2] &quot;24625 /opt/homebrew/Cellar/python@3.11/3.11.14_1/Frameworks/Python.framework/Versions/3.11/Resources/Python.app/Contents/MacOS/Python /opt/homebrew/bin/flower-superlink --ssl-certfile /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//RtmpSRD6kd/dsflower_superlink/certs/server.pem --ssl-keyfile /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//RtmpSRD6kd/dsflower_superlink/certs/server.key --ssl-ca-certfile /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//RtmpSRD6kd/dsflower_superlink/certs/ca.pem --fleet-api-address 0.0.0.0:9092 --control-api-address 0.0.0.0:9093 --serverappio-api-address 0.0.0.0:9091&quot;</span></span></code></pre></div>
 </div>
 <div id="train" class="section level2">
 <h2>Train</h2>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.ensure</span>(conns))</span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; Warning: hospital_c cannot reach SuperLink at host.docker.internal:9092 (There</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; are some DataSHIELD errors, list them with datashield.errors())</span></span>
-<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; Warning: Some nodes failed connectivity check: hospital_c. Consider providing</span></span>
-<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; per-node superlink_address for those nodes.</span></span>
-<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="fu">Sys.sleep</span>(<span class="dv">10</span>)</span>
-<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">ds.flower.run.start</span>(</span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>  <span class="fu">ds.flower.recipe</span>(</span>
-<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>    <span class="at">task     =</span> <span class="fu">ds.flower.task.classification</span>(),</span>
-<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>    <span class="at">model    =</span> <span class="fu">ds.flower.model.sklearn_logreg</span>(<span class="at">C =</span> <span class="fl">1.0</span>),</span>
-<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>    <span class="at">strategy =</span> <span class="fu">ds.flower.strategy.fedavg</span>(</span>
-<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>      <span class="at">min_fit_clients =</span> <span class="dv">3</span><span class="dt">L</span>, <span class="at">min_available_clients =</span> <span class="dv">3</span><span class="dt">L</span>),</span>
-<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>    <span class="at">num_rounds      =</span> <span class="dv">5</span><span class="dt">L</span>,</span>
-<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>    <span class="at">target_column   =</span> <span class="st">&quot;target&quot;</span>,</span>
-<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>    <span class="at">feature_columns =</span> <span class="fu">c</span>(<span class="st">&quot;f1&quot;</span>, <span class="st">&quot;f2&quot;</span>, <span class="st">&quot;f3&quot;</span>, <span class="st">&quot;f4&quot;</span>, <span class="st">&quot;f5&quot;</span>)</span>
-<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  ),</span>
-<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">TRUE</span></span>
-<span id="cb5-19"><a href="#cb5-19" tabindex="-1"></a>)</span>
-<span id="cb5-20"><a href="#cb5-20" tabindex="-1"></a><span class="co">#&gt; Flower App configuration warnings in &#39;/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp8coxp3/dsflower_app/sklearn_logreg/pyproject.toml&#39;:</span></span>
-<span id="cb5-21"><a href="#cb5-21" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;description&quot; missing in [project]</span></span>
-<span id="cb5-22"><a href="#cb5-22" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;license&quot; missing in [project]</span></span>
-<span id="cb5-23"><a href="#cb5-23" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully started run 16825771704506909477</span></span>
-<span id="cb5-24"><a href="#cb5-24" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Start `flwr-serverapp` process</span></span>
-<span id="cb5-25"><a href="#cb5-25" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp8coxp3/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.d8be0996.</span></span>
-<span id="cb5-26"><a href="#cb5-26" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting Flower ServerApp, config: num_rounds=5, no round_timeout</span></span>
-<span id="cb5-27"><a href="#cb5-27" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
-<span id="cb5-28"><a href="#cb5-28" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [INIT]</span></span>
-<span id="cb5-29"><a href="#cb5-29" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Requesting initial parameters from one random client</span></span>
-<span id="cb5-30"><a href="#cb5-30" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Received initial parameters from one random client</span></span>
-<span id="cb5-31"><a href="#cb5-31" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting evaluation of initial global parameters</span></span>
-<span id="cb5-32"><a href="#cb5-32" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Evaluation returned no results (`None`)</span></span>
-<span id="cb5-33"><a href="#cb5-33" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
-<span id="cb5-34"><a href="#cb5-34" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 1]</span></span>
-<span id="cb5-35"><a href="#cb5-35" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span id="cb5-36"><a href="#cb5-36" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span id="cb5-37"><a href="#cb5-37" tabindex="-1"></a><span class="co">#&gt; [93mWARNING [0m:   No fit_metrics_aggregation_fn provided</span></span>
-<span id="cb5-38"><a href="#cb5-38" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span id="cb5-39"><a href="#cb5-39" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span id="cb5-40"><a href="#cb5-40" tabindex="-1"></a><span class="co">#&gt; [93mWARNING [0m:   No evaluate_metrics_aggregation_fn provided</span></span>
-<span id="cb5-41"><a href="#cb5-41" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
-<span id="cb5-42"><a href="#cb5-42" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 2]</span></span>
-<span id="cb5-43"><a href="#cb5-43" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span id="cb5-44"><a href="#cb5-44" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span id="cb5-45"><a href="#cb5-45" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span id="cb5-46"><a href="#cb5-46" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span id="cb5-47"><a href="#cb5-47" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
-<span id="cb5-48"><a href="#cb5-48" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 3]</span></span>
-<span id="cb5-49"><a href="#cb5-49" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span id="cb5-50"><a href="#cb5-50" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span id="cb5-51"><a href="#cb5-51" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span id="cb5-52"><a href="#cb5-52" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span id="cb5-53"><a href="#cb5-53" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
-<span id="cb5-54"><a href="#cb5-54" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 4]</span></span>
-<span id="cb5-55"><a href="#cb5-55" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span id="cb5-56"><a href="#cb5-56" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span id="cb5-57"><a href="#cb5-57" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span id="cb5-58"><a href="#cb5-58" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span id="cb5-59"><a href="#cb5-59" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
-<span id="cb5-60"><a href="#cb5-60" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [ROUND 5]</span></span>
-<span id="cb5-61"><a href="#cb5-61" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span id="cb5-62"><a href="#cb5-62" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span id="cb5-63"><a href="#cb5-63" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span id="cb5-64"><a href="#cb5-64" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span id="cb5-65"><a href="#cb5-65" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
-<span id="cb5-66"><a href="#cb5-66" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [SUMMARY]</span></span>
-<span id="cb5-67"><a href="#cb5-67" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Run finished 5 round(s) in 90.50s</span></span>
-<span id="cb5-68"><a href="#cb5-68" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:          History (loss, distributed):</span></span>
-<span id="cb5-69"><a href="#cb5-69" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 1: 0.14106420993565436</span></span>
-<span id="cb5-70"><a href="#cb5-70" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 2: 0.14103147463155039</span></span>
-<span id="cb5-71"><a href="#cb5-71" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 3: 0.14103127348483888</span></span>
-<span id="cb5-72"><a href="#cb5-72" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 4: 0.14103127111558603</span></span>
-<span id="cb5-73"><a href="#cb5-73" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 5: 0.14103127108541966</span></span>
-<span id="cb5-74"><a href="#cb5-74" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
-<span id="cb5-75"><a href="#cb5-75" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:</span></span>
-<span id="cb5-76"><a href="#cb5-76" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting logstream for run_id `16825771704506909477`</span></span></code></pre></div>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; Warning: hospital_c cannot reach SuperLink. Tried: host.docker.internal:9092,</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; 192.168.1.89:9092, 127.0.0.1:9092. Provide superlink_address explicitly for</span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt; this node.</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="fu">Sys.sleep</span>(<span class="dv">10</span>)</span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">ds.flower.run.start</span>(</span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a>  <span class="fu">ds.flower.recipe</span>(</span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a>    <span class="at">task     =</span> <span class="fu">ds.flower.task.classification</span>(),</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>    <span class="at">model    =</span> <span class="fu">ds.flower.model.sklearn_logreg</span>(<span class="at">C =</span> <span class="fl">1.0</span>),</span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a>    <span class="at">strategy =</span> <span class="fu">ds.flower.strategy.fedavg</span>(</span>
+<span id="cb5-12"><a href="#cb5-12" tabindex="-1"></a>      <span class="at">min_fit_clients =</span> <span class="dv">3</span><span class="dt">L</span>, <span class="at">min_available_clients =</span> <span class="dv">3</span><span class="dt">L</span>),</span>
+<span id="cb5-13"><a href="#cb5-13" tabindex="-1"></a>    <span class="at">num_rounds      =</span> <span class="dv">5</span><span class="dt">L</span>,</span>
+<span id="cb5-14"><a href="#cb5-14" tabindex="-1"></a>    <span class="at">target_column   =</span> <span class="st">&quot;target&quot;</span>,</span>
+<span id="cb5-15"><a href="#cb5-15" tabindex="-1"></a>    <span class="at">feature_columns =</span> <span class="fu">c</span>(<span class="st">&quot;f1&quot;</span>, <span class="st">&quot;f2&quot;</span>, <span class="st">&quot;f3&quot;</span>, <span class="st">&quot;f4&quot;</span>, <span class="st">&quot;f5&quot;</span>)</span>
+<span id="cb5-16"><a href="#cb5-16" tabindex="-1"></a>  ),</span>
+<span id="cb5-17"><a href="#cb5-17" tabindex="-1"></a>  <span class="at">verbose =</span> <span class="cn">FALSE</span></span>
+<span id="cb5-18"><a href="#cb5-18" tabindex="-1"></a>)</span></code></pre></div>
 </div>
 <div id="results" class="section level2">
 <h2>Results</h2>
 <div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>result</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt; $run_id</span></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt; [1] &quot;16825771704506909477&quot;</span></span>
-<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt; $app_dir</span></span>
-<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt; [1] &quot;/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//Rtmp8coxp3/dsflower_app/sklearn_logreg&quot;</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">#&gt; Federated Learning Run</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">#&gt;   Model:     sklearn_logreg </span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">#&gt;   Strategy:  FedAvg </span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">#&gt;   Rounds:    5 </span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">#&gt;   Status:    success </span></span>
 <span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt; $status</span></span>
-<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt; [1] 0</span></span>
-<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt; $stdout</span></span>
-<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt; [1] &quot;Flower App configuration warnings in &#39;/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp8coxp3/dsflower_app/sklearn_logreg/pyproject.toml&#39;:\n- Recommended property \&quot;description\&quot; missing in [project]\n- Recommended property \&quot;license\&quot; missing in [project]\n🎊 Successfully started run 16825771704506909477\n\033[92mINFO \033[0m:      Start `flwr-serverapp` process\n🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp8coxp3/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.d8be0996.\n\033[92mINFO \033[0m:      Starting Flower ServerApp, config: num_rounds=5, no round_timeout\n\033[92mINFO \033[0m:      \n\033[92mINFO \033[0m:      [INIT]\n\033[92mINFO \033[0m:      Requesting initial parameters from one random client\n\033[92mINFO \033[0m:      Received initial parameters from one random client\n\033[92mINFO \033[0m:      Starting evaluation of initial global parameters\n\033[92mINFO \033[0m:      Evaluation returned no results (`None`)\n\033[92mINFO \033[0m:      \n\033[92mINFO \033[0m:      [ROUND 1]\n\033[92mINFO \033[0m:      configure_fit: strategy sampled 3 clients (out of 3)\n\033[92mINFO \033[0m:      aggregate_fit: received 3 results and 0 failures\n\033[93mWARNING \033[0m:   No fit_metrics_aggregation_fn provided\n\033[92mINFO \033[0m:      configure_evaluate: strategy sampled 3 clients (out of 3)\n\033[92mINFO \033[0m:      aggregate_evaluate: received 3 results and 0 failures\n\033[93mWARNING \033[0m:   No evaluate_metrics_aggregation_fn provided\n\033[92mINFO \033[0m:      \n\033[92mINFO \033[0m:      [ROUND 2]\n\033[92mINFO \033[0m:      configure_fit: strategy sampled 3 clients (out of 3)\n\033[92mINFO \033[0m:      aggregate_fit: received 3 results and 0 failures\n\033[92mINFO \033[0m:      configure_evaluate: strategy sampled 3 clients (out of 3)\n\033[92mINFO \033[0m:      aggregate_evaluate: received 3 results and 0 failures\n\033[92mINFO \033[0m:      \n\033[92mINFO \033[0m:      [ROUND 3]\n\033[92mINFO \033[0m:      configure_fit: strategy sampled 3 clients (out of 3)\n\033[92mINFO \033[0m:      aggregate_fit: received 3 results and 0 failures\n\033[92mINFO \033[0m:      configure_evaluate: strategy sampled 3 clients (out of 3)\n\033[92mINFO \033[0m:      aggregate_evaluate: received 3 results and 0 failures\n\033[92mINFO \033[0m:      \n\033[92mINFO \033[0m:      [ROUND 4]\n\033[92mINFO \033[0m:      configure_fit: strategy sampled 3 clients (out of 3)\n\033[92mINFO \033[0m:      aggregate_fit: received 3 results and 0 failures\n\033[92mINFO \033[0m:      configure_evaluate: strategy sampled 3 clients (out of 3)\n\033[92mINFO \033[0m:      aggregate_evaluate: received 3 results and 0 failures\n\033[92mINFO \033[0m:      \n\033[92mINFO \033[0m:      [ROUND 5]\n\033[92mINFO \033[0m:      configure_fit: strategy sampled 3 clients (out of 3)\n\033[92mINFO \033[0m:      aggregate_fit: received 3 results and 0 failures\n\033[92mINFO \033[0m:      configure_evaluate: strategy sampled 3 clients (out of 3)\n\033[92mINFO \033[0m:      aggregate_evaluate: received 3 results and 0 failures\n\033[92mINFO \033[0m:      \n\033[92mINFO \033[0m:      [SUMMARY]\n\033[92mINFO \033[0m:      Run finished 5 round(s) in 90.50s\n\033[92mINFO \033[0m:      \tHistory (loss, distributed):\n\033[92mINFO \033[0m:      \t\tround 1: 0.14106420993565436\n\033[92mINFO \033[0m:      \t\tround 2: 0.14103147463155039\n\033[92mINFO \033[0m:      \t\tround 3: 0.14103127348483888\n\033[92mINFO \033[0m:      \t\tround 4: 0.14103127111558603\n\033[92mINFO \033[0m:      \t\tround 5: 0.14103127108541966\n\033[92mINFO \033[0m:      \n\033[92mINFO \033[0m:      \n&quot;</span></span>
-<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt; </span></span>
-<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; $stderr</span></span>
-<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt; [1] &quot;\033[92mINFO \033[0m:      Starting logstream for run_id `16825771704506909477`\n&quot;</span></span></code></pre></div>
+<span id="cb6-8"><a href="#cb6-8" tabindex="-1"></a><span class="co">#&gt;   Loss per round:</span></span>
+<span id="cb6-9"><a href="#cb6-9" tabindex="-1"></a><span class="co">#&gt;     round 1: 0.141100 (3 clients)</span></span>
+<span id="cb6-10"><a href="#cb6-10" tabindex="-1"></a><span class="co">#&gt;     round 2: 0.141032 (3 clients)</span></span>
+<span id="cb6-11"><a href="#cb6-11" tabindex="-1"></a><span class="co">#&gt;     round 3: 0.141031 (3 clients)</span></span>
+<span id="cb6-12"><a href="#cb6-12" tabindex="-1"></a><span class="co">#&gt;     round 4: 0.141031 (3 clients)</span></span>
+<span id="cb6-13"><a href="#cb6-13" tabindex="-1"></a><span class="co">#&gt;     round 5: 0.141031 (3 clients)</span></span>
+<span id="cb6-14"><a href="#cb6-14" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-15"><a href="#cb6-15" tabindex="-1"></a><span class="co">#&gt;   Global model weights:  2  parameter arrays</span></span>
+<span id="cb6-16"><a href="#cb6-16" tabindex="-1"></a><span class="co">#&gt;     coef: 1 x 5</span></span>
+<span id="cb6-17"><a href="#cb6-17" tabindex="-1"></a><span class="co">#&gt;     intercept: 1</span></span>
+<span id="cb6-18"><a href="#cb6-18" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb6-19"><a href="#cb6-19" tabindex="-1"></a><span class="co">#&gt;   Use ds.flower.save_model() to save the trained model.</span></span></code></pre></div>
+</div>
+<div id="save-model" class="section level2">
+<h2>Save model</h2>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">ds.flower.save_model</span>(result, <span class="st">&quot;federated_logreg.rds&quot;</span>)</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; Model saved to federated_logreg.rds</span></span></code></pre></div>
+</div>
+<div id="load-and-predict" class="section level2">
+<h2>Load and predict</h2>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(<span class="st">&quot;federated_logreg.rds&quot;</span>)</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>new_patients <span class="ot">&lt;-</span> <span class="fu">data.frame</span>(</span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>  <span class="at">f1 =</span> <span class="fu">c</span>(<span class="fl">1.5</span>, <span class="sc">-</span><span class="fl">0.5</span>, <span class="fl">0.3</span>),</span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>  <span class="at">f2 =</span> <span class="fu">c</span>(<span class="fl">2.0</span>,  <span class="fl">0.1</span>, <span class="fl">1.2</span>),</span>
+<span id="cb8-6"><a href="#cb8-6" tabindex="-1"></a>  <span class="at">f3 =</span> <span class="fu">c</span>(<span class="fl">1.0</span>, <span class="sc">-</span><span class="fl">1.0</span>, <span class="fl">0.5</span>),</span>
+<span id="cb8-7"><a href="#cb8-7" tabindex="-1"></a>  <span class="at">f4 =</span> <span class="fu">c</span>(<span class="fl">0.2</span>,  <span class="fl">0.5</span>, <span class="fl">0.8</span>),</span>
+<span id="cb8-8"><a href="#cb8-8" tabindex="-1"></a>  <span class="at">f5 =</span> <span class="fu">c</span>(<span class="fl">0.1</span>,  <span class="fl">0.3</span>, <span class="sc">-</span><span class="fl">0.2</span>)</span>
+<span id="cb8-9"><a href="#cb8-9" tabindex="-1"></a>)</span>
+<span id="cb8-10"><a href="#cb8-10" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" tabindex="-1"></a>X <span class="ot">&lt;-</span> <span class="fu">as.matrix</span>(new_patients)</span>
+<span id="cb8-12"><a href="#cb8-12" tabindex="-1"></a>coef <span class="ot">&lt;-</span> <span class="fu">as.vector</span>(model<span class="sc">$</span>weights<span class="sc">$</span>coef)</span>
+<span id="cb8-13"><a href="#cb8-13" tabindex="-1"></a>intercept <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(model<span class="sc">$</span>weights<span class="sc">$</span>intercept)</span>
+<span id="cb8-14"><a href="#cb8-14" tabindex="-1"></a></span>
+<span id="cb8-15"><a href="#cb8-15" tabindex="-1"></a>probs <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> (<span class="dv">1</span> <span class="sc">+</span> <span class="fu">exp</span>(<span class="sc">-</span>(X <span class="sc">%*%</span> coef <span class="sc">+</span> intercept)))</span>
+<span id="cb8-16"><a href="#cb8-16" tabindex="-1"></a>new_patients<span class="sc">$</span>probability <span class="ot">&lt;-</span> <span class="fu">round</span>(probs, <span class="dv">4</span>)</span>
+<span id="cb8-17"><a href="#cb8-17" tabindex="-1"></a>new_patients<span class="sc">$</span>prediction <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(probs <span class="sc">&gt;</span> <span class="fl">0.5</span>, <span class="dv">1</span>, <span class="dv">0</span>)</span>
+<span id="cb8-18"><a href="#cb8-18" tabindex="-1"></a>new_patients</span>
+<span id="cb8-19"><a href="#cb8-19" tabindex="-1"></a><span class="co">#&gt;     f1  f2   f3  f4   f5 probability prediction</span></span>
+<span id="cb8-20"><a href="#cb8-20" tabindex="-1"></a><span class="co">#&gt; 1  1.5 2.0  1.0 0.2  0.1      1.0000          1</span></span>
+<span id="cb8-21"><a href="#cb8-21" tabindex="-1"></a><span class="co">#&gt; 2 -0.5 0.1 -1.0 0.5  0.3      0.0158          0</span></span>
+<span id="cb8-22"><a href="#cb8-22" tabindex="-1"></a><span class="co">#&gt; 3  0.3 1.2  0.5 0.8 -0.2      0.9954          1</span></span></code></pre></div>
 </div>
 <div id="cleanup" class="section level2">
 <h2>Cleanup</h2>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">ds.flower.nodes.cleanup</span>(conns)</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; dsflower_result</span></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt;   Servers: hospital_a, hospital_b, hospital_c </span></span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt;   Scope:   per_site </span></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt;   Pooled:  no</span></span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt;   Code:    ds.flower.nodes.cleanup(symbol = &quot;flower&quot;)</span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="fu">ds.flower.superlink.stop</span>()</span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; SuperLink stopped.</span></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a>DSI<span class="sc">::</span><span class="fu">datashield.logout</span>(conns)</span></code></pre></div>
 </div>
 
 

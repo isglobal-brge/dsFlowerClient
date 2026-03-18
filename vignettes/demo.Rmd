@@ -85,7 +85,7 @@ result <- ds.flower.run.start(
     target_column   = "target",
     feature_columns = c("f1", "f2", "f3", "f4", "f5")
   ),
-  verbose = TRUE
+  verbose = FALSE
 )
 ```
 
@@ -95,10 +95,40 @@ result <- ds.flower.run.start(
 result
 ```
 
+## Save model
+
+```{r save}
+ds.flower.save_model(result, "federated_logreg.rds")
+```
+
+## Load and predict
+
+```{r predict}
+model <- readRDS("federated_logreg.rds")
+
+new_patients <- data.frame(
+  f1 = c(1.5, -0.5, 0.3),
+  f2 = c(2.0,  0.1, 1.2),
+  f3 = c(1.0, -1.0, 0.5),
+  f4 = c(0.2,  0.5, 0.8),
+  f5 = c(0.1,  0.3, -0.2)
+)
+
+X <- as.matrix(new_patients)
+coef <- as.vector(model$weights$coef)
+intercept <- as.numeric(model$weights$intercept)
+
+probs <- 1 / (1 + exp(-(X %*% coef + intercept)))
+new_patients$probability <- round(probs, 4)
+new_patients$prediction <- ifelse(probs > 0.5, 1, 0)
+new_patients
+```
+
 ## Cleanup
 
-```{r cleanup, cache = FALSE}
+```{r cleanup, cache = FALSE, include = FALSE}
 ds.flower.nodes.cleanup(conns)
 ds.flower.superlink.stop()
 DSI::datashield.logout(conns)
+file.remove("federated_logreg.rds")
 ```

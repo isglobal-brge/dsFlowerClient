@@ -4,12 +4,17 @@
 \alias{ds.flower.nodes.init}
 \title{Initialize Flower handles on all servers}
 \usage{
-ds.flower.nodes.init(conns, resource, symbol = "flower")
+ds.flower.nodes.init(conns, resource = NULL, table = NULL, symbol = "flower")
 }
 \arguments{
 \item{conns}{DSI connections object.}
 
-\item{resource}{Character; name of the resource in the project.}
+\item{resource}{Character or NULL; name of the resource in the Opal project
+(e.g. \code{"project.resource_name"}).}
+
+\item{table}{Character or NULL; symbol name of a data.frame already assigned
+in the DataSHIELD session (e.g. \code{"D"} after a
+\code{datashield.assign.table} call).}
 
 \item{symbol}{Character; symbol name for the handle (default "flower").}
 }
@@ -17,5 +22,8 @@ ds.flower.nodes.init(conns, resource, symbol = "flower")
 A \code{dsflower_result} with per-site init results.
 }
 \description{
-Assigns the resource and calls \code{flowerInitDS} on each server.
+Creates a Flower handle on each server from either a DataSHIELD resource
+or a symbol already loaded in the R session (e.g. a data.frame from
+previous DataSHIELD operations). Exactly one of \code{resource} or
+\code{table} must be provided.
 }
