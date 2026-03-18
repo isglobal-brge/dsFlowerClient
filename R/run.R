@@ -54,8 +54,22 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                   results_dir = results_dir)
   }
 
+  # Verify app hash with all servers before running
+  template_name <- recipe$model$template
+  app_hash <- .compute_app_hash(app_dir, template_name)
+  verification <- .ds_safe_aggregate(
+    conns,
+    expr = call("flowerVerifyAppHashDS", "flower", app_hash, template_name)
+  )
+  for (srv in names(verification)) {
+    if (!isTRUE(verification[[srv]]$verified)) {
+      stop("Code verification failed on '", srv, "': app hash does not ",
+           "match server template. Training aborted.", call. = FALSE)
+    }
+  }
+  message("  Code verification passed on all servers")
+
   # Build command: flwr run <app_dir> dsflower --stream
-  # The "dsflower" arg refers to the named connection in config.toml
   args <- c("run", app_dir, "dsflower", "--stream")
 
   # Add run_config overrides
@@ -150,6 +164,29 @@ ds.flower.run.stop <- function(run_id) {
   result <- processx::run("flwr", args = c("stop", run_id), env = env,
                           error_on_status = FALSE)
   result$stdout
+}
+
+#' Compute SHA-256 hash of the Python files in the built app
+#'
+#' Must match the server-side \code{.compute_template_hash()} algorithm.
+#'
+#' @param app_dir Character; path to the built app directory.
+#' @param template_name Character; template name (subdirectory name).
+#' @return Character; hex-encoded SHA-256 hash.
+#' @keywords internal
+.compute_app_hash <- function(app_dir, template_name) {
+  pkg_dir <- file.path(app_dir, template_name)
+  py_files <- sort(list.files(pkg_dir, pattern = "\\.py$",
+                               full.names = FALSE))
+
+  blob <- raw(0)
+  for (fname in py_files) {
+    content <- readBin(file.path(pkg_dir, fname), "raw",
+                       file.info(file.path(pkg_dir, fname))$size)
+    blob <- c(blob, charToRaw(fname), charToRaw("\n"), content, as.raw(0x00))
+  }
+
+  digest::digest(blob, algo = "sha256", serialize = FALSE)
 }
 
 #' Parse run ID from flwr output
