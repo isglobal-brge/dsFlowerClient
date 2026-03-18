@@ -1,27 +1,24 @@
 # Module: Flower App Generation
-# Builds Flower App from composable recipe specs using templates.
+# Builds Flower App from recipe specs using templates fetched from the server.
 
 #' Build a Flower App from a recipe
 #'
-#' Copies the appropriate template from \code{inst/flower_templates/} and
-#' generates a \code{pyproject.toml} with run_config from the recipe.
+#' Fetches the template from the server (via DataSHIELD), writes the Python
+#' files locally, and generates a \code{pyproject.toml} with run_config
+#' from the recipe.
 #'
 #' @param recipe A \code{dsflower_recipe} object.
+#' @param conns DSI connections object (used to fetch templates from server).
 #' @param app_dir Character; directory to create the app in (default: tempdir).
 #' @param results_dir Character; directory for the strategy to save weights/metrics.
 #' @return Character; path to the created app directory.
 #' @keywords internal
-.build_flower_app <- function(recipe, app_dir = NULL, results_dir = NULL) {
+.build_flower_app <- function(recipe, conns, app_dir = NULL,
+                               results_dir = NULL) {
   template_name <- recipe$model$template
 
-  # Locate template in inst
-  template_src <- system.file("flower_templates", template_name,
-                               package = "dsFlowerClient")
-  if (!nzchar(template_src) || !dir.exists(template_src)) {
-    stop("Flower template not found: ", template_name,
-         ". Available templates are in inst/flower_templates/.",
-         call. = FALSE)
-  }
+  # Fetch template from the server
+  template_files <- .fetch_template(conns, template_name)
 
   # Create app dir
   if (is.null(app_dir)) {
@@ -30,16 +27,94 @@
   if (dir.exists(app_dir)) unlink(app_dir, recursive = TRUE)
   dir.create(app_dir, recursive = TRUE, showWarnings = FALSE)
 
-  # Copy the Python package directory (e.g., sklearn_logreg/)
-  pkg_src <- file.path(template_src, template_name)
-  if (dir.exists(pkg_src)) {
-    file.copy(pkg_src, app_dir, recursive = TRUE)
+  # Write template files to disk
+  for (rel_path in names(template_files)) {
+    full_path <- file.path(app_dir, rel_path)
+    dir.create(dirname(full_path), recursive = TRUE, showWarnings = FALSE)
+    writeLines(template_files[[rel_path]], full_path)
   }
 
   # Generate pyproject.toml
   .write_pyproject_toml(app_dir, recipe, results_dir = results_dir)
 
   app_dir
+}
+
+#' Fetch a template from the server
+#'
+#' Calls \code{flowerGetTemplateDS} on the first available server.
+#' Results are cached per session so repeated runs with the same model
+#' don't re-fetch.
+#'
+#' @param conns DSI connections object.
+#' @param template_name Character; template name.
+#' @return Named list mapping relative file paths to contents.
+#' @keywords internal
+.fetch_template <- function(conns, template_name) {
+  # Check session cache
+  cache <- .dsflower_client_env$.template_cache
+  if (!is.null(cache[[template_name]])) {
+    return(cache[[template_name]])
+  }
+
+  # Verify all servers have this template
+  all_templates <- tryCatch(
+    DSI::datashield.aggregate(conns, expr = quote(flowerListTemplatesDS())),
+    error = function(e) NULL
+  )
+  if (!is.null(all_templates)) {
+    missing <- character(0)
+    for (srv in names(all_templates)) {
+      if (!template_name %in% all_templates[[srv]]) {
+        missing <- c(missing, srv)
+      }
+    }
+    if (length(missing) > 0) {
+      stop("Template '", template_name, "' is not available on: ",
+           paste(missing, collapse = ", "), ".", call. = FALSE)
+    }
+  }
+
+  # Fetch template files from the first server
+  srv <- names(conns)[1]
+  result <- tryCatch(
+    DSI::datashield.aggregate(
+      conns[srv],
+      expr = call("flowerGetTemplateDS", template_name)
+    ),
+    error = function(e) {
+      stop("Failed to fetch template '", template_name, "' from server '",
+           srv, "': ", conditionMessage(e), call. = FALSE)
+    }
+  )
+
+  files <- result[[srv]]$files
+  if (is.null(files) || length(files) == 0) {
+    stop("Template '", template_name, "' returned no files from server '",
+         srv, "'.", call. = FALSE)
+  }
+
+  # Cache for this session
+  if (is.null(.dsflower_client_env$.template_cache)) {
+    .dsflower_client_env$.template_cache <- list()
+  }
+  .dsflower_client_env$.template_cache[[template_name]] <- files
+
+  files
+}
+
+#' List templates available on the servers
+#'
+#' Queries each server for its installed templates.
+#'
+#' @param conns DSI connections object.
+#' @return A named list mapping server names to character vectors of template names.
+#' @export
+ds.flower.templates <- function(conns) {
+  results <- DSI::datashield.aggregate(
+    conns, expr = quote(flowerListTemplatesDS())
+  )
+  results
 }
 
 #' Generate pyproject.toml for a Flower App

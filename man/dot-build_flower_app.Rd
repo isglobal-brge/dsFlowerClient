@@ -4,10 +4,12 @@
 \alias{.build_flower_app}
 \title{Build a Flower App from a recipe}
 \usage{
-.build_flower_app(recipe, app_dir = NULL, results_dir = NULL)
+.build_flower_app(recipe, conns, app_dir = NULL, results_dir = NULL)
 }
 \arguments{
 \item{recipe}{A \code{dsflower_recipe} object.}
+
+\item{conns}{DSI connections object (used to fetch templates from server).}
 
 \item{app_dir}{Character; directory to create the app in (default: tempdir).}
 
@@ -17,7 +19,8 @@
 Character; path to the created app directory.
 }
 \description{
-Copies the appropriate template from \code{inst/flower_templates/} and
-generates a \code{pyproject.toml} with run_config from the recipe.
+Fetches the template from the server (via DataSHIELD), writes the Python
+files locally, and generates a \code{pyproject.toml} with run_config
+from the recipe.
 }
 \keyword{internal}

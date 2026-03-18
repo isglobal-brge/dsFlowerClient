@@ -6,6 +6,7 @@
 \usage{
 ds.flower.run.start(
   recipe,
+  conns = NULL,
   app_dir = NULL,
   run_config = list(),
   verbose = TRUE
@@ -14,6 +15,10 @@ ds.flower.run.start(
 \arguments{
 \item{recipe}{A \code{dsflower_recipe} object.}
 
+\item{conns}{DSI connections object. Used to fetch the model template
+from the server. If NULL, uses the connections stored during
+\code{ds.flower.nodes.init}.}
+
 \item{app_dir}{Character; path to a pre-built app directory (optional).}
 
 \item{run_config}{Named list; additional run config overrides.}
@@ -21,10 +26,9 @@ ds.flower.run.start(
 \item{verbose}{Logical; print flwr output (default TRUE).}
 }
 \value{
-A list with run_id, app_dir, and output.
+A \code{dsflower_run} object with weights, history, and predictions.
 }
 \description{
-Builds a Flower App from the recipe, then invokes \code{flwr run} against
-the running SuperLink. The SuperLink must have been started with
-\code{ds.flower.superlink.start()} beforehand.
+Fetches the model template from the server, builds a Flower App from
+the recipe, then invokes \code{flwr run} against the running SuperLink.
 }

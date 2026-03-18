@@ -47,6 +47,9 @@ ds.flower.nodes.init <- function(conns, data, symbol = "flower") {
     )
   }
 
+  # Store connections for later use (run.start, templates)
+  .dsflower_client_env$.conns <- conns
+
   code <- .build_code("ds.flower.nodes.init", data = data, symbol = symbol)
   results <- .ds_safe_aggregate(conns, expr = call("flowerPingDS"))
 

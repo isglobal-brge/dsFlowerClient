@@ -3,17 +3,19 @@
 
 #' Start a Flower run
 #'
-#' Builds a Flower App from the recipe, then invokes \code{flwr run} against
-#' the running SuperLink. The SuperLink must have been started with
-#' \code{ds.flower.superlink.start()} beforehand.
+#' Fetches the model template from the server, builds a Flower App from
+#' the recipe, then invokes \code{flwr run} against the running SuperLink.
 #'
 #' @param recipe A \code{dsflower_recipe} object.
+#' @param conns DSI connections object. Used to fetch the model template
+#'   from the server. If NULL, uses the connections stored during
+#'   \code{ds.flower.nodes.init}.
 #' @param app_dir Character; path to a pre-built app directory (optional).
 #' @param run_config Named list; additional run config overrides.
 #' @param verbose Logical; print flwr output (default TRUE).
-#' @return A list with run_id, app_dir, and output.
+#' @return A \code{dsflower_run} object with weights, history, and predictions.
 #' @export
-ds.flower.run.start <- function(recipe, app_dir = NULL,
+ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                  run_config = list(), verbose = TRUE) {
   .require_flwr_cli()
 
@@ -33,9 +35,18 @@ ds.flower.run.start <- function(recipe, app_dir = NULL,
                            format(Sys.time(), "%Y%m%d_%H%M%S"))
   dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
+  # Get connections for template fetching
+  if (is.null(conns)) {
+    conns <- .dsflower_client_env$.conns
+  }
+  if (is.null(conns)) {
+    stop("'conns' is required to fetch templates from the server.", call. = FALSE)
+  }
+
   # Build app if no pre-built dir provided
   if (is.null(app_dir)) {
-    app_dir <- .build_flower_app(recipe, results_dir = results_dir)
+    app_dir <- .build_flower_app(recipe, conns = conns,
+                                  results_dir = results_dir)
   }
 
   # Build command: flwr run <app_dir> dsflower --stream
