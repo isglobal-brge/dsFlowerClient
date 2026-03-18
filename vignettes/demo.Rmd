@@ -77,16 +77,19 @@ system2("ps", c("-p", status$pid, "-o", "pid,command"), stdout = TRUE)
 
 ## Train
 
+```{r ensure}
+ds.flower.nodes.ensure(conns)
+```
+
+## Train
+
 ```{r train}
-quiet(ds.flower.nodes.ensure(conns))
-Sys.sleep(10)
 
 result <- ds.flower.run.start(
   ds.flower.recipe(
     task     = ds.flower.task.classification(),
     model    = ds.flower.model.sklearn_logreg(C = 1.0),
-    strategy = ds.flower.strategy.fedavg(
-      min_fit_clients = 2L, min_available_clients = 2L),
+    strategy = ds.flower.strategy.fedavg(),
     num_rounds      = 5L,
     target_column   = "target",
     feature_columns = c("f1", "f2", "f3", "f4", "f5")
@@ -138,7 +141,7 @@ ds.flower.recipe(
     alpha       = 0.0001,
     lr_schedule = "optimal"
   ),
-  strategy = ds.flower.strategy.fedavg(min_fit_clients = 3L),
+  strategy = ds.flower.strategy.fedavg(fraction_fit = 1.0),
   num_rounds      = 10L,
   target_column   = "diagnosis",
   feature_columns = c("age", "bmi", "glucose")
@@ -150,7 +153,7 @@ ds.flower.recipe(
   model    = ds.flower.model.sklearn_ridge(alpha = 1.0),
   strategy = ds.flower.strategy.fedprox(
     proximal_mu = 0.1,
-    min_fit_clients = 3L
+    fraction_fit = 1.0
   ),
   num_rounds      = 10L,
   target_column   = "outcome",
@@ -166,7 +169,7 @@ ds.flower.recipe(
     batch_size    = 32L,
     local_epochs  = 2L
   ),
-  strategy = ds.flower.strategy.fedavg(min_fit_clients = 3L),
+  strategy = ds.flower.strategy.fedavg(fraction_fit = 1.0),
   num_rounds      = 20L,
   target_column   = "target",
   feature_columns = c("f1", "f2", "f3", "f4", "f5")
@@ -176,7 +179,7 @@ ds.flower.recipe(
 ds.flower.recipe(
   task     = ds.flower.task.regression(),
   model    = ds.flower.model.sklearn_sgd(loss = "squared_error"),
-  strategy = ds.flower.strategy.fedavg(min_fit_clients = 2L),
+  strategy = ds.flower.strategy.fedavg(fraction_fit = 1.0),
   num_rounds      = 15L,
   target_column   = "price",
   feature_columns = c("sqft", "bedrooms", "bathrooms")

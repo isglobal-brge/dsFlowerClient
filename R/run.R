@@ -43,6 +43,11 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     stop("'conns' is required to fetch templates from the server.", call. = FALSE)
   }
 
+  # Set min_fit_clients and min_available_clients from number of connections
+  n_clients <- length(conns)
+  recipe$strategy$params$min_fit_clients <- as.integer(n_clients)
+  recipe$strategy$params$min_available_clients <- as.integer(n_clients)
+
   # Build app if no pre-built dir provided
   if (is.null(app_dir)) {
     app_dir <- .build_flower_app(recipe, conns = conns,

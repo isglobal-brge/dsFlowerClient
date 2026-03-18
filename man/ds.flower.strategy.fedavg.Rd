@@ -4,25 +4,18 @@
 \alias{ds.flower.strategy.fedavg}
 \title{Create a FedAvg strategy spec}
 \usage{
-ds.flower.strategy.fedavg(
-  fraction_fit = 1,
-  fraction_evaluate = 1,
-  min_fit_clients = 2L,
-  min_available_clients = 2L
-)
+ds.flower.strategy.fedavg(fraction_fit = 1, fraction_evaluate = 1)
 }
 \arguments{
 \item{fraction_fit}{Numeric; fraction of clients used for training (0-1).}
 
 \item{fraction_evaluate}{Numeric; fraction of clients used for evaluation (0-1).}
-
-\item{min_fit_clients}{Integer; minimum number of clients for training.}
-
-\item{min_available_clients}{Integer; minimum number of available clients.}
 }
 \value{
 A \code{dsflower_strategy} S3 object.
 }
 \description{
-Create a FedAvg strategy spec
+Federated Averaging: each node trains, sends updated weights, and the
+server computes a weighted average. The number of participating clients
+is determined automatically from the number of connected servers.
 }

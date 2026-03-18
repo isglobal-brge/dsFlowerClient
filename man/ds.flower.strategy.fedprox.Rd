@@ -4,25 +4,17 @@
 \alias{ds.flower.strategy.fedprox}
 \title{Create a FedProx strategy spec}
 \usage{
-ds.flower.strategy.fedprox(
-  proximal_mu = 0.1,
-  fraction_fit = 1,
-  min_fit_clients = 2L,
-  min_available_clients = 2L
-)
+ds.flower.strategy.fedprox(proximal_mu = 0.1, fraction_fit = 1)
 }
 \arguments{
 \item{proximal_mu}{Numeric; proximal term weight.}
 
 \item{fraction_fit}{Numeric; fraction of clients used for training (0-1).}
-
-\item{min_fit_clients}{Integer; minimum number of clients for training.}
-
-\item{min_available_clients}{Integer; minimum number of available clients.}
 }
 \value{
 A \code{dsflower_strategy} S3 object.
 }
 \description{
-Create a FedProx strategy spec
+FedProx adds a proximal term to keep local models closer to the global
+model. Helps with heterogeneous (non-IID) data.
 }

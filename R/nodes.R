@@ -155,7 +155,8 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
     superlink_address = superlink_address
   )
 
-  results <- .ds_safe_aggregate(conns, expr = call("flowerStatusDS", symbol))
+  # Wait for all SuperNodes to be running
+  results <- .wait_supernodes_ready(conns, symbol, timeout = 30)
 
   # Verify all nodes joined the same federation
   .verify_federation(results, fed_id)
@@ -164,6 +165,50 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
     per_site = results,
     meta = list(call_code = code, scope = "per_site")
   )
+}
+
+#' Wait for all SuperNodes to be running
+#'
+#' Polls each server until \code{supernode_running = TRUE} or timeout.
+#'
+#' @param conns DSI connections object.
+#' @param symbol Character; handle symbol name.
+#' @param timeout Numeric; seconds to wait.
+#' @return Named list of per-node status results.
+#' @keywords internal
+.wait_supernodes_ready <- function(conns, symbol, timeout = 30) {
+  deadline <- Sys.time() + timeout
+  srv_names <- names(conns)
+  ready <- stats::setNames(rep(FALSE, length(srv_names)), srv_names)
+
+  while (Sys.time() < deadline) {
+    pending <- srv_names[!ready]
+    if (length(pending) == 0) break
+
+    statuses <- .ds_safe_aggregate(
+      conns[pending],
+      expr = call("flowerStatusDS", symbol)
+    )
+
+    for (srv in pending) {
+      if (isTRUE(statuses[[srv]]$supernode_running)) {
+        ready[[srv]] <- TRUE
+        message("  ", srv, ": SuperNode connected")
+      }
+    }
+
+    if (all(ready)) break
+    Sys.sleep(2)
+  }
+
+  if (!all(ready)) {
+    failed <- srv_names[!ready]
+    warning("SuperNodes not ready on: ", paste(failed, collapse = ", "),
+            " (timed out after ", timeout, "s).", call. = FALSE)
+  }
+
+  # Final status from all nodes
+  .ds_safe_aggregate(conns, expr = call("flowerStatusDS", symbol))
 }
 
 #' Verify all nodes joined the same federation
