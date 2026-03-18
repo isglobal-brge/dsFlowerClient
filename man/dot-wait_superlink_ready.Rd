@@ -16,7 +16,8 @@
 \item{timeout}{Numeric; seconds to wait.}
 }
 \description{
-Polls the fleet port until a TCP connection succeeds, or the process
-dies, or the timeout is reached.
+Verifies the process is alive and the fleet port is listening.
+Uses \code{lsof} (macOS/Linux) to check port binding without needing
+a TLS handshake.
 }
 \keyword{internal}

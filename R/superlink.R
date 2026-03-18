@@ -245,8 +245,9 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
 
 #' Wait for SuperLink to be ready
 #'
-#' Polls the fleet port until a TCP connection succeeds, or the process
-#' dies, or the timeout is reached.
+#' Verifies the process is alive and the fleet port is listening.
+#' Uses \code{lsof} (macOS/Linux) to check port binding without needing
+#' a TLS handshake.
 #'
 #' @param proc processx process object.
 #' @param port Integer; port to check.
@@ -257,7 +258,6 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
   deadline <- Sys.time() + timeout
 
   while (Sys.time() < deadline) {
-    # Check process is still alive
     if (!proc$is_alive()) {
       log_tail <- tryCatch(
         paste(tail(readLines(log_path, warn = FALSE), 10), collapse = "\n"),
@@ -266,24 +266,42 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
            call. = FALSE)
     }
 
-    # Try connecting to the fleet port
-    ok <- tryCatch({
-      con <- socketConnection("127.0.0.1", port, open = "r",
-                              blocking = TRUE, timeout = 1)
-      close(con)
-      TRUE
-    }, error = function(e) FALSE)
-
-    if (ok) return(invisible(TRUE))
+    # Check if the process is listening on the port
+    if (.port_is_listening(port)) return(invisible(TRUE))
     Sys.sleep(0.5)
   }
 
-  # Timeout
   log_tail <- tryCatch(
     paste(tail(readLines(log_path, warn = FALSE), 10), collapse = "\n"),
     error = function(e) "(no log)")
   stop("SuperLink did not become ready within ", timeout, " seconds.\nLog:\n",
        log_tail, call. = FALSE)
+}
+
+#' Check if a port is being listened on
+#'
+#' Uses \code{lsof} on macOS/Linux or \code{netstat} on Windows to check
+#' if any process is listening on the given port. Does not require a
+#' TLS handshake.
+#'
+#' @param port Integer; port number.
+#' @return Logical.
+#' @keywords internal
+.port_is_listening <- function(port) {
+  tryCatch({
+    if (.Platform$OS.type == "unix") {
+      out <- suppressWarnings(
+        system2("lsof", c("-i", paste0(":", port), "-sTCP:LISTEN"),
+                stdout = TRUE, stderr = TRUE)
+      )
+      length(out) > 0
+    } else {
+      out <- suppressWarnings(
+        system2("netstat", c("-an"), stdout = TRUE, stderr = TRUE)
+      )
+      any(grepl(paste0(":", port, "\\s"), out) & grepl("LISTEN", out))
+    }
+  }, error = function(e) FALSE, warning = function(w) FALSE)
 }
 
 #' Stop the Flower SuperLink
