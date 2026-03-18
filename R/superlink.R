@@ -41,7 +41,7 @@
   openssl_path <- Sys.which("openssl")
   if (!nzchar(openssl_path)) {
     stop("openssl CLI not found on PATH. ",
-         "Install OpenSSL to use TLS (insecure = FALSE).",
+         "Install OpenSSL to use TLS.",
          call. = FALSE)
   }
 
@@ -144,7 +144,6 @@
 #' FLWR_HOME directory. Writes a \code{config.toml} so that \code{flwr run}
 #' can connect to this SuperLink.
 #'
-#' @param insecure Logical; use insecure mode (default TRUE).
 #' @param fleet_port Integer; port for the Fleet API (default 9092).
 #'   SuperNodes connect here.
 #' @param control_port Integer; port for the Control API (default 9093).
@@ -152,8 +151,7 @@
 #' @param serverappio_port Integer; port for the ServerAppIO API (default 9091).
 #' @return Invisible list with process info.
 #' @export
-ds.flower.superlink.start <- function(insecure = TRUE,
-                                       fleet_port = 9092L,
+ds.flower.superlink.start <- function(fleet_port = 9092L,
                                        control_port = 9093L,
                                        serverappio_port = 9091L) {
   .require_flwr_cli()
@@ -170,24 +168,16 @@ ds.flower.superlink.start <- function(insecure = TRUE,
   flwr_home <- file.path(tempdir(), "dsflower_superlink")
   dir.create(flwr_home, recursive = TRUE, showWarnings = FALSE)
 
-  # TLS certificate generation when insecure = FALSE
-  tls_info <- NULL
-  if (!insecure) {
-    cert_dir <- file.path(flwr_home, "certs")
-    tls_info <- .generate_tls_certs(cert_dir)
-  }
+  # TLS certificate generation (always enabled)
+  cert_dir <- file.path(flwr_home, "certs")
+  tls_info <- .generate_tls_certs(cert_dir)
 
   # Build args for flower-superlink
-  args <- character(0)
-  if (insecure) {
-    args <- c(args, "--insecure")
-  } else {
-    args <- c(args,
-      "--ssl-certfile", tls_info$srv_cert_path,
-      "--ssl-keyfile", tls_info$srv_key_path,
-      "--ssl-ca-certfile", tls_info$ca_cert_path
-    )
-  }
+  args <- c(
+    "--ssl-certfile", tls_info$srv_cert_path,
+    "--ssl-keyfile", tls_info$srv_key_path,
+    "--ssl-ca-certfile", tls_info$ca_cert_path
+  )
   args <- c(args,
     "--fleet-api-address", paste0("0.0.0.0:", fleet_port),
     "--control-api-address", paste0("0.0.0.0:", control_port),
@@ -209,23 +199,13 @@ ds.flower.superlink.start <- function(insecure = TRUE,
   )
 
   # Write config.toml so flwr run can find this SuperLink
-  if (insecure) {
-    config_toml <- paste0(
-      "[superlink]\n",
-      'default = "dsflower"\n\n',
-      "[superlink.dsflower]\n",
-      'address = "127.0.0.1:', control_port, '"\n',
-      "insecure = true\n"
-    )
-  } else {
-    config_toml <- paste0(
-      "[superlink]\n",
-      'default = "dsflower"\n\n',
-      "[superlink.dsflower]\n",
-      'address = "127.0.0.1:', control_port, '"\n',
-      'root-certificates = "', tls_info$ca_cert_path, '"\n'
-    )
-  }
+  config_toml <- paste0(
+    "[superlink]\n",
+    'default = "dsflower"\n\n',
+    "[superlink.dsflower]\n",
+    'address = "127.0.0.1:', control_port, '"\n',
+    'root-certificates = "', tls_info$ca_cert_path, '"\n'
+  )
   writeLines(config_toml, file.path(flwr_home, "config.toml"))
 
   fleet_address   <- paste0("127.0.0.1:", fleet_port)
@@ -248,8 +228,7 @@ ds.flower.superlink.start <- function(insecure = TRUE,
     flwr_home        = flwr_home,
     log_path         = log_path,
     federation_id    = federation_id,
-    insecure         = insecure,
-    ca_cert_pem      = if (!is.null(tls_info)) tls_info$ca_cert_pem else NULL,
+    ca_cert_pem      = tls_info$ca_cert_pem,
     started_at       = Sys.time()
   )
 
@@ -306,7 +285,6 @@ ds.flower.superlink.status <- function() {
       fleet_address   = NULL,
       control_address = NULL,
       ports           = NULL,
-      insecure        = NULL,
       ca_cert_pem     = NULL,
       started_at      = NULL
     ))
@@ -323,7 +301,6 @@ ds.flower.superlink.status <- function() {
       serverappio = info$serverappio_port
     ),
     federation_id   = info$federation_id,
-    insecure        = info$insecure,
     ca_cert_pem     = info$ca_cert_pem,
     started_at      = info$started_at
   )

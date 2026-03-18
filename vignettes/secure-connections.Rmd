@@ -29,13 +29,14 @@ evaluation metrics. Without encryption, anyone on the network path could:
 - **Tamper** with gradient updates in transit, degrading model quality
 
 The DataSHIELD/Opal control channel is already HTTPS, but the Flower gRPC
-training channel is separate. By default it runs unencrypted. Setting
-`insecure = FALSE` enables TLS.
+training channel is separate. dsFlowerClient enforces TLS on this channel:
+every call to `ds.flower.superlink.start()` auto-generates ephemeral
+certificates.
 
 ## How certificate generation works
 
-When `insecure = FALSE`, dsFlowerClient auto-generates ephemeral TLS
-certificates using the system `openssl` CLI. Let's see what it produces:
+dsFlowerClient generates ephemeral TLS certificates using the system
+`openssl` CLI. Let's see what it produces:
 
 ```{r cert-gen}
 library(dsFlowerClient)
@@ -102,25 +103,26 @@ unlink(cert_dir, recursive = TRUE)
 All seven steps take roughly 5 milliseconds total (EC P-256 is fast):
 
 ```
-1. Sys.which("openssl")          → find the binary
-2. ecparam -name prime256v1      → probe EC support
-3. Write san.cnf                 → SAN configuration
-4. ecparam -genkey + req -x509   → CA key + self-signed cert (1-day expiry)
-5. ecparam -genkey + req + x509  → server key + CSR + sign with CA
-6. Sys.chmod("ca.key", "0600")   → restrict permissions
-7. readLines("ca.pem")           → load PEM for distribution
+1. Sys.which("openssl")          -> find the binary
+2. ecparam -name prime256v1      -> probe EC support
+3. Write san.cnf                 -> SAN configuration
+4. ecparam -genkey + req -x509   -> CA key + self-signed cert (1-day expiry)
+5. ecparam -genkey + req + x509  -> server key + CSR + sign with CA
+6. Sys.chmod("ca.key", "0600")   -> restrict permissions
+7. readLines("ca.pem")           -> load PEM for distribution
 ```
 
-We use `-extfile san.cnf` instead of `-addext` because `-addext` is not
-supported by LibreSSL (the default on macOS).
+We use `-extfile san.cnf` for SANs instead of `-addext` for compatibility
+with both OpenSSL and LibreSSL (the default on macOS).
 
 ```{r openssl-version}
 cat("OpenSSL version:", system2("openssl", "version", stdout = TRUE), "\n")
 ```
 
-## Live demo: insecure vs TLS
+## Live demo: TLS-encrypted training across 3 sites
 
-Let's connect to three real Opal servers and compare both modes.
+Let's connect to three real Opal servers and run federated training with
+TLS encryption on the gRPC channel.
 
 ```{r connect-tls, cache = FALSE}
 library(DSI)
@@ -144,22 +146,20 @@ conns <- DSI::datashield.login(logins = builder$build(), assign = FALSE)
 cat("Connected to:", paste(names(conns), collapse = ", "), "\n")
 ```
 
-### Insecure mode
-
-```{r insecure-run}
+```{r tls-run}
 quiet(ds.flower.nodes.init(conns, resource = "dsflower_test.flower_node"))
 quiet(ds.flower.nodes.prepare(conns, target_column = "target",
                                feature_columns = c("f1", "f2", "f3", "f4", "f5")))
 
-quiet(ds.flower.superlink.start(insecure = TRUE))
+quiet(ds.flower.superlink.start())
 Sys.sleep(2)
-status_insecure <- ds.flower.superlink.status()
-cat(sprintf("Insecure mode:\n"))
-cat(sprintf("  Running:       %s\n", status_insecure$running))
-cat(sprintf("  Insecure:      %s\n", status_insecure$insecure))
-cat(sprintf("  TLS cert:      %s\n",
-    ifelse(is.null(status_insecure$ca_cert_pem), "none", "present")))
-cat(sprintf("  Federation ID: %s\n", status_insecure$federation_id))
+status <- ds.flower.superlink.status()
+cat(sprintf("SuperLink running:   %s\n", status$running))
+cat(sprintf("  TLS cert:          %s\n",
+    ifelse(is.null(status$ca_cert_pem), "none",
+           paste0(substr(status$ca_cert_pem, 1, 27), "... (",
+                  nchar(status$ca_cert_pem), " chars)"))))
+cat(sprintf("  Federation ID:     %s\n", status$federation_id))
 
 quiet(ds.flower.nodes.ensure(conns, symbol = "flower"))
 Sys.sleep(10)
@@ -174,79 +174,29 @@ recipe <- ds.flower.recipe(
   feature_columns = c("f1", "f2", "f3", "f4", "f5")
 )
 
-cat("\nTraining (insecure, 3 sites, 3 rounds)...\n\n")
-run_insecure <- ds.flower.run.start(recipe, verbose = TRUE)
-cat(sprintf("\nExit status: %s\n", run_insecure$status))
-
-quiet(ds.flower.nodes.cleanup(conns, symbol = "flower"))
-quiet(ds.flower.superlink.stop())
-```
-
-### TLS mode
-
-Now the same thing with encryption. Only one line changes:
-`insecure = FALSE`.
-
-```{r tls-run}
-quiet(ds.flower.nodes.init(conns, resource = "dsflower_test.flower_node"))
-quiet(ds.flower.nodes.prepare(conns, target_column = "target",
-                               feature_columns = c("f1", "f2", "f3", "f4", "f5")))
-
-quiet(ds.flower.superlink.start(insecure = FALSE))
-Sys.sleep(2)
-status_tls <- ds.flower.superlink.status()
-cat(sprintf("TLS mode:\n"))
-cat(sprintf("  Running:       %s\n", status_tls$running))
-cat(sprintf("  Insecure:      %s\n", status_tls$insecure))
-cat(sprintf("  TLS cert:      %s\n",
-    ifelse(is.null(status_tls$ca_cert_pem), "none",
-           paste0(substr(status_tls$ca_cert_pem, 1, 27), "... (",
-                  nchar(status_tls$ca_cert_pem), " chars)"))))
-cat(sprintf("  Federation ID: %s\n", status_tls$federation_id))
-
-quiet(ds.flower.nodes.ensure(conns, symbol = "flower"))
-Sys.sleep(10)
-
 cat("\nTraining (TLS encrypted, 3 sites, 3 rounds)...\n\n")
-run_tls <- ds.flower.run.start(recipe, verbose = TRUE)
-cat(sprintf("\nExit status: %s\n", run_tls$status))
+run <- ds.flower.run.start(recipe, verbose = TRUE)
+cat(sprintf("\nExit status: %s\n", run$status))
 
 quiet(ds.flower.nodes.cleanup(conns, symbol = "flower"))
 quiet(ds.flower.superlink.stop())
 ```
 
-The loss values are comparable. TLS is transparent to the training
-protocol: the only difference is that all gRPC traffic was encrypted.
+All gRPC traffic (model weights, gradients, evaluation metrics) was
+encrypted in transit. TLS is transparent to the training protocol.
 
 ## How the CA cert reaches the Opals
 
 The CA certificate travels through the DataSHIELD HTTPS channel (which is
 already secure). Here is the encoding chain:
 
-```
-Your machine                        Opal/Rock
------------                         ---------
-
-1. ca_cert_pem (string, ~500 bytes)
-   |
-2. .ds_encode(list(pem = ca_cert_pem))
-   → JSON → Base64 → URL-safe → "B64:..." prefix
-   |
-3. flowerEnsureSuperNodeDS(         ──[HTTPS]──>  4. .ds_arg() decodes
-      symbol, address,                                → Base64 → JSON
-      fed_id, "B64:eyJw...")                          → list(pem = "-----BEGIN...")
-                                                  |
-                                               5. writeLines(pem, "ca.pem")
-                                                  |
-                                               6. flower-supernode
-                                                    --root-certificates ca.pem
-```
+![TLS certificate distribution flow](figures/tls-flow.svg)
 
 ## Certificate lifecycle
 
 | Event | What happens |
 |:------|:-------------|
-| `superlink.start(insecure=FALSE)` | Certs generated in temp dir (~5ms) |
+| `superlink.start()` | Certs generated in temp dir (~5ms) |
 | `nodes.ensure()` | CA public cert sent to each Opal via HTTPS |
 | SuperNode connects | gRPC TLS handshake verifies server cert |
 | Training runs | All gRPC traffic encrypted |

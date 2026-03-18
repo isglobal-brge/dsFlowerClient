@@ -83,17 +83,9 @@ federated learning framework).</p>
 </h2>
 <p>dsFlower is split into two R packages that run on different
 machines:</p>
-<pre><code> YOUR MACHINE                              HOSPITAL SERVERS
- (researcher)                              (Opal/Rock)
- ┌──────────────────────┐                  ┌──────────────────────┐
- │                      │                  │                      │
- │   dsFlowerClient     │   instructions   │     dsFlower         │
- │                      │ ───────────────&gt; │                      │
- │   "Tell the servers  │   (via HTTPS)    │   "Do what the       │
- │    what to do"       │                  │    researcher says"   │
- │                      │ &lt;─────────────── │                      │
- │                      │    results       │                      │
- └──────────────────────┘                  └──────────────────────┘</code></pre>
+<div class="float">
+<img src="figures/architecture.svg" alt="Two packages, two roles"><div class="figcaption">Two packages, two roles</div>
+</div>
 <p><strong>dsFlowerClient</strong> runs on <em>your</em> laptop. It is
 the orchestrator. You use it to connect to servers, prepare data, start
 training, and collect results.</p>
@@ -107,19 +99,9 @@ You never interact with it directly.</p>
 </h2>
 <p>dsFlower uses <em>two completely separate network channels</em> at
 the same time:</p>
-<pre><code> YOUR MACHINE                              HOSPITAL SERVERS
- ┌─────────────────┐                       ┌─────────────────┐
- │ dsFlowerClient  │───── HTTPS ─────────&gt; │ dsFlower        │
- │ (R)             │&lt;──── (DataSHIELD) ─── │ (R on Rock)     │
- │                 │                        │                 │
- │ flower-superlink│&lt;──── gRPC ──────────&gt; │ flower-supernode │
- │ (Python)        │───── (Flower) ──────&gt; │ (Python)        │
- └─────────────────┘                       └─────────────────┘
-         │                                          │
-   Control channel                           Training channel
-   "prepare data"                            model weights
-   "start training"                          gradients
-   "give me metrics"                         evaluation scores</code></pre>
+<div class="float">
+<img src="figures/channels.svg" alt="Two communication channels"><div class="figcaption">Two communication channels</div>
+</div>
 <p>The <strong>control channel</strong> (top) is standard DataSHIELD
 over HTTPS. The <strong>training channel</strong> (bottom) is Flower’s
 gRPC protocol. Why two channels? Because DataSHIELD’s request-response
@@ -133,14 +115,14 @@ federated training needs.</p>
 experiment from four building blocks. These are plain R objects that
 describe <em>what</em> should happen, without triggering any
 computation:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">dsFlowerClient</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># What kind of problem?</span></span>
 <span><span class="va">task</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.task.classification.html">ds.flower.task.classification</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">task</span></span>
 <span><span class="co">#&gt; dsflower_task: classification</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># What model to train?</span></span>
 <span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.model.sklearn_logreg.html">ds.flower.model.sklearn_logreg</a></span><span class="op">(</span>C <span class="op">=</span> <span class="fl">1.0</span>, max_iter <span class="op">=</span> <span class="fl">200L</span><span class="op">)</span></span>
 <span><span class="va">model</span></span>
@@ -148,7 +130,7 @@ computation:</p>
 <span><span class="co">#&gt;    penalty = "l2" </span></span>
 <span><span class="co">#&gt;    C = 1 </span></span>
 <span><span class="co">#&gt;    max_iter = 200L</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># How to aggregate updates from nodes?</span></span>
 <span><span class="va">strategy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.strategy.fedavg.html">ds.flower.strategy.fedavg</a></span><span class="op">(</span></span>
 <span>  fraction_fit          <span class="op">=</span> <span class="fl">1.0</span>,</span>
@@ -161,13 +143,13 @@ computation:</p>
 <span><span class="co">#&gt;    fraction_evaluate = 1 </span></span>
 <span><span class="co">#&gt;    min_fit_clients = 3L </span></span>
 <span><span class="co">#&gt;    min_available_clients = 3L</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Any privacy enhancements?</span></span>
 <span><span class="va">privacy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.privacy.research.html">ds.flower.privacy.research</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">privacy</span></span>
 <span><span class="co">#&gt; dsflower_privacy: research</span></span></code></pre></div>
 <p>Then you combine them into a recipe:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.recipe.html">ds.flower.recipe</a></span><span class="op">(</span></span>
 <span>  task            <span class="op">=</span> <span class="va">task</span>,</span>
 <span>  model           <span class="op">=</span> <span class="va">model</span>,</span>
@@ -201,7 +183,7 @@ target).</p>
 <div class="section level3">
 <h3 id="stage-1-connect-to-the-three-opal-servers">Stage 1: Connect to the three Opal servers<a class="anchor" aria-label="anchor" href="#stage-1-connect-to-the-three-opal-servers"></a>
 </h3>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
 <span></span>
@@ -228,7 +210,7 @@ target).</p>
 <div class="section level3">
 <h3 id="stage-2-initialize-and-inspect-capabilities">Stage 2: Initialize and inspect capabilities<a class="anchor" aria-label="anchor" href="#stage-2-initialize-and-inspect-capabilities"></a>
 </h3>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">init_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.nodes.init.html">ds.flower.nodes.init</a></span><span class="op">(</span></span>
 <span>  <span class="va">conns</span>, resource <span class="op">=</span> <span class="st">"dsflower_test.flower_node"</span>, symbol <span class="op">=</span> <span class="st">"flower"</span></span>
 <span><span class="op">)</span></span>
@@ -254,7 +236,7 @@ of the host’s LAN IP).</p>
 <div class="section level3">
 <h3 id="stage-3-prepare-training-data">Stage 3: Prepare training data<a class="anchor" aria-label="anchor" href="#stage-3-prepare-training-data"></a>
 </h3>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">prep</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.nodes.prepare.html">ds.flower.nodes.prepare</a></span><span class="op">(</span></span>
 <span>  <span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span>,</span>
 <span>  target_column <span class="op">=</span> <span class="st">"target"</span>,</span>
@@ -273,7 +255,7 @@ temporary directory that the Python SuperNode will read.</p>
 <div class="section level3">
 <h3 id="stage-4-start-the-superlink-insecure-mode">Stage 4: Start the SuperLink (insecure mode)<a class="anchor" aria-label="anchor" href="#stage-4-start-the-superlink-insecure-mode"></a>
 </h3>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span>insecure <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
 <span></span>
@@ -296,7 +278,7 @@ commands.</p>
 <div class="section level3">
 <h3 id="stage-5-connect-the-three-nodes">Stage 5: Connect the three nodes<a class="anchor" aria-label="anchor" href="#stage-5-connect-the-three-nodes"></a>
 </h3>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="va">ensure</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092</span></span>
 <span><span class="co">#&gt; (There are some DataSHIELD errors, list them with datashield.errors())</span></span>
@@ -321,7 +303,7 @@ SuperLink via gRPC.</p>
 <div class="section level3">
 <h3 id="stage-6-train-a-model-across-3-sites">Stage 6: Train a model across 3 sites<a class="anchor" aria-label="anchor" href="#stage-6-train-a-model-across-3-sites"></a>
 </h3>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">recipe_lr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.recipe.html">ds.flower.recipe</a></span><span class="op">(</span></span>
 <span>  task     <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.task.classification.html">ds.flower.task.classification</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  model    <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.model.sklearn_logreg.html">ds.flower.model.sklearn_logreg</a></span><span class="op">(</span>C <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span>,</span>
@@ -337,12 +319,12 @@ SuperLink via gRPC.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Training logistic regression across 3 sites (3 rounds)...\n\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Training logistic regression across 3 sites (3 rounds)...</span></span>
 <span><span class="va">run1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe_lr</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpnAAqpk/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
+<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
 <span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
 <span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 9871220183137015194</span></span>
+<span><span class="co">#&gt; 🎊 Successfully started run 12394865800874772647</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpnAAqpk/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
+<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=3, no round_timeout</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
@@ -372,14 +354,14 @@ SuperLink via gRPC.</p>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 54.20s</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 54.17s</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.14106420993565436</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103147463155039</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127348483888</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.1410312734848389</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `9871220183137015194`</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `12394865800874772647`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nRun completed with exit status: %s\n"</span>, <span class="va">run1</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Run completed with exit status: 0</span></span></code></pre></div>
@@ -391,7 +373,7 @@ averaged them using FedAvg.</p>
 <div class="section level3">
 <h3 id="stage-7-clean-up">Stage 7: Clean up<a class="anchor" aria-label="anchor" href="#stage-7-clean-up"></a>
 </h3>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.cleanup.html">ds.flower.nodes.cleanup</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.stop.html">ds.flower.superlink.stop</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Cleaned up: staging data removed, SuperLink stopped.\n"</span><span class="op">)</span></span>
@@ -403,7 +385,7 @@ averaged them using FedAvg.</p>
 </h2>
 <p>Now let’s repeat the experiment with TLS encryption on the gRPC
 channel. The only difference is <code>insecure = FALSE</code>:</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Re-init and prepare (needed after cleanup)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.init.html">ds.flower.nodes.init</a></span><span class="op">(</span><span class="va">conns</span>, resource <span class="op">=</span> <span class="st">"dsflower_test.flower_node"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.prepare.html">ds.flower.nodes.prepare</a></span><span class="op">(</span><span class="va">conns</span>, target_column <span class="op">=</span> <span class="st">"target"</span>,</span>
@@ -425,7 +407,7 @@ channel. The only difference is <code>insecure = FALSE</code>:</p>
 <span><span class="co">#&gt;   TLS certificate:   -----BEGIN CERTIFICATE-----... (443 chars)</span></span></code></pre></div>
 <p>The CA certificate was auto-generated and will be distributed to each
 Opal through the DataSHIELD control channel:</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="va">ensure_tls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092</span></span>
 <span><span class="co">#&gt; (There are some DataSHIELD errors, list them with datashield.errors())</span></span>
@@ -438,7 +420,7 @@ Opal through the DataSHIELD control channel:</p>
 <span><span class="co">#&gt;   site_b: node_ensured = TRUE</span></span>
 <span><span class="co">#&gt;   site_c: node_ensured = TRUE</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">recipe_tls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.recipe.html">ds.flower.recipe</a></span><span class="op">(</span></span>
 <span>  task     <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.task.classification.html">ds.flower.task.classification</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  model    <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.model.sklearn_logreg.html">ds.flower.model.sklearn_logreg</a></span><span class="op">(</span>C <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span>,</span>
@@ -454,12 +436,12 @@ Opal through the DataSHIELD control channel:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Training logistic regression across 3 sites (TLS encrypted)...\n\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Training logistic regression across 3 sites (TLS encrypted)...</span></span>
 <span><span class="va">run_tls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe_tls</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpnAAqpk/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
+<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
 <span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
 <span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 4915840087870506168</span></span>
+<span><span class="co">#&gt; 🎊 Successfully started run 7740698634960522040</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpnAAqpk/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
+<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=3, no round_timeout</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
@@ -489,14 +471,14 @@ Opal through the DataSHIELD control channel:</p>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 51.24s</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 54.24s</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.1410575314912668</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103128152699967</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127519907777</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.14109970773484848</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103161567624484</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127456124395</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `4915840087870506168`</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `7740698634960522040`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nRun completed with exit status: %s\n"</span>, <span class="va">run_tls</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Run completed with exit status: 0</span></span></code></pre></div>
@@ -504,7 +486,7 @@ Opal through the DataSHIELD control channel:</p>
 transparent to the training protocol. The difference is that all gRPC
 traffic (model weights, gradients, metrics) was encrypted in
 transit.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.cleanup.html">ds.flower.nodes.cleanup</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.stop.html">ds.flower.superlink.stop</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"TLS run cleaned up.\n"</span><span class="op">)</span></span>
@@ -557,7 +539,7 @@ runs in Docker (uses <code>host.docker.internal</code>) or on bare metal
 (uses the researcher’s LAN IP), verifies TCP connectivity, and then
 spawns a <code>flower-supernode</code> process on each server.</p>
 <p>If auto-detection fails, you can provide addresses explicitly:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Same address for all nodes</span></span>
 <span><span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, superlink_address <span class="op">=</span> <span class="st">"192.168.1.50:9092"</span><span class="op">)</span></span>
 <span></span>
@@ -639,7 +621,7 @@ strategies, and privacy options, and how to compare experiments.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by David Sarrat González, Ramón Mateo Navarro, Juan R González.</p>
+  <p>dsFlowerClient</p>
 </div>
 
 <div class="pkgdown-footer-right">

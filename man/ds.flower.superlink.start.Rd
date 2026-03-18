@@ -5,15 +5,12 @@
 \title{Start a Flower SuperLink}
 \usage{
 ds.flower.superlink.start(
-  insecure = TRUE,
   fleet_port = 9092L,
   control_port = 9093L,
   serverappio_port = 9091L
 )
 }
 \arguments{
-\item{insecure}{Logical; use insecure mode (default TRUE).}
-
 \item{fleet_port}{Integer; port for the Fleet API (default 9092).
 SuperNodes connect here.}
 

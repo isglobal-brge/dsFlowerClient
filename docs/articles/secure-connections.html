@@ -111,7 +111,7 @@ Let’s see what it produces:</p>
 <span><span class="co">#&gt;   san.cnf          95 bytes</span></span>
 <span><span class="co">#&gt;   server.csr       367 bytes</span></span>
 <span><span class="co">#&gt;   server.key       302 bytes</span></span>
-<span><span class="co">#&gt;   server.pem       542 bytes</span></span></code></pre></div>
+<span><span class="co">#&gt;   server.pem       538 bytes</span></span></code></pre></div>
 <p>Seven files. Let’s look at each important one.</p>
 <div class="section level3">
 <h3 id="the-ca-certificate-root-of-trust">The CA certificate (root of trust)<a class="anchor" aria-label="anchor" href="#the-ca-certificate-root-of-trust"></a>
@@ -120,12 +120,12 @@ Let’s see what it produces:</p>
 <code class="sourceCode R"><span><span class="va">ca_lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">certs</span><span class="op">$</span><span class="va">ca_cert_path</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">ca_lines</span>, collapse <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; -----BEGIN CERTIFICATE-----</span></span>
-<span><span class="co">#&gt; MIIBGzCBwgIJALkbDCE+kXCOMAoGCCqGSM49BAMCMBYxFDASBgNVBAMMC2RzRmxv</span></span>
-<span><span class="co">#&gt; d2VyLUNBMB4XDTI2MDMxNzE4MDk0OFoXDTI2MDMxODE4MDk0OFowFjEUMBIGA1UE</span></span>
-<span><span class="co">#&gt; AwwLZHNGbG93ZXItQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAT/Q15pML8l</span></span>
-<span><span class="co">#&gt; uleDbt/57hMveNAvikTArhH1FlqINaQWrS5i1EQrQDsmKzJu46BO+sP37yf1TDny</span></span>
-<span><span class="co">#&gt; gW8eA/XMGGbNMAoGCCqGSM49BAMCA0gAMEUCIQDrAXGQ2zLIVqYz1v1V3C4b1sS7</span></span>
-<span><span class="co">#&gt; F2A2KOrHZlknJOPvZwIgDBT8GWJc+/tHOCykVnFbXZmEzGmW/SjNT6xiF+56yBw=</span></span>
+<span><span class="co">#&gt; MIIBGzCBwgIJALucD8RsGVzXMAoGCCqGSM49BAMCMBYxFDASBgNVBAMMC2RzRmxv</span></span>
+<span><span class="co">#&gt; d2VyLUNBMB4XDTI2MDMxNzE4MjgwNVoXDTI2MDMxODE4MjgwNVowFjEUMBIGA1UE</span></span>
+<span><span class="co">#&gt; AwwLZHNGbG93ZXItQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATaQsTDlmB0</span></span>
+<span><span class="co">#&gt; PFce6FrkQA9vOHPlLf/9LBpMELMbSDCaieVOK/oakzbi7qUQQr1B6ciEwv5KiLZ3</span></span>
+<span><span class="co">#&gt; 6cQBnIbuHjU7MAoGCCqGSM49BAMCA0gAMEUCIHx3b/47cSxpIEPhQIfjYRdEjfLG</span></span>
+<span><span class="co">#&gt; e4NWeqf/+yZoy2aVAiEAgWlTpmBPH7ey7gLgn+EDFebhisi0nKGel3PFjS7Bmz8=</span></span>
 <span><span class="co">#&gt; -----END CERTIFICATE-----</span></span></code></pre></div>
 <p>This CA certificate gets distributed to every Opal. The CA private
 key (<code>ca.key</code>) never leaves your machine:</p>
@@ -176,14 +176,14 @@ certificate is valid for:</p>
 <code class="sourceCode R"><span><span class="va">srv_lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">certs</span><span class="op">$</span><span class="va">srv_cert_path</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">srv_lines</span>, collapse <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; -----BEGIN CERTIFICATE-----</span></span>
-<span><span class="co">#&gt; MIIBYjCCAQmgAwIBAgIJAL2C5R2bS5YmMAkGByqGSM49BAEwFjEUMBIGA1UEAwwL</span></span>
-<span><span class="co">#&gt; ZHNGbG93ZXItQ0EwHhcNMjYwMzE3MTgwOTQ4WhcNMjYwMzE4MTgwOTQ4WjAdMRsw</span></span>
+<span><span class="co">#&gt; MIIBYTCCAQmgAwIBAgIJAKJo/nhXfQ27MAkGByqGSM49BAEwFjEUMBIGA1UEAwwL</span></span>
+<span><span class="co">#&gt; ZHNGbG93ZXItQ0EwHhcNMjYwMzE3MTgyODA1WhcNMjYwMzE4MTgyODA1WjAdMRsw</span></span>
 <span><span class="co">#&gt; GQYDVQQDDBJkc0Zsb3dlci1TdXBlckxpbmswWTATBgcqhkjOPQIBBggqhkjOPQMB</span></span>
-<span><span class="co">#&gt; BwNCAAQq8d6WzU8uDEPIoe0QtfqBBZhyl1WIG/M/6eJ7uY/jPHJCTKICiGdKW2gt</span></span>
-<span><span class="co">#&gt; 7JyIGwnveM8p1xHZ8RJNTUh+AM4vozowODA2BgNVHREELzAtgglsb2NhbGhvc3SC</span></span>
-<span><span class="co">#&gt; FGhvc3QuZG9ja2VyLmludGVybmFshwR/AAABhwTAqAFZMAkGByqGSM49BAEDSAAw</span></span>
-<span><span class="co">#&gt; RQIgThWlSj/OjNqX+5xfNDfAv/5AjNg0gkg2iLAjKaHtALkCIQDzVNa/TP2ZL0Bg</span></span>
-<span><span class="co">#&gt; z9ZltK22NjLwUsl9ww7fzKNJOYEY+Q==</span></span>
+<span><span class="co">#&gt; BwNCAAT9S9cZMkADY4oZJarad4vIYQLpouu8LP9+RBcG53PF+7WL5BoXGlcGq/pB</span></span>
+<span><span class="co">#&gt; 2EW18eevGtMLTVFAJg5A/+r1kwq0ozowODA2BgNVHREELzAtgglsb2NhbGhvc3SC</span></span>
+<span><span class="co">#&gt; FGhvc3QuZG9ja2VyLmludGVybmFshwR/AAABhwTAqAFZMAkGByqGSM49BAEDRwAw</span></span>
+<span><span class="co">#&gt; RAIgUSNcnf2vb87Oh8JUR2zo31aXolFLR/f9bDoWAXHEPygCIARtbS6jWODhI7v9</span></span>
+<span><span class="co">#&gt; X58F5Fp/dbNVYWyUAyO795JnHEBE</span></span>
 <span><span class="co">#&gt; -----END CERTIFICATE-----</span></span></code></pre></div>
 <p>This is what the SuperLink presents during the TLS handshake.
 SuperNodes verify it against the CA certificate.</p>
@@ -279,12 +279,12 @@ on macOS).</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Training (insecure, 3 sites, 3 rounds)...</span></span>
 <span><span class="va">run_insecure</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpoIM0we/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
+<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
 <span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
 <span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 10648262044936446603</span></span>
+<span><span class="co">#&gt; 🎊 Successfully started run 1743725714196021799</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpoIM0we/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
+<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=3, no round_timeout</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
@@ -314,14 +314,14 @@ on macOS).</p>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 48.23s</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 51.29s</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.1410575314912668</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103128152699967</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127519907777</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.14106420993565436</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103147463155039</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.1410312734848389</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `10648262044936446603`</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `1743725714196021799`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nExit status: %s\n"</span>, <span class="va">run_insecure</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Exit status: 0</span></span>
@@ -367,12 +367,12 @@ on macOS).</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Training (TLS encrypted, 3 sites, 3 rounds)...</span></span>
 <span><span class="va">run_tls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpoIM0we/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
+<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
 <span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
 <span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 5550878570024827726</span></span>
+<span><span class="co">#&gt; 🎊 Successfully started run 7966990835034737904</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpoIM0we/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
+<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=3, no round_timeout</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
@@ -402,14 +402,14 @@ on macOS).</p>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 51.22s</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 51.26s</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.1410575314912668</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103128152699967</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127519907774</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.14109970773484848</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103161567624484</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127456124395</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `5550878570024827726`</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `7966990835034737904`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nExit status: %s\n"</span>, <span class="va">run_tls</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Exit status: 0</span></span>
@@ -426,22 +426,9 @@ encrypted.</p>
 </h2>
 <p>The CA certificate travels through the DataSHIELD HTTPS channel
 (which is already secure). Here is the encoding chain:</p>
-<pre><code>Your machine                        Opal/Rock
------------                         ---------
-
-1. ca_cert_pem (string, ~500 bytes)
-   |
-2. .ds_encode(list(pem = ca_cert_pem))
-   → JSON → Base64 → URL-safe → "B64:..." prefix
-   |
-3. flowerEnsureSuperNodeDS(         ──[HTTPS]──&gt;  4. .ds_arg() decodes
-      symbol, address,                                → Base64 → JSON
-      fed_id, "B64:eyJw...")                          → list(pem = "-----BEGIN...")
-                                                  |
-                                               5. writeLines(pem, "ca.pem")
-                                                  |
-                                               6. flower-supernode
-                                                    --root-certificates ca.pem</code></pre>
+<div class="float">
+<img src="figures/tls-flow.svg" alt="TLS certificate distribution flow"><div class="figcaption">TLS certificate distribution flow</div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="certificate-lifecycle">Certificate lifecycle<a class="anchor" aria-label="anchor" href="#certificate-lifecycle"></a>
@@ -507,7 +494,7 @@ Rock requires re-registering methods through Opal’s admin UI.</li>
 
 
     <footer><div class="pkgdown-footer-left">
-  <p>Developed by David Sarrat González, Ramón Mateo Navarro, Juan R González.</p>
+  <p>dsFlowerClient</p>
 </div>
 
 <div class="pkgdown-footer-right">

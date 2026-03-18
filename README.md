@@ -6,16 +6,7 @@
 
 dsFlowerClient lets you train machine learning models across hospitals without moving patient data. It bridges [DataSHIELD](https://www.datashield.org/) (privacy-preserving infrastructure) with [Flower](https://flower.ai/) (federated learning framework).
 
-```
- YOUR MACHINE                              HOSPITAL SERVERS
- (researcher)                              (Opal/Rock)
- ┌──────────────────────┐                  ┌──────────────────────┐
- │   dsFlowerClient     │   DataSHIELD     │     dsFlower         │
- │                      │ ───────────────> │                      │
- │   Orchestrates the   │   (HTTPS)        │   Trains locally,    │
- │   experiment         │ <─────────────── │   enforces controls  │
- └──────────────────────┘                  └──────────────────────┘
-```
+![Architecture](man/figures/architecture.svg)
 
 ## Key features
 
@@ -49,7 +40,7 @@ ds.flower.nodes.prepare(conns, target_column = "diagnosis",
                         feature_columns = c("age", "bmi", "glucose"))
 
 # 3. Start SuperLink and connect nodes
-ds.flower.superlink.start(insecure = FALSE)  # TLS enabled
+ds.flower.superlink.start()  # TLS certificates auto-generated
 ds.flower.nodes.ensure(conns)
 
 # 4. Define and run experiment

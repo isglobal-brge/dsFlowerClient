@@ -29,7 +29,7 @@ test_that("superlink status reports ports correctly", {
     fleet_port = 9092L, control_port = 9093L,
     serverappio_port = 9091L,
     flwr_home = tempdir(), log_path = tempfile(),
-    insecure = TRUE, ca_cert_pem = NULL,
+    ca_cert_pem = "-----BEGIN CERTIFICATE-----\nMOCK\n-----END CERTIFICATE-----",
     started_at = Sys.time()
   )
   on.exit(env$.superlink <- old)
@@ -94,21 +94,18 @@ test_that("superlink status includes TLS fields", {
     serverappio_port = 9091L,
     flwr_home = tempdir(), log_path = tempfile(),
     federation_id = "fl-test123",
-    insecure = FALSE,
     ca_cert_pem = "-----BEGIN CERTIFICATE-----\nMOCK\n-----END CERTIFICATE-----",
     started_at = Sys.time()
   )
   on.exit(env$.superlink <- old)
 
   status <- ds.flower.superlink.status()
-  expect_false(status$insecure)
   expect_true(grepl("BEGIN CERTIFICATE", status$ca_cert_pem))
 })
 
-test_that("superlink status returns NULL TLS fields when not running", {
+test_that("superlink status returns NULL ca_cert_pem when not running", {
   env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
   env$.superlink <- NULL
   status <- ds.flower.superlink.status()
-  expect_null(status$insecure)
   expect_null(status$ca_cert_pem)
 })

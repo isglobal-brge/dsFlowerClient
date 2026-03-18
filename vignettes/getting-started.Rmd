@@ -33,19 +33,7 @@ federated *statistics*. It does this by bridging two systems: DataSHIELD
 
 dsFlower is split into two R packages that run on different machines:
 
-```
- YOUR MACHINE                              HOSPITAL SERVERS
- (researcher)                              (Opal/Rock)
- ┌──────────────────────┐                  ┌──────────────────────┐
- │                      │                  │                      │
- │   dsFlowerClient     │   instructions   │     dsFlower         │
- │                      │ ───────────────> │                      │
- │   "Tell the servers  │   (via HTTPS)    │   "Do what the       │
- │    what to do"       │                  │    researcher says"   │
- │                      │ <─────────────── │                      │
- │                      │    results       │                      │
- └──────────────────────┘                  └──────────────────────┘
-```
+![Two packages, two roles](figures/architecture.svg)
 
 **dsFlowerClient** runs on *your* laptop. It is the orchestrator. You use
 it to connect to servers, prepare data, start training, and collect results.
@@ -59,21 +47,7 @@ directly.
 
 dsFlower uses *two completely separate network channels* at the same time:
 
-```
- YOUR MACHINE                              HOSPITAL SERVERS
- ┌─────────────────┐                       ┌─────────────────┐
- │ dsFlowerClient  │───── HTTPS ─────────> │ dsFlower        │
- │ (R)             │<──── (DataSHIELD) ─── │ (R on Rock)     │
- │                 │                        │                 │
- │ flower-superlink│<──── gRPC ──────────> │ flower-supernode │
- │ (Python)        │───── (Flower) ──────> │ (Python)        │
- └─────────────────┘                       └─────────────────┘
-         │                                          │
-   Control channel                           Training channel
-   "prepare data"                            model weights
-   "start training"                          gradients
-   "give me metrics"                         evaluation scores
-```
+![Two communication channels](figures/channels.svg)
 
 The **control channel** (top) is standard DataSHIELD over HTTPS. The
 **training channel** (bottom) is Flower's gRPC protocol. Why two channels?
@@ -206,23 +180,25 @@ On each server, this validates the columns exist, checks the row count
 against the disclosure threshold, and stages the data into a temporary
 directory that the Python SuperNode will read.
 
-### Stage 4: Start the SuperLink (insecure mode)
+### Stage 4: Start the SuperLink
 
 ```{r superlink}
-quiet(ds.flower.superlink.start(insecure = TRUE))
+quiet(ds.flower.superlink.start())
 Sys.sleep(2)
 
 status <- ds.flower.superlink.status()
 cat(sprintf("SuperLink running:   %s\n", status$running))
 cat(sprintf("  Fleet API:         %s\n", status$fleet_address))
-cat(sprintf("  Insecure mode:     %s\n", status$insecure))
 cat(sprintf("  TLS certificate:   %s\n",
-    ifelse(is.null(status$ca_cert_pem), "none (insecure)", "present")))
+    ifelse(is.null(status$ca_cert_pem), "none",
+           paste0(substr(status$ca_cert_pem, 1, 27), "... (",
+                  nchar(status$ca_cert_pem), " chars)"))))
 cat(sprintf("  Federation ID:     %s\n", status$federation_id))
 ```
 
-The SuperLink runs on your machine. It listens on port 9092 for SuperNode
-connections and on port 9093 for `flwr run` commands.
+The SuperLink runs on your machine with TLS enabled by default. It
+auto-generates ephemeral certificates and listens on port 9092 for
+SuperNode connections and on port 9093 for `flwr run` commands.
 
 ### Stage 5: Connect the three nodes
 
@@ -236,13 +212,13 @@ Sys.sleep(10)
 cat("Ready.\n")
 ```
 
-Each Opal receives the SuperLink address, verifies connectivity, and
-spawns a `flower-supernode` process that connects to your SuperLink via
-gRPC.
+Each Opal receives the SuperLink address and the TLS certificate,
+verifies connectivity, and spawns a `flower-supernode` process that
+connects to your SuperLink via encrypted gRPC.
 
 ### Stage 6: Train a model across 3 sites
 
-```{r train-insecure}
+```{r train}
 recipe_lr <- ds.flower.recipe(
   task     = ds.flower.task.classification(),
   model    = ds.flower.model.sklearn_logreg(C = 1.0),
@@ -267,73 +243,10 @@ them using FedAvg.
 
 ### Stage 7: Clean up
 
-```{r cleanup-insecure, cache = FALSE}
+```{r cleanup, cache = FALSE}
 quiet(ds.flower.nodes.cleanup(conns, symbol = "flower"))
 quiet(ds.flower.superlink.stop())
 cat("Cleaned up: staging data removed, SuperLink stopped.\n")
-```
-
-## TLS mode: the same thing, encrypted
-
-Now let's repeat the experiment with TLS encryption on the gRPC channel.
-The only difference is `insecure = FALSE`:
-
-```{r tls-setup}
-# Re-init and prepare (needed after cleanup)
-quiet(ds.flower.nodes.init(conns, resource = "dsflower_test.flower_node"))
-quiet(ds.flower.nodes.prepare(conns, target_column = "target",
-                               feature_columns = c("f1", "f2", "f3", "f4", "f5")))
-
-# Start SuperLink with TLS
-quiet(ds.flower.superlink.start(insecure = FALSE))
-Sys.sleep(2)
-
-status_tls <- ds.flower.superlink.status()
-cat(sprintf("SuperLink running:   %s\n", status_tls$running))
-cat(sprintf("  Insecure mode:     %s\n", status_tls$insecure))
-cat(sprintf("  TLS certificate:   %s\n",
-    ifelse(is.null(status_tls$ca_cert_pem), "none",
-           paste0(substr(status_tls$ca_cert_pem, 1, 27), "... (",
-                  nchar(status_tls$ca_cert_pem), " chars)"))))
-```
-
-The CA certificate was auto-generated and will be distributed to each
-Opal through the DataSHIELD control channel:
-
-```{r tls-nodes}
-quiet(ensure_tls <- ds.flower.nodes.ensure(conns, symbol = "flower"))
-for (srv in names(ensure_tls$per_site)) {
-  cat(sprintf("  %s: node_ensured = %s\n", srv, ensure_tls$per_site[[srv]]$node_ensured))
-}
-Sys.sleep(10)
-```
-
-```{r tls-train}
-recipe_tls <- ds.flower.recipe(
-  task     = ds.flower.task.classification(),
-  model    = ds.flower.model.sklearn_logreg(C = 1.0),
-  strategy = ds.flower.strategy.fedavg(
-    min_fit_clients = 3L,
-    min_available_clients = 3L
-  ),
-  num_rounds      = 3L,
-  target_column   = "target",
-  feature_columns = c("f1", "f2", "f3", "f4", "f5")
-)
-
-cat("Training logistic regression across 3 sites (TLS encrypted)...\n\n")
-run_tls <- ds.flower.run.start(recipe_tls, verbose = TRUE)
-cat(sprintf("\nRun completed with exit status: %s\n", run_tls$status))
-```
-
-The output is identical to the insecure run because TLS is transparent
-to the training protocol. The difference is that all gRPC traffic (model
-weights, gradients, metrics) was encrypted in transit.
-
-```{r tls-cleanup, cache = FALSE}
-quiet(ds.flower.nodes.cleanup(conns, symbol = "flower"))
-quiet(ds.flower.superlink.stop())
-cat("TLS run cleaned up.\n")
 ```
 
 ## Detailed explanation: what happens at each stage

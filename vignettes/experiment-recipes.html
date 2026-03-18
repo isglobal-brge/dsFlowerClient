@@ -555,7 +555,7 @@ against three Opal servers.</p>
 <div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.init</span>(conns, <span class="at">resource =</span> <span class="st">&quot;dsflower_test.flower_node&quot;</span>))</span>
 <span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.prepare</span>(conns, <span class="at">target_column =</span> <span class="st">&quot;target&quot;</span>,</span>
 <span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>                               <span class="at">feature_columns =</span> <span class="fu">c</span>(<span class="st">&quot;f1&quot;</span>, <span class="st">&quot;f2&quot;</span>, <span class="st">&quot;f3&quot;</span>, <span class="st">&quot;f4&quot;</span>, <span class="st">&quot;f5&quot;</span>)))</span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.superlink.start</span>(<span class="at">insecure =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.superlink.start</span>())</span>
 <span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="fu">Sys.sleep</span>(<span class="dv">2</span>)</span>
 <span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.ensure</span>(conns, <span class="at">symbol =</span> <span class="st">&quot;flower&quot;</span>))</span>
 <span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092 (There are</span></span>
@@ -577,12 +577,12 @@ against three Opal servers.</p>
 <span id="cb13-23"><a href="#cb13-23" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;=== Logistic Regression + FedAvg (5 rounds) ===</span><span class="sc">\n\n</span><span class="st">&quot;</span>)</span>
 <span id="cb13-24"><a href="#cb13-24" tabindex="-1"></a><span class="co">#&gt; === Logistic Regression + FedAvg (5 rounds) ===</span></span>
 <span id="cb13-25"><a href="#cb13-25" tabindex="-1"></a>run_exp1 <span class="ot">&lt;-</span> <span class="fu">ds.flower.run.start</span>(recipe_exp1, <span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a><span class="co">#&gt; Flower App configuration warnings in &#39;/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpYex32P/dsflower_app/sklearn_logreg/pyproject.toml&#39;:</span></span>
+<span id="cb13-26"><a href="#cb13-26" tabindex="-1"></a><span class="co">#&gt; Flower App configuration warnings in &#39;/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp49rfRk/dsflower_app/sklearn_logreg/pyproject.toml&#39;:</span></span>
 <span id="cb13-27"><a href="#cb13-27" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;description&quot; missing in [project]</span></span>
 <span id="cb13-28"><a href="#cb13-28" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;license&quot; missing in [project]</span></span>
-<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully started run 10052978683276768173</span></span>
+<span id="cb13-29"><a href="#cb13-29" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully started run 14143783693896207008</span></span>
 <span id="cb13-30"><a href="#cb13-30" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Start `flwr-serverapp` process</span></span>
-<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpYex32P/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.4173ea32.</span></span>
+<span id="cb13-31"><a href="#cb13-31" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp49rfRk/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.4173ea32.</span></span>
 <span id="cb13-32"><a href="#cb13-32" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting Flower ServerApp, config: num_rounds=5, no round_timeout</span></span>
 <span id="cb13-33"><a href="#cb13-33" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
 <span id="cb13-34"><a href="#cb13-34" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [INIT]</span></span>
@@ -624,16 +624,16 @@ against three Opal servers.</p>
 <span id="cb13-70"><a href="#cb13-70" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span id="cb13-71"><a href="#cb13-71" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
 <span id="cb13-72"><a href="#cb13-72" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [SUMMARY]</span></span>
-<span id="cb13-73"><a href="#cb13-73" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Run finished 5 round(s) in 84.42s</span></span>
+<span id="cb13-73"><a href="#cb13-73" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Run finished 5 round(s) in 93.42s</span></span>
 <span id="cb13-74"><a href="#cb13-74" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:          History (loss, distributed):</span></span>
 <span id="cb13-75"><a href="#cb13-75" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 1: 0.14109970773484848</span></span>
 <span id="cb13-76"><a href="#cb13-76" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 2: 0.14103161567624484</span></span>
 <span id="cb13-77"><a href="#cb13-77" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 3: 0.14103127456124395</span></span>
 <span id="cb13-78"><a href="#cb13-78" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 4: 0.14103127113649458</span></span>
-<span id="cb13-79"><a href="#cb13-79" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 5: 0.14103127108565142</span></span>
+<span id="cb13-79"><a href="#cb13-79" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 5: 0.1410312710856514</span></span>
 <span id="cb13-80"><a href="#cb13-80" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
 <span id="cb13-81"><a href="#cb13-81" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:</span></span>
-<span id="cb13-82"><a href="#cb13-82" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting logstream for run_id `10052978683276768173`</span></span>
+<span id="cb13-82"><a href="#cb13-82" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting logstream for run_id `14143783693896207008`</span></span>
 <span id="cb13-83"><a href="#cb13-83" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Exit status: %s</span><span class="sc">\n</span><span class="st">&quot;</span>, run_exp1<span class="sc">$</span>status))</span>
 <span id="cb13-84"><a href="#cb13-84" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb13-85"><a href="#cb13-85" tabindex="-1"></a><span class="co">#&gt; Exit status: 0</span></span>
@@ -646,7 +646,7 @@ against three Opal servers.</p>
 <div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.init</span>(conns, <span class="at">resource =</span> <span class="st">&quot;dsflower_test.flower_node&quot;</span>))</span>
 <span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.prepare</span>(conns, <span class="at">target_column =</span> <span class="st">&quot;target&quot;</span>,</span>
 <span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>                               <span class="at">feature_columns =</span> <span class="fu">c</span>(<span class="st">&quot;f1&quot;</span>, <span class="st">&quot;f2&quot;</span>, <span class="st">&quot;f3&quot;</span>, <span class="st">&quot;f4&quot;</span>, <span class="st">&quot;f5&quot;</span>)))</span>
-<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.superlink.start</span>(<span class="at">insecure =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.superlink.start</span>())</span>
 <span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="fu">Sys.sleep</span>(<span class="dv">2</span>)</span>
 <span id="cb14-6"><a href="#cb14-6" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.ensure</span>(conns, <span class="at">symbol =</span> <span class="st">&quot;flower&quot;</span>))</span>
 <span id="cb14-7"><a href="#cb14-7" tabindex="-1"></a><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092 (There are</span></span>
@@ -668,12 +668,12 @@ against three Opal servers.</p>
 <span id="cb14-23"><a href="#cb14-23" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;=== SGD Classifier + FedAvg (5 rounds) ===</span><span class="sc">\n\n</span><span class="st">&quot;</span>)</span>
 <span id="cb14-24"><a href="#cb14-24" tabindex="-1"></a><span class="co">#&gt; === SGD Classifier + FedAvg (5 rounds) ===</span></span>
 <span id="cb14-25"><a href="#cb14-25" tabindex="-1"></a>run_exp2 <span class="ot">&lt;-</span> <span class="fu">ds.flower.run.start</span>(recipe_exp2, <span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a><span class="co">#&gt; Flower App configuration warnings in &#39;/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpYex32P/dsflower_app/sklearn_sgd/pyproject.toml&#39;:</span></span>
+<span id="cb14-26"><a href="#cb14-26" tabindex="-1"></a><span class="co">#&gt; Flower App configuration warnings in &#39;/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp49rfRk/dsflower_app/sklearn_sgd/pyproject.toml&#39;:</span></span>
 <span id="cb14-27"><a href="#cb14-27" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;description&quot; missing in [project]</span></span>
 <span id="cb14-28"><a href="#cb14-28" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;license&quot; missing in [project]</span></span>
-<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully started run 13922431360997839246</span></span>
+<span id="cb14-29"><a href="#cb14-29" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully started run 13365250248870770884</span></span>
 <span id="cb14-30"><a href="#cb14-30" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Start `flwr-serverapp` process</span></span>
-<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully installed sklearn_sgd to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpYex32P/dsflower_superlink/apps/dsflower.sklearn_sgd.0.1.0.343f9f24.</span></span>
+<span id="cb14-31"><a href="#cb14-31" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully installed sklearn_sgd to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp49rfRk/dsflower_superlink/apps/dsflower.sklearn_sgd.0.1.0.343f9f24.</span></span>
 <span id="cb14-32"><a href="#cb14-32" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting Flower ServerApp, config: num_rounds=5, no round_timeout</span></span>
 <span id="cb14-33"><a href="#cb14-33" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
 <span id="cb14-34"><a href="#cb14-34" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [INIT]</span></span>
@@ -715,16 +715,16 @@ against three Opal servers.</p>
 <span id="cb14-70"><a href="#cb14-70" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span id="cb14-71"><a href="#cb14-71" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
 <span id="cb14-72"><a href="#cb14-72" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [SUMMARY]</span></span>
-<span id="cb14-73"><a href="#cb14-73" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Run finished 5 round(s) in 75.37s</span></span>
+<span id="cb14-73"><a href="#cb14-73" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Run finished 5 round(s) in 87.37s</span></span>
 <span id="cb14-74"><a href="#cb14-74" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:          History (loss, distributed):</span></span>
-<span id="cb14-75"><a href="#cb14-75" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 1: 0.3003018636173892</span></span>
-<span id="cb14-76"><a href="#cb14-76" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 2: 0.22974881414280285</span></span>
-<span id="cb14-77"><a href="#cb14-77" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 3: 0.2253535894950944</span></span>
-<span id="cb14-78"><a href="#cb14-78" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 4: 0.3297759366303787</span></span>
-<span id="cb14-79"><a href="#cb14-79" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 5: 0.22094366018558947</span></span>
+<span id="cb14-75"><a href="#cb14-75" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 1: 0.21396716057595785</span></span>
+<span id="cb14-76"><a href="#cb14-76" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 2: 0.200362174352302</span></span>
+<span id="cb14-77"><a href="#cb14-77" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 3: 0.1607300360233489</span></span>
+<span id="cb14-78"><a href="#cb14-78" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 4: 0.25210616086243426</span></span>
+<span id="cb14-79"><a href="#cb14-79" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 5: 0.18597977504017224</span></span>
 <span id="cb14-80"><a href="#cb14-80" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
 <span id="cb14-81"><a href="#cb14-81" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:</span></span>
-<span id="cb14-82"><a href="#cb14-82" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting logstream for run_id `13922431360997839246`</span></span>
+<span id="cb14-82"><a href="#cb14-82" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting logstream for run_id `13365250248870770884`</span></span>
 <span id="cb14-83"><a href="#cb14-83" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Exit status: %s</span><span class="sc">\n</span><span class="st">&quot;</span>, run_exp2<span class="sc">$</span>status))</span>
 <span id="cb14-84"><a href="#cb14-84" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb14-85"><a href="#cb14-85" tabindex="-1"></a><span class="co">#&gt; Exit status: 0</span></span>
@@ -737,7 +737,7 @@ against three Opal servers.</p>
 <div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.init</span>(conns, <span class="at">resource =</span> <span class="st">&quot;dsflower_test.flower_node&quot;</span>))</span>
 <span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.prepare</span>(conns, <span class="at">target_column =</span> <span class="st">&quot;target&quot;</span>,</span>
 <span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a>                               <span class="at">feature_columns =</span> <span class="fu">c</span>(<span class="st">&quot;f1&quot;</span>, <span class="st">&quot;f2&quot;</span>, <span class="st">&quot;f3&quot;</span>, <span class="st">&quot;f4&quot;</span>, <span class="st">&quot;f5&quot;</span>)))</span>
-<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.superlink.start</span>(<span class="at">insecure =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.superlink.start</span>())</span>
 <span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a><span class="fu">Sys.sleep</span>(<span class="dv">2</span>)</span>
 <span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="fu">quiet</span>(<span class="fu">ds.flower.nodes.ensure</span>(conns, <span class="at">symbol =</span> <span class="st">&quot;flower&quot;</span>))</span>
 <span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092 (There are</span></span>
@@ -759,12 +759,12 @@ against three Opal servers.</p>
 <span id="cb15-23"><a href="#cb15-23" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;=== Ridge Classifier + FedAvg (5 rounds) ===</span><span class="sc">\n\n</span><span class="st">&quot;</span>)</span>
 <span id="cb15-24"><a href="#cb15-24" tabindex="-1"></a><span class="co">#&gt; === Ridge Classifier + FedAvg (5 rounds) ===</span></span>
 <span id="cb15-25"><a href="#cb15-25" tabindex="-1"></a>run_exp3 <span class="ot">&lt;-</span> <span class="fu">ds.flower.run.start</span>(recipe_exp3, <span class="at">verbose =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a><span class="co">#&gt; Flower App configuration warnings in &#39;/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpYex32P/dsflower_app/sklearn_ridge/pyproject.toml&#39;:</span></span>
+<span id="cb15-26"><a href="#cb15-26" tabindex="-1"></a><span class="co">#&gt; Flower App configuration warnings in &#39;/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp49rfRk/dsflower_app/sklearn_ridge/pyproject.toml&#39;:</span></span>
 <span id="cb15-27"><a href="#cb15-27" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;description&quot; missing in [project]</span></span>
 <span id="cb15-28"><a href="#cb15-28" tabindex="-1"></a><span class="co">#&gt; - Recommended property &quot;license&quot; missing in [project]</span></span>
-<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully started run 9003349236293328090</span></span>
+<span id="cb15-29"><a href="#cb15-29" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully started run 7969624510934887378</span></span>
 <span id="cb15-30"><a href="#cb15-30" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Start `flwr-serverapp` process</span></span>
-<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully installed sklearn_ridge to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpYex32P/dsflower_superlink/apps/dsflower.sklearn_ridge.0.1.0.f7f5d691.</span></span>
+<span id="cb15-31"><a href="#cb15-31" tabindex="-1"></a><span class="co">#&gt; 🎊 Successfully installed sklearn_ridge to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp49rfRk/dsflower_superlink/apps/dsflower.sklearn_ridge.0.1.0.f7f5d691.</span></span>
 <span id="cb15-32"><a href="#cb15-32" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting Flower ServerApp, config: num_rounds=5, no round_timeout</span></span>
 <span id="cb15-33"><a href="#cb15-33" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
 <span id="cb15-34"><a href="#cb15-34" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [INIT]</span></span>
@@ -806,16 +806,16 @@ against three Opal servers.</p>
 <span id="cb15-70"><a href="#cb15-70" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span id="cb15-71"><a href="#cb15-71" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
 <span id="cb15-72"><a href="#cb15-72" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      [SUMMARY]</span></span>
-<span id="cb15-73"><a href="#cb15-73" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Run finished 5 round(s) in 72.36s</span></span>
+<span id="cb15-73"><a href="#cb15-73" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Run finished 5 round(s) in 90.40s</span></span>
 <span id="cb15-74"><a href="#cb15-74" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:          History (loss, distributed):</span></span>
 <span id="cb15-75"><a href="#cb15-75" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 1: 0.42592063546180725</span></span>
 <span id="cb15-76"><a href="#cb15-76" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 2: 0.42592063546180725</span></span>
-<span id="cb15-77"><a href="#cb15-77" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 3: 0.42592063546180725</span></span>
+<span id="cb15-77"><a href="#cb15-77" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 3: 0.42592064539591473</span></span>
 <span id="cb15-78"><a href="#cb15-78" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 4: 0.42592063546180725</span></span>
 <span id="cb15-79"><a href="#cb15-79" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:              round 5: 0.42592063546180725</span></span>
 <span id="cb15-80"><a href="#cb15-80" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      </span></span>
 <span id="cb15-81"><a href="#cb15-81" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:</span></span>
-<span id="cb15-82"><a href="#cb15-82" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting logstream for run_id `9003349236293328090`</span></span>
+<span id="cb15-82"><a href="#cb15-82" tabindex="-1"></a><span class="co">#&gt; [92mINFO [0m:      Starting logstream for run_id `7969624510934887378`</span></span>
 <span id="cb15-83"><a href="#cb15-83" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">sprintf</span>(<span class="st">&quot;</span><span class="sc">\n</span><span class="st">Exit status: %s</span><span class="sc">\n</span><span class="st">&quot;</span>, run_exp3<span class="sc">$</span>status))</span>
 <span id="cb15-84"><a href="#cb15-84" tabindex="-1"></a><span class="co">#&gt; </span></span>
 <span id="cb15-85"><a href="#cb15-85" tabindex="-1"></a><span class="co">#&gt; Exit status: 0</span></span>

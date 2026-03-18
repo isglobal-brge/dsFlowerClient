@@ -11,14 +11,9 @@ without moving patient data. It bridges
 infrastructure) with [Flower](https://flower.ai/) (federated learning
 framework).
 
-     YOUR MACHINE                              HOSPITAL SERVERS
-     (researcher)                              (Opal/Rock)
-     ┌──────────────────────┐                  ┌──────────────────────┐
-     │   dsFlowerClient     │   DataSHIELD     │     dsFlower         │
-     │                      │ ───────────────> │                      │
-     │   Orchestrates the   │   (HTTPS)        │   Trains locally,    │
-     │   experiment         │ <─────────────── │   enforces controls  │
-     └──────────────────────┘                  └──────────────────────┘
+![Architecture](reference/figures/architecture.svg)
+
+Architecture
 
 ## Key features
 

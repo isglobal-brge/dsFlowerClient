@@ -17,17 +17,9 @@ framework).
 
 dsFlower is split into two R packages that run on different machines:
 
-     YOUR MACHINE                              HOSPITAL SERVERS
-     (researcher)                              (Opal/Rock)
-     ┌──────────────────────┐                  ┌──────────────────────┐
-     │                      │                  │                      │
-     │   dsFlowerClient     │   instructions   │     dsFlower         │
-     │                      │ ───────────────> │                      │
-     │   "Tell the servers  │   (via HTTPS)    │   "Do what the       │
-     │    what to do"       │                  │    researcher says"   │
-     │                      │ <─────────────── │                      │
-     │                      │    results       │                      │
-     └──────────────────────┘                  └──────────────────────┘
+![Two packages, two roles](figures/architecture.svg)
+
+Two packages, two roles
 
 **dsFlowerClient** runs on *your* laptop. It is the orchestrator. You
 use it to connect to servers, prepare data, start training, and collect
@@ -43,19 +35,9 @@ it directly.
 dsFlower uses *two completely separate network channels* at the same
 time:
 
-     YOUR MACHINE                              HOSPITAL SERVERS
-     ┌─────────────────┐                       ┌─────────────────┐
-     │ dsFlowerClient  │───── HTTPS ─────────> │ dsFlower        │
-     │ (R)             │<──── (DataSHIELD) ─── │ (R on Rock)     │
-     │                 │                        │                 │
-     │ flower-superlink│<──── gRPC ──────────> │ flower-supernode │
-     │ (Python)        │───── (Flower) ──────> │ (Python)        │
-     └─────────────────┘                       └─────────────────┘
-             │                                          │
-       Control channel                           Training channel
-       "prepare data"                            model weights
-       "start training"                          gradients
-       "give me metrics"                         evaluation scores
+![Two communication channels](figures/channels.svg)
+
+Two communication channels
 
 The **control channel** (top) is standard DataSHIELD over HTTPS. The
 **training channel** (bottom) is Flower’s gRPC protocol. Why two
@@ -296,12 +278,12 @@ recipe_lr <- ds.flower.recipe(
 cat("Training logistic regression across 3 sites (3 rounds)...\n\n")
 #> Training logistic regression across 3 sites (3 rounds)...
 run1 <- ds.flower.run.start(recipe_lr, verbose = TRUE)
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpnAAqpk/dsflower_app/sklearn_logreg/pyproject.toml':
+#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_app/sklearn_logreg/pyproject.toml':
 #> - Recommended property "description" missing in [project]
 #> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 9871220183137015194
+#> 🎊 Successfully started run 12394865800874772647
 #> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpnAAqpk/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
+#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
 #> INFO :      Starting Flower ServerApp, config: num_rounds=3, no round_timeout
 #> INFO :      
 #> INFO :      [INIT]
@@ -331,14 +313,14 @@ run1 <- ds.flower.run.start(recipe_lr, verbose = TRUE)
 #> INFO :      aggregate_evaluate: received 3 results and 0 failures
 #> INFO :      
 #> INFO :      [SUMMARY]
-#> INFO :      Run finished 3 round(s) in 54.20s
+#> INFO :      Run finished 3 round(s) in 54.17s
 #> INFO :          History (loss, distributed):
 #> INFO :              round 1: 0.14106420993565436
 #> INFO :              round 2: 0.14103147463155039
-#> INFO :              round 3: 0.14103127348483888
+#> INFO :              round 3: 0.1410312734848389
 #> INFO :      
 #> INFO :
-#> INFO :      Starting logstream for run_id `9871220183137015194`
+#> INFO :      Starting logstream for run_id `12394865800874772647`
 cat(sprintf("\nRun completed with exit status: %s\n", run1$status))
 #> 
 #> Run completed with exit status: 0
@@ -423,12 +405,12 @@ recipe_tls <- ds.flower.recipe(
 cat("Training logistic regression across 3 sites (TLS encrypted)...\n\n")
 #> Training logistic regression across 3 sites (TLS encrypted)...
 run_tls <- ds.flower.run.start(recipe_tls, verbose = TRUE)
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpnAAqpk/dsflower_app/sklearn_logreg/pyproject.toml':
+#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_app/sklearn_logreg/pyproject.toml':
 #> - Recommended property "description" missing in [project]
 #> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 4915840087870506168
+#> 🎊 Successfully started run 7740698634960522040
 #> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpnAAqpk/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
+#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
 #> INFO :      Starting Flower ServerApp, config: num_rounds=3, no round_timeout
 #> INFO :      
 #> INFO :      [INIT]
@@ -458,14 +440,14 @@ run_tls <- ds.flower.run.start(recipe_tls, verbose = TRUE)
 #> INFO :      aggregate_evaluate: received 3 results and 0 failures
 #> INFO :      
 #> INFO :      [SUMMARY]
-#> INFO :      Run finished 3 round(s) in 51.24s
+#> INFO :      Run finished 3 round(s) in 54.24s
 #> INFO :          History (loss, distributed):
-#> INFO :              round 1: 0.1410575314912668
-#> INFO :              round 2: 0.14103128152699967
-#> INFO :              round 3: 0.14103127519907777
+#> INFO :              round 1: 0.14109970773484848
+#> INFO :              round 2: 0.14103161567624484
+#> INFO :              round 3: 0.14103127456124395
 #> INFO :      
 #> INFO :
-#> INFO :      Starting logstream for run_id `4915840087870506168`
+#> INFO :      Starting logstream for run_id `7740698634960522040`
 cat(sprintf("\nRun completed with exit status: %s\n", run_tls$status))
 #> 
 #> Run completed with exit status: 0

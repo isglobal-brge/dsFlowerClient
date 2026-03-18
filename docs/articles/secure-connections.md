@@ -41,7 +41,7 @@ for (f in list.files(cert_dir)) {
 #>   san.cnf          95 bytes
 #>   server.csr       367 bytes
 #>   server.key       302 bytes
-#>   server.pem       542 bytes
+#>   server.pem       538 bytes
 ```
 
 Seven files. Let’s look at each important one.
@@ -53,12 +53,12 @@ Seven files. Let’s look at each important one.
 ca_lines <- readLines(certs$ca_cert_path)
 cat(paste(ca_lines, collapse = "\n"), "\n")
 #> -----BEGIN CERTIFICATE-----
-#> MIIBGzCBwgIJALkbDCE+kXCOMAoGCCqGSM49BAMCMBYxFDASBgNVBAMMC2RzRmxv
-#> d2VyLUNBMB4XDTI2MDMxNzE4MDk0OFoXDTI2MDMxODE4MDk0OFowFjEUMBIGA1UE
-#> AwwLZHNGbG93ZXItQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAAT/Q15pML8l
-#> uleDbt/57hMveNAvikTArhH1FlqINaQWrS5i1EQrQDsmKzJu46BO+sP37yf1TDny
-#> gW8eA/XMGGbNMAoGCCqGSM49BAMCA0gAMEUCIQDrAXGQ2zLIVqYz1v1V3C4b1sS7
-#> F2A2KOrHZlknJOPvZwIgDBT8GWJc+/tHOCykVnFbXZmEzGmW/SjNT6xiF+56yBw=
+#> MIIBGzCBwgIJALucD8RsGVzXMAoGCCqGSM49BAMCMBYxFDASBgNVBAMMC2RzRmxv
+#> d2VyLUNBMB4XDTI2MDMxNzE4MjgwNVoXDTI2MDMxODE4MjgwNVowFjEUMBIGA1UE
+#> AwwLZHNGbG93ZXItQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATaQsTDlmB0
+#> PFce6FrkQA9vOHPlLf/9LBpMELMbSDCaieVOK/oakzbi7qUQQr1B6ciEwv5KiLZ3
+#> 6cQBnIbuHjU7MAoGCCqGSM49BAMCA0gAMEUCIHx3b/47cSxpIEPhQIfjYRdEjfLG
+#> e4NWeqf/+yZoy2aVAiEAgWlTpmBPH7ey7gLgn+EDFebhisi0nKGel3PFjS7Bmz8=
 #> -----END CERTIFICATE-----
 ```
 
@@ -99,14 +99,14 @@ cat(readLines(file.path(cert_dir, "san.cnf")), sep = "\n")
 srv_lines <- readLines(certs$srv_cert_path)
 cat(paste(srv_lines, collapse = "\n"), "\n")
 #> -----BEGIN CERTIFICATE-----
-#> MIIBYjCCAQmgAwIBAgIJAL2C5R2bS5YmMAkGByqGSM49BAEwFjEUMBIGA1UEAwwL
-#> ZHNGbG93ZXItQ0EwHhcNMjYwMzE3MTgwOTQ4WhcNMjYwMzE4MTgwOTQ4WjAdMRsw
+#> MIIBYTCCAQmgAwIBAgIJAKJo/nhXfQ27MAkGByqGSM49BAEwFjEUMBIGA1UEAwwL
+#> ZHNGbG93ZXItQ0EwHhcNMjYwMzE3MTgyODA1WhcNMjYwMzE4MTgyODA1WjAdMRsw
 #> GQYDVQQDDBJkc0Zsb3dlci1TdXBlckxpbmswWTATBgcqhkjOPQIBBggqhkjOPQMB
-#> BwNCAAQq8d6WzU8uDEPIoe0QtfqBBZhyl1WIG/M/6eJ7uY/jPHJCTKICiGdKW2gt
-#> 7JyIGwnveM8p1xHZ8RJNTUh+AM4vozowODA2BgNVHREELzAtgglsb2NhbGhvc3SC
-#> FGhvc3QuZG9ja2VyLmludGVybmFshwR/AAABhwTAqAFZMAkGByqGSM49BAEDSAAw
-#> RQIgThWlSj/OjNqX+5xfNDfAv/5AjNg0gkg2iLAjKaHtALkCIQDzVNa/TP2ZL0Bg
-#> z9ZltK22NjLwUsl9ww7fzKNJOYEY+Q==
+#> BwNCAAT9S9cZMkADY4oZJarad4vIYQLpouu8LP9+RBcG53PF+7WL5BoXGlcGq/pB
+#> 2EW18eevGtMLTVFAJg5A/+r1kwq0ozowODA2BgNVHREELzAtgglsb2NhbGhvc3SC
+#> FGhvc3QuZG9ja2VyLmludGVybmFshwR/AAABhwTAqAFZMAkGByqGSM49BAEDRwAw
+#> RAIgUSNcnf2vb87Oh8JUR2zo31aXolFLR/f9bDoWAXHEPygCIARtbS6jWODhI7v9
+#> X58F5Fp/dbNVYWyUAyO795JnHEBE
 #> -----END CERTIFICATE-----
 ```
 
@@ -208,12 +208,12 @@ cat("\nTraining (insecure, 3 sites, 3 rounds)...\n\n")
 #> 
 #> Training (insecure, 3 sites, 3 rounds)...
 run_insecure <- ds.flower.run.start(recipe, verbose = TRUE)
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpoIM0we/dsflower_app/sklearn_logreg/pyproject.toml':
+#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_app/sklearn_logreg/pyproject.toml':
 #> - Recommended property "description" missing in [project]
 #> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 10648262044936446603
+#> 🎊 Successfully started run 1743725714196021799
 #> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpoIM0we/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
+#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
 #> INFO :      Starting Flower ServerApp, config: num_rounds=3, no round_timeout
 #> INFO :      
 #> INFO :      [INIT]
@@ -243,14 +243,14 @@ run_insecure <- ds.flower.run.start(recipe, verbose = TRUE)
 #> INFO :      aggregate_evaluate: received 3 results and 0 failures
 #> INFO :      
 #> INFO :      [SUMMARY]
-#> INFO :      Run finished 3 round(s) in 48.23s
+#> INFO :      Run finished 3 round(s) in 51.29s
 #> INFO :          History (loss, distributed):
-#> INFO :              round 1: 0.1410575314912668
-#> INFO :              round 2: 0.14103128152699967
-#> INFO :              round 3: 0.14103127519907777
+#> INFO :              round 1: 0.14106420993565436
+#> INFO :              round 2: 0.14103147463155039
+#> INFO :              round 3: 0.1410312734848389
 #> INFO :      
 #> INFO :
-#> INFO :      Starting logstream for run_id `10648262044936446603`
+#> INFO :      Starting logstream for run_id `1743725714196021799`
 cat(sprintf("\nExit status: %s\n", run_insecure$status))
 #> 
 #> Exit status: 0
@@ -298,12 +298,12 @@ cat("\nTraining (TLS encrypted, 3 sites, 3 rounds)...\n\n")
 #> 
 #> Training (TLS encrypted, 3 sites, 3 rounds)...
 run_tls <- ds.flower.run.start(recipe, verbose = TRUE)
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpoIM0we/dsflower_app/sklearn_logreg/pyproject.toml':
+#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_app/sklearn_logreg/pyproject.toml':
 #> - Recommended property "description" missing in [project]
 #> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 5550878570024827726
+#> 🎊 Successfully started run 7966990835034737904
 #> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpoIM0we/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
+#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
 #> INFO :      Starting Flower ServerApp, config: num_rounds=3, no round_timeout
 #> INFO :      
 #> INFO :      [INIT]
@@ -333,14 +333,14 @@ run_tls <- ds.flower.run.start(recipe, verbose = TRUE)
 #> INFO :      aggregate_evaluate: received 3 results and 0 failures
 #> INFO :      
 #> INFO :      [SUMMARY]
-#> INFO :      Run finished 3 round(s) in 51.22s
+#> INFO :      Run finished 3 round(s) in 51.26s
 #> INFO :          History (loss, distributed):
-#> INFO :              round 1: 0.1410575314912668
-#> INFO :              round 2: 0.14103128152699967
-#> INFO :              round 3: 0.14103127519907774
+#> INFO :              round 1: 0.14109970773484848
+#> INFO :              round 2: 0.14103161567624484
+#> INFO :              round 3: 0.14103127456124395
 #> INFO :      
 #> INFO :
-#> INFO :      Starting logstream for run_id `5550878570024827726`
+#> INFO :      Starting logstream for run_id `7966990835034737904`
 cat(sprintf("\nExit status: %s\n", run_tls$status))
 #> 
 #> Exit status: 0
@@ -357,22 +357,9 @@ protocol: the only difference is that all gRPC traffic was encrypted.
 The CA certificate travels through the DataSHIELD HTTPS channel (which
 is already secure). Here is the encoding chain:
 
-    Your machine                        Opal/Rock
-    -----------                         ---------
+![TLS certificate distribution flow](figures/tls-flow.svg)
 
-    1. ca_cert_pem (string, ~500 bytes)
-       |
-    2. .ds_encode(list(pem = ca_cert_pem))
-       → JSON → Base64 → URL-safe → "B64:..." prefix
-       |
-    3. flowerEnsureSuperNodeDS(         ──[HTTPS]──>  4. .ds_arg() decodes
-          symbol, address,                                → Base64 → JSON
-          fed_id, "B64:eyJw...")                          → list(pem = "-----BEGIN...")
-                                                      |
-                                                   5. writeLines(pem, "ca.pem")
-                                                      |
-                                                   6. flower-supernode
-                                                        --root-certificates ca.pem
+TLS certificate distribution flow
 
 ## Certificate lifecycle
 
