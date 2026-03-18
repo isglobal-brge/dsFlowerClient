@@ -4,26 +4,39 @@
 \alias{ds.flower.nodes.init}
 \title{Initialize Flower handles on all servers}
 \usage{
-ds.flower.nodes.init(conns, resource = NULL, table = NULL, symbol = "flower")
+ds.flower.nodes.init(conns, data, symbol = "flower")
 }
 \arguments{
 \item{conns}{DSI connections object.}
 
-\item{resource}{Character or NULL; name of the resource in the Opal project
-(e.g. \code{"project.resource_name"}).}
+\item{data}{Character or named list; symbol name(s) of data already
+assigned in the DataSHIELD session.}
 
-\item{table}{Character or NULL; symbol name of a data.frame already assigned
-in the DataSHIELD session (e.g. \code{"D"} after a
-\code{datashield.assign.table} call).}
-
-\item{symbol}{Character; symbol name for the handle (default "flower").}
+\item{symbol}{Character; symbol name for the Flower handle (default
+\code{"flower"}).}
 }
 \value{
 A \code{dsflower_result} with per-site init results.
 }
 \description{
-Creates a Flower handle on each server from either a DataSHIELD resource
-or a symbol already loaded in the R session (e.g. a data.frame from
-previous DataSHIELD operations). Exactly one of \code{resource} or
-\code{table} must be provided.
+Creates a Flower handle on each server from a symbol already assigned
+in the DataSHIELD session (data.frame, matrix, or any object loaded
+via \code{datashield.assign.table}, \code{datashield.assign.resource},
+or DataSHIELD operations).
+}
+\details{
+Accepts a single string (same symbol on all servers) or a named list
+(one entry per server):
+
+\preformatted{
+# Same symbol on all servers
+ds.flower.nodes.init(conns, data = "D")
+
+# Different symbol per server
+ds.flower.nodes.init(conns, data = list(
+  hospital_a = "D_filtered",
+  hospital_b = "D_merged",
+  hospital_c = "D"
+))
+}
 }

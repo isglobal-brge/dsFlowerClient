@@ -3,50 +3,51 @@
 
 #' Initialize Flower handles on all servers
 #'
-#' Creates a Flower handle on each server from either a DataSHIELD resource
-#' or a symbol already loaded in the R session (e.g. a data.frame from
-#' previous DataSHIELD operations). Exactly one of \code{resource} or
-#' \code{table} must be provided.
+#' Creates a Flower handle on each server from a symbol already assigned
+#' in the DataSHIELD session (data.frame, matrix, or any object loaded
+#' via \code{datashield.assign.table}, \code{datashield.assign.resource},
+#' or DataSHIELD operations).
+#'
+#' Accepts a single string (same symbol on all servers) or a named list
+#' (one entry per server):
+#'
+#' \preformatted{
+#' # Same symbol on all servers
+#' ds.flower.nodes.init(conns, data = "D")
+#'
+#' # Different symbol per server
+#' ds.flower.nodes.init(conns, data = list(
+#'   hospital_a = "D_filtered",
+#'   hospital_b = "D_merged",
+#'   hospital_c = "D"
+#' ))
+#' }
 #'
 #' @param conns DSI connections object.
-#' @param resource Character or NULL; name of the resource in the Opal project
-#'   (e.g. \code{"project.resource_name"}).
-#' @param table Character or NULL; symbol name of a data.frame already assigned
-#'   in the DataSHIELD session (e.g. \code{"D"} after a
-#'   \code{datashield.assign.table} call).
-#' @param symbol Character; symbol name for the handle (default "flower").
+#' @param data Character or named list; symbol name(s) of data already
+#'   assigned in the DataSHIELD session.
+#' @param symbol Character; symbol name for the Flower handle (default
+#'   \code{"flower"}).
 #' @return A \code{dsflower_result} with per-site init results.
 #' @export
-ds.flower.nodes.init <- function(conns, resource = NULL, table = NULL,
-                                  symbol = "flower") {
-  if (is.null(resource) && is.null(table)) {
-    stop("Provide either 'resource' or 'table'.", call. = FALSE)
-  }
-  if (!is.null(resource) && !is.null(table)) {
-    stop("Provide only one of 'resource' or 'table', not both.", call. = FALSE)
+ds.flower.nodes.init <- function(conns, data, symbol = "flower") {
+  srv_names <- names(conns)
+  data_symbols <- if (is.list(data)) data else {
+    stats::setNames(rep(data, length(srv_names)), srv_names)
   }
 
-  if (!is.null(resource)) {
-    # Resource path: assign the resource, then init from it
-    res_symbol <- .generate_symbol("res")
-    DSI::datashield.assign.resource(conns, symbol = res_symbol,
-                                     resource = resource)
+  for (srv in srv_names) {
+    sym <- data_symbols[[srv]]
+    if (is.null(sym)) {
+      stop("No data symbol for server '", srv, "'.", call. = FALSE)
+    }
     DSI::datashield.assign.expr(
-      conns, symbol = symbol,
-      expr = call("flowerInitDS", res_symbol)
+      conns[srv], symbol = symbol,
+      expr = call("flowerInitDS", sym)
     )
-    code <- .build_code("ds.flower.nodes.init",
-      resource = resource, symbol = symbol)
-  } else {
-    # Table path: the symbol already exists in the session
-    DSI::datashield.assign.expr(
-      conns, symbol = symbol,
-      expr = call("flowerInitDS", table)
-    )
-    code <- .build_code("ds.flower.nodes.init",
-      table = table, symbol = symbol)
   }
 
+  code <- .build_code("ds.flower.nodes.init", data = data, symbol = symbol)
   results <- .ds_safe_aggregate(conns, expr = call("flowerPingDS"))
 
   dsflower_result(

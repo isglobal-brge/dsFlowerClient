@@ -48,20 +48,25 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
 
 #' @keywords internal
 .predict_linear_classifier <- function(weights, X, type) {
-  coef <- as.vector(weights$coef)
-  intercept <- as.numeric(weights$intercept)
-  logits <- as.vector(X %*% coef + intercept)
+  coef <- drop(weights$coef)
+  if (is.matrix(coef)) coef <- as.vector(coef)
+  intercept <- as.numeric(weights$intercept)[1]
+  if (length(coef) != ncol(X)) {
+    stop(sprintf("Coefficient length (%d) does not match feature count (%d).",
+                 length(coef), ncol(X)), call. = FALSE)
+  }
+  logits <- as.vector(X %*% coef) + intercept
   probs <- 1 / (1 + exp(-logits))
   if (type == "prob") probs else as.integer(probs > 0.5)
 }
 
 #' @keywords internal
 .predict_ridge_classifier <- function(weights, X, type) {
-  coef <- as.vector(weights$coef)
-  intercept <- as.numeric(weights$intercept)
-  decision <- as.vector(X %*% coef + intercept)
+  coef <- drop(weights$coef)
+  if (is.matrix(coef)) coef <- as.vector(coef)
+  intercept <- as.numeric(weights$intercept)[1]
+  decision <- as.vector(X %*% coef) + intercept
   if (type == "prob") {
-    # Ridge has no natural probability; use sigmoid of decision function
     1 / (1 + exp(-decision))
   } else {
     as.integer(decision > 0)

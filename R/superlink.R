@@ -233,10 +233,57 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
   )
 
   .dsflower_client_env$.superlink <- info
+
+  # Wait for the SuperLink to be ready (listening on fleet port)
+  .wait_superlink_ready(proc, fleet_port, log_path, timeout = 15)
+
   message("SuperLink started (PID: ", info$pid, ")")
   message("  Fleet API (SuperNodes): ", fleet_address)
   message("  Control API (flwr run): ", control_address)
   invisible(info)
+}
+
+#' Wait for SuperLink to be ready
+#'
+#' Polls the fleet port until a TCP connection succeeds, or the process
+#' dies, or the timeout is reached.
+#'
+#' @param proc processx process object.
+#' @param port Integer; port to check.
+#' @param log_path Character; path to the log file (for error messages).
+#' @param timeout Numeric; seconds to wait.
+#' @keywords internal
+.wait_superlink_ready <- function(proc, port, log_path, timeout = 15) {
+  deadline <- Sys.time() + timeout
+
+  while (Sys.time() < deadline) {
+    # Check process is still alive
+    if (!proc$is_alive()) {
+      log_tail <- tryCatch(
+        paste(tail(readLines(log_path, warn = FALSE), 10), collapse = "\n"),
+        error = function(e) "(no log)")
+      stop("SuperLink process died during startup.\nLog:\n", log_tail,
+           call. = FALSE)
+    }
+
+    # Try connecting to the fleet port
+    ok <- tryCatch({
+      con <- socketConnection("127.0.0.1", port, open = "r",
+                              blocking = TRUE, timeout = 1)
+      close(con)
+      TRUE
+    }, error = function(e) FALSE)
+
+    if (ok) return(invisible(TRUE))
+    Sys.sleep(0.5)
+  }
+
+  # Timeout
+  log_tail <- tryCatch(
+    paste(tail(readLines(log_path, warn = FALSE), 10), collapse = "\n"),
+    error = function(e) "(no log)")
+  stop("SuperLink did not become ready within ", timeout, " seconds.\nLog:\n",
+       log_tail, call. = FALSE)
 }
 
 #' Stop the Flower SuperLink
