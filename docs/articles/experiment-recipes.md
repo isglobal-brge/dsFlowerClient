@@ -225,11 +225,7 @@ against three Opal servers.
 ``` r
 
 library(DSI)
-#> Loading required package: progress
-#> Loading required package: R6
 library(DSOpal)
-#> Loading required package: opalr
-#> Loading required package: httr
 
 builder <- DSI::newDSLoginBuilder()
 builder$append(server = "site_a", url = "https://localhost:8443",
@@ -259,7 +255,7 @@ cat("Connected to:", paste(names(conns), collapse = ", "), "\n")
 quiet(ds.flower.nodes.init(conns, resource = "dsflower_test.flower_node"))
 quiet(ds.flower.nodes.prepare(conns, target_column = "target",
                                feature_columns = c("f1", "f2", "f3", "f4", "f5")))
-quiet(ds.flower.superlink.start(insecure = TRUE))
+quiet(ds.flower.superlink.start())
 Sys.sleep(2)
 quiet(ds.flower.nodes.ensure(conns, symbol = "flower"))
 #> Warning: site_c cannot reach SuperLink at host.docker.internal:9092
@@ -281,12 +277,12 @@ recipe_exp1 <- ds.flower.recipe(
 cat("=== Logistic Regression + FedAvg (5 rounds) ===\n\n")
 #> === Logistic Regression + FedAvg (5 rounds) ===
 run_exp1 <- ds.flower.run.start(recipe_exp1, verbose = TRUE)
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_app/sklearn_logreg/pyproject.toml':
+#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_app/sklearn_logreg/pyproject.toml':
 #> - Recommended property "description" missing in [project]
 #> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 5468004023582724476
+#> 🎊 Successfully started run 10288826012768592227
 #> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.4173ea32.
+#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.4173ea32.
 #> INFO :      Starting Flower ServerApp, config: num_rounds=5, no round_timeout
 #> INFO :      
 #> INFO :      [INIT]
@@ -328,16 +324,16 @@ run_exp1 <- ds.flower.run.start(recipe_exp1, verbose = TRUE)
 #> INFO :      aggregate_evaluate: received 3 results and 0 failures
 #> INFO :      
 #> INFO :      [SUMMARY]
-#> INFO :      Run finished 5 round(s) in 75.34s
+#> INFO :      Run finished 5 round(s) in 85.36s
 #> INFO :          History (loss, distributed):
-#> INFO :              round 1: 0.14106420993565436
-#> INFO :              round 2: 0.14103147463155055
-#> INFO :              round 3: 0.14103127348483877
-#> INFO :              round 4: 0.1410312711155861
-#> INFO :              round 5: 0.14103127108541957
+#> INFO :              round 1: 0.1410575314912668
+#> INFO :              round 2: 0.14103128152699967
+#> INFO :              round 3: 0.14103127519907777
+#> INFO :              round 4: 0.141031271108741
+#> INFO :              round 5: 0.14103127108545993
 #> INFO :      
 #> INFO :
-#> INFO :      Starting logstream for run_id `5468004023582724476`
+#> INFO :      Starting logstream for run_id `10288826012768592227`
 cat(sprintf("\nExit status: %s\n", run_exp1$status))
 #> 
 #> Exit status: 0
@@ -353,7 +349,7 @@ quiet(ds.flower.superlink.stop())
 quiet(ds.flower.nodes.init(conns, resource = "dsflower_test.flower_node"))
 quiet(ds.flower.nodes.prepare(conns, target_column = "target",
                                feature_columns = c("f1", "f2", "f3", "f4", "f5")))
-quiet(ds.flower.superlink.start(insecure = TRUE))
+quiet(ds.flower.superlink.start())
 Sys.sleep(2)
 quiet(ds.flower.nodes.ensure(conns, symbol = "flower"))
 #> Warning: site_c cannot reach SuperLink at host.docker.internal:9092
@@ -375,12 +371,12 @@ recipe_exp2 <- ds.flower.recipe(
 cat("=== SGD Classifier + FedAvg (5 rounds) ===\n\n")
 #> === SGD Classifier + FedAvg (5 rounds) ===
 run_exp2 <- ds.flower.run.start(recipe_exp2, verbose = TRUE)
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_app/sklearn_sgd/pyproject.toml':
+#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_app/sklearn_sgd/pyproject.toml':
 #> - Recommended property "description" missing in [project]
 #> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 18013291716223821744
+#> 🎊 Successfully started run 7961172843316684186
 #> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_sgd to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_superlink/apps/dsflower.sklearn_sgd.0.1.0.343f9f24.
+#> 🎊 Successfully installed sklearn_sgd to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_superlink/apps/dsflower.sklearn_sgd.0.1.0.343f9f24.
 #> INFO :      Starting Flower ServerApp, config: num_rounds=5, no round_timeout
 #> INFO :      
 #> INFO :      [INIT]
@@ -422,16 +418,16 @@ run_exp2 <- ds.flower.run.start(recipe_exp2, verbose = TRUE)
 #> INFO :      aggregate_evaluate: received 3 results and 0 failures
 #> INFO :      
 #> INFO :      [SUMMARY]
-#> INFO :      Run finished 5 round(s) in 78.37s
+#> INFO :      Run finished 5 round(s) in 90.42s
 #> INFO :          History (loss, distributed):
-#> INFO :              round 1: 0.17969965733189516
-#> INFO :              round 2: 0.34973387417776713
-#> INFO :              round 3: 0.18041587508312013
-#> INFO :              round 4: 0.2481234142508982
-#> INFO :              round 5: 0.2707563995408066
+#> INFO :              round 1: 0.27213230308602127
+#> INFO :              round 2: 0.23223964289424961
+#> INFO :              round 3: 0.21353167865543043
+#> INFO :              round 4: 0.28560826940504686
+#> INFO :              round 5: 0.3077306028769155
 #> INFO :      
 #> INFO :
-#> INFO :      Starting logstream for run_id `18013291716223821744`
+#> INFO :      Starting logstream for run_id `7961172843316684186`
 cat(sprintf("\nExit status: %s\n", run_exp2$status))
 #> 
 #> Exit status: 0
@@ -447,7 +443,7 @@ quiet(ds.flower.superlink.stop())
 quiet(ds.flower.nodes.init(conns, resource = "dsflower_test.flower_node"))
 quiet(ds.flower.nodes.prepare(conns, target_column = "target",
                                feature_columns = c("f1", "f2", "f3", "f4", "f5")))
-quiet(ds.flower.superlink.start(insecure = TRUE))
+quiet(ds.flower.superlink.start())
 Sys.sleep(2)
 quiet(ds.flower.nodes.ensure(conns, symbol = "flower"))
 #> Warning: site_c cannot reach SuperLink at host.docker.internal:9092
@@ -469,12 +465,12 @@ recipe_exp3 <- ds.flower.recipe(
 cat("=== Ridge Classifier + FedAvg (5 rounds) ===\n\n")
 #> === Ridge Classifier + FedAvg (5 rounds) ===
 run_exp3 <- ds.flower.run.start(recipe_exp3, verbose = TRUE)
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_app/sklearn_ridge/pyproject.toml':
+#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_app/sklearn_ridge/pyproject.toml':
 #> - Recommended property "description" missing in [project]
 #> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 12759576435245565353
+#> 🎊 Successfully started run 15109136990041595773
 #> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_ridge to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_superlink/apps/dsflower.sklearn_ridge.0.1.0.f7f5d691.
+#> 🎊 Successfully installed sklearn_ridge to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_superlink/apps/dsflower.sklearn_ridge.0.1.0.f7f5d691.
 #> INFO :      Starting Flower ServerApp, config: num_rounds=5, no round_timeout
 #> INFO :      
 #> INFO :      [INIT]
@@ -516,16 +512,16 @@ run_exp3 <- ds.flower.run.start(recipe_exp3, verbose = TRUE)
 #> INFO :      aggregate_evaluate: received 3 results and 0 failures
 #> INFO :      
 #> INFO :      [SUMMARY]
-#> INFO :      Run finished 5 round(s) in 79.48s
+#> INFO :      Run finished 5 round(s) in 90.34s
 #> INFO :          History (loss, distributed):
-#> INFO :              round 1: 0.42592063546180725
+#> INFO :              round 1: 0.42592064539591473
 #> INFO :              round 2: 0.42592063546180725
-#> INFO :              round 3: 0.42592064539591473
+#> INFO :              round 3: 0.42592063546180725
 #> INFO :              round 4: 0.42592063546180725
-#> INFO :              round 5: 0.42592064539591473
+#> INFO :              round 5: 0.42592063546180725
 #> INFO :      
 #> INFO :
-#> INFO :      Starting logstream for run_id `12759576435245565353`
+#> INFO :      Starting logstream for run_id `15109136990041595773`
 cat(sprintf("\nExit status: %s\n", run_exp3$status))
 #> 
 #> Exit status: 0

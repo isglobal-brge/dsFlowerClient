@@ -253,10 +253,10 @@ count against the disclosure threshold, and stages the data into a
 temporary directory that the Python SuperNode will read.</p>
 </div>
 <div class="section level3">
-<h3 id="stage-4-start-the-superlink-insecure-mode">Stage 4: Start the SuperLink (insecure mode)<a class="anchor" aria-label="anchor" href="#stage-4-start-the-superlink-insecure-mode"></a>
+<h3 id="stage-4-start-the-superlink">Stage 4: Start the SuperLink<a class="anchor" aria-label="anchor" href="#stage-4-start-the-superlink"></a>
 </h3>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span>insecure <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">status</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.superlink.status.html">ds.flower.superlink.status</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -264,14 +264,15 @@ temporary directory that the Python SuperNode will read.</p>
 <span><span class="co">#&gt; SuperLink running:   TRUE</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Fleet API:         %s\n"</span>, <span class="va">status</span><span class="op">$</span><span class="va">fleet_address</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Fleet API:         127.0.0.1:9092</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Insecure mode:     %s\n"</span>, <span class="va">status</span><span class="op">$</span><span class="va">insecure</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Insecure mode:     TRUE</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  TLS certificate:   %s\n"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">ca_cert_pem</span><span class="op">)</span>, <span class="st">"none (insecure)"</span>, <span class="st">"present"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   TLS certificate:   none (insecure)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">ca_cert_pem</span><span class="op">)</span>, <span class="st">"none"</span>,</span>
+<span>           <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">ca_cert_pem</span>, <span class="fl">1</span>, <span class="fl">27</span><span class="op">)</span>, <span class="st">"... ("</span>,</span>
+<span>                  <span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar</a></span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">ca_cert_pem</span><span class="op">)</span>, <span class="st">" chars)"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   TLS certificate:   -----BEGIN CERTIFICATE-----... (443 chars)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Federation ID:     %s\n"</span>, <span class="va">status</span><span class="op">$</span><span class="va">federation_id</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Federation ID:     fl-ieexombeu7fd</span></span></code></pre></div>
-<p>The SuperLink runs on your machine. It listens on port 9092 for
+<p>The SuperLink runs on your machine with TLS enabled by default. It
+auto-generates ephemeral certificates and listens on port 9092 for
 SuperNode connections and on port 9093 for <code>flwr run</code>
 commands.</p>
 </div>
@@ -296,9 +297,9 @@ commands.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Ready.\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Ready.</span></span></code></pre></div>
-<p>Each Opal receives the SuperLink address, verifies connectivity, and
-spawns a <code>flower-supernode</code> process that connects to your
-SuperLink via gRPC.</p>
+<p>Each Opal receives the SuperLink address and the TLS certificate,
+verifies connectivity, and spawns a <code>flower-supernode</code>
+process that connects to your SuperLink via encrypted gRPC.</p>
 </div>
 <div class="section level3">
 <h3 id="stage-6-train-a-model-across-3-sites">Stage 6: Train a model across 3 sites<a class="anchor" aria-label="anchor" href="#stage-6-train-a-model-across-3-sites"></a>
@@ -319,12 +320,12 @@ SuperLink via gRPC.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Training logistic regression across 3 sites (3 rounds)...\n\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Training logistic regression across 3 sites (3 rounds)...</span></span>
 <span><span class="va">run1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe_lr</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
+<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmphB8roG/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
 <span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
 <span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 12394865800874772647</span></span>
+<span><span class="co">#&gt; 🎊 Successfully started run 9364974303857020918</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
+<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmphB8roG/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=3, no round_timeout</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
@@ -354,14 +355,14 @@ SuperLink via gRPC.</p>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 54.17s</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 54.39s</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.14106420993565436</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103147463155039</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.1410312734848389</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.14109970773484848</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103161567624484</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127456124395</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `12394865800874772647`</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `9364974303857020918`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nRun completed with exit status: %s\n"</span>, <span class="va">run1</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Run completed with exit status: 0</span></span></code></pre></div>
@@ -379,118 +380,6 @@ averaged them using FedAvg.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Cleaned up: staging data removed, SuperLink stopped.\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Cleaned up: staging data removed, SuperLink stopped.</span></span></code></pre></div>
 </div>
-</div>
-<div class="section level2">
-<h2 id="tls-mode-the-same-thing-encrypted">TLS mode: the same thing, encrypted<a class="anchor" aria-label="anchor" href="#tls-mode-the-same-thing-encrypted"></a>
-</h2>
-<p>Now let’s repeat the experiment with TLS encryption on the gRPC
-channel. The only difference is <code>insecure = FALSE</code>:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Re-init and prepare (needed after cleanup)</span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.init.html">ds.flower.nodes.init</a></span><span class="op">(</span><span class="va">conns</span>, resource <span class="op">=</span> <span class="st">"dsflower_test.flower_node"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.prepare.html">ds.flower.nodes.prepare</a></span><span class="op">(</span><span class="va">conns</span>, target_column <span class="op">=</span> <span class="st">"target"</span>,</span>
-<span>                               feature_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"f1"</span>, <span class="st">"f2"</span>, <span class="st">"f3"</span>, <span class="st">"f4"</span>, <span class="st">"f5"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Start SuperLink with TLS</span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span>insecure <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">status_tls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.superlink.status.html">ds.flower.superlink.status</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"SuperLink running:   %s\n"</span>, <span class="va">status_tls</span><span class="op">$</span><span class="va">running</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; SuperLink running:   TRUE</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Insecure mode:     %s\n"</span>, <span class="va">status_tls</span><span class="op">$</span><span class="va">insecure</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Insecure mode:     FALSE</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  TLS certificate:   %s\n"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">status_tls</span><span class="op">$</span><span class="va">ca_cert_pem</span><span class="op">)</span>, <span class="st">"none"</span>,</span>
-<span>           <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">status_tls</span><span class="op">$</span><span class="va">ca_cert_pem</span>, <span class="fl">1</span>, <span class="fl">27</span><span class="op">)</span>, <span class="st">"... ("</span>,</span>
-<span>                  <span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar</a></span><span class="op">(</span><span class="va">status_tls</span><span class="op">$</span><span class="va">ca_cert_pem</span><span class="op">)</span>, <span class="st">" chars)"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   TLS certificate:   -----BEGIN CERTIFICATE-----... (443 chars)</span></span></code></pre></div>
-<p>The CA certificate was auto-generated and will be distributed to each
-Opal through the DataSHIELD control channel:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="va">ensure_tls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092</span></span>
-<span><span class="co">#&gt; (There are some DataSHIELD errors, list them with datashield.errors())</span></span>
-<span><span class="co">#&gt; Warning: Some nodes failed connectivity check: site_c. Consider providing</span></span>
-<span><span class="co">#&gt; per-node superlink_address for those nodes.</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">srv</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">ensure_tls</span><span class="op">$</span><span class="va">per_site</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  %s: node_ensured = %s\n"</span>, <span class="va">srv</span>, <span class="va">ensure_tls</span><span class="op">$</span><span class="va">per_site</span><span class="op">[[</span><span class="va">srv</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">node_ensured</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span><span class="co">#&gt;   site_a: node_ensured = TRUE</span></span>
-<span><span class="co">#&gt;   site_b: node_ensured = TRUE</span></span>
-<span><span class="co">#&gt;   site_c: node_ensured = TRUE</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">recipe_tls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.recipe.html">ds.flower.recipe</a></span><span class="op">(</span></span>
-<span>  task     <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.task.classification.html">ds.flower.task.classification</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  model    <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.model.sklearn_logreg.html">ds.flower.model.sklearn_logreg</a></span><span class="op">(</span>C <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span>,</span>
-<span>  strategy <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.strategy.fedavg.html">ds.flower.strategy.fedavg</a></span><span class="op">(</span></span>
-<span>    min_fit_clients <span class="op">=</span> <span class="fl">3L</span>,</span>
-<span>    min_available_clients <span class="op">=</span> <span class="fl">3L</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  num_rounds      <span class="op">=</span> <span class="fl">3L</span>,</span>
-<span>  target_column   <span class="op">=</span> <span class="st">"target"</span>,</span>
-<span>  feature_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"f1"</span>, <span class="st">"f2"</span>, <span class="st">"f3"</span>, <span class="st">"f4"</span>, <span class="st">"f5"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Training logistic regression across 3 sites (TLS encrypted)...\n\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Training logistic regression across 3 sites (TLS encrypted)...</span></span>
-<span><span class="va">run_tls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe_tls</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
-<span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
-<span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 7740698634960522040</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=3, no round_timeout</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Requesting initial parameters from one random client</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Received initial parameters from one random client</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting evaluation of initial global parameters</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Evaluation returned no results (`None`)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [ROUND 1]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #FFFF55;">WARNING </span>:   No fit_metrics_aggregation_fn provided</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #FFFF55;">WARNING </span>:   No evaluate_metrics_aggregation_fn provided</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [ROUND 2]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [ROUND 3]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 54.24s</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.14109970773484848</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103161567624484</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127456124395</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `7740698634960522040`</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nRun completed with exit status: %s\n"</span>, <span class="va">run_tls</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Run completed with exit status: 0</span></span></code></pre></div>
-<p>The output is identical to the insecure run because TLS is
-transparent to the training protocol. The difference is that all gRPC
-traffic (model weights, gradients, metrics) was encrypted in
-transit.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.cleanup.html">ds.flower.nodes.cleanup</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.stop.html">ds.flower.superlink.stop</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"TLS run cleaned up.\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; TLS run cleaned up.</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="detailed-explanation-what-happens-at-each-stage">Detailed explanation: what happens at each stage<a class="anchor" aria-label="anchor" href="#detailed-explanation-what-happens-at-each-stage"></a>
@@ -539,7 +428,7 @@ runs in Docker (uses <code>host.docker.internal</code>) or on bare metal
 (uses the researcher’s LAN IP), verifies TCP connectivity, and then
 spawns a <code>flower-supernode</code> process on each server.</p>
 <p>If auto-detection fails, you can provide addresses explicitly:</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Same address for all nodes</span></span>
 <span><span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, superlink_address <span class="op">=</span> <span class="st">"192.168.1.50:9092"</span><span class="op">)</span></span>
 <span></span>

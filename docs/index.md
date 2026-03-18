@@ -50,7 +50,7 @@ ds.flower.nodes.prepare(conns, target_column = "diagnosis",
                         feature_columns = c("age", "bmi", "glucose"))
 
 # 3. Start SuperLink and connect nodes
-ds.flower.superlink.start(insecure = FALSE)  # TLS enabled
+ds.flower.superlink.start()  # TLS certificates auto-generated
 ds.flower.nodes.ensure(conns)
 
 # 4. Define and run experiment

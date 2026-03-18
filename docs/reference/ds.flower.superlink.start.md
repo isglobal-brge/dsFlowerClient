@@ -8,7 +8,6 @@ connect to this SuperLink.
 
 ``` r
 ds.flower.superlink.start(
-  insecure = TRUE,
   fleet_port = 9092L,
   control_port = 9093L,
   serverappio_port = 9091L
@@ -16,10 +15,6 @@ ds.flower.superlink.start(
 ```
 
 ## Arguments
-
-- insecure:
-
-  Logical; use insecure mode (default TRUE).
 
 - fleet_port:
 

@@ -16,12 +16,8 @@ A single address string (if all nodes need the same) or a named
   list of per-node addresses.
 }
 \description{
-Resolution strategy per node:
-\enumerate{
-  \item If the node is in a container, try \code{host.docker.internal}.
-  \item If bare-metal, detect the researcher's routable IP via UDP socket.
-  \item Verify connectivity from the Opal to the candidate address.
-  \item If verification fails, error with guidance.
-}
+For each node, builds a prioritized list of candidate addresses and tests
+connectivity until one succeeds. Candidates include host.docker.internal
+(for containerized nodes), the OS-routed IP, VPN/tunnel IPs, and LAN IPs.
 }
 \keyword{internal}

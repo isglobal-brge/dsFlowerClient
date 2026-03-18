@@ -279,11 +279,7 @@ stronger privacy but noisier model.</p>
 against three Opal servers.</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: progress</span></span>
-<span><span class="co">#&gt; Loading required package: R6</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
-<span><span class="co">#&gt; Loading required package: opalr</span></span>
-<span><span class="co">#&gt; Loading required package: httr</span></span>
 <span></span>
 <span><span class="va">builder</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/newDSLoginBuilder.html" class="external-link">newDSLoginBuilder</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="st">"site_a"</span>, url <span class="op">=</span> <span class="st">"https://localhost:8443"</span>,</span>
@@ -311,7 +307,7 @@ against three Opal servers.</p>
 <code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.init.html">ds.flower.nodes.init</a></span><span class="op">(</span><span class="va">conns</span>, resource <span class="op">=</span> <span class="st">"dsflower_test.flower_node"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.prepare.html">ds.flower.nodes.prepare</a></span><span class="op">(</span><span class="va">conns</span>, target_column <span class="op">=</span> <span class="st">"target"</span>,</span>
 <span>                               feature_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"f1"</span>, <span class="st">"f2"</span>, <span class="st">"f3"</span>, <span class="st">"f4"</span>, <span class="st">"f5"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span>insecure <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092</span></span>
@@ -333,12 +329,12 @@ against three Opal servers.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"=== Logistic Regression + FedAvg (5 rounds) ===\n\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; === Logistic Regression + FedAvg (5 rounds) ===</span></span>
 <span><span class="va">run_exp1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe_exp1</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
+<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
 <span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
 <span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 5468004023582724476</span></span>
+<span><span class="co">#&gt; 🎊 Successfully started run 10288826012768592227</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.4173ea32.</span></span>
+<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.4173ea32.</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=5, no round_timeout</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
@@ -380,16 +376,16 @@ against three Opal servers.</p>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 5 round(s) in 75.34s</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 5 round(s) in 85.36s</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.14106420993565436</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103147463155055</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127348483877</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 4: 0.1410312711155861</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 5: 0.14103127108541957</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.1410575314912668</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103128152699967</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127519907777</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 4: 0.141031271108741</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 5: 0.14103127108545993</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `5468004023582724476`</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `10288826012768592227`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nExit status: %s\n"</span>, <span class="va">run_exp1</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Exit status: 0</span></span>
@@ -404,7 +400,7 @@ against three Opal servers.</p>
 <code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.init.html">ds.flower.nodes.init</a></span><span class="op">(</span><span class="va">conns</span>, resource <span class="op">=</span> <span class="st">"dsflower_test.flower_node"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.prepare.html">ds.flower.nodes.prepare</a></span><span class="op">(</span><span class="va">conns</span>, target_column <span class="op">=</span> <span class="st">"target"</span>,</span>
 <span>                               feature_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"f1"</span>, <span class="st">"f2"</span>, <span class="st">"f3"</span>, <span class="st">"f4"</span>, <span class="st">"f5"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span>insecure <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092</span></span>
@@ -426,12 +422,12 @@ against three Opal servers.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"=== SGD Classifier + FedAvg (5 rounds) ===\n\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; === SGD Classifier + FedAvg (5 rounds) ===</span></span>
 <span><span class="va">run_exp2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe_exp2</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_app/sklearn_sgd/pyproject.toml':</span></span>
+<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_app/sklearn_sgd/pyproject.toml':</span></span>
 <span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
 <span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 18013291716223821744</span></span>
+<span><span class="co">#&gt; 🎊 Successfully started run 7961172843316684186</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_sgd to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_superlink/apps/dsflower.sklearn_sgd.0.1.0.343f9f24.</span></span>
+<span><span class="co">#&gt; 🎊 Successfully installed sklearn_sgd to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_superlink/apps/dsflower.sklearn_sgd.0.1.0.343f9f24.</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=5, no round_timeout</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
@@ -473,16 +469,16 @@ against three Opal servers.</p>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 5 round(s) in 78.37s</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 5 round(s) in 90.42s</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.17969965733189516</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.34973387417776713</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.18041587508312013</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 4: 0.2481234142508982</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 5: 0.2707563995408066</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.27213230308602127</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.23223964289424961</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.21353167865543043</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 4: 0.28560826940504686</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 5: 0.3077306028769155</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `18013291716223821744`</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `7961172843316684186`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nExit status: %s\n"</span>, <span class="va">run_exp2</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Exit status: 0</span></span>
@@ -497,7 +493,7 @@ against three Opal servers.</p>
 <code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.init.html">ds.flower.nodes.init</a></span><span class="op">(</span><span class="va">conns</span>, resource <span class="op">=</span> <span class="st">"dsflower_test.flower_node"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.prepare.html">ds.flower.nodes.prepare</a></span><span class="op">(</span><span class="va">conns</span>, target_column <span class="op">=</span> <span class="st">"target"</span>,</span>
 <span>                               feature_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"f1"</span>, <span class="st">"f2"</span>, <span class="st">"f3"</span>, <span class="st">"f4"</span>, <span class="st">"f5"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span>insecure <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092</span></span>
@@ -519,12 +515,12 @@ against three Opal servers.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"=== Ridge Classifier + FedAvg (5 rounds) ===\n\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; === Ridge Classifier + FedAvg (5 rounds) ===</span></span>
 <span><span class="va">run_exp3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe_exp3</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_app/sklearn_ridge/pyproject.toml':</span></span>
+<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_app/sklearn_ridge/pyproject.toml':</span></span>
 <span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
 <span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 12759576435245565353</span></span>
+<span><span class="co">#&gt; 🎊 Successfully started run 15109136990041595773</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_ridge to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp0Cks8s/dsflower_superlink/apps/dsflower.sklearn_ridge.0.1.0.f7f5d691.</span></span>
+<span><span class="co">#&gt; 🎊 Successfully installed sklearn_ridge to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpbJyoKN/dsflower_superlink/apps/dsflower.sklearn_ridge.0.1.0.f7f5d691.</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=5, no round_timeout</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
@@ -566,16 +562,16 @@ against three Opal servers.</p>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 5 round(s) in 79.48s</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 5 round(s) in 90.34s</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.42592063546180725</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.42592064539591473</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.42592063546180725</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.42592064539591473</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.42592063546180725</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 4: 0.42592063546180725</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 5: 0.42592064539591473</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 5: 0.42592063546180725</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `12759576435245565353`</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `15109136990041595773`</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nExit status: %s\n"</span>, <span class="va">run_exp3</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Exit status: 0</span></span>

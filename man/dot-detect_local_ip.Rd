@@ -2,7 +2,7 @@
 % Please edit documentation in R/superlink.R
 \name{.detect_local_ip}
 \alias{.detect_local_ip}
-\title{Detect the researcher's routable local IP address}
+\title{Detect the researcher's primary routable local IP address}
 \usage{
 .detect_local_ip()
 }
@@ -10,9 +10,6 @@
 Character; an IPv4 address string.
 }
 \description{
-Opens a UDP socket toward a public DNS server (no data is sent) to let the
-OS routing table choose the correct outgoing interface. Falls back to
-\code{hostname -I} (Linux) and \code{ipconfig getifaddr} (macOS) if the
-socket approach fails.
+Convenience wrapper that returns only the first (highest priority) IP.
 }
 \keyword{internal}

@@ -208,11 +208,11 @@ On each server, this validates the columns exist, checks the row count
 against the disclosure threshold, and stages the data into a temporary
 directory that the Python SuperNode will read.
 
-### Stage 4: Start the SuperLink (insecure mode)
+### Stage 4: Start the SuperLink
 
 ``` r
 
-quiet(ds.flower.superlink.start(insecure = TRUE))
+quiet(ds.flower.superlink.start())
 Sys.sleep(2)
 
 status <- ds.flower.superlink.status()
@@ -220,16 +220,17 @@ cat(sprintf("SuperLink running:   %s\n", status$running))
 #> SuperLink running:   TRUE
 cat(sprintf("  Fleet API:         %s\n", status$fleet_address))
 #>   Fleet API:         127.0.0.1:9092
-cat(sprintf("  Insecure mode:     %s\n", status$insecure))
-#>   Insecure mode:     TRUE
 cat(sprintf("  TLS certificate:   %s\n",
-    ifelse(is.null(status$ca_cert_pem), "none (insecure)", "present")))
-#>   TLS certificate:   none (insecure)
+    ifelse(is.null(status$ca_cert_pem), "none",
+           paste0(substr(status$ca_cert_pem, 1, 27), "... (",
+                  nchar(status$ca_cert_pem), " chars)"))))
+#>   TLS certificate:   -----BEGIN CERTIFICATE-----... (443 chars)
 cat(sprintf("  Federation ID:     %s\n", status$federation_id))
 #>   Federation ID:     fl-ieexombeu7fd
 ```
 
-The SuperLink runs on your machine. It listens on port 9092 for
+The SuperLink runs on your machine with TLS enabled by default. It
+auto-generates ephemeral certificates and listens on port 9092 for
 SuperNode connections and on port 9093 for `flwr run` commands.
 
 ### Stage 5: Connect the three nodes
@@ -255,9 +256,9 @@ cat("Ready.\n")
 #> Ready.
 ```
 
-Each Opal receives the SuperLink address, verifies connectivity, and
-spawns a `flower-supernode` process that connects to your SuperLink via
-gRPC.
+Each Opal receives the SuperLink address and the TLS certificate,
+verifies connectivity, and spawns a `flower-supernode` process that
+connects to your SuperLink via encrypted gRPC.
 
 ### Stage 6: Train a model across 3 sites
 
@@ -278,12 +279,12 @@ recipe_lr <- ds.flower.recipe(
 cat("Training logistic regression across 3 sites (3 rounds)...\n\n")
 #> Training logistic regression across 3 sites (3 rounds)...
 run1 <- ds.flower.run.start(recipe_lr, verbose = TRUE)
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_app/sklearn_logreg/pyproject.toml':
+#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmphB8roG/dsflower_app/sklearn_logreg/pyproject.toml':
 #> - Recommended property "description" missing in [project]
 #> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 12394865800874772647
+#> 🎊 Successfully started run 9364974303857020918
 #> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
+#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmphB8roG/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
 #> INFO :      Starting Flower ServerApp, config: num_rounds=3, no round_timeout
 #> INFO :      
 #> INFO :      [INIT]
@@ -313,14 +314,14 @@ run1 <- ds.flower.run.start(recipe_lr, verbose = TRUE)
 #> INFO :      aggregate_evaluate: received 3 results and 0 failures
 #> INFO :      
 #> INFO :      [SUMMARY]
-#> INFO :      Run finished 3 round(s) in 54.17s
+#> INFO :      Run finished 3 round(s) in 54.39s
 #> INFO :          History (loss, distributed):
-#> INFO :              round 1: 0.14106420993565436
-#> INFO :              round 2: 0.14103147463155039
-#> INFO :              round 3: 0.1410312734848389
+#> INFO :              round 1: 0.14109970773484848
+#> INFO :              round 2: 0.14103161567624484
+#> INFO :              round 3: 0.14103127456124395
 #> INFO :      
 #> INFO :
-#> INFO :      Starting logstream for run_id `12394865800874772647`
+#> INFO :      Starting logstream for run_id `9364974303857020918`
 cat(sprintf("\nRun completed with exit status: %s\n", run1$status))
 #> 
 #> Run completed with exit status: 0
@@ -339,130 +340,6 @@ quiet(ds.flower.nodes.cleanup(conns, symbol = "flower"))
 quiet(ds.flower.superlink.stop())
 cat("Cleaned up: staging data removed, SuperLink stopped.\n")
 #> Cleaned up: staging data removed, SuperLink stopped.
-```
-
-## TLS mode: the same thing, encrypted
-
-Now let’s repeat the experiment with TLS encryption on the gRPC channel.
-The only difference is `insecure = FALSE`:
-
-``` r
-
-# Re-init and prepare (needed after cleanup)
-quiet(ds.flower.nodes.init(conns, resource = "dsflower_test.flower_node"))
-quiet(ds.flower.nodes.prepare(conns, target_column = "target",
-                               feature_columns = c("f1", "f2", "f3", "f4", "f5")))
-
-# Start SuperLink with TLS
-quiet(ds.flower.superlink.start(insecure = FALSE))
-Sys.sleep(2)
-
-status_tls <- ds.flower.superlink.status()
-cat(sprintf("SuperLink running:   %s\n", status_tls$running))
-#> SuperLink running:   TRUE
-cat(sprintf("  Insecure mode:     %s\n", status_tls$insecure))
-#>   Insecure mode:     FALSE
-cat(sprintf("  TLS certificate:   %s\n",
-    ifelse(is.null(status_tls$ca_cert_pem), "none",
-           paste0(substr(status_tls$ca_cert_pem, 1, 27), "... (",
-                  nchar(status_tls$ca_cert_pem), " chars)"))))
-#>   TLS certificate:   -----BEGIN CERTIFICATE-----... (443 chars)
-```
-
-The CA certificate was auto-generated and will be distributed to each
-Opal through the DataSHIELD control channel:
-
-``` r
-
-quiet(ensure_tls <- ds.flower.nodes.ensure(conns, symbol = "flower"))
-#> Warning: site_c cannot reach SuperLink at host.docker.internal:9092
-#> (There are some DataSHIELD errors, list them with datashield.errors())
-#> Warning: Some nodes failed connectivity check: site_c. Consider providing
-#> per-node superlink_address for those nodes.
-for (srv in names(ensure_tls$per_site)) {
-  cat(sprintf("  %s: node_ensured = %s\n", srv, ensure_tls$per_site[[srv]]$node_ensured))
-}
-#>   site_a: node_ensured = TRUE
-#>   site_b: node_ensured = TRUE
-#>   site_c: node_ensured = TRUE
-Sys.sleep(10)
-```
-
-``` r
-
-recipe_tls <- ds.flower.recipe(
-  task     = ds.flower.task.classification(),
-  model    = ds.flower.model.sklearn_logreg(C = 1.0),
-  strategy = ds.flower.strategy.fedavg(
-    min_fit_clients = 3L,
-    min_available_clients = 3L
-  ),
-  num_rounds      = 3L,
-  target_column   = "target",
-  feature_columns = c("f1", "f2", "f3", "f4", "f5")
-)
-
-cat("Training logistic regression across 3 sites (TLS encrypted)...\n\n")
-#> Training logistic regression across 3 sites (TLS encrypted)...
-run_tls <- ds.flower.run.start(recipe_tls, verbose = TRUE)
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_app/sklearn_logreg/pyproject.toml':
-#> - Recommended property "description" missing in [project]
-#> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 7740698634960522040
-#> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpMMquhd/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.
-#> INFO :      Starting Flower ServerApp, config: num_rounds=3, no round_timeout
-#> INFO :      
-#> INFO :      [INIT]
-#> INFO :      Requesting initial parameters from one random client
-#> INFO :      Received initial parameters from one random client
-#> INFO :      Starting evaluation of initial global parameters
-#> INFO :      Evaluation returned no results (`None`)
-#> INFO :      
-#> INFO :      [ROUND 1]
-#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_fit: received 3 results and 0 failures
-#> WARNING :   No fit_metrics_aggregation_fn provided
-#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_evaluate: received 3 results and 0 failures
-#> WARNING :   No evaluate_metrics_aggregation_fn provided
-#> INFO :      
-#> INFO :      [ROUND 2]
-#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_fit: received 3 results and 0 failures
-#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_evaluate: received 3 results and 0 failures
-#> INFO :      
-#> INFO :      [ROUND 3]
-#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_fit: received 3 results and 0 failures
-#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_evaluate: received 3 results and 0 failures
-#> INFO :      
-#> INFO :      [SUMMARY]
-#> INFO :      Run finished 3 round(s) in 54.24s
-#> INFO :          History (loss, distributed):
-#> INFO :              round 1: 0.14109970773484848
-#> INFO :              round 2: 0.14103161567624484
-#> INFO :              round 3: 0.14103127456124395
-#> INFO :      
-#> INFO :
-#> INFO :      Starting logstream for run_id `7740698634960522040`
-cat(sprintf("\nRun completed with exit status: %s\n", run_tls$status))
-#> 
-#> Run completed with exit status: 0
-```
-
-The output is identical to the insecure run because TLS is transparent
-to the training protocol. The difference is that all gRPC traffic (model
-weights, gradients, metrics) was encrypted in transit.
-
-``` r
-
-quiet(ds.flower.nodes.cleanup(conns, symbol = "flower"))
-quiet(ds.flower.superlink.stop())
-cat("TLS run cleaned up.\n")
-#> TLS run cleaned up.
 ```
 
 ## Detailed explanation: what happens at each stage

@@ -310,13 +310,9 @@ ds.flower.superlink.status <- function() {
 
 #' Auto-resolve SuperLink address for each Opal node
 #'
-#' Resolution strategy per node:
-#' \enumerate{
-#'   \item If the node is in a container, try \code{host.docker.internal}.
-#'   \item If bare-metal, detect the researcher's routable IP via UDP socket.
-#'   \item Verify connectivity from the Opal to the candidate address.
-#'   \item If verification fails, error with guidance.
-#' }
+#' For each node, builds a prioritized list of candidate addresses and tests
+#' connectivity until one succeeds. Candidates include host.docker.internal
+#' (for containerized nodes), the OS-routed IP, VPN/tunnel IPs, and LAN IPs.
 #'
 #' @param conns DSI connections object.
 #' @param symbol Character; handle symbol name.
@@ -336,50 +332,66 @@ ds.flower.superlink.status <- function() {
     conns, expr = call("flowerGetCapabilitiesDS", symbol)
   )
 
+  # Collect all local IPs once (expensive, do it lazily)
+  all_ips <- NULL
+
   addresses <- list()
-  local_ip <- NULL  # lazily detected
+  failed <- character(0)
 
   for (srv in names(caps)) {
+    # Build candidate list in priority order
+    candidates <- character(0)
+
     if (isTRUE(caps[[srv]]$is_docker)) {
-      candidate <- paste0("host.docker.internal:", fleet_port)
-    } else {
-      if (is.null(local_ip)) local_ip <- .detect_local_ip()
-      candidate <- paste0(local_ip, ":", fleet_port)
+      # Docker nodes: try host.docker.internal first, then all local IPs
+      candidates <- c(candidates, paste0("host.docker.internal:", fleet_port))
     }
-    addresses[[srv]] <- candidate
-  }
 
-  # Verify connectivity from each Opal to its candidate address
-  failed <- character(0)
-  for (srv in names(addresses)) {
-    check <- .check_node_connectivity(conns, srv, addresses[[srv]])
+    # Add all local IPs as candidates (LAN, VPN, etc.)
+    if (is.null(all_ips)) all_ips <- .detect_all_ips()
+    for (ip in all_ips) {
+      candidates <- c(candidates, paste0(ip, ":", fleet_port))
+    }
 
-    if (isTRUE(check$reachable)) {
-      message("  ", srv, ": SuperLink reachable at ", addresses[[srv]])
-    } else {
+    # Also try localhost for nodes on the same machine
+    candidates <- c(candidates, paste0("127.0.0.1:", fleet_port))
+    candidates <- unique(candidates)
+
+    # Test each candidate until one works
+    resolved <- NULL
+    tried <- character(0)
+    for (candidate in candidates) {
+      check <- .check_node_connectivity(conns, srv, candidate)
+      if (isTRUE(check$reachable)) {
+        resolved <- candidate
+        message("  ", srv, ": SuperLink reachable at ", candidate)
+        break
+      }
+      tried <- c(tried, candidate)
+    }
+
+    if (is.null(resolved)) {
       failed <- c(failed, srv)
       warning(
-        srv, " cannot reach SuperLink at ", addresses[[srv]],
-        if (!is.null(check$error)) paste0(" (", check$error, ")"),
+        srv, " cannot reach SuperLink. Tried: ",
+        paste(tried, collapse = ", "), ". ",
+        "Provide superlink_address explicitly for this node.",
         call. = FALSE
       )
+    } else {
+      addresses[[srv]] <- resolved
     }
   }
 
-  if (length(failed) > 0 && length(failed) == length(addresses)) {
+  if (length(failed) == length(caps)) {
     stop(
       "No Opal node can reach the SuperLink. ",
-      "Tried: ", paste(unique(unlist(addresses)), collapse = ", "), ". ",
+      "Tried: ", paste(unique(unlist(
+        lapply(caps, function(x) {
+          if (isTRUE(x$is_docker)) "host.docker.internal" else "local IPs"
+        })
+      )), collapse = ", "), ". ",
       "Provide superlink_address explicitly (see ?ds.flower.nodes.ensure).",
-      call. = FALSE
-    )
-  }
-
-  if (length(failed) > 0) {
-    warning(
-      "Some nodes failed connectivity check: ",
-      paste(failed, collapse = ", "), ". ",
-      "Consider providing per-node superlink_address for those nodes.",
       call. = FALSE
     )
   }
@@ -390,72 +402,130 @@ ds.flower.superlink.status <- function() {
   addresses
 }
 
-#' Detect the researcher's routable local IP address
+#' Detect all routable IPv4 addresses on the researcher's machine
 #'
-#' Opens a UDP socket toward a public DNS server (no data is sent) to let the
-#' OS routing table choose the correct outgoing interface. Falls back to
-#' \code{hostname -I} (Linux) and \code{ipconfig getifaddr} (macOS) if the
-#' socket approach fails.
+#' Returns a prioritized list of IPs: OS-routed IP first (from UDP socket
+#' trick), then VPN/tunnel interfaces (tun, utun, wg, tailscale), then
+#' remaining LAN interfaces. Excludes loopback (127.x.x.x) and link-local
+#' (169.254.x.x).
+#'
+#' @return Character vector of IPv4 address strings, ordered by priority.
+#' @keywords internal
+.detect_all_ips <- function() {
+  ips <- character(0)
+  ipv4_re <- "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$"
+
+  # 1. OS-routed IP (respects routing table, best for most cases)
+  routed_ip <- tryCatch({
+    out <- system2("python3", c("-c",
+      shQuote("import socket; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.connect(('8.8.8.8',80)); print(s.getsockname()[0]); s.close()")),
+      stdout = TRUE, stderr = TRUE)
+    addr <- trimws(out[1])
+    if (grepl(ipv4_re, addr)) addr else NULL
+  }, error = function(e) NULL, warning = function(w) NULL)
+
+  if (!is.null(routed_ip)) ips <- c(ips, routed_ip)
+
+  # 2. Enumerate all interfaces via ifconfig/ip (cross-platform)
+  iface_ips <- tryCatch({
+    .parse_interface_ips()
+  }, error = function(e) character(0))
+
+  ips <- c(ips, iface_ips)
+
+  # Deduplicate, exclude loopback and link-local
+  ips <- unique(ips)
+  ips <- ips[!grepl("^127\\.", ips)]
+  ips <- ips[!grepl("^169\\.254\\.", ips)]
+
+  if (length(ips) == 0L) {
+    stop("Could not detect any routable IP. ",
+         "Please provide superlink_address explicitly.",
+         call. = FALSE)
+  }
+
+  ips
+}
+
+#' Detect the researcher's primary routable local IP address
+#'
+#' Convenience wrapper that returns only the first (highest priority) IP.
 #'
 #' @return Character; an IPv4 address string.
 #' @keywords internal
 .detect_local_ip <- function() {
-  ip <- NULL
+  .detect_all_ips()[1]
+}
 
-  # Strategy 1: Python UDP socket (works on any OS, respects routing table)
-  if (is.null(ip) || !nzchar(ip %||% "")) {
-    ip <- tryCatch({
-      out <- system2("python3", c("-c",
-        shQuote("import socket; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.connect(('8.8.8.8',80)); print(s.getsockname()[0]); s.close()")),
-        stdout = TRUE, stderr = TRUE)
-      addr <- trimws(out[1])
-      if (grepl("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", addr)) addr else NULL
-    }, error = function(e) NULL,
-       warning = function(w) NULL)
-  }
+#' Parse interface IPs from system commands
+#'
+#' Uses \code{ifconfig} (macOS/BSD) or \code{ip addr} (Linux) to list all
+#' IPv4 addresses. Returns them ordered: VPN/tunnel interfaces first
+#' (tun, utun, wg, tailscale, ts), then physical interfaces.
+#'
+#' @return Character vector of IPv4 addresses, VPN-first ordering.
+#' @keywords internal
+.parse_interface_ips <- function() {
+  ipv4_re <- "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$"
+  vpn_iface_re <- "^(tun|utun|wg|tailscale|ts|nordlynx|proton)"
+  vpn_ips <- character(0)
+  lan_ips <- character(0)
 
-  # Strategy 3: hostname -I (Linux)
-  if (is.null(ip) || !nzchar(ip %||% "")) {
-    ip <- tryCatch({
-      out <- system2("hostname", "-I", stdout = TRUE, stderr = TRUE)
-      addr <- trimws(strsplit(out[1], "\\s+")[[1]][1])
-      if (grepl("^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$", addr)) addr else NULL
-    }, error = function(e) NULL,
-       warning = function(w) NULL)
-  }
+  if (.Platform$OS.type == "unix") {
+    # Try `ip addr` first (Linux), fall back to `ifconfig`
+    out <- tryCatch(
+      system2("ip", c("-4", "-o", "addr", "show"), stdout = TRUE, stderr = TRUE),
+      error = function(e) NULL, warning = function(w) NULL
+    )
 
-  # Strategy 4: macOS — try all active interfaces, not just en0
-  if (is.null(ip) || !nzchar(ip %||% "")) {
-    ip <- tryCatch({
-      # List active network services, try each
-      services <- system2("networksetup", "-listallhardwareports",
-                          stdout = TRUE, stderr = TRUE)
-      devs <- grep("^Device:", services, value = TRUE)
-      devs <- gsub("^Device:\\s*", "", devs)
-      addr <- NULL
-      for (dev in devs) {
-        out <- tryCatch(
-          system2("ipconfig", c("getifaddr", dev),
-                  stdout = TRUE, stderr = TRUE),
-          error = function(e) "",
-          warning = function(w) ""
-        )
-        if (length(out) > 0 && grepl("^[0-9]+\\.[0-9]+", out[1])) {
-          addr <- trimws(out[1])
-          break
+    if (!is.null(out) && length(out) > 0) {
+      # `ip -4 -o addr show` output:
+      # 2: eth0    inet 192.168.1.5/24 brd 192.168.1.255 scope global eth0
+      for (line in out) {
+        parts <- strsplit(trimws(line), "\\s+")[[1]]
+        iface_idx <- which(parts == "inet")
+        if (length(iface_idx) == 0) next
+        addr_cidr <- parts[iface_idx + 1]
+        addr <- sub("/.*", "", addr_cidr)
+        if (!grepl(ipv4_re, addr)) next
+
+        # Interface name is the 2nd field (strip trailing colon)
+        iface <- gsub(":$", "", parts[2])
+        if (grepl(vpn_iface_re, iface)) {
+          vpn_ips <- c(vpn_ips, addr)
+        } else {
+          lan_ips <- c(lan_ips, addr)
         }
       }
-      addr
-    }, error = function(e) NULL,
-       warning = function(w) NULL)
+    } else {
+      # macOS / BSD: ifconfig
+      out <- tryCatch(
+        system2("ifconfig", stdout = TRUE, stderr = TRUE),
+        error = function(e) character(0), warning = function(w) character(0)
+      )
+      current_iface <- ""
+      for (line in out) {
+        # Interface header: "en0: flags=..."
+        if (grepl("^[a-zA-Z]", line) && grepl(":", line)) {
+          current_iface <- sub(":.*", "", line)
+        }
+        # IPv4 line: "  inet 192.168.1.5 netmask ..."
+        m <- regmatches(line, regexpr("inet ([0-9.]+)", line))
+        if (length(m) > 0) {
+          addr <- sub("^inet\\s+", "", m)
+          if (!grepl(ipv4_re, addr)) next
+          if (grepl(vpn_iface_re, current_iface)) {
+            vpn_ips <- c(vpn_ips, addr)
+          } else {
+            lan_ips <- c(lan_ips, addr)
+          }
+        }
+      }
+    }
   }
 
-  if (is.null(ip) || !nzchar(ip %||% "")) {
-    stop("Could not auto-detect local IP. ",
-         "Please provide superlink_address explicitly.",
-         call. = FALSE)
-  }
-  ip
+  # VPN IPs first (more likely to be the right route for remote nodes)
+  c(vpn_ips, lan_ips)
 }
 
 #' Check connectivity from a single Opal node to a candidate address

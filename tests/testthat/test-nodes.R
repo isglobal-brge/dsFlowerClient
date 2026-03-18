@@ -69,7 +69,7 @@ test_that(".auto_resolve_superlink returns per-node addresses for mixed env", {
 
   local_mocked_bindings(
     .ds_safe_aggregate = function(conns, expr) mock_caps,
-    .detect_local_ip = function() "192.168.1.100",
+    .detect_all_ips = function() "192.168.1.100",
     .check_node_connectivity = function(conns, srv, address) {
       list(reachable = TRUE, error = NULL)
     }
@@ -105,6 +105,7 @@ test_that(".auto_resolve_superlink errors when all nodes fail connectivity", {
 
   local_mocked_bindings(
     .ds_safe_aggregate = function(conns, expr) mock_caps,
+    .detect_all_ips = function() "10.0.0.1",
     .check_node_connectivity = function(conns, srv, address) {
       list(reachable = FALSE, error = "Connection refused")
     }

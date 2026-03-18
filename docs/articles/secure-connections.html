@@ -84,15 +84,15 @@ sends back a poisoned model</li>
 model quality</li>
 </ul>
 <p>The DataSHIELD/Opal control channel is already HTTPS, but the Flower
-gRPC training channel is separate. By default it runs unencrypted.
-Setting <code>insecure = FALSE</code> enables TLS.</p>
+gRPC training channel is separate. dsFlowerClient enforces TLS on this
+channel: every call to <code><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start()</a></code>
+auto-generates ephemeral certificates.</p>
 </div>
 <div class="section level2">
 <h2 id="how-certificate-generation-works">How certificate generation works<a class="anchor" aria-label="anchor" href="#how-certificate-generation-works"></a>
 </h2>
-<p>When <code>insecure = FALSE</code>, dsFlowerClient auto-generates
-ephemeral TLS certificates using the system <code>openssl</code> CLI.
-Let’s see what it produces:</p>
+<p>dsFlowerClient generates ephemeral TLS certificates using the system
+<code>openssl</code> CLI. Let’s see what it produces:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">dsFlowerClient</span><span class="op">)</span></span>
 <span></span>
@@ -111,7 +111,7 @@ Let’s see what it produces:</p>
 <span><span class="co">#&gt;   san.cnf          95 bytes</span></span>
 <span><span class="co">#&gt;   server.csr       367 bytes</span></span>
 <span><span class="co">#&gt;   server.key       302 bytes</span></span>
-<span><span class="co">#&gt;   server.pem       538 bytes</span></span></code></pre></div>
+<span><span class="co">#&gt;   server.pem       542 bytes</span></span></code></pre></div>
 <p>Seven files. Let’s look at each important one.</p>
 <div class="section level3">
 <h3 id="the-ca-certificate-root-of-trust">The CA certificate (root of trust)<a class="anchor" aria-label="anchor" href="#the-ca-certificate-root-of-trust"></a>
@@ -120,12 +120,12 @@ Let’s see what it produces:</p>
 <code class="sourceCode R"><span><span class="va">ca_lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">certs</span><span class="op">$</span><span class="va">ca_cert_path</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">ca_lines</span>, collapse <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; -----BEGIN CERTIFICATE-----</span></span>
-<span><span class="co">#&gt; MIIBGzCBwgIJALucD8RsGVzXMAoGCCqGSM49BAMCMBYxFDASBgNVBAMMC2RzRmxv</span></span>
-<span><span class="co">#&gt; d2VyLUNBMB4XDTI2MDMxNzE4MjgwNVoXDTI2MDMxODE4MjgwNVowFjEUMBIGA1UE</span></span>
-<span><span class="co">#&gt; AwwLZHNGbG93ZXItQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAATaQsTDlmB0</span></span>
-<span><span class="co">#&gt; PFce6FrkQA9vOHPlLf/9LBpMELMbSDCaieVOK/oakzbi7qUQQr1B6ciEwv5KiLZ3</span></span>
-<span><span class="co">#&gt; 6cQBnIbuHjU7MAoGCCqGSM49BAMCA0gAMEUCIHx3b/47cSxpIEPhQIfjYRdEjfLG</span></span>
-<span><span class="co">#&gt; e4NWeqf/+yZoy2aVAiEAgWlTpmBPH7ey7gLgn+EDFebhisi0nKGel3PFjS7Bmz8=</span></span>
+<span><span class="co">#&gt; MIIBHDCBwgIJALM7yMnZLwDIMAoGCCqGSM49BAMCMBYxFDASBgNVBAMMC2RzRmxv</span></span>
+<span><span class="co">#&gt; d2VyLUNBMB4XDTI2MDMxODA2NDAxOVoXDTI2MDMxOTA2NDAxOVowFjEUMBIGA1UE</span></span>
+<span><span class="co">#&gt; AwwLZHNGbG93ZXItQ0EwWTATBgcqhkjOPQIBBggqhkjOPQMBBwNCAARP9hhZQacY</span></span>
+<span><span class="co">#&gt; XpnxRzb+WP/wOgaFC4svGgM6waR0VQ2nuS99+YpGQxkpXg9crlEj/pPTTtZL3ZIS</span></span>
+<span><span class="co">#&gt; iJoUVJ5nYjdeMAoGCCqGSM49BAMCA0kAMEYCIQCCLpV8m+LAQHDr1iFYSx+lj0Z/</span></span>
+<span><span class="co">#&gt; qJt5mUHA0bAKG7eZlwIhAL9ClyaN78KsUyu9vpHh62e8EGoUO+25gvlWbUNcYDgO</span></span>
 <span><span class="co">#&gt; -----END CERTIFICATE-----</span></span></code></pre></div>
 <p>This CA certificate gets distributed to every Opal. The CA private
 key (<code>ca.key</code>) never leaves your machine:</p>
@@ -176,14 +176,14 @@ certificate is valid for:</p>
 <code class="sourceCode R"><span><span class="va">srv_lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readLines.html" class="external-link">readLines</a></span><span class="op">(</span><span class="va">certs</span><span class="op">$</span><span class="va">srv_cert_path</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">srv_lines</span>, collapse <span class="op">=</span> <span class="st">"\n"</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; -----BEGIN CERTIFICATE-----</span></span>
-<span><span class="co">#&gt; MIIBYTCCAQmgAwIBAgIJAKJo/nhXfQ27MAkGByqGSM49BAEwFjEUMBIGA1UEAwwL</span></span>
-<span><span class="co">#&gt; ZHNGbG93ZXItQ0EwHhcNMjYwMzE3MTgyODA1WhcNMjYwMzE4MTgyODA1WjAdMRsw</span></span>
+<span><span class="co">#&gt; MIIBYzCCAQmgAwIBAgIJAJ1Nekd88VsJMAkGByqGSM49BAEwFjEUMBIGA1UEAwwL</span></span>
+<span><span class="co">#&gt; ZHNGbG93ZXItQ0EwHhcNMjYwMzE4MDY0MDE5WhcNMjYwMzE5MDY0MDE5WjAdMRsw</span></span>
 <span><span class="co">#&gt; GQYDVQQDDBJkc0Zsb3dlci1TdXBlckxpbmswWTATBgcqhkjOPQIBBggqhkjOPQMB</span></span>
-<span><span class="co">#&gt; BwNCAAT9S9cZMkADY4oZJarad4vIYQLpouu8LP9+RBcG53PF+7WL5BoXGlcGq/pB</span></span>
-<span><span class="co">#&gt; 2EW18eevGtMLTVFAJg5A/+r1kwq0ozowODA2BgNVHREELzAtgglsb2NhbGhvc3SC</span></span>
-<span><span class="co">#&gt; FGhvc3QuZG9ja2VyLmludGVybmFshwR/AAABhwTAqAFZMAkGByqGSM49BAEDRwAw</span></span>
-<span><span class="co">#&gt; RAIgUSNcnf2vb87Oh8JUR2zo31aXolFLR/f9bDoWAXHEPygCIARtbS6jWODhI7v9</span></span>
-<span><span class="co">#&gt; X58F5Fp/dbNVYWyUAyO795JnHEBE</span></span>
+<span><span class="co">#&gt; BwNCAATS6eUgPw0u23rUb2MfB81RVnmULkmr9+NuIxzJXwPzUFwNWwHyxu0tdGaU</span></span>
+<span><span class="co">#&gt; vJUo0Mdf1dRFmudsXhbZy817m2ZwozowODA2BgNVHREELzAtgglsb2NhbGhvc3SC</span></span>
+<span><span class="co">#&gt; FGhvc3QuZG9ja2VyLmludGVybmFshwR/AAABhwTAqAFZMAkGByqGSM49BAEDSQAw</span></span>
+<span><span class="co">#&gt; RgIhAO24QblzPBLaW24qC0SI0ve6WUipJzTXHGv+jgynb0WIAiEA0AN8xyLo/68X</span></span>
+<span><span class="co">#&gt; A3zSF3xQRKTcAArUsocB5Y9exLbe7Hs=</span></span>
 <span><span class="co">#&gt; -----END CERTIFICATE-----</span></span></code></pre></div>
 <p>This is what the SuperLink presents during the TLS handshake.
 SuperNodes verify it against the CA certificate.</p>
@@ -193,25 +193,26 @@ SuperNodes verify it against the CA certificate.</p>
 </h3>
 <p>All seven steps take roughly 5 milliseconds total (EC P-256 is
 fast):</p>
-<pre><code>1. Sys.which("openssl")          → find the binary
-2. ecparam -name prime256v1      → probe EC support
-3. Write san.cnf                 → SAN configuration
-4. ecparam -genkey + req -x509   → CA key + self-signed cert (1-day expiry)
-5. ecparam -genkey + req + x509  → server key + CSR + sign with CA
-6. Sys.chmod("ca.key", "0600")   → restrict permissions
-7. readLines("ca.pem")           → load PEM for distribution</code></pre>
-<p>We use <code>-extfile san.cnf</code> instead of <code>-addext</code>
-because <code>-addext</code> is not supported by LibreSSL (the default
-on macOS).</p>
+<pre><code>1. Sys.which("openssl")          -&gt; find the binary
+2. ecparam -name prime256v1      -&gt; probe EC support
+3. Write san.cnf                 -&gt; SAN configuration
+4. ecparam -genkey + req -x509   -&gt; CA key + self-signed cert (1-day expiry)
+5. ecparam -genkey + req + x509  -&gt; server key + CSR + sign with CA
+6. Sys.chmod("ca.key", "0600")   -&gt; restrict permissions
+7. readLines("ca.pem")           -&gt; load PEM for distribution</code></pre>
+<p>We use <code>-extfile san.cnf</code> for SANs instead of
+<code>-addext</code> for compatibility with both OpenSSL and LibreSSL
+(the default on macOS).</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"OpenSSL version:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/system2.html" class="external-link">system2</a></span><span class="op">(</span><span class="st">"openssl"</span>, <span class="st">"version"</span>, stdout <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; OpenSSL version: LibreSSL 3.3.6</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="live-demo-insecure-vs-tls">Live demo: insecure vs TLS<a class="anchor" aria-label="anchor" href="#live-demo-insecure-vs-tls"></a>
+<h2 id="live-demo-tls-encrypted-training-across-3-sites">Live demo: TLS-encrypted training across 3 sites<a class="anchor" aria-label="anchor" href="#live-demo-tls-encrypted-training-across-3-sites"></a>
 </h2>
-<p>Let’s connect to three real Opal servers and compare both modes.</p>
+<p>Let’s connect to three real Opal servers and run federated training
+with TLS encryption on the gRPC channel.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
@@ -235,28 +236,23 @@ on macOS).</p>
 <span><span class="co">#&gt; Logging into the collaborating servers</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Connected to:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Connected to: site_a, site_b, site_c</span></span></code></pre></div>
-<div class="section level3">
-<h3 id="insecure-mode">Insecure mode<a class="anchor" aria-label="anchor" href="#insecure-mode"></a>
-</h3>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.init.html">ds.flower.nodes.init</a></span><span class="op">(</span><span class="va">conns</span>, resource <span class="op">=</span> <span class="st">"dsflower_test.flower_node"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.prepare.html">ds.flower.nodes.prepare</a></span><span class="op">(</span><span class="va">conns</span>, target_column <span class="op">=</span> <span class="st">"target"</span>,</span>
 <span>                               feature_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"f1"</span>, <span class="st">"f2"</span>, <span class="st">"f3"</span>, <span class="st">"f4"</span>, <span class="st">"f5"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span>insecure <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
-<span><span class="va">status_insecure</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.superlink.status.html">ds.flower.superlink.status</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"Insecure mode:\n"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Insecure mode:</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Running:       %s\n"</span>, <span class="va">status_insecure</span><span class="op">$</span><span class="va">running</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Running:       TRUE</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Insecure:      %s\n"</span>, <span class="va">status_insecure</span><span class="op">$</span><span class="va">insecure</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Insecure:      TRUE</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  TLS cert:      %s\n"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">status_insecure</span><span class="op">$</span><span class="va">ca_cert_pem</span><span class="op">)</span>, <span class="st">"none"</span>, <span class="st">"present"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   TLS cert:      none</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Federation ID: %s\n"</span>, <span class="va">status_insecure</span><span class="op">$</span><span class="va">federation_id</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Federation ID: fl-ieexombeu7fd</span></span>
+<span><span class="va">status</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.superlink.status.html">ds.flower.superlink.status</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"SuperLink running:   %s\n"</span>, <span class="va">status</span><span class="op">$</span><span class="va">running</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; SuperLink running:   TRUE</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  TLS cert:          %s\n"</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">ca_cert_pem</span><span class="op">)</span>, <span class="st">"none"</span>,</span>
+<span>           <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">ca_cert_pem</span>, <span class="fl">1</span>, <span class="fl">27</span><span class="op">)</span>, <span class="st">"... ("</span>,</span>
+<span>                  <span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar</a></span><span class="op">(</span><span class="va">status</span><span class="op">$</span><span class="va">ca_cert_pem</span><span class="op">)</span>, <span class="st">" chars)"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   TLS cert:          -----BEGIN CERTIFICATE-----... (443 chars)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Federation ID:     %s\n"</span>, <span class="va">status</span><span class="op">$</span><span class="va">federation_id</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   Federation ID:     fl-ieexombeu7fd</span></span>
 <span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092</span></span>
@@ -275,104 +271,16 @@ on macOS).</p>
 <span>  feature_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"f1"</span>, <span class="st">"f2"</span>, <span class="st">"f3"</span>, <span class="st">"f4"</span>, <span class="st">"f5"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nTraining (insecure, 3 sites, 3 rounds)...\n\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Training (insecure, 3 sites, 3 rounds)...</span></span>
-<span><span class="va">run_insecure</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
-<span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
-<span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 1743725714196021799</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=3, no round_timeout</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Requesting initial parameters from one random client</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Received initial parameters from one random client</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting evaluation of initial global parameters</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Evaluation returned no results (`None`)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [ROUND 1]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #FFFF55;">WARNING </span>:   No fit_metrics_aggregation_fn provided</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #FFFF55;">WARNING </span>:   No evaluate_metrics_aggregation_fn provided</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [ROUND 2]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [ROUND 3]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_fit: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 51.29s</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.14106420993565436</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103147463155039</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.1410312734848389</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `1743725714196021799`</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nExit status: %s\n"</span>, <span class="va">run_insecure</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Exit status: 0</span></span>
-<span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.cleanup.html">ds.flower.nodes.cleanup</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.stop.html">ds.flower.superlink.stop</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="tls-mode">TLS mode<a class="anchor" aria-label="anchor" href="#tls-mode"></a>
-</h3>
-<p>Now the same thing with encryption. Only one line changes:
-<code>insecure = FALSE</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.init.html">ds.flower.nodes.init</a></span><span class="op">(</span><span class="va">conns</span>, resource <span class="op">=</span> <span class="st">"dsflower_test.flower_node"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.prepare.html">ds.flower.nodes.prepare</a></span><span class="op">(</span><span class="va">conns</span>, target_column <span class="op">=</span> <span class="st">"target"</span>,</span>
-<span>                               feature_columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"f1"</span>, <span class="st">"f2"</span>, <span class="st">"f3"</span>, <span class="st">"f4"</span>, <span class="st">"f5"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.start.html">ds.flower.superlink.start</a></span><span class="op">(</span>insecure <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">2</span><span class="op">)</span></span>
-<span><span class="va">status_tls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.superlink.status.html">ds.flower.superlink.status</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"TLS mode:\n"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; TLS mode:</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Running:       %s\n"</span>, <span class="va">status_tls</span><span class="op">$</span><span class="va">running</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Running:       TRUE</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Insecure:      %s\n"</span>, <span class="va">status_tls</span><span class="op">$</span><span class="va">insecure</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Insecure:      FALSE</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  TLS cert:      %s\n"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">status_tls</span><span class="op">$</span><span class="va">ca_cert_pem</span><span class="op">)</span>, <span class="st">"none"</span>,</span>
-<span>           <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">status_tls</span><span class="op">$</span><span class="va">ca_cert_pem</span>, <span class="fl">1</span>, <span class="fl">27</span><span class="op">)</span>, <span class="st">"... ("</span>,</span>
-<span>                  <span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar</a></span><span class="op">(</span><span class="va">status_tls</span><span class="op">$</span><span class="va">ca_cert_pem</span><span class="op">)</span>, <span class="st">" chars)"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   TLS cert:      -----BEGIN CERTIFICATE-----... (443 chars)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Federation ID: %s\n"</span>, <span class="va">status_tls</span><span class="op">$</span><span class="va">federation_id</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Federation ID: fl-g5fivj57qv4a</span></span>
-<span></span>
-<span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Warning: site_c cannot reach SuperLink at host.docker.internal:9092</span></span>
-<span><span class="co">#&gt; (There are some DataSHIELD errors, list them with datashield.errors())</span></span>
-<span><span class="co">#&gt; Warning: Some nodes failed connectivity check: site_c. Consider providing</span></span>
-<span><span class="co">#&gt; per-node superlink_address for those nodes.</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Sys.sleep.html" class="external-link">Sys.sleep</a></span><span class="op">(</span><span class="fl">10</span><span class="op">)</span></span>
-<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nTraining (TLS encrypted, 3 sites, 3 rounds)...\n\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Training (TLS encrypted, 3 sites, 3 rounds)...</span></span>
-<span><span class="va">run_tls</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
+<span><span class="va">run</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpA689wa/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
 <span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
 <span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 7966990835034737904</span></span>
+<span><span class="co">#&gt; 🎊 Successfully started run 16387788166003670182</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpcIYWOw/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
+<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpA689wa/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9921d28d.</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting Flower ServerApp, config: num_rounds=3, no round_timeout</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [INIT]</span></span>
@@ -402,24 +310,22 @@ on macOS).</p>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      [SUMMARY]</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 51.26s</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Run finished 3 round(s) in 57.21s</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:          History (loss, distributed):</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 1: 0.14109970773484848</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.14103161567624484</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127456124395</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 2: 0.141031615676245</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:              round 3: 0.14103127456124406</span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      </span></span>
 <span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:</span></span>
-<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `7966990835034737904`</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nExit status: %s\n"</span>, <span class="va">run_tls</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #55FF55;">INFO </span>:      Starting logstream for run_id `16387788166003670182`</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"\nExit status: %s\n"</span>, <span class="va">run</span><span class="op">$</span><span class="va">status</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Exit status: 0</span></span>
 <span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.nodes.cleanup.html">ds.flower.nodes.cleanup</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu">quiet</span><span class="op">(</span><span class="fu"><a href="../reference/ds.flower.superlink.stop.html">ds.flower.superlink.stop</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<p>The loss values are comparable. TLS is transparent to the training
-protocol: the only difference is that all gRPC traffic was
-encrypted.</p>
-</div>
+<p>All gRPC traffic (model weights, gradients, evaluation metrics) was
+encrypted in transit. TLS is transparent to the training protocol.</p>
 </div>
 <div class="section level2">
 <h2 id="how-the-ca-cert-reaches-the-opals">How the CA cert reaches the Opals<a class="anchor" aria-label="anchor" href="#how-the-ca-cert-reaches-the-opals"></a>
@@ -434,17 +340,13 @@ encrypted.</p>
 <h2 id="certificate-lifecycle">Certificate lifecycle<a class="anchor" aria-label="anchor" href="#certificate-lifecycle"></a>
 </h2>
 <table class="table">
-<colgroup>
-<col width="33%">
-<col width="66%">
-</colgroup>
 <thead><tr class="header">
 <th align="left">Event</th>
 <th align="left">What happens</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
-<td align="left"><code>superlink.start(insecure=FALSE)</code></td>
+<td align="left"><code>superlink.start()</code></td>
 <td align="left">Certs generated in temp dir (~5ms)</td>
 </tr>
 <tr class="even">
