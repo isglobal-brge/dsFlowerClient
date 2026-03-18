@@ -1,6 +1,52 @@
 # Module: SuperLink Lifecycle
 # Manages the Flower SuperLink process on the researcher's machine.
 
+# --- Orphan cleanup ---
+
+#' Kill any process listening on a TCP port
+#'
+#' Finds and kills orphaned flower-superlink processes that hold our ports
+#' from crashed or abandoned R sessions. Only kills \code{flower-superlink}
+#' processes to avoid accidentally killing unrelated services.
+#'
+#' @param port Integer; the port number.
+#' @return Invisible NULL.
+#' @keywords internal
+.kill_orphan_on_port <- function(port) {
+  if (!.port_is_listening(port)) return(invisible(NULL))
+
+  tryCatch({
+    if (.Platform$OS.type == "unix") {
+      out <- suppressWarnings(
+        system2("lsof", c("-t", "-i", paste0(":", port), "-sTCP:LISTEN"),
+                stdout = TRUE, stderr = TRUE)
+      )
+      for (pid_str in out) {
+        pid <- suppressWarnings(as.integer(trimws(pid_str)))
+        if (is.na(pid)) next
+        # Only kill flower-superlink processes
+        cmd_line <- tryCatch(
+          system2("ps", c("-p", pid, "-o", "comm="),
+                  stdout = TRUE, stderr = TRUE),
+          error = function(e) ""
+        )
+        if (any(grepl("flower-superlink", cmd_line, fixed = TRUE))) {
+          message("  Cleaning up orphaned SuperLink (PID: ", pid,
+                  ") on port ", port)
+          tools::pskill(pid, signal = 15L)  # SIGTERM
+          Sys.sleep(1)
+          if (.port_is_listening(port)) {
+            tools::pskill(pid, signal = 9L)  # SIGKILL
+            Sys.sleep(0.5)
+          }
+        }
+      }
+    }
+  }, error = function(e) NULL)
+
+  invisible(NULL)
+}
+
 # --- TLS certificate generation helpers ---
 
 #' Run an openssl command with error checking
@@ -156,13 +202,18 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
                                        serverappio_port = 9091L) {
   .require_flwr_cli()
 
-  # Check if already running
+  # Check if already running (our own process)
   existing <- .dsflower_client_env$.superlink
   if (!is.null(existing) && !is.null(existing$process) &&
       existing$process$is_alive()) {
     message("SuperLink is already running (PID: ", existing$process$get_pid(), ")")
     return(invisible(existing))
   }
+
+  # Kill orphaned SuperLinks on our ports (from crashed sessions)
+  .kill_orphan_on_port(fleet_port)
+  .kill_orphan_on_port(control_port)
+  .kill_orphan_on_port(serverappio_port)
 
   # Private FLWR_HOME
   flwr_home <- file.path(tempdir(), "dsflower_superlink")
