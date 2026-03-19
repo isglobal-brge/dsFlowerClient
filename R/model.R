@@ -198,9 +198,18 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
   obj
 }
 
-#' Create an XGBoost Tabular model spec
+#' Create an XGBoost Tabular model spec (RESEARCH-ONLY)
 #'
-#' Gradient-boosted trees for structured data.
+#' Gradient-boosted trees for structured data using tree bagging aggregation.
+#'
+#' WARNING: This template is NOT available under the 'secure' or 'secure_dp'
+#' privacy profiles. Tree bagging sends complete local trees to the SuperLink,
+#' exposing individual client data structure (split thresholds, leaf values).
+#' This is incompatible with DataSHIELD's privacy model where the researcher
+#' must not access individual-level information.
+#'
+#' For secure XGBoost, use \code{ds.flower.model.xgboost_secure()} instead,
+#' which implements histogram-based aggregation with SecAgg+.
 #'
 #' @param max_depth Integer; maximum tree depth.
 #' @param eta Numeric; learning rate (shrinkage).
@@ -375,6 +384,41 @@ ds.flower.model.pytorch_lstm <- function(hidden_size = 64L,
       learning_rate = learning_rate,
       batch_size    = as.integer(batch_size),
       local_epochs  = as.integer(local_epochs)
+    )
+  )
+  class(obj) <- "dsflower_model"
+  obj
+}
+
+#' Create a Secure XGBoost model spec (Histogram Protocol)
+#'
+#' Secure federated XGBoost using histogram-based aggregation
+#' compatible with Flower SecAgg+. The server never sees individual
+#' client gradients -- only aggregated histogram sums.
+#'
+#' @param n_trees Integer; number of boosting rounds.
+#' @param max_depth Integer; maximum tree depth.
+#' @param eta Numeric; learning rate (shrinkage).
+#' @param reg_lambda Numeric; L2 regularization term.
+#' @param n_bins Integer; number of histogram bins.
+#' @param objective Character; XGBoost objective function.
+#' @return A \code{dsflower_model} S3 object.
+#' @export
+ds.flower.model.xgboost_secure <- function(n_trees = 10L, max_depth = 3L,
+                                            eta = 0.3, reg_lambda = 1.0,
+                                            n_bins = 64L,
+                                            objective = "binary:logistic") {
+  obj <- list(
+    name      = "xgboost_secure_horizontal",
+    framework = "xgboost",
+    template  = "xgboost_secure_horizontal",
+    params    = list(
+      n_trees    = as.integer(n_trees),
+      max_depth  = as.integer(max_depth),
+      eta        = eta,
+      reg_lambda = reg_lambda,
+      n_bins     = as.integer(n_bins),
+      objective  = objective
     )
   )
   class(obj) <- "dsflower_model"
