@@ -67,12 +67,14 @@ ds.flower.model.pytorch_mlp <- function(hidden_layers = c(64L, 32L),
                                          learning_rate = 0.01,
                                          batch_size = 32L,
                                          local_epochs = 1L) {
+  # Store as comma-separated string for TOML compatibility
+  hl_str <- paste(as.integer(hidden_layers), collapse = ",")
   obj <- list(
     name      = "pytorch_mlp",
     framework = "pytorch",
     template  = "pytorch_mlp",
     params    = list(
-      hidden_layers = as.integer(hidden_layers),
+      hidden_layers = hl_str,
       learning_rate = learning_rate,
       batch_size    = as.integer(batch_size),
       local_epochs  = as.integer(local_epochs)

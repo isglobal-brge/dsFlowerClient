@@ -45,7 +45,7 @@ test_that("pytorch_mlp creates correct model", {
   expect_s3_class(m, "dsflower_model")
   expect_equal(m$name, "pytorch_mlp")
   expect_equal(m$framework, "pytorch")
-  expect_equal(m$params$hidden_layers, c(64L, 32L))
+  expect_equal(m$params$hidden_layers, "64,32")
   expect_equal(m$params$learning_rate, 0.01)
   expect_equal(m$params$batch_size, 32L)
   expect_equal(m$params$local_epochs, 1L)
@@ -57,7 +57,7 @@ test_that("pytorch_mlp accepts overrides", {
     learning_rate = 0.001,
     batch_size = 64L
   )
-  expect_equal(m$params$hidden_layers, c(128L, 64L, 32L))
+  expect_equal(m$params$hidden_layers, "128,64,32")
   expect_equal(m$params$learning_rate, 0.001)
   expect_equal(m$params$batch_size, 64L)
 })
