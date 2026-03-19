@@ -21,16 +21,47 @@
 #'   hospital_b = "D_merged",
 #'   hospital_c = "D"
 #' ))
+#'
+#' # From an Opal resource (e.g. imaging+dataset://)
+#' ds.flower.nodes.init(conns, resource = "chest_xray")
 #' }
 #'
 #' @param conns DSI connections object.
 #' @param data Character or named list; symbol name(s) of data already
-#'   assigned in the DataSHIELD session.
+#'   assigned in the DataSHIELD session. Mutually exclusive with
+#'   \code{resource}.
+#' @param resource Character or NULL; name of an Opal resource to assign
+#'   and resolve before init. When provided, the resource is assigned,
+#'   resolved to a ResourceClient, and passed to \code{flowerInitDS}.
 #' @param symbol Character; symbol name for the Flower handle (default
 #'   \code{"flower"}).
 #' @return A \code{dsflower_result} with per-site init results.
 #' @export
-ds.flower.nodes.init <- function(conns, data, symbol = "flower") {
+ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
+                                  symbol = "flower") {
+  # Resource path: assign resource, resolve to client, then init
+  if (!is.null(resource)) {
+    if (!is.null(data)) {
+      stop("Specify either 'data' or 'resource', not both.", call. = FALSE)
+    }
+    res_symbol <- paste0(symbol, "_res")
+
+    # Assign the resource on each server
+    DSI::datashield.assign.resource(conns, symbol = res_symbol,
+                                     resource = resource)
+    # Resolve to ResourceClient
+    DSI::datashield.assign.expr(
+      conns,
+      symbol = res_symbol,
+      expr = call("as.resource.client", as.name(res_symbol))
+    )
+    data <- res_symbol
+  }
+
+  if (is.null(data)) {
+    stop("Either 'data' or 'resource' must be provided.", call. = FALSE)
+  }
+
   srv_names <- names(conns)
   data_symbols <- if (is.list(data)) data else {
     stats::setNames(rep(data, length(srv_names)), srv_names)
