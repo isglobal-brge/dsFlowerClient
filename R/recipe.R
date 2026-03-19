@@ -10,14 +10,14 @@
 #' @param task A \code{dsflower_task} object.
 #' @param model A \code{dsflower_model} object.
 #' @param strategy A \code{dsflower_strategy} object.
-#' @param privacy A \code{dsflower_privacy} object (default: research mode).
+#' @param privacy A \code{dsflower_privacy} object (default: clinical_default).
 #' @param num_rounds Integer; number of federated training rounds.
 #' @param target_column Character; name of the target column.
 #' @param feature_columns Character vector; names of feature columns, or NULL.
 #' @return A \code{dsflower_recipe} S3 object.
 #' @export
 ds.flower.recipe <- function(task, model, strategy,
-                              privacy = ds.flower.privacy.research(),
+                              privacy = ds.flower.privacy.clinical_default(),
                               num_rounds = 5L,
                               target_column = "target",
                               feature_columns = NULL) {

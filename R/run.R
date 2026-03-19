@@ -48,6 +48,31 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   recipe$strategy$params$min_fit_clients <- as.integer(n_clients)
   recipe$strategy$params$min_available_clients <- as.integer(n_clients)
 
+  # Enforce min_clients_per_round from server trust profiles
+  caps <- tryCatch(
+    .ds_safe_aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
+    error = function(e) NULL
+  )
+  if (!is.null(caps)) {
+    min_clients_required <- max(vapply(caps, function(c) {
+      c$trust_profile$min_clients_per_round %||% 1L
+    }, integer(1)))
+    if (n_clients < min_clients_required) {
+      stop("Insufficient clients: ", n_clients, " connected but the trust ",
+           "profile requires at least ", min_clients_required, " clients.",
+           call. = FALSE)
+    }
+
+    # Enforce fixed_client_sampling: if any server requires it, force
+    # fraction_fit = 1.0 so all clients participate every round.
+    any_fixed <- any(vapply(caps, function(c) {
+      isTRUE(c$trust_profile$fixed_client_sampling)
+    }, logical(1)))
+    if (any_fixed) {
+      recipe$strategy$params$fraction_fit <- 1.0
+    }
+  }
+
   # Build app if no pre-built dir provided
   if (is.null(app_dir)) {
     app_dir <- .build_flower_app(recipe, conns = conns,

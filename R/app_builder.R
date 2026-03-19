@@ -162,7 +162,10 @@ ds.flower.templates <- function(conns) {
 
   # SecAgg and metric suppression flags (passed via run_config to server_app)
   # These are informational in pyproject.toml; the server enforces via manifest.
-  if (recipe$privacy$mode %in% c("secure", "dp")) {
+  secagg_profiles <- c("clinical_default", "clinical_hardened",
+                       "clinical_dp", "high_sensitivity_dp",
+                       "secure", "dp")
+  if (recipe$privacy$mode %in% secagg_profiles) {
     config_lines <- c(config_lines,
       'require-secure-aggregation = true',
       'allow-per-node-metrics = false'
@@ -172,6 +175,37 @@ ds.flower.templates <- function(conns) {
       'require-secure-aggregation = false',
       'allow-per-node-metrics = true'
     )
+  }
+
+  # evaluation_only flag
+  if (isTRUE(recipe$privacy$params$evaluation_only)) {
+    config_lines <- c(config_lines, 'evaluation-only = true')
+  } else {
+    config_lines <- c(config_lines, 'evaluation-only = false')
+  }
+
+  # dp-scope
+  dp_scope_profiles <- c("clinical_dp", "high_sensitivity_dp")
+  if (recipe$privacy$mode %in% dp_scope_profiles) {
+    dp_scope <- if (recipe$privacy$mode == "high_sensitivity_dp") {
+      "patient_level_dp_sgd"
+    } else {
+      "update_noise_only"
+    }
+    config_lines <- c(config_lines,
+      paste0('dp-scope = "', dp_scope, '"'))
+  } else {
+    config_lines <- c(config_lines, 'dp-scope = "none"')
+  }
+
+  # fixed-client-sampling
+  fixed_sampling_profiles <- c("consortium_internal", "clinical_default",
+                                "clinical_hardened", "clinical_dp",
+                                "high_sensitivity_dp")
+  if (recipe$privacy$mode %in% fixed_sampling_profiles) {
+    config_lines <- c(config_lines, 'fixed-client-sampling = true')
+  } else {
+    config_lines <- c(config_lines, 'fixed-client-sampling = false')
   }
 
   deps <- .template_dependencies(recipe$model$framework)
