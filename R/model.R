@@ -176,12 +176,18 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
                                                 learning_rate = 0.01,
                                                 batch_size = 32L,
                                                 local_epochs = 1L) {
+  # Store as comma-separated string for TOML compatibility
+  hl_str <- if (length(hidden_layers) > 0) {
+    paste(as.integer(hidden_layers), collapse = ",")
+  } else {
+    ""
+  }
   obj <- list(
     name      = "pytorch_multiclass",
     framework = "pytorch",
     template  = "pytorch_multiclass",
     params    = list(
-      hidden_layers = as.integer(hidden_layers),
+      hidden_layers = hl_str,
       n_classes     = as.integer(n_classes),
       learning_rate = learning_rate,
       batch_size    = as.integer(batch_size),

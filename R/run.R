@@ -234,7 +234,10 @@ ds.flower.run.stop <- function(run_id) {
   params <- lapply(seq_along(param_names), function(i) {
     vals <- unlist(raw[[param_names[i]]])
     shape <- unlist(shapes[[i]])
-    if (length(shape) == 1) {
+    if (is.null(shape) || length(shape) == 0 || any(shape == 0)) {
+      # Scalar or empty tensor (e.g. BatchNorm num_batches_tracked)
+      vals
+    } else if (length(shape) == 1) {
       array(vals, dim = shape)
     } else if (length(shape) == 2) {
       matrix(vals, nrow = shape[1], ncol = shape[2], byrow = TRUE)

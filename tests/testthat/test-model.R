@@ -94,14 +94,14 @@ test_that("pytorch_multiclass creates correct model", {
   expect_equal(m$name, "pytorch_multiclass")
   expect_equal(m$framework, "pytorch")
   expect_equal(m$params$n_classes, 3L)
-  expect_equal(m$params$hidden_layers, integer(0))
+  expect_equal(m$params$hidden_layers, "")
 })
 
 test_that("pytorch_multiclass accepts overrides", {
   m <- ds.flower.model.pytorch_multiclass(
     hidden_layers = c(64L, 32L), n_classes = 5L
   )
-  expect_equal(m$params$hidden_layers, c(64L, 32L))
+  expect_equal(m$params$hidden_layers, "64,32")
   expect_equal(m$params$n_classes, 5L)
 })
 
