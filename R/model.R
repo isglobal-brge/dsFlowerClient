@@ -542,23 +542,27 @@ ds.flower.model.pytorch_multilabel <- function(n_labels = 2L,
   obj
 }
 
-#' Create an Accelerated Failure Time model spec
+#' Create a Log-Normal AFT survival model spec
 #'
-#' Parametric survival model with log-normal distribution.
+#' Log-normal Accelerated Failure Time parametric survival model.
 #' Alternative to Cox PH when proportional hazards assumption fails.
+#' Predicts log(T) = X*beta + sigma*epsilon, epsilon ~ N(0,1).
+#'
+#' NOTE: This is specifically log-normal AFT, not the full AFT family
+#' (Weibull, log-logistic, etc.).
 #'
 #' @param learning_rate Numeric; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
-ds.flower.model.pytorch_aft <- function(learning_rate = 0.01,
+ds.flower.model.pytorch_lognormal_aft <- function(learning_rate = 0.01,
                                          batch_size = 32L,
                                          local_epochs = 1L) {
   obj <- list(
-    name      = "pytorch_aft",
+    name      = "pytorch_lognormal_aft",
     framework = "pytorch",
-    template  = "pytorch_aft",
+    template  = "pytorch_lognormal_aft",
     params    = list(learning_rate = learning_rate,
                      batch_size = as.integer(batch_size),
                      local_epochs = as.integer(local_epochs))
@@ -567,10 +571,13 @@ ds.flower.model.pytorch_aft <- function(learning_rate = 0.01,
   obj
 }
 
-#' Create a Competing Risks model spec
+#' Create a Cause-Specific Cox model spec
 #'
-#' Multi-cause survival analysis (Fine-Gray style). Separate
-#' sub-hazard per cause via cause-specific Cox partial likelihood.
+#' Multi-cause survival analysis via cause-specific hazard modeling.
+#' Separate Cox partial likelihood per event cause.
+#'
+#' NOTE: This is cause-specific hazard modeling, NOT Fine-Gray
+#' sub-distribution hazards. Each cause has its own Cox PH model.
 #'
 #' @param n_causes Integer; number of competing event types.
 #' @param learning_rate Numeric; learning rate.
@@ -578,14 +585,14 @@ ds.flower.model.pytorch_aft <- function(learning_rate = 0.01,
 #' @param local_epochs Integer; local training epochs.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
-ds.flower.model.pytorch_competing_risks <- function(n_causes = 2L,
+ds.flower.model.pytorch_cause_specific_cox <- function(n_causes = 2L,
                                                       learning_rate = 0.01,
                                                       batch_size = 32L,
                                                       local_epochs = 1L) {
   obj <- list(
-    name      = "pytorch_competing_risks",
+    name      = "pytorch_cause_specific_cox",
     framework = "pytorch",
-    template  = "pytorch_competing_risks",
+    template  = "pytorch_cause_specific_cox",
     params    = list(n_causes = as.integer(n_causes),
                      learning_rate = learning_rate,
                      batch_size = as.integer(batch_size),
