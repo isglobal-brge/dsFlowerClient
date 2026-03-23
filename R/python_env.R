@@ -100,6 +100,63 @@
   env
 }
 
+# --- On-demand framework dependency install ---
+
+.FRAMEWORK_CLIENT_DEPS <- list(
+  sklearn = c("scikit-learn>=1.0.0", "numpy>=1.21.0", "pandas>=1.3.0",
+              "pyarrow>=10.0.0", "joblib"),
+  pytorch = c("torch>=2.0.0", "numpy>=1.21.0", "pandas>=1.3.0",
+              "pyarrow>=10.0.0"),
+  pytorch_vision = c("torch>=2.0.0", "torchvision>=0.15.0", "Pillow>=9.0.0",
+                     "numpy>=1.21.0", "pandas>=1.3.0", "pyarrow>=10.0.0"),
+  xgboost = c("xgboost>=1.7.0", "numpy>=1.21.0", "pandas>=1.3.0",
+              "pyarrow>=10.0.0")
+)
+
+.FRAMEWORK_CHECK_MODULE <- list(
+  sklearn = "sklearn", pytorch = "torch",
+  pytorch_vision = "torchvision", xgboost = "xgboost"
+)
+
+#' Ensure ML framework dependencies are installed in the client venv
+#'
+#' Checks if the framework's Python packages are available.
+#' Installs them on-demand if missing. Called automatically before
+#' training and prediction.
+#'
+#' @param framework Character; "sklearn", "pytorch", "pytorch_vision", or "xgboost".
+#' @return Invisible TRUE.
+#' @keywords internal
+.ensure_client_framework <- function(framework) {
+  check_mod <- .FRAMEWORK_CHECK_MODULE[[framework]]
+  if (is.null(check_mod)) return(invisible(TRUE))
+
+  python <- .client_python_cmd()
+  rc <- suppressWarnings(
+    system2(python, c("-c", shQuote(paste0("import ", check_mod))),
+            stdout = FALSE, stderr = FALSE)
+  )
+  if (rc == 0L) return(invisible(TRUE))
+
+  deps <- .FRAMEWORK_CLIENT_DEPS[[framework]]
+  if (is.null(deps)) return(invisible(TRUE))
+
+  message("dsFlowerClient: installing ", framework, " dependencies...")
+  uv <- .ensure_client_uv()
+  result <- processx::run(
+    command = uv,
+    args = c("pip", "install", "--python", python, "--quiet", deps),
+    error_on_status = FALSE,
+    timeout = 600
+  )
+  if (result$status != 0L) {
+    stop("Failed to install ", framework, " dependencies:\n",
+         result$stderr, call. = FALSE)
+  }
+  message("  ", framework, " ready.")
+  invisible(TRUE)
+}
+
 #' Ensure the client Python venv exists and is healthy
 #'
 #' Downloads uv if needed, creates venv with Python 3.11, installs flwr.

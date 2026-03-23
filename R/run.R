@@ -78,6 +78,9 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     }
   }
 
+  # Ensure framework dependencies are installed on-demand
+  .ensure_client_framework(recipe$model$framework)
+
   # Build app if no pre-built dir provided
   if (is.null(app_dir)) {
     app_dir <- .build_flower_app(recipe, conns = conns,

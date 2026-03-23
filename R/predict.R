@@ -1,16 +1,15 @@
 # Module: Prediction
-# Apply trained federated models to new data.
+# Apply trained federated models to new data via Python (native format).
 
 #' Predict with a federated model
 #'
-#' Uses the global model weights from a training run or a saved model file
-#' to generate predictions on new data. Supports all model types:
-#' sklearn_logreg, sklearn_sgd, sklearn_ridge, and pytorch_mlp.
+#' Uses the saved model in native format (joblib/pt/xgb) to generate
+#' predictions via Python. The appropriate framework dependencies are
+#' installed on-demand in the client venv if not already present.
 #'
-#' @param model A \code{dsflower_run} object, or a list loaded from a saved
-#'   model file (via \code{readRDS} or \code{jsonlite::fromJSON}).
-#' @param newdata A data.frame or matrix with the same feature columns used
-#'   during training.
+#' @param model A \code{dsflower_run} object, a saved model list (from
+#'   \code{ds.flower.load_model}), or a path to a model directory.
+#' @param newdata A data.frame or matrix with feature columns.
 #' @param type Character; \code{"response"} for predicted class (default),
 #'   \code{"prob"} for probabilities.
 #' @return A numeric vector of predictions.
@@ -18,97 +17,117 @@
 ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   type <- match.arg(type)
 
-  # Extract weights and model name from either dsflower_run or saved list
+  # Resolve model directory and framework
+  info <- .resolve_model_for_predict(model)
+  model_file <- info$model_file
+  framework <- info$framework
+
+  # Ensure framework deps are installed
+  .ensure_client_framework(framework)
+
+  # Write data to temp CSV
+  tmp_data <- tempfile(fileext = ".csv")
+  on.exit(unlink(tmp_data), add = TRUE)
+  utils::write.csv(as.data.frame(newdata), tmp_data, row.names = FALSE)
+
+  # Find predict helper script
+  helper <- system.file("python", "predict_helper.py",
+                        package = "dsFlowerClient")
+  if (!nzchar(helper)) {
+    stop("predict_helper.py not found in dsFlowerClient.", call. = FALSE)
+  }
+
+  # Run Python predict
+  python <- .client_python_cmd()
+  result <- processx::run(
+    command = python,
+    args = c(helper,
+             "--model", model_file,
+             "--data", tmp_data,
+             "--type", type,
+             "--framework", framework),
+    env = .client_venv_env(),
+    error_on_status = FALSE
+  )
+
+  if (result$status != 0L) {
+    stop("Prediction failed:\n", result$stderr, call. = FALSE)
+  }
+
+  jsonlite::fromJSON(result$stdout)
+}
+
+#' Resolve model info for prediction
+#'
+#' Finds the native model file and determines the framework.
+#'
+#' @param model dsflower_run, list, or path.
+#' @return List with model_file and framework.
+#' @keywords internal
+.resolve_model_for_predict <- function(model) {
+  # Determine model directory
+  model_dir <- NULL
   if (inherits(model, "dsflower_run")) {
-    weights <- model$weights
-    model_name <- model$model
-  } else if (is.list(model) && "weights" %in% names(model)) {
-    weights <- model$weights
-    model_name <- model$model
-  } else {
-    stop("'model' must be a dsflower_run or a saved model list.", call. = FALSE)
-  }
-
-  if (is.null(weights)) {
-    stop("No weights available in this model.", call. = FALSE)
-  }
-
-  X <- as.matrix(newdata)
-
-  if (model_name %in% c("sklearn_logreg", "sklearn_sgd", "sklearn_svm",
-                         "sklearn_elastic_net")) {
-    .predict_linear_classifier(weights, X, type)
-  } else if (model_name == "sklearn_ridge") {
-    .predict_ridge_classifier(weights, X, type)
-  } else if (model_name == "pytorch_mlp") {
-    .predict_mlp(weights, X, type)
-  } else {
-    stop("Unknown model type: ", model_name, call. = FALSE)
-  }
-}
-
-#' @keywords internal
-.predict_linear_classifier <- function(weights, X, type) {
-  coef <- drop(weights$coef)
-  if (is.matrix(coef)) coef <- as.vector(coef)
-  intercept <- as.numeric(weights$intercept)[1]
-  if (length(coef) != ncol(X)) {
-    stop(sprintf("Coefficient length (%d) does not match feature count (%d).",
-                 length(coef), ncol(X)), call. = FALSE)
-  }
-  logits <- as.vector(X %*% coef) + intercept
-  probs <- 1 / (1 + exp(-logits))
-  if (type == "prob") probs else as.integer(probs > 0.5)
-}
-
-#' @keywords internal
-.predict_ridge_classifier <- function(weights, X, type) {
-  coef <- drop(weights$coef)
-  if (is.matrix(coef)) coef <- as.vector(coef)
-  intercept <- as.numeric(weights$intercept)[1]
-  decision <- as.vector(X %*% coef) + intercept
-  if (type == "prob") {
-    1 / (1 + exp(-decision))
-  } else {
-    as.integer(decision > 0)
-  }
-}
-
-#' @keywords internal
-.predict_mlp <- function(weights, X, type) {
-  # MLP weights come as alternating [weight, bias, weight, bias, ...]
-  # Architecture: Linear -> ReLU -> ... -> Linear (output)
-  param_names <- names(weights)
-  if (is.null(param_names)) {
-    # Unnamed: assume alternating weight/bias pairs
-    n_params <- length(weights)
-    param_names <- character(n_params)
-    for (i in seq_len(n_params)) {
-      param_names[i] <- if (i %% 2 == 1) "weight" else "bias"
+    model_dir <- model$output_dir
+  } else if (is.character(model) && length(model) == 1) {
+    if (dir.exists(model)) {
+      model_dir <- model
+    } else if (file.exists(model)) {
+      # Direct file path
+      ext <- tolower(tools::file_ext(model))
+      framework <- switch(ext,
+        joblib = "sklearn", pt = "pytorch",
+        xgb = "xgboost", json = "xgboost",
+        stop("Unknown model format: ", ext, call. = FALSE))
+      return(list(model_file = model, framework = framework))
+    }
+  } else if (is.list(model)) {
+    # Loaded model list -- check for source directory
+    if (!is.null(model$source_dir)) model_dir <- model$source_dir
+    if (is.null(model_dir) && !is.null(model$template)) {
+      # Try to find by framework
+      fw <- if (grepl("sklearn", model$template)) "sklearn"
+            else if (grepl("xgboost", model$template)) "xgboost"
+            else "pytorch"
+      # Need model_dir to find the file
+      stop("Cannot predict from in-memory model list without a model directory. ",
+           "Pass the output_dir path instead.", call. = FALSE)
     }
   }
 
-  # Forward pass
-  h <- X
-  n_layers <- length(weights) %/% 2
-  for (i in seq_len(n_layers)) {
-    W <- weights[[(i - 1) * 2 + 1]]  # weight matrix
-    b <- weights[[(i - 1) * 2 + 2]]  # bias vector
+  if (is.null(model_dir) || !dir.exists(model_dir)) {
+    stop("Cannot resolve model directory for prediction.", call. = FALSE)
+  }
 
-    if (is.matrix(W)) {
-      h <- h %*% t(W)  # PyTorch stores weights as (out, in)
-    } else {
-      h <- h * as.vector(W)
-    }
-    h <- sweep(h, 2, as.vector(b), "+")
+  # Find native model file (priority: joblib > pt > xgb.json > xgb)
+  candidates <- list(
+    list(file = "model.joblib", framework = "sklearn"),
+    list(file = "model.pt", framework = "pytorch"),
+    list(file = "model.xgb.json", framework = "xgboost"),
+    list(file = "model.xgb", framework = "xgboost")
+  )
 
-    # ReLU for all layers except the last
-    if (i < n_layers) {
-      h <- pmax(h, 0)
+  for (c in candidates) {
+    path <- file.path(model_dir, c$file)
+    if (file.exists(path)) {
+      return(list(model_file = path, framework = c$framework))
     }
   }
 
-  logits <- as.vector(h)
-  probs <- 1 / (1 + exp(-logits))
-  if (type == "prob") probs else as.integer(probs > 0.5)
+  # Fallback: try global_model.json with pytorch
+  json_path <- file.path(model_dir, "global_model.json")
+  if (file.exists(json_path)) {
+    # Detect framework from metadata
+    meta_path <- file.path(model_dir, "metadata.json")
+    if (file.exists(meta_path)) {
+      meta <- jsonlite::fromJSON(meta_path)
+      if (grepl("sklearn", meta$template %||% "")) {
+        return(list(model_file = json_path, framework = "sklearn"))
+      }
+    }
+    return(list(model_file = json_path, framework = "pytorch"))
+  }
+
+  stop("No native model file found in ", model_dir,
+       ". Expected model.joblib, model.pt, or model.xgb.json.", call. = FALSE)
 }
