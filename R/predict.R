@@ -35,7 +35,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
 
   X <- as.matrix(newdata)
 
-  if (model_name %in% c("sklearn_logreg", "sklearn_sgd")) {
+  if (model_name %in% c("sklearn_logreg", "sklearn_sgd", "sklearn_svm",
+                         "sklearn_elastic_net")) {
     .predict_linear_classifier(weights, X, type)
   } else if (model_name == "sklearn_ridge") {
     .predict_ridge_classifier(weights, X, type)

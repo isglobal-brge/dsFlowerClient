@@ -79,22 +79,28 @@ ds.flower.privacy.clinical_hardened <- function() {
   obj
 }
 
-#' Create a clinical_dp privacy spec
+#' Create a clinical_update_noise privacy spec
 #'
-#' Requires differential privacy with update-level noise. SecAgg enforced.
+#' Update-level differential privacy hardening: clips weight updates and
+#' adds calibrated Gaussian noise before aggregation. SecAgg enforced.
+#'
+#' NOTE: This is NOT patient-level DP-SGD. It protects against an honest-but-
+#' curious aggregator seeing individual updates, but does not provide formal
+#' per-example privacy guarantees. For formal DP, use
+#' \code{ds.flower.privacy.high_sensitivity_dp()} which uses Opacus DP-SGD.
 #'
 #' @param epsilon Numeric; privacy budget (default 1.0).
 #' @param delta Numeric; probability of privacy leakage (default 1e-5).
-#' @param clipping_norm Numeric; gradient clipping norm (default 1.0).
-#' @return A \code{dsflower_privacy} S3 object with mode = "clinical_dp".
+#' @param clipping_norm Numeric; update clipping norm (default 1.0).
+#' @return A \code{dsflower_privacy} S3 object with mode = "clinical_update_noise".
 #' @export
-ds.flower.privacy.clinical_dp <- function(epsilon = 1.0, delta = 1e-5,
-                                           clipping_norm = 1.0) {
+ds.flower.privacy.clinical_update_noise <- function(epsilon = 1.0, delta = 1e-5,
+                                                     clipping_norm = 1.0) {
   if (epsilon <= 0) stop("epsilon must be positive.", call. = FALSE)
   if (delta <= 0 || delta >= 1) stop("delta must be in (0, 1).", call. = FALSE)
   if (clipping_norm <= 0) stop("clipping_norm must be positive.", call. = FALSE)
   obj <- list(
-    mode   = "clinical_dp",
+    mode   = "clinical_update_noise",
     params = list(
       epsilon       = epsilon,
       delta         = delta,

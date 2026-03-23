@@ -164,7 +164,7 @@ ds.flower.templates <- function(conns) {
   # SecAgg and metric suppression flags (passed via run_config to server_app)
   # These are informational in pyproject.toml; the server enforces via manifest.
   secagg_profiles <- c("clinical_default", "clinical_hardened",
-                       "clinical_dp", "high_sensitivity_dp",
+                       "clinical_update_noise", "high_sensitivity_dp",
                        "secure", "dp")
   if (recipe$privacy$mode %in% secagg_profiles) {
     config_lines <- c(config_lines,
@@ -186,7 +186,7 @@ ds.flower.templates <- function(conns) {
   }
 
   # dp-scope
-  dp_scope_profiles <- c("clinical_dp", "high_sensitivity_dp")
+  dp_scope_profiles <- c("clinical_update_noise", "high_sensitivity_dp")
   if (recipe$privacy$mode %in% dp_scope_profiles) {
     dp_scope <- if (recipe$privacy$mode == "high_sensitivity_dp") {
       "patient_level_dp_sgd"
@@ -201,7 +201,7 @@ ds.flower.templates <- function(conns) {
 
   # fixed-client-sampling
   fixed_sampling_profiles <- c("consortium_internal", "clinical_default",
-                                "clinical_hardened", "clinical_dp",
+                                "clinical_hardened", "clinical_update_noise",
                                 "high_sensitivity_dp")
   if (recipe$privacy$mode %in% fixed_sampling_profiles) {
     config_lines <- c(config_lines, 'fixed-client-sampling = true')

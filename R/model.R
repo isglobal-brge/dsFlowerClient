@@ -55,6 +55,62 @@ ds.flower.model.sklearn_sgd <- function(loss = "log_loss", alpha = 0.0001,
   obj
 }
 
+#' Create a Linear SVM model spec
+#'
+#' Convenience constructor for a linear Support Vector Machine. Internally
+#' uses the \code{sklearn_sgd} template with \code{loss = "hinge"}, which
+#' is mathematically equivalent to \code{sklearn.svm.LinearSVC}.
+#'
+#' Only linear SVMs are supported in federated learning because kernel SVMs
+#' require the full pairwise kernel matrix (all data in one place).
+#'
+#' @param alpha Numeric; regularization constant (analogous to 1/C in SVC).
+#'   Smaller values = less regularization.
+#' @param lr_schedule Character; learning rate schedule.
+#' @return A \code{dsflower_model} S3 object using the sklearn_sgd template.
+#' @export
+ds.flower.model.sklearn_svm <- function(alpha = 0.0001,
+                                         lr_schedule = "optimal") {
+  obj <- list(
+    name      = "sklearn_svm",
+    framework = "sklearn",
+    template  = "sklearn_sgd",
+    params    = list(loss = "hinge", alpha = alpha, lr_schedule = lr_schedule)
+  )
+  class(obj) <- "dsflower_model"
+  obj
+}
+
+#' Create an Elastic Net model spec
+#'
+#' Convenience constructor for Elastic Net regularization (L1 + L2 penalty).
+#' Internally uses the \code{sklearn_sgd} template with
+#' \code{penalty = "elasticnet"}. Useful for variable selection in
+#' high-dimensional data (genomics, radiomics).
+#'
+#' @param l1_ratio Numeric; mixing parameter (0 = L2 only, 1 = L1 only).
+#'   Default 0.15.
+#' @param alpha Numeric; regularization constant. Default 0.0001.
+#' @param loss Character; loss function. Default "log_loss" (logistic).
+#' @return A \code{dsflower_model} S3 object using the sklearn_sgd template.
+#' @export
+ds.flower.model.sklearn_elastic_net <- function(l1_ratio = 0.15,
+                                                 alpha = 0.0001,
+                                                 loss = "log_loss") {
+  if (l1_ratio < 0 || l1_ratio > 1) {
+    stop("l1_ratio must be between 0 and 1.", call. = FALSE)
+  }
+  obj <- list(
+    name      = "sklearn_elastic_net",
+    framework = "sklearn",
+    template  = "sklearn_sgd",
+    params    = list(loss = loss, alpha = alpha, penalty = "elasticnet",
+                     l1_ratio = l1_ratio)
+  )
+  class(obj) <- "dsflower_model"
+  obj
+}
+
 #' Create a PyTorch MLP model spec
 #'
 #' @param hidden_layers Integer vector; hidden layer sizes.
