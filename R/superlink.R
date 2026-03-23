@@ -83,7 +83,7 @@
 #' @return A named list with ca_cert_path, ca_key_path, srv_cert_path,
 #'   srv_key_path, and ca_cert_pem.
 #' @keywords internal
-.generate_tls_certs <- function(cert_dir, extra_sans = NULL) {
+.generate_tls_certs <- function(cert_dir, extra_sans = NULL, cert_days = 1L) {
   openssl_path <- Sys.which("openssl")
   if (!nzchar(openssl_path)) {
     stop("openssl CLI not found on PATH. ",
@@ -138,7 +138,7 @@
     "req", "-new", "-x509",
     "-key", ca_key_path,
     "-out", ca_cert_path,
-    "-days", "1",
+    "-days", as.character(cert_days),
     "-subj", "/CN=dsFlower-CA"
   ))
 
@@ -164,7 +164,7 @@
     "-CAkey", ca_key_path,
     "-CAcreateserial",
     "-out", srv_cert_path,
-    "-days", "1",
+    "-days", as.character(cert_days),
     "-extfile", san_cnf_path,
     "-extensions", "v3_req"
   ))
@@ -186,71 +186,95 @@
 
 #' Start a Flower SuperLink
 #'
-#' Spawns a \code{flower-superlink} process using processx with a private
-#' FLWR_HOME directory. Writes a \code{config.toml} so that \code{flwr run}
-#' can connect to this SuperLink.
+#' Spawns a \code{flower-superlink} process. In detached mode, the process
+#' survives R session exit and can be reattached from a new session via
+#' \code{ds.flower.superlink.attach()}.
 #'
 #' @param fleet_port Integer; port for the Fleet API (default 9092).
-#'   SuperNodes connect here.
 #' @param control_port Integer; port for the Control API (default 9093).
-#'   \code{flwr run} connects here.
 #' @param serverappio_port Integer; port for the ServerAppIO API (default 9091).
+#' @param detached Logical; if TRUE, SuperLink runs as daemon (survives
+#'   R session exit). Default FALSE for interactive use.
 #' @return Invisible list with process info.
 #' @export
 ds.flower.superlink.start <- function(fleet_port = 9092L,
                                        control_port = 9093L,
-                                       serverappio_port = 9091L) {
+                                       serverappio_port = 9091L,
+                                       detached = FALSE) {
   .require_flwr_cli()
 
-  # Check if already running (our own process)
+  # Check if already running (in-session process)
   existing <- .dsflower_client_env$.superlink
-  if (!is.null(existing) && !is.null(existing$process) &&
-      existing$process$is_alive()) {
-    message("SuperLink is already running (PID: ", existing$process$get_pid(), ")")
-    return(invisible(existing))
+  if (!is.null(existing)) {
+    alive <- if (!is.null(existing$process)) {
+      existing$process$is_alive()
+    } else {
+      .pid_is_alive_local(existing$pid)
+    }
+    if (alive) {
+      message("SuperLink is already running (PID: ", existing$pid, ")")
+      return(invisible(existing))
+    }
   }
 
-  # Kill orphaned SuperLinks on our ports (from crashed sessions)
+  # Check for existing detached SuperLink
+  if (detached) {
+    state <- .load_superlink_state()
+    if (!is.null(state) && .pid_is_alive_local(state$pid) &&
+        .port_is_listening(state$fleet_port)) {
+      message("Attaching to existing detached SuperLink (PID: ", state$pid, ")")
+      .dsflower_client_env$.superlink <- state
+      return(invisible(state))
+    }
+    .clear_superlink_state()
+  }
+
+  # Kill orphaned SuperLinks on our ports
   .kill_orphan_on_port(fleet_port)
   .kill_orphan_on_port(control_port)
   .kill_orphan_on_port(serverappio_port)
 
-  # Private FLWR_HOME
-  flwr_home <- file.path(tempdir(), "dsflower_superlink")
+  # Persistent dir for detached, tempdir for interactive
+  if (detached) {
+    base_dir <- file.path(.client_venv_root(), "superlink")
+    flwr_home <- file.path(base_dir, "flwr_home")
+    cert_dir <- file.path(base_dir, "certs")
+    log_path <- file.path(base_dir, "superlink.log")
+    cert_days <- 30L
+  } else {
+    flwr_home <- file.path(tempdir(), "dsflower_superlink")
+    cert_dir <- file.path(flwr_home, "certs")
+    log_path <- file.path(flwr_home, "superlink.log")
+    cert_days <- 1L
+  }
   dir.create(flwr_home, recursive = TRUE, showWarnings = FALSE)
 
-  # TLS certificate generation (always enabled)
-  cert_dir <- file.path(flwr_home, "certs")
-  tls_info <- .generate_tls_certs(cert_dir)
+  # TLS certificates
+  tls_info <- .generate_tls_certs(cert_dir, cert_days = cert_days)
 
-  # Build args for flower-superlink
+  # Build args
   args <- c(
     "--ssl-certfile", tls_info$srv_cert_path,
     "--ssl-keyfile", tls_info$srv_key_path,
-    "--ssl-ca-certfile", tls_info$ca_cert_path
-  )
-  args <- c(args,
+    "--ssl-ca-certfile", tls_info$ca_cert_path,
     "--fleet-api-address", paste0("0.0.0.0:", fleet_port),
     "--control-api-address", paste0("0.0.0.0:", control_port),
     "--serverappio-api-address", paste0("0.0.0.0:", serverappio_port)
   )
 
-  # Log path
-  log_path <- file.path(flwr_home, "superlink.log")
-
-  # Spawn via venv binary with clean environment
+  # Spawn -- detached processes survive R exit
   superlink_cmd <- .client_superlink_cmd()
   proc <- processx::process$new(
     command = superlink_cmd,
     args = args,
     stdout = log_path,
     stderr = "2>&1",
-    cleanup = TRUE,
-    cleanup_tree = TRUE,
+    cleanup = !detached,
+    cleanup_tree = !detached,
     env = .client_venv_env(extra = c(FLWR_HOME = flwr_home))
   )
 
-  # Write config.toml so flwr run can find this SuperLink
+  # Write config.toml for flwr run
   config_toml <- paste0(
     "[superlink]\n",
     'default = "dsflower"\n\n',
@@ -263,9 +287,6 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
   fleet_address   <- paste0("127.0.0.1:", fleet_port)
   control_address <- paste0("127.0.0.1:", control_port)
 
-  # Unique federation ID for this SuperLink instance — used to verify
-
-  # all nodes connected to the same SuperLink after ensure.
   federation_id <- paste0("fl-",
     paste(sample(c(letters, 0:9), 12, replace = TRUE), collapse = ""))
 
@@ -281,18 +302,63 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
     log_path         = log_path,
     federation_id    = federation_id,
     ca_cert_pem      = tls_info$ca_cert_pem,
+    ca_cert_path     = tls_info$ca_cert_path,
+    detached         = detached,
     started_at       = Sys.time()
   )
 
   .dsflower_client_env$.superlink <- info
 
-  # Wait for the SuperLink to be ready (listening on fleet port)
+  # Wait for ready
   .wait_superlink_ready(proc, fleet_port, log_path, timeout = 15)
 
-  message("SuperLink started (PID: ", info$pid, ")")
+  # Save state for detached reconnection
+  if (detached) .save_superlink_state(info)
+
+  message("SuperLink started",
+          if (detached) " (detached)" else "", " (PID: ", info$pid, ")")
   message("  Fleet API (SuperNodes): ", fleet_address)
   message("  Control API (flwr run): ", control_address)
+  if (detached) {
+    message("  Mode: detached -- survives R session exit")
+    message("  Reconnect with: ds.flower.superlink.attach()")
+  }
   invisible(info)
+}
+
+#' Attach to a detached SuperLink
+#'
+#' Reconnects to a SuperLink started with \code{detached = TRUE} in a
+#' previous R session. Reads the state file, verifies the process is
+#' alive and the port is listening, and restores the session state.
+#'
+#' @return Invisible list with SuperLink info.
+#' @export
+ds.flower.superlink.attach <- function() {
+  state <- .load_superlink_state()
+  if (is.null(state)) {
+    stop("No detached SuperLink state found at ",
+         .superlink_state_path(), ".", call. = FALSE)
+  }
+
+  if (!.pid_is_alive_local(state$pid)) {
+    .clear_superlink_state()
+    stop("Detached SuperLink (PID: ", state$pid,
+         ") is no longer running.", call. = FALSE)
+  }
+
+  if (!.port_is_listening(state$fleet_port)) {
+    .clear_superlink_state()
+    stop("SuperLink PID ", state$pid, " is alive but fleet port ",
+         state$fleet_port, " is not listening.", call. = FALSE)
+  }
+
+  .dsflower_client_env$.superlink <- state
+  message("Attached to detached SuperLink (PID: ", state$pid, ")")
+  message("  Fleet API: ", state$fleet_address)
+  message("  Control API: ", state$control_address)
+  message("  Running since: ", state$started_at)
+  invisible(state)
 }
 
 #' Wait for SuperLink to be ready
@@ -358,30 +424,46 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
 
 #' Stop the Flower SuperLink
 #'
-#' Sends SIGTERM, waits, then SIGKILL if needed. Cleans up temp files.
+#' Sends SIGTERM, waits, then SIGKILL if needed. Works for both
+#' interactive and detached SuperLinks.
 #'
 #' @return Invisible TRUE.
 #' @export
 ds.flower.superlink.stop <- function() {
   info <- .dsflower_client_env$.superlink
-  if (is.null(info) || is.null(info$process)) {
-    message("No SuperLink is running.")
-    return(invisible(TRUE))
-  }
-
-  proc <- info$process
-  if (proc$is_alive()) {
-    proc$signal(15L)  # SIGTERM
-    proc$wait(timeout = 5000)
-    if (proc$is_alive()) {
-      proc$kill()
+  if (is.null(info)) {
+    # Check for detached state file
+    info <- .load_superlink_state()
+    if (is.null(info)) {
+      message("No SuperLink is running.")
+      return(invisible(TRUE))
     }
   }
 
-  # Cleanup temp directory
-  if (!is.null(info$flwr_home) && dir.exists(info$flwr_home)) {
+  # Kill via processx object if available, otherwise via PID
+  if (!is.null(info$process)) {
+    proc <- info$process
+    if (proc$is_alive()) {
+      proc$signal(15L)
+      proc$wait(timeout = 5000)
+      if (proc$is_alive()) proc$kill()
+    }
+  } else if (!is.null(info$pid) && .pid_is_alive_local(info$pid)) {
+    tools::pskill(info$pid, signal = 15L)
+    Sys.sleep(2)
+    if (.pid_is_alive_local(info$pid)) {
+      tools::pskill(info$pid, signal = 9L)
+    }
+  }
+
+  # Cleanup directories (only non-detached or explicit stop)
+  if (!isTRUE(info$detached) && !is.null(info$flwr_home) &&
+      dir.exists(info$flwr_home)) {
     unlink(info$flwr_home, recursive = TRUE)
   }
+
+  # Clear state file if detached
+  .clear_superlink_state()
 
   .dsflower_client_env$.superlink <- NULL
   message("SuperLink stopped.")
@@ -391,11 +473,17 @@ ds.flower.superlink.stop <- function() {
 #' Get SuperLink status
 #'
 #' @return A named list with running, pid, fleet_address, control_address,
-#'   ports, started_at.
+#'   ports, detached, started_at.
 #' @export
 ds.flower.superlink.status <- function() {
   info <- .dsflower_client_env$.superlink
-  if (is.null(info) || is.null(info$process)) {
+
+  # Check detached state if no in-session info
+  if (is.null(info)) {
+    info <- .load_superlink_state()
+  }
+
+  if (is.null(info)) {
     return(list(
       running         = FALSE,
       pid             = NULL,
@@ -403,12 +491,19 @@ ds.flower.superlink.status <- function() {
       control_address = NULL,
       ports           = NULL,
       ca_cert_pem     = NULL,
+      detached        = FALSE,
       started_at      = NULL
     ))
   }
 
+  running <- if (!is.null(info$process)) {
+    info$process$is_alive()
+  } else {
+    .pid_is_alive_local(info$pid) && .port_is_listening(info$fleet_port)
+  }
+
   list(
-    running         = info$process$is_alive(),
+    running         = running,
     pid             = info$pid,
     fleet_address   = info$fleet_address,
     control_address = info$control_address,
@@ -419,6 +514,7 @@ ds.flower.superlink.status <- function() {
     ),
     federation_id   = info$federation_id,
     ca_cert_pem     = info$ca_cert_pem,
+    detached        = isTRUE(info$detached),
     started_at      = info$started_at
   )
 }
@@ -663,4 +759,68 @@ ds.flower.superlink.status <- function() {
   }, error = function(e) {
     list(reachable = FALSE, error = conditionMessage(e))
   })
+}
+
+# --- Detached SuperLink state management ---
+
+#' Path to the SuperLink state file
+#' @keywords internal
+.superlink_state_path <- function() {
+  file.path(.client_venv_root(), "superlink", "state.json")
+}
+
+#' Save SuperLink state for cross-session reconnection
+#' @keywords internal
+.save_superlink_state <- function(info) {
+  state <- list(
+    pid              = info$pid,
+    fleet_address    = info$fleet_address,
+    control_address  = info$control_address,
+    fleet_port       = info$fleet_port,
+    control_port     = info$control_port,
+    serverappio_port = info$serverappio_port,
+    flwr_home        = info$flwr_home,
+    log_path         = info$log_path,
+    federation_id    = info$federation_id,
+    ca_cert_pem      = info$ca_cert_pem,
+    ca_cert_path     = info$ca_cert_path,
+    detached         = TRUE,
+    started_at       = format(info$started_at, "%Y-%m-%dT%H:%M:%S")
+  )
+  path <- .superlink_state_path()
+  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
+  jsonlite::write_json(state, path, auto_unbox = TRUE, pretty = TRUE)
+}
+
+#' Load SuperLink state from file
+#' @return Named list or NULL.
+#' @keywords internal
+.load_superlink_state <- function() {
+  path <- .superlink_state_path()
+  if (!file.exists(path)) return(NULL)
+  tryCatch({
+    state <- jsonlite::fromJSON(path, simplifyVector = TRUE)
+    state$process <- NULL  # No processx object in detached mode
+    state$pid <- as.integer(state$pid)
+    state$fleet_port <- as.integer(state$fleet_port)
+    state$control_port <- as.integer(state$control_port)
+    state$serverappio_port <- as.integer(state$serverappio_port)
+    state
+  }, error = function(e) NULL)
+}
+
+#' Clear SuperLink state file
+#' @keywords internal
+.clear_superlink_state <- function() {
+  path <- .superlink_state_path()
+  if (file.exists(path)) unlink(path)
+}
+
+#' Check if a local PID is alive
+#' @keywords internal
+.pid_is_alive_local <- function(pid) {
+  tryCatch(
+    isTRUE(tools::pskill(pid, signal = 0L)),
+    error = function(e) FALSE
+  )
 }
