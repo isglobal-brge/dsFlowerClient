@@ -238,15 +238,16 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
   # Log path
   log_path <- file.path(flwr_home, "superlink.log")
 
-  # Spawn
+  # Spawn via venv binary with clean environment
+  superlink_cmd <- .client_superlink_cmd()
   proc <- processx::process$new(
-    command = "flower-superlink",
+    command = superlink_cmd,
     args = args,
     stdout = log_path,
     stderr = "2>&1",
     cleanup = TRUE,
     cleanup_tree = TRUE,
-    env = c("current", FLWR_HOME = flwr_home)
+    env = .client_venv_env(extra = c(FLWR_HOME = flwr_home))
   )
 
   # Write config.toml so flwr run can find this SuperLink
@@ -533,7 +534,8 @@ ds.flower.superlink.status <- function() {
 
   # 1. OS-routed IP (respects routing table, best for most cases)
   routed_ip <- tryCatch({
-    out <- system2("python3", c("-c",
+    python_bin <- tryCatch(.client_python_cmd(), error = function(e) "python3")
+    out <- system2(python_bin, c("-c",
       shQuote("import socket; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.connect(('8.8.8.8',80)); print(s.getsockname()[0]); s.close()")),
       stdout = TRUE, stderr = TRUE)
     addr <- trimws(out[1])

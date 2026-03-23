@@ -95,18 +95,23 @@
   paste0(fn_name, "(", paste(parts, collapse = ", "), ")")
 }
 
-#' Check that the flwr CLI is available
+#' Ensure the Flower CLI is available
+#'
+#' Checks the venv first. If not healthy, attempts to create it on-the-fly.
 #'
 #' @return Invisible TRUE, or stops with an error.
 #' @keywords internal
 .require_flwr_cli <- function() {
-  path <- Sys.which("flwr")
-  if (!nzchar(path)) {
-    stop(
-      "The 'flwr' CLI is not found on the PATH. ",
-      "Install Flower: pip install flwr",
-      call. = FALSE
-    )
-  }
+  if (.client_venv_is_healthy()) return(invisible(TRUE))
+
+  # Try to auto-provision if venv is missing
+  tryCatch(
+    .ensure_client_venv(),
+    error = function(e) {
+      stop("Flower Python environment not available. ",
+           "Reinstall dsFlowerClient or run .ensure_client_venv(). ",
+           "Error: ", conditionMessage(e), call. = FALSE)
+    }
+  )
   invisible(TRUE)
 }

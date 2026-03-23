@@ -130,7 +130,8 @@ ds.flower.templates <- function(conns) {
   # Build run_config section
   config_lines <- c(
     paste0('num-server-rounds = ', recipe$num_rounds),
-    paste0('task-type = "', recipe$task$type, '"')
+    paste0('task-type = "', recipe$task$type, '"'),
+    paste0('template-name = "', template_name, '"')
   )
 
   if (!is.null(results_dir)) {

@@ -5,6 +5,8 @@
 #'
 #' Fetches the model template from the server, builds a Flower App from
 #' the recipe, then invokes \code{flwr run} against the running SuperLink.
+#' Model weights and training history are automatically saved to
+#' \code{output_dir} after training completes.
 #'
 #' @param recipe A \code{dsflower_recipe} object.
 #' @param conns DSI connections object. Used to fetch the model template
@@ -12,11 +14,14 @@
 #'   \code{ds.flower.nodes.init}.
 #' @param app_dir Character; path to a pre-built app directory (optional).
 #' @param run_config Named list; additional run config overrides.
+#' @param output_dir Character; persistent directory for model output.
+#'   Defaults to \code{"dsflower_output/<timestamp>"} in the working directory.
 #' @param verbose Logical; print flwr output (default TRUE).
 #' @return A \code{dsflower_run} object with weights, history, and predictions.
 #' @export
 ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
-                                 run_config = list(), verbose = TRUE) {
+                                 run_config = list(), output_dir = NULL,
+                                 verbose = TRUE) {
   .require_flwr_cli()
 
   if (!inherits(recipe, "dsflower_recipe")) {
@@ -103,11 +108,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     args <- c(args, "-c", paste0(nm, "=", val))
   }
 
-  # Run via processx with FLWR_HOME pointing to our private config
+  # Run via venv flwr with FLWR_HOME pointing to our private config
+  flwr_cmd <- .client_flwr_cmd()
   result <- processx::run(
-    command = "flwr",
+    command = flwr_cmd,
     args = args,
-    env = c("current", FLWR_HOME = sl_info$flwr_home),
+    env = .client_venv_env(extra = c(FLWR_HOME = sl_info$flwr_home)),
     error_on_status = FALSE,
     timeout = 3600  # 1 hour max
   )
@@ -126,8 +132,66 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   weights <- .read_model_weights(results_dir)
   history <- .read_training_history(results_dir)
 
+  # Generate a unique model ID for identification
+  model_id <- paste0(
+    recipe$model$template, "_",
+    recipe$strategy$name, "_",
+    recipe$num_rounds, "r_",
+    format(Sys.time(), "%Y%m%d_%H%M%S")
+  )
+
+  # Auto-save to persistent output_dir
+  saved_path <- NULL
+  if (!is.null(weights) || !is.null(history)) {
+    if (is.null(output_dir)) {
+      output_dir <- file.path(".", "dsflower_output", model_id)
+    }
+    dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+    model_data <- list(
+      model_id   = model_id,
+      weights    = weights,
+      history    = history,
+      model      = recipe$model$name,
+      template   = recipe$model$template,
+      framework  = recipe$model$framework,
+      strategy   = recipe$strategy$name,
+      privacy    = recipe$privacy$mode,
+      num_rounds = recipe$num_rounds,
+      run_id     = run_id,
+      created_at = Sys.time(),
+      n_clients  = length(conns)
+    )
+    saved_path <- file.path(output_dir, "model.rds")
+    saveRDS(model_data, saved_path)
+
+    # Copy all output files (JSON, native format, history)
+    output_files <- list.files(results_dir, full.names = TRUE)
+    for (f in output_files) {
+      file.copy(f, file.path(output_dir, basename(f)), overwrite = TRUE)
+    }
+
+    # Write metadata for listing/identification
+    meta <- list(
+      model_id   = model_id,
+      model      = recipe$model$name,
+      template   = recipe$model$template,
+      strategy   = recipe$strategy$name,
+      privacy    = recipe$privacy$mode,
+      num_rounds = recipe$num_rounds,
+      n_clients  = length(conns),
+      created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
+      status     = if (result$status == 0L) "success" else "failed"
+    )
+    jsonlite::write_json(meta, file.path(output_dir, "metadata.json"),
+                         auto_unbox = TRUE, pretty = TRUE)
+
+    message("Model saved to ", output_dir)
+  }
+
   structure(
     list(
+      model_id    = model_id,
       run_id      = run_id,
       status      = result$status,
       num_rounds  = recipe$num_rounds,
@@ -135,6 +199,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       strategy    = recipe$strategy$name,
       weights     = weights,
       history     = history,
+      output_dir  = output_dir,
+      saved_path  = saved_path,
       results_dir = results_dir,
       app_dir     = app_dir,
       stdout      = clean_stdout,
@@ -153,8 +219,9 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
 ds.flower.run.list <- function() {
   .require_flwr_cli()
   sl_info <- .dsflower_client_env$.superlink
-  env <- if (!is.null(sl_info)) c("current", FLWR_HOME = sl_info$flwr_home) else "current"
-  result <- processx::run("flwr", args = c("list"), env = env,
+  extra <- if (!is.null(sl_info)) c(FLWR_HOME = sl_info$flwr_home) else NULL
+  result <- processx::run(.client_flwr_cmd(), args = c("list"),
+                          env = .client_venv_env(extra = extra),
                           error_on_status = FALSE)
   result$stdout
 }
@@ -169,8 +236,9 @@ ds.flower.run.list <- function() {
 ds.flower.run.logs <- function(run_id) {
   .require_flwr_cli()
   sl_info <- .dsflower_client_env$.superlink
-  env <- if (!is.null(sl_info)) c("current", FLWR_HOME = sl_info$flwr_home) else "current"
-  result <- processx::run("flwr", args = c("log", run_id), env = env,
+  extra <- if (!is.null(sl_info)) c(FLWR_HOME = sl_info$flwr_home) else NULL
+  result <- processx::run(.client_flwr_cmd(), args = c("log", run_id),
+                          env = .client_venv_env(extra = extra),
                           error_on_status = FALSE)
   result$stdout
 }
@@ -185,8 +253,9 @@ ds.flower.run.logs <- function(run_id) {
 ds.flower.run.stop <- function(run_id) {
   .require_flwr_cli()
   sl_info <- .dsflower_client_env$.superlink
-  env <- if (!is.null(sl_info)) c("current", FLWR_HOME = sl_info$flwr_home) else "current"
-  result <- processx::run("flwr", args = c("stop", run_id), env = env,
+  extra <- if (!is.null(sl_info)) c(FLWR_HOME = sl_info$flwr_home) else NULL
+  result <- processx::run(.client_flwr_cmd(), args = c("stop", run_id),
+                          env = .client_venv_env(extra = extra),
                           error_on_status = FALSE)
   result$stdout
 }
@@ -294,6 +363,7 @@ ds.flower.run.stop <- function(run_id) {
 #' @export
 print.dsflower_run <- function(x, ...) {
   cat("Federated Learning Run\n")
+  cat("  Model ID: ", x$model_id, "\n")
   cat("  Model:    ", x$model, "\n")
   cat("  Strategy: ", x$strategy, "\n")
   cat("  Rounds:   ", x$num_rounds, "\n")
@@ -316,7 +386,9 @@ print.dsflower_run <- function(x, ...) {
     }
   }
 
-  cat("\n  Use ds.flower.save_model() to save the trained model.\n")
+  if (!is.null(x$output_dir)) {
+    cat("\n  Output: ", x$output_dir, "\n")
+  }
   invisible(x)
 }
 
@@ -338,12 +410,14 @@ ds.flower.save_model <- function(run, path) {
   }
 
   model_data <- list(
+    model_id = run$model_id,
     weights  = run$weights,
     history  = run$history,
     model    = run$model,
     strategy = run$strategy,
     rounds   = run$num_rounds,
-    run_id   = run$run_id
+    run_id   = run$run_id,
+    saved_at = Sys.time()
   )
 
   ext <- tolower(tools::file_ext(path))
@@ -357,4 +431,131 @@ ds.flower.save_model <- function(run, path) {
 
   message("Model saved to ", path)
   invisible(path)
+}
+
+#' List saved models
+#'
+#' Scans the output directory for previously saved models and returns
+#' a summary data.frame with metadata for each.
+#'
+#' @param base_dir Character; base directory to scan.
+#'   Defaults to \code{"./dsflower_output"}.
+#' @return A data.frame with columns: model_id, model, template, strategy,
+#'   privacy, num_rounds, n_clients, created_at, status, path.
+#' @export
+ds.flower.models <- function(base_dir = file.path(".", "dsflower_output")) {
+  if (!dir.exists(base_dir)) {
+    return(data.frame(
+      model_id = character(0), model = character(0),
+      template = character(0), strategy = character(0),
+      privacy = character(0), num_rounds = integer(0),
+      n_clients = integer(0), created_at = character(0),
+      status = character(0), path = character(0),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  subdirs <- list.dirs(base_dir, recursive = FALSE, full.names = TRUE)
+  rows <- list()
+
+  for (d in subdirs) {
+    meta_path <- file.path(d, "metadata.json")
+    if (!file.exists(meta_path)) next
+    meta <- tryCatch(
+      jsonlite::fromJSON(meta_path, simplifyVector = TRUE),
+      error = function(e) NULL
+    )
+    if (is.null(meta)) next
+    rows[[length(rows) + 1L]] <- data.frame(
+      model_id   = meta$model_id %||% basename(d),
+      model      = meta$model %||% NA_character_,
+      template   = meta$template %||% NA_character_,
+      strategy   = meta$strategy %||% NA_character_,
+      privacy    = meta$privacy %||% NA_character_,
+      num_rounds = as.integer(meta$num_rounds %||% NA_integer_),
+      n_clients  = as.integer(meta$n_clients %||% NA_integer_),
+      created_at = meta$created_at %||% NA_character_,
+      status     = meta$status %||% NA_character_,
+      path       = d,
+      stringsAsFactors = FALSE
+    )
+  }
+
+  if (length(rows) == 0L) {
+    return(data.frame(
+      model_id = character(0), model = character(0),
+      template = character(0), strategy = character(0),
+      privacy = character(0), num_rounds = integer(0),
+      n_clients = integer(0), created_at = character(0),
+      status = character(0), path = character(0),
+      stringsAsFactors = FALSE
+    ))
+  }
+
+  do.call(rbind, rows)
+}
+
+#' Load a saved model
+#'
+#' Reads model weights and metadata from a previously saved output directory
+#' or \code{.rds} file.
+#'
+#' @param path Character; path to the model directory or \code{.rds} file.
+#' @return A list with model_id, weights, history, and metadata.
+#' @export
+ds.flower.load_model <- function(path) {
+  if (dir.exists(path)) {
+    rds_path <- file.path(path, "model.rds")
+    if (!file.exists(rds_path))
+      stop("No model.rds found in ", path, call. = FALSE)
+    return(readRDS(rds_path))
+  }
+
+  if (file.exists(path)) {
+    ext <- tolower(tools::file_ext(path))
+    if (ext == "rds") return(readRDS(path))
+    if (ext == "json") {
+      return(jsonlite::fromJSON(path, simplifyVector = FALSE))
+    }
+    stop("Unsupported format: ", ext, call. = FALSE)
+  }
+
+  stop("Path not found: ", path, call. = FALSE)
+}
+
+#' Delete a saved model
+#'
+#' Removes a model output directory and all its contents.
+#'
+#' @param path Character; path to the model directory.
+#' @param confirm Logical; if TRUE (default), ask for confirmation.
+#' @return Invisible TRUE.
+#' @export
+ds.flower.delete_model <- function(path, confirm = TRUE) {
+  if (!dir.exists(path)) {
+    stop("Directory not found: ", path, call. = FALSE)
+  }
+
+  meta_path <- file.path(path, "metadata.json")
+  if (!file.exists(meta_path)) {
+    stop("Not a dsFlower model directory (no metadata.json): ", path,
+         call. = FALSE)
+  }
+
+  if (confirm && interactive()) {
+    meta <- tryCatch(
+      jsonlite::fromJSON(meta_path, simplifyVector = TRUE),
+      error = function(e) list(model_id = basename(path))
+    )
+    ans <- readline(paste0("Delete model '", meta$model_id, "' at ",
+                           path, "? [y/N] "))
+    if (!tolower(trimws(ans)) %in% c("y", "yes")) {
+      message("Cancelled.")
+      return(invisible(FALSE))
+    }
+  }
+
+  unlink(path, recursive = TRUE)
+  message("Deleted: ", path)
+  invisible(TRUE)
 }

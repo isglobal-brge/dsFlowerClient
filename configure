@@ -1,0 +1,149 @@
+#!/bin/sh
+# dsFlowerClient post-install configuration script
+# Runs automatically during R CMD INSTALL on Unix systems.
+#
+# Creates a Python virtual environment with Flower (flwr) so that the
+# researcher's machine can run flower-superlink and flwr CLI without
+# needing a pre-existing Python + pip setup.
+#
+# Self-contained: if neither Python nor uv are present, downloads uv
+# (a single static binary) and uses it to install Python 3.11 + flwr.
+
+VENV_ROOT="${DSFLOWER_CLIENT_VENV_ROOT:-${HOME}/.dsflower}"
+VENV_PATH="${VENV_ROOT}/venv"
+LOG_PREFIX="[dsFlowerClient configure]"
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+log_info() { echo "${LOG_PREFIX} $*"; }
+log_warn() { echo "${LOG_PREFIX} WARNING: $*" >&2; }
+
+# ---------------------------------------------------------------------------
+# Bootstrap: ensure uv + Python are available
+# ---------------------------------------------------------------------------
+
+ensure_uv() {
+  # 1. Already on PATH?
+  UV="$(command -v uv 2>/dev/null || true)"
+  if [ -n "${UV}" ] && [ -x "${UV}" ]; then return 0; fi
+
+  # 2. Common install locations
+  for _p in "${HOME}/.local/bin/uv" "${HOME}/.cargo/bin/uv" "/usr/local/bin/uv"; do
+    if [ -x "${_p}" ]; then UV="${_p}"; return 0; fi
+  done
+
+  # 3. Download uv standalone
+  log_info "Downloading uv (Python package manager)..."
+
+  if command -v curl >/dev/null 2>&1; then
+    _DL="curl -LsSf"
+  elif command -v wget >/dev/null 2>&1; then
+    _DL="wget -qO-"
+  else
+    log_warn "No curl/wget available. Cannot download uv."
+    return 1
+  fi
+
+  ${_DL} https://astral.sh/uv/install.sh 2>/dev/null | sh 2>/dev/null
+  UV="${HOME}/.local/bin/uv"
+  if [ ! -x "${UV}" ]; then UV="$(command -v uv 2>/dev/null || true)"; fi
+  if [ -n "${UV}" ] && [ -x "${UV}" ]; then
+    log_info "uv installed: $(${UV} --version)"
+    return 0
+  fi
+
+  log_warn "Failed to install uv."
+  return 1
+}
+
+ensure_python() {
+  if [ -z "${UV}" ] || [ ! -x "${UV}" ]; then
+    log_warn "No uv available. Cannot provision Python."
+    return 1
+  fi
+
+  PYTHON="$("${UV}" python find 3.11 2>/dev/null || true)"
+  if [ -n "${PYTHON}" ] && [ -x "${PYTHON}" ]; then
+    log_info "Python: ${PYTHON} ($("${PYTHON}" --version 2>&1 | head -1))"
+    return 0
+  fi
+
+  log_info "Installing Python 3.11 via uv..."
+  "${UV}" python install 3.11 --quiet 2>&1 || true
+
+  PYTHON="$("${UV}" python find 3.11 2>/dev/null || true)"
+  if [ -n "${PYTHON}" ] && [ -x "${PYTHON}" ]; then
+    log_info "Python installed: ${PYTHON} ($("${PYTHON}" --version 2>&1 | head -1))"
+    return 0
+  fi
+
+  log_warn "Failed to install Python via uv."
+  return 1
+}
+
+# --- Run bootstrap ---
+
+ensure_uv || {
+  log_warn "uv not available. Flower CLI will need to be installed manually."
+  log_warn "Install uv: https://docs.astral.sh/uv/"
+  exit 0
+}
+
+ensure_python || {
+  log_warn "No Python available. Skipping environment setup."
+  exit 0
+}
+
+# ---------------------------------------------------------------------------
+# Create venv with flwr
+# ---------------------------------------------------------------------------
+
+mkdir -p "${VENV_ROOT}" 2>/dev/null || {
+  log_warn "Cannot create ${VENV_ROOT}. Skipping."
+  exit 0
+}
+
+if [ -d "${VENV_PATH}" ] && [ -f "${VENV_PATH}/.dsflower_client_ready" ]; then
+  # Check that binaries exist
+  if [ -x "${VENV_PATH}/bin/flwr" ] && [ -x "${VENV_PATH}/bin/flower-superlink" ]; then
+    log_info "Python environment already provisioned, skipping."
+    exit 0
+  fi
+  log_info "Cached environment unhealthy, rebuilding..."
+fi
+
+log_info "Creating Python environment for Flower..."
+rm -rf "${VENV_PATH}"
+"${UV}" venv --python "${PYTHON}" "${VENV_PATH}" >/dev/null 2>&1 || {
+  log_warn "Failed to create venv at ${VENV_PATH}."
+  exit 0
+}
+
+VENV_PYTHON="${VENV_PATH}/bin/python"
+log_info "Installing flwr[app]>=1.13.0..."
+"${UV}" pip install --python "${VENV_PYTHON}" --quiet "flwr[app]>=1.13.0" 2>&1 | tail -5 || {
+  log_warn "pip install failed."
+  rm -rf "${VENV_PATH}"
+  exit 0
+}
+
+# Verify
+if [ ! -x "${VENV_PATH}/bin/flwr" ] || [ ! -x "${VENV_PATH}/bin/flower-superlink" ]; then
+  log_warn "flwr/flower-superlink not found after install."
+  rm -rf "${VENV_PATH}"
+  exit 0
+fi
+
+# Mark ready
+DEP_HASH=$(echo "flwr[app]>=1.13.0" | sha256sum 2>/dev/null | cut -d' ' -f1 || echo "unknown")
+echo "${DEP_HASH}" > "${VENV_PATH}/.dsflower_client_ready"
+
+log_info "Python environment ready."
+log_info "  flwr:             ${VENV_PATH}/bin/flwr"
+log_info "  flower-superlink: ${VENV_PATH}/bin/flower-superlink"
+SIZE=$(du -sh "${VENV_PATH}" 2>/dev/null | cut -f1)
+log_info "  Size: ${SIZE}"
+
+exit 0
