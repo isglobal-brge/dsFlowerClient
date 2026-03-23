@@ -456,10 +456,14 @@ ds.flower.superlink.stop <- function() {
     }
   }
 
-  # Cleanup directories (only non-detached or explicit stop)
-  if (!isTRUE(info$detached) && !is.null(info$flwr_home) &&
-      dir.exists(info$flwr_home)) {
+  # Cleanup directories
+  if (!is.null(info$flwr_home) && dir.exists(info$flwr_home)) {
     unlink(info$flwr_home, recursive = TRUE)
+  }
+  # Cleanup detached superlink base dir (certs, logs, state)
+  if (isTRUE(info$detached)) {
+    base_dir <- file.path(.client_venv_root(), "superlink")
+    if (dir.exists(base_dir)) unlink(base_dir, recursive = TRUE)
   }
 
   # Clear state file if detached
