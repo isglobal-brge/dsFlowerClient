@@ -483,6 +483,118 @@ ds.flower.model.xgboost_secure <- function(n_trees = 10L, max_depth = 3L,
   obj
 }
 
+#' Create a Poisson Regression model spec
+#'
+#' Count data modeling (hospital events, readmissions, adverse events).
+#' Uses Poisson NLL loss with log link.
+#'
+#' @param hidden_layers Character; comma-separated hidden layer sizes (empty = linear).
+#' @param learning_rate Numeric; learning rate.
+#' @param batch_size Integer; batch size.
+#' @param local_epochs Integer; local training epochs.
+#' @return A \code{dsflower_model} S3 object.
+#' @export
+ds.flower.model.pytorch_poisson <- function(hidden_layers = "",
+                                             learning_rate = 0.01,
+                                             batch_size = 32L,
+                                             local_epochs = 1L) {
+  obj <- list(
+    name      = "pytorch_poisson",
+    framework = "pytorch",
+    template  = "pytorch_poisson",
+    params    = list(hidden_layers = hidden_layers,
+                     learning_rate = learning_rate,
+                     batch_size = as.integer(batch_size),
+                     local_epochs = as.integer(local_epochs))
+  )
+  class(obj) <- "dsflower_model"
+  obj
+}
+
+#' Create a Multi-Label Classification model spec
+#'
+#' Multiple binary outcomes per sample (phenotyping, multi-endpoint).
+#' Uses BCEWithLogitsLoss per label.
+#'
+#' @param n_labels Integer; number of label columns.
+#' @param hidden_layers Character; comma-separated hidden layer sizes.
+#' @param learning_rate Numeric; learning rate.
+#' @param batch_size Integer; batch size.
+#' @param local_epochs Integer; local training epochs.
+#' @return A \code{dsflower_model} S3 object.
+#' @export
+ds.flower.model.pytorch_multilabel <- function(n_labels = 2L,
+                                                hidden_layers = "64,32",
+                                                learning_rate = 0.01,
+                                                batch_size = 32L,
+                                                local_epochs = 1L) {
+  obj <- list(
+    name      = "pytorch_multilabel",
+    framework = "pytorch",
+    template  = "pytorch_multilabel",
+    params    = list(n_labels = as.integer(n_labels),
+                     hidden_layers = hidden_layers,
+                     learning_rate = learning_rate,
+                     batch_size = as.integer(batch_size),
+                     local_epochs = as.integer(local_epochs))
+  )
+  class(obj) <- "dsflower_model"
+  obj
+}
+
+#' Create an Accelerated Failure Time model spec
+#'
+#' Parametric survival model with log-normal distribution.
+#' Alternative to Cox PH when proportional hazards assumption fails.
+#'
+#' @param learning_rate Numeric; learning rate.
+#' @param batch_size Integer; batch size.
+#' @param local_epochs Integer; local training epochs.
+#' @return A \code{dsflower_model} S3 object.
+#' @export
+ds.flower.model.pytorch_aft <- function(learning_rate = 0.01,
+                                         batch_size = 32L,
+                                         local_epochs = 1L) {
+  obj <- list(
+    name      = "pytorch_aft",
+    framework = "pytorch",
+    template  = "pytorch_aft",
+    params    = list(learning_rate = learning_rate,
+                     batch_size = as.integer(batch_size),
+                     local_epochs = as.integer(local_epochs))
+  )
+  class(obj) <- "dsflower_model"
+  obj
+}
+
+#' Create a Competing Risks model spec
+#'
+#' Multi-cause survival analysis (Fine-Gray style). Separate
+#' sub-hazard per cause via cause-specific Cox partial likelihood.
+#'
+#' @param n_causes Integer; number of competing event types.
+#' @param learning_rate Numeric; learning rate.
+#' @param batch_size Integer; batch size.
+#' @param local_epochs Integer; local training epochs.
+#' @return A \code{dsflower_model} S3 object.
+#' @export
+ds.flower.model.pytorch_competing_risks <- function(n_causes = 2L,
+                                                      learning_rate = 0.01,
+                                                      batch_size = 32L,
+                                                      local_epochs = 1L) {
+  obj <- list(
+    name      = "pytorch_competing_risks",
+    framework = "pytorch",
+    template  = "pytorch_competing_risks",
+    params    = list(n_causes = as.integer(n_causes),
+                     learning_rate = learning_rate,
+                     batch_size = as.integer(batch_size),
+                     local_epochs = as.integer(local_epochs))
+  )
+  class(obj) <- "dsflower_model"
+  obj
+}
+
 #' Print a dsflower_model
 #' @param x A dsflower_model object.
 #' @param ... Additional arguments (ignored).

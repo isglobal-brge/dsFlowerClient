@@ -102,6 +102,32 @@ ds.flower.strategy.fedadagrad <- function(server_learning_rate = 0.01,
   obj
 }
 
+#' Create a FedBN strategy spec
+#'
+#' Federated Batch Normalization: keeps BatchNorm layers local (not
+#' aggregated) to handle feature shift between sites. Essential for
+#' medical imaging across different scanners/protocols.
+#'
+#' Built on FedAvg but the server excludes BatchNorm parameters from
+#' aggregation. Each client retains its own BN statistics.
+#'
+#' @param fraction_fit Numeric; fraction of clients used for training (0-1).
+#' @param fraction_evaluate Numeric; fraction of clients used for evaluation (0-1).
+#' @return A \code{dsflower_strategy} S3 object.
+#' @export
+ds.flower.strategy.fedbn <- function(fraction_fit = 1.0,
+                                      fraction_evaluate = 1.0) {
+  obj <- list(
+    name   = "FedBN",
+    params = list(
+      fraction_fit      = fraction_fit,
+      fraction_evaluate = fraction_evaluate
+    )
+  )
+  class(obj) <- "dsflower_strategy"
+  obj
+}
+
 #' Print a dsflower_strategy
 #' @param x A dsflower_strategy object.
 #' @param ... Additional arguments (ignored).
