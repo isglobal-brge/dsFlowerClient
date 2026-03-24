@@ -1,6 +1,53 @@
 # Module: Auto-managed run
 # Wraps run.start with automatic SuperLink, ensure, prepare, and cleanup.
 
+# Client-side param bounds (mirrors server .TEMPLATE_PARAM_SCHEMA)
+.PARAM_BOUNDS <- list(
+  learning_rate = list(min = 1e-8,  max = 1.0),
+  batch_size    = list(min = 1L,    max = 100000L),
+  local_epochs  = list(min = 1L,    max = 1000L),
+  n_classes     = list(min = 1L,    max = 10000L),
+  n_labels      = list(min = 1L,    max = 10000L),
+  n_causes      = list(min = 2L,    max = 100L),
+  hidden_size   = list(min = 1L,    max = 4096L),
+  num_layers    = list(min = 1L,    max = 20L),
+  n_channels    = list(min = 1L,    max = 100L),
+  kernel_size   = list(min = 1L,    max = 100L),
+  n_layers      = list(min = 1L,    max = 50L),
+  alpha         = list(min = 1e-10, max = 100),
+  C             = list(min = 1e-10, max = 1000),
+  max_iter      = list(min = 1L,    max = 100000L),
+  l1_ratio      = list(min = 0,     max = 1),
+  n_trees       = list(min = 1L,    max = 1000L),
+  max_depth     = list(min = 1L,    max = 30L),
+  n_bins        = list(min = 2L,    max = 1024L),
+  eta           = list(min = 1e-6,  max = 1.0),
+  reg_lambda    = list(min = 0,     max = 1000),
+  local_rounds  = list(min = 1L,    max = 10000L)
+)
+
+#' Validate model hyperparameters against bounds
+#' @keywords internal
+.validate_model_params <- function(model) {
+  params <- model$params
+  if (is.null(params)) return(invisible(TRUE))
+  for (nm in names(params)) {
+    bounds <- .PARAM_BOUNDS[[nm]]
+    if (is.null(bounds)) next
+    val <- params[[nm]]
+    if (is.null(val)) next
+    val <- suppressWarnings(as.numeric(val))
+    if (is.na(val)) next
+    if (!is.null(bounds$min) && val < bounds$min)
+      stop("Parameter '", nm, "' = ", val, " is below minimum (", bounds$min,
+           ") for model '", model$name, "'.", call. = FALSE)
+    if (!is.null(bounds$max) && val > bounds$max)
+      stop("Parameter '", nm, "' = ", val, " exceeds maximum (", bounds$max,
+           ") for model '", model$name, "'.", call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
 #' Run federated learning (auto-managed)
 #'
 #' Automatically handles SuperLink startup, SuperNode ensure, data preparation,
@@ -31,6 +78,9 @@ ds.flower.run <- function(flower = NULL, recipe, detached = FALSE,
 
   # Resolve template from model (never require the user to pass it)
   template_name <- recipe$model$template
+
+  # Client-side hyperparameter validation (server schema)
+  .validate_model_params(recipe$model)
 
   # Resolve privacy (recipe wins, else clinical_default)
   privacy <- recipe$privacy
