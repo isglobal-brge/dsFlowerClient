@@ -1,6 +1,21 @@
 # Module: Node Orchestration via DSI
 # Calls server-side DataSHIELD methods to manage nodes.
 
+#' List available label sets for an imaging dataset
+#'
+#' Queries the server for label sets defined in the dataset's manifest.
+#' The researcher can then choose which label set to use in
+#' \code{ds.flower.nodes.prepare(label_set = "...")}.
+#'
+#' @param conns DSI connections object.
+#' @param symbol Character; the imaging handle symbol (default "img").
+#' @return A data.frame with columns: name, type, columns, description.
+#' @export
+ds.flower.labels <- function(conns, symbol = "img") {
+  DSI::datashield.aggregate(conns,
+    expr = call("imagingLabelsDS", symbol))
+}
+
 #' Initialize Flower handles on all servers
 #'
 #' Creates a Flower handle on each server from a symbol already assigned
@@ -104,7 +119,8 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
 ds.flower.nodes.prepare <- function(conns, symbol = "flower",
                                      target_column, feature_columns = NULL,
                                      run_config = list(), privacy = NULL,
-                                     template_name = NULL) {
+                                     template_name = NULL,
+                                     label_set = NULL) {
   # Inject privacy settings into run_config if a privacy spec is provided
   if (!is.null(privacy) && inherits(privacy, "dsflower_privacy")) {
     run_config[["privacy-mode"]] <- privacy$mode
@@ -113,9 +129,12 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
     }
   }
 
-  # Pass template name for profile compatibility checks on the server
   if (!is.null(template_name)) {
     run_config[["template_name"]] <- template_name
+  }
+
+  if (!is.null(label_set)) {
+    run_config[["label_set"]] <- label_set
   }
 
   feat_enc <- .ds_encode(feature_columns)
