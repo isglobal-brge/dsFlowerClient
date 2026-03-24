@@ -4,7 +4,7 @@
 \alias{.generate_tls_certs}
 \title{Generate ephemeral TLS certificates for SuperLink}
 \usage{
-.generate_tls_certs(cert_dir, extra_sans = NULL)
+.generate_tls_certs(cert_dir, extra_sans = NULL, cert_days = 1L)
 }
 \arguments{
 \item{cert_dir}{Character; directory to write certificate files.}

@@ -7,11 +7,10 @@
 ds.flower.predict(model, newdata, type = c("response", "prob"))
 }
 \arguments{
-\item{model}{A \code{dsflower_run} object, or a list loaded from a saved
-model file (via \code{readRDS} or \code{jsonlite::fromJSON}).}
+\item{model}{A \code{dsflower_run} object, a saved model list (from
+\code{ds.flower.load_model}), or a path to a model directory.}
 
-\item{newdata}{A data.frame or matrix with the same feature columns used
-during training.}
+\item{newdata}{A data.frame or matrix with feature columns.}
 
 \item{type}{Character; \code{"response"} for predicted class (default),
 \code{"prob"} for probabilities.}
@@ -20,7 +19,7 @@ during training.}
 A numeric vector of predictions.
 }
 \description{
-Uses the global model weights from a training run or a saved model file
-to generate predictions on new data. Supports all model types:
-sklearn_logreg, sklearn_sgd, sklearn_ridge, and pytorch_mlp.
+Uses the saved model in native format (joblib/pt/xgb) to generate
+predictions via Python. The appropriate framework dependencies are
+installed on-demand in the client venv if not already present.
 }

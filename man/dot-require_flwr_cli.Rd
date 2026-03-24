@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{.require_flwr_cli}
 \alias{.require_flwr_cli}
-\title{Check that the flwr CLI is available}
+\title{Ensure the Flower CLI is available}
 \usage{
 .require_flwr_cli()
 }
@@ -10,6 +10,6 @@
 Invisible TRUE, or stops with an error.
 }
 \description{
-Check that the flwr CLI is available
+Checks the venv first. If not healthy, attempts to create it on-the-fly.
 }
 \keyword{internal}

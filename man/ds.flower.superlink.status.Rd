@@ -8,7 +8,7 @@ ds.flower.superlink.status()
 }
 \value{
 A named list with running, pid, fleet_address, control_address,
-  ports, started_at.
+  ports, detached, started_at.
 }
 \description{
 Get SuperLink status

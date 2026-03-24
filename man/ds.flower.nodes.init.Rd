@@ -4,13 +4,18 @@
 \alias{ds.flower.nodes.init}
 \title{Initialize Flower handles on all servers}
 \usage{
-ds.flower.nodes.init(conns, data, symbol = "flower")
+ds.flower.nodes.init(conns, data = NULL, resource = NULL, symbol = "flower")
 }
 \arguments{
 \item{conns}{DSI connections object.}
 
 \item{data}{Character or named list; symbol name(s) of data already
-assigned in the DataSHIELD session.}
+assigned in the DataSHIELD session. Mutually exclusive with
+\code{resource}.}
+
+\item{resource}{Character or NULL; name of an Opal resource to assign
+and resolve before init. When provided, the resource is assigned,
+resolved to a ResourceClient, and passed to \code{flowerInitDS}.}
 
 \item{symbol}{Character; symbol name for the Flower handle (default
 \code{"flower"}).}
@@ -38,5 +43,8 @@ ds.flower.nodes.init(conns, data = list(
   hospital_b = "D_merged",
   hospital_c = "D"
 ))
+
+# From an Opal resource (e.g. imaging+dataset://)
+ds.flower.nodes.init(conns, resource = "chest_xray")
 }
 }

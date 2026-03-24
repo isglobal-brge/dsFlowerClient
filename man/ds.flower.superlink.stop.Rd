@@ -10,5 +10,6 @@ ds.flower.superlink.stop()
 Invisible TRUE.
 }
 \description{
-Sends SIGTERM, waits, then SIGKILL if needed. Cleans up temp files.
+Sends SIGTERM, waits, then SIGKILL if needed. Works for both
+interactive and detached SuperLinks.
 }

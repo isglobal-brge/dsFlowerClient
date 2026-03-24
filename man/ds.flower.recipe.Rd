@@ -8,7 +8,7 @@ ds.flower.recipe(
   task,
   model,
   strategy,
-  privacy = ds.flower.privacy.research(),
+  privacy = ds.flower.privacy.clinical_default(),
   num_rounds = 5L,
   target_column = "target",
   feature_columns = NULL
@@ -21,7 +21,7 @@ ds.flower.recipe(
 
 \item{strategy}{A \code{dsflower_strategy} object.}
 
-\item{privacy}{A \code{dsflower_privacy} object (default: research mode).}
+\item{privacy}{A \code{dsflower_privacy} object (default: clinical_default).}
 
 \item{num_rounds}{Integer; number of federated training rounds.}
 

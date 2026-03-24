@@ -7,23 +7,25 @@
 ds.flower.superlink.start(
   fleet_port = 9092L,
   control_port = 9093L,
-  serverappio_port = 9091L
+  serverappio_port = 9091L,
+  detached = FALSE
 )
 }
 \arguments{
-\item{fleet_port}{Integer; port for the Fleet API (default 9092).
-SuperNodes connect here.}
+\item{fleet_port}{Integer; port for the Fleet API (default 9092).}
 
-\item{control_port}{Integer; port for the Control API (default 9093).
-\code{flwr run} connects here.}
+\item{control_port}{Integer; port for the Control API (default 9093).}
 
 \item{serverappio_port}{Integer; port for the ServerAppIO API (default 9091).}
+
+\item{detached}{Logical; if TRUE, SuperLink runs as daemon (survives
+R session exit). Default FALSE for interactive use.}
 }
 \value{
 Invisible list with process info.
 }
 \description{
-Spawns a \code{flower-superlink} process using processx with a private
-FLWR_HOME directory. Writes a \code{config.toml} so that \code{flwr run}
-can connect to this SuperLink.
+Spawns a \code{flower-superlink} process. In detached mode, the process
+survives R session exit and can be reattached from a new session via
+\code{ds.flower.superlink.attach()}.
 }

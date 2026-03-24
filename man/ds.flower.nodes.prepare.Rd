@@ -9,7 +9,10 @@ ds.flower.nodes.prepare(
   symbol = "flower",
   target_column,
   feature_columns = NULL,
-  run_config = list()
+  run_config = list(),
+  privacy = NULL,
+  template_name = NULL,
+  label_set = NULL
 )
 }
 \arguments{

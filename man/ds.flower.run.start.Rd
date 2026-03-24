@@ -9,6 +9,7 @@ ds.flower.run.start(
   conns = NULL,
   app_dir = NULL,
   run_config = list(),
+  output_dir = NULL,
   verbose = TRUE
 )
 }
@@ -23,6 +24,9 @@ from the server. If NULL, uses the connections stored during
 
 \item{run_config}{Named list; additional run config overrides.}
 
+\item{output_dir}{Character; persistent directory for model output.
+Defaults to \code{"dsflower_output/<timestamp>"} in the working directory.}
+
 \item{verbose}{Logical; print flwr output (default TRUE).}
 }
 \value{
@@ -31,4 +35,6 @@ A \code{dsflower_run} object with weights, history, and predictions.
 \description{
 Fetches the model template from the server, builds a Flower App from
 the recipe, then invokes \code{flwr run} against the running SuperLink.
+Model weights and training history are automatically saved to
+\code{output_dir} after training completes.
 }

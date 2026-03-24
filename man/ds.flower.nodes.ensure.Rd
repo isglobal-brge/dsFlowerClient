@@ -4,7 +4,12 @@
 \alias{ds.flower.nodes.ensure}
 \title{Ensure SuperNodes are running on all servers}
 \usage{
-ds.flower.nodes.ensure(conns, symbol = "flower", superlink_address = NULL)
+ds.flower.nodes.ensure(
+  conns,
+  symbol = "flower",
+  superlink_address = NULL,
+  template_name = NULL
+)
 }
 \arguments{
 \item{conns}{DSI connections object.}
