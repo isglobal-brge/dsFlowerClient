@@ -3,9 +3,11 @@
 
 # Client-side param bounds (mirrors server .TEMPLATE_PARAM_SCHEMA)
 .PARAM_BOUNDS <- list(
+  # PyTorch common
   learning_rate = list(min = 1e-8,  max = 1.0),
   batch_size    = list(min = 1L,    max = 100000L),
   local_epochs  = list(min = 1L,    max = 1000L),
+  # Architecture
   n_classes     = list(min = 1L,    max = 10000L),
   n_labels      = list(min = 1L,    max = 10000L),
   n_causes      = list(min = 2L,    max = 100L),
@@ -14,16 +16,27 @@
   n_channels    = list(min = 1L,    max = 100L),
   kernel_size   = list(min = 1L,    max = 100L),
   n_layers      = list(min = 1L,    max = 50L),
+  # sklearn
   alpha         = list(min = 1e-10, max = 100),
   C             = list(min = 1e-10, max = 1000),
   max_iter      = list(min = 1L,    max = 100000L),
   l1_ratio      = list(min = 0,     max = 1),
+  # XGBoost
   n_trees       = list(min = 1L,    max = 1000L),
   max_depth     = list(min = 1L,    max = 30L),
   n_bins        = list(min = 2L,    max = 1024L),
   eta           = list(min = 1e-6,  max = 1.0),
   reg_lambda    = list(min = 0,     max = 1000),
   local_rounds  = list(min = 1L,    max = 10000L)
+)
+
+# Strategy param bounds
+.STRATEGY_BOUNDS <- list(
+  fraction_fit      = list(min = 0, max = 1),
+  fraction_evaluate = list(min = 0, max = 1),
+  proximal_mu       = list(min = 0, max = 100),
+  eta               = list(min = 1e-8, max = 10),
+  tau               = list(min = 1e-10, max = 10)
 )
 
 #' Validate model hyperparameters against bounds
@@ -48,6 +61,28 @@
   invisible(TRUE)
 }
 
+#' Validate strategy parameters against bounds
+#' @keywords internal
+.validate_strategy_params <- function(strategy) {
+  params <- strategy$params
+  if (is.null(params)) return(invisible(TRUE))
+  for (nm in names(params)) {
+    bounds <- .STRATEGY_BOUNDS[[nm]]
+    if (is.null(bounds)) next
+    val <- params[[nm]]
+    if (is.null(val)) next
+    val <- suppressWarnings(as.numeric(val))
+    if (is.na(val)) next
+    if (!is.null(bounds$min) && val < bounds$min)
+      stop("Strategy parameter '", nm, "' = ", val, " is below minimum (",
+           bounds$min, ") for strategy '", strategy$name, "'.", call. = FALSE)
+    if (!is.null(bounds$max) && val > bounds$max)
+      stop("Strategy parameter '", nm, "' = ", val, " exceeds maximum (",
+           bounds$max, ") for strategy '", strategy$name, "'.", call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
 #' Run federated learning (auto-managed)
 #'
 #' Automatically handles SuperLink startup, SuperNode ensure, data preparation,
@@ -64,14 +99,14 @@
 #' @param verbose Logical; print training output (default TRUE).
 #' @return A \code{dsflower_run} object.
 #' @export
-ds.flower.run <- function(flower = NULL, recipe, detached = FALSE,
+ds.flower.run <- function(flower, recipe, detached = FALSE,
                            verbose = TRUE) {
-  if (is.null(flower)) {
-    flower <- .dsflower_client_env$.connection
-  }
-  if (is.null(flower) || !inherits(flower, "dsflower_connection")) {
-    stop("No connection. Call ds.flower.connect() first.", call. = FALSE)
-  }
+  if (missing(flower) || is.null(flower))
+    stop("'flower' connection handle required. Use: ds.flower.run(flower, recipe)",
+         call. = FALSE)
+  if (!inherits(flower, "dsflower_connection"))
+    stop("'flower' must be a dsflower_connection from ds.flower.connect().",
+         call. = FALSE)
 
   conns <- flower$conns
   symbol <- flower$symbol
@@ -81,6 +116,7 @@ ds.flower.run <- function(flower = NULL, recipe, detached = FALSE,
 
   # Client-side hyperparameter validation (server schema)
   .validate_model_params(recipe$model)
+  .validate_strategy_params(recipe$strategy)
 
   # Resolve privacy (recipe wins, else clinical_default)
   privacy <- recipe$privacy

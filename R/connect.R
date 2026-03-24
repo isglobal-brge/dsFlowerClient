@@ -80,10 +80,30 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
   )
   class(conn) <- "dsflower_connection"
 
-  .dsflower_client_env$.connection <- conn
   .dsflower_client_env$.conns <- conns
 
   conn
+}
+
+#' Disconnect and clean up a flower connection
+#'
+#' Removes server-side symbols created by \code{ds.flower.connect()}.
+#'
+#' @param flower A \code{dsflower_connection} object.
+#' @return Invisible TRUE.
+#' @export
+ds.flower.disconnect <- function(flower) {
+  if (missing(flower) || !inherits(flower, "dsflower_connection"))
+    stop("'flower' must be a dsflower_connection.", call. = FALSE)
+  tryCatch({
+    syms <- paste0(flower$symbol, c("", "_img", "_res"))
+    for (s in syms) {
+      tryCatch(
+        DSI::datashield.rm(flower$conns, s),
+        error = function(e) NULL)
+    }
+  }, error = function(e) NULL)
+  invisible(TRUE)
 }
 
 #' @export
@@ -108,16 +128,26 @@ print.dsflower_connection <- function(x, ...) {
 #'
 #' @keywords internal
 .resolve_data_source <- function(data, conns) {
+  is_symbol <- FALSE
+  is_resource <- FALSE
+
   # Check if it's an existing symbol on all servers
   syms <- tryCatch(DSI::datashield.symbols(conns), error = function(e) list())
-  all_have_sym <- all(vapply(syms, function(s) data %in% s, logical(1)))
-  if (all_have_sym) return(list(kind = "symbol"))
-
-  # Check if it looks like a resource name (PROJECT.NAME format)
-  # Resources are always PROJECT.NAME in Opal
-  if (grepl("^[A-Za-z][A-Za-z0-9_]*\\.[A-Za-z][A-Za-z0-9_]*$", data)) {
-    return(list(kind = "resource"))
+  if (length(syms) > 0) {
+    is_symbol <- all(vapply(syms, function(s) data %in% s, logical(1)))
   }
 
+  # Check if it looks like a resource name (PROJECT.NAME format)
+  is_resource <- grepl("^[A-Za-z][A-Za-z0-9_]*\\.[A-Za-z][A-Za-z0-9_]*$", data)
+
+  # Ambiguity check: if both match, fail
+  if (is_symbol && is_resource) {
+    stop("Ambiguous data source '", data, "': exists as both a server symbol ",
+         "and matches resource name format. Use resource= or symbol= explicitly.",
+         call. = FALSE)
+  }
+
+  if (is_symbol) return(list(kind = "symbol"))
+  if (is_resource) return(list(kind = "resource"))
   list(kind = "unknown")
 }

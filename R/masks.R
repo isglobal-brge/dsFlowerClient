@@ -9,10 +9,13 @@
 #' @param flower A \code{dsflower_connection}, or NULL for last connection.
 #' @return A data.frame with mask assets, or empty if none.
 #' @export
-ds.flower.masks <- function(flower = NULL) {
-  if (is.null(flower)) flower <- .dsflower_client_env$.connection
-  if (is.null(flower)) stop("No connection. Call ds.flower.connect() first.",
-                            call. = FALSE)
+ds.flower.masks <- function(flower) {
+  if (missing(flower) || is.null(flower))
+    stop("'flower' connection handle required. Use: ds.flower.masks(flower)",
+         call. = FALSE)
+  if (!inherits(flower, "dsflower_connection"))
+    stop("'flower' must be a dsflower_connection from ds.flower.connect().",
+         call. = FALSE)
 
   # Query server for mask assets via dsImaging
   tryCatch({

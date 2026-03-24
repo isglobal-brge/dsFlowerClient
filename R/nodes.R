@@ -9,10 +9,13 @@
 #'   or NULL to use the last connection.
 #' @return Per-server list of data.frames with columns: name, type, columns, description.
 #' @export
-ds.flower.labels <- function(flower = NULL) {
-  if (is.null(flower)) flower <- .dsflower_client_env$.connection
-  if (is.null(flower)) stop("No connection. Call ds.flower.connect() first.",
-                            call. = FALSE)
+ds.flower.labels <- function(flower) {
+  if (missing(flower) || is.null(flower))
+    stop("'flower' connection handle required. Use: ds.flower.labels(flower)",
+         call. = FALSE)
+  if (!inherits(flower, "dsflower_connection"))
+    stop("'flower' must be a dsflower_connection from ds.flower.connect().",
+         call. = FALSE)
   img_sym <- paste0(flower$symbol, "_img")
   DSI::datashield.aggregate(flower$conns,
     expr = call("imagingLabelsDS", img_sym))
