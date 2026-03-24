@@ -4,16 +4,18 @@
 #' List available label sets for an imaging dataset
 #'
 #' Queries the server for label sets defined in the dataset's manifest.
-#' The researcher can then choose which label set to use in
-#' \code{ds.flower.nodes.prepare(label_set = "...")}.
 #'
-#' @param conns DSI connections object.
-#' @param symbol Character; the imaging handle symbol (default "img").
-#' @return A data.frame with columns: name, type, columns, description.
+#' @param flower A \code{dsflower_connection} from \code{ds.flower.connect()},
+#'   or NULL to use the last connection.
+#' @return Per-server list of data.frames with columns: name, type, columns, description.
 #' @export
-ds.flower.labels <- function(conns, symbol = "img") {
-  DSI::datashield.aggregate(conns,
-    expr = call("imagingLabelsDS", symbol))
+ds.flower.labels <- function(flower = NULL) {
+  if (is.null(flower)) flower <- .dsflower_client_env$.connection
+  if (is.null(flower)) stop("No connection. Call ds.flower.connect() first.",
+                            call. = FALSE)
+  img_sym <- paste0(flower$symbol, "_img")
+  DSI::datashield.aggregate(flower$conns,
+    expr = call("imagingLabelsDS", img_sym))
 }
 
 #' Initialize Flower handles on all servers

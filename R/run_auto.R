@@ -44,19 +44,24 @@ ds.flower.run <- function(flower = NULL, recipe, detached = FALSE,
   feature_columns <- recipe$feature_columns %||% recipe$features
   if (is.null(feature_columns)) feature_columns <- character(0)
 
-  # Step 1: Prepare (if not already done)
-  tryCatch({
+  # Step 1: Prepare (only if config changed since last prepare)
+  current_hash <- digest::digest(list(
+    target_column, feature_columns, label_set, template_name,
+    privacy$mode, recipe$masks), algo = "sha256")
+
+  needs_prepare <- is.null(flower$prepare_hash) ||
+                   !identical(flower$prepare_hash, current_hash)
+
+  if (needs_prepare) {
     ds.flower.nodes.prepare(conns, symbol,
       target_column   = target_column,
       feature_columns = if (length(feature_columns) > 0) feature_columns else NULL,
       privacy         = privacy,
       template_name   = template_name,
       label_set       = label_set)
-  }, error = function(e) {
-    # If prepare fails because already prepared, continue
-    if (!grepl("already prepared|staging", conditionMessage(e), ignore.case = TRUE))
-      stop(e)
-  })
+    flower$prepare_hash <- current_hash
+    .dsflower_client_env$.connection <- flower
+  }
 
   # Step 2: SuperLink (start if not running)
   started_superlink <- FALSE

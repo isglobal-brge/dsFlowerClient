@@ -3,49 +3,63 @@
 
 #' Connect to a data source for federated learning
 #'
-#' Single entry point that handles the full init chain: detects data type
-#' (table symbol, Opal resource, or imaging dataset), assigns resources,
-#' initializes dsImaging and dsFlower handles, and returns a connection
-#' handle with metadata about available labels, masks, and features.
+#' Single entry point that handles the full init chain: detects data type,
+#' assigns resources, initializes dsImaging and dsFlower handles, and
+#' returns a connection handle with metadata.
+#'
+#' Uses unique hidden symbols per connection to avoid collisions when
+#' multiple connections are active.
 #'
 #' @param conns DSI connections object.
-#' @param data Character; one of:
-#'   \itemize{
-#'     \item A DataSHIELD symbol already assigned (e.g. \code{"D"})
-#'     \item An Opal resource name (e.g. \code{"IMAGING.brain_mri"})
-#'   }
-#' @param symbol Character; server-side handle name (default auto-generated).
+#' @param data Character; auto-detected data source. Use explicit params
+#'   if ambiguous.
+#' @param resource Character; explicit Opal resource name (e.g. "RSRC.brain_mri").
+#' @param symbol Character; explicit DS symbol already assigned (e.g. "D").
 #' @return A \code{dsflower_connection} object.
 #' @export
-ds.flower.connect <- function(conns, data, symbol = "flower") {
-  data_kind <- .detect_data_kind(data, conns)
+ds.flower.connect <- function(conns, data = NULL, resource = NULL,
+                               symbol = NULL) {
+  # Exactly one of data/resource/symbol must be provided
+  n_args <- sum(!is.null(data), !is.null(resource), !is.null(symbol))
+  if (n_args == 0)
+    stop("Provide one of: data, resource, or symbol.", call. = FALSE)
+
+  # If data is provided, resolve deterministically
+  if (!is.null(data)) {
+    resolved <- .resolve_data_source(data, conns)
+    if (resolved$kind == "resource") resource <- data
+    else if (resolved$kind == "symbol") symbol <- data
+    else stop("Cannot resolve '", data, "'. Use resource= or symbol= explicitly.",
+              call. = FALSE)
+  }
+
+  # Generate unique hidden symbols (avoid collisions between connections)
+  uid <- paste0(sample(c(letters, 0:9), 8, replace = TRUE), collapse = "")
+  fl_sym <- paste0(".dsfl_", uid)
+
+  data_kind <- if (!is.null(resource)) "resource" else "symbol"
 
   if (data_kind == "resource") {
-    # Opal resource: assign -> imagingInit -> flowerInit
-    img_sym <- paste0(symbol, "_img_res")
-    resource_map <- stats::setNames(rep(data, length(conns)), names(conns))
+    res_sym <- paste0(fl_sym, "_res")
+    img_sym <- paste0(fl_sym, "_img")
+    resource_map <- stats::setNames(rep(resource, length(conns)), names(conns))
 
-    DSI::datashield.assign.resource(conns, symbol = img_sym,
+    DSI::datashield.assign.resource(conns, symbol = res_sym,
       resource = as.list(resource_map))
-
-    img_handle_sym <- paste0(symbol, "_img")
-    DSI::datashield.assign.expr(conns, img_handle_sym,
-      expr = call("imagingInitDS", img_sym))
-
-    DSI::datashield.assign.expr(conns, symbol,
-      expr = call("flowerInitDS", img_handle_sym))
-
+    DSI::datashield.assign.expr(conns, img_sym,
+      expr = call("imagingInitDS", res_sym))
+    DSI::datashield.assign.expr(conns, fl_sym,
+      expr = call("flowerInitDS", img_sym))
   } else {
-    # Table symbol: direct flowerInit
-    DSI::datashield.assign.expr(conns, symbol,
-      expr = call("flowerInitDS", data))
+    DSI::datashield.assign.expr(conns, fl_sym,
+      expr = call("flowerInitDS", symbol))
   }
 
   # Gather metadata
   labels <- tryCatch({
     if (data_kind == "resource") {
       res <- DSI::datashield.aggregate(conns,
-        expr = call("imagingLabelsDS", paste0(symbol, "_img")))
+        expr = call("imagingLabelsDS", paste0(fl_sym, "_img")))
       res[[1]]
     } else {
       data.frame(name = character(0), type = character(0),
@@ -58,14 +72,14 @@ ds.flower.connect <- function(conns, data, symbol = "flower") {
 
   conn <- list(
     conns     = conns,
-    symbol    = symbol,
-    data      = data,
+    symbol    = fl_sym,
+    data      = resource %||% symbol,
     data_kind = data_kind,
-    labels    = labels
+    labels    = labels,
+    prepare_hash = NULL
   )
   class(conn) <- "dsflower_connection"
 
-  # Store in session for ds.flower.run() to find
   .dsflower_client_env$.connection <- conn
   .dsflower_client_env$.conns <- conns
 
@@ -76,9 +90,8 @@ ds.flower.connect <- function(conns, data, symbol = "flower") {
 print.dsflower_connection <- function(x, ...) {
   cat("dsFlower Connection\n")
   cat("  Data:    ", x$data, "(", x$data_kind, ")\n")
-  cat("  Symbol:  ", x$symbol, "\n")
   cat("  Servers: ", paste(names(x$conns), collapse = ", "), "\n")
-  if (nrow(x$labels) > 0) {
+  if (NROW(x$labels) > 0) {
     cat("  Labels:\n")
     for (i in seq_len(nrow(x$labels))) {
       cat("    ", x$labels$name[i], " (", x$labels$type[i], "): ",
@@ -88,11 +101,23 @@ print.dsflower_connection <- function(x, ...) {
   invisible(x)
 }
 
-#' Detect whether data is a table symbol or resource name
+#' Resolve a data source deterministically
+#'
+#' Checks if the data string is a resource name or an existing symbol.
+#' No heuristics -- checks the actual server state.
+#'
 #' @keywords internal
-.detect_data_kind <- function(data, conns) {
-  if (grepl("\\.", data) && !grepl("^/", data)) {
-    return("resource")
+.resolve_data_source <- function(data, conns) {
+  # Check if it's an existing symbol on all servers
+  syms <- tryCatch(DSI::datashield.symbols(conns), error = function(e) list())
+  all_have_sym <- all(vapply(syms, function(s) data %in% s, logical(1)))
+  if (all_have_sym) return(list(kind = "symbol"))
+
+  # Check if it looks like a resource name (PROJECT.NAME format)
+  # Resources are always PROJECT.NAME in Opal
+  if (grepl("^[A-Za-z][A-Za-z0-9_]*\\.[A-Za-z][A-Za-z0-9_]*$", data)) {
+    return(list(kind = "resource"))
   }
-  "symbol"
+
+  list(kind = "unknown")
 }
