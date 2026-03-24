@@ -74,7 +74,7 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
     }
     DSI::datashield.assign.expr(
       conns[srv], symbol = symbol,
-      expr = call("flowerInitDS", as.symbol(sym))
+      expr = call("flowerInitDS", sym)
     )
   }
 
