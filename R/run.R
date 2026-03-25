@@ -131,8 +131,13 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
 
   run_id <- .parse_run_id(clean_stdout)
 
-  # Read saved weights and history from results dir
+  # Read saved weights and history from results dir.
+  # The ServerApp writes files asynchronously -- retry briefly if not found.
   weights <- .read_model_weights(results_dir)
+  if (is.null(weights) && result$status == 0L) {
+    Sys.sleep(2)
+    weights <- .read_model_weights(results_dir)
+  }
   history <- .read_training_history(results_dir)
 
   # Generate a unique model ID for identification
