@@ -124,7 +124,12 @@ ds.flower.model.pytorch_mlp <- function(hidden_layers = c(64L, 32L),
                                          batch_size = 32L,
                                          local_epochs = 1L) {
   # Store as comma-separated string for TOML compatibility
-  hl_str <- paste(as.integer(hidden_layers), collapse = ",")
+  # Accept both integer vector c(64, 32) and string "64,32"
+  if (is.character(hidden_layers) && length(hidden_layers) == 1) {
+    hl_str <- hidden_layers
+  } else {
+    hl_str <- paste(as.integer(hidden_layers), collapse = ",")
+  }
   obj <- list(
     name      = "pytorch_mlp",
     framework = "pytorch",
@@ -235,10 +240,12 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
                                                 batch_size = 32L,
                                                 local_epochs = 1L) {
   # Store as comma-separated string for TOML compatibility
-  hl_str <- if (length(hidden_layers) > 0) {
-    paste(as.integer(hidden_layers), collapse = ",")
+  if (is.character(hidden_layers) && length(hidden_layers) == 1) {
+    hl_str <- hidden_layers
+  } else if (length(hidden_layers) > 0) {
+    hl_str <- paste(as.integer(hidden_layers), collapse = ",")
   } else {
-    ""
+    hl_str <- ""
   }
   obj <- list(
     name      = "pytorch_multiclass",
