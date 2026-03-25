@@ -4,18 +4,15 @@
 \alias{ds.flower.labels}
 \title{List available label sets for an imaging dataset}
 \usage{
-ds.flower.labels(conns, symbol = "img")
+ds.flower.labels(flower)
 }
 \arguments{
-\item{conns}{DSI connections object.}
-
-\item{symbol}{Character; the imaging handle symbol (default "img").}
+\item{flower}{A \code{dsflower_connection} from \code{ds.flower.connect()},
+or NULL to use the last connection.}
 }
 \value{
-A data.frame with columns: name, type, columns, description.
+Per-server list of data.frames with columns: name, type, columns, description.
 }
 \description{
 Queries the server for label sets defined in the dataset's manifest.
-The researcher can then choose which label set to use in
-\code{ds.flower.nodes.prepare(label_set = "...")}.
 }

@@ -5,35 +5,50 @@
 \title{Create a Flower federated learning recipe}
 \usage{
 ds.flower.recipe(
-  task,
   model,
-  strategy,
+  strategy = ds.flower.strategy.fedavg(),
   privacy = ds.flower.privacy.clinical_default(),
+  task = NULL,
   num_rounds = 5L,
-  target_column = "target",
-  feature_columns = NULL
+  target = NULL,
+  target_column = NULL,
+  label_set = NULL,
+  features = NULL,
+  feature_columns = NULL,
+  masks = NULL,
+  evaluation_only = FALSE
 )
 }
 \arguments{
-\item{task}{A \code{dsflower_task} object.}
+\item{model}{A \code{dsflower_model} object (required).}
 
-\item{model}{A \code{dsflower_model} object.}
-
-\item{strategy}{A \code{dsflower_strategy} object.}
+\item{strategy}{A \code{dsflower_strategy} object (default: FedAvg).}
 
 \item{privacy}{A \code{dsflower_privacy} object (default: clinical_default).}
 
+\item{task}{A \code{dsflower_task} object, or NULL to infer from model.}
+
 \item{num_rounds}{Integer; number of federated training rounds.}
 
-\item{target_column}{Character; name of the target column.}
+\item{target}{Character; target column name(s). For survival: c("time", "event").}
 
-\item{feature_columns}{Character vector; names of feature columns, or NULL.}
+\item{target_column}{Alias for \code{target} (backward compat).}
+
+\item{label_set}{Character; name of the label set to use (imaging datasets).}
+
+\item{features}{Character vector; feature column names, or NULL for auto.}
+
+\item{feature_columns}{Alias for \code{features} (backward compat).}
+
+\item{masks}{Character; mask asset alias for segmentation, or NULL.}
+
+\item{evaluation_only}{Logical; if TRUE, blocks model release.}
 }
 \value{
 A \code{dsflower_recipe} S3 object.
 }
 \description{
 A recipe combines all specification objects needed for a federated
-learning experiment: task type, model architecture, aggregation
-strategy, privacy settings, and data configuration.
+learning experiment. Template is always inferred from the model.
+Task can be inferred from the model if not specified.
 }
