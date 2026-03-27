@@ -30,8 +30,6 @@ Suggests:
     plotly,
     clipr,
     knitr,
-    rmarkdown,
-    pkgdown
-VignetteBuilder: knitr
+    rmarkdown
 Config/testthat/edition: 3
 RoxygenNote: 7.3.3

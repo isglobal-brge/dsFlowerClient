@@ -105,10 +105,10 @@ test_that("pytorch_multiclass accepts overrides", {
   expect_equal(m$params$n_classes, 5L)
 })
 
-test_that("xgboost_tabular creates correct model", {
-  m <- ds.flower.model.xgboost_tabular()
+test_that("xgboost creates correct model", {
+  m <- ds.flower.model.xgboost()
   expect_s3_class(m, "dsflower_model")
-  expect_equal(m$name, "xgboost_tabular")
+  expect_equal(m$name, "xgboost")
   expect_equal(m$framework, "xgboost")
   expect_equal(m$params$max_depth, 6L)
   expect_equal(m$params$eta, 0.3)
