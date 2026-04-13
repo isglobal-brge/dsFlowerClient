@@ -1,82 +1,54 @@
 # dsFlowerClient
 
-> Client-side DataSHIELD package for orchestrating **Flower federated learning** experiments across multiple Opal/Rock servers.
+Client-side R package for [dsFlower](https://github.com/isglobal-brge/dsFlower) — federated learning on [DataSHIELD](https://www.datashield.org/) powered by [Flower](https://flower.ai/).
 
-## What it does
+## Installation
 
-dsFlowerClient lets you train machine learning models across hospitals without moving patient data. It bridges [DataSHIELD](https://www.datashield.org/) (privacy-preserving infrastructure) with [Flower](https://flower.ai/) (federated learning framework).
+```r
+remotes::install_github("isglobal-brge/dsFlowerClient")
+```
 
-![Architecture](man/figures/architecture.svg)
+Requires Python with [Flower](https://flower.ai/): `pip install flwr>=1.13.0`
 
-## Key features
-
-- **Composable recipes** --- mix and match tasks, models, strategies, and privacy settings
-- **Multiple models** --- Logistic Regression, SGD, Ridge, PyTorch MLP
-- **Aggregation strategies** --- FedAvg, FedProx
-- **Differential privacy** --- optional gradient clipping and noise
-- **Auto-TLS** --- ephemeral certificates for encrypted gRPC channels
-- **Server-side controls** --- disclosure thresholds, round limits, spawn permissions
-
-## Quick start
+## Usage
 
 ```r
 library(dsFlowerClient)
 library(DSI)
 library(DSOpal)
 
-# 1. Connect to Opal servers
+# Connect to Opal nodes
 builder <- DSI::newDSLoginBuilder()
-builder$append(server = "site_a", url = "https://opal1.example.org",
-               user = "researcher", password = "secret",
-               driver = "OpalDriver")
-builder$append(server = "site_b", url = "https://opal2.example.org",
-               user = "researcher", password = "secret",
-               driver = "OpalDriver")
-conns <- DSI::datashield.login(logins = builder$build(), assign = FALSE)
+builder$append(server = "site1", url = "https://opal1.example.org",
+               user = "researcher", password = "...",
+               table = "PROJECT.data", driver = "OpalDriver")
+builder$append(server = "site2", url = "https://opal2.example.org",
+               user = "researcher", password = "...",
+               table = "PROJECT.data", driver = "OpalDriver")
+conns <- DSI::datashield.login(logins = builder$build(),
+                               assign = TRUE, symbol = "D")
+flower <- ds.flower.connect(conns, symbol = "D")
 
-# 2. Initialize and prepare
-ds.flower.nodes.init(conns, resource = "project.flower_node")
-ds.flower.nodes.prepare(conns, target_column = "diagnosis",
-                        feature_columns = c("age", "bmi", "glucose"))
+# Train
+result <- ds.flower.run(flower, ds.flower.recipe(
+  model         = ds.flower.model.pytorch_mlp(hidden_layers = "64,32"),
+  strategy      = ds.flower.strategy.fedprox(proximal_mu = 0.1),
+  target_column = "outcome",
+  num_rounds    = 10L
+))
 
-# 3. Start SuperLink and connect nodes
-ds.flower.superlink.start()  # TLS certificates auto-generated
-ds.flower.nodes.ensure(conns)
-
-# 4. Define and run experiment
-recipe <- ds.flower.recipe(
-  task     = ds.flower.task.classification(),
-  model    = ds.flower.model.sklearn_logreg(C = 1.0),
-  strategy = ds.flower.strategy.fedavg(min_fit_clients = 2L),
-  num_rounds      = 10L,
-  target_column   = "diagnosis",
-  feature_columns = c("age", "bmi", "glucose")
-)
-
-result <- ds.flower.run.start(recipe, verbose = TRUE)
-
-# 5. Clean up
-ds.flower.nodes.cleanup(conns)
-ds.flower.superlink.stop()
+# Cleanup
+ds.flower.disconnect(flower)
 DSI::datashield.logout(conns)
 ```
 
-## Guides
+## Models
 
-- [Getting Started](articles/getting-started.html) --- full walkthrough with live demo across 3 Opal servers
-- [Experiment Recipes](articles/experiment-recipes.html) --- all models, strategies, and privacy settings
-- [Secure Connections](articles/secure-connections.html) --- TLS auto-certificate generation explained
+20 models across scikit-learn, PyTorch, and XGBoost. See the [dsFlower README](https://github.com/isglobal-brge/dsFlower) for the full list.
 
-## Installation
+## Authors
 
-```r
-# Install from GitHub
-remotes::install_github("dsFlower-framework/dsFlowerClient")
-```
+- **David Sarrat González** — david.sarrat@isglobal.org
+- **Juan R González** — juanr.gonzalez@isglobal.org
 
-## Requirements
-
-- R >= 4.1.0
-- Python >= 3.8 with Flower (`pip install flwr`)
-- [DSI](https://cran.r-project.org/package=DSI) and [DSOpal](https://cran.r-project.org/package=DSOpal)
-- Opal/Rock servers with [dsFlower](https://github.com/dsFlower-framework/dsFlower) installed
+[Barcelona Institute for Global Health (ISGlobal)](https://www.isglobal.org/)

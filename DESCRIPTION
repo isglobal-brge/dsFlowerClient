@@ -4,7 +4,6 @@ Title: DataSHIELD Client for Flower Federated Learning
 Version: 0.1.0
 Authors@R: c(
     person("David", "Sarrat González", role = c("aut", "cre"), email = "david.sarrat@isglobal.org"),
-    person("Ramón", "Mateo Navarro", role = "aut", email = "ramon.mateo@isglobal.org"),
     person("Juan R", "González", role = "aut", email = "juanr.gonzalez@isglobal.org"))
 Description: Client-side DataSHIELD package for orchestrating Flower federated
     learning experiments. Provides composable specification objects (task, model,
