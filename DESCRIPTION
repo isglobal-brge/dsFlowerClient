@@ -11,6 +11,7 @@ Description: Client-side DataSHIELD package for orchestrating Flower federated
     processx, generates Flower App bundles from templates, and controls runs via
     the flwr CLI. Includes result objects with metrics, plotting, and comparison.
 License: MIT + file LICENSE
+URL: https://isglobal-brge.github.io/dsFlowerClient/
 Encoding: UTF-8
 Depends:
     R (>= 4.1.0)
@@ -20,15 +21,19 @@ Imports:
     jsonlite,
     processx
 Suggests:
+    DSOpal,
     DSLite,
-    testthat (>= 3.0.0),
-    withr,
-    shiny,
     bslib,
-    DT,
-    plotly,
     clipr,
+    DT,
     knitr,
-    rmarkdown
+    mlbench,
+    opalr,
+    plotly,
+    rmarkdown,
+    shiny,
+    testthat (>= 3.0.0),
+    withr
 Config/testthat/edition: 3
+VignetteBuilder: knitr
 RoxygenNote: 7.3.3

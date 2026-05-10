@@ -1,4 +1,4 @@
-url: ~
+url: https://isglobal-brge.github.io/dsFlowerClient/
 
 template:
   bootstrap: 5
@@ -18,20 +18,23 @@ navbar:
     articles:
       text: Guides
       menu:
-        - text: "Getting Started"
-          href: articles/getting-started.html
-        - text: "Experiment Recipes"
-          href: articles/experiment-recipes.html
-        - text: "Secure Connections (TLS)"
-          href: articles/secure-connections.html
+        - text: "Breast Cancer Benchmark"
+          href: articles/demo-breast-cancer.html
+        - text: "Heart Disease Benchmark"
+          href: articles/demo-heart-disease.html
+        - text: "MedMNIST Benchmark"
+          href: articles/demo-medmnist.html
+        - text: "Radiomics Benchmark"
+          href: articles/demo-lung1-radiomics.html
 
 articles:
-  - title: Guides
+  - title: Federated benchmark demos
     navbar: ~
     contents:
-      - getting-started
-      - experiment-recipes
-      - secure-connections
+      - demo-breast-cancer
+      - demo-heart-disease
+      - demo-medmnist
+      - demo-lung1-radiomics
 
 reference:
   - title: "Lifecycle: Node Management"
@@ -76,8 +79,17 @@ reference:
     contents:
       - ds.flower.task.classification
       - ds.flower.task.regression
-      - ds.flower.privacy.research
-      - ds.flower.privacy.dp
+      - ds.flower.task.segmentation
+      - ds.flower.task.survival
+      - ds.flower.privacy.sandbox_open
+      - ds.flower.privacy.trusted_internal
+      - ds.flower.privacy.consortium_internal
+      - ds.flower.privacy.clinical_default
+      - ds.flower.privacy.clinical_hardened
+      - ds.flower.privacy.clinical_update_noise
+      - ds.flower.privacy.high_sensitivity_dp
+      - ds.flower.privacy.evaluation_only
+      - ds.flower.privacy.budget
 
   - title: "Specification: Recipe"
     desc: "Combine task, model, strategy, and privacy into a recipe."
@@ -105,3 +117,9 @@ reference:
       - print.dsflower_result
       - as.data.frame.dsflower_result
       - "`$.dsflower_result`"
+
+  - title: "Full Exported API"
+    desc: "Catch-all index for exported helpers not listed above."
+    contents:
+      - starts_with("ds.flower.")
+      - starts_with("print.")

@@ -1,0 +1,48 @@
+---
+title: "MedMNIST Federated Benchmark"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{MedMNIST Federated Benchmark}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+run_demo <- identical(Sys.getenv("DSFLOWER_RUN_VIGNETTE_DEMOS"), "true")
+```
+
+This vignette demonstrates that image-origin data can be turned into a compact
+federated learning task without sending images to the client. The demo uses
+BreastMNIST from MedMNIST, average-pools each 28x28 image to a 7x7 feature map,
+and trains a binary logistic model through the same DataSHIELD/Flower path used
+by the tabular demos.
+
+The script bootstraps the Python client environment with `medmnist` when needed.
+
+```sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export OPAL_USER="administrator"
+export OPAL_PASSWORD="admin123"
+Rscript inst/demos/benchmark_medmnist.R
+```
+
+```{r run-demo, eval=run_demo}
+demo_file <- system.file("demos", "benchmark_medmnist.R", package = "dsFlowerClient")
+if (!nzchar(demo_file)) demo_file <- file.path("..", "inst", "demos", "benchmark_medmnist.R")
+source(demo_file)
+```
+
+Validation run on 2026-05-10:
+
+```{r validation-table, echo=FALSE}
+data.frame(
+  metric = c("rows", "train", "test", "sites", "features", "central_auc",
+             "federated_auc", "central_accuracy", "federated_accuracy"),
+  value = c(510, 383, 127, 3, 49, 0.7654, 0.7985, 0.6929, 0.7165)
+)
+```
+
+This is not intended to replace a deep-learning imaging benchmark. It is a
+small, reproducible proof that image-derived feature matrices can enter the
+federated training path cleanly.

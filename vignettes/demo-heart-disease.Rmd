@@ -1,0 +1,49 @@
+---
+title: "Heart Disease Federated Benchmark"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Heart Disease Federated Benchmark}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+run_demo <- identical(Sys.getenv("DSFLOWER_RUN_VIGNETTE_DEMOS"), "true")
+```
+
+This vignette demonstrates a clinical-tabular benchmark using the processed
+Cleveland Heart Disease dataset from the UCI Machine Learning Repository. The
+demo downloads the dataset, removes rows with missing values, builds a central
+baseline, and trains the same feature set through DataSHIELD/Flower across the
+configured Opal servers.
+
+```sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export OPAL_USER="administrator"
+export OPAL_PASSWORD="admin123"
+Rscript inst/demos/benchmark_heart_disease.R
+```
+
+If the UCI URL is temporarily unavailable, the script falls back to a
+deterministic heart-like fixture. The `data_mode` field in `summary.json`
+records which path was used.
+
+```{r run-demo, eval=run_demo}
+demo_file <- system.file("demos", "benchmark_heart_disease.R", package = "dsFlowerClient")
+if (!nzchar(demo_file)) demo_file <- file.path("..", "inst", "demos", "benchmark_heart_disease.R")
+source(demo_file)
+```
+
+Validation run on 2026-05-10:
+
+```{r validation-table, echo=FALSE}
+data.frame(
+  metric = c("rows", "train", "test", "sites", "central_auc", "federated_auc",
+             "central_accuracy", "federated_accuracy"),
+  value = c(297, 223, 74, 3, 0.8919, 0.8926, 0.8378, 0.8514)
+)
+```
+
+The run passes only when Flower reports zero client failures and the post-run
+capability check shows no active SuperNodes.

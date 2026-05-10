@@ -1,0 +1,48 @@
+---
+title: "Radiomics Federated Benchmark"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Radiomics Federated Benchmark}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+run_demo <- identical(Sys.getenv("DSFLOWER_RUN_VIGNETTE_DEMOS"), "true")
+```
+
+This vignette demonstrates downstream federated modeling on radiomics-derived
+features. By default the script uses a deterministic LUNG1-style fixture with
+feature names and signal structure similar to radiomics studies. When real
+radiomics features are available, point the script at a CSV/RDS file:
+
+```sh
+export DSFLOWER_LUNG1_FEATURES="/path/to/radiomics_features.csv"
+export DSFLOWER_LUNG1_TARGET="outcome"
+Rscript inst/demos/benchmark_lung1_radiomics.R
+```
+
+The external file must contain an `id` column or one will be generated. The
+target column is renamed internally to `outcome`, and all numeric columns other
+than the target are used as model features.
+
+```{r run-demo, eval=run_demo}
+demo_file <- system.file("demos", "benchmark_lung1_radiomics.R", package = "dsFlowerClient")
+if (!nzchar(demo_file)) demo_file <- file.path("..", "inst", "demos", "benchmark_lung1_radiomics.R")
+source(demo_file)
+```
+
+Validation run on 2026-05-10:
+
+```{r validation-table, echo=FALSE}
+data.frame(
+  metric = c("rows", "train", "test", "sites", "features", "central_auc",
+             "federated_auc", "central_accuracy", "federated_accuracy"),
+  value = c(420, 316, 104, 3, 10, 0.7217, 0.7205, 0.6827, 0.6635)
+)
+```
+
+This vignette covers the modeling stage. Image segmentation and radiomics
+extraction should happen upstream in `dsImaging`; this benchmark consumes the
+derived feature table as a federated learning input.

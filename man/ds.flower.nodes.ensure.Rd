@@ -22,6 +22,9 @@ ds.flower.nodes.ensure(
   \item Single string: broadcast to all nodes.
   \item Named list: per-node addresses (names must match connection names).
 }}
+
+\item{template_name}{Optional Flower template name passed to server-side
+SuperNode bootstrap.}
 }
 \value{
 A \code{dsflower_result} with per-site status.

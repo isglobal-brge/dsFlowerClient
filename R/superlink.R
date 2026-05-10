@@ -378,7 +378,7 @@ ds.flower.superlink.attach <- function() {
   while (Sys.time() < deadline) {
     if (!proc$is_alive()) {
       log_tail <- tryCatch(
-        paste(tail(readLines(log_path, warn = FALSE), 10), collapse = "\n"),
+        paste(utils::tail(readLines(log_path, warn = FALSE), 10), collapse = "\n"),
         error = function(e) "(no log)")
       stop("SuperLink process died during startup.\nLog:\n", log_tail,
            call. = FALSE)
@@ -390,7 +390,7 @@ ds.flower.superlink.attach <- function() {
   }
 
   log_tail <- tryCatch(
-    paste(tail(readLines(log_path, warn = FALSE), 10), collapse = "\n"),
+    paste(utils::tail(readLines(log_path, warn = FALSE), 10), collapse = "\n"),
     error = function(e) "(no log)")
   stop("SuperLink did not become ready within ", timeout, " seconds.\nLog:\n",
        log_tail, call. = FALSE)

@@ -25,6 +25,14 @@ ds.flower.nodes.prepare(
 \item{feature_columns}{Character vector or NULL; feature column names.}
 
 \item{run_config}{Named list; additional run configuration.}
+
+\item{privacy}{Optional \code{dsflower_privacy} object. When supplied,
+privacy mode and parameters are injected into \code{run_config}.}
+
+\item{template_name}{Optional Flower template name used for server-side
+staging.}
+
+\item{label_set}{Optional imaging label-set name for imaging-backed runs.}
 }
 \value{
 A \code{dsflower_result} with per-site status.

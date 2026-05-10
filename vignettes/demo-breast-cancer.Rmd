@@ -1,0 +1,49 @@
+---
+title: "Breast Cancer Federated Benchmark"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Breast Cancer Federated Benchmark}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+run_demo <- identical(Sys.getenv("DSFLOWER_RUN_VIGNETTE_DEMOS"), "true")
+```
+
+This vignette demonstrates a federated logistic-regression benchmark on the
+Wisconsin Breast Cancer dataset from `mlbench`. The script creates a local
+central baseline, partitions the training rows across the configured Opal
+servers, runs Flower through DataSHIELD, and writes a JSON/RDS audit record.
+
+The default Opal configuration is:
+
+```sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export OPAL_USER="administrator"
+export OPAL_PASSWORD="admin123"
+Rscript inst/demos/benchmark_breast_cancer.R
+```
+
+The demo can also be launched while rendering this vignette:
+
+```{r run-demo, eval=run_demo}
+demo_file <- system.file("demos", "benchmark_breast_cancer.R", package = "dsFlowerClient")
+if (!nzchar(demo_file)) demo_file <- file.path("..", "inst", "demos", "benchmark_breast_cancer.R")
+source(demo_file)
+```
+
+Validation run on 2026-05-10:
+
+```{r validation-table, echo=FALSE}
+data.frame(
+  metric = c("rows", "train", "test", "sites", "central_auc", "federated_auc",
+             "central_accuracy", "federated_accuracy"),
+  value = c(683, 513, 170, 3, 0.9878, 0.9908, 0.9471, 0.9647)
+)
+```
+
+The expected output directory is `dsflower_output/demo_benchmarks/`, with
+`summary.json` and `benchmark.rds` for each run. The Flower run must finish with
+zero client failures and no active SuperNodes left behind.

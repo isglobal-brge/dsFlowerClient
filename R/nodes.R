@@ -119,6 +119,11 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
 #' @param target_column Character; name of the target column.
 #' @param feature_columns Character vector or NULL; feature column names.
 #' @param run_config Named list; additional run configuration.
+#' @param privacy Optional \code{dsflower_privacy} object. When supplied,
+#'   privacy mode and parameters are injected into \code{run_config}.
+#' @param template_name Optional Flower template name used for server-side
+#'   staging.
+#' @param label_set Optional imaging label-set name for imaging-backed runs.
 #' @return A \code{dsflower_result} with per-site status.
 #' @export
 ds.flower.nodes.prepare <- function(conns, symbol = "flower",
@@ -180,6 +185,8 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 #'     \item Single string: broadcast to all nodes.
 #'     \item Named list: per-node addresses (names must match connection names).
 #'   }
+#' @param template_name Optional Flower template name passed to server-side
+#'   SuperNode bootstrap.
 #' @return A \code{dsflower_result} with per-site status.
 #' @export
 ds.flower.nodes.ensure <- function(conns, symbol = "flower",
