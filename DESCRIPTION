@@ -26,6 +26,7 @@ Suggests:
     bslib,
     clipr,
     DT,
+    ggplot2,
     knitr,
     mlbench,
     opalr,

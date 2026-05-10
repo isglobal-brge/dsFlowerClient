@@ -47,6 +47,16 @@ The same demos are documented as pkgdown articles. Set
 `DSFLOWER_RUN_VIGNETTE_DEMOS=true` before rendering if the vignettes should
 execute the Opal runs instead of only showing the runnable workflow.
 
+For a real imaging handoff, `inst/demos/lung1_radiomics_to_flower.R` consumes
+published `dsImaging` radiomics assets, loads them as a server-side `rad` table,
+and trains a federated model with `ds.flower.fit()`:
+
+```sh
+export LUNG1_WORKDIR="/tmp/dsimaging_lung1_full"
+export LUNG1_OPAL_RESOURCE="lung1_full_study"
+Rscript inst/demos/lung1_radiomics_to_flower.R
+```
+
 ## Usage
 
 ```r

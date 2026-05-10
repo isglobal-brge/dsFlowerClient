@@ -28,6 +28,8 @@ navbar:
           href: articles/demo-medmnist.html
         - text: "Radiomics Benchmark"
           href: articles/demo-lung1-radiomics.html
+        - text: "Radiomics To Flower"
+          href: articles/radiomics-to-flower.html
 
 articles:
   - title: Federated benchmark demos
@@ -38,6 +40,7 @@ articles:
       - demo-heart-disease
       - demo-medmnist
       - demo-lung1-radiomics
+      - radiomics-to-flower
 
 reference:
   - title: "Lifecycle: Node Management"

@@ -145,6 +145,14 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     weights <- .read_model_weights(results_dir)
   }
   history <- .read_training_history(results_dir)
+  runtime_status <- .flower_runtime_status(
+    cli_status = result$status,
+    stdout = clean_stdout,
+    stderr = clean_stderr,
+    weights = weights,
+    history = history,
+    expect_artifacts = !isTRUE(recipe$privacy$params$evaluation_only)
+  )
 
   # Generate a unique model ID for identification
   model_id <- paste0(
@@ -195,7 +203,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       num_rounds = recipe$num_rounds,
       n_clients  = length(conns),
       created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
-      status     = if (result$status == 0L) "success" else "failed"
+      status     = if (runtime_status == 0L) "success" else "failed"
     )
     jsonlite::write_json(meta, file.path(output_dir, "metadata.json"),
                          auto_unbox = TRUE, pretty = TRUE)
@@ -207,7 +215,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     list(
       model_id    = model_id,
       run_id      = run_id,
-      status      = result$status,
+      status      = runtime_status,
+      cli_status  = result$status,
       num_rounds  = recipe$num_rounds,
       model       = recipe$model$name,
       strategy    = recipe$strategy$name,
@@ -321,6 +330,44 @@ ds.flower.run.stop <- function(run_id) {
   if (length(m3) >= 2) return(m3[2])
 
   NULL
+}
+
+.parse_flower_exit_code <- function(text) {
+  if (is.null(text) || !nzchar(text)) return(NULL)
+  m <- regmatches(text, regexec("Exit Code:\\s*([0-9]+)", text))[[1]]
+  if (length(m) >= 2L) return(as.integer(m[[2L]]))
+  NULL
+}
+
+.flower_runtime_status <- function(cli_status, stdout = "", stderr = "",
+                                   weights = NULL, history = NULL,
+                                   expect_artifacts = TRUE) {
+  cli_status <- as.integer(cli_status %||% 0L)
+  combined <- paste(stdout %||% "", stderr %||% "", sep = "\n")
+  flower_exit <- .parse_flower_exit_code(combined)
+  has_server_error <- grepl(
+    paste(c(
+      "ServerApp raised an exception",
+      "ClientApp raised an exception",
+      "An unhandled exception occurred",
+      "Traceback \\(most recent call last\\)"
+    ), collapse = "|"),
+    combined
+  )
+
+  if (!is.null(flower_exit) && flower_exit != 0L) {
+    return(flower_exit)
+  }
+  if (cli_status != 0L) {
+    return(cli_status)
+  }
+  if (has_server_error) {
+    return(1L)
+  }
+  if (isTRUE(expect_artifacts) && is.null(weights) && is.null(history)) {
+    return(1L)
+  }
+  0L
 }
 
 #' Read saved model weights from results directory

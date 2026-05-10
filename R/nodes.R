@@ -340,15 +340,41 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
 #' @return A \code{dsflower_result} with cleanup confirmation.
 #' @export
 ds.flower.nodes.cleanup <- function(conns, symbol = "flower") {
-  DSI::datashield.assign.expr(
-    conns,
-    symbol = symbol,
-    expr = call("flowerCleanupRunDS", symbol)
-  )
-
   code <- .build_code("ds.flower.nodes.cleanup", symbol = symbol)
+  results <- list()
 
-  results <- .ds_safe_aggregate(conns, expr = call("flowerStatusDS", symbol))
+  for (srv in names(conns)) {
+    cleaned <- FALSE
+    error <- NULL
+
+    for (attempt in seq_len(3L)) {
+      ok <- tryCatch({
+        DSI::datashield.assign.expr(
+          conns[srv],
+          symbol = symbol,
+          expr = call("flowerCleanupRunDS", symbol)
+        )
+        TRUE
+      }, error = function(e) {
+        error <<- conditionMessage(e)
+        FALSE
+      })
+
+      if (isTRUE(ok)) {
+        cleaned <- TRUE
+        break
+      }
+      Sys.sleep(1)
+    }
+
+    status <- tryCatch(
+      DSI::datashield.aggregate(conns[srv], expr = call("flowerStatusDS", symbol))[[srv]],
+      error = function(e) list(status_error = conditionMessage(e))
+    )
+    status$cleanup_ok <- cleaned
+    if (!isTRUE(cleaned)) status$cleanup_error <- error %||% "unknown cleanup error"
+    results[[srv]] <- status
+  }
 
   dsflower_result(
     per_site = results,
