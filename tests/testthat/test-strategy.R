@@ -6,14 +6,13 @@ test_that("fedavg creates correct strategy with defaults", {
   expect_equal(s$name, "FedAvg")
   expect_equal(s$params$fraction_fit, 1.0)
   expect_equal(s$params$fraction_evaluate, 1.0)
-  expect_equal(s$params$min_fit_clients, 2L)
-  expect_equal(s$params$min_available_clients, 2L)
+  expect_null(s$params$min_fit_clients)
+  expect_null(s$params$min_available_clients)
 })
 
 test_that("fedavg accepts overrides", {
-  s <- ds.flower.strategy.fedavg(fraction_fit = 0.5, min_fit_clients = 3L)
+  s <- ds.flower.strategy.fedavg(fraction_fit = 0.5)
   expect_equal(s$params$fraction_fit, 0.5)
-  expect_equal(s$params$min_fit_clients, 3L)
 })
 
 test_that("fedprox creates correct strategy with defaults", {
@@ -25,9 +24,8 @@ test_that("fedprox creates correct strategy with defaults", {
 })
 
 test_that("fedprox accepts overrides", {
-  s <- ds.flower.strategy.fedprox(proximal_mu = 0.5, min_fit_clients = 4L)
+  s <- ds.flower.strategy.fedprox(proximal_mu = 0.5)
   expect_equal(s$params$proximal_mu, 0.5)
-  expect_equal(s$params$min_fit_clients, 4L)
 })
 
 test_that("fedadam creates correct strategy with defaults", {

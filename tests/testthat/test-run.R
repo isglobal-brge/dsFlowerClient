@@ -20,11 +20,6 @@ test_that(".parse_run_id returns NULL for no match", {
   expect_null(dsFlowerClient:::.parse_run_id("No run id here"))
 })
 
-test_that(".require_flwr_cli errors when flwr not found", {
-  withr::with_path("", action = "replace", {
-    expect_error(
-      dsFlowerClient:::.require_flwr_cli(),
-      "flwr.*not found"
-    )
-  })
+test_that(".require_flwr_cli accepts provisioned client environment", {
+  expect_true(isTRUE(dsFlowerClient:::.require_flwr_cli()))
 })

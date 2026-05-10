@@ -29,14 +29,14 @@ test_that("recipe defaults to clinical_default privacy", {
   expect_equal(recipe$privacy$mode, "clinical_default")
 })
 
-test_that("recipe with clinical_dp privacy", {
+test_that("recipe with clinical_update_noise privacy", {
   recipe <- ds.flower.recipe(
     task = ds.flower.task.classification(),
     model = ds.flower.model.pytorch_mlp(),
     strategy = ds.flower.strategy.fedprox(),
-    privacy = ds.flower.privacy.clinical_dp(epsilon = 0.5)
+    privacy = ds.flower.privacy.clinical_update_noise(epsilon = 0.5)
   )
-  expect_equal(recipe$privacy$mode, "clinical_dp")
+  expect_equal(recipe$privacy$mode, "clinical_update_noise")
   expect_equal(recipe$privacy$params$epsilon, 0.5)
 })
 

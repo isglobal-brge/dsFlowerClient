@@ -3,7 +3,7 @@
 
 #' List available segmentation masks
 #'
-#' Queries the server for validated mask assets from dsRadiomics.
+#' Queries the server for validated mask assets from dsImaging.
 #' Only shows ACTIVE, valid, non-partial masks by default.
 #'
 #' @param flower A \code{dsflower_connection}, or NULL for last connection.

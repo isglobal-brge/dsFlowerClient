@@ -10,6 +10,20 @@ remotes::install_github("isglobal-brge/dsFlowerClient")
 
 Requires Python with [Flower](https://flower.ai/): `pip install flwr>=1.13.0`
 
+## Local Opal demo
+
+The package ships a runnable three-site Opal demo that creates synthetic
+balanced tables, configures the local Opal profile, and trains a federated
+scikit-learn logistic regression model:
+
+```sh
+Rscript "$(Rscript -e 'cat(system.file("demos", "opal_federated_logreg.R", package = "dsFlowerClient"))')"
+```
+
+By default the demo uses `DSFLOWER_DEMO_PRIVACY=trusted_internal`. Profiles
+that require Secure Aggregation are only allowed when the connected servers
+report `secure_aggregation_supported = TRUE`.
+
 ## Usage
 
 ```r

@@ -37,18 +37,18 @@ test_that("clinical_hardened has correct structure", {
   expect_equal(length(p$params), 0)
 })
 
-test_that("clinical_dp has correct defaults", {
-  p <- ds.flower.privacy.clinical_dp()
+test_that("clinical_update_noise has correct defaults", {
+  p <- ds.flower.privacy.clinical_update_noise()
   expect_s3_class(p, "dsflower_privacy")
-  expect_equal(p$mode, "clinical_dp")
+  expect_equal(p$mode, "clinical_update_noise")
   expect_equal(p$params$epsilon, 1.0)
   expect_equal(p$params$delta, 1e-5)
   expect_equal(p$params$clipping_norm, 1.0)
 })
 
-test_that("clinical_dp accepts overrides", {
-  p <- ds.flower.privacy.clinical_dp(epsilon = 0.5, delta = 1e-6,
-                                      clipping_norm = 2.0)
+test_that("clinical_update_noise accepts overrides", {
+  p <- ds.flower.privacy.clinical_update_noise(epsilon = 0.5, delta = 1e-6,
+                                                clipping_norm = 2.0)
   expect_equal(p$params$epsilon, 0.5)
   expect_equal(p$params$delta, 1e-6)
   expect_equal(p$params$clipping_norm, 2.0)
@@ -73,11 +73,11 @@ test_that("high_sensitivity_dp accepts overrides", {
 
 # --- DP param validation ---
 
-test_that("clinical_dp rejects invalid params", {
-  expect_error(ds.flower.privacy.clinical_dp(epsilon = -1), "positive")
-  expect_error(ds.flower.privacy.clinical_dp(delta = 0), "\\(0, 1\\)")
-  expect_error(ds.flower.privacy.clinical_dp(delta = 1), "\\(0, 1\\)")
-  expect_error(ds.flower.privacy.clinical_dp(clipping_norm = 0), "positive")
+test_that("clinical_update_noise rejects invalid params", {
+  expect_error(ds.flower.privacy.clinical_update_noise(epsilon = -1), "positive")
+  expect_error(ds.flower.privacy.clinical_update_noise(delta = 0), "\\(0, 1\\)")
+  expect_error(ds.flower.privacy.clinical_update_noise(delta = 1), "\\(0, 1\\)")
+  expect_error(ds.flower.privacy.clinical_update_noise(clipping_norm = 0), "positive")
 })
 
 test_that("high_sensitivity_dp rejects invalid params", {
@@ -98,9 +98,9 @@ test_that("evaluation_only sets flag on base privacy", {
 })
 
 test_that("evaluation_only works with DP profiles", {
-  base <- ds.flower.privacy.clinical_dp(epsilon = 0.5)
+  base <- ds.flower.privacy.clinical_update_noise(epsilon = 0.5)
   p <- ds.flower.privacy.evaluation_only(base)
-  expect_equal(p$mode, "clinical_dp")
+  expect_equal(p$mode, "clinical_update_noise")
   expect_true(p$params$evaluation_only)
   expect_equal(p$params$epsilon, 0.5)
 })
@@ -120,7 +120,7 @@ test_that("privacy prints correctly for all modes", {
   expect_output(print(ds.flower.privacy.consortium_internal()), "consortium_internal")
   expect_output(print(ds.flower.privacy.clinical_default()), "clinical_default")
   expect_output(print(ds.flower.privacy.clinical_hardened()), "clinical_hardened")
-  expect_output(print(ds.flower.privacy.clinical_dp()), "clinical_dp")
+  expect_output(print(ds.flower.privacy.clinical_update_noise()), "clinical_update_noise")
   expect_output(print(ds.flower.privacy.high_sensitivity_dp()), "high_sensitivity_dp")
 })
 

@@ -49,6 +49,11 @@ print.dsflower_description <- function(x, ...) {
     c <- x$caps[[srv]]
     cat("\n  [", srv, "]\n")
     cat("    Profile:    ", c$privacy_profile %||% "unknown", "\n")
+    if (!is.null(c$secure_aggregation_supported)) {
+      cat("    SecAgg:     ",
+          if (isTRUE(c$secure_aggregation_supported)) "available" else "unavailable",
+          "\n")
+    }
     if (!is.null(c$data_n_rows))
       cat("    Samples:    ", c$data_n_rows, "\n")
     if (!is.null(c$data_source))

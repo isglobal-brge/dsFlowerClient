@@ -39,6 +39,59 @@
   tau               = list(min = 1e-10, max = 10)
 )
 
+.SECAGG_PRIVACY_MODES <- c(
+  "consortium_internal",
+  "clinical_default",
+  "clinical_hardened",
+  "clinical_update_noise",
+  "high_sensitivity_dp",
+  "secure",
+  "dp"
+)
+
+#' Whether a recipe requires Secure Aggregation at runtime
+#' @keywords internal
+.recipe_requires_secagg <- function(recipe, privacy) {
+  mode <- privacy$mode %||% ""
+  mode %in% .SECAGG_PRIVACY_MODES ||
+    identical(recipe$model$template %||% "", "xgboost")
+}
+
+#' Enforce server-reported Secure Aggregation capability before preparing a run
+#' @keywords internal
+.enforce_server_runtime_capabilities <- function(caps, recipe, privacy) {
+  if (is.null(caps) || length(caps) == 0) return(invisible(TRUE))
+
+  server_requires <- any(vapply(caps, function(c) {
+    isTRUE(c$trust_profile$require_secure_aggregation)
+  }, logical(1)))
+  recipe_requires <- .recipe_requires_secagg(recipe, privacy)
+  if (!server_requires && !recipe_requires) return(invisible(TRUE))
+
+  unsupported <- names(caps)[!vapply(caps, function(c) {
+    isTRUE(c$secure_aggregation_supported)
+  }, logical(1))]
+  if (length(unsupported) == 0) return(invisible(TRUE))
+
+  reason <- if (recipe_requires && server_requires) {
+    "the recipe and at least one server trust profile require Secure Aggregation"
+  } else if (recipe_requires) {
+    paste0("recipe privacy mode '", privacy$mode,
+           "' requires Secure Aggregation")
+  } else {
+    "at least one server trust profile requires Secure Aggregation"
+  }
+
+  stop(
+    "Cannot run this dsFlower job: ", reason,
+    ", but these servers report no server-side SecAgg support: ",
+    paste(unsupported, collapse = ", "), ". ",
+    "Use privacy = ds.flower.privacy.trusted_internal() for trusted local demos, ",
+    "or install a compatible Flower runtime/server app implementation.",
+    call. = FALSE
+  )
+}
+
 #' Validate model hyperparameters against bounds
 #' @keywords internal
 .validate_model_params <- function(model) {
@@ -130,6 +183,12 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
   feature_columns <- recipe$feature_columns %||% recipe$features
   if (is.null(feature_columns)) feature_columns <- character(0)
 
+  caps <- tryCatch(
+    .ds_safe_aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
+    error = function(e) NULL
+  )
+  .enforce_server_runtime_capabilities(caps, recipe, privacy)
+
   # Step 1: Prepare (only if config changed since last prepare)
   current_hash <- digest::digest(list(
     target_column, feature_columns, label_set, template_name,
@@ -157,10 +216,25 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
     started_superlink <- TRUE
   }
 
+  cleanup_nodes <- function() {
+    tryCatch(
+      ds.flower.nodes.cleanup(conns, symbol),
+      error = function(e) {
+        warning("Failed to clean up dsFlower SuperNodes: ",
+                conditionMessage(e), call. = FALSE)
+      }
+    )
+  }
+  nodes_ensured <- FALSE
+
   # Step 3: Ensure SuperNodes
   tryCatch(
-    ds.flower.nodes.ensure(conns, symbol, template_name = template_name),
+    {
+      ds.flower.nodes.ensure(conns, symbol, template_name = template_name)
+      nodes_ensured <- TRUE
+    },
     error = function(e) {
+      cleanup_nodes()
       if (started_superlink) ds.flower.superlink.stop()
       stop(e)
     }
@@ -170,12 +244,17 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
   run <- tryCatch(
     ds.flower.run.start(recipe, conns, verbose = verbose),
     error = function(e) {
+      if (nodes_ensured) cleanup_nodes()
       if (started_superlink && !detached) ds.flower.superlink.stop()
       stop(e)
     }
   )
 
-  # Step 5: Stop SuperLink (only if we started it and not detached)
+  # Step 5: Stop remote SuperNodes, then stop SuperLink if we started it.
+  # SuperNodes are per-run processes; leaving them alive after SuperLink stops
+  # causes reconnection loops and consumes CPU/RAM in Rock containers.
+  if (nodes_ensured) cleanup_nodes()
+
   if (started_superlink && !detached) {
     ds.flower.superlink.stop()
   }

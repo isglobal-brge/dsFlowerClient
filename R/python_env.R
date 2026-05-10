@@ -1,7 +1,7 @@
 # Module: Client-Side Python Environment Management
 #
 # Uses uv to create a single venv with flwr[app] on the researcher's machine.
-# Same pattern as server-side packages (dsFlower, dsRadiomics, dsImaging):
+# Same pattern as server-side packages (dsFlower, dsImaging):
 #   1. Ensure uv is available (download if needed)
 #   2. uv creates Python venv (downloads Python if needed)
 #   3. Use the venv's flwr CLI + flower-superlink

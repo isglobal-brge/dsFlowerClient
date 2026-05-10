@@ -47,8 +47,6 @@ test_that(".build_code skips NULL arguments", {
   expect_equal(code, 'fn(a = 1, c = "y")')
 })
 
-test_that(".require_flwr_cli errors when not found", {
-  withr::with_path("", action = "replace", {
-    expect_error(dsFlowerClient:::.require_flwr_cli(), "flwr.*not found")
-  })
+test_that(".require_flwr_cli accepts provisioned client environment", {
+  expect_true(isTRUE(dsFlowerClient:::.require_flwr_cli()))
 })

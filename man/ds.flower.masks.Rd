@@ -13,6 +13,6 @@ ds.flower.masks(flower)
 A data.frame with mask assets, or empty if none.
 }
 \description{
-Queries the server for validated mask assets from dsRadiomics.
+Queries the server for validated mask assets from dsImaging.
 Only shows ACTIVE, valid, non-partial masks by default.
 }

@@ -110,10 +110,12 @@ test_that("xgboost creates correct model", {
   expect_s3_class(m, "dsflower_model")
   expect_equal(m$name, "xgboost")
   expect_equal(m$framework, "xgboost")
-  expect_equal(m$params$max_depth, 6L)
+  expect_equal(m$params$n_trees, 10L)
+  expect_equal(m$params$max_depth, 3L)
   expect_equal(m$params$eta, 0.3)
+  expect_equal(m$params$reg_lambda, 1.0)
+  expect_equal(m$params$n_bins, 64L)
   expect_equal(m$params$objective, "binary:logistic")
-  expect_equal(m$params$local_rounds, 10L)
 })
 
 test_that("pytorch_resnet18 creates correct model", {
