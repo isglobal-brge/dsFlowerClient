@@ -18,6 +18,8 @@ navbar:
     articles:
       text: Guides
       menu:
+        - text: "API Quickstart"
+          href: articles/api-quickstart.html
         - text: "Breast Cancer Benchmark"
           href: articles/demo-breast-cancer.html
         - text: "Heart Disease Benchmark"
@@ -31,6 +33,7 @@ articles:
   - title: Federated benchmark demos
     navbar: ~
     contents:
+      - api-quickstart
       - demo-breast-cancer
       - demo-heart-disease
       - demo-medmnist

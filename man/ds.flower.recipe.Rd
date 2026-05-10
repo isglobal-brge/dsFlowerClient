@@ -20,13 +20,17 @@ ds.flower.recipe(
 )
 }
 \arguments{
-\item{model}{A \code{dsflower_model} object (required).}
+\item{model}{A \code{dsflower_model} object or character model name
+accepted by \code{ds.flower.model()}.}
 
-\item{strategy}{A \code{dsflower_strategy} object (default: FedAvg).}
+\item{strategy}{A \code{dsflower_strategy} object or character strategy
+name accepted by \code{ds.flower.strategy()}.}
 
-\item{privacy}{A \code{dsflower_privacy} object (default: clinical_default).}
+\item{privacy}{A \code{dsflower_privacy} object or character privacy name
+accepted by \code{ds.flower.privacy()}.}
 
-\item{task}{A \code{dsflower_task} object, or NULL to infer from model.}
+\item{task}{A \code{dsflower_task} object, character task name, or NULL to
+infer from model.}
 
 \item{num_rounds}{Integer; number of federated training rounds.}
 

@@ -311,19 +311,17 @@ run_dsflower_benchmark <- function(data,
   conns <- DSI::datashield.login(logins = builder$build(), assign = TRUE, symbol = "D")
   on.exit(try(DSI::datashield.logout(conns), silent = TRUE), add = TRUE)
 
-  handle <- ds.flower.connect(conns, symbol = "D")
-  on.exit(try(ds.flower.disconnect(handle), silent = TRUE), add = TRUE)
-
-  recipe <- ds.flower.recipe(
-    model = ds.flower.model.sklearn_logreg(max_iter = cfg$max_iter),
-    strategy = ds.flower.strategy.fedavg(),
-    privacy = ds.flower.privacy.trusted_internal(),
-    num_rounds = cfg$rounds,
+  run <- ds.flower.fit(
+    conns,
+    symbol = "D",
     target = target,
-    features = features
+    features = features,
+    model = "sklearn_logreg",
+    model_params = list(max_iter = cfg$max_iter),
+    strategy = "fedavg",
+    privacy = "trusted_internal",
+    rounds = cfg$rounds
   )
-
-  run <- ds.flower.run(handle, recipe)
   fed_probs <- predict_sklearn_logreg_weights(run$weights, test[features])
   fed_metrics <- binary_metrics(test[[target]], fed_probs)
 

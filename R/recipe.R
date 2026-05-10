@@ -19,10 +19,14 @@
 #' learning experiment. Template is always inferred from the model.
 #' Task can be inferred from the model if not specified.
 #'
-#' @param model A \code{dsflower_model} object (required).
-#' @param strategy A \code{dsflower_strategy} object (default: FedAvg).
-#' @param privacy A \code{dsflower_privacy} object (default: clinical_default).
-#' @param task A \code{dsflower_task} object, or NULL to infer from model.
+#' @param model A \code{dsflower_model} object or character model name
+#'   accepted by \code{ds.flower.model()}.
+#' @param strategy A \code{dsflower_strategy} object or character strategy
+#'   name accepted by \code{ds.flower.strategy()}.
+#' @param privacy A \code{dsflower_privacy} object or character privacy name
+#'   accepted by \code{ds.flower.privacy()}.
+#' @param task A \code{dsflower_task} object, character task name, or NULL to
+#'   infer from model.
 #' @param num_rounds Integer; number of federated training rounds.
 #' @param target Character; target column name(s). For survival: c("time", "event").
 #' @param target_column Alias for \code{target} (backward compat).
@@ -45,15 +49,11 @@ ds.flower.recipe <- function(model,
                               feature_columns = NULL,
                               masks = NULL,
                               evaluation_only = FALSE) {
-  if (!inherits(model, "dsflower_model")) {
-    stop("'model' must be a dsflower_model object.", call. = FALSE)
-  }
+  if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
   if (!inherits(strategy, "dsflower_strategy")) {
-    stop("'strategy' must be a dsflower_strategy object.", call. = FALSE)
+    strategy <- ds.flower.strategy(strategy)
   }
-  if (!inherits(privacy, "dsflower_privacy")) {
-    stop("'privacy' must be a dsflower_privacy object.", call. = FALSE)
-  }
+  if (!inherits(privacy, "dsflower_privacy")) privacy <- ds.flower.privacy(privacy)
 
   # Infer task from model if not provided
   if (is.null(task)) {
@@ -70,9 +70,7 @@ ds.flower.recipe <- function(model,
       task <- ds.flower.task.classification()
     }
   }
-  if (!inherits(task, "dsflower_task")) {
-    stop("'task' must be a dsflower_task object.", call. = FALSE)
-  }
+  if (!inherits(task, "dsflower_task")) task <- ds.flower.task(task)
 
   # Resolve target (new param wins over backward-compat)
   resolved_target <- target %||% target_column %||% "target"

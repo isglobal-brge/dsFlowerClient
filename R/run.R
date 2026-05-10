@@ -76,7 +76,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     if (any_fixed) {
       recipe$strategy$params$fraction_fit <- 1.0
     }
+    recipe$privacy <- .resolve_auto_privacy(recipe$privacy, caps = caps,
+                                            verbose = verbose)
     .enforce_server_runtime_capabilities(caps, recipe, recipe$privacy)
+  } else {
+    recipe$privacy <- .resolve_auto_privacy(recipe$privacy, caps = caps,
+                                            verbose = verbose)
   }
 
   # Ensure framework dependencies are installed on-demand

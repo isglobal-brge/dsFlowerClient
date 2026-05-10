@@ -171,9 +171,15 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
   .validate_model_params(recipe$model)
   .validate_strategy_params(recipe$strategy)
 
-  # Resolve privacy (recipe wins, else clinical_default)
-  privacy <- recipe$privacy
-  if (is.null(privacy)) privacy <- ds.flower.privacy.clinical_default()
+  caps <- tryCatch(
+    .ds_safe_aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
+    error = function(e) NULL
+  )
+
+  # Resolve privacy (recipe wins, else clinical_default). "auto" depends on
+  # runtime capabilities, so it must be resolved after querying servers.
+  privacy <- .resolve_auto_privacy(recipe$privacy, caps = caps, verbose = verbose)
+  recipe$privacy <- privacy
 
   # Resolve target and label_set from recipe
   target_column <- recipe$target_column %||% recipe$target
@@ -183,10 +189,6 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
   feature_columns <- recipe$feature_columns %||% recipe$features
   if (is.null(feature_columns)) feature_columns <- character(0)
 
-  caps <- tryCatch(
-    .ds_safe_aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
-    error = function(e) NULL
-  )
   .enforce_server_runtime_capabilities(caps, recipe, privacy)
 
   # Step 1: Prepare (only if config changed since last prepare)
@@ -275,5 +277,6 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
 #' @export
 ds.flower.train <- function(conns, data, recipe, ...) {
   flower <- ds.flower.connect(conns, data)
+  on.exit(try(ds.flower.disconnect(flower), silent = TRUE), add = TRUE)
   ds.flower.run(flower, recipe, ...)
 }

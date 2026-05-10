@@ -64,18 +64,42 @@ builder$append(server = "site2", url = "https://opal2.example.org",
                table = "PROJECT.data", driver = "OpalDriver")
 conns <- DSI::datashield.login(logins = builder$build(),
                                assign = TRUE, symbol = "D")
-flower <- ds.flower.connect(conns, symbol = "D")
 
-# Train
-result <- ds.flower.run(flower, ds.flower.recipe(
-  model         = ds.flower.model.pytorch_mlp(hidden_layers = "64,32"),
-  strategy      = ds.flower.strategy.fedprox(proximal_mu = 0.1),
-  target_column = "outcome",
-  num_rounds    = 10L
-))
+# Happy path: connect, build recipe, train, and clean up the Flower handle
+result <- ds.flower.fit(
+  conns,
+  symbol = "D",
+  target = "outcome",
+  features = c("age", "chol", "thalach"),
+  model = "sklearn_logreg",
+  strategy = "fedavg",
+  privacy = "auto",
+  rounds = 5L
+)
+
+# Advanced path remains available for full control
+flower <- ds.flower.connect(conns, symbol = "D")
+recipe <- ds.flower.recipe(
+  model = ds.flower.model("mlp", hidden_layers = c(64, 32)),
+  strategy = ds.flower.strategy("fedprox", proximal_mu = 0.1),
+  privacy = ds.flower.privacy("clinical_default"),
+  target = "outcome",
+  features = c("age", "chol", "thalach"),
+  num_rounds = 10L
+)
+result <- ds.flower.run(flower, recipe)
+ds.flower.disconnect(flower)
+
+# Recipes also accept character names directly
+recipe <- ds.flower.recipe(
+  model = "sklearn_logreg",
+  strategy = "fedavg",
+  privacy = "trusted_internal",
+  target = "outcome",
+  features = c("age", "chol", "thalach")
+)
 
 # Cleanup
-ds.flower.disconnect(flower)
 DSI::datashield.logout(conns)
 ```
 
