@@ -1,8 +1,8 @@
 ---
-title: "Direct Image ResNet Smoke Demo"
+title: "Direct Image ResNet Validation Demo"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Direct Image ResNet Smoke Demo}
+  %\VignetteIndexEntry{Direct Image ResNet Validation Demo}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -10,12 +10,13 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 run_demo <- identical(Sys.getenv("DSFLOWER_RUN_IMAGE_VIGNETTE"), "true")
+has_ggplot2 <- requireNamespace("ggplot2", quietly = TRUE)
 ```
 
-This vignette covers a small direct-image workflow. Unlike the radiomics and
-MedMNIST-tabular demos, this one trains a PyTorch vision template from image
-files stored on the server side. The Opal table contains only sample metadata:
-`id`, `relative_path`, and `label`.
+This vignette covers a small direct-image validation workflow. Unlike the
+radiomics and MedMNIST-tabular demos, this one trains a PyTorch vision template
+from image files stored on the server side. The Opal table contains only sample
+metadata; image pixels remain in the Rock-side imaging store or bucket.
 
 The demo is intentionally small and uses the `sandbox_open` profile by default.
 Clinical vision profiles require substantially larger cohorts and Secure
@@ -133,3 +134,103 @@ That path calls `ds.flower.connect(resource = ...)`, so the server initializes
 `dsImaging`, carries the imaging descriptor into `dsFlower`, stages the
 metadata, resolves image paths from `sample_manifests`, and trains directly
 from the image assets in the imaging store or bucket.
+
+Set `DSFLOWER_IMAGING_LOCAL_WORKDIR` to a local copy of the same demo study to
+also run a centralized PyTorch baseline over the same NIfTI images:
+
+```sh
+export DSFLOWER_IMAGING_LOCAL_WORKDIR="/tmp/dsimaging_lung1_study"
+export DSFLOWER_IMAGING_REQUIRE_LOCAL_BASELINE=true
+Rscript inst/demos/dsimaging_direct_image_resnet.R
+```
+
+The script writes:
+
+```text
+summary.json
+run.rds
+imaging_metadata.rds
+imaging_assets.rds
+post_capabilities.rds
+local_baseline.json
+local_baseline.log
+local_vs_federated.json
+```
+
+## Local vs Federated Validation
+
+The validation run below was executed on 2026-05-11 against three local
+Opal/Rock nodes using the `dsdemo.lung1_study` imaging resource. Each node held
+three LUNG1 cases; the centralized baseline used the same nine NIfTI images from
+the local dsImaging work directory. This is a path validation, not a clinical
+performance claim: the cohort is deliberately tiny and the evaluation is on the
+same training cohort.
+
+```{r validation-table}
+validation <- data.frame(
+  run = c("centralized local", "federated dsImaging"),
+  engine = c("PyTorch ResNet18", "DataSHIELD + Flower ResNet18"),
+  samples = c(9L, 9L),
+  sites_or_clients = c(1L, 3L),
+  rounds_or_epochs = c(1L, 1L),
+  loss = c(0.5540125, 0.5847445),
+  accuracy = c(0.7777778, NA_real_),
+  failures = c(NA_integer_, 0L)
+)
+knitr::kable(validation, digits = 4)
+```
+
+```{r validation-loss-plot, fig.width=7, fig.height=4, fig.alt="Bar chart comparing centralized and federated ResNet18 loss on the same direct imaging demo cohort."}
+plot_data <- data.frame(
+  run = factor(c("centralized local", "federated dsImaging"),
+               levels = c("centralized local", "federated dsImaging")),
+  loss = c(0.5540125, 0.5847445)
+)
+if (has_ggplot2) {
+  ggplot2::ggplot(plot_data, ggplot2::aes(x = run, y = loss, fill = run)) +
+    ggplot2::geom_col(width = 0.62, show.legend = FALSE) +
+    ggplot2::geom_text(ggplot2::aes(label = sprintf("%.4f", loss)),
+                       vjust = -0.35, size = 3.5) +
+    ggplot2::scale_fill_manual(values = c("#4C78A8", "#F58518")) +
+    ggplot2::coord_cartesian(ylim = c(0, 0.7)) +
+    ggplot2::labs(x = NULL, y = "Loss",
+                  title = "Centralized vs federated direct-image run") +
+    ggplot2::theme_minimal(base_size = 11)
+} else {
+  barplot(plot_data$loss, names.arg = as.character(plot_data$run),
+          ylim = c(0, 0.7), ylab = "Loss",
+          main = "Centralized vs federated direct-image run",
+          col = c("#4C78A8", "#F58518"))
+}
+```
+
+The federated run completed one round with three clients, zero client failures,
+and no active SuperNodes left after cleanup. The resulting comparison file was:
+
+```text
+dsflower_output/direct_dsimaging_images/20260511_140204/local_vs_federated.json
+```
+
+The key output was:
+
+```json
+{
+  "federated": {
+    "rounds": 1,
+    "clients": 3,
+    "loss": 0.5847444699870216,
+    "n_failures": 0
+  },
+  "centralized": {
+    "epochs": 1,
+    "n_samples": 9,
+    "class_counts": {"0": 7, "1": 2},
+    "device": "cpu",
+    "loss": 0.5540124575297037,
+    "accuracy": 0.7777777777777778
+  },
+  "delta": {
+    "loss_federated_minus_centralized": 0.03073201245731793
+  }
+}
+```
