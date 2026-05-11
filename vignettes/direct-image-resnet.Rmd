@@ -117,3 +117,19 @@ The higher-level `ds.flower.fit(resource = ..., model = "resnet18")` path is
 intended for `dsImaging` resources whose descriptors already declare
 `source_kind = "image_bundle"`.
 
+## dsImaging Resource Handoff
+
+When images are already published as a `dsImaging` resource, use the direct
+resource demo instead of copying files into each Rock manually:
+
+```sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export DSFLOWER_IMAGING_RESOURCE="dsdemo.lung1_study"
+export DSFLOWER_IMAGING_TARGET="os_2yr_alive"
+Rscript inst/demos/dsimaging_direct_image_resnet.R
+```
+
+That path calls `ds.flower.connect(resource = ...)`, so the server initializes
+`dsImaging`, carries the imaging descriptor into `dsFlower`, stages the
+metadata, resolves image paths from `sample_manifests`, and trains directly
+from the image assets in the imaging store or bucket.

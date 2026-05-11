@@ -8,7 +8,8 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE,
+                      purl = FALSE)
 ```
 
 `dsFlowerClient` exposes two API levels. Use `ds.flower.fit()` for the common
@@ -17,7 +18,7 @@ control.
 
 ## Connect to DataSHIELD
 
-```{r}
+```{r connect-example, eval=FALSE, purl=FALSE}
 library(dsFlowerClient)
 library(DSI)
 library(DSOpal)
@@ -49,7 +50,7 @@ conns <- DSI::datashield.login(
 
 ## Happy path
 
-```{r}
+```{r fit-example, eval=FALSE, purl=FALSE}
 fit <- ds.flower.fit(
   conns,
   symbol = "D",
@@ -70,7 +71,7 @@ policy.
 
 ## Advanced path
 
-```{r}
+```{r advanced-example, eval=FALSE, purl=FALSE}
 flower <- ds.flower.connect(conns, symbol = "D")
 
 recipe <- ds.flower.recipe(
@@ -88,6 +89,6 @@ ds.flower.disconnect(flower)
 
 ## Cleanup
 
-```{r}
+```{r cleanup-example, eval=FALSE, purl=FALSE}
 DSI::datashield.logout(conns)
 ```

@@ -62,6 +62,18 @@ This demo uses `sandbox_open` by default because it is intentionally tiny.
 Clinical direct-image runs should use larger cohorts and a SecAgg-capable
 runtime/profile.
 
+For a direct handoff from `dsImaging`, `inst/demos/dsimaging_direct_image_resnet.R`
+connects to an Opal imaging resource, stages the image assets through the
+server-side `dsFlower`/`dsImaging` descriptor path, and trains a federated
+ResNet-18 model directly from the stored image files:
+
+```sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export DSFLOWER_IMAGING_RESOURCE="dsdemo.lung1_study"
+export DSFLOWER_IMAGING_TARGET="os_2yr_alive"
+Rscript inst/demos/dsimaging_direct_image_resnet.R
+```
+
 For a real imaging handoff, `inst/demos/lung1_radiomics_to_flower.R` consumes
 published `dsImaging` radiomics assets, loads them as a server-side `rad` table,
 and trains a federated model with `ds.flower.fit()`:
