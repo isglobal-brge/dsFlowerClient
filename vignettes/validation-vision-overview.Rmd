@@ -36,7 +36,8 @@ knitr::kable(summary_table)
 ```{r}
 display <- results[, c(
   'method', 'task', 'centralized_metric', 'centralized_loss',
-  'federated_status', 'federated_loss', 'delta_loss', 'validation_status'
+  'federated_status', 'federated_loss', 'delta_loss',
+  'acceptable_loss', 'validation_status'
 )]
 knitr::kable(display)
 ```

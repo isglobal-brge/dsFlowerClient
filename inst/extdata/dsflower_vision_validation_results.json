@@ -26,6 +26,9 @@
       "federated_loss": 0.5399,
       "federated_n_failures": 0,
       "delta_loss": -0.0206,
+      "acceptance_max_loss_ratio": 2.5,
+      "acceptance_max_loss_margin": 0.25,
+      "acceptable_loss": true,
       "validation_status": "pass",
       "error": "",
       "notes": "Synthetic PNG image classification with ResNet-18."
@@ -47,6 +50,9 @@
       "federated_loss": 0.9373,
       "federated_n_failures": 0,
       "delta_loss": 0.3339,
+      "acceptance_max_loss_ratio": 2.5,
+      "acceptance_max_loss_margin": 0.25,
+      "acceptable_loss": true,
       "validation_status": "pass",
       "error": "",
       "notes": "Synthetic PNG image classification with DenseNet-121."
@@ -68,6 +74,9 @@
       "federated_loss": 1.4397,
       "federated_n_failures": 0,
       "delta_loss": 0.1298,
+      "acceptance_max_loss_ratio": 2.5,
+      "acceptance_max_loss_margin": 0.25,
+      "acceptable_loss": true,
       "validation_status": "pass",
       "error": "",
       "notes": "Synthetic PNG image/mask segmentation with U-Net 2D."

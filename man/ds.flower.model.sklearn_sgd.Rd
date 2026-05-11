@@ -7,7 +7,9 @@
 ds.flower.model.sklearn_sgd(
   loss = "log_loss",
   alpha = 1e-04,
-  lr_schedule = "optimal"
+  lr_schedule = "optimal",
+  eta0 = 0.01,
+  max_iter = 1000L
 )
 }
 \arguments{
@@ -16,6 +18,10 @@ ds.flower.model.sklearn_sgd(
 \item{alpha}{Numeric; regularization constant.}
 
 \item{lr_schedule}{Character; learning rate schedule ("optimal", "constant", "invscaling").}
+
+\item{eta0}{Numeric; initial learning rate for constant/invscaling/adaptive schedules.}
+
+\item{max_iter}{Integer; maximum local sklearn iterations.}
 }
 \value{
 A \code{dsflower_model} S3 object.

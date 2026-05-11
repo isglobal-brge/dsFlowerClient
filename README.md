@@ -95,9 +95,16 @@ Rscript inst/demos/validate_methods.R
 DSFLOWER_VALIDATE_METHODS=pytorch_multilabel Rscript inst/demos/validate_methods.R
 ```
 
-Validation run on 2026-05-11: 16 methods passed against centralized baselines.
-Federated XGBoost was intentionally blocked because the local runtime did not
-report server-side Secure Aggregation support.
+Validation run on 2026-05-11: all 17 non-vision methods passed against
+centralized baselines with zero client failures. XGBoost now validates in the
+trusted sandbox profile through the histogram template and native model-artifact
+evaluation; clinical/consortium profiles still enforce SecAgg through the
+DataSHIELD trust policy.
+
+The suite fails fast when a method has client failures, missing finite losses,
+or a federated loss outside the configured acceptance envelope. The generated
+JSON records the centralized loss, federated loss, delta, acceptance margin, and
+per-method pass/fail status used by the validation vignettes.
 
 ## Vision method validation
 
@@ -114,7 +121,8 @@ DSFLOWER_VALIDATE_VISION_METHODS=pytorch_unet2d Rscript inst/demos/validate_visi
 Validation run on 2026-05-11: `pytorch_resnet18`, `pytorch_densenet121`, and
 `pytorch_unet2d` all passed on three Opal/Rock nodes with zero client failures.
 The run writes `inst/extdata/dsflower_vision_validation_results.json` for the
-vision validation pkgdown articles.
+vision validation pkgdown articles, including the same acceptance fields used by
+the non-vision suite.
 
 For a real imaging handoff, `inst/demos/lung1_radiomics_to_flower.R` consumes
 published `dsImaging` radiomics assets, loads them as a server-side `rad` table,

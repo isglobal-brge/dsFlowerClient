@@ -38,6 +38,8 @@ test_that("sklearn_sgd creates correct model", {
   expect_equal(m$params$loss, "log_loss")
   expect_equal(m$params$alpha, 0.0001)
   expect_equal(m$params$lr_schedule, "optimal")
+  expect_equal(m$params$eta0, 0.01)
+  expect_equal(m$params$max_iter, 1000L)
 })
 
 test_that("pytorch_mlp creates correct model", {

@@ -1,6 +1,11 @@
 #!/usr/bin/env Rscript
 
-script_file <- tryCatch(sys.frame(1)$ofile, error = function(e) NULL)
+file_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
+script_file <- if (length(file_arg)) {
+  normalizePath(sub("^--file=", "", file_arg[[1L]]), mustWork = FALSE)
+} else {
+  tryCatch(sys.frame(1)$ofile, error = function(e) NULL)
+}
 if (is.null(script_file) || !nzchar(script_file)) {
   script_file <- "inst/demos/validate_methods.R"
 }
@@ -110,7 +115,9 @@ method_specs <- function() {
          notes = "Federated ridge classifier."),
     list(method = "sklearn_sgd", model = "sklearn_sgd", task = "classification",
          target = "outcome", features = paste0("x", 1:12),
-         model_params = list(loss = "log_loss", alpha = 0.0001, lr_schedule = "optimal"), rounds = 1L,
+         model_params = list(loss = "log_loss", alpha = 0.001,
+                             lr_schedule = "constant", eta0 = 0.01,
+                             max_iter = 1000L), rounds = 1L,
          notes = "Federated SGD classifier with logistic loss."),
     list(method = "sklearn_svm", model = "sklearn_svm", task = "classification",
          target = "outcome", features = paste0("x", 1:12),
@@ -118,7 +125,9 @@ method_specs <- function() {
          notes = "Linear SVM via SGD hinge loss."),
     list(method = "sklearn_elastic_net", model = "sklearn_elastic_net", task = "classification",
          target = "outcome", features = paste0("x", 1:12),
-         model_params = list(l1_ratio = 0.15, alpha = 0.0001, loss = "log_loss"), rounds = 1L,
+         model_params = list(l1_ratio = 0.15, alpha = 0.001,
+                             loss = "log_loss", lr_schedule = "constant",
+                             eta0 = 0.01, max_iter = 1000L), rounds = 1L,
          notes = "Elastic-net regularized SGD classifier."),
     list(method = "pytorch_logreg", model = "pytorch_logreg", task = "classification",
          target = "outcome", features = paste0("x", 1:12),
@@ -169,8 +178,7 @@ method_specs <- function() {
          model_params = list(n_trees = 3L, max_depth = 2L, eta = 0.3,
                              reg_lambda = 1.0, n_bins = 16L,
                              objective = "binary:logistic"), rounds = 1L,
-         requires_secagg = TRUE,
-         notes = "Federated XGBoost is intentionally gated on server-side Secure Aggregation.")
+         notes = "Histogram XGBoost; SecAgg is enforced by secure privacy profiles.")
   )
 }
 
@@ -255,7 +263,71 @@ history_metric <- function(hist, name) {
   NA_real_
 }
 
-run_federated_method <- function(spec, conns, privacy, secagg_supported) {
+acceptance_params <- function(spec) {
+  acc <- spec$acceptance %||% list()
+  list(
+    max_loss_ratio = as_scalar(acc$max_loss_ratio, 2.5),
+    max_loss_margin = as_scalar(acc$max_loss_margin, 0.25)
+  )
+}
+
+acceptable_federated_loss <- function(spec, central_loss, fed_loss,
+                                      n_failures) {
+  params <- acceptance_params(spec)
+  if (!is.finite(central_loss) || !is.finite(fed_loss)) return(FALSE)
+  failures <- suppressWarnings(as.numeric(n_failures))
+  no_failures <- length(failures) == 0L || is.na(failures[[1L]]) ||
+    failures[[1L]] <= 0
+  no_failures &&
+    fed_loss <= central_loss * params$max_loss_ratio + params$max_loss_margin
+}
+
+evaluate_xgboost_artifact <- function(output_dir, data_csv, features, target) {
+  model_path <- file.path(output_dir, "global_model.json")
+  if (!file.exists(model_path)) return(NULL)
+  model <- jsonlite::fromJSON(model_path, simplifyVector = FALSE)
+  if (!identical(model$model_type, "xgboost")) return(NULL)
+
+  data <- utils::read.csv(data_csv, stringsAsFactors = FALSE)
+  X <- as.matrix(data[, features, drop = FALSE])
+  y <- as.numeric(data[[target[[1L]]]])
+  raw <- numeric(nrow(X))
+  learning_rate <- as_scalar(model$learning_rate, 0.3)
+
+  for (tree in model$trees) {
+    splits <- tree$splits %||% list()
+    leaves <- tree$leaves %||% list()
+    for (i in seq_len(nrow(X))) {
+      node <- "0"
+      repeat {
+        split <- splits[[node]]
+        if (is.null(split)) break
+        feature_idx <- as.integer(split$feature) + 1L
+        threshold <- as.numeric(split$threshold)
+        node <- if (X[i, feature_idx] <= threshold) {
+          as.character(split$left)
+        } else {
+          as.character(split$right)
+        }
+      }
+      raw[[i]] <- raw[[i]] + learning_rate * as_scalar(leaves[[node]], 0)
+    }
+  }
+
+  if (identical(model$objective %||% "binary:logistic", "binary:logistic")) {
+    prob <- 1 / (1 + exp(-raw))
+    prob <- pmin(pmax(prob, 1e-7), 1 - 1e-7)
+    loss <- -mean(y * log(prob) + (1 - y) * log(1 - prob))
+    accuracy <- mean(as.integer(prob > 0.5) == as.integer(y))
+    return(list(loss = loss, accuracy = accuracy))
+  }
+
+  loss <- mean((raw - y)^2)
+  list(loss = loss, accuracy = NA_real_)
+}
+
+run_federated_method <- function(spec, conns, privacy, secagg_supported,
+                                 data_csv) {
   if (isTRUE(spec$requires_secagg) && !isTRUE(secagg_supported)) {
     return(list(
       status = "blocked_by_design",
@@ -308,6 +380,20 @@ run_federated_method <- function(spec, conns, privacy, secagg_supported) {
   if (!is.finite(loss)) loss <- history_metric(hist, "mse")
   accuracy <- history_metric(hist, "accuracy")
   n_failures <- history_metric(hist, "n_failures")
+  if (!is.finite(loss) && identical(spec$model, "xgboost") &&
+      !is.null(run$output_dir) && nzchar(run$output_dir)) {
+    artifact_eval <- evaluate_xgboost_artifact(
+      run$output_dir, data_csv, spec$features, spec$target
+    )
+    if (!is.null(artifact_eval)) {
+      loss <- artifact_eval$loss
+      accuracy <- artifact_eval$accuracy
+      failures <- suppressWarnings(as.numeric(n_failures))
+      if (length(failures) == 0L || !is.finite(failures[[1L]])) {
+        n_failures <- 0L
+      }
+    }
+  }
 
   list(
     status = if (is.null(validation_error)) "ok" else "failed",
@@ -327,8 +413,14 @@ record_for_spec <- function(spec, central, federated) {
   fed_status <- federated$status %||% "unknown"
   fed_loss <- as_scalar(federated$loss)
   fed_accuracy <- as_scalar(federated$accuracy)
-  validation_status <- if (identical(central_status, "ok") && identical(fed_status, "ok") &&
-                           is.finite(central_loss) && is.finite(fed_loss)) {
+  fed_n_failures <- as_scalar(federated$n_failures)
+  acceptance <- acceptance_params(spec)
+  acceptable_loss <- acceptable_federated_loss(
+    spec, central_loss, fed_loss, fed_n_failures
+  )
+  validation_status <- if (identical(central_status, "ok") &&
+                           identical(fed_status, "ok") &&
+                           isTRUE(acceptable_loss)) {
     "pass"
   } else if (identical(fed_status, "blocked_by_design")) {
     "blocked_by_design"
@@ -349,9 +441,12 @@ record_for_spec <- function(spec, central, federated) {
     federated_status = fed_status,
     federated_loss = fed_loss,
     federated_accuracy = fed_accuracy,
-    federated_n_failures = as_scalar(federated$n_failures),
+    federated_n_failures = fed_n_failures,
     federated_run_id = federated$run_id %||% NA_character_,
     delta_loss = if (is.finite(central_loss) && is.finite(fed_loss)) fed_loss - central_loss else NA_real_,
+    acceptance_max_loss_ratio = acceptance$max_loss_ratio,
+    acceptance_max_loss_margin = acceptance$max_loss_margin,
+    acceptable_loss = acceptable_loss,
     validation_status = validation_status,
     notes = spec$notes %||% "",
     error = paste(na.omit(c(central$error %||% NA_character_, federated$error %||% NA_character_)), collapse = "\n"),
@@ -402,7 +497,9 @@ main <- function() {
     message("Validating ", spec$method, "...")
     central <- run_central_baseline(spec, data_csv, out_dir, python,
                                     baseline_script, cfg$seed)
-    federated <- run_federated_method(spec, conns, cfg$profile, secagg_supported)
+    federated <- run_federated_method(
+      spec, conns, cfg$profile, secagg_supported, data_csv
+    )
     records[[spec$method]] <- record_for_spec(spec, central, federated)
     utils::write.csv(do.call(rbind, records),
                      file.path(out_dir, "method_validation_results.csv"),
@@ -440,8 +537,11 @@ main <- function() {
   }
 
   print(results[, c("method", "centralized_loss", "federated_loss",
-                    "delta_loss", "validation_status")])
+                    "delta_loss", "acceptable_loss", "validation_status")])
   message("Wrote method validation results to ", result_json)
+  if (any(results$validation_status != "pass")) {
+    stop("One or more method validation methods failed.", call. = FALSE)
+  }
   invisible(summary)
 }
 

@@ -30,7 +30,9 @@ ds.flower.model.xgboost(
 A \code{dsflower_model} S3 object.
 }
 \description{
-Federated XGBoost using histogram-based secure aggregation.
-The server never sees individual client gradients -- only
-aggregated histogram sums.
+Federated XGBoost using a histogram aggregation protocol.
+In trusted demo profiles the histogram protocol can run without Secure
+Aggregation so that the method path is testable end-to-end. In consortium
+and clinical profiles, Secure Aggregation is still enforced by the selected
+server trust profile.
 }

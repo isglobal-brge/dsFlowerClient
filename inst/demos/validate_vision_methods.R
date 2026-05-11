@@ -73,6 +73,31 @@ history_metric <- function(hist, name) {
   NA_real_
 }
 
+as_scalar <- function(x, default = NA_real_) {
+  if (is.null(x) || length(x) == 0L) return(default)
+  x <- suppressWarnings(as.numeric(x))
+  if (length(x) == 0L || is.na(x[[1L]])) default else x[[1L]]
+}
+
+acceptance_params <- function(spec) {
+  acc <- spec$acceptance %||% list()
+  list(
+    max_loss_ratio = as_scalar(acc$max_loss_ratio, 2.5),
+    max_loss_margin = as_scalar(acc$max_loss_margin, 0.25)
+  )
+}
+
+acceptable_federated_loss <- function(spec, central_loss, fed_loss,
+                                      n_failures) {
+  params <- acceptance_params(spec)
+  if (!is.finite(central_loss) || !is.finite(fed_loss)) return(FALSE)
+  failures <- suppressWarnings(as.numeric(n_failures))
+  no_failures <- length(failures) == 0L || is.na(failures[[1L]]) ||
+    failures[[1L]] <= 0
+  no_failures &&
+    fed_loss <= central_loss * params$max_loss_ratio + params$max_loss_margin
+}
+
 make_png_pair <- function(image_path, mask_path, label, site, index,
                           size = 64L) {
   dir.create(dirname(image_path), recursive = TRUE, showWarnings = FALSE)
@@ -408,6 +433,11 @@ for (i in seq_along(specs)) {
 
   central_loss <- suppressWarnings(as.numeric(central$loss %||% NA_real_))
   fed_loss <- suppressWarnings(as.numeric(fed$loss %||% NA_real_))
+  fed_n_failures <- suppressWarnings(as.numeric(fed$n_failures %||% NA_real_))
+  acceptance <- acceptance_params(spec)
+  acceptable_loss <- acceptable_federated_loss(
+    spec, central_loss, fed_loss, fed_n_failures
+  )
   results[[i]] <- data.frame(
     method = spec$method,
     task = spec$task,
@@ -423,10 +453,14 @@ for (i in seq_along(specs)) {
     centralized_dice = suppressWarnings(as.numeric(central$dice %||% NA_real_)),
     federated_status = fed$status %||% "unknown",
     federated_loss = fed_loss,
-    federated_n_failures = suppressWarnings(as.numeric(fed$n_failures %||% NA_real_)),
+    federated_n_failures = fed_n_failures,
     delta_loss = fed_loss - central_loss,
+    acceptance_max_loss_ratio = acceptance$max_loss_ratio,
+    acceptance_max_loss_margin = acceptance$max_loss_margin,
+    acceptable_loss = acceptable_loss,
     validation_status = if (identical(central$status, "ok") &&
-                            identical(fed$status, "ok")) "pass" else "failed",
+                            identical(fed$status, "ok") &&
+                            isTRUE(acceptable_loss)) "pass" else "failed",
     error = fed$error %||% central$error %||% "",
     notes = spec$notes,
     stringsAsFactors = FALSE

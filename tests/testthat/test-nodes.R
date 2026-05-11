@@ -188,6 +188,9 @@ test_that("nodes.ensure passes ca_cert_pem when TLS is enabled", {
     .ds_safe_aggregate = function(conns, expr) {
       list(opal1 = list(prepared = TRUE, node_ensured = TRUE,
                          federation_id = "fl-test"))
+    },
+    .wait_supernodes_ready = function(conns, symbol, timeout) {
+      list(opal1 = list(supernode_running = TRUE, federation_id = "fl-test"))
     }
   )
 

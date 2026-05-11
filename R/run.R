@@ -515,8 +515,12 @@ ds.flower.run.stop <- function(run_id) {
   }
 
   raw <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  if (identical(raw[["model_type"]], "xgboost")) {
+    return(raw)
+  }
   shapes <- raw[["__shapes__"]]
   round <- raw[["__round__"]]
+  if (is.null(shapes)) return(NULL)
 
   # Reconstruct numpy arrays as R matrices/vectors
   param_names <- setdiff(names(raw), c("__shapes__", "__round__"))

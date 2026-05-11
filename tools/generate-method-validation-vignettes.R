@@ -7,6 +7,13 @@ if (!file.exists(result_path)) {
 
 validation <- jsonlite::fromJSON(result_path)
 results <- validation$results
+vision_result_path <- file.path("inst", "extdata", "dsflower_vision_validation_results.json")
+vision_validation <- if (file.exists(vision_result_path)) {
+  jsonlite::fromJSON(vision_result_path)
+} else {
+  NULL
+}
+vision_results <- if (!is.null(vision_validation)) vision_validation$results else NULL
 
 slug <- function(method) gsub("_", "-", method, fixed = TRUE)
 
@@ -58,13 +65,17 @@ method_vignette <- function(method) {
     "    'method', 'task', 'target', 'n_features', 'rounds',",
     "    'centralized_metric', 'centralized_loss', 'centralized_accuracy',",
     "    'federated_status', 'federated_loss', 'federated_n_failures',",
-    "    'delta_loss', 'validation_status'",
+    "    'delta_loss', 'acceptance_max_loss_ratio',",
+    "    'acceptance_max_loss_margin', 'acceptable_loss',",
+    "    'validation_status'",
     "  ),",
     "  Value = c(",
     "    row$method, row$task, row$target, row$n_features, row$rounds,",
     "    row$centralized_metric, fmt(row$centralized_loss), fmt(row$centralized_accuracy),",
     "    row$federated_status, fmt(row$federated_loss), fmt(row$federated_n_failures),",
-    "    fmt(row$delta_loss), row$validation_status",
+    "    fmt(row$delta_loss), fmt(row$acceptance_max_loss_ratio),",
+    "    fmt(row$acceptance_max_loss_margin), row$acceptable_loss,",
+    "    row$validation_status",
     "  )",
     ")",
     "knitr::kable(overview)",
@@ -99,60 +110,111 @@ method_vignette <- function(method) {
   )
 }
 
-overview_vignette <- function(methods) {
+article_link_lines <- function(methods, vision_methods = character()) {
+  lines <- c("Per-method vignettes:", "")
+  lines <- c(lines, paste0("- [", methods, "](validation-", slug(methods), ".html)"))
+  if (length(vision_methods)) {
+    lines <- c(lines, "", "Vision method vignettes:", "")
+    lines <- c(lines, paste0(
+      "- [", vision_methods, "](validation-vision-", slug(vision_methods), ".html)"
+    ))
+  }
+  lines
+}
+
+overview_vignette <- function(methods, vision_methods = character()) {
   c(
     "---",
-    "title: \"Method Validation Overview\"",
+    "title: \"All Method Validation Overview\"",
     "output: rmarkdown::html_vignette",
     "vignette: >",
-    "  %\\VignetteIndexEntry{Method Validation Overview}",
+    "  %\\VignetteIndexEntry{All Method Validation Overview}",
     "  %\\VignetteEngine{knitr::rmarkdown}",
     "  %\\VignetteEncoding{UTF-8}",
     "---",
     "",
     "```{r, include=FALSE}",
     "knitr::opts_chunk$set(collapse = TRUE, comment = '#>')",
-    "paths <- c(",
+    "method_paths <- c(",
     "  file.path('..', 'inst', 'extdata', 'dsflower_method_validation_results.json'),",
     "  file.path('inst', 'extdata', 'dsflower_method_validation_results.json'),",
     "  system.file('extdata', 'dsflower_method_validation_results.json', package = 'dsFlowerClient')",
     ")",
-    "result_path <- paths[nzchar(paths) & file.exists(paths)][1]",
-    "validation <- jsonlite::fromJSON(result_path)",
-    "results <- validation$results",
+    "method_result_path <- method_paths[nzchar(method_paths) & file.exists(method_paths)][1]",
+    "method_validation <- jsonlite::fromJSON(method_result_path)",
+    "method_results <- method_validation$results",
+    "vision_paths <- c(",
+    "  file.path('..', 'inst', 'extdata', 'dsflower_vision_validation_results.json'),",
+    "  file.path('inst', 'extdata', 'dsflower_vision_validation_results.json'),",
+    "  system.file('extdata', 'dsflower_vision_validation_results.json', package = 'dsFlowerClient')",
+    ")",
+    "vision_result_path <- vision_paths[nzchar(vision_paths) & file.exists(vision_paths)][1]",
+    "vision_validation <- if (!is.na(vision_result_path)) jsonlite::fromJSON(vision_result_path) else NULL",
+    "vision_results <- if (!is.null(vision_validation)) vision_validation$results else NULL",
+    "method_display <- data.frame(",
+    "  suite = 'tabular_sequence_survival',",
+    "  method = method_results$method,",
+    "  task = method_results$task,",
+    "  centralized_metric = method_results$centralized_metric,",
+    "  centralized_loss = method_results$centralized_loss,",
+    "  federated_status = method_results$federated_status,",
+    "  federated_loss = method_results$federated_loss,",
+    "  delta_loss = method_results$delta_loss,",
+    "  acceptable_loss = method_results$acceptable_loss,",
+    "  validation_status = method_results$validation_status,",
+    "  stringsAsFactors = FALSE",
+    ")",
+    "vision_display <- if (!is.null(vision_results)) data.frame(",
+    "  suite = 'vision',",
+    "  method = vision_results$method,",
+    "  task = vision_results$task,",
+    "  centralized_metric = vision_results$centralized_metric,",
+    "  centralized_loss = vision_results$centralized_loss,",
+    "  federated_status = vision_results$federated_status,",
+    "  federated_loss = vision_results$federated_loss,",
+    "  delta_loss = vision_results$delta_loss,",
+    "  acceptable_loss = vision_results$acceptable_loss,",
+    "  validation_status = vision_results$validation_status,",
+    "  stringsAsFactors = FALSE",
+    ") else method_display[0, ]",
+    "results <- rbind(method_display, vision_display)",
     "```",
     "",
-    "This macro-vignette summarizes the live dsFlower method-validation run.",
-    "The experiment created one synthetic cohort, split it across three Opal/Rock",
-    "servers, trained each supported federated template, and compared the final",
-    "federated loss with a centralized baseline trained on the pooled cohort.",
+    "This macro-vignette summarizes the live dsFlower validation suite across",
+    "tabular, sequence, survival, XGBoost, image-classification, and segmentation",
+    "templates. Each method has its own vignette, and each federated run is",
+    "compared with a centralized baseline trained on the corresponding pooled",
+    "synthetic cohort.",
     "",
     "The suite is deliberately a functional and numerical sanity check, not a",
     "privacy claim and not a clinical benchmark. It uses `sandbox_open` so that",
     "per-node diagnostics can be observed during development. Production studies",
-    "should use the stricter DataSHIELD privacy profiles.",
+    "should use the stricter DataSHIELD privacy profiles. XGBoost is validated",
+    "in this trusted demo mode; profiles that require Secure Aggregation still",
+    "enforce SecAgg before execution.",
     "",
     "```{r}",
     "summary_table <- data.frame(",
-    "  Field = c('generated_at', 'privacy_profile', 'n_sites', 'n_per_site', 'n_total', 'secagg_supported'),",
-    "  Value = c(validation$generated_at, validation$privacy_profile, validation$n_sites,",
-    "            validation$n_per_site, validation$n_total, validation$secagg_supported)",
+    "  suite = c('tabular_sequence_survival', 'vision'),",
+    "  generated_at = c(method_validation$generated_at, if (!is.null(vision_validation)) vision_validation$generated_at else NA),",
+    "  privacy_profile = c(method_validation$privacy_profile, if (!is.null(vision_validation)) vision_validation$privacy_profile else NA),",
+    "  n_sites = c(method_validation$n_sites, if (!is.null(vision_validation)) vision_validation$n_sites else NA),",
+    "  n_total = c(method_validation$n_total, if (!is.null(vision_validation)) vision_validation$n_total else NA),",
+    "  secagg_supported = c(method_validation$secagg_supported, NA),",
+    "  stringsAsFactors = FALSE",
     ")",
     "knitr::kable(summary_table)",
     "```",
     "",
     "```{r}",
-    "display <- results[, c(",
-    "  'method', 'task', 'centralized_metric', 'centralized_loss',",
-    "  'federated_status', 'federated_loss', 'delta_loss', 'validation_status'",
-    ")]",
-    "knitr::kable(display)",
+    "knitr::kable(results)",
     "```",
     "",
     "```{r, fig.width=8, fig.height=5, fig.alt=\"Horizontal bar chart of federated minus centralized loss by method.\"}",
     "plot_df <- results[is.finite(results$delta_loss), , drop = FALSE]",
     "if (nrow(plot_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {",
-    "  ggplot2::ggplot(plot_df, ggplot2::aes(x = stats::reorder(method, delta_loss), y = delta_loss, fill = task)) +",
+    "  plot_df$label <- paste(plot_df$suite, plot_df$method, sep = ': ')",
+    "  ggplot2::ggplot(plot_df, ggplot2::aes(x = stats::reorder(label, delta_loss), y = delta_loss, fill = task)) +",
     "    ggplot2::geom_hline(yintercept = 0, linewidth = 0.3, color = 'grey40') +",
     "    ggplot2::geom_col(width = 0.7) +",
     "    ggplot2::coord_flip() +",
@@ -161,16 +223,16 @@ overview_vignette <- function(methods) {
     "}",
     "```",
     "",
-    "The image-classification validation with images sourced from dsImaging is",
-    "documented separately in `direct-image-resnet`. XGBoost is included here",
-    "as a security guardrail check: centralized XGBoost trains locally, but the",
-    "federated template is blocked unless server-side Secure Aggregation is",
-    "available.",
+    article_link_lines(methods, vision_methods),
+    "",
+    "The vision-specific overview remains available at",
+    "[Vision Method Validation Overview](validation-vision-overview.html).",
     "",
     "To reproduce the complete suite against configured Opal servers:",
     "",
     "```sh",
     "Rscript inst/demos/validate_methods.R",
+    "Rscript inst/demos/validate_vision_methods.R",
     "```"
   )
 }
@@ -181,6 +243,9 @@ for (method in results$method) {
 }
 
 write_lines(file.path("vignettes", "validation-overview.Rmd"),
-            overview_vignette(results$method))
+            overview_vignette(
+              results$method,
+              if (!is.null(vision_results)) vision_results$method else character()
+            ))
 
 message("Generated ", length(results$method) + 1L, " validation vignettes.")

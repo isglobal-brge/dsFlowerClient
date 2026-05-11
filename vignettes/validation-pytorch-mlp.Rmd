@@ -38,13 +38,17 @@ overview <- data.frame(
     'method', 'task', 'target', 'n_features', 'rounds',
     'centralized_metric', 'centralized_loss', 'centralized_accuracy',
     'federated_status', 'federated_loss', 'federated_n_failures',
-    'delta_loss', 'validation_status'
+    'delta_loss', 'acceptance_max_loss_ratio',
+    'acceptance_max_loss_margin', 'acceptable_loss',
+    'validation_status'
   ),
   Value = c(
     row$method, row$task, row$target, row$n_features, row$rounds,
     row$centralized_metric, fmt(row$centralized_loss), fmt(row$centralized_accuracy),
     row$federated_status, fmt(row$federated_loss), fmt(row$federated_n_failures),
-    fmt(row$delta_loss), row$validation_status
+    fmt(row$delta_loss), fmt(row$acceptance_max_loss_ratio),
+    fmt(row$acceptance_max_loss_margin), row$acceptable_loss,
+    row$validation_status
   )
 )
 knitr::kable(overview)

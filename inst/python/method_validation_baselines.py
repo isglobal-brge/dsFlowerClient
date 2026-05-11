@@ -115,6 +115,8 @@ def _sklearn_baseline(method, x, y, params, seed):
             "max_iter": _as_int(params.get("max_iter"), 1000),
             "tol": 1e-4,
         }
+        if kwargs["learning_rate"] in ("constant", "invscaling", "adaptive"):
+            kwargs["eta0"] = _as_float(params.get("eta0"), 0.01)
         if penalty == "elasticnet":
             kwargs["l1_ratio"] = _as_float(params.get("l1_ratio"), 0.15)
         model = SGDClassifier(**kwargs)

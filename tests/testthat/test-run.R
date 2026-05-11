@@ -93,9 +93,36 @@ test_that(".training_artifacts_complete accepts skipped JSON marker", {
   ))
 })
 
+test_that(".read_model_weights returns native XGBoost model JSON", {
+  results_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    list(model_type = "xgboost", n_trees = 1L, trees = list()),
+    file.path(results_dir, "global_model.json"),
+    auto_unbox = TRUE
+  )
+  weights <- dsFlowerClient:::.read_model_weights(results_dir)
+  expect_equal(weights$model_type, "xgboost")
+  expect_equal(weights$n_trees, 1L)
+})
+
 test_that(".flwr_run_timeout_secs accepts environment override", {
   withr::local_envvar(DSFLOWER_RUN_TIMEOUT_SECS = "7")
   expect_equal(dsFlowerClient:::.flwr_run_timeout_secs(), 7)
+})
+
+test_that(".recipe_requires_secagg is profile-driven", {
+  recipe <- ds.flower.recipe(
+    target = "outcome",
+    features = c("x1", "x2"),
+    model = ds.flower.model.xgboost(),
+    privacy = ds.flower.privacy.sandbox_open()
+  )
+  expect_false(dsFlowerClient:::.recipe_requires_secagg(
+    recipe, ds.flower.privacy.sandbox_open()
+  ))
+  expect_true(dsFlowerClient:::.recipe_requires_secagg(
+    recipe, ds.flower.privacy.clinical_default()
+  ))
 })
 
 test_that(".require_flwr_cli accepts provisioned client environment", {

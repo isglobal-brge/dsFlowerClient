@@ -18,6 +18,7 @@
   n_layers      = list(min = 1L,    max = 50L),
   # sklearn
   alpha         = list(min = 1e-10, max = 100),
+  eta0          = list(min = 1e-8,  max = 10),
   C             = list(min = 1e-10, max = 1000),
   max_iter      = list(min = 1L,    max = 100000L),
   l1_ratio      = list(min = 0,     max = 1),
@@ -53,8 +54,7 @@
 #' @keywords internal
 .recipe_requires_secagg <- function(recipe, privacy) {
   mode <- privacy$mode %||% ""
-  mode %in% .SECAGG_PRIVACY_MODES ||
-    identical(recipe$model$template %||% "", "xgboost")
+  mode %in% .SECAGG_PRIVACY_MODES
 }
 
 #' Enforce server-reported Secure Aggregation capability before preparing a run

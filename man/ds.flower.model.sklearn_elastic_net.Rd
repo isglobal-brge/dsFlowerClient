@@ -7,7 +7,10 @@
 ds.flower.model.sklearn_elastic_net(
   l1_ratio = 0.15,
   alpha = 1e-04,
-  loss = "log_loss"
+  loss = "log_loss",
+  lr_schedule = "optimal",
+  eta0 = 0.01,
+  max_iter = 1000L
 )
 }
 \arguments{
@@ -17,6 +20,12 @@ Default 0.15.}
 \item{alpha}{Numeric; regularization constant. Default 0.0001.}
 
 \item{loss}{Character; loss function. Default "log_loss" (logistic).}
+
+\item{lr_schedule}{Character; learning rate schedule.}
+
+\item{eta0}{Numeric; initial learning rate for constant/invscaling/adaptive schedules.}
+
+\item{max_iter}{Integer; maximum local sklearn iterations.}
 }
 \value{
 A \code{dsflower_model} S3 object using the sklearn_sgd template.

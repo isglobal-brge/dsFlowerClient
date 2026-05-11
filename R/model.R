@@ -41,15 +41,20 @@ ds.flower.model.sklearn_ridge <- function(alpha = 1.0) {
 #' @param loss Character; loss function ("log_loss", "hinge", "modified_huber").
 #' @param alpha Numeric; regularization constant.
 #' @param lr_schedule Character; learning rate schedule ("optimal", "constant", "invscaling").
+#' @param eta0 Numeric; initial learning rate for constant/invscaling/adaptive schedules.
+#' @param max_iter Integer; maximum local sklearn iterations.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.sklearn_sgd <- function(loss = "log_loss", alpha = 0.0001,
-                                         lr_schedule = "optimal") {
+                                         lr_schedule = "optimal",
+                                         eta0 = 0.01,
+                                         max_iter = 1000L) {
   obj <- list(
     name      = "sklearn_sgd",
     framework = "sklearn",
     template  = "sklearn_sgd",
-    params    = list(loss = loss, alpha = alpha, lr_schedule = lr_schedule)
+    params    = list(loss = loss, alpha = alpha, lr_schedule = lr_schedule,
+                     eta0 = eta0, max_iter = as.integer(max_iter))
   )
   class(obj) <- "dsflower_model"
   obj
@@ -67,15 +72,20 @@ ds.flower.model.sklearn_sgd <- function(loss = "log_loss", alpha = 0.0001,
 #' @param alpha Numeric; regularization constant (analogous to 1/C in SVC).
 #'   Smaller values = less regularization.
 #' @param lr_schedule Character; learning rate schedule.
+#' @param eta0 Numeric; initial learning rate for constant/invscaling/adaptive schedules.
+#' @param max_iter Integer; maximum local sklearn iterations.
 #' @return A \code{dsflower_model} S3 object using the sklearn_sgd template.
 #' @export
 ds.flower.model.sklearn_svm <- function(alpha = 0.0001,
-                                         lr_schedule = "optimal") {
+                                         lr_schedule = "optimal",
+                                         eta0 = 0.01,
+                                         max_iter = 1000L) {
   obj <- list(
     name      = "sklearn_svm",
     framework = "sklearn",
     template  = "sklearn_sgd",
-    params    = list(loss = "hinge", alpha = alpha, lr_schedule = lr_schedule)
+    params    = list(loss = "hinge", alpha = alpha, lr_schedule = lr_schedule,
+                     eta0 = eta0, max_iter = as.integer(max_iter))
   )
   class(obj) <- "dsflower_model"
   obj
@@ -92,11 +102,17 @@ ds.flower.model.sklearn_svm <- function(alpha = 0.0001,
 #'   Default 0.15.
 #' @param alpha Numeric; regularization constant. Default 0.0001.
 #' @param loss Character; loss function. Default "log_loss" (logistic).
+#' @param lr_schedule Character; learning rate schedule.
+#' @param eta0 Numeric; initial learning rate for constant/invscaling/adaptive schedules.
+#' @param max_iter Integer; maximum local sklearn iterations.
 #' @return A \code{dsflower_model} S3 object using the sklearn_sgd template.
 #' @export
 ds.flower.model.sklearn_elastic_net <- function(l1_ratio = 0.15,
                                                  alpha = 0.0001,
-                                                 loss = "log_loss") {
+                                                 loss = "log_loss",
+                                                 lr_schedule = "optimal",
+                                                 eta0 = 0.01,
+                                                 max_iter = 1000L) {
   if (l1_ratio < 0 || l1_ratio > 1) {
     stop("l1_ratio must be between 0 and 1.", call. = FALSE)
   }
@@ -105,7 +121,8 @@ ds.flower.model.sklearn_elastic_net <- function(l1_ratio = 0.15,
     framework = "sklearn",
     template  = "sklearn_sgd",
     params    = list(loss = loss, alpha = alpha, penalty = "elasticnet",
-                     l1_ratio = l1_ratio)
+                     l1_ratio = l1_ratio, lr_schedule = lr_schedule,
+                     eta0 = eta0, max_iter = as.integer(max_iter))
   )
   class(obj) <- "dsflower_model"
   obj
@@ -432,9 +449,11 @@ ds.flower.model.pytorch_lstm <- function(hidden_size = 64L,
 
 #' Create an XGBoost model spec
 #'
-#' Federated XGBoost using histogram-based secure aggregation.
-#' The server never sees individual client gradients -- only
-#' aggregated histogram sums.
+#' Federated XGBoost using a histogram aggregation protocol.
+#' In trusted demo profiles the histogram protocol can run without Secure
+#' Aggregation so that the method path is testable end-to-end. In consortium
+#' and clinical profiles, Secure Aggregation is still enforced by the selected
+#' server trust profile.
 #'
 #' @param n_trees Integer; number of boosting rounds.
 #' @param max_depth Integer; maximum tree depth.

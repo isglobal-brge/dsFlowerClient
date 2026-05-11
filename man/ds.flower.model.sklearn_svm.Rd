@@ -4,13 +4,22 @@
 \alias{ds.flower.model.sklearn_svm}
 \title{Create a Linear SVM model spec}
 \usage{
-ds.flower.model.sklearn_svm(alpha = 1e-04, lr_schedule = "optimal")
+ds.flower.model.sklearn_svm(
+  alpha = 1e-04,
+  lr_schedule = "optimal",
+  eta0 = 0.01,
+  max_iter = 1000L
+)
 }
 \arguments{
 \item{alpha}{Numeric; regularization constant (analogous to 1/C in SVC).
 Smaller values = less regularization.}
 
 \item{lr_schedule}{Character; learning rate schedule.}
+
+\item{eta0}{Numeric; initial learning rate for constant/invscaling/adaptive schedules.}
+
+\item{max_iter}{Integer; maximum local sklearn iterations.}
 }
 \value{
 A \code{dsflower_model} S3 object using the sklearn_sgd template.
