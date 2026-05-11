@@ -79,7 +79,7 @@ ensure_project <- function(opal, project) {
 set_privacy_profile <- function(opal, profile) {
   opalr::dsadmin.set_option(opal, "dsflower.privacy_profile", profile, profile = "default")
   if (identical(profile, "sandbox_open")) {
-    opalr::dsadmin.set_option(opal, "dsflower.allow_sandbox", TRUE, profile = "default")
+    opalr::dsadmin.set_option(opal, "dsflower.allow_sandbox", "TRUE", profile = "default")
   }
   invisible(TRUE)
 }

@@ -72,7 +72,7 @@ configure_dsflower_profile <- function(opal, name) {
   opalr::dsadmin.set_option(opal, "dsflower.privacy_profile", name,
                             profile = "default")
   if (identical(name, "sandbox_open")) {
-    opalr::dsadmin.set_option(opal, "dsflower.allow_sandbox", TRUE,
+    opalr::dsadmin.set_option(opal, "dsflower.allow_sandbox", "TRUE",
                               profile = "default")
   }
 }

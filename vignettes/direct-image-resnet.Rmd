@@ -1,0 +1,119 @@
+---
+title: "Direct Image ResNet Smoke Demo"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Direct Image ResNet Smoke Demo}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+run_demo <- identical(Sys.getenv("DSFLOWER_RUN_IMAGE_VIGNETTE"), "true")
+```
+
+This vignette covers a small direct-image workflow. Unlike the radiomics and
+MedMNIST-tabular demos, this one trains a PyTorch vision template from image
+files stored on the server side. The Opal table contains only sample metadata:
+`id`, `relative_path`, and `label`.
+
+The demo is intentionally small and uses the `sandbox_open` profile by default.
+Clinical vision profiles require substantially larger cohorts and Secure
+Aggregation-capable Flower runtimes.
+
+## Layout
+
+Each Rock sees the same configured image root:
+
+```text
+/tmp/dsflower_direct_image_smoke/
+  site1/
+    img_001.png
+    img_002.png
+  site2/
+    img_001.png
+  site3/
+    img_001.png
+```
+
+Each Opal receives a site-specific metadata table:
+
+```text
+id,relative_path,label
+site1_img_001,site1/img_001.png,0
+site1_img_002,site1/img_002.png,1
+```
+
+`dsFlower` stages the metadata, writes an image manifest, and the
+`pytorch_resnet18` ClientApp loads the PNG files inside the Rock.
+
+## Run
+
+For the local three-Opal Docker setup:
+
+```sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export OPAL_USER="administrator"
+export OPAL_PASSWORD="admin123"
+
+Rscript inst/demos/direct_image_resnet_smoke.R
+```
+
+The script generates synthetic PNGs, copies each site folder into the matching
+Rock container, sets `dsflower.image_data_root`, uploads metadata tables, and
+runs one federated ResNet-18 round.
+
+If the images are already available inside each Rock, skip the Docker copy:
+
+```sh
+export DSFLOWER_IMAGE_DEMO_SKIP_DOCKER_COPY=true
+export DSFLOWER_IMAGE_DEMO_SERVER_ROOT="/path/visible/in/each/rock"
+Rscript inst/demos/direct_image_resnet_smoke.R
+```
+
+```{r run-demo, eval=run_demo}
+demo_file <- system.file("demos", "direct_image_resnet_smoke.R",
+                         package = "dsFlowerClient")
+if (!nzchar(demo_file)) {
+  demo_file <- file.path("..", "inst", "demos",
+                         "direct_image_resnet_smoke.R")
+}
+source(demo_file)
+```
+
+## API Shape
+
+The core training spec is:
+
+```{r api-shape, eval=FALSE}
+recipe <- ds.flower.recipe(
+  model = ds.flower.model.pytorch_resnet18(
+    n_classes = 2L,
+    batch_size = 4L,
+    local_epochs = 1L
+  ),
+  strategy = ds.flower.strategy.fedavg(),
+  privacy = ds.flower.privacy.sandbox_open(),
+  target = "label",
+  num_rounds = 1L
+)
+```
+
+The current direct-image table path uses the low-level prepare call so the
+server receives `data_type = "image"` and stages an image manifest:
+
+```{r prepare-shape, eval=FALSE}
+ds.flower.nodes.prepare(
+  conns,
+  symbol = "flower",
+  target_column = "label",
+  run_config = c(recipe$model$params, list(data_type = "image")),
+  privacy = recipe$privacy,
+  template_name = recipe$model$template
+)
+```
+
+The higher-level `ds.flower.fit(resource = ..., model = "resnet18")` path is
+intended for `dsImaging` resources whose descriptors already declare
+`source_kind = "image_bundle"`.
+

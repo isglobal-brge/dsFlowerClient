@@ -5,6 +5,9 @@ Version: 0.1.0
 Authors@R: c(
     person("David", "Sarrat González", role = c("aut", "cre"), email = "david.sarrat@isglobal.org"),
     person("Juan R", "González", role = "aut", email = "juanr.gonzalez@isglobal.org"))
+Author: David Sarrat González [aut, cre],
+  Juan R González [aut]
+Maintainer: David Sarrat González <david.sarrat@isglobal.org>
 Description: Client-side DataSHIELD package for orchestrating Flower federated
     learning experiments. Provides composable specification objects (task, model,
     strategy, privacy) that combine into recipes, manages SuperLink lifecycle via

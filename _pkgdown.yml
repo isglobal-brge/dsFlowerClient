@@ -26,6 +26,8 @@ navbar:
           href: articles/demo-heart-disease.html
         - text: "MedMNIST Benchmark"
           href: articles/demo-medmnist.html
+        - text: "Direct Image ResNet Smoke Demo"
+          href: articles/direct-image-resnet.html
         - text: "Radiomics Benchmark"
           href: articles/demo-lung1-radiomics.html
         - text: "Radiomics To Flower"
@@ -39,6 +41,7 @@ articles:
       - demo-breast-cancer
       - demo-heart-disease
       - demo-medmnist
+      - direct-image-resnet
       - demo-lung1-radiomics
       - radiomics-to-flower
 

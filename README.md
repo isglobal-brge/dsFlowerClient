@@ -47,6 +47,21 @@ The same demos are documented as pkgdown articles. Set
 `DSFLOWER_RUN_VIGNETTE_DEMOS=true` before rendering if the vignettes should
 execute the Opal runs instead of only showing the runnable workflow.
 
+For a direct-image smoke test, `inst/demos/direct_image_resnet_smoke.R`
+generates small synthetic PNG files, places them on the Rock filesystem,
+uploads only metadata tables to Opal, and trains one federated ResNet-18 round:
+
+```sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export OPAL_USER="administrator"
+export OPAL_PASSWORD="admin123"
+Rscript inst/demos/direct_image_resnet_smoke.R
+```
+
+This demo uses `sandbox_open` by default because it is intentionally tiny.
+Clinical direct-image runs should use larger cohorts and a SecAgg-capable
+runtime/profile.
+
 For a real imaging handoff, `inst/demos/lung1_radiomics_to_flower.R` consumes
 published `dsImaging` radiomics assets, loads them as a server-side `rad` table,
 and trains a federated model with `ds.flower.fit()`:
