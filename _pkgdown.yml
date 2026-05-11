@@ -32,6 +32,8 @@ navbar:
           href: articles/demo-lung1-radiomics.html
         - text: "Radiomics To Flower"
           href: articles/radiomics-to-flower.html
+        - text: "Method Validation Overview"
+          href: articles/validation-overview.html
 
 articles:
   - title: Federated benchmark demos
@@ -44,6 +46,27 @@ articles:
       - direct-image-resnet
       - demo-lung1-radiomics
       - radiomics-to-flower
+  - title: Method validation
+    desc: "Per-template validation against centralized baselines."
+    contents:
+      - validation-sklearn-logreg
+      - validation-sklearn-ridge
+      - validation-sklearn-sgd
+      - validation-sklearn-svm
+      - validation-sklearn-elastic-net
+      - validation-pytorch-logreg
+      - validation-pytorch-mlp
+      - validation-pytorch-linear-regression
+      - validation-pytorch-multiclass
+      - validation-pytorch-multilabel
+      - validation-pytorch-poisson
+      - validation-pytorch-coxph
+      - validation-pytorch-lognormal-aft
+      - validation-pytorch-cause-specific-cox
+      - validation-pytorch-lstm
+      - validation-pytorch-tcn
+      - validation-xgboost
+      - validation-overview
 
 reference:
   - title: "Lifecycle: Node Management"

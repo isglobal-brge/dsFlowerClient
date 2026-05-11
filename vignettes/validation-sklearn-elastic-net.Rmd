@@ -1,0 +1,78 @@
+---
+title: "Validation: sklearn_elastic_net"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Validation: sklearn_elastic_net}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
+method_id <- "sklearn_elastic_net"
+paths <- c(
+  file.path('..', 'inst', 'extdata', 'dsflower_method_validation_results.json'),
+  file.path('inst', 'extdata', 'dsflower_method_validation_results.json'),
+  system.file('extdata', 'dsflower_method_validation_results.json', package = 'dsFlowerClient')
+)
+result_path <- paths[nzchar(paths) & file.exists(paths)][1]
+validation <- jsonlite::fromJSON(result_path)
+results <- validation$results
+row <- results[results$method == method_id, , drop = FALSE]
+fmt <- function(x) {
+  if (length(x) == 0 || is.null(x) || is.na(x)) return('NA')
+  if (is.numeric(x)) return(format(round(x, 4), nsmall = 4, trim = TRUE))
+  as.character(x)
+}
+```
+
+This vignette records a live validation of the method against a centralized baseline.
+The federated run used three Opal/Rock nodes and the same pooled synthetic
+validation cohort was used for the local baseline. The purpose is method-path
+validation: data staging, template verification, Flower execution, result
+persistence, and cleanup. It is not a clinical performance benchmark.
+
+```{r}
+overview <- data.frame(
+  Field = c(
+    'method', 'task', 'target', 'n_features', 'rounds',
+    'centralized_metric', 'centralized_loss', 'centralized_accuracy',
+    'federated_status', 'federated_loss', 'federated_n_failures',
+    'delta_loss', 'validation_status'
+  ),
+  Value = c(
+    row$method, row$task, row$target, row$n_features, row$rounds,
+    row$centralized_metric, fmt(row$centralized_loss), fmt(row$centralized_accuracy),
+    row$federated_status, fmt(row$federated_loss), fmt(row$federated_n_failures),
+    fmt(row$delta_loss), row$validation_status
+  )
+)
+knitr::kable(overview)
+```
+
+```{r, fig.width=5.5, fig.height=3.2}
+loss_df <- data.frame(
+  mode = c('Centralized', 'Federated'),
+  loss = c(row$centralized_loss, row$federated_loss)
+)
+loss_df <- loss_df[is.finite(loss_df$loss), , drop = FALSE]
+if (nrow(loss_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
+  ggplot2::ggplot(loss_df, ggplot2::aes(x = mode, y = loss, fill = mode)) +
+    ggplot2::geom_col(width = 0.65, show.legend = FALSE) +
+    ggplot2::labs(x = NULL, y = row$centralized_metric[[1]], title = method_id) +
+    ggplot2::theme_minimal(base_size = 11)
+} else {
+  plot.new()
+  text(0.5, 0.5, 'No federated loss available for this method')
+}
+```
+
+To reproduce only this method against configured Opal servers:
+
+```sh
+DSFLOWER_VALIDATE_METHODS=sklearn_elastic_net Rscript inst/demos/validate_methods.R
+```
+
+```{r}
+if (nzchar(row$error)) cat(row$error)
+```

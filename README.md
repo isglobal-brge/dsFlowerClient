@@ -82,6 +82,23 @@ Validation run on 2026-05-11: three Opal/Rock clients, nine LUNG1 NIfTI images,
 one federated round, zero client failures, federated loss `0.5847` vs
 centralized local loss `0.5540` on the same tiny smoke cohort.
 
+## Method validation suite
+
+`inst/demos/validate_methods.R` validates the tabular, survival, sequence, and
+XGBoost method templates against centralized baselines. It creates one synthetic
+cohort, uploads site partitions to three Opal/Rock nodes, runs each federated
+template, and writes `inst/extdata/dsflower_method_validation_results.json` for
+the pkgdown validation vignettes.
+
+```sh
+Rscript inst/demos/validate_methods.R
+DSFLOWER_VALIDATE_METHODS=pytorch_multilabel Rscript inst/demos/validate_methods.R
+```
+
+Validation run on 2026-05-11: 16 methods passed against centralized baselines.
+Federated XGBoost was intentionally blocked because the local runtime did not
+report server-side Secure Aggregation support.
+
 For a real imaging handoff, `inst/demos/lung1_radiomics_to_flower.R` consumes
 published `dsImaging` radiomics assets, loads them as a server-side `rad` table,
 and trains a federated model with `ds.flower.fit()`:

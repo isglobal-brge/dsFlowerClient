@@ -119,12 +119,13 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
 
   # Run via venv flwr with FLWR_HOME pointing to our private config
   flwr_cmd <- .client_flwr_cmd()
-  result <- processx::run(
+  result <- .run_flwr_with_artifact_watchdog(
     command = flwr_cmd,
     args = args,
     env = .client_venv_env(extra = c(FLWR_HOME = sl_info$flwr_home)),
-    error_on_status = FALSE,
-    timeout = 3600  # 1 hour max
+    results_dir = results_dir,
+    num_rounds = recipe$num_rounds,
+    expect_artifacts = !isTRUE(recipe$privacy$params$evaluation_only)
   )
 
   # Clean ANSI escape codes
@@ -230,6 +231,117 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       stderr      = clean_stderr
     ),
     class = "dsflower_run"
+  )
+}
+
+.flwr_run_timeout_secs <- function() {
+  opt <- getOption("dsflower.run_timeout_secs", NULL)
+  env <- Sys.getenv("DSFLOWER_RUN_TIMEOUT_SECS", unset = NA_character_)
+  raw <- opt %||% if (!is.na(env) && nzchar(env)) env else 3600
+  val <- suppressWarnings(as.numeric(raw))
+  if (is.na(val) || val <= 0) 3600 else val
+}
+
+.flwr_artifact_watchdog_secs <- function() {
+  opt <- getOption("dsflower.artifact_watchdog_grace_secs", NULL)
+  env <- Sys.getenv("DSFLOWER_ARTIFACT_WATCHDOG_GRACE_SECS", unset = NA_character_)
+  raw <- opt %||% if (!is.na(env) && nzchar(env)) env else 10
+  val <- suppressWarnings(as.numeric(raw))
+  if (is.na(val) || val < 0) 10 else val
+}
+
+.training_artifacts_complete <- function(results_dir, num_rounds,
+                                         expect_artifacts = TRUE) {
+  history <- .read_training_history(results_dir)
+  if (is.null(history) || !NROW(history)) return(FALSE)
+
+  if ("round" %in% names(history)) {
+    rounds <- suppressWarnings(as.integer(history$round))
+    if (!any(rounds >= as.integer(num_rounds), na.rm = TRUE)) return(FALSE)
+  }
+
+  if (!isTRUE(expect_artifacts)) return(TRUE)
+  !is.null(.read_model_weights(results_dir)) || !is.null(history)
+}
+
+.stop_flwr_run <- function(flwr_cmd, run_id, env) {
+  if (is.null(run_id) || !nzchar(run_id)) return(invisible(FALSE))
+  tryCatch({
+    processx::run(flwr_cmd, args = c("stop", run_id), env = env,
+                  error_on_status = FALSE, timeout = 15)
+    TRUE
+  }, error = function(e) FALSE)
+}
+
+.run_flwr_with_artifact_watchdog <- function(command, args, env,
+                                             results_dir, num_rounds,
+                                             expect_artifacts = TRUE) {
+  timeout <- .flwr_run_timeout_secs()
+  grace <- .flwr_artifact_watchdog_secs()
+  deadline <- Sys.time() + timeout
+  artifact_deadline <- NULL
+  completed_from_artifacts <- FALSE
+  run_id <- NULL
+  stdout <- character()
+  stderr <- character()
+
+  proc <- processx::process$new(
+    command = command,
+    args = args,
+    env = env,
+    stdout = "|",
+    stderr = "|",
+    cleanup = TRUE,
+    cleanup_tree = TRUE
+  )
+
+  repeat {
+    out <- proc$read_output_lines()
+    err <- proc$read_error_lines()
+    if (length(out)) stdout <- c(stdout, out)
+    if (length(err)) stderr <- c(stderr, err)
+
+    if (is.null(run_id)) {
+      run_id <- .parse_run_id(paste(c(stdout, stderr), collapse = "\n"))
+    }
+
+    if (proc$is_alive() &&
+        .training_artifacts_complete(results_dir, num_rounds, expect_artifacts)) {
+      completed_from_artifacts <- TRUE
+      if (is.null(artifact_deadline)) {
+        artifact_deadline <- Sys.time() + grace
+        .stop_flwr_run(command, run_id, env)
+      } else if (Sys.time() >= artifact_deadline) {
+        proc$kill_tree()
+      }
+    }
+
+    if (!proc$is_alive()) break
+
+    if (Sys.time() >= deadline) {
+      .stop_flwr_run(command, run_id, env)
+      Sys.sleep(1)
+      if (proc$is_alive()) proc$kill_tree()
+      stderr <- c(stderr, paste0("dsFlower run timeout after ", timeout, " seconds."))
+      break
+    }
+
+    Sys.sleep(1)
+  }
+
+  out <- proc$read_all_output_lines()
+  err <- proc$read_all_error_lines()
+  if (length(out)) stdout <- c(stdout, out)
+  if (length(err)) stderr <- c(stderr, err)
+
+  status <- proc$get_exit_status()
+  if (is.null(status)) status <- if (Sys.time() >= deadline) 124L else 0L
+  if (isTRUE(completed_from_artifacts)) status <- 0L
+
+  list(
+    status = as.integer(status),
+    stdout = paste(stdout, collapse = "\n"),
+    stderr = paste(stderr, collapse = "\n")
   )
 }
 

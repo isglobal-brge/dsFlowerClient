@@ -59,6 +59,27 @@ test_that(".flower_runtime_status requires training artifacts for successful run
   )
 })
 
+test_that(".training_artifacts_complete waits for final round", {
+  results_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    data.frame(round = 1L, loss = 0.5, n_clients = 3L, n_failures = 0L),
+    file.path(results_dir, "history.json"),
+    auto_unbox = TRUE
+  )
+
+  expect_false(dsFlowerClient:::.training_artifacts_complete(
+    results_dir, num_rounds = 2L
+  ))
+  expect_true(dsFlowerClient:::.training_artifacts_complete(
+    results_dir, num_rounds = 1L
+  ))
+})
+
+test_that(".flwr_run_timeout_secs accepts environment override", {
+  withr::local_envvar(DSFLOWER_RUN_TIMEOUT_SECS = "7")
+  expect_equal(dsFlowerClient:::.flwr_run_timeout_secs(), 7)
+})
+
 test_that(".require_flwr_cli accepts provisioned client environment", {
   expect_true(isTRUE(dsFlowerClient:::.require_flwr_cli()))
 })
