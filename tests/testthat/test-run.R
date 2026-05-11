@@ -70,6 +70,24 @@ test_that(".training_artifacts_complete waits for final round", {
   expect_false(dsFlowerClient:::.training_artifacts_complete(
     results_dir, num_rounds = 2L
   ))
+  file.create(file.path(results_dir, "model.pt"))
+  expect_true(dsFlowerClient:::.training_artifacts_complete(
+    results_dir, num_rounds = 1L
+  ))
+})
+
+test_that(".training_artifacts_complete accepts skipped JSON marker", {
+  results_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    data.frame(round = 1L, loss = 0.5, n_clients = 3L, n_failures = 0L),
+    file.path(results_dir, "history.json"),
+    auto_unbox = TRUE
+  )
+  jsonlite::write_json(
+    list(reason = "weights_exceed_json_limit"),
+    file.path(results_dir, "global_model.skipped.json"),
+    auto_unbox = TRUE
+  )
   expect_true(dsFlowerClient:::.training_artifacts_complete(
     results_dir, num_rounds = 1L
   ))

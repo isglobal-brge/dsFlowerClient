@@ -50,7 +50,7 @@ overview <- data.frame(
 knitr::kable(overview)
 ```
 
-```{r, fig.width=5.5, fig.height=3.2}
+```{r, fig.width=5.5, fig.height=3.2, fig.alt="Bar chart comparing centralized and federated validation loss for pytorch_lognormal_aft."}
 loss_df <- data.frame(
   mode = c('Centralized', 'Federated'),
   loss = c(row$centralized_loss, row$federated_loss)

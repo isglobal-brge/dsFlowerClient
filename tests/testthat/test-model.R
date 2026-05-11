@@ -125,6 +125,7 @@ test_that("pytorch_resnet18 creates correct model", {
   expect_equal(m$framework, "pytorch_vision")
   expect_equal(m$params$n_classes, 2L)
   expect_equal(m$params$learning_rate, 0.001)
+  expect_equal(m$params$image_size, 224L)
 })
 
 test_that("pytorch_densenet121 creates correct model", {
@@ -133,6 +134,7 @@ test_that("pytorch_densenet121 creates correct model", {
   expect_equal(m$name, "pytorch_densenet121")
   expect_equal(m$framework, "pytorch_vision")
   expect_equal(m$params$n_classes, 2L)
+  expect_equal(m$params$image_size, 224L)
 })
 
 test_that("pytorch_unet2d creates correct model", {
@@ -142,6 +144,8 @@ test_that("pytorch_unet2d creates correct model", {
   expect_equal(m$framework, "pytorch_vision")
   expect_equal(m$params$n_classes, 1L)
   expect_equal(m$params$batch_size, 8L)
+  expect_equal(m$params$image_size, 224L)
+  expect_equal(m$params$base_channels, 64L)
 })
 
 test_that("pytorch_tcn creates correct model", {

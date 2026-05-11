@@ -1,8 +1,9 @@
 #!/usr/bin/env Rscript
 
-result_path <- file.path("inst", "extdata", "dsflower_method_validation_results.json")
+result_path <- file.path("inst", "extdata", "dsflower_vision_validation_results.json")
 if (!file.exists(result_path)) {
-  stop("Run inst/demos/validate_methods.R before generating validation vignettes.", call. = FALSE)
+  stop("Run inst/demos/validate_vision_methods.R before generating vision vignettes.",
+       call. = FALSE)
 }
 
 validation <- jsonlite::fromJSON(result_path)
@@ -16,7 +17,7 @@ write_lines <- function(path, lines) {
 }
 
 method_vignette <- function(method) {
-  title <- paste0("Validation: ", method)
+  title <- paste0("Vision Validation: ", method)
   c(
     "---",
     paste0("title: \"", title, "\""),
@@ -31,9 +32,9 @@ method_vignette <- function(method) {
     "knitr::opts_chunk$set(collapse = TRUE, comment = '#>')",
     paste0("method_id <- \"", method, "\""),
     "paths <- c(",
-    "  file.path('..', 'inst', 'extdata', 'dsflower_method_validation_results.json'),",
-    "  file.path('inst', 'extdata', 'dsflower_method_validation_results.json'),",
-    "  system.file('extdata', 'dsflower_method_validation_results.json', package = 'dsFlowerClient')",
+    "  file.path('..', 'inst', 'extdata', 'dsflower_vision_validation_results.json'),",
+    "  file.path('inst', 'extdata', 'dsflower_vision_validation_results.json'),",
+    "  system.file('extdata', 'dsflower_vision_validation_results.json', package = 'dsFlowerClient')",
     ")",
     "result_path <- paths[nzchar(paths) & file.exists(paths)][1]",
     "validation <- jsonlite::fromJSON(result_path)",
@@ -46,25 +47,26 @@ method_vignette <- function(method) {
     "}",
     "```",
     "",
-    "This vignette records a live validation of the method against a centralized baseline.",
-    "The federated run used three Opal/Rock nodes and the same pooled synthetic",
-    "validation cohort was used for the local baseline. The purpose is method-path",
-    "validation: data staging, template verification, Flower execution, result",
-    "persistence, and cleanup. It is not a clinical performance benchmark.",
+    "This vignette records a live validation of a dsFlower vision template.",
+    "Synthetic PNG images were split across three Opal/Rock nodes, trained",
+    "federatively through DataSHIELD, and compared with a centralized PyTorch",
+    "baseline trained on the pooled synthetic cohort. This is a path validation",
+    "for image staging, template execution, result persistence, and cleanup;",
+    "it is not a clinical imaging benchmark.",
     "",
     "```{r}",
     "overview <- data.frame(",
     "  Field = c(",
-    "    'method', 'task', 'target', 'n_features', 'rounds',",
+    "    'method', 'task', 'target', 'n_total', 'image_size', 'rounds',",
     "    'centralized_metric', 'centralized_loss', 'centralized_accuracy',",
-    "    'federated_status', 'federated_loss', 'federated_n_failures',",
-    "    'delta_loss', 'validation_status'",
+    "    'centralized_dice', 'federated_status', 'federated_loss',",
+    "    'federated_n_failures', 'delta_loss', 'validation_status'",
     "  ),",
     "  Value = c(",
-    "    row$method, row$task, row$target, row$n_features, row$rounds,",
+    "    row$method, row$task, row$target, row$n_total, validation$image_size, row$rounds,",
     "    row$centralized_metric, fmt(row$centralized_loss), fmt(row$centralized_accuracy),",
-    "    row$federated_status, fmt(row$federated_loss), fmt(row$federated_n_failures),",
-    "    fmt(row$delta_loss), row$validation_status",
+    "    fmt(row$centralized_dice), row$federated_status, fmt(row$federated_loss),",
+    "    fmt(row$federated_n_failures), fmt(row$delta_loss), row$validation_status",
     "  )",
     ")",
     "knitr::kable(overview)",
@@ -90,7 +92,7 @@ method_vignette <- function(method) {
     "To reproduce only this method against configured Opal servers:",
     "",
     "```sh",
-    paste0("DSFLOWER_VALIDATE_METHODS=", method, " Rscript inst/demos/validate_methods.R"),
+    paste0("DSFLOWER_VALIDATE_VISION_METHODS=", method, " Rscript inst/demos/validate_vision_methods.R"),
     "```",
     "",
     "```{r}",
@@ -102,10 +104,10 @@ method_vignette <- function(method) {
 overview_vignette <- function(methods) {
   c(
     "---",
-    "title: \"Method Validation Overview\"",
+    "title: \"Vision Method Validation Overview\"",
     "output: rmarkdown::html_vignette",
     "vignette: >",
-    "  %\\VignetteIndexEntry{Method Validation Overview}",
+    "  %\\VignetteIndexEntry{Vision Method Validation Overview}",
     "  %\\VignetteEngine{knitr::rmarkdown}",
     "  %\\VignetteEncoding{UTF-8}",
     "---",
@@ -113,30 +115,25 @@ overview_vignette <- function(methods) {
     "```{r, include=FALSE}",
     "knitr::opts_chunk$set(collapse = TRUE, comment = '#>')",
     "paths <- c(",
-    "  file.path('..', 'inst', 'extdata', 'dsflower_method_validation_results.json'),",
-    "  file.path('inst', 'extdata', 'dsflower_method_validation_results.json'),",
-    "  system.file('extdata', 'dsflower_method_validation_results.json', package = 'dsFlowerClient')",
+    "  file.path('..', 'inst', 'extdata', 'dsflower_vision_validation_results.json'),",
+    "  file.path('inst', 'extdata', 'dsflower_vision_validation_results.json'),",
+    "  system.file('extdata', 'dsflower_vision_validation_results.json', package = 'dsFlowerClient')",
     ")",
     "result_path <- paths[nzchar(paths) & file.exists(paths)][1]",
     "validation <- jsonlite::fromJSON(result_path)",
     "results <- validation$results",
     "```",
     "",
-    "This macro-vignette summarizes the live dsFlower method-validation run.",
-    "The experiment created one synthetic cohort, split it across three Opal/Rock",
-    "servers, trained each supported federated template, and compared the final",
-    "federated loss with a centralized baseline trained on the pooled cohort.",
-    "",
-    "The suite is deliberately a functional and numerical sanity check, not a",
-    "privacy claim and not a clinical benchmark. It uses `sandbox_open` so that",
-    "per-node diagnostics can be observed during development. Production studies",
-    "should use the stricter DataSHIELD privacy profiles.",
+    "This macro-vignette summarizes the live dsFlower vision-template validation.",
+    "The experiment uses synthetic image and mask files staged on the Rock",
+    "servers, while metadata remains in Opal tables. Each federated run is",
+    "compared with a centralized PyTorch baseline trained over the pooled files.",
     "",
     "```{r}",
     "summary_table <- data.frame(",
-    "  Field = c('generated_at', 'privacy_profile', 'n_sites', 'n_per_site', 'n_total', 'secagg_supported'),",
+    "  Field = c('generated_at', 'privacy_profile', 'n_sites', 'n_per_site', 'n_total', 'image_size'),",
     "  Value = c(validation$generated_at, validation$privacy_profile, validation$n_sites,",
-    "            validation$n_per_site, validation$n_total, validation$secagg_supported)",
+    "            validation$n_per_site, validation$n_total, validation$image_size)",
     ")",
     "knitr::kable(summary_table)",
     "```",
@@ -149,7 +146,7 @@ overview_vignette <- function(methods) {
     "knitr::kable(display)",
     "```",
     "",
-    "```{r, fig.width=8, fig.height=5, fig.alt=\"Horizontal bar chart of federated minus centralized loss by method.\"}",
+    "```{r, fig.width=7, fig.height=3.5, fig.alt=\"Horizontal bar chart of vision-template federated minus centralized loss.\"}",
     "plot_df <- results[is.finite(results$delta_loss), , drop = FALSE]",
     "if (nrow(plot_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {",
     "  ggplot2::ggplot(plot_df, ggplot2::aes(x = stats::reorder(method, delta_loss), y = delta_loss, fill = task)) +",
@@ -161,26 +158,20 @@ overview_vignette <- function(methods) {
     "}",
     "```",
     "",
-    "The image-classification validation with images sourced from dsImaging is",
-    "documented separately in `direct-image-resnet`. XGBoost is included here",
-    "as a security guardrail check: centralized XGBoost trains locally, but the",
-    "federated template is blocked unless server-side Secure Aggregation is",
-    "available.",
-    "",
-    "To reproduce the complete suite against configured Opal servers:",
+    "To reproduce the complete vision suite against configured Opal servers:",
     "",
     "```sh",
-    "Rscript inst/demos/validate_methods.R",
+    "Rscript inst/demos/validate_vision_methods.R",
     "```"
   )
 }
 
 for (method in results$method) {
-  path <- file.path("vignettes", paste0("validation-", slug(method), ".Rmd"))
+  path <- file.path("vignettes", paste0("validation-vision-", slug(method), ".Rmd"))
   write_lines(path, method_vignette(method))
 }
 
-write_lines(file.path("vignettes", "validation-overview.Rmd"),
+write_lines(file.path("vignettes", "validation-vision-overview.Rmd"),
             overview_vignette(results$method))
 
-message("Generated ", length(results$method) + 1L, " validation vignettes.")
+message("Generated ", length(results$method) + 1L, " vision validation vignettes.")

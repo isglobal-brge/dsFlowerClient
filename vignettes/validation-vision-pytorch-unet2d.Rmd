@@ -1,19 +1,19 @@
 ---
-title: "Validation: pytorch_mlp"
+title: "Vision Validation: pytorch_unet2d"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Validation: pytorch_mlp}
+  %\VignetteIndexEntry{Vision Validation: pytorch_unet2d}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
 ```{r, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
-method_id <- "pytorch_mlp"
+method_id <- "pytorch_unet2d"
 paths <- c(
-  file.path('..', 'inst', 'extdata', 'dsflower_method_validation_results.json'),
-  file.path('inst', 'extdata', 'dsflower_method_validation_results.json'),
-  system.file('extdata', 'dsflower_method_validation_results.json', package = 'dsFlowerClient')
+  file.path('..', 'inst', 'extdata', 'dsflower_vision_validation_results.json'),
+  file.path('inst', 'extdata', 'dsflower_vision_validation_results.json'),
+  system.file('extdata', 'dsflower_vision_validation_results.json', package = 'dsFlowerClient')
 )
 result_path <- paths[nzchar(paths) & file.exists(paths)][1]
 validation <- jsonlite::fromJSON(result_path)
@@ -26,31 +26,32 @@ fmt <- function(x) {
 }
 ```
 
-This vignette records a live validation of the method against a centralized baseline.
-The federated run used three Opal/Rock nodes and the same pooled synthetic
-validation cohort was used for the local baseline. The purpose is method-path
-validation: data staging, template verification, Flower execution, result
-persistence, and cleanup. It is not a clinical performance benchmark.
+This vignette records a live validation of a dsFlower vision template.
+Synthetic PNG images were split across three Opal/Rock nodes, trained
+federatively through DataSHIELD, and compared with a centralized PyTorch
+baseline trained on the pooled synthetic cohort. This is a path validation
+for image staging, template execution, result persistence, and cleanup;
+it is not a clinical imaging benchmark.
 
 ```{r}
 overview <- data.frame(
   Field = c(
-    'method', 'task', 'target', 'n_features', 'rounds',
+    'method', 'task', 'target', 'n_total', 'image_size', 'rounds',
     'centralized_metric', 'centralized_loss', 'centralized_accuracy',
-    'federated_status', 'federated_loss', 'federated_n_failures',
-    'delta_loss', 'validation_status'
+    'centralized_dice', 'federated_status', 'federated_loss',
+    'federated_n_failures', 'delta_loss', 'validation_status'
   ),
   Value = c(
-    row$method, row$task, row$target, row$n_features, row$rounds,
+    row$method, row$task, row$target, row$n_total, validation$image_size, row$rounds,
     row$centralized_metric, fmt(row$centralized_loss), fmt(row$centralized_accuracy),
-    row$federated_status, fmt(row$federated_loss), fmt(row$federated_n_failures),
-    fmt(row$delta_loss), row$validation_status
+    fmt(row$centralized_dice), row$federated_status, fmt(row$federated_loss),
+    fmt(row$federated_n_failures), fmt(row$delta_loss), row$validation_status
   )
 )
 knitr::kable(overview)
 ```
 
-```{r, fig.width=5.5, fig.height=3.2, fig.alt="Bar chart comparing centralized and federated validation loss for pytorch_mlp."}
+```{r, fig.width=5.5, fig.height=3.2, fig.alt="Bar chart comparing centralized and federated validation loss for pytorch_unet2d."}
 loss_df <- data.frame(
   mode = c('Centralized', 'Federated'),
   loss = c(row$centralized_loss, row$federated_loss)
@@ -70,7 +71,7 @@ if (nrow(loss_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
 To reproduce only this method against configured Opal servers:
 
 ```sh
-DSFLOWER_VALIDATE_METHODS=pytorch_mlp Rscript inst/demos/validate_methods.R
+DSFLOWER_VALIDATE_VISION_METHODS=pytorch_unet2d Rscript inst/demos/validate_vision_methods.R
 ```
 
 ```{r}

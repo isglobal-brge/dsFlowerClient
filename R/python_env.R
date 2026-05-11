@@ -108,7 +108,8 @@
   pytorch = c("torch>=2.0.0", "numpy>=1.21.0", "pandas>=1.3.0",
               "pyarrow>=10.0.0"),
   pytorch_vision = c("torch>=2.0.0", "torchvision>=0.15.0", "Pillow>=9.0.0",
-                     "numpy>=1.21.0", "pandas>=1.3.0", "pyarrow>=10.0.0"),
+                     "numpy>=1.21.0", "pandas>=1.3.0", "pyarrow>=10.0.0",
+                     "nibabel>=5.0.0", "pydicom>=2.4.0", "pynrrd>=1.0.0"),
   xgboost = c("xgboost>=1.7.0", "numpy>=1.21.0", "pandas>=1.3.0",
               "pyarrow>=10.0.0")
 )

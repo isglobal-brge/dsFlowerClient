@@ -269,7 +269,8 @@ ds.flower.templates <- function(conns) {
     return(c(base, "torch>=2.0.0"))
   }
   if (framework == "pytorch_vision") {
-    return(c(base, "torch>=2.0.0", "torchvision>=0.15.0", "Pillow>=9.0.0"))
+    return(c(base, "torch>=2.0.0", "torchvision>=0.15.0", "Pillow>=9.0.0",
+             "nibabel>=5.0.0", "pydicom>=2.4.0", "pynrrd>=1.0.0"))
   }
   if (framework == "xgboost") {
     return(c(base, "xgboost>=1.7.0"))

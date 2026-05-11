@@ -250,6 +250,22 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   if (is.na(val) || val < 0) 10 else val
 }
 
+.flwr_weight_read_max_bytes <- function() {
+  opt <- getOption("dsflower.weight_read_max_bytes", NULL)
+  env <- Sys.getenv("DSFLOWER_WEIGHT_READ_MAX_BYTES", unset = NA_character_)
+  raw <- opt %||% if (!is.na(env) && nzchar(env)) env else 50 * 1024^2
+  val <- suppressWarnings(as.numeric(raw))
+  if (is.na(val) || val < 0) 50 * 1024^2 else val
+}
+
+.model_artifact_exists <- function(results_dir) {
+  any(file.exists(file.path(
+    results_dir,
+    c("global_model.json", "global_model.skipped.json",
+      "model.pt", "model.joblib", "model.npz")
+  )))
+}
+
 .training_artifacts_complete <- function(results_dir, num_rounds,
                                          expect_artifacts = TRUE) {
   history <- .read_training_history(results_dir)
@@ -261,7 +277,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   }
 
   if (!isTRUE(expect_artifacts)) return(TRUE)
-  !is.null(.read_model_weights(results_dir)) || !is.null(history)
+  .model_artifact_exists(results_dir)
 }
 
 .stop_flwr_run <- function(flwr_cmd, run_id, env) {
@@ -489,6 +505,14 @@ ds.flower.run.stop <- function(run_id) {
 .read_model_weights <- function(results_dir) {
   path <- file.path(results_dir, "global_model.json")
   if (!file.exists(path)) return(NULL)
+  size <- file.info(path)$size
+  max_bytes <- .flwr_weight_read_max_bytes()
+  if (is.finite(size) && !is.na(size) && size > max_bytes) {
+    message("Skipping in-memory weight load for large global_model.json (",
+            round(size / 1024^2, 1), " MiB). Native artifacts remain in ",
+            results_dir, ".")
+    return(NULL)
+  }
 
   raw <- jsonlite::fromJSON(path, simplifyVector = FALSE)
   shapes <- raw[["__shapes__"]]

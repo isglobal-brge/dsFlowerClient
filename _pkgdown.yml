@@ -34,6 +34,8 @@ navbar:
           href: articles/radiomics-to-flower.html
         - text: "Method Validation Overview"
           href: articles/validation-overview.html
+        - text: "Vision Validation Overview"
+          href: articles/validation-vision-overview.html
 
 articles:
   - title: Federated benchmark demos
@@ -67,6 +69,13 @@ articles:
       - validation-pytorch-tcn
       - validation-xgboost
       - validation-overview
+  - title: Vision method validation
+    desc: "Image and segmentation templates validated against centralized PyTorch baselines."
+    contents:
+      - validation-vision-pytorch-resnet18
+      - validation-vision-pytorch-densenet121
+      - validation-vision-pytorch-unet2d
+      - validation-vision-overview
 
 reference:
   - title: "Lifecycle: Node Management"
@@ -99,6 +108,9 @@ reference:
       - ds.flower.model.sklearn_ridge
       - ds.flower.model.sklearn_sgd
       - ds.flower.model.pytorch_mlp
+      - ds.flower.model.pytorch_resnet18
+      - ds.flower.model.pytorch_densenet121
+      - ds.flower.model.pytorch_unet2d
 
   - title: "Specification: Strategies"
     desc: "Federated aggregation strategy specifications."

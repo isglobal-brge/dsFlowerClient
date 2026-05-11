@@ -272,12 +272,14 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
 #' @param learning_rate Numeric; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
+#' @param image_size Integer; square resize dimension before training.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
                                               learning_rate = 0.001,
                                               batch_size = 32L,
-                                              local_epochs = 1L) {
+                                              local_epochs = 1L,
+                                              image_size = 224L) {
   obj <- list(
     name      = "pytorch_resnet18",
     framework = "pytorch_vision",
@@ -286,7 +288,8 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
       n_classes     = as.integer(n_classes),
       learning_rate = learning_rate,
       batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs)
+      local_epochs  = as.integer(local_epochs),
+      image_size    = as.integer(image_size)
     )
   )
   class(obj) <- "dsflower_model"
@@ -301,12 +304,14 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
 #' @param learning_rate Numeric; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
+#' @param image_size Integer; square resize dimension before training.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
                                                  learning_rate = 0.001,
                                                  batch_size = 32L,
-                                                 local_epochs = 1L) {
+                                                 local_epochs = 1L,
+                                                 image_size = 224L) {
   obj <- list(
     name      = "pytorch_densenet121",
     framework = "pytorch_vision",
@@ -315,7 +320,8 @@ ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
       n_classes     = as.integer(n_classes),
       learning_rate = learning_rate,
       batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs)
+      local_epochs  = as.integer(local_epochs),
+      image_size    = as.integer(image_size)
     )
   )
   class(obj) <- "dsflower_model"
@@ -330,12 +336,16 @@ ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
 #' @param learning_rate Numeric; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
+#' @param image_size Integer; square resize dimension before training.
+#' @param base_channels Integer; number of channels in the first U-Net block.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.pytorch_unet2d <- function(n_classes = 1L,
                                             learning_rate = 0.001,
                                             batch_size = 8L,
-                                            local_epochs = 1L) {
+                                            local_epochs = 1L,
+                                            image_size = 224L,
+                                            base_channels = 64L) {
   obj <- list(
     name      = "pytorch_unet2d",
     framework = "pytorch_vision",
@@ -344,7 +354,9 @@ ds.flower.model.pytorch_unet2d <- function(n_classes = 1L,
       n_classes     = as.integer(n_classes),
       learning_rate = learning_rate,
       batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs)
+      local_epochs  = as.integer(local_epochs),
+      image_size    = as.integer(image_size),
+      base_channels = as.integer(base_channels)
     )
   )
   class(obj) <- "dsflower_model"

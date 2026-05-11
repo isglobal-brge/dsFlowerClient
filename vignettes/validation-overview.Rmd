@@ -46,7 +46,7 @@ display <- results[, c(
 knitr::kable(display)
 ```
 
-```{r, fig.width=8, fig.height=5}
+```{r, fig.width=8, fig.height=5, fig.alt="Horizontal bar chart of federated minus centralized loss by method."}
 plot_df <- results[is.finite(results$delta_loss), , drop = FALSE]
 if (nrow(plot_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
   ggplot2::ggplot(plot_df, ggplot2::aes(x = stats::reorder(method, delta_loss), y = delta_loss, fill = task)) +

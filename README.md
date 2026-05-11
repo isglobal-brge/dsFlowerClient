@@ -99,6 +99,23 @@ Validation run on 2026-05-11: 16 methods passed against centralized baselines.
 Federated XGBoost was intentionally blocked because the local runtime did not
 report server-side Secure Aggregation support.
 
+## Vision method validation
+
+`inst/demos/validate_vision_methods.R` validates the image templates separately
+from the tabular suite. It generates synthetic PNG images and masks, copies the
+files to the Rock-side image root, uploads only metadata tables to Opal, and
+compares federated training with centralized PyTorch baselines.
+
+```sh
+Rscript inst/demos/validate_vision_methods.R
+DSFLOWER_VALIDATE_VISION_METHODS=pytorch_unet2d Rscript inst/demos/validate_vision_methods.R
+```
+
+Validation run on 2026-05-11: `pytorch_resnet18`, `pytorch_densenet121`, and
+`pytorch_unet2d` all passed on three Opal/Rock nodes with zero client failures.
+The run writes `inst/extdata/dsflower_vision_validation_results.json` for the
+vision validation pkgdown articles.
+
 For a real imaging handoff, `inst/demos/lung1_radiomics_to_flower.R` consumes
 published `dsImaging` radiomics assets, loads them as a server-side `rad` table,
 and trains a federated model with `ds.flower.fit()`:

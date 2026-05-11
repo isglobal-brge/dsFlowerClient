@@ -1,0 +1,60 @@
+---
+title: "Vision Method Validation Overview"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vision Method Validation Overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
+paths <- c(
+  file.path('..', 'inst', 'extdata', 'dsflower_vision_validation_results.json'),
+  file.path('inst', 'extdata', 'dsflower_vision_validation_results.json'),
+  system.file('extdata', 'dsflower_vision_validation_results.json', package = 'dsFlowerClient')
+)
+result_path <- paths[nzchar(paths) & file.exists(paths)][1]
+validation <- jsonlite::fromJSON(result_path)
+results <- validation$results
+```
+
+This macro-vignette summarizes the live dsFlower vision-template validation.
+The experiment uses synthetic image and mask files staged on the Rock
+servers, while metadata remains in Opal tables. Each federated run is
+compared with a centralized PyTorch baseline trained over the pooled files.
+
+```{r}
+summary_table <- data.frame(
+  Field = c('generated_at', 'privacy_profile', 'n_sites', 'n_per_site', 'n_total', 'image_size'),
+  Value = c(validation$generated_at, validation$privacy_profile, validation$n_sites,
+            validation$n_per_site, validation$n_total, validation$image_size)
+)
+knitr::kable(summary_table)
+```
+
+```{r}
+display <- results[, c(
+  'method', 'task', 'centralized_metric', 'centralized_loss',
+  'federated_status', 'federated_loss', 'delta_loss', 'validation_status'
+)]
+knitr::kable(display)
+```
+
+```{r, fig.width=7, fig.height=3.5, fig.alt="Horizontal bar chart of vision-template federated minus centralized loss."}
+plot_df <- results[is.finite(results$delta_loss), , drop = FALSE]
+if (nrow(plot_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
+  ggplot2::ggplot(plot_df, ggplot2::aes(x = stats::reorder(method, delta_loss), y = delta_loss, fill = task)) +
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.3, color = 'grey40') +
+    ggplot2::geom_col(width = 0.7) +
+    ggplot2::coord_flip() +
+    ggplot2::labs(x = NULL, y = 'Federated loss - centralized loss') +
+    ggplot2::theme_minimal(base_size = 11)
+}
+```
+
+To reproduce the complete vision suite against configured Opal servers:
+
+```sh
+Rscript inst/demos/validate_vision_methods.R
+```

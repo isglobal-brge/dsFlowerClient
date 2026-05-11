@@ -8,7 +8,8 @@ ds.flower.model.pytorch_densenet121(
   n_classes = 2L,
   learning_rate = 0.001,
   batch_size = 32L,
-  local_epochs = 1L
+  local_epochs = 1L,
+  image_size = 224L
 )
 }
 \arguments{
@@ -19,6 +20,8 @@ ds.flower.model.pytorch_densenet121(
 \item{batch_size}{Integer; batch size.}
 
 \item{local_epochs}{Integer; local training epochs per round.}
+
+\item{image_size}{Integer; square resize dimension before training.}
 }
 \value{
 A \code{dsflower_model} S3 object.
