@@ -20,6 +20,8 @@ navbar:
       menu:
         - text: "API Quickstart"
           href: articles/api-quickstart.html
+        - text: "Demo Results Overview"
+          href: articles/demo-overview.html
         - text: "Breast Cancer Benchmark"
           href: articles/demo-breast-cancer.html
         - text: "Heart Disease Benchmark"
@@ -42,6 +44,7 @@ articles:
     navbar: ~
     contents:
       - api-quickstart
+      - demo-overview
       - demo-breast-cancer
       - demo-heart-disease
       - demo-medmnist

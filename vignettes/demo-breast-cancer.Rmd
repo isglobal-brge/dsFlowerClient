@@ -26,6 +26,71 @@ export OPAL_PASSWORD="admin123"
 Rscript inst/demos/benchmark_breast_cancer.R
 ```
 
+## What The Script Does
+
+The benchmark script is intentionally transparent. It loads the public dataset,
+creates a binary outcome, partitions the training rows across the configured
+sites, uploads one Opal table per site, logs into DataSHIELD, and launches a
+federated logistic regression with `ds.flower.fit()`.
+
+```{r workflow-shape, eval=FALSE}
+data("BreastCancer", package = "mlbench")
+raw <- BreastCancer[stats::complete.cases(BreastCancer), , drop = FALSE]
+
+feature_cols <- setdiff(names(raw), c("Id", "Class"))
+features <- paste0("bc_", seq_along(feature_cols))
+
+dataset <- data.frame(
+  id = paste0("bcw_", seq_len(nrow(raw))),
+  setNames(lapply(raw[feature_cols], function(x) as.numeric(as.character(x))), features),
+  outcome = as.integer(raw$Class == "malignant"),
+  check.names = FALSE
+)
+
+run_dsflower_benchmark(
+  data = dataset,
+  features = features,
+  demo_id = "breast_cancer_wisconsin",
+  dataset_label = "Breast Cancer Wisconsin diagnostic benchmark",
+  data_mode = "mlbench::BreastCancer",
+  default_rounds = 2L
+)
+```
+
+The helper expands to the same explicit DataSHIELD flow used in production
+demos:
+
+```{r opal-training-shape, eval=FALSE}
+builder <- DSI::newDSLoginBuilder()
+builder$append(
+  server = "opal1",
+  url = "https://localhost:8443",
+  user = Sys.getenv("OPAL_USER", "administrator"),
+  password = Sys.getenv("OPAL_PASSWORD", "admin123"),
+  table = "dsflower_demo.demo_breast_cancer_wisconsin_site1",
+  driver = "OpalDriver"
+)
+# opal2 and opal3 are appended in the same way.
+
+conns <- DSI::datashield.login(
+  logins = builder$build(),
+  assign = TRUE,
+  symbol = "D"
+)
+
+fit <- ds.flower.fit(
+  conns,
+  symbol = "D",
+  target = "outcome",
+  features = features,
+  model = "sklearn_logreg",
+  model_params = list(max_iter = 100L),
+  strategy = "fedavg",
+  privacy = "trusted_internal",
+  rounds = 2L
+)
+```
+
 The demo can also be launched while rendering this vignette:
 
 ```{r run-demo, eval=run_demo}

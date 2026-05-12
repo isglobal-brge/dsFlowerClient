@@ -1,0 +1,139 @@
+---
+title: "Demo Results Overview"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Demo Results Overview}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+This page is the landing point for the rendered dsFlowerClient demos. It links
+to each transparent workflow article and records the final validation numbers
+that were available at handoff time. The demos are intended to show how the
+researcher connects to Opal/DataSHIELD, stages or references server-side data,
+launches Flower training, and checks the resulting federated model.
+
+## Demo Results
+
+```{r demo-results}
+demo_results <- data.frame(
+  demo = c(
+    "Breast Cancer Benchmark",
+    "Heart Disease Benchmark",
+    "MedMNIST Benchmark",
+    "Radiomics Benchmark",
+    "Radiomics To Flower",
+    "Direct Image ResNet",
+    "Method Validation Suite",
+    "Vision Method Validation"
+  ),
+  article = c(
+    "demo-breast-cancer.html",
+    "demo-heart-disease.html",
+    "demo-medmnist.html",
+    "demo-lung1-radiomics.html",
+    "radiomics-to-flower.html",
+    "direct-image-resnet.html",
+    "validation-overview.html",
+    "validation-vision-overview.html"
+  ),
+  data_path = c(
+    "mlbench BreastCancer table",
+    "UCI Cleveland or deterministic fallback",
+    "BreastMNIST pooled image features",
+    "LUNG1-style radiomics features",
+    "dsImaging-derived LUNG1 radiomics table",
+    "dsImaging direct NIfTI image resource",
+    "Synthetic tabular/sequence/survival cohort",
+    "Synthetic PNG image/mask cohort"
+  ),
+  sites = c(3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L),
+  central_metric = c(
+    "AUC 0.9878",
+    "AUC 0.8919",
+    "AUC 0.7654",
+    "AUC 0.7217",
+    "not applicable",
+    "loss 0.5540",
+    "17/17 methods pass",
+    "3/3 methods pass"
+  ),
+  federated_metric = c(
+    "AUC 0.9908",
+    "AUC 0.8926",
+    "AUC 0.7985",
+    "AUC 0.7205",
+    "loss 0.6503 -> 0.6474",
+    "loss 0.5847",
+    "17/17 acceptable",
+    "3/3 acceptable"
+  ),
+  failures = c(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L),
+  stringsAsFactors = FALSE
+)
+knitr::kable(demo_results)
+```
+
+## Article Links
+
+- [API Quickstart](api-quickstart.html)
+- [Breast Cancer Benchmark](demo-breast-cancer.html)
+- [Heart Disease Benchmark](demo-heart-disease.html)
+- [MedMNIST Benchmark](demo-medmnist.html)
+- [Radiomics Benchmark](demo-lung1-radiomics.html)
+- [Radiomics To Flower](radiomics-to-flower.html)
+- [Direct Image ResNet](direct-image-resnet.html)
+- [All Method Validation Overview](validation-overview.html)
+- [Vision Method Validation Overview](validation-vision-overview.html)
+
+## Common Execution Shape
+
+All live demos use the same DataSHIELD shape: build Opal logins, assign a
+server-side symbol, call `ds.flower.fit()` or the lower-level
+`connect -> prepare -> run` flow, then inspect metrics and cleanup state.
+
+```{r common-shape, eval=FALSE}
+library(dsFlowerClient)
+library(DSI)
+library(DSOpal)
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(
+  server = "opal1",
+  url = "https://localhost:8443",
+  user = Sys.getenv("OPAL_USER", "administrator"),
+  password = Sys.getenv("OPAL_PASSWORD", "admin123"),
+  table = "dsflower_demo.demo_site1",
+  driver = "OpalDriver"
+)
+# Repeat builder$append(...) for opal2 and opal3.
+
+conns <- DSI::datashield.login(
+  logins = builder$build(),
+  assign = TRUE,
+  symbol = "D"
+)
+
+fit <- ds.flower.fit(
+  conns,
+  symbol = "D",
+  target = "outcome",
+  features = c("x1", "x2", "x3"),
+  model = "sklearn_logreg",
+  strategy = "fedavg",
+  privacy = "trusted_internal",
+  rounds = 2L
+)
+
+ds.flower.metrics(fit)
+DSI::datashield.logout(conns)
+```
+
+For full method-by-method validation numbers, use the rendered validation
+overview. It reads the committed JSON result files and links to every individual
+method article.
+

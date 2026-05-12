@@ -1,0 +1,611 @@
+# dsFlowerClient
+
+Client-side R package for
+[dsFlower](https://github.com/isglobal-brge/dsFlower) — federated
+learning on [DataSHIELD](https://www.datashield.org/) powered by
+[Flower](https://flower.ai/).
+
+## Installation
+
+``` r
+
+remotes::install_github("isglobal-brge/dsFlowerClient")
+```
+
+Requires Python with [Flower](https://flower.ai/):
+`pip install flwr>=1.13.0`
+
+## Local Opal demo
+
+The package ships a runnable three-site Opal demo that creates synthetic
+balanced tables, configures the local Opal profile, and trains a
+federated scikit-learn logistic regression model:
+
+``` sh
+Rscript "$(Rscript -e 'cat(system.file("demos", "opal_federated_logreg.R", package = "dsFlowerClient"))')"
+```
+
+By default the demo uses `DSFLOWER_DEMO_PRIVACY=trusted_internal`.
+Profiles that require Secure Aggregation are only allowed when the
+connected servers report `secure_aggregation_supported = TRUE`.
+
+## Benchmark demos
+
+The `inst/demos` directory also includes four central-vs-federated
+benchmark scripts. Each script uploads site partitions to the configured
+Opal servers, runs Flower through DataSHIELD, compares the federated
+model with a local baseline, and writes `summary.json` plus
+`benchmark.rds` under `dsflower_output/demo_benchmarks`.
+
+``` sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export OPAL_USER="administrator"
+export OPAL_PASSWORD="admin123"
+
+Rscript inst/demos/benchmark_breast_cancer.R
+Rscript inst/demos/benchmark_heart_disease.R
+Rscript inst/demos/benchmark_medmnist.R
+Rscript inst/demos/benchmark_lung1_radiomics.R
+```
+
+The same demos are documented as pkgdown articles. Set
+`DSFLOWER_RUN_VIGNETTE_DEMOS=true` before rendering if the vignettes
+should execute the Opal runs instead of only showing the runnable
+workflow.
+
+For a direct-image smoke test, `inst/demos/direct_image_resnet_smoke.R`
+generates small synthetic PNG files, places them on the Rock filesystem,
+uploads only metadata tables to Opal, and trains one federated ResNet-18
+round:
+
+``` sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export OPAL_USER="administrator"
+export OPAL_PASSWORD="admin123"
+Rscript inst/demos/direct_image_resnet_smoke.R
+```
+
+This demo uses `sandbox_open` by default because it is intentionally
+tiny. Clinical direct-image runs should use larger cohorts and a
+SecAgg-capable runtime/profile.
+
+For a direct handoff from `dsImaging`,
+`inst/demos/dsimaging_direct_image_resnet.R` connects to an Opal imaging
+resource, stages the image assets through the server-side
+`dsFlower`/`dsImaging` descriptor path, and trains a federated ResNet-18
+model directly from the stored image files. When
+`DSFLOWER_IMAGING_LOCAL_WORKDIR` points to a local copy of the same
+study, the script also trains a centralized ResNet-18 baseline and
+writes `local_vs_federated.json`:
+
+``` sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export DSFLOWER_IMAGING_RESOURCE="dsdemo.lung1_study"
+export DSFLOWER_IMAGING_TARGET="os_2yr_alive"
+export DSFLOWER_IMAGING_LOCAL_WORKDIR="/tmp/dsimaging_lung1_study"
+Rscript inst/demos/dsimaging_direct_image_resnet.R
+```
+
+Validation run on 2026-05-11: three Opal/Rock clients, nine LUNG1 NIfTI
+images, one federated round, zero client failures, federated loss
+`0.5847` vs centralized local loss `0.5540` on the same tiny smoke
+cohort.
+
+## Method validation suite
+
+`inst/demos/validate_methods.R` validates the tabular, survival,
+sequence, and XGBoost method templates against centralized baselines. It
+creates one synthetic cohort, uploads site partitions to three Opal/Rock
+nodes, runs each federated template, and writes
+`inst/extdata/dsflower_method_validation_results.json` for the pkgdown
+validation vignettes.
+
+``` sh
+Rscript inst/demos/validate_methods.R
+DSFLOWER_VALIDATE_METHODS=pytorch_multilabel Rscript inst/demos/validate_methods.R
+```
+
+Validation run on 2026-05-11: all 17 non-vision methods passed against
+centralized baselines with zero client failures. XGBoost now validates
+in the trusted sandbox profile through the histogram template and native
+model-artifact evaluation; clinical/consortium profiles still enforce
+SecAgg through the DataSHIELD trust policy.
+
+The suite fails fast when a method has client failures, missing finite
+losses, or a federated loss outside the configured acceptance envelope.
+The generated JSON records the centralized loss, federated loss, delta,
+acceptance margin, and per-method pass/fail status used by the
+validation vignettes.
+
+## Vision method validation
+
+`inst/demos/validate_vision_methods.R` validates the image templates
+separately from the tabular suite. It generates synthetic PNG images and
+masks, copies the files to the Rock-side image root, uploads only
+metadata tables to Opal, and compares federated training with
+centralized PyTorch baselines.
+
+``` sh
+Rscript inst/demos/validate_vision_methods.R
+DSFLOWER_VALIDATE_VISION_METHODS=pytorch_unet2d Rscript inst/demos/validate_vision_methods.R
+```
+
+Validation run on 2026-05-11: `pytorch_resnet18`, `pytorch_densenet121`,
+and `pytorch_unet2d` all passed on three Opal/Rock nodes with zero
+client failures. The run writes
+`inst/extdata/dsflower_vision_validation_results.json` for the vision
+validation pkgdown articles, including the same acceptance fields used
+by the non-vision suite.
+
+For a real imaging handoff, `inst/demos/lung1_radiomics_to_flower.R`
+consumes published `dsImaging` radiomics assets, loads them as a
+server-side `rad` table, and trains a federated model with
+[`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md):
+
+``` sh
+export LUNG1_WORKDIR="/tmp/dsimaging_lung1_full"
+export LUNG1_OPAL_RESOURCE="lung1_full_study"
+Rscript inst/demos/lung1_radiomics_to_flower.R
+```
+
+## Usage
+
+``` r
+
+library(dsFlowerClient)
+library(DSI)
+library(DSOpal)
+
+# Connect to Opal nodes
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = "site1", url = "https://opal1.example.org",
+               user = "researcher", password = "...",
+               table = "PROJECT.data", driver = "OpalDriver")
+builder$append(server = "site2", url = "https://opal2.example.org",
+               user = "researcher", password = "...",
+               table = "PROJECT.data", driver = "OpalDriver")
+conns <- DSI::datashield.login(logins = builder$build(),
+                               assign = TRUE, symbol = "D")
+
+# Happy path: connect, build recipe, train, and clean up the Flower handle
+result <- ds.flower.fit(
+  conns,
+  symbol = "D",
+  target = "outcome",
+  features = c("age", "chol", "thalach"),
+  model = "sklearn_logreg",
+  strategy = "fedavg",
+  privacy = "auto",
+  rounds = 5L
+)
+
+# Advanced path remains available for full control
+flower <- ds.flower.connect(conns, symbol = "D")
+recipe <- ds.flower.recipe(
+  model = ds.flower.model("mlp", hidden_layers = c(64, 32)),
+  strategy = ds.flower.strategy("fedprox", proximal_mu = 0.1),
+  privacy = ds.flower.privacy("clinical_default"),
+  target = "outcome",
+  features = c("age", "chol", "thalach"),
+  num_rounds = 10L
+)
+result <- ds.flower.run(flower, recipe)
+ds.flower.disconnect(flower)
+
+# Recipes also accept character names directly
+recipe <- ds.flower.recipe(
+  model = "sklearn_logreg",
+  strategy = "fedavg",
+  privacy = "trusted_internal",
+  target = "outcome",
+  features = c("age", "chol", "thalach")
+)
+
+# Cleanup
+DSI::datashield.logout(conns)
+```
+
+## Models
+
+20 models across scikit-learn, PyTorch, and XGBoost. See the [dsFlower
+README](https://github.com/isglobal-brge/dsFlower) for the full list.
+
+## Authors
+
+- **David Sarrat González** — <david.sarrat@isglobal.org>
+- **Juan R González** — <juanr.gonzalez@isglobal.org>
+
+[Barcelona Institute for Global Health
+(ISGlobal)](https://www.isglobal.org/)
+
+# Package index
+
+## Lifecycle: Node Management
+
+Connect, prepare, and manage federated nodes on Opal servers.
+
+- [`ds.flower.nodes.init()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.init.md)
+  : Initialize Flower handles on all servers
+- [`ds.flower.nodes.prepare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.prepare.md)
+  : Prepare a training run on all servers
+- [`ds.flower.nodes.ensure()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.ensure.md)
+  : Ensure SuperNodes are running on all servers
+- [`ds.flower.nodes.cleanup()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.cleanup.md)
+  : Clean up training run on all servers
+
+## Lifecycle: SuperLink
+
+Start, monitor, and stop the local Flower SuperLink process.
+
+- [`ds.flower.superlink.start()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.start.md)
+  : Start a Flower SuperLink
+- [`ds.flower.superlink.status()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.status.md)
+  : Get SuperLink status
+- [`ds.flower.superlink.stop()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.stop.md)
+  : Stop the Flower SuperLink
+
+## Lifecycle: Training Runs
+
+Launch and manage federated training runs.
+
+- [`ds.flower.run.start()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.start.md)
+  : Start a Flower run
+- [`ds.flower.run.stop()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.stop.md)
+  : Stop a Flower run
+- [`ds.flower.run.list()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.list.md)
+  : List Flower runs
+- [`ds.flower.run.logs()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.logs.md)
+  : Get Flower run logs
+
+## Specification: Models
+
+Model specification objects for federated learning.
+
+- [`ds.flower.model.sklearn_logreg()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.sklearn_logreg.md)
+  : Create a scikit-learn Logistic Regression model spec
+- [`ds.flower.model.sklearn_ridge()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.sklearn_ridge.md)
+  : Create a scikit-learn Ridge Classifier model spec
+- [`ds.flower.model.sklearn_sgd()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.sklearn_sgd.md)
+  : Create a scikit-learn SGD Classifier model spec
+- [`ds.flower.model.pytorch_mlp()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_mlp.md)
+  : Create a PyTorch MLP model spec
+- [`ds.flower.model.pytorch_resnet18()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_resnet18.md)
+  : Create a PyTorch ResNet-18 model spec
+- [`ds.flower.model.pytorch_densenet121()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_densenet121.md)
+  : Create a PyTorch DenseNet-121 model spec
+- [`ds.flower.model.pytorch_unet2d()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_unet2d.md)
+  : Create a PyTorch U-Net 2D model spec
+
+## Specification: Strategies
+
+Federated aggregation strategy specifications.
+
+- [`ds.flower.strategy.fedavg()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedavg.md)
+  : Create a FedAvg strategy spec
+- [`ds.flower.strategy.fedprox()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedprox.md)
+  : Create a FedProx strategy spec
+
+## Specification: Tasks & Privacy
+
+Task types and privacy enhancement specifications.
+
+- [`ds.flower.task.classification()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.classification.md)
+  : Create a classification task specification
+- [`ds.flower.task.regression()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.regression.md)
+  : Create a regression task specification
+- [`ds.flower.task.segmentation()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.segmentation.md)
+  : Create a segmentation task specification
+- [`ds.flower.task.survival()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.survival.md)
+  : Create a survival task specification
+- [`ds.flower.privacy.sandbox_open()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.sandbox_open.md)
+  : Create a sandbox_open privacy spec
+- [`ds.flower.privacy.trusted_internal()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.trusted_internal.md)
+  : Create a trusted_internal privacy spec
+- [`ds.flower.privacy.consortium_internal()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.consortium_internal.md)
+  : Create a consortium_internal privacy spec
+- [`ds.flower.privacy.clinical_default()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.clinical_default.md)
+  : Create a clinical_default privacy spec (recommended)
+- [`ds.flower.privacy.clinical_hardened()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.clinical_hardened.md)
+  : Create a clinical_hardened privacy spec
+- [`ds.flower.privacy.clinical_update_noise()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.clinical_update_noise.md)
+  : Create a clinical_update_noise privacy spec
+- [`ds.flower.privacy.high_sensitivity_dp()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.high_sensitivity_dp.md)
+  : Create a high_sensitivity_dp privacy spec
+- [`ds.flower.privacy.evaluation_only()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.evaluation_only.md)
+  : Apply evaluation_only modifier to a privacy spec
+- [`ds.flower.privacy.budget()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.budget.md)
+  : Query remaining privacy budget on all servers
+
+## Specification: Recipe
+
+Combine task, model, strategy, and privacy into a recipe.
+
+- [`ds.flower.recipe()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.recipe.md)
+  : Create a Flower federated learning recipe
+
+## Results & Metrics
+
+Collect, compare, and visualize training results.
+
+- [`ds.flower.metrics()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.metrics.md)
+  : Get training metrics from all servers
+- [`ds.flower.compare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.compare.md)
+  : Compare metrics across multiple training runs
+- [`ds.flower.plot()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.plot.md)
+  : Plot training curves
+- [`ds.flower.log()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.log.md)
+  : Get log output from all servers
+- [`dsflower_result()`](https://isglobal-brge.github.io/dsFlowerClient/reference/dsflower_result.md)
+  : Create a dsflower_result object
+- [`ds.flower.code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.code.md)
+  : Get the R code that produced a result
+- [`ds.flower.copy_code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.copy_code.md)
+  : Copy reproducible R code to clipboard
+
+## Print Methods
+
+- [`print(`*`<dsflower_model>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_model.md)
+  : Print a dsflower_model
+- [`print(`*`<dsflower_strategy>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_strategy.md)
+  : Print a dsflower_strategy
+- [`print(`*`<dsflower_task>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_task.md)
+  : Print a dsflower_task
+- [`print(`*`<dsflower_privacy>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_privacy.md)
+  : Print a dsflower_privacy
+- [`print(`*`<dsflower_recipe>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_recipe.md)
+  : Print a dsflower_recipe
+- [`print(`*`<dsflower_result>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_result.md)
+  : Print a dsflower_result
+- [`as.data.frame(`*`<dsflower_result>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/as.data.frame.dsflower_result.md)
+  : Convert dsflower_result to data.frame
+- [`` `$`( ``*`<dsflower_result>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/cash-.dsflower_result.md)
+  : Access dsflower_result elements
+
+## Full Exported API
+
+Catch-all index for exported helpers not listed above.
+
+- [`ds.flower.code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.code.md)
+  : Get the R code that produced a result
+- [`ds.flower.compare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.compare.md)
+  : Compare metrics across multiple training runs
+- [`ds.flower.connect()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.connect.md)
+  : Connect to a data source for federated learning
+- [`ds.flower.copy_code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.copy_code.md)
+  : Copy reproducible R code to clipboard
+- [`ds.flower.delete_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.delete_model.md)
+  : Delete a saved model
+- [`ds.flower.describe()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.describe.md)
+  : Describe the connected dataset
+- [`ds.flower.disconnect()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.disconnect.md)
+  : Disconnect and clean up a flower connection
+- [`ds.flower.features()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.features.md)
+  : List available feature assets
+- [`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
+  : Fit a federated model in one call
+- [`ds.flower.labels()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.labels.md)
+  : List available label sets for an imaging dataset
+- [`ds.flower.load_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.load_model.md)
+  : Load a saved model
+- [`ds.flower.log()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.log.md)
+  : Get log output from all servers
+- [`ds.flower.masks()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.masks.md)
+  : List available segmentation masks
+- [`ds.flower.metrics()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.metrics.md)
+  : Get training metrics from all servers
+- [`ds.flower.model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.md)
+  : Create a model spec by name
+- [`ds.flower.model.pytorch_cause_specific_cox()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_cause_specific_cox.md)
+  : Create a Cause-Specific Cox model spec
+- [`ds.flower.model.pytorch_coxph()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_coxph.md)
+  : Create a PyTorch Cox Proportional Hazards model spec
+- [`ds.flower.model.pytorch_densenet121()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_densenet121.md)
+  : Create a PyTorch DenseNet-121 model spec
+- [`ds.flower.model.pytorch_linear_regression()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_linear_regression.md)
+  : Create a PyTorch Linear Regression model spec
+- [`ds.flower.model.pytorch_lognormal_aft()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_lognormal_aft.md)
+  : Create a Log-Normal AFT survival model spec
+- [`ds.flower.model.pytorch_logreg()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_logreg.md)
+  : Create a PyTorch Logistic Regression model spec
+- [`ds.flower.model.pytorch_lstm()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_lstm.md)
+  : Create a PyTorch LSTM model spec
+- [`ds.flower.model.pytorch_mlp()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_mlp.md)
+  : Create a PyTorch MLP model spec
+- [`ds.flower.model.pytorch_multiclass()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_multiclass.md)
+  : Create a PyTorch Multi-Class Classifier model spec
+- [`ds.flower.model.pytorch_multilabel()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_multilabel.md)
+  : Create a Multi-Label Classification model spec
+- [`ds.flower.model.pytorch_poisson()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_poisson.md)
+  : Create a Poisson Regression model spec
+- [`ds.flower.model.pytorch_resnet18()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_resnet18.md)
+  : Create a PyTorch ResNet-18 model spec
+- [`ds.flower.model.pytorch_tcn()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_tcn.md)
+  : Create a PyTorch TCN model spec
+- [`ds.flower.model.pytorch_unet2d()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_unet2d.md)
+  : Create a PyTorch U-Net 2D model spec
+- [`ds.flower.model.sklearn_elastic_net()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.sklearn_elastic_net.md)
+  : Create an Elastic Net model spec
+- [`ds.flower.model.sklearn_logreg()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.sklearn_logreg.md)
+  : Create a scikit-learn Logistic Regression model spec
+- [`ds.flower.model.sklearn_ridge()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.sklearn_ridge.md)
+  : Create a scikit-learn Ridge Classifier model spec
+- [`ds.flower.model.sklearn_sgd()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.sklearn_sgd.md)
+  : Create a scikit-learn SGD Classifier model spec
+- [`ds.flower.model.sklearn_svm()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.sklearn_svm.md)
+  : Create a Linear SVM model spec
+- [`ds.flower.model.xgboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.xgboost.md)
+  : Create an XGBoost model spec
+- [`ds.flower.models()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.models.md)
+  : List saved models
+- [`ds.flower.nodes.cleanup()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.cleanup.md)
+  : Clean up training run on all servers
+- [`ds.flower.nodes.ensure()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.ensure.md)
+  : Ensure SuperNodes are running on all servers
+- [`ds.flower.nodes.init()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.init.md)
+  : Initialize Flower handles on all servers
+- [`ds.flower.nodes.prepare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.prepare.md)
+  : Prepare a training run on all servers
+- [`ds.flower.plot()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.plot.md)
+  : Plot training curves
+- [`ds.flower.predict()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.predict.md)
+  : Predict with a federated model
+- [`ds.flower.privacy()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.md)
+  : Create a privacy spec by name
+- [`ds.flower.privacy.auto()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.auto.md)
+  : Create an automatic privacy spec
+- [`ds.flower.privacy.budget()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.budget.md)
+  : Query remaining privacy budget on all servers
+- [`ds.flower.privacy.clinical_default()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.clinical_default.md)
+  : Create a clinical_default privacy spec (recommended)
+- [`ds.flower.privacy.clinical_hardened()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.clinical_hardened.md)
+  : Create a clinical_hardened privacy spec
+- [`ds.flower.privacy.clinical_update_noise()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.clinical_update_noise.md)
+  : Create a clinical_update_noise privacy spec
+- [`ds.flower.privacy.consortium_internal()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.consortium_internal.md)
+  : Create a consortium_internal privacy spec
+- [`ds.flower.privacy.evaluation_only()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.evaluation_only.md)
+  : Apply evaluation_only modifier to a privacy spec
+- [`ds.flower.privacy.high_sensitivity_dp()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.high_sensitivity_dp.md)
+  : Create a high_sensitivity_dp privacy spec
+- [`ds.flower.privacy.sandbox_open()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.sandbox_open.md)
+  : Create a sandbox_open privacy spec
+- [`ds.flower.privacy.trusted_internal()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.trusted_internal.md)
+  : Create a trusted_internal privacy spec
+- [`ds.flower.recipe()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.recipe.md)
+  : Create a Flower federated learning recipe
+- [`ds.flower.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.md)
+  : Run federated learning (auto-managed)
+- [`ds.flower.run.list()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.list.md)
+  : List Flower runs
+- [`ds.flower.run.logs()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.logs.md)
+  : Get Flower run logs
+- [`ds.flower.run.start()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.start.md)
+  : Start a Flower run
+- [`ds.flower.run.stop()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.stop.md)
+  : Stop a Flower run
+- [`ds.flower.save_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.save_model.md)
+  : Save the global model from a training run
+- [`ds.flower.strategy()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.md)
+  : Create a strategy spec by name
+- [`ds.flower.strategy.fedadagrad()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedadagrad.md)
+  : Create a FedAdagrad strategy spec
+- [`ds.flower.strategy.fedadam()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedadam.md)
+  : Create a FedAdam strategy spec
+- [`ds.flower.strategy.fedavg()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedavg.md)
+  : Create a FedAvg strategy spec
+- [`ds.flower.strategy.fedbn()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedbn.md)
+  : Create a FedBN strategy spec
+- [`ds.flower.strategy.fedprox()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedprox.md)
+  : Create a FedProx strategy spec
+- [`ds.flower.superlink.attach()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.attach.md)
+  : Attach to a detached SuperLink
+- [`ds.flower.superlink.start()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.start.md)
+  : Start a Flower SuperLink
+- [`ds.flower.superlink.status()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.status.md)
+  : Get SuperLink status
+- [`ds.flower.superlink.stop()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.stop.md)
+  : Stop the Flower SuperLink
+- [`ds.flower.task()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.md)
+  : Create a task spec by name
+- [`ds.flower.task.classification()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.classification.md)
+  : Create a classification task specification
+- [`ds.flower.task.regression()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.regression.md)
+  : Create a regression task specification
+- [`ds.flower.task.segmentation()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.segmentation.md)
+  : Create a segmentation task specification
+- [`ds.flower.task.survival()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.survival.md)
+  : Create a survival task specification
+- [`ds.flower.templates()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.templates.md)
+  : List templates available on the servers
+- [`ds.flower.train()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.train.md)
+  : One-shot federated learning (simplest path)
+- [`print(`*`<dsflower_model>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_model.md)
+  : Print a dsflower_model
+- [`print(`*`<dsflower_privacy>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_privacy.md)
+  : Print a dsflower_privacy
+- [`print(`*`<dsflower_recipe>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_recipe.md)
+  : Print a dsflower_recipe
+- [`print(`*`<dsflower_result>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_result.md)
+  : Print a dsflower_result
+- [`print(`*`<dsflower_run>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_run.md)
+  : Print a dsflower_run
+- [`print(`*`<dsflower_strategy>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_strategy.md)
+  : Print a dsflower_strategy
+- [`print(`*`<dsflower_task>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_task.md)
+  : Print a dsflower_task
+
+# Articles
+
+### Federated benchmark demos
+
+- [API
+  Quickstart](https://isglobal-brge.github.io/dsFlowerClient/articles/api-quickstart.md):
+- [Demo Results
+  Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-overview.md):
+- [Breast Cancer Federated
+  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-breast-cancer.md):
+- [Heart Disease Federated
+  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-heart-disease.md):
+- [MedMNIST Federated
+  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-medmnist.md):
+- [Direct Image ResNet Validation
+  Demo](https://isglobal-brge.github.io/dsFlowerClient/articles/direct-image-resnet.md):
+- [Radiomics Federated
+  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-lung1-radiomics.md):
+- [Radiomics To Federated
+  Learning](https://isglobal-brge.github.io/dsFlowerClient/articles/radiomics-to-flower.md):
+
+### Method validation
+
+Per-template validation against centralized baselines.
+
+- [Validation:
+  sklearn_logreg](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-sklearn-logreg.md):
+- [Validation:
+  sklearn_ridge](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-sklearn-ridge.md):
+- [Validation:
+  sklearn_sgd](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-sklearn-sgd.md):
+- [Validation:
+  sklearn_svm](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-sklearn-svm.md):
+- [Validation:
+  sklearn_elastic_net](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-sklearn-elastic-net.md):
+- [Validation:
+  pytorch_logreg](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-logreg.md):
+- [Validation:
+  pytorch_mlp](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-mlp.md):
+- [Validation:
+  pytorch_linear_regression](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-linear-regression.md):
+- [Validation:
+  pytorch_multiclass](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-multiclass.md):
+- [Validation:
+  pytorch_multilabel](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-multilabel.md):
+- [Validation:
+  pytorch_poisson](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-poisson.md):
+- [Validation:
+  pytorch_coxph](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-coxph.md):
+- [Validation:
+  pytorch_lognormal_aft](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-lognormal-aft.md):
+- [Validation:
+  pytorch_cause_specific_cox](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-cause-specific-cox.md):
+- [Validation:
+  pytorch_lstm](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-lstm.md):
+- [Validation:
+  pytorch_tcn](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-tcn.md):
+- [Validation:
+  xgboost](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-xgboost.md):
+- [All Method Validation
+  Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-overview.md):
+
+### Vision method validation
+
+Image and segmentation templates validated against centralized PyTorch
+baselines.
+
+- [Vision Validation:
+  pytorch_resnet18](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-vision-pytorch-resnet18.md):
+- [Vision Validation:
+  pytorch_densenet121](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-vision-pytorch-densenet121.md):
+- [Vision Validation:
+  pytorch_unet2d](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-vision-pytorch-unet2d.md):
+- [Vision Method Validation
+  Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-vision-overview.md):

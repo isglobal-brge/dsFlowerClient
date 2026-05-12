@@ -1,0 +1,38 @@
+pandoc: 3.8.3
+pkgdown: 2.2.0
+pkgdown_sha: ~
+articles:
+  api-quickstart: api-quickstart.html
+  demo-breast-cancer: demo-breast-cancer.html
+  demo-heart-disease: demo-heart-disease.html
+  demo-lung1-radiomics: demo-lung1-radiomics.html
+  demo-medmnist: demo-medmnist.html
+  demo-overview: demo-overview.html
+  direct-image-resnet: direct-image-resnet.html
+  radiomics-to-flower: radiomics-to-flower.html
+  validation-overview: validation-overview.html
+  validation-pytorch-cause-specific-cox: validation-pytorch-cause-specific-cox.html
+  validation-pytorch-coxph: validation-pytorch-coxph.html
+  validation-pytorch-linear-regression: validation-pytorch-linear-regression.html
+  validation-pytorch-lognormal-aft: validation-pytorch-lognormal-aft.html
+  validation-pytorch-logreg: validation-pytorch-logreg.html
+  validation-pytorch-lstm: validation-pytorch-lstm.html
+  validation-pytorch-mlp: validation-pytorch-mlp.html
+  validation-pytorch-multiclass: validation-pytorch-multiclass.html
+  validation-pytorch-multilabel: validation-pytorch-multilabel.html
+  validation-pytorch-poisson: validation-pytorch-poisson.html
+  validation-pytorch-tcn: validation-pytorch-tcn.html
+  validation-sklearn-elastic-net: validation-sklearn-elastic-net.html
+  validation-sklearn-logreg: validation-sklearn-logreg.html
+  validation-sklearn-ridge: validation-sklearn-ridge.html
+  validation-sklearn-sgd: validation-sklearn-sgd.html
+  validation-sklearn-svm: validation-sklearn-svm.html
+  validation-vision-overview: validation-vision-overview.html
+  validation-vision-pytorch-densenet121: validation-vision-pytorch-densenet121.html
+  validation-vision-pytorch-resnet18: validation-vision-pytorch-resnet18.html
+  validation-vision-pytorch-unet2d: validation-vision-pytorch-unet2d.html
+  validation-xgboost: validation-xgboost.html
+last_built: 2026-05-12T13:49Z
+urls:
+  reference: https://isglobal-brge.github.io/dsFlowerClient/reference
+  article: https://isglobal-brge.github.io/dsFlowerClient/articles

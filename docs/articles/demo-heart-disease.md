@@ -1,0 +1,92 @@
+# Heart Disease Federated Benchmark
+
+This vignette demonstrates a clinical-tabular benchmark using the
+processed Cleveland Heart Disease dataset from the UCI Machine Learning
+Repository. The demo downloads the dataset, removes rows with missing
+values, builds a central baseline, and trains the same feature set
+through DataSHIELD/Flower across the configured Opal servers.
+
+``` sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export OPAL_USER="administrator"
+export OPAL_PASSWORD="admin123"
+Rscript inst/demos/benchmark_heart_disease.R
+```
+
+If the UCI URL is temporarily unavailable, the script falls back to a
+deterministic heart-like fixture. The `data_mode` field in
+`summary.json` records which path was used.
+
+## What The Script Does
+
+The demo first tries to download the processed Cleveland table, converts
+the multi-valued disease field to a binary outcome, removes incomplete
+rows, and uses all clinical covariates as features. If the download is
+unavailable, it uses a deterministic fixture with the same column shape
+so that the DataSHIELD and Flower path remains reproducible.
+
+``` r
+
+dataset <- load_uci_cleveland()
+features <- setdiff(names(dataset), c("id", "outcome"))
+
+run_dsflower_benchmark(
+  data = dataset,
+  features = features,
+  demo_id = "uci_heart_disease",
+  dataset_label = "UCI Heart Disease federated benchmark",
+  data_mode = "UCI Heart Disease processed Cleveland",
+  default_rounds = 2L
+)
+```
+
+The shared benchmark helper then performs the operational steps
+explicitly:
+
+``` r
+
+# 1. Stratified train/test split and feature standardization.
+# 2. Stratified partition of train rows across opal1, opal2, opal3.
+# 3. opalr::opal.table_save(...) uploads one table per site.
+# 4. DSI::datashield.login(..., assign = TRUE, symbol = "D").
+# 5. ds.flower.fit(...) launches the federated training run.
+
+fit <- ds.flower.fit(
+  conns,
+  symbol = "D",
+  target = "outcome",
+  features = features,
+  model = "sklearn_logreg",
+  model_params = list(max_iter = 100L),
+  strategy = "fedavg",
+  privacy = "trusted_internal",
+  rounds = 2L
+)
+
+post_caps <- DSI::datashield.aggregate(
+  conns,
+  as.symbol("flowerGetCapabilitiesDS")
+)
+```
+
+``` r
+
+demo_file <- system.file("demos", "benchmark_heart_disease.R", package = "dsFlowerClient")
+if (!nzchar(demo_file)) demo_file <- file.path("..", "inst", "demos", "benchmark_heart_disease.R")
+source(demo_file)
+```
+
+Validation run on 2026-05-10:
+
+    #>               metric    value
+    #> 1               rows 297.0000
+    #> 2              train 223.0000
+    #> 3               test  74.0000
+    #> 4              sites   3.0000
+    #> 5        central_auc   0.8919
+    #> 6      federated_auc   0.8926
+    #> 7   central_accuracy   0.8378
+    #> 8 federated_accuracy   0.8514
+
+The run passes only when Flower reports zero client failures and the
+post-run capability check shows no active SuperNodes.

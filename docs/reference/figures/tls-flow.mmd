@@ -1,0 +1,15 @@
+%%{init: {'theme': 'base', 'themeVariables': {'actorBkg': '#fff', 'actorBorder': '#333', 'actorTextColor': '#333', 'actorLineColor': '#666', 'signalColor': '#333', 'signalTextColor': '#333', 'labelBoxBkgColor': '#f5f5f5', 'labelBoxBorderColor': '#999', 'labelTextColor': '#333', 'loopTextColor': '#333', 'noteBkgColor': '#f5f5f5', 'noteBorderColor': '#999', 'noteTextColor': '#333', 'activationBkgColor': '#e8e8e8', 'activationBorderColor': '#999', 'sequenceNumberColor': '#333', 'fontFamily': 'Georgia, serif', 'fontSize': '13px'}, 'sequence': {'mirrorActors': false}}}%%
+sequenceDiagram
+    participant R as Researcher machine
+    participant O as Opal / Rock
+    participant N as SuperNode (Python)
+
+    Note over R: Generate CA + server certs
+    R ->> R: Encode ca_cert_pem as Base64
+
+    R ->> O: flowerEnsureSuperNodeDS(..., B64-encoded cert) [HTTPS]
+
+    O ->> O: Decode Base64, write ca.pem to disk
+
+    O ->> N: Start flower-supernode with --root-certificates ca.pem
+    N ->> R: gRPC TLS handshake (verified)
