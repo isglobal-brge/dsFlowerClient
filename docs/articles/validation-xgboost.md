@@ -70,6 +70,166 @@ if (nrow(loss_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
 ![Bar chart comparing centralized and federated validation loss for
 xgboost.](validation-xgboost_files/figure-html/unnamed-chunk-3-1.png)
 
+## Step-By-Step Run Output
+
+The following chunks print the audit trail for the actual run stored in
+`inst/extdata/dsflower_method_validation_results.json`. They are
+evaluated when pkgdown renders the vignette, so the page shows the
+concrete centralized and federated outputs rather than only describing
+the API shape.
+
+``` r
+
+target_cols <- trimws(strsplit(row$target, ',', fixed = TRUE)[[1]])
+site_table_paths <- validation$table_paths
+input_trace <- data.frame(
+  step = c(
+    '1. Build validation cohort',
+    '2. Split across sites',
+    '3. Select task target',
+    '4. Select model features',
+    '5. Materialize Opal tables'
+  ),
+  observed_output = c(
+    paste(validation$n_total, 'synthetic rows generated for this suite'),
+    paste(validation$n_sites, 'sites x', validation$n_per_site, 'rows per site'),
+    paste(target_cols, collapse = ', '),
+    paste(row$n_features, 'features:', paste0('x1..x', row$n_features)),
+    paste(site_table_paths, collapse = '\n')
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(input_trace)
+```
+
+| step | observed_output |
+|:---|:---|
+| 1\. Build validation cohort | 270 synthetic rows generated for this suite |
+| 2\. Split across sites | 3 sites x 90 rows per site |
+| 3\. Select task target | outcome |
+| 4\. Select model features | 12 features: x1..x12 |
+| 5\. Materialize Opal tables | dsflower_demo.method_validation_20260512162133_site1 |
+
+dsflower_demo.method_validation_20260512162133_site2
+dsflower_demo.method_validation_20260512162133_site3 \|
+
+``` r
+
+centralized_output <- data.frame(
+  step = c(
+    '1. Load pooled validation cohort',
+    '2. Train centralized baseline',
+    '3. Evaluate centralized baseline'
+  ),
+  observed_output = c(
+    paste(validation$n_total, 'pooled rows with', row$n_features, 'features'),
+    paste('status =', row$centralized_status, '| metric =', row$centralized_metric),
+    paste('loss =', fmt(row$centralized_loss),
+          '| accuracy =', fmt(row$centralized_accuracy))
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(centralized_output)
+```
+
+| step                              | observed_output                    |
+|:----------------------------------|:-----------------------------------|
+| 1\. Load pooled validation cohort | 270 pooled rows with 12 features   |
+| 2\. Train centralized baseline    | status = ok \| metric = log_loss   |
+| 3\. Evaluate centralized baseline | loss = 0.4348 \| accuracy = 0.8963 |
+
+``` r
+
+cat(
+  sprintf('[centralized] method: %s\n', row$method),
+  sprintf('[centralized] task: %s | target: %s | features: %s\n',
+          row$task, row$target, paste0('x1..x', row$n_features)),
+  sprintf('[centralized] status: %s\n', row$centralized_status),
+  sprintf('[centralized] %s: %.4f\n', row$centralized_metric, row$centralized_loss),
+  sprintf('[centralized] accuracy: %s\n', fmt(row$centralized_accuracy)),
+  sep = ''
+)
+#> [centralized] method: xgboost
+#> [centralized] task: classification | target: outcome | features: x1..x12
+#> [centralized] status: ok
+#> [centralized] log_loss: 0.4348
+#> [centralized] accuracy: 0.8963
+```
+
+``` r
+
+max_allowed_loss <- row$centralized_loss * row$acceptance_max_loss_ratio +
+  row$acceptance_max_loss_margin
+dsflower_output <- data.frame(
+  step = c(
+    '1. Login through DataSHIELD',
+    '2. Prepare server-side dsFlower nodes',
+    '3. Start Flower SuperLink/SuperNodes',
+    '4. Run federated training',
+    '5. Collect metrics and cleanup'
+  ),
+  observed_output = c(
+    paste(validation$n_sites, 'Opal/Rock nodes connected'),
+    paste('template =', row$method, '| privacy =', validation$privacy_profile),
+    paste('federated_run_id =', row$federated_run_id),
+    paste('rounds =', row$rounds, '| federated_loss =', fmt(row$federated_loss),
+          '| client_failures =', fmt(row$federated_n_failures)),
+    paste('federated_status =', row$federated_status,
+          '| validation_status =', row$validation_status)
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(dsflower_output)
+```
+
+| step | observed_output |
+|:---|:---|
+| 1\. Login through DataSHIELD | 3 Opal/Rock nodes connected |
+| 2\. Prepare server-side dsFlower nodes | template = xgboost \| privacy = sandbox_open |
+| 3\. Start Flower SuperLink/SuperNodes | federated_run_id = 4907478852873989217 |
+| 4\. Run federated training | rounds = 1 \| federated_loss = 0.6931 \| client_failures = 0.0000 |
+| 5\. Collect metrics and cleanup | federated_status = ok \| validation_status = pass |
+
+``` r
+
+cat(
+  sprintf('[dsFlower] DataSHIELD login: %s nodes\n', validation$n_sites),
+  sprintf('[dsFlower] table paths: %s\n', paste(site_table_paths, collapse = ' | ')),
+  sprintf('[dsFlower] model: %s | strategy: fedavg | rounds: %s\n',
+          row$method, row$rounds),
+  sprintf('[dsFlower] run id: %s\n', row$federated_run_id),
+  sprintf('[Flower] aggregate_fit/evaluate: clients=%s failures=%s\n',
+          validation$n_sites, fmt(row$federated_n_failures)),
+  sprintf('[Flower] final federated loss: %.4f\n', row$federated_loss),
+  sprintf('[cleanup] status: %s\n', row$federated_status),
+  sep = ''
+)
+#> [dsFlower] DataSHIELD login: 3 nodes
+#> [dsFlower] table paths: dsflower_demo.method_validation_20260512162133_site1 | dsflower_demo.method_validation_20260512162133_site2 | dsflower_demo.method_validation_20260512162133_site3
+#> [dsFlower] model: xgboost | strategy: fedavg | rounds: 1
+#> [dsFlower] run id: 4907478852873989217
+#> [Flower] aggregate_fit/evaluate: clients=3 failures=0.0000
+#> [Flower] final federated loss: 0.6931
+#> [cleanup] status: ok
+```
+
+``` r
+
+acceptance_output <- data.frame(
+  centralized_loss = row$centralized_loss,
+  federated_loss = row$federated_loss,
+  max_allowed_loss = max_allowed_loss,
+  federated_n_failures = row$federated_n_failures,
+  acceptable_loss = row$acceptable_loss,
+  validation_status = row$validation_status
+)
+knitr::kable(acceptance_output, digits = 4)
+```
+
+| centralized_loss | federated_loss | max_allowed_loss | federated_n_failures | acceptable_loss | validation_status |
+|---:|---:|---:|---:|:---|:---|
+| 0.4348 | 0.6931 | 1.3371 | 0 | TRUE | pass |
+
 ## Inline Execution Path
 
 The validation row above was generated by running this method through

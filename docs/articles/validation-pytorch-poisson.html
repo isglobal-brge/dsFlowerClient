@@ -187,13 +187,245 @@ not a clinical performance benchmark.</p>
 <span><span class="op">}</span></span></code></pre></div>
 <p><img src="validation-pytorch-poisson_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="Bar chart comparing centralized and federated validation loss for pytorch_poisson." width="528"></p>
 <div class="section level2">
+<h2 id="step-by-step-run-output">Step-By-Step Run Output<a class="anchor" aria-label="anchor" href="#step-by-step-run-output"></a>
+</h2>
+<p>The following chunks print the audit trail for the actual run stored
+in <code>inst/extdata/dsflower_method_validation_results.json</code>.
+They are evaluated when pkgdown renders the vignette, so the page shows
+the concrete centralized and federated outputs rather than only
+describing the API shape.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">target_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">target</span>, <span class="st">','</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">site_table_paths</span> <span class="op">&lt;-</span> <span class="va">validation</span><span class="op">$</span><span class="va">table_paths</span></span>
+<span><span class="va">input_trace</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  step <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">'1. Build validation cohort'</span>,</span>
+<span>    <span class="st">'2. Split across sites'</span>,</span>
+<span>    <span class="st">'3. Select task target'</span>,</span>
+<span>    <span class="st">'4. Select model features'</span>,</span>
+<span>    <span class="st">'5. Materialize Opal tables'</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  observed_output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">validation</span><span class="op">$</span><span class="va">n_total</span>, <span class="st">'synthetic rows generated for this suite'</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">validation</span><span class="op">$</span><span class="va">n_sites</span>, <span class="st">'sites x'</span>, <span class="va">validation</span><span class="op">$</span><span class="va">n_per_site</span>, <span class="st">'rows per site'</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">target_cols</span>, collapse <span class="op">=</span> <span class="st">', '</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">n_features</span>, <span class="st">'features:'</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'x1..x'</span>, <span class="va">row</span><span class="op">$</span><span class="va">n_features</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">site_table_paths</span>, collapse <span class="op">=</span> <span class="st">'\n'</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">input_trace</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="14%">
+<col width="85%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">step</th>
+<th align="left">observed_output</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1. Build validation cohort</td>
+<td align="left">270 synthetic rows generated for this suite</td>
+</tr>
+<tr class="even">
+<td align="left">2. Split across sites</td>
+<td align="left">3 sites x 90 rows per site</td>
+</tr>
+<tr class="odd">
+<td align="left">3. Select task target</td>
+<td align="left">count</td>
+</tr>
+<tr class="even">
+<td align="left">4. Select model features</td>
+<td align="left">12 features: x1..x12</td>
+</tr>
+<tr class="odd">
+<td align="left">5. Materialize Opal tables</td>
+<td align="left">dsflower_demo.method_validation_20260512162133_site1</td>
+</tr>
+</tbody>
+</table>
+<p>dsflower_demo.method_validation_20260512162133_site2
+dsflower_demo.method_validation_20260512162133_site3 |</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">centralized_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  step <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">'1. Load pooled validation cohort'</span>,</span>
+<span>    <span class="st">'2. Train centralized baseline'</span>,</span>
+<span>    <span class="st">'3. Evaluate centralized baseline'</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  observed_output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">validation</span><span class="op">$</span><span class="va">n_total</span>, <span class="st">'pooled rows with'</span>, <span class="va">row</span><span class="op">$</span><span class="va">n_features</span>, <span class="st">'features'</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'status ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">centralized_status</span>, <span class="st">'| metric ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">centralized_metric</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'loss ='</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span><span class="op">)</span>,</span>
+<span>          <span class="st">'| accuracy ='</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_accuracy</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">centralized_output</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="45%">
+<col width="54%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">step</th>
+<th align="left">observed_output</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1. Load pooled validation cohort</td>
+<td align="left">270 pooled rows with 12 features</td>
+</tr>
+<tr class="even">
+<td align="left">2. Train centralized baseline</td>
+<td align="left">status = ok | metric = poisson_nll</td>
+</tr>
+<tr class="odd">
+<td align="left">3. Evaluate centralized baseline</td>
+<td align="left">loss = 0.8904 | accuracy = NA</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] method: %s\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">method</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] task: %s | target: %s | features: %s\n'</span>,</span>
+<span>          <span class="va">row</span><span class="op">$</span><span class="va">task</span>, <span class="va">row</span><span class="op">$</span><span class="va">target</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'x1..x'</span>, <span class="va">row</span><span class="op">$</span><span class="va">n_features</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] status: %s\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">centralized_status</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] %s: %.4f\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">centralized_metric</span>, <span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] accuracy: %s\n'</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_accuracy</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  sep <span class="op">=</span> <span class="st">''</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; [centralized] method: pytorch_poisson</span></span>
+<span><span class="co">#&gt; [centralized] task: regression | target: count | features: x1..x12</span></span>
+<span><span class="co">#&gt; [centralized] status: ok</span></span>
+<span><span class="co">#&gt; [centralized] poisson_nll: 0.8904</span></span>
+<span><span class="co">#&gt; [centralized] accuracy: NA</span></span></code></pre></div>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">max_allowed_loss</span> <span class="op">&lt;-</span> <span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span> <span class="op">*</span> <span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_ratio</span> <span class="op">+</span></span>
+<span>  <span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_margin</span></span>
+<span><span class="va">dsflower_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  step <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">'1. Login through DataSHIELD'</span>,</span>
+<span>    <span class="st">'2. Prepare server-side dsFlower nodes'</span>,</span>
+<span>    <span class="st">'3. Start Flower SuperLink/SuperNodes'</span>,</span>
+<span>    <span class="st">'4. Run federated training'</span>,</span>
+<span>    <span class="st">'5. Collect metrics and cleanup'</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  observed_output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">validation</span><span class="op">$</span><span class="va">n_sites</span>, <span class="st">'Opal/Rock nodes connected'</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'template ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">method</span>, <span class="st">'| privacy ='</span>, <span class="va">validation</span><span class="op">$</span><span class="va">privacy_profile</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'federated_run_id ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_run_id</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'rounds ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">rounds</span>, <span class="st">'| federated_loss ='</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span><span class="op">)</span>,</span>
+<span>          <span class="st">'| client_failures ='</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">federated_n_failures</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'federated_status ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_status</span>,</span>
+<span>          <span class="st">'| validation_status ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">validation_status</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">dsflower_output</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="33%">
+<col width="66%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">step</th>
+<th align="left">observed_output</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">1. Login through DataSHIELD</td>
+<td align="left">3 Opal/Rock nodes connected</td>
+</tr>
+<tr class="even">
+<td align="left">2. Prepare server-side dsFlower nodes</td>
+<td align="left">template = pytorch_poisson | privacy =
+sandbox_open</td>
+</tr>
+<tr class="odd">
+<td align="left">3. Start Flower SuperLink/SuperNodes</td>
+<td align="left">federated_run_id = 15892421086434557087</td>
+</tr>
+<tr class="even">
+<td align="left">4. Run federated training</td>
+<td align="left">rounds = 1 | federated_loss = 1.0228 | client_failures
+= 0.0000</td>
+</tr>
+<tr class="odd">
+<td align="left">5. Collect metrics and cleanup</td>
+<td align="left">federated_status = ok | validation_status = pass</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[dsFlower] DataSHIELD login: %s nodes\n'</span>, <span class="va">validation</span><span class="op">$</span><span class="va">n_sites</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[dsFlower] table paths: %s\n'</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">site_table_paths</span>, collapse <span class="op">=</span> <span class="st">' | '</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[dsFlower] model: %s | strategy: fedavg | rounds: %s\n'</span>,</span>
+<span>          <span class="va">row</span><span class="op">$</span><span class="va">method</span>, <span class="va">row</span><span class="op">$</span><span class="va">rounds</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[dsFlower] run id: %s\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_run_id</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[Flower] aggregate_fit/evaluate: clients=%s failures=%s\n'</span>,</span>
+<span>          <span class="va">validation</span><span class="op">$</span><span class="va">n_sites</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">federated_n_failures</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[Flower] final federated loss: %.4f\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[cleanup] status: %s\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_status</span><span class="op">)</span>,</span>
+<span>  sep <span class="op">=</span> <span class="st">''</span></span>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; [dsFlower] DataSHIELD login: 3 nodes</span></span>
+<span><span class="co">#&gt; [dsFlower] table paths: dsflower_demo.method_validation_20260512162133_site1 | dsflower_demo.method_validation_20260512162133_site2 | dsflower_demo.method_validation_20260512162133_site3</span></span>
+<span><span class="co">#&gt; [dsFlower] model: pytorch_poisson | strategy: fedavg | rounds: 1</span></span>
+<span><span class="co">#&gt; [dsFlower] run id: 15892421086434557087</span></span>
+<span><span class="co">#&gt; [Flower] aggregate_fit/evaluate: clients=3 failures=0.0000</span></span>
+<span><span class="co">#&gt; [Flower] final federated loss: 1.0228</span></span>
+<span><span class="co">#&gt; [cleanup] status: ok</span></span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">acceptance_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  centralized_loss <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span>,</span>
+<span>  federated_loss <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span>,</span>
+<span>  max_allowed_loss <span class="op">=</span> <span class="va">max_allowed_loss</span>,</span>
+<span>  federated_n_failures <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">federated_n_failures</span>,</span>
+<span>  acceptable_loss <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">acceptable_loss</span>,</span>
+<span>  validation_status <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">validation_status</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">acceptance_output</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="16%">
+<col width="14%">
+<col width="16%">
+<col width="20%">
+<col width="15%">
+<col width="17%">
+</colgroup>
+<thead><tr class="header">
+<th align="right">centralized_loss</th>
+<th align="right">federated_loss</th>
+<th align="right">max_allowed_loss</th>
+<th align="right">federated_n_failures</th>
+<th align="left">acceptable_loss</th>
+<th align="left">validation_status</th>
+</tr></thead>
+<tbody><tr class="odd">
+<td align="right">0.8904</td>
+<td align="right">1.0228</td>
+<td align="right">2.4759</td>
+<td align="right">0</td>
+<td align="left">TRUE</td>
+<td align="left">pass</td>
+</tr></tbody>
+</table>
+</div>
+<div class="section level2">
 <h2 id="inline-execution-path">Inline Execution Path<a class="anchor" aria-label="anchor" href="#inline-execution-path"></a>
 </h2>
 <p>The validation row above was generated by running this method through
 the same inline DataSHIELD/Flower flow shown below. The vignette does
 not delegate execution to an external launcher; the rendered result is
 loaded from the versioned JSON artifact written by the live run.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
@@ -206,7 +438,7 @@ loaded from the versioned JSON artifact written by the live run.</p>
 <span><span class="va">opal_users</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">'OPAL_USER'</span>, <span class="st">'administrator'</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">opal_urls</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">opal_passwords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">'OPAL_PASSWORD'</span>, <span class="st">'admin123'</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">opal_urls</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">'DSFLOWER_DEMO_PROJECT'</span>, <span class="st">'dsflower_demo'</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">4242</span><span class="op">)</span></span>
 <span><span class="va">n_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">opal_urls</span><span class="op">)</span></span>
 <span><span class="va">n_per_site</span> <span class="op">&lt;-</span> <span class="va">validation</span><span class="op">$</span><span class="va">n_per_site</span></span>
@@ -236,7 +468,7 @@ loaded from the versioned JSON artifact written by the live run.</p>
 <span><span class="va">cohort</span><span class="op">$</span><span class="va">event_type</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">cohort</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">0L</span>, <span class="fl">0L</span>,</span>
 <span>                            <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fl">0.6</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">10</span><span class="op">]</span> <span class="op">-</span> <span class="fl">0.45</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">11</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="fl">1L</span>, <span class="fl">2L</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">cohort</span><span class="op">$</span><span class="va">site</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_sites</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">table_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="va">n_sites</span><span class="op">)</span></span>
 <span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">opal</span> <span class="op">&lt;-</span> <span class="fu">opalr</span><span class="fu">::</span><span class="fu"><a href="https://www.obiba.org/opalr/reference/opal.login.html" class="external-link">opal.login</a></span><span class="op">(</span></span>
@@ -260,7 +492,7 @@ loaded from the versioned JSON artifact written by the live run.</p>
 <span>                 table <span class="op">=</span> <span class="va">table_paths</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, driver <span class="op">=</span> <span class="st">'OpalDriver'</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">conns</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.login.html" class="external-link">datashield.login</a></span><span class="op">(</span><span class="va">builder</span><span class="op">$</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span>, assign <span class="op">=</span> <span class="cn">TRUE</span>, symbol <span class="op">=</span> <span class="st">'D'</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">target</span>, <span class="st">','</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'x'</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">n_features</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
@@ -280,7 +512,7 @@ loaded from the versioned JSON artifact written by the live run.</p>
 <span>  <span class="va">conns</span>, <span class="fu"><a href="https://rdrr.io/r/base/name.html" class="external-link">as.symbol</a></span><span class="op">(</span><span class="st">'flowerGetCapabilitiesDS'</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">history</span> <span class="op">&lt;-</span> <span class="va">fit</span><span class="op">$</span><span class="va">history</span></span>
 <span><span class="va">federated_loss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">loss</span><span class="op">)</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="va">federated_failures</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">n_failures</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
@@ -288,10 +520,11 @@ loaded from the versioned JSON artifact written by the live run.</p>
 <span>  <span class="va">federated_loss</span> <span class="op">&lt;=</span> <span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span> <span class="op">*</span> <span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_ratio</span> <span class="op">+</span></span>
 <span>                    <span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_margin</span></span>
 <span><span class="va">acceptable</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">error</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">error</span><span class="op">)</span></span></code></pre></div>
 </div>
-  </main>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside>
 </div>
 
 

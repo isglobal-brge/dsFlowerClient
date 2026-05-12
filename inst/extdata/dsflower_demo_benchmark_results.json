@@ -1,0 +1,264 @@
+{
+  "generated_at": "2026-05-13T00:07:24+0200",
+  "source": "live three-Opal demo benchmark summaries",
+  "n_demos": 4,
+  "results": {
+    "breast_cancer_wisconsin": {
+      "demo_id": "breast_cancer_wisconsin",
+      "dataset_label": "Breast Cancer Wisconsin diagnostic benchmark",
+      "data_mode": "mlbench::BreastCancer",
+      "n_total": 683,
+      "n_train": 513,
+      "n_test": 170,
+      "n_sites": 3,
+      "rounds": 2,
+      "features": [
+        "bc_1",
+        "bc_2",
+        "bc_3",
+        "bc_4",
+        "bc_5",
+        "bc_6",
+        "bc_7",
+        "bc_8",
+        "bc_9"
+      ],
+      "central_metrics": {
+        "auc": 0.9878,
+        "accuracy": 0.9471,
+        "log_loss": 0.1635,
+        "brier": 0.0408
+      },
+      "federated_metrics": {
+        "auc": 0.9908,
+        "accuracy": 0.9647,
+        "log_loss": 0.124,
+        "brier": 0.0333
+      },
+      "metric_delta": {
+        "auc": 0.0031,
+        "accuracy": 0.0176,
+        "log_loss": -0.0395
+      },
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161454",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0.0615,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0.0615,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ]
+    },
+    "lung1_radiomics": {
+      "demo_id": "lung1_radiomics",
+      "dataset_label": "LUNG1-style radiomics federated benchmark",
+      "data_mode": "deterministic LUNG1-style derived radiomics fixture",
+      "n_total": 420,
+      "n_train": 316,
+      "n_test": 104,
+      "n_sites": 3,
+      "rounds": 2,
+      "features": [
+        "age",
+        "stage",
+        "original_shape_VoxelVolume",
+        "original_firstorder_Energy",
+        "original_shape_Compactness2",
+        "original_glrlm_RunLengthNonUniformity",
+        "wavelet_HLH_glrlm_RunLengthNonUniformity",
+        "original_firstorder_Entropy",
+        "original_shape_Sphericity",
+        "original_gldm_DependenceNonUniformity"
+      ],
+      "central_metrics": {
+        "auc": 0.7217,
+        "accuracy": 0.6827,
+        "log_loss": 0.6116,
+        "brier": 0.2114
+      },
+      "federated_metrics": {
+        "auc": 0.7205,
+        "accuracy": 0.6635,
+        "log_loss": 0.6175,
+        "brier": 0.2135
+      },
+      "metric_delta": {
+        "auc": -0.0011,
+        "accuracy": -0.0192,
+        "log_loss": 0.0059
+      },
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_162114",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0.5904,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0.5904,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ]
+    },
+    "medmnist_breastmnist": {
+      "demo_id": "medmnist_breastmnist",
+      "dataset_label": "MedMNIST BreastMNIST tabularized pixel benchmark",
+      "data_mode": "medmnist::BreastMNIST pooled 7x7 pixels",
+      "n_total": 510,
+      "n_train": 383,
+      "n_test": 127,
+      "n_sites": 3,
+      "rounds": 2,
+      "features": [
+        "px_00",
+        "px_01",
+        "px_02",
+        "px_03",
+        "px_04",
+        "px_05",
+        "px_06",
+        "px_07",
+        "px_08",
+        "px_09",
+        "px_10",
+        "px_11",
+        "px_12",
+        "px_13",
+        "px_14",
+        "px_15",
+        "px_16",
+        "px_17",
+        "px_18",
+        "px_19",
+        "px_20",
+        "px_21",
+        "px_22",
+        "px_23",
+        "px_24",
+        "px_25",
+        "px_26",
+        "px_27",
+        "px_28",
+        "px_29",
+        "px_30",
+        "px_31",
+        "px_32",
+        "px_33",
+        "px_34",
+        "px_35",
+        "px_36",
+        "px_37",
+        "px_38",
+        "px_39",
+        "px_40",
+        "px_41",
+        "px_42",
+        "px_43",
+        "px_44",
+        "px_45",
+        "px_46",
+        "px_47",
+        "px_48"
+      ],
+      "central_metrics": {
+        "auc": 0.7654,
+        "accuracy": 0.6929,
+        "log_loss": 0.614,
+        "brier": 0.199
+      },
+      "federated_metrics": {
+        "auc": 0.7985,
+        "accuracy": 0.7165,
+        "log_loss": 0.5499,
+        "brier": 0.1764
+      },
+      "metric_delta": {
+        "auc": 0.0331,
+        "accuracy": 0.0236,
+        "log_loss": -0.0641
+      },
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161917",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0.5105,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0.5106,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ]
+    },
+    "uci_heart_disease": {
+      "demo_id": "uci_heart_disease",
+      "dataset_label": "UCI Heart Disease federated benchmark",
+      "data_mode": "UCI Heart Disease processed Cleveland",
+      "n_total": 297,
+      "n_train": 223,
+      "n_test": 74,
+      "n_sites": 3,
+      "rounds": 2,
+      "features": [
+        "age",
+        "sex",
+        "cp",
+        "trestbps",
+        "chol",
+        "fbs",
+        "restecg",
+        "thalach",
+        "exang",
+        "oldpeak",
+        "slope",
+        "ca",
+        "thal"
+      ],
+      "central_metrics": {
+        "auc": 0.8919,
+        "accuracy": 0.8378,
+        "log_loss": 0.4102,
+        "brier": 0.1204
+      },
+      "federated_metrics": {
+        "auc": 0.8926,
+        "accuracy": 0.8514,
+        "log_loss": 0.3954,
+        "brier": 0.118
+      },
+      "metric_delta": {
+        "auc": 0.0007,
+        "accuracy": 0.0135,
+        "log_loss": -0.0149
+      },
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161657",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0.3425,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0.3425,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ]
+    }
+  }
+}
