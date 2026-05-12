@@ -76,10 +76,10 @@
 radiomics-derived features. By default the script uses a deterministic
 LUNG1-style fixture with feature names and signal structure similar to
 radiomics studies. When real radiomics features are available, point the
-script at a CSV/RDS file:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_LUNG1_FEATURES</span><span class="op">=</span><span class="st">"/path/to/radiomics_features.csv"</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_LUNG1_TARGET</span><span class="op">=</span><span class="st">"outcome"</span></span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_lung1_radiomics.R</span></code></pre></div>
+inline loader at a CSV/RDS file:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">external_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"DSFLOWER_LUNG1_FEATURES"</span>, <span class="st">"/path/to/radiomics_features.csv"</span><span class="op">)</span></span>
+<span><span class="va">target_column</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"DSFLOWER_LUNG1_TARGET"</span>, <span class="st">"outcome"</span><span class="op">)</span></span></code></pre></div>
 <p>The external file must contain an <code>id</code> column or one will
 be generated. The target column is renamed internally to
 <code>outcome</code>, and all numeric columns other than the target are
@@ -123,11 +123,7 @@ calls:</p>
 <span>  privacy <span class="op">=</span> <span class="st">"trusted_internal"</span>,</span>
 <span>  rounds <span class="op">=</span> <span class="fl">2L</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">demo_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"demos"</span>, <span class="st">"benchmark_lung1_radiomics.R"</span>, package <span class="op">=</span> <span class="st">"dsFlowerClient"</span><span class="op">)</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">demo_file</span><span class="op">)</span><span class="op">)</span> <span class="va">demo_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">".."</span>, <span class="st">"inst"</span>, <span class="st">"demos"</span>, <span class="st">"benchmark_lung1_radiomics.R"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="va">demo_file</span><span class="op">)</span></span></code></pre></div>
-<p>Validation run on 2026-05-10:</p>
+<p>Validation run on 2026-05-12:</p>
 <pre><code><span><span class="co">#&gt;               metric    value</span></span>
 <span><span class="co">#&gt; 1               rows 420.0000</span></span>
 <span><span class="co">#&gt; 2              train 316.0000</span></span>

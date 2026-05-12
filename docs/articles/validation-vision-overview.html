@@ -92,7 +92,7 @@ pooled files.</p>
 <tbody>
 <tr class="odd">
 <td align="left">generated_at</td>
-<td align="left">2026-05-11T14:01:13.113Z</td>
+<td align="left">2026-05-12T14:54:38.270Z</td>
 </tr>
 <tr class="even">
 <td align="left">privacy_profile</td>
@@ -153,8 +153,8 @@ pooled files.</p>
 <td align="left">cross_entropy</td>
 <td align="right">0.5605</td>
 <td align="left">ok</td>
-<td align="right">0.5399</td>
-<td align="right">-0.0206</td>
+<td align="right">0.6322</td>
+<td align="right">0.0717</td>
 <td align="left">TRUE</td>
 <td align="left">pass</td>
 </tr>
@@ -164,8 +164,8 @@ pooled files.</p>
 <td align="left">cross_entropy</td>
 <td align="right">0.6033</td>
 <td align="left">ok</td>
-<td align="right">0.9373</td>
-<td align="right">0.3339</td>
+<td align="right">0.8186</td>
+<td align="right">0.2152</td>
 <td align="left">TRUE</td>
 <td align="left">pass</td>
 </tr>
@@ -175,8 +175,8 @@ pooled files.</p>
 <td align="left">dice_bce_loss</td>
 <td align="right">1.3099</td>
 <td align="left">ok</td>
-<td align="right">1.4397</td>
-<td align="right">0.1298</td>
+<td align="right">1.3597</td>
+<td align="right">0.0499</td>
 <td align="left">TRUE</td>
 <td align="left">pass</td>
 </tr>
@@ -193,9 +193,10 @@ pooled files.</p>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p><img src="validation-vision-overview_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="Horizontal bar chart of vision-template federated minus centralized loss." width="672"></p>
-<p>To reproduce the complete vision suite against configured Opal
-servers:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/validate_vision_methods.R</span></code></pre></div>
+<p>The complete vision suite is produced by repeating the inline
+Opal/DataSHIELD/Flower workflow shown in each per-method vignette for
+all vision templates listed above. The persisted JSON artifact is the
+audit trail consumed by this pkgdown page.</p>
   </main>
 </div>
 

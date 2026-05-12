@@ -6,11 +6,15 @@ Repository. The demo downloads the dataset, removes rows with missing
 values, builds a central baseline, and trains the same feature set
 through DataSHIELD/Flower across the configured Opal servers.
 
-``` sh
-export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
-export OPAL_USER="administrator"
-export OPAL_PASSWORD="admin123"
-Rscript inst/demos/benchmark_heart_disease.R
+``` r
+
+opal_urls <- c(
+  "https://localhost:8443",
+  "https://localhost:8444",
+  "https://localhost:8445"
+)
+opal_user <- Sys.getenv("OPAL_USER", "administrator")
+opal_password <- Sys.getenv("OPAL_PASSWORD", "admin123")
 ```
 
 If the UCI URL is temporarily unavailable, the script falls back to a
@@ -69,14 +73,7 @@ post_caps <- DSI::datashield.aggregate(
 )
 ```
 
-``` r
-
-demo_file <- system.file("demos", "benchmark_heart_disease.R", package = "dsFlowerClient")
-if (!nzchar(demo_file)) demo_file <- file.path("..", "inst", "demos", "benchmark_heart_disease.R")
-source(demo_file)
-```
-
-Validation run on 2026-05-10:
+Validation run on 2026-05-12:
 
     #>               metric    value
     #> 1               rows 297.0000

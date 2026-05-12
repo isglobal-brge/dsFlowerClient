@@ -102,30 +102,42 @@ and the <code>pytorch_resnet18</code> ClientApp loads the PNG files
 inside the Rock.</p>
 </div>
 <div class="section level2">
-<h2 id="run">Run<a class="anchor" aria-label="anchor" href="#run"></a>
+<h2 id="inline-run">Inline Run<a class="anchor" aria-label="anchor" href="#inline-run"></a>
 </h2>
 <p>For the local three-Opal Docker setup:</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_OPAL_URLS</span><span class="op">=</span><span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span></span>
-<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_USER</span><span class="op">=</span><span class="st">"administrator"</span></span>
-<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_PASSWORD</span><span class="op">=</span><span class="st">"admin123"</span></span>
-<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/direct_image_resnet_smoke.R</span></code></pre></div>
-<p>The script generates synthetic PNGs, copies each site folder into the
-matching Rock container, sets <code>dsflower.image_data_root</code>,
-uploads metadata tables, and runs one federated ResNet-18 round.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">opal_urls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"https://localhost:8443"</span>,</span>
+<span>  <span class="st">"https://localhost:8444"</span>,</span>
+<span>  <span class="st">"https://localhost:8445"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">opal_user</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"OPAL_USER"</span>, <span class="st">"administrator"</span><span class="op">)</span></span>
+<span><span class="va">opal_password</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"OPAL_PASSWORD"</span>, <span class="st">"admin123"</span><span class="op">)</span></span>
+<span><span class="va">local_root</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"dsflower_direct_image_smoke"</span><span class="op">)</span></span>
+<span><span class="va">server_root</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"DSFLOWER_IMAGE_DEMO_SERVER_ROOT"</span>,</span>
+<span>                          <span class="st">"/tmp/dsflower_direct_image_smoke"</span><span class="op">)</span></span></code></pre></div>
+<p>The inline workflow generates synthetic PNGs, copies each site folder
+into the matching Rock container, sets
+<code>dsflower.image_data_root</code>, uploads metadata tables, and runs
+one federated ResNet-18 round.</p>
 <p>If the images are already available inside each Rock, skip the Docker
 copy:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGE_DEMO_SKIP_DOCKER_COPY</span><span class="op">=</span>true</span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGE_DEMO_SERVER_ROOT</span><span class="op">=</span><span class="st">"/path/visible/in/each/rock"</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/direct_image_resnet_smoke.R</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">skip_docker_copy</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span>
+<span><span class="va">server_root</span> <span class="op">&lt;-</span> <span class="st">"/path/visible/in/each/rock"</span></span></code></pre></div>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">demo_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"demos"</span>, <span class="st">"direct_image_resnet_smoke.R"</span>,</span>
-<span>                         package <span class="op">=</span> <span class="st">"dsFlowerClient"</span><span class="op">)</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">demo_file</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">demo_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">".."</span>, <span class="st">"inst"</span>, <span class="st">"demos"</span>,</span>
-<span>                         <span class="st">"direct_image_resnet_smoke.R"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">builder</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/newDSLoginBuilder.html" class="external-link">newDSLoginBuilder</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">opal_urls</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span></span>
+<span>    server <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"opal"</span>, <span class="va">i</span><span class="op">)</span>,</span>
+<span>    url <span class="op">=</span> <span class="va">opal_urls</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>    user <span class="op">=</span> <span class="va">opal_user</span>,</span>
+<span>    password <span class="op">=</span> <span class="va">opal_password</span>,</span>
+<span>    table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"dsflower_demo.direct_image_site"</span>, <span class="va">i</span><span class="op">)</span>,</span>
+<span>    driver <span class="op">=</span> <span class="st">"OpalDriver"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="va">demo_file</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">conns</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.login.html" class="external-link">datashield.login</a></span><span class="op">(</span><span class="va">builder</span><span class="op">$</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span>, assign <span class="op">=</span> <span class="cn">TRUE</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="api-shape">API Shape<a class="anchor" aria-label="anchor" href="#api-shape"></a>
@@ -166,10 +178,15 @@ declare <code>source_kind = "image_bundle"</code>.</p>
 <p>When images are already published as a <code>dsImaging</code>
 resource, use the direct resource demo instead of copying files into
 each Rock manually:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_OPAL_URLS</span><span class="op">=</span><span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_RESOURCE</span><span class="op">=</span><span class="st">"dsdemo.lung1_study"</span></span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_TARGET</span><span class="op">=</span><span class="st">"os_2yr_alive"</span></span>
-<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/dsimaging_direct_image_resnet.R</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">imaging_resource</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"DSFLOWER_IMAGING_RESOURCE"</span>, <span class="st">"dsdemo.lung1_study"</span><span class="op">)</span></span>
+<span><span class="va">imaging_target</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"DSFLOWER_IMAGING_TARGET"</span>, <span class="st">"os_2yr_alive"</span><span class="op">)</span></span>
+<span><span class="va">flower</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.connect.html">ds.flower.connect</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>,</span>
+<span>  resource <span class="op">=</span> <span class="va">imaging_resource</span>,</span>
+<span>  target <span class="op">=</span> <span class="va">imaging_target</span>,</span>
+<span>  data_type <span class="op">=</span> <span class="st">"image"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>That path calls <code>ds.flower.connect(resource = ...)</code>, so
 the server initializes <code>dsImaging</code>, carries the imaging
 descriptor into <code>dsFlower</code>, stages the metadata, resolves
@@ -178,9 +195,10 @@ the image assets in the imaging store or bucket.</p>
 <p>Set <code>DSFLOWER_IMAGING_LOCAL_WORKDIR</code> to a local copy of
 the same demo study to also run a centralized PyTorch baseline over the
 same NIfTI images:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_LOCAL_WORKDIR</span><span class="op">=</span><span class="st">"/tmp/dsimaging_lung1_study"</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_REQUIRE_LOCAL_BASELINE</span><span class="op">=</span>true</span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/dsimaging_direct_image_resnet.R</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">local_workdir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"DSFLOWER_IMAGING_LOCAL_WORKDIR"</span>,</span>
+<span>                            <span class="st">"/tmp/dsimaging_lung1_study"</span><span class="op">)</span></span>
+<span><span class="va">require_local_baseline</span> <span class="op">&lt;-</span> <span class="cn">TRUE</span></span></code></pre></div>
 <p>The script writes:</p>
 <pre class="text"><code><span><span class="va">summary.json</span></span>
 <span><span class="va">run.rds</span></span>

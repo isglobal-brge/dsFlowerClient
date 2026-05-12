@@ -54,8 +54,7 @@ if (nrow(plot_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
 }
 ```
 
-To reproduce the complete vision suite against configured Opal servers:
-
-```sh
-Rscript inst/demos/validate_vision_methods.R
-```
+The complete vision suite is produced by repeating the inline
+Opal/DataSHIELD/Flower workflow shown in each per-method vignette for all
+vision templates listed above. The persisted JSON artifact is the audit
+trail consumed by this pkgdown page.

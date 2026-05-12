@@ -6,13 +6,18 @@ local central baseline, partitions the training rows across the
 configured Opal servers, runs Flower through DataSHIELD, and writes a
 JSON/RDS audit record.
 
-The default Opal configuration is:
+The default Opal configuration is declared from R so the same vignette
+can be executed interactively or rendered in a live demo environment:
 
-``` sh
-export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
-export OPAL_USER="administrator"
-export OPAL_PASSWORD="admin123"
-Rscript inst/demos/benchmark_breast_cancer.R
+``` r
+
+opal_urls <- c(
+  "https://localhost:8443",
+  "https://localhost:8444",
+  "https://localhost:8445"
+)
+opal_user <- Sys.getenv("OPAL_USER", "administrator")
+opal_password <- Sys.getenv("OPAL_PASSWORD", "admin123")
 ```
 
 ## What The Script Does
@@ -83,16 +88,7 @@ fit <- ds.flower.fit(
 )
 ```
 
-The demo can also be launched while rendering this vignette:
-
-``` r
-
-demo_file <- system.file("demos", "benchmark_breast_cancer.R", package = "dsFlowerClient")
-if (!nzchar(demo_file)) demo_file <- file.path("..", "inst", "demos", "benchmark_breast_cancer.R")
-source(demo_file)
-```
-
-Validation run on 2026-05-10:
+Validation run on 2026-05-12:
 
     #>               metric    value
     #> 1               rows 683.0000

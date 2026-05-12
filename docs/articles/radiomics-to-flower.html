@@ -77,9 +77,10 @@
 <code>dsImaging</code> derives a radiomics feature asset from CT images
 and masks, and <code>dsFlowerClient</code> trains a federated model from
 the derived server-side feature table.</p>
-<p>The default pkgdown build does not launch Opal jobs. Set
-<code>DSFLOWER_RUN_RADFLOWER_VIGNETTE=true</code> to run the live
-workflow while rendering.</p>
+<p>The validated run is represented directly in this vignette:
+initialize the imaging resource, load derived radiomics features
+server-side, and then call <code><a href="../reference/ds.flower.fit.html">ds.flower.fit()</a></code> on those
+server-side tables.</p>
 <div class="section level2">
 <h2 id="workflow">Workflow<a class="anchor" aria-label="anchor" href="#workflow"></a>
 </h2>
@@ -149,31 +150,48 @@ training table violates the active trust profile.</p>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="runnable-script">Runnable Script<a class="anchor" aria-label="anchor" href="#runnable-script"></a>
+<h2 id="inline-execution-path">Inline Execution Path<a class="anchor" aria-label="anchor" href="#inline-execution-path"></a>
 </h2>
-<p>The package ships a script that runs the full downstream step from
-published radiomics assets:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_OPAL_URLS</span><span class="op">=</span><span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span></span>
-<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_USER</span><span class="op">=</span><span class="st">"administrator"</span></span>
-<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_PASSWORD</span><span class="op">=</span><span class="st">"admin123"</span></span>
-<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a><span class="bu">export</span> <span class="va">LUNG1_WORKDIR</span><span class="op">=</span><span class="st">"/tmp/dsimaging_lung1_full"</span></span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="bu">export</span> <span class="va">LUNG1_OPAL_RESOURCE</span><span class="op">=</span><span class="st">"lung1_full_study"</span></span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a></span>
-<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/lung1_radiomics_to_flower.R</span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">demo_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"demos"</span>, <span class="st">"lung1_radiomics_to_flower.R"</span>,</span>
-<span>                         package <span class="op">=</span> <span class="st">"dsFlowerClient"</span><span class="op">)</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">demo_file</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">demo_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">".."</span>, <span class="st">"inst"</span>, <span class="st">"demos"</span>,</span>
-<span>                         <span class="st">"lung1_radiomics_to_flower.R"</span><span class="op">)</span></span>
+<p>The downstream training step is the following DataSHIELD/Flower path;
+it does not require embedding radiomics features in the client
+session.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">opal_urls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"https://localhost:8443"</span>,</span>
+<span>  <span class="st">"https://localhost:8444"</span>,</span>
+<span>  <span class="st">"https://localhost:8445"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">builder</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/newDSLoginBuilder.html" class="external-link">newDSLoginBuilder</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">opal_urls</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span></span>
+<span>    server <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"opal"</span>, <span class="va">i</span><span class="op">)</span>,</span>
+<span>    url <span class="op">=</span> <span class="va">opal_urls</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
+<span>    user <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"OPAL_USER"</span>, <span class="st">"administrator"</span><span class="op">)</span>,</span>
+<span>    password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"OPAL_PASSWORD"</span>, <span class="st">"admin123"</span><span class="op">)</span>,</span>
+<span>    table <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"dsflower_demo.lung1_radiomics_site"</span>, <span class="va">i</span><span class="op">)</span>,</span>
+<span>    driver <span class="op">=</span> <span class="st">"OpalDriver"</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="va">demo_file</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">conns</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.login.html" class="external-link">datashield.login</a></span><span class="op">(</span><span class="va">builder</span><span class="op">$</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span>, assign <span class="op">=</span> <span class="cn">TRUE</span>, symbol <span class="op">=</span> <span class="st">"rad"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>,</span>
+<span>  symbol <span class="op">=</span> <span class="st">"rad"</span>,</span>
+<span>  target <span class="op">=</span> <span class="st">"os_2yr_alive"</span>,</span>
+<span>  features <span class="op">=</span> <span class="va">features</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"sklearn_logreg"</span>,</span>
+<span>  model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>max_iter <span class="op">=</span> <span class="fl">100L</span><span class="op">)</span>,</span>
+<span>  strategy <span class="op">=</span> <span class="st">"fedavg"</span>,</span>
+<span>  privacy <span class="op">=</span> <span class="st">"trusted_internal"</span>,</span>
+<span>  rounds <span class="op">=</span> <span class="fl">2L</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="validated-run">Validated Run<a class="anchor" aria-label="anchor" href="#validated-run"></a>
 </h2>
 <p>Validation run on 2026-05-10 against three local Opal/Rock nodes:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">validation</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"opal1 rows"</span>, <span class="st">"opal2 rows"</span>, <span class="st">"opal3 rows"</span>, <span class="st">"combined rows"</span>,</span>
 <span>             <span class="st">"columns loaded"</span>, <span class="st">"selected features"</span>, <span class="st">"rounds"</span>,</span>
@@ -235,7 +253,7 @@ published radiomics assets:</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">loss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  round <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span><span class="op">)</span>,</span>
 <span>  loss <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.6502785</span>, <span class="fl">0.6474173</span><span class="op">)</span>,</span>

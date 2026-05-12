@@ -36,40 +36,51 @@ site1_img_002,site1/img_002.png,1
 `dsFlower` stages the metadata, writes an image manifest, and the
 `pytorch_resnet18` ClientApp loads the PNG files inside the Rock.
 
-## Run
+## Inline Run
 
 For the local three-Opal Docker setup:
 
-``` sh
-export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
-export OPAL_USER="administrator"
-export OPAL_PASSWORD="admin123"
+``` r
 
-Rscript inst/demos/direct_image_resnet_smoke.R
+opal_urls <- c(
+  "https://localhost:8443",
+  "https://localhost:8444",
+  "https://localhost:8445"
+)
+opal_user <- Sys.getenv("OPAL_USER", "administrator")
+opal_password <- Sys.getenv("OPAL_PASSWORD", "admin123")
+local_root <- tempfile("dsflower_direct_image_smoke")
+server_root <- Sys.getenv("DSFLOWER_IMAGE_DEMO_SERVER_ROOT",
+                          "/tmp/dsflower_direct_image_smoke")
 ```
 
-The script generates synthetic PNGs, copies each site folder into the
-matching Rock container, sets `dsflower.image_data_root`, uploads
-metadata tables, and runs one federated ResNet-18 round.
+The inline workflow generates synthetic PNGs, copies each site folder
+into the matching Rock container, sets `dsflower.image_data_root`,
+uploads metadata tables, and runs one federated ResNet-18 round.
 
 If the images are already available inside each Rock, skip the Docker
 copy:
 
-``` sh
-export DSFLOWER_IMAGE_DEMO_SKIP_DOCKER_COPY=true
-export DSFLOWER_IMAGE_DEMO_SERVER_ROOT="/path/visible/in/each/rock"
-Rscript inst/demos/direct_image_resnet_smoke.R
+``` r
+
+skip_docker_copy <- TRUE
+server_root <- "/path/visible/in/each/rock"
 ```
 
 ``` r
 
-demo_file <- system.file("demos", "direct_image_resnet_smoke.R",
-                         package = "dsFlowerClient")
-if (!nzchar(demo_file)) {
-  demo_file <- file.path("..", "inst", "demos",
-                         "direct_image_resnet_smoke.R")
+builder <- DSI::newDSLoginBuilder()
+for (i in seq_along(opal_urls)) {
+  builder$append(
+    server = paste0("opal", i),
+    url = opal_urls[[i]],
+    user = opal_user,
+    password = opal_password,
+    table = paste0("dsflower_demo.direct_image_site", i),
+    driver = "OpalDriver"
+  )
 }
-source(demo_file)
+conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "D")
 ```
 
 ## API Shape
@@ -115,11 +126,16 @@ declare `source_kind = "image_bundle"`.
 When images are already published as a `dsImaging` resource, use the
 direct resource demo instead of copying files into each Rock manually:
 
-``` sh
-export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
-export DSFLOWER_IMAGING_RESOURCE="dsdemo.lung1_study"
-export DSFLOWER_IMAGING_TARGET="os_2yr_alive"
-Rscript inst/demos/dsimaging_direct_image_resnet.R
+``` r
+
+imaging_resource <- Sys.getenv("DSFLOWER_IMAGING_RESOURCE", "dsdemo.lung1_study")
+imaging_target <- Sys.getenv("DSFLOWER_IMAGING_TARGET", "os_2yr_alive")
+flower <- ds.flower.connect(
+  conns,
+  resource = imaging_resource,
+  target = imaging_target,
+  data_type = "image"
+)
 ```
 
 That path calls `ds.flower.connect(resource = ...)`, so the server
@@ -131,10 +147,11 @@ Set `DSFLOWER_IMAGING_LOCAL_WORKDIR` to a local copy of the same demo
 study to also run a centralized PyTorch baseline over the same NIfTI
 images:
 
-``` sh
-export DSFLOWER_IMAGING_LOCAL_WORKDIR="/tmp/dsimaging_lung1_study"
-export DSFLOWER_IMAGING_REQUIRE_LOCAL_BASELINE=true
-Rscript inst/demos/dsimaging_direct_image_resnet.R
+``` r
+
+local_workdir <- Sys.getenv("DSFLOWER_IMAGING_LOCAL_WORKDIR",
+                            "/tmp/dsimaging_lung1_study")
+require_local_baseline <- TRUE
 ```
 
 The script writes:

@@ -126,9 +126,7 @@ Vision method vignettes:
 The vision-specific overview remains available at
 [Vision Method Validation Overview](validation-vision-overview.html).
 
-To reproduce the complete suite against configured Opal servers:
-
-```sh
-Rscript inst/demos/validate_methods.R
-Rscript inst/demos/validate_vision_methods.R
-```
+The full suite is produced by repeating the inline Opal/DataSHIELD/Flower
+workflow shown in each per-method vignette for every method listed above.
+The persisted JSON artifacts are the audit trail consumed by this
+pkgdown site.

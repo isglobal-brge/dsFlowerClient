@@ -6,14 +6,18 @@ The demo uses BreastMNIST from MedMNIST, average-pools each 28x28 image
 to a 7x7 feature map, and trains a binary logistic model through the
 same DataSHIELD/Flower path used by the tabular demos.
 
-The script bootstraps the Python client environment with `medmnist` when
-needed.
+The live run uses the same Opal configuration shape as the
+clinical-tabular benchmarks:
 
-``` sh
-export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
-export OPAL_USER="administrator"
-export OPAL_PASSWORD="admin123"
-Rscript inst/demos/benchmark_medmnist.R
+``` r
+
+opal_urls <- c(
+  "https://localhost:8443",
+  "https://localhost:8444",
+  "https://localhost:8445"
+)
+opal_user <- Sys.getenv("OPAL_USER", "administrator")
+opal_password <- Sys.getenv("OPAL_PASSWORD", "admin123")
 ```
 
 ## What The Script Does
@@ -65,14 +69,7 @@ fit <- ds.flower.fit(
 )
 ```
 
-``` r
-
-demo_file <- system.file("demos", "benchmark_medmnist.R", package = "dsFlowerClient")
-if (!nzchar(demo_file)) demo_file <- file.path("..", "inst", "demos", "benchmark_medmnist.R")
-source(demo_file)
-```
-
-Validation run on 2026-05-10:
+Validation run on 2026-05-12:
 
     #>               metric    value
     #> 1               rows 510.0000

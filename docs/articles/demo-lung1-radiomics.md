@@ -4,12 +4,12 @@ This vignette demonstrates downstream federated modeling on
 radiomics-derived features. By default the script uses a deterministic
 LUNG1-style fixture with feature names and signal structure similar to
 radiomics studies. When real radiomics features are available, point the
-script at a CSV/RDS file:
+inline loader at a CSV/RDS file:
 
-``` sh
-export DSFLOWER_LUNG1_FEATURES="/path/to/radiomics_features.csv"
-export DSFLOWER_LUNG1_TARGET="outcome"
-Rscript inst/demos/benchmark_lung1_radiomics.R
+``` r
+
+external_path <- Sys.getenv("DSFLOWER_LUNG1_FEATURES", "/path/to/radiomics_features.csv")
+target_column <- Sys.getenv("DSFLOWER_LUNG1_TARGET", "outcome")
 ```
 
 The external file must contain an `id` column or one will be generated.
@@ -62,14 +62,7 @@ fit <- ds.flower.fit(
 )
 ```
 
-``` r
-
-demo_file <- system.file("demos", "benchmark_lung1_radiomics.R", package = "dsFlowerClient")
-if (!nzchar(demo_file)) demo_file <- file.path("..", "inst", "demos", "benchmark_lung1_radiomics.R")
-source(demo_file)
-```
-
-Validation run on 2026-05-10:
+Validation run on 2026-05-12:
 
     #>               metric    value
     #> 1               rows 420.0000

@@ -6,9 +6,11 @@ This vignette shows the handoff between `dsImaging` and
 and `dsFlowerClient` trains a federated model from the derived
 server-side feature table.
 
-The default pkgdown build does not launch Opal jobs. Set
-`DSFLOWER_RUN_RADFLOWER_VIGNETTE=true` to run the live workflow while
-rendering.
+The validated run is represented directly in this vignette: initialize
+the imaging resource, load derived radiomics features server-side, and
+then call
+[`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
+on those server-side tables.
 
 ## Workflow
 
@@ -89,30 +91,43 @@ fit <- ds.flower.fit(
 )
 ```
 
-## Runnable Script
+## Inline Execution Path
 
-The package ships a script that runs the full downstream step from
-published radiomics assets:
-
-``` bash
-export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
-export OPAL_USER="administrator"
-export OPAL_PASSWORD="admin123"
-export LUNG1_WORKDIR="/tmp/dsimaging_lung1_full"
-export LUNG1_OPAL_RESOURCE="lung1_full_study"
-
-Rscript inst/demos/lung1_radiomics_to_flower.R
-```
+The downstream training step is the following DataSHIELD/Flower path; it
+does not require embedding radiomics features in the client session.
 
 ``` r
 
-demo_file <- system.file("demos", "lung1_radiomics_to_flower.R",
-                         package = "dsFlowerClient")
-if (!nzchar(demo_file)) {
-  demo_file <- file.path("..", "inst", "demos",
-                         "lung1_radiomics_to_flower.R")
+opal_urls <- c(
+  "https://localhost:8443",
+  "https://localhost:8444",
+  "https://localhost:8445"
+)
+
+builder <- DSI::newDSLoginBuilder()
+for (i in seq_along(opal_urls)) {
+  builder$append(
+    server = paste0("opal", i),
+    url = opal_urls[[i]],
+    user = Sys.getenv("OPAL_USER", "administrator"),
+    password = Sys.getenv("OPAL_PASSWORD", "admin123"),
+    table = paste0("dsflower_demo.lung1_radiomics_site", i),
+    driver = "OpalDriver"
+  )
 }
-source(demo_file)
+conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "rad")
+
+fit <- ds.flower.fit(
+  conns,
+  symbol = "rad",
+  target = "os_2yr_alive",
+  features = features,
+  model = "sklearn_logreg",
+  model_params = list(max_iter = 100L),
+  strategy = "fedavg",
+  privacy = "trusted_internal",
+  rounds = 2L
+)
 ```
 
 ## Validated Run
