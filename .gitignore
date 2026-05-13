@@ -4,3 +4,4 @@
 .Ruserdata
 *.Rproj
 dsflower_output/
+vignettes/dsflower_output/

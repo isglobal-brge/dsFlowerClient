@@ -326,7 +326,7 @@ run_dsflower_benchmark <- function(data,
   fed_metrics <- binary_metrics(test[[target]], fed_probs)
 
   post_caps <- tryCatch(
-    DSI::datashield.aggregate(conns, as.symbol("flowerGetCapabilitiesDS")),
+    DSI::datashield.aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
     error = function(e) NULL
   )
   validate_run(run, post_caps)

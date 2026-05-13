@@ -367,7 +367,7 @@ run_federated_method <- function(spec, conns, privacy, secagg_supported,
   }
 
   post_caps <- tryCatch(
-    DSI::datashield.aggregate(conns, as.symbol("flowerGetCapabilitiesDS")),
+    DSI::datashield.aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
     error = function(e) NULL
   )
   validation_error <- tryCatch({
@@ -483,7 +483,7 @@ main <- function() {
   conns <- connect_validation_tables(cfg, table_paths)
   on.exit(try(DSI::datashield.logout(conns), silent = TRUE), add = TRUE)
 
-  caps <- tryCatch(DSI::datashield.aggregate(conns, as.symbol("flowerGetCapabilitiesDS")),
+  caps <- tryCatch(DSI::datashield.aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
                    error = function(e) NULL)
   secagg_supported <- !is.null(caps) && all(vapply(caps, function(x) {
     isTRUE(x$secure_aggregation_supported)

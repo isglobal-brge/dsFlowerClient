@@ -12,7 +12,7 @@
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-heart-disease.md):
 - [MedMNIST Federated
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-medmnist.md):
-- [Direct Image ResNet Validation
+- [Direct Image ResNet
   Demo](https://isglobal-brge.github.io/dsFlowerClient/articles/direct-image-resnet.md):
 - [Radiomics Federated
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-lung1-radiomics.md):

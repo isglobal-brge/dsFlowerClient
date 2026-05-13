@@ -1,176 +1,462 @@
 # Radiomics To Federated Learning
 
-This vignette shows the handoff between `dsImaging` and
-`dsFlowerClient`: images stay in the imaging store or bucket,
-`dsImaging` derives a radiomics feature asset from CT images and masks,
-and `dsFlowerClient` trains a federated model from the derived
-server-side feature table.
-
-The validated run is represented directly in this vignette: initialize
-the imaging resource, load derived radiomics features server-side, and
-then call
-[`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
-on those server-side tables.
-
-## Workflow
-
-The upstream extraction is owned by `dsImaging`. The example below uses
-the public LUNG1/NSCLC-Radiomics CT cohort with existing RTSTRUCT
-`GTV-1` tumour masks and the Aerts signature profile.
-
 ``` r
 
-library(dsImagingClient)
-
-ds.imaging.init(conns, resource = "dsdemo.lung1_full_study", symbol = "img")
-
-radiomics <- ds.imaging.radiomics.process_collection(
-  conns,
-  dataset_id = NULL,
-  segmenter = ds.imaging.segmenter.existing_mask("masks"),
-  profile = ds.imaging.radiomics.profile.aerts_signature(),
-  batch_size = 1L,
-  allow_partial = FALSE,
-  visibility = "global"
-)
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+live <- identical(tolower(Sys.getenv("DSFLOWER_RENDER_LIVE_VIGNETTES")), "true")
+`%||%` <- function(x, y) {
+  if (is.null(x) || length(x) == 0 || (length(x) == 1 && is.na(x))) y else x
+}
+cat("Live Opal/DataSHIELD execution:", live, "\n")
 ```
 
-When the radiomics collection is published, each server exposes a
-derived asset. Load those assets into a server-side table named `rad`
-before training.
-[`ds.imaging.init()`](https://rdrr.io/pkg/dsImagingClient/man/ds.imaging.init.html)
-must run first because the asset loader resolves dataset metadata from
-the imaging resource context.
+    ## Live Opal/DataSHIELD execution: TRUE
+
+This vignette shows the downstream handoff from `dsImaging` to
+`dsFlowerClient`. The imaging package owns CT segmentation and radiomics
+extraction. Once each server has a derived radiomics table,
+`dsFlowerClient` trains on those server-side tables without pulling
+row-level features back to the researcher.
+
+For a self-contained render, this page builds a deterministic
+LUNG1-style radiomics table with the same shape as a derived imaging
+asset, trains a centralized reference model, partitions the training
+rows across three Opal servers, uploads the per-site feature tables, and
+runs federated logistic regression through DataSHIELD and Flower.
+
+## 1. Configure The Three DataSHIELD Nodes
 
 ``` r
 
-radiomics <- readRDS("/tmp/dsimaging_lung1_full/datashield_radiomics_result.rds")
+opal_urls <- trimws(strsplit(Sys.getenv(
+  "DSFLOWER_OPAL_URLS",
+  "https://localhost:8443,https://localhost:8444,https://localhost:8445"
+), ",", fixed = TRUE)[[1]])
+opal_user <- Sys.getenv("OPAL_USER", "administrator")
+opal_password <- Sys.getenv("OPAL_PASSWORD", "admin123")
+opal_project <- Sys.getenv("DSFLOWER_DEMO_PROJECT", "dsflower_demo")
+table_prefix <- paste0("vignette_radiomics_handoff_", format(Sys.time(), "%Y%m%d%H%M%S"))
 
-for (srv in names(radiomics)) {
-  ds.imaging.radiomics.load_features(
-    conns[srv],
-    dataset_id = radiomics[[srv]]$dataset_id,
-    asset_id = radiomics[[srv]]$asset_id,
-    symbol = "rad",
-    include_metadata = TRUE,
-    syntactic_names = TRUE
+data.frame(
+  node = paste0("opal", seq_along(opal_urls)),
+  url = opal_urls,
+  project = opal_project,
+  upload_prefix = table_prefix
+)
+#>    node                    url       project
+#> 1 opal1 https://localhost:8443 dsflower_demo
+#> 2 opal2 https://localhost:8444 dsflower_demo
+#> 3 opal3 https://localhost:8445 dsflower_demo
+#>                               upload_prefix
+#> 1 vignette_radiomics_handoff_20260513031815
+#> 2 vignette_radiomics_handoff_20260513031815
+#> 3 vignette_radiomics_handoff_20260513031815
+```
+
+## 2. Build Or Load A Derived Radiomics Table
+
+``` r
+
+make_lung1_style <- function(n = 420L, seed = 20260513L) {
+  set.seed(seed)
+  stage <- sample(1:4, n, replace = TRUE, prob = c(0.22, 0.28, 0.34, 0.16))
+  age <- pmin(pmax(round(stats::rnorm(n, 67, 9)), 38), 89)
+  gender_male <- stats::rbinom(n, 1, 0.57)
+  tumor_volume <- stats::rlnorm(n, meanlog = 4.2 + 0.28 * stage, sdlog = 0.55)
+  energy <- log1p(tumor_volume) + stats::rnorm(n, 0, 0.35)
+  compactness1 <- pmax(stats::rnorm(n, 0.78 - 0.045 * stage, 0.12), 0.05)
+  glrlm_rlnu <- stats::rlnorm(n, 4.6 + 0.12 * stage, 0.42)
+  wavelet_hlh_rlnu <- stats::rlnorm(n, 4.2 + 0.18 * stage, 0.48)
+  firstorder_entropy <- pmax(stats::rnorm(n, 3.1 + 0.12 * stage, 0.45), 0.1)
+  shape_sphericity <- pmax(pmin(stats::rnorm(n, 0.62 - 0.04 * stage, 0.11), 1), 0.05)
+
+  risk <- -5.8 + 0.026 * age + 0.42 * gender_male + 0.52 * stage +
+    0.30 * energy - 1.20 * compactness1 + 0.0017 * glrlm_rlnu +
+    0.0021 * wavelet_hlh_rlnu + 0.35 * firstorder_entropy -
+    0.95 * shape_sphericity
+  os_2yr_alive <- stats::rbinom(n, 1, 1 - stats::plogis(risk))
+
+  data.frame(
+    id = paste0("lung1_derived_", seq_len(n)),
+    age = age,
+    gender_male = gender_male,
+    stage = stage,
+    original_firstorder_Energy = energy,
+    original_shape_Compactness1 = compactness1,
+    original_glrlm_RunLengthNonUniformity = glrlm_rlnu,
+    wavelet_HLH_glrlm_RunLengthNonUniformity = wavelet_hlh_rlnu,
+    original_firstorder_Entropy = firstorder_entropy,
+    original_shape_Sphericity = shape_sphericity,
+    os_2yr_alive = os_2yr_alive,
+    check.names = FALSE
   )
 }
-```
 
-The downstream model uses the high-level
-[`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
-syntax. `dsFlower` stages only the target and selected feature columns
-on each server, drops rows with missing or non-finite target/feature
-values before training, and fails early if the resulting training table
-violates the active trust profile.
+load_external_radiomics <- function(path, target = Sys.getenv("DSFLOWER_RADIOMICS_TARGET", "os_2yr_alive")) {
+  if (!nzchar(path) || !file.exists(path)) return(NULL)
+  ext <- tolower(tools::file_ext(path))
+  data <- switch(
+    ext,
+    rds = readRDS(path),
+    csv = utils::read.csv(path, check.names = FALSE),
+    tsv = utils::read.delim(path, check.names = FALSE),
+    stop("Unsupported radiomics feature file extension: ", ext, call. = FALSE)
+  )
+  if (!"id" %in% names(data)) data$id <- paste0("radiomics_", seq_len(nrow(data)))
+  if (!target %in% names(data)) stop("Missing target column: ", target, call. = FALSE)
+  names(data)[names(data) == target] <- "os_2yr_alive"
+  data
+}
 
-``` r
-
-library(dsFlowerClient)
+external_path <- Sys.getenv("DSFLOWER_RADIOMICS_FEATURES", "")
+dataset <- load_external_radiomics(external_path)
+data_mode <- if (is.null(dataset)) {
+  dataset <- make_lung1_style()
+  "deterministic LUNG1-style derived radiomics fixture"
+} else {
+  paste("external derived radiomics table", normalizePath(external_path))
+}
 
 features <- c(
   "original_firstorder_Energy",
   "original_shape_Compactness1",
   "original_glrlm_RunLengthNonUniformity",
-  "wavelet.HLH_glrlm_RunLengthNonUniformity",
+  "wavelet_HLH_glrlm_RunLengthNonUniformity",
   "age",
   "gender_male"
 )
+missing_features <- setdiff(features, names(dataset))
+if (length(missing_features)) {
+  stop("Missing radiomics feature columns: ", paste(missing_features, collapse = ", "),
+       call. = FALSE)
+}
 
-fit <- ds.flower.fit(
-  conns,
-  symbol = "rad",
-  target = "os_2yr_alive",
-  features = features,
-  model = "sklearn_logreg",
-  model_params = list(max_iter = 100L),
-  strategy = "fedavg",
-  privacy = "trusted_internal",
-  rounds = 2L
+cat("[data] mode:", data_mode, "\n")
+#> [data] mode: deterministic LUNG1-style derived radiomics fixture
+data.frame(
+  rows = nrow(dataset),
+  selected_features = length(features),
+  alive_2yr = sum(dataset$os_2yr_alive == 1L),
+  dead_by_2yr = sum(dataset$os_2yr_alive == 0L)
 )
+#>   rows selected_features alive_2yr dead_by_2yr
+#> 1  420                 6       279         141
 ```
 
-## Inline Execution Path
-
-The downstream training step is the following DataSHIELD/Flower path; it
-does not require embedding radiomics features in the client session.
+## 3. Train The Centralized Reference Model
 
 ``` r
 
-opal_urls <- c(
-  "https://localhost:8443",
-  "https://localhost:8444",
-  "https://localhost:8445"
-)
+rank_auc <- function(y, p) {
+  ok <- is.finite(p) & !is.na(y)
+  y <- as.integer(y[ok])
+  p <- as.numeric(p[ok])
+  if (length(unique(y)) < 2L) return(NA_real_)
+  n_pos <- sum(y == 1L)
+  n_neg <- sum(y == 0L)
+  ranks <- rank(p, ties.method = "average")
+  (sum(ranks[y == 1L]) - n_pos * (n_pos + 1) / 2) / (n_pos * n_neg)
+}
 
-builder <- DSI::newDSLoginBuilder()
-for (i in seq_along(opal_urls)) {
-  builder$append(
-    server = paste0("opal", i),
-    url = opal_urls[[i]],
-    user = Sys.getenv("OPAL_USER", "administrator"),
-    password = Sys.getenv("OPAL_PASSWORD", "admin123"),
-    table = paste0("dsflower_demo.lung1_radiomics_site", i),
-    driver = "OpalDriver"
+binary_metrics <- function(y, p, eps = 1e-15) {
+  p <- pmin(pmax(as.numeric(p), eps), 1 - eps)
+  y <- as.integer(y)
+  list(
+    auc = unname(rank_auc(y, p)),
+    accuracy = unname(mean(as.integer(p >= 0.5) == y)),
+    log_loss = unname(-mean(y * log(p) + (1 - y) * log(1 - p))),
+    brier = unname(mean((p - y)^2))
   )
 }
-conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "rad")
 
-fit <- ds.flower.fit(
-  conns,
-  symbol = "rad",
-  target = "os_2yr_alive",
-  features = features,
-  model = "sklearn_logreg",
-  model_params = list(max_iter = 100L),
-  strategy = "fedavg",
-  privacy = "trusted_internal",
-  rounds = 2L
+set.seed(20260513)
+test_idx <- integer()
+for (cls in sort(unique(dataset$os_2yr_alive))) {
+  idx <- sample(which(dataset$os_2yr_alive == cls))
+  test_idx <- c(test_idx, idx[seq_len(max(1L, floor(length(idx) * 0.25)))])
+}
+train <- dataset[setdiff(seq_len(nrow(dataset)), test_idx), , drop = FALSE]
+test <- dataset[test_idx, , drop = FALSE]
+
+centers <- vapply(train[features], mean, numeric(1), na.rm = TRUE)
+scales <- vapply(train[features], stats::sd, numeric(1), na.rm = TRUE)
+scales[!is.finite(scales) | scales == 0] <- 1
+for (feature in features) {
+  train[[feature]] <- (as.numeric(train[[feature]]) - centers[[feature]]) / scales[[feature]]
+  test[[feature]] <- (as.numeric(test[[feature]]) - centers[[feature]]) / scales[[feature]]
+}
+
+central_model <- stats::glm(
+  os_2yr_alive ~ .,
+  data = data.frame(os_2yr_alive = train$os_2yr_alive, train[features], check.names = FALSE),
+  family = stats::binomial(),
+  control = stats::glm.control(maxit = 100)
 )
+central_probs <- as.numeric(stats::predict(
+  central_model,
+  newdata = data.frame(test[features], check.names = FALSE),
+  type = "response"
+))
+central_metrics <- binary_metrics(test$os_2yr_alive, central_probs)
+
+cat("[centralized] rows:", nrow(train), "train /", nrow(test), "test\n")
+#> [centralized] rows: 316 train / 104 test
+cat("[centralized] model: stats::glm(binomial)\n")
+#> [centralized] model: stats::glm(binomial)
+cat("[centralized] AUC:", sprintf("%.4f", central_metrics$auc), "\n")
+#> [centralized] AUC: 0.7375
+cat("[centralized] accuracy:", sprintf("%.4f", central_metrics$accuracy), "\n")
+#> [centralized] accuracy: 0.7788
+data.frame(metric = names(central_metrics), value = unlist(central_metrics), row.names = NULL)
+#>     metric     value
+#> 1      auc 0.7374741
+#> 2 accuracy 0.7788462
+#> 3 log_loss 0.5520869
+#> 4    brier 0.1798008
 ```
 
-## Validated Run
-
-Validation run on 2026-05-10 against three local Opal/Rock nodes:
+## 4. Partition The Training Rows Across Sites
 
 ``` r
 
-validation <- data.frame(
-  metric = c("opal1 rows", "opal2 rows", "opal3 rows", "combined rows",
-             "columns loaded", "selected features", "rounds",
-             "round 1 loss", "round 2 loss", "client failures",
-             "global coef shape"),
-  value = c("142", "143", "137", "422", "20", "6", "2",
-            "0.6502785", "0.6474173", "0", "1 x 6")
-)
-knitr::kable(validation)
+make_site_labels <- function(y, n_sites, seed = 20260513L) {
+  set.seed(seed)
+  labels <- rep(NA_integer_, length(y))
+  for (cls in sort(unique(y))) {
+    idx <- sample(which(y == cls))
+    labels[idx] <- rep(seq_len(n_sites), length.out = length(idx))
+  }
+  labels
+}
+
+n_sites <- length(opal_urls)
+train$site <- make_site_labels(train$os_2yr_alive, n_sites)
+site_tables <- split(train, train$site)
+site_tables <- lapply(site_tables, function(x) {
+  x$site <- NULL
+  x
+})
+
+do.call(rbind, lapply(seq_along(site_tables), function(i) {
+  data.frame(
+    site = paste0("opal", i),
+    rows = nrow(site_tables[[i]]),
+    alive_2yr = sum(site_tables[[i]]$os_2yr_alive == 1L),
+    dead_by_2yr = sum(site_tables[[i]]$os_2yr_alive == 0L)
+  )
+}))
+#>    site rows alive_2yr dead_by_2yr
+#> 1 opal1  106        70          36
+#> 2 opal2  105        70          35
+#> 3 opal3  105        70          35
 ```
 
-| metric            | value     |
-|:------------------|:----------|
-| opal1 rows        | 142       |
-| opal2 rows        | 143       |
-| opal3 rows        | 137       |
-| combined rows     | 422       |
-| columns loaded    | 20        |
-| selected features | 6         |
-| rounds            | 2         |
-| round 1 loss      | 0.6502785 |
-| round 2 loss      | 0.6474173 |
-| client failures   | 0         |
-| global coef shape | 1 x 6     |
+## 5. Upload Tables, Run dsFlower, And Show Flower Output
+
+``` r
+
+predict_sklearn_logreg_weights <- function(weights, x) {
+  coef_raw <- weights[[1L]]
+  intercept_raw <- weights[[2L]]
+  if (is.list(coef_raw) && length(coef_raw) == 1L) coef_raw <- coef_raw[[1L]]
+  if (is.list(intercept_raw) && length(intercept_raw) == 1L) intercept_raw <- intercept_raw[[1L]]
+  p <- ncol(x)
+  flat <- as.numeric(coef_raw)
+  coef <- if (length(flat) == p) flat else matrix(flat, ncol = p, byrow = TRUE)[1L, ]
+  score <- as.matrix(x) %*% coef + as.numeric(intercept_raw)[1L]
+  as.numeric(1 / (1 + exp(-score)))
+}
+
+fallback_path <- c(
+  file.path("..", "inst", "extdata", "dsflower_demo_benchmark_results.json"),
+  file.path("inst", "extdata", "dsflower_demo_benchmark_results.json"),
+  system.file("extdata", "dsflower_demo_benchmark_results.json", package = "dsFlowerClient")
+)
+fallback_path <- fallback_path[nzchar(fallback_path) & file.exists(fallback_path)][1]
+fallback <- jsonlite::fromJSON(fallback_path, simplifyVector = FALSE)$results$lung1_radiomics
+
+if (live) {
+  suppressPackageStartupMessages({
+    library(DSI)
+    library(DSOpal)
+    library(dsFlowerClient)
+    library(opalr)
+  })
+
+  table_paths <- character(n_sites)
+  for (i in seq_len(n_sites)) {
+    opal <- opalr::opal.login(username = opal_user, password = opal_password,
+                              url = opal_urls[[i]],
+                              opts = list(ssl_verifyhost = 0L, ssl_verifypeer = 0L))
+    if (!opalr::opal.project_exists(opal, opal_project)) {
+      opalr::opal.project_create(opal, opal_project, database = "mongodb")
+    }
+    opalr::dsadmin.set_option(opal, "dsflower.privacy_profile",
+                              "trusted_internal", profile = "default")
+    table_name <- paste0(table_prefix, "_site", i)
+    opalr::opal.table_save(opal, site_tables[[i]], project = opal_project,
+                           table = table_name, id.name = "id",
+                           policy = "generate", overwrite = TRUE, force = TRUE)
+    table_paths[[i]] <- paste(opal_project, table_name, sep = ".")
+    opalr::opal.logout(opal)
+    cat("[upload]", opal_urls[[i]], "->", table_paths[[i]], "\n")
+  }
+
+  builder <- DSI::newDSLoginBuilder()
+  for (i in seq_len(n_sites)) {
+    builder$append(server = paste0("opal", i), url = opal_urls[[i]],
+                   user = opal_user, password = opal_password,
+                   table = table_paths[[i]], driver = "OpalDriver")
+  }
+  conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "D")
+  cat("[DataSHIELD] connected nodes:", length(conns), "\n")
+
+  fit <- ds.flower.fit(
+    conns, symbol = "D", target = "os_2yr_alive", features = features,
+    model = "sklearn_logreg", model_params = list(max_iter = 100L),
+    strategy = "fedavg", privacy = "trusted_internal", rounds = 2L
+  )
+
+  post_caps <- tryCatch(
+    DSI::datashield.aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
+    error = function(e) {
+      cat("[cleanup] capability check unavailable:", conditionMessage(e), "\n")
+      NULL
+    }
+  )
+  DSI::datashield.logout(conns)
+  federated_metrics <- binary_metrics(
+    test$os_2yr_alive,
+    predict_sklearn_logreg_weights(fit$weights, test[features])
+  )
+  history <- fit$history
+  output_dir <- fit$output_dir
+} else {
+  table_paths <- paste0(opal_project, ".", table_prefix, "_site", seq_len(n_sites))
+  federated_metrics <- fallback$federated_metrics
+  history <- do.call(rbind, lapply(fallback$history, as.data.frame))
+  output_dir <- fallback$flower_output_dir
+  post_caps <- replicate(n_sites, list(active_supernodes = 0L), simplify = FALSE)
+  cat("[non-live render] using committed output from the last live equivalent run\n")
+}
+#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
+#> opal_project, : Coercing data.frame to a tibble...
+#> [upload] https://localhost:8443 -> dsflower_demo.vignette_radiomics_handoff_20260513031815_site1
+#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
+#> opal_project, : Coercing data.frame to a tibble...
+#> [upload] https://localhost:8444 -> dsflower_demo.vignette_radiomics_handoff_20260513031815_site2
+#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
+#> opal_project, : Coercing data.frame to a tibble...
+#> [upload] https://localhost:8445 -> dsflower_demo.vignette_radiomics_handoff_20260513031815_site3
+#> 
+#> Logging into the collaborating servers
+#> [DataSHIELD] connected nodes: 3
+#> SuperLink started (PID: 21666)
+#>   Fleet API (SuperNodes): 127.0.0.1:9092
+#>   Control API (flwr run): 127.0.0.1:9093
+#>   opal1: SuperLink reachable at host.docker.internal:9092
+#>   opal2: SuperLink reachable at host.docker.internal:9092
+#>   opal3: SuperLink reachable at host.docker.internal:9092
+#>   opal1: SuperNode connected
+#>   opal2: SuperNode connected
+#>   opal3: SuperNode connected
+#>   Code verification passed on all servers
+#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpIcx60D/dsflower_app/sklearn_logreg/pyproject.toml':
+#> - Recommended property "description" missing in [project]
+#> - Recommended property "license" missing in [project]
+#> 🎊 Successfully started run 5347349380240008512
+#> INFO :      Start `flwr-serverapp` process
+#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpIcx60D/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.0bcdeec6.
+#> INFO :      Starting Flower ServerApp, config: num_rounds=2, no round_timeout
+#> INFO :      
+#> INFO :      [INIT]
+#> INFO :      Requesting initial parameters from one random client
+#> INFO :      Received initial parameters from one random client
+#> INFO :      Starting evaluation of initial global parameters
+#> INFO :      Evaluation returned no results (`None`)
+#> INFO :      
+#> INFO :      [ROUND 1]
+#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
+#> INFO :      aggregate_fit: received 3 results and 0 failures
+#> WARNING :   No fit_metrics_aggregation_fn provided
+#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
+#> INFO :      aggregate_evaluate: received 3 results and 0 failures
+#> WARNING :   No evaluate_metrics_aggregation_fn provided
+#> INFO :      
+#> INFO :      [ROUND 2]
+#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
+#> INFO :      aggregate_fit: received 3 results and 0 failures
+#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
+#> INFO :      aggregate_evaluate: received 3 results and 0 failures
+#> INFO :      
+#> INFO :      [SUMMARY]
+#> INFO :      Run finished 2 round(s) in 58.52s
+#> INFO :       History (loss, distributed):
+#> INFO :           round 1: 0.5401713538686527
+#> INFO :           round 2: 0.5401704271003624
+#> INFO :      
+#> INFO :
+#> Model saved to ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_032047
+#> SuperLink stopped.
+
+cat("[dsFlower] output_dir:", output_dir, "\n")
+#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_032047
+print(history)
+#>   round      loss n_clients n_failures
+#> 1     1 0.5401714         3          0
+#> 2     2 0.5401704         3          0
+```
+
+## 6. Compare Centralized vs dsFlower
+
+``` r
+
+comparison <- data.frame(
+  metric = c("auc", "accuracy", "log_loss", "brier"),
+  centralized = unlist(central_metrics[c("auc", "accuracy", "log_loss", "brier")]),
+  dsFlower = unlist(federated_metrics[c("auc", "accuracy", "log_loss", "brier")])
+)
+comparison$delta <- comparison$dsFlower - comparison$centralized
+knitr::kable(comparison, digits = 4)
+```
+
+|          | metric   | centralized | dsFlower |   delta |
+|:---------|:---------|------------:|---------:|--------:|
+| auc      | auc      |      0.7375 |   0.7308 | -0.0066 |
+| accuracy | accuracy |      0.7788 |   0.7692 | -0.0096 |
+| log_loss | log_loss |      0.5521 |   0.5547 |  0.0027 |
+| brier    | brier    |      0.1798 |   0.1809 |  0.0011 |
+
+``` r
+
+
+failure_count <- if ("n_failures" %in% names(history)) {
+  sum(as.integer(history$n_failures), na.rm = TRUE)
+} else {
+  0L
+}
+active_supernodes <- if (is.null(post_caps)) integer() else {
+  vapply(post_caps, function(x) as.integer(x$active_supernodes %||% 0L), integer(1))
+}
+cat("[acceptance] Flower client failures:", failure_count, "\n")
+#> [acceptance] Flower client failures: 0
+cat("[acceptance] active SuperNodes after cleanup:",
+    if (length(active_supernodes)) paste(active_supernodes, collapse = ", ") else "not available", "\n")
+#> [acceptance] active SuperNodes after cleanup: 0, 0, 0
+cat("[acceptance] PASS:",
+    failure_count == 0L && (length(active_supernodes) == 0L || all(active_supernodes == 0L)), "\n")
+#> [acceptance] PASS: TRUE
+```
 
 ``` r
 
 loss <- data.frame(
-  round = c(1L, 2L),
-  loss = c(0.6502785, 0.6474173),
-  n_clients = c(3L, 3L),
-  n_failures = c(0L, 0L)
+  round = seq_len(nrow(history)),
+  loss = as.numeric(history$loss),
+  n_failures = if ("n_failures" %in% names(history)) as.numeric(history$n_failures) else 0
 )
 
-if (has_ggplot2) {
+if (requireNamespace("ggplot2", quietly = TRUE)) {
   ggplot2::ggplot(loss, ggplot2::aes(x = round, y = loss)) +
     ggplot2::geom_line(color = "#2c6f7d", linewidth = 0.8) +
     ggplot2::geom_point(color = "#2c6f7d", size = 2.6) +
@@ -188,11 +474,6 @@ if (has_ggplot2) {
 }
 ```
 
-![Line chart with two federated training loss values for the LUNG1
-radiomics
-workflow.](radiomics-to-flower_files/figure-html/validation-loss-plot-1.png)
-
-The validated run produced a global scikit-learn logistic-regression
-model with two parameter arrays: `coef` (`1 x 6`) and `intercept` (`1`).
-All three clients participated in both rounds and Flower reported zero
-client failures.
+![Line chart with two federated training loss values for the radiomics
+handoff
+workflow.](radiomics-to-flower_files/figure-html/loss-plot-1.png)

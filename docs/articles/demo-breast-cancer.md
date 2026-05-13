@@ -41,9 +41,9 @@ data.frame(
 #> 2 opal2 https://localhost:8444 dsflower_demo
 #> 3 opal3 https://localhost:8445 dsflower_demo
 #>                           upload_prefix
-#> 1 vignette_breast_cancer_20260513002713
-#> 2 vignette_breast_cancer_20260513002713
-#> 3 vignette_breast_cancer_20260513002713
+#> 1 vignette_breast_cancer_20260513030009
+#> 2 vignette_breast_cancer_20260513030009
+#> 3 vignette_breast_cancer_20260513030009
 ```
 
 ## 2. Build The Analysis Dataset
@@ -282,7 +282,7 @@ if (live) {
   )
 
   post_caps <- tryCatch(
-    DSI::datashield.aggregate(conns, as.symbol("flowerGetCapabilitiesDS")),
+    DSI::datashield.aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
     error = function(e) {
       cat("[cleanup] capability check unavailable:", conditionMessage(e), "\n")
       NULL
@@ -304,17 +304,17 @@ if (live) {
 }
 #> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
 #> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8443 -> dsflower_demo.vignette_breast_cancer_20260513002713_site1
+#> [upload] https://localhost:8443 -> dsflower_demo.vignette_breast_cancer_20260513030009_site1
 #> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
 #> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8444 -> dsflower_demo.vignette_breast_cancer_20260513002713_site2
+#> [upload] https://localhost:8444 -> dsflower_demo.vignette_breast_cancer_20260513030009_site2
 #> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
 #> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8445 -> dsflower_demo.vignette_breast_cancer_20260513002713_site3
+#> [upload] https://localhost:8445 -> dsflower_demo.vignette_breast_cancer_20260513030009_site3
 #> 
 #> Logging into the collaborating servers
 #> [DataSHIELD] connected nodes: 3
-#> SuperLink started (PID: 70443)
+#> SuperLink started (PID: 18092)
 #>   Fleet API (SuperNodes): 127.0.0.1:9092
 #>   Control API (flwr run): 127.0.0.1:9093
 #>   opal1: SuperLink reachable at host.docker.internal:9092
@@ -324,12 +324,12 @@ if (live) {
 #>   opal2: SuperNode connected
 #>   opal3: SuperNode connected
 #>   Code verification passed on all servers
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpFyweCD/dsflower_app/sklearn_logreg/pyproject.toml':
+#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpzCYoRo/dsflower_app/sklearn_logreg/pyproject.toml':
 #> - Recommended property "description" missing in [project]
 #> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 14270757246309122955
+#> 🎊 Successfully started run 15328422956271254088
 #> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpFyweCD/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.f6156c08.
+#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpzCYoRo/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.74f6cd33.
 #> INFO :      Starting Flower ServerApp, config: num_rounds=2, no round_timeout
 #> INFO :      
 #> INFO :      [INIT]
@@ -353,22 +353,21 @@ if (live) {
 #> INFO :      aggregate_evaluate: received 3 results and 0 failures
 #> INFO :      
 #> INFO :      [SUMMARY]
-#> INFO :      Run finished 2 round(s) in 38.49s
+#> INFO :      Run finished 2 round(s) in 86.65s
 #> INFO :       History (loss, distributed):
-#> INFO :           round 1: 0.06149870809313271
-#> INFO :           round 2: 0.061518229783184254
+#> INFO :           round 1: 0.061523796650712094
+#> INFO :           round 2: 0.061518356871655265
 #> INFO :      
 #> INFO :
-#> Model saved to ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_002836
+#> Model saved to ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_030459
 #> SuperLink stopped.
-#> [cleanup] capability check unavailable: There are some DataSHIELD errors, list them with datashield.errors()
 
 cat("[dsFlower] output_dir:", output_dir, "\n")
-#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_002836
+#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_030459
 print(history)
 #>   round       loss n_clients n_failures
-#> 1     1 0.06149871         3          0
-#> 2     2 0.06151823         3          0
+#> 1     1 0.06152380         3          0
+#> 2     2 0.06151836         3          0
 ```
 
 ## 6. Compare Centralized vs dsFlower
@@ -407,7 +406,7 @@ cat("[acceptance] Flower client failures:", failure_count, "\n")
 #> [acceptance] Flower client failures: 0
 cat("[acceptance] active SuperNodes after cleanup:",
     if (length(active_supernodes)) paste(active_supernodes, collapse = ", ") else "not available", "\n")
-#> [acceptance] active SuperNodes after cleanup: not available
+#> [acceptance] active SuperNodes after cleanup: 0, 0, 0
 cat("[acceptance] PASS:",
     failure_count == 0L && (length(active_supernodes) == 0L || all(active_supernodes == 0L)), "\n")
 #> [acceptance] PASS: TRUE

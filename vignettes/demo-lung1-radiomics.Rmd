@@ -273,7 +273,7 @@ if (live) {
   )
 
   post_caps <- tryCatch(
-    DSI::datashield.aggregate(conns, as.symbol("flowerGetCapabilitiesDS")),
+    DSI::datashield.aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
     error = function(e) {
       cat("[cleanup] capability check unavailable:", conditionMessage(e), "\n")
       NULL

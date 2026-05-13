@@ -307,7 +307,7 @@ method_vignette <- function(method) {
     ")",
     "",
     "post_caps <- DSI::datashield.aggregate(",
-    "  conns, as.symbol('flowerGetCapabilitiesDS')",
+    "  conns, expr = call('flowerGetCapabilitiesDS')",
     ")",
     "DSI::datashield.logout(conns)",
     "```",

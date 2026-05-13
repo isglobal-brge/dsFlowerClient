@@ -243,7 +243,7 @@ run <- with_ds_errors(
 )
 
 post_caps <- tryCatch(
-  DSI::datashield.aggregate(conns, as.symbol("flowerGetCapabilitiesDS")),
+  DSI::datashield.aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
   error = function(e) NULL
 )
 validate_run(run, post_caps)

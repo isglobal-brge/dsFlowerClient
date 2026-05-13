@@ -108,9 +108,9 @@ Opal/Rock nodes and runs dsFlower.</p>
 <span><span class="co">#&gt; 2 opal2 https://localhost:8444 dsflower_demo</span></span>
 <span><span class="co">#&gt; 3 opal3 https://localhost:8445 dsflower_demo</span></span>
 <span><span class="co">#&gt;                           upload_prefix</span></span>
-<span><span class="co">#&gt; 1 vignette_heart_disease_20260513002845</span></span>
-<span><span class="co">#&gt; 2 vignette_heart_disease_20260513002845</span></span>
-<span><span class="co">#&gt; 3 vignette_heart_disease_20260513002845</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 vignette_heart_disease_20260513030550</span></span>
+<span><span class="co">#&gt; 2 vignette_heart_disease_20260513030550</span></span>
+<span><span class="co">#&gt; 3 vignette_heart_disease_20260513030550</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="load-and-clean-the-clinical-dataset">2. Load And Clean The Clinical Dataset<a class="anchor" aria-label="anchor" href="#load-and-clean-the-clinical-dataset"></a>
@@ -360,7 +360,7 @@ Opal/Rock nodes and runs dsFlower.</p>
 <span>  <span class="op">)</span></span>
 <span></span>
 <span>  <span class="va">post_caps</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">tryCatch</a></span><span class="op">(</span></span>
-<span>    <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.aggregate.html" class="external-link">datashield.aggregate</a></span><span class="op">(</span><span class="va">conns</span>, <span class="fu"><a href="https://rdrr.io/r/base/name.html" class="external-link">as.symbol</a></span><span class="op">(</span><span class="st">"flowerGetCapabilitiesDS"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.aggregate.html" class="external-link">datashield.aggregate</a></span><span class="op">(</span><span class="va">conns</span>, expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/call.html" class="external-link">call</a></span><span class="op">(</span><span class="st">"flowerGetCapabilitiesDS"</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>    error <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">e</span><span class="op">)</span> <span class="op">{</span></span>
 <span>      <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[cleanup] capability check unavailable:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/conditions.html" class="external-link">conditionMessage</a></span><span class="op">(</span><span class="va">e</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span>      <span class="cn">NULL</span></span>
@@ -380,17 +380,17 @@ Opal/Rock nodes and runs dsFlower.</p>
 <span><span class="op">}</span></span>
 <span><span class="co">#&gt; Warning in opalr::opal.table_save(opal, site_tables[[i]], project =</span></span>
 <span><span class="co">#&gt; opal_project, : Coercing data.frame to a tibble...</span></span>
-<span><span class="co">#&gt; [upload] https://localhost:8443 -&gt; dsflower_demo.vignette_heart_disease_20260513002845_site1</span></span>
+<span><span class="co">#&gt; [upload] https://localhost:8443 -&gt; dsflower_demo.vignette_heart_disease_20260513030550_site1</span></span>
 <span><span class="co">#&gt; Warning in opalr::opal.table_save(opal, site_tables[[i]], project =</span></span>
 <span><span class="co">#&gt; opal_project, : Coercing data.frame to a tibble...</span></span>
-<span><span class="co">#&gt; [upload] https://localhost:8444 -&gt; dsflower_demo.vignette_heart_disease_20260513002845_site2</span></span>
+<span><span class="co">#&gt; [upload] https://localhost:8444 -&gt; dsflower_demo.vignette_heart_disease_20260513030550_site2</span></span>
 <span><span class="co">#&gt; Warning in opalr::opal.table_save(opal, site_tables[[i]], project =</span></span>
 <span><span class="co">#&gt; opal_project, : Coercing data.frame to a tibble...</span></span>
-<span><span class="co">#&gt; [upload] https://localhost:8445 -&gt; dsflower_demo.vignette_heart_disease_20260513002845_site3</span></span>
+<span><span class="co">#&gt; [upload] https://localhost:8445 -&gt; dsflower_demo.vignette_heart_disease_20260513030550_site3</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; Logging into the collaborating servers</span></span>
 <span><span class="co">#&gt; [DataSHIELD] connected nodes: 3</span></span>
-<span><span class="co">#&gt; SuperLink started (PID: 70678)</span></span>
+<span><span class="co">#&gt; SuperLink started (PID: 19049)</span></span>
 <span><span class="co">#&gt;   Fleet API (SuperNodes): 127.0.0.1:9092</span></span>
 <span><span class="co">#&gt;   Control API (flwr run): 127.0.0.1:9093</span></span>
 <span><span class="co">#&gt;   opal1: SuperLink reachable at host.docker.internal:9092</span></span>
@@ -400,12 +400,12 @@ Opal/Rock nodes and runs dsFlower.</p>
 <span><span class="co">#&gt;   opal2: SuperNode connected</span></span>
 <span><span class="co">#&gt;   opal3: SuperNode connected</span></span>
 <span><span class="co">#&gt;   Code verification passed on all servers</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpykBI8E/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
+<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpgfqzLN/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
 <span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
 <span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 7685783508091916466</span></span>
+<span><span class="co">#&gt; 🎊 Successfully started run 8717880442321985699</span></span>
 <span><span class="co">#&gt; INFO :      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpykBI8E/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.603a9029.</span></span>
+<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpgfqzLN/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.7ba59d3b.</span></span>
 <span><span class="co">#&gt; INFO :      Starting Flower ServerApp, config: num_rounds=2, no round_timeout</span></span>
 <span><span class="co">#&gt; INFO :      </span></span>
 <span><span class="co">#&gt; INFO :      [INIT]</span></span>
@@ -429,18 +429,17 @@ Opal/Rock nodes and runs dsFlower.</p>
 <span><span class="co">#&gt; INFO :      aggregate_evaluate: received 3 results and 0 failures</span></span>
 <span><span class="co">#&gt; INFO :      </span></span>
 <span><span class="co">#&gt; INFO :      [SUMMARY]</span></span>
-<span><span class="co">#&gt; INFO :      Run finished 2 round(s) in 38.51s</span></span>
+<span><span class="co">#&gt; INFO :      Run finished 2 round(s) in 54.23s</span></span>
 <span><span class="co">#&gt; INFO :       History (loss, distributed):</span></span>
 <span><span class="co">#&gt; INFO :           round 1: 0.34254647045911885</span></span>
-<span><span class="co">#&gt; INFO :           round 2: 0.3425485731690046</span></span>
+<span><span class="co">#&gt; INFO :           round 2: 0.3425485731690053</span></span>
 <span><span class="co">#&gt; INFO :      </span></span>
 <span><span class="co">#&gt; INFO :</span></span>
-<span><span class="co">#&gt; Model saved to ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_003008</span></span>
+<span><span class="co">#&gt; Model saved to ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_030920</span></span>
 <span><span class="co">#&gt; SuperLink stopped.</span></span>
-<span><span class="co">#&gt; [cleanup] capability check unavailable: There are some DataSHIELD errors, list them with datashield.errors()</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[dsFlower] output_dir:"</span>, <span class="va">output_dir</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_003008</span></span>
+<span><span class="co">#&gt; [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_030920</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">history</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   round      loss n_clients n_failures</span></span>
 <span><span class="co">#&gt; 1     1 0.3425465         3          0</span></span>
@@ -506,7 +505,7 @@ Opal/Rock nodes and runs dsFlower.</p>
 <span><span class="co">#&gt; [acceptance] Flower client failures: 0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] active SuperNodes after cleanup:"</span>,</span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">active_supernodes</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">active_supernodes</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span> <span class="kw">else</span> <span class="st">"not available"</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [acceptance] active SuperNodes after cleanup: not available</span></span>
+<span><span class="co">#&gt; [acceptance] active SuperNodes after cleanup: 0, 0, 0</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] PASS:"</span>,</span>
 <span>    <span class="va">failure_count</span> <span class="op">==</span> <span class="fl">0L</span> <span class="op">&amp;&amp;</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">active_supernodes</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0L</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">active_supernodes</span> <span class="op">==</span> <span class="fl">0L</span><span class="op">)</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [acceptance] PASS: TRUE</span></span></code></pre></div>

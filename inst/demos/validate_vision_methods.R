@@ -295,7 +295,7 @@ run_federated_vision <- function(spec, conns, privacy, rounds) {
     ds.flower.run.start(recipe, conns = conns, verbose = TRUE)
   )
   post_caps <- tryCatch(
-    DSI::datashield.aggregate(conns, as.symbol("flowerGetCapabilitiesDS")),
+    DSI::datashield.aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
     error = function(e) NULL
   )
   validate_run(run, post_caps)

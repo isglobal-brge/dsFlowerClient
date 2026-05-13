@@ -331,7 +331,7 @@ fit <- ds.flower.fit(
 )
 
 post_caps <- DSI::datashield.aggregate(
-  conns, as.symbol('flowerGetCapabilitiesDS')
+  conns, expr = call('flowerGetCapabilitiesDS')
 )
 DSI::datashield.logout(conns)
 ```
