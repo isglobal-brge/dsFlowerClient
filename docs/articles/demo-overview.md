@@ -18,7 +18,9 @@ demo_results <- data.frame(
     "MedMNIST Benchmark",
     "Radiomics Benchmark",
     "Radiomics To Flower",
-    "Direct Image ResNet",
+    "Direct Image ResNet Smoke Demo",
+    "LUNG1 Direct dsImaging Image Evidence",
+    "LUNG1 dsImaging Radiomics Evidence",
     "Method Validation Suite",
     "Vision Method Validation"
   ),
@@ -29,6 +31,8 @@ demo_results <- data.frame(
     "demo-lung1-radiomics.html",
     "radiomics-to-flower.html",
     "direct-image-resnet.html",
+    "lung1-direct-image-dsimaging-resnet.html",
+    "lung1-radiomics-to-flower.html",
     "validation-overview.html",
     "validation-vision-overview.html"
   ),
@@ -37,19 +41,23 @@ demo_results <- data.frame(
     "UCI Cleveland or deterministic fallback",
     "BreastMNIST pooled image features",
     "LUNG1-style radiomics features",
+    "deterministic LUNG1-style derived radiomics fixture",
+    "Synthetic PNG image resource",
+    "dsImaging direct LUNG1 NIfTI resource",
     "dsImaging-derived LUNG1 radiomics table",
-    "dsImaging direct NIfTI image resource",
     "Synthetic tabular/sequence/survival cohort",
     "Synthetic PNG image/mask cohort"
   ),
-  sites = c(3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L),
+  sites = c(3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L),
   central_metric = c(
     "AUC 0.9878",
     "AUC 0.8919",
     "AUC 0.7654",
     "AUC 0.7217",
-    "not applicable",
+    "AUC 0.7217",
+    "loss 0.5605",
     "loss 0.5540",
+    "not applicable",
     "17/17 methods pass",
     "3/3 methods pass"
   ),
@@ -58,12 +66,14 @@ demo_results <- data.frame(
     "AUC 0.8926",
     "AUC 0.7985",
     "AUC 0.7205",
-    "loss 0.6503 -> 0.6474",
+    "AUC 0.7205",
+    "loss 0.6322",
     "loss 0.5847",
+    "loss 0.6503 -> 0.6474",
     "17/17 acceptable",
     "3/3 acceptable"
   ),
-  failures = c(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L),
+  failures = c(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L),
   stringsAsFactors = FALSE
 )
 knitr::kable(demo_results)
@@ -75,8 +85,10 @@ knitr::kable(demo_results)
 | Heart Disease Benchmark | demo-heart-disease.html | UCI Cleveland or deterministic fallback | 3 | AUC 0.8919 | AUC 0.8926 | 0 |
 | MedMNIST Benchmark | demo-medmnist.html | BreastMNIST pooled image features | 3 | AUC 0.7654 | AUC 0.7985 | 0 |
 | Radiomics Benchmark | demo-lung1-radiomics.html | LUNG1-style radiomics features | 3 | AUC 0.7217 | AUC 0.7205 | 0 |
-| Radiomics To Flower | radiomics-to-flower.html | dsImaging-derived LUNG1 radiomics table | 3 | not applicable | loss 0.6503 -\> 0.6474 | 0 |
-| Direct Image ResNet | direct-image-resnet.html | dsImaging direct NIfTI image resource | 3 | loss 0.5540 | loss 0.5847 | 0 |
+| Radiomics To Flower | radiomics-to-flower.html | deterministic LUNG1-style derived radiomics fixture | 3 | AUC 0.7217 | AUC 0.7205 | 0 |
+| Direct Image ResNet Smoke Demo | direct-image-resnet.html | Synthetic PNG image resource | 3 | loss 0.5605 | loss 0.6322 | 0 |
+| LUNG1 Direct dsImaging Image Evidence | lung1-direct-image-dsimaging-resnet.html | dsImaging direct LUNG1 NIfTI resource | 3 | loss 0.5540 | loss 0.5847 | 0 |
+| LUNG1 dsImaging Radiomics Evidence | lung1-radiomics-to-flower.html | dsImaging-derived LUNG1 radiomics table | 3 | not applicable | loss 0.6503 -\> 0.6474 | 0 |
 | Method Validation Suite | validation-overview.html | Synthetic tabular/sequence/survival cohort | 3 | 17/17 methods pass | 17/17 acceptable | 0 |
 | Vision Method Validation | validation-vision-overview.html | Synthetic PNG image/mask cohort | 3 | 3/3 methods pass | 3/3 acceptable | 0 |
 
@@ -96,6 +108,10 @@ knitr::kable(demo_results)
   Flower](https://isglobal-brge.github.io/dsFlowerClient/articles/radiomics-to-flower.md)
 - [Direct Image
   ResNet](https://isglobal-brge.github.io/dsFlowerClient/articles/direct-image-resnet.md)
+- [LUNG1 Direct dsImaging Image
+  Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-direct-image-dsimaging-resnet.md)
+- [LUNG1 dsImaging Radiomics
+  Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-radiomics-to-flower.md)
 - [All Method Validation
   Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-overview.md)
 - [Vision Method Validation

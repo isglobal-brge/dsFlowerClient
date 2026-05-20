@@ -27,7 +27,9 @@ demo_results <- data.frame(
     "MedMNIST Benchmark",
     "Radiomics Benchmark",
     "Radiomics To Flower",
-    "Direct Image ResNet",
+    "Direct Image ResNet Smoke Demo",
+    "LUNG1 Direct dsImaging Image Evidence",
+    "LUNG1 dsImaging Radiomics Evidence",
     "Method Validation Suite",
     "Vision Method Validation"
   ),
@@ -38,6 +40,8 @@ demo_results <- data.frame(
     "demo-lung1-radiomics.html",
     "radiomics-to-flower.html",
     "direct-image-resnet.html",
+    "lung1-direct-image-dsimaging-resnet.html",
+    "lung1-radiomics-to-flower.html",
     "validation-overview.html",
     "validation-vision-overview.html"
   ),
@@ -46,19 +50,23 @@ demo_results <- data.frame(
     "UCI Cleveland or deterministic fallback",
     "BreastMNIST pooled image features",
     "LUNG1-style radiomics features",
+    "deterministic LUNG1-style derived radiomics fixture",
+    "Synthetic PNG image resource",
+    "dsImaging direct LUNG1 NIfTI resource",
     "dsImaging-derived LUNG1 radiomics table",
-    "dsImaging direct NIfTI image resource",
     "Synthetic tabular/sequence/survival cohort",
     "Synthetic PNG image/mask cohort"
   ),
-  sites = c(3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L),
+  sites = c(3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L),
   central_metric = c(
     "AUC 0.9878",
     "AUC 0.8919",
     "AUC 0.7654",
     "AUC 0.7217",
-    "not applicable",
+    "AUC 0.7217",
+    "loss 0.5605",
     "loss 0.5540",
+    "not applicable",
     "17/17 methods pass",
     "3/3 methods pass"
   ),
@@ -67,12 +75,14 @@ demo_results <- data.frame(
     "AUC 0.8926",
     "AUC 0.7985",
     "AUC 0.7205",
-    "loss 0.6503 -> 0.6474",
+    "AUC 0.7205",
+    "loss 0.6322",
     "loss 0.5847",
+    "loss 0.6503 -> 0.6474",
     "17/17 acceptable",
     "3/3 acceptable"
   ),
-  failures = c(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L),
+  failures = c(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L),
   stringsAsFactors = FALSE
 )
 knitr::kable(demo_results)
@@ -87,6 +97,8 @@ knitr::kable(demo_results)
 - [Radiomics Benchmark](demo-lung1-radiomics.html)
 - [Radiomics To Flower](radiomics-to-flower.html)
 - [Direct Image ResNet](direct-image-resnet.html)
+- [LUNG1 Direct dsImaging Image Evidence](lung1-direct-image-dsimaging-resnet.html)
+- [LUNG1 dsImaging Radiomics Evidence](lung1-radiomics-to-flower.html)
 - [All Method Validation Overview](validation-overview.html)
 - [Vision Method Validation Overview](validation-vision-overview.html)
 
@@ -136,4 +148,3 @@ DSI::datashield.logout(conns)
 For full method-by-method validation numbers, use the rendered validation
 overview. It reads the committed JSON result files and links to every individual
 method article.
-

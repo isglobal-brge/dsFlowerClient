@@ -19,6 +19,15 @@ result_path <- paths[nzchar(paths) & file.exists(paths)][1]
 validation <- jsonlite::fromJSON(result_path)
 results <- validation$results
 row <- results[results$method == method_id, , drop = FALSE]
+if (!"acceptable_loss" %in% names(row)) {
+  row$acceptable_loss <- row$validation_status == "pass"
+}
+if (!"acceptance_max_loss_ratio" %in% names(row)) {
+  row$acceptance_max_loss_ratio <- NA_real_
+}
+if (!"acceptance_max_loss_margin" %in% names(row)) {
+  row$acceptance_max_loss_margin <- NA_real_
+}
 fmt <- function(x) {
   if (length(x) == 0 || is.null(x) || is.na(x)) return('NA')
   if (is.numeric(x)) return(format(round(x, 4), nsmall = 4, trim = TRUE))

@@ -18,7 +18,7 @@ knitr::kable(summary_table)
 
 | Field           | Value                    |
 |:----------------|:-------------------------|
-| generated_at    | 2026-05-12T14:54:38.270Z |
+| generated_at    | 2026-05-11T14:01:13.113Z |
 | privacy_profile | sandbox_open             |
 | n_sites         | 3                        |
 | n_per_site      | 4                        |
@@ -37,9 +37,9 @@ knitr::kable(display)
 
 | method | task | centralized_metric | centralized_loss | federated_status | federated_loss | delta_loss | acceptable_loss | validation_status |
 |:---|:---|:---|---:|:---|---:|---:|:---|:---|
-| pytorch_resnet18 | classification | cross_entropy | 0.5605 | ok | 0.6322 | 0.0717 | TRUE | pass |
-| pytorch_densenet121 | classification | cross_entropy | 0.6033 | ok | 0.8186 | 0.2152 | TRUE | pass |
-| pytorch_unet2d | segmentation | dice_bce_loss | 1.3099 | ok | 1.3597 | 0.0499 | TRUE | pass |
+| pytorch_resnet18 | classification | cross_entropy | 0.5605 | ok | 0.5399 | -0.0206 | TRUE | pass |
+| pytorch_densenet121 | classification | cross_entropy | 0.6033 | ok | 0.9373 | 0.3339 | TRUE | pass |
+| pytorch_unet2d | segmentation | dice_bce_loss | 1.3099 | ok | 1.4397 | 0.1298 | TRUE | pass |
 
 ``` r
 

@@ -38,8 +38,10 @@
     <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
   </ul>
@@ -79,7 +81,7 @@
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">||</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="va">y</span> <span class="kw">else</span> <span class="va">x</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Live Opal/DataSHIELD execution:"</span>, <span class="va">live</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Live Opal/DataSHIELD execution: TRUE</span></span></code></pre>
+<pre><code><span><span class="co">## Live Opal/DataSHIELD execution: FALSE</span></span></code></pre>
 <p>This vignette is a complete direct-image dsFlower run. It creates
 synthetic PNG images on the client machine, copies each site’s files
 into the matching Rock container, uploads only metadata tables to Opal,
@@ -143,9 +145,9 @@ filesystem, or an object-storage mount.</p>
 <span><span class="co">#&gt; 2 opal2 https://localhost:8444 dsflower_demo</span></span>
 <span><span class="co">#&gt; 3 opal3 https://localhost:8445 dsflower_demo</span></span>
 <span><span class="co">#&gt;                          upload_prefix rock_container</span></span>
-<span><span class="co">#&gt; 1 vignette_direct_image_20260513031406     opal1-rock</span></span>
-<span><span class="co">#&gt; 2 vignette_direct_image_20260513031406     opal2-rock</span></span>
-<span><span class="co">#&gt; 3 vignette_direct_image_20260513031406     opal3-rock</span></span>
+<span><span class="co">#&gt; 1 vignette_direct_image_20260520134731     opal1-rock</span></span>
+<span><span class="co">#&gt; 2 vignette_direct_image_20260520134731     opal2-rock</span></span>
+<span><span class="co">#&gt; 3 vignette_direct_image_20260520134731     opal3-rock</span></span>
 <span><span class="co">#&gt;                 server_image_root</span></span>
 <span><span class="co">#&gt; 1 /tmp/dsflower_direct_image_demo</span></span>
 <span><span class="co">#&gt; 2 /tmp/dsflower_direct_image_demo</span></span>
@@ -225,9 +227,9 @@ filesystem, or an object-storage mount.</p>
 <span><span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">pooled</span>, <span class="va">samples_csv</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[data] local image root:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="va">local_root</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [data] local image root: /private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpjoRPOm/dsflower_direct_image_demo</span></span>
+<span><span class="co">#&gt; [data] local image root: /private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp6hXLdW/dsflower_direct_image_demo</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[data] pooled samples CSV:"</span>, <span class="va">samples_csv</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [data] pooled samples CSV: /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//RtmpjoRPOm/dsflower_direct_image_demo/pooled_samples.csv</span></span>
+<span><span class="co">#&gt; [data] pooled samples CSV: /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//Rtmp6hXLdW/dsflower_direct_image_demo/pooled_samples.csv</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">site_tables</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    site <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"opal"</span>, <span class="va">i</span><span class="op">)</span>,</span>
@@ -366,11 +368,7 @@ filesystem, or an object-storage mount.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">central</span> <span class="op">&lt;-</span> <span class="fu">run_central_resnet</span><span class="op">(</span><span class="va">samples_csv</span>, <span class="va">local_root</span>, <span class="va">image_size</span>, epochs <span class="op">=</span> <span class="fl">1L</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [centralized] engine: PyTorch ResNet-18</span></span>
-<span><span class="co">#&gt; [centralized] samples: 12</span></span>
-<span><span class="co">#&gt; [centralized] device: cpu</span></span>
-<span><span class="co">#&gt; [centralized] loss: 0.493180</span></span>
-<span><span class="co">#&gt; [centralized] accuracy: 1.000000</span></span>
+<span><span class="co">#&gt; [non-live render] using committed direct-image validation output</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  engine <span class="op">=</span> <span class="st">"local PyTorch ResNet-18"</span>,</span>
 <span>  samples <span class="op">=</span> <span class="va">central</span><span class="op">$</span><span class="va">n_samples</span>,</span>
@@ -378,8 +376,8 @@ filesystem, or an object-storage mount.</p>
 <span>  loss <span class="op">=</span> <span class="va">central</span><span class="op">$</span><span class="va">loss</span>,</span>
 <span>  accuracy <span class="op">=</span> <span class="va">central</span><span class="op">$</span><span class="va">accuracy</span></span>
 <span><span class="op">)</span></span>
-<span><span class="co">#&gt;                    engine samples device      loss accuracy</span></span>
-<span><span class="co">#&gt; 1 local PyTorch ResNet-18      12    cpu 0.4931796        1</span></span></code></pre></div>
+<span><span class="co">#&gt;                    engine samples   device   loss accuracy</span></span>
+<span><span class="co">#&gt; 1 local PyTorch ResNet-18      12 recorded 0.5605      0.5</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="upload-metadata-stage-files-and-run-dsflower">4. Upload Metadata, Stage Files, And Run dsFlower<a class="anchor" aria-label="anchor" href="#upload-metadata-stage-files-and-run-dsflower"></a>
@@ -577,67 +575,13 @@ filesystem, or an object-storage mount.</p>
 <span>  <span class="va">post_caps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="va">n_sites</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>active_supernodes <span class="op">=</span> <span class="fl">0L</span><span class="op">)</span>, simplify <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[non-live render] using committed direct-image validation output\n"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="co">#&gt; [copy] site 1 -&gt; opal1-rock : /tmp/dsflower_direct_image_demo </span></span>
-<span><span class="co">#&gt; [copy] site 2 -&gt; opal2-rock : /tmp/dsflower_direct_image_demo </span></span>
-<span><span class="co">#&gt; [copy] site 3 -&gt; opal3-rock : /tmp/dsflower_direct_image_demo</span></span>
-<span><span class="co">#&gt; Warning in opalr::opal.table_save(opal, site_tables[[i]], project =</span></span>
-<span><span class="co">#&gt; opal_project, : Coercing data.frame to a tibble...</span></span>
-<span><span class="co">#&gt; [upload] https://localhost:8443 -&gt; dsflower_demo.vignette_direct_image_20260513031406_site1</span></span>
-<span><span class="co">#&gt; Warning in opalr::opal.table_save(opal, site_tables[[i]], project =</span></span>
-<span><span class="co">#&gt; opal_project, : Coercing data.frame to a tibble...</span></span>
-<span><span class="co">#&gt; [upload] https://localhost:8444 -&gt; dsflower_demo.vignette_direct_image_20260513031406_site2</span></span>
-<span><span class="co">#&gt; Warning in opalr::opal.table_save(opal, site_tables[[i]], project =</span></span>
-<span><span class="co">#&gt; opal_project, : Coercing data.frame to a tibble...</span></span>
-<span><span class="co">#&gt; [upload] https://localhost:8445 -&gt; dsflower_demo.vignette_direct_image_20260513031406_site3</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Logging into the collaborating servers</span></span>
-<span><span class="co">#&gt; [DataSHIELD] connected nodes: 3</span></span>
-<span><span class="co">#&gt; SuperLink started (PID: 20760)</span></span>
-<span><span class="co">#&gt;   Fleet API (SuperNodes): 127.0.0.1:9092</span></span>
-<span><span class="co">#&gt;   Control API (flwr run): 127.0.0.1:9093</span></span>
-<span><span class="co">#&gt;   opal1: SuperLink reachable at host.docker.internal:9092</span></span>
-<span><span class="co">#&gt;   opal2: SuperLink reachable at host.docker.internal:9092</span></span>
-<span><span class="co">#&gt;   opal3: SuperLink reachable at host.docker.internal:9092</span></span>
-<span><span class="co">#&gt;   opal1: SuperNode connected</span></span>
-<span><span class="co">#&gt;   opal2: SuperNode connected</span></span>
-<span><span class="co">#&gt;   opal3: SuperNode connected</span></span>
-<span><span class="co">#&gt;   Code verification passed on all servers</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpjoRPOm/dsflower_app/pytorch_resnet18/pyproject.toml':</span></span>
-<span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
-<span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 11179191229769106627</span></span>
-<span><span class="co">#&gt; INFO :      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed pytorch_resnet18 to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpjoRPOm/dsflower_superlink/apps/dsflower.pytorch_resnet18.0.1.0.5eda836e.</span></span>
-<span><span class="co">#&gt; INFO :      Starting Flower ServerApp, config: num_rounds=1, no round_timeout</span></span>
-<span><span class="co">#&gt; INFO :      </span></span>
-<span><span class="co">#&gt; INFO :      [INIT]</span></span>
-<span><span class="co">#&gt; INFO :      Requesting initial parameters from one random client</span></span>
-<span><span class="co">#&gt; INFO :      Received initial parameters from one random client</span></span>
-<span><span class="co">#&gt; INFO :      Starting evaluation of initial global parameters</span></span>
-<span><span class="co">#&gt; INFO :      Evaluation returned no results (`None`)</span></span>
-<span><span class="co">#&gt; INFO :      </span></span>
-<span><span class="co">#&gt; INFO :      [ROUND 1]</span></span>
-<span><span class="co">#&gt; INFO :      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; INFO :      aggregate_fit: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; WARNING :   No fit_metrics_aggregation_fn provided</span></span>
-<span><span class="co">#&gt; INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; INFO :      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; WARNING :   No evaluate_metrics_aggregation_fn provided</span></span>
-<span><span class="co">#&gt; INFO :      </span></span>
-<span><span class="co">#&gt; INFO :      [SUMMARY]</span></span>
-<span><span class="co">#&gt; INFO :      Run finished 1 round(s) in 123.57s</span></span>
-<span><span class="co">#&gt; INFO :       History (loss, distributed):</span></span>
-<span><span class="co">#&gt; INFO :           round 1: 0.6399528135855993</span></span>
-<span><span class="co">#&gt; INFO :      </span></span>
-<span><span class="co">#&gt; INFO :</span></span>
-<span><span class="co">#&gt; Model saved to ./dsflower_output/pytorch_resnet18_FedAvg_1r_20260513_031750</span></span>
-<span><span class="co">#&gt; SuperLink stopped.</span></span>
+<span><span class="co">#&gt; [non-live render] using committed direct-image validation output</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[dsFlower] output_dir:"</span>, <span class="va">output_dir</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [dsFlower] output_dir: ./dsflower_output/pytorch_resnet18_FedAvg_1r_20260513_031750</span></span>
+<span><span class="co">#&gt; [dsFlower] output_dir: recorded dsflower_vision_validation_results.json</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">history</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   round      loss n_clients n_failures</span></span>
-<span><span class="co">#&gt; 1     1 0.6399528         3          0</span></span></code></pre></div>
+<span><span class="co">#&gt;   round   loss n_failures</span></span>
+<span><span class="co">#&gt; 1     1 0.5399          0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="compare-centralized-vs-federated-output">5. Compare Centralized vs Federated Output<a class="anchor" aria-label="anchor" href="#compare-centralized-vs-federated-output"></a>
@@ -692,8 +636,8 @@ filesystem, or an object-storage mount.</p>
 <td align="right">12</td>
 <td align="right">1</td>
 <td align="right">1</td>
-<td align="right">0.4932</td>
-<td align="right">1</td>
+<td align="right">0.5605</td>
+<td align="right">0.5</td>
 <td align="right">NA</td>
 </tr>
 <tr class="even">
@@ -702,7 +646,7 @@ filesystem, or an object-storage mount.</p>
 <td align="right">12</td>
 <td align="right">3</td>
 <td align="right">1</td>
-<td align="right">0.6400</td>
+<td align="right">0.5399</td>
 <td align="right">NA</td>
 <td align="right">0</td>
 </tr>
@@ -718,9 +662,9 @@ filesystem, or an object-storage mount.</p>
 <span>  <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">active_supernodes</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0L</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">active_supernodes</span> <span class="op">==</span> <span class="fl">0L</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] centralized loss:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.6f"</span>, <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">central</span><span class="op">$</span><span class="va">loss</span><span class="op">)</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [acceptance] centralized loss: 0.493180</span></span>
+<span><span class="co">#&gt; [acceptance] centralized loss: 0.560500</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] federated loss:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.6f"</span>, <span class="va">federated_loss</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [acceptance] federated loss: 0.639953</span></span>
+<span><span class="co">#&gt; [acceptance] federated loss: 0.539900</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] allowed absolute margin:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.6f"</span>, <span class="va">max_loss_margin</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [acceptance] allowed absolute margin: 0.500000</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] Flower client failures:"</span>, <span class="va">failure_count</span>, <span class="st">"\n"</span><span class="op">)</span></span>

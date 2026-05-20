@@ -10,7 +10,7 @@ live <- identical(tolower(Sys.getenv("DSFLOWER_RENDER_LIVE_VIGNETTES")), "true")
 cat("Live Opal/DataSHIELD execution:", live, "\n")
 ```
 
-    ## Live Opal/DataSHIELD execution: TRUE
+    ## Live Opal/DataSHIELD execution: FALSE
 
 This vignette is a complete clinical-tabular run notebook. It downloads
 the UCI Cleveland Heart Disease table when available, trains a
@@ -41,9 +41,9 @@ data.frame(
 #> 2 opal2 https://localhost:8444 dsflower_demo
 #> 3 opal3 https://localhost:8445 dsflower_demo
 #>                           upload_prefix
-#> 1 vignette_heart_disease_20260513030550
-#> 2 vignette_heart_disease_20260513030550
-#> 3 vignette_heart_disease_20260513030550
+#> 1 vignette_heart_disease_20260520134722
+#> 2 vignette_heart_disease_20260520134722
+#> 3 vignette_heart_disease_20260520134722
 ```
 
 ## 2. Load And Clean The Clinical Dataset
@@ -315,72 +315,14 @@ if (live) {
   post_caps <- replicate(n_sites, list(active_supernodes = 0L), simplify = FALSE)
   cat("[non-live render] using committed output from the last live vignette-equivalent run\n")
 }
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8443 -> dsflower_demo.vignette_heart_disease_20260513030550_site1
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8444 -> dsflower_demo.vignette_heart_disease_20260513030550_site2
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8445 -> dsflower_demo.vignette_heart_disease_20260513030550_site3
-#> 
-#> Logging into the collaborating servers
-#> [DataSHIELD] connected nodes: 3
-#> SuperLink started (PID: 19049)
-#>   Fleet API (SuperNodes): 127.0.0.1:9092
-#>   Control API (flwr run): 127.0.0.1:9093
-#>   opal1: SuperLink reachable at host.docker.internal:9092
-#>   opal2: SuperLink reachable at host.docker.internal:9092
-#>   opal3: SuperLink reachable at host.docker.internal:9092
-#>   opal1: SuperNode connected
-#>   opal2: SuperNode connected
-#>   opal3: SuperNode connected
-#>   Code verification passed on all servers
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpgfqzLN/dsflower_app/sklearn_logreg/pyproject.toml':
-#> - Recommended property "description" missing in [project]
-#> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 8717880442321985699
-#> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpgfqzLN/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.7ba59d3b.
-#> INFO :      Starting Flower ServerApp, config: num_rounds=2, no round_timeout
-#> INFO :      
-#> INFO :      [INIT]
-#> INFO :      Requesting initial parameters from one random client
-#> INFO :      Received initial parameters from one random client
-#> INFO :      Starting evaluation of initial global parameters
-#> INFO :      Evaluation returned no results (`None`)
-#> INFO :      
-#> INFO :      [ROUND 1]
-#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_fit: received 3 results and 0 failures
-#> WARNING :   No fit_metrics_aggregation_fn provided
-#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_evaluate: received 3 results and 0 failures
-#> WARNING :   No evaluate_metrics_aggregation_fn provided
-#> INFO :      
-#> INFO :      [ROUND 2]
-#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_fit: received 3 results and 0 failures
-#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_evaluate: received 3 results and 0 failures
-#> INFO :      
-#> INFO :      [SUMMARY]
-#> INFO :      Run finished 2 round(s) in 54.23s
-#> INFO :       History (loss, distributed):
-#> INFO :           round 1: 0.34254647045911885
-#> INFO :           round 2: 0.3425485731690053
-#> INFO :      
-#> INFO :
-#> Model saved to ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_030920
-#> SuperLink stopped.
+#> [non-live render] using committed output from the last live vignette-equivalent run
 
 cat("[dsFlower] output_dir:", output_dir, "\n")
-#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_030920
+#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161657
 print(history)
-#>   round      loss n_clients n_failures
-#> 1     1 0.3425465         3          0
-#> 2     2 0.3425486         3          0
+#>   round   loss n_clients n_failures
+#> 1     1 0.3425         3          0
+#> 2     2 0.3425         3          0
 ```
 
 ## 6. Compare Centralized vs dsFlower
@@ -399,8 +341,8 @@ knitr::kable(comparison, digits = 4)
 |          | metric   | centralized | dsFlower |   delta |
 |:---------|:---------|------------:|---------:|--------:|
 | auc      | auc      |      0.8919 |   0.8926 |  0.0007 |
-| accuracy | accuracy |      0.8378 |   0.8514 |  0.0135 |
-| log_loss | log_loss |      0.4102 |   0.3954 | -0.0149 |
+| accuracy | accuracy |      0.8378 |   0.8514 |  0.0136 |
+| log_loss | log_loss |      0.4102 |   0.3954 | -0.0148 |
 | brier    | brier    |      0.1204 |   0.1180 | -0.0024 |
 
 ``` r

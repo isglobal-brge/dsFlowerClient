@@ -38,8 +38,10 @@
     <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
   </ul>
@@ -150,7 +152,7 @@ and cleanup; it is not a clinical imaging benchmark.</p>
 </tr>
 <tr class="even">
 <td align="left">federated_loss</td>
-<td align="left">0.6322</td>
+<td align="left">0.5399</td>
 </tr>
 <tr class="odd">
 <td align="left">federated_n_failures</td>
@@ -158,15 +160,15 @@ and cleanup; it is not a clinical imaging benchmark.</p>
 </tr>
 <tr class="even">
 <td align="left">delta_loss</td>
-<td align="left">0.0717</td>
+<td align="left">-0.0206</td>
 </tr>
 <tr class="odd">
 <td align="left">acceptance_max_loss_ratio</td>
-<td align="left">2.5000</td>
+<td align="left">NA</td>
 </tr>
 <tr class="even">
 <td align="left">acceptance_max_loss_margin</td>
-<td align="left">0.2500</td>
+<td align="left">NA</td>
 </tr>
 <tr class="odd">
 <td align="left">acceptable_loss</td>
@@ -318,7 +320,7 @@ label</td>
 </tr>
 <tr class="even">
 <td align="left">loss</td>
-<td align="left">0.6322</td>
+<td align="left">0.5399</td>
 </tr>
 <tr class="odd">
 <td align="left">client_failures</td>
@@ -340,13 +342,13 @@ label</td>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">'[dsFlower] model template:'</span>, <span class="va">row</span><span class="op">$</span><span class="va">method</span>, <span class="st">'\n'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [dsFlower] model template: pytorch_resnet18</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">'[Flower] final federated loss:'</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span><span class="op">)</span>, <span class="st">'\n'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [Flower] final federated loss: 0.6322</span></span>
+<span><span class="co">#&gt; [Flower] final federated loss: 0.5399</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">'[Flower] client failures:'</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">federated_n_failures</span><span class="op">)</span>, <span class="st">'\n'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [Flower] client failures: 0.0000</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">'[acceptance] max loss ratio:'</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_ratio</span><span class="op">)</span>, <span class="st">'\n'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [acceptance] max loss ratio: 2.5000</span></span>
+<span><span class="co">#&gt; [acceptance] max loss ratio: NA</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">'[acceptance] max loss margin:'</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_margin</span><span class="op">)</span>, <span class="st">'\n'</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [acceptance] max loss margin: 0.2500</span></span>
+<span><span class="co">#&gt; [acceptance] max loss margin: NA</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">'[acceptance] PASS:'</span>, <span class="va">row</span><span class="op">$</span><span class="va">validation_status</span> <span class="op">==</span> <span class="st">'pass'</span>, <span class="st">'\n'</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [acceptance] PASS: TRUE</span></span></code></pre></div>
 </div>

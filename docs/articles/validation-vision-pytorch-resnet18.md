@@ -43,11 +43,11 @@ knitr::kable(overview)
 | centralized_accuracy       | 0.5000           |
 | centralized_dice           | NA               |
 | federated_status           | ok               |
-| federated_loss             | 0.6322           |
+| federated_loss             | 0.5399           |
 | federated_n_failures       | 0.0000           |
-| delta_loss                 | 0.0717           |
-| acceptance_max_loss_ratio  | 2.5000           |
-| acceptance_max_loss_margin | 0.2500           |
+| delta_loss                 | -0.0206          |
+| acceptance_max_loss_ratio  | NA               |
+| acceptance_max_loss_margin | NA               |
 | acceptable_loss            | TRUE             |
 | validation_status          | pass             |
 
@@ -156,7 +156,7 @@ knitr::kable(dsflower_output)
 | metric            | value  |
 |:------------------|:-------|
 | status            | ok     |
-| loss              | 0.6322 |
+| loss              | 0.5399 |
 | client_failures   | 0.0000 |
 | accepted          | TRUE   |
 | validation_status | pass   |
@@ -168,13 +168,13 @@ cat('[DataSHIELD] connected nodes:', row$n_sites, '\n')
 cat('[dsFlower] model template:', row$method, '\n')
 #> [dsFlower] model template: pytorch_resnet18
 cat('[Flower] final federated loss:', fmt(row$federated_loss), '\n')
-#> [Flower] final federated loss: 0.6322
+#> [Flower] final federated loss: 0.5399
 cat('[Flower] client failures:', fmt(row$federated_n_failures), '\n')
 #> [Flower] client failures: 0.0000
 cat('[acceptance] max loss ratio:', fmt(row$acceptance_max_loss_ratio), '\n')
-#> [acceptance] max loss ratio: 2.5000
+#> [acceptance] max loss ratio: NA
 cat('[acceptance] max loss margin:', fmt(row$acceptance_max_loss_margin), '\n')
-#> [acceptance] max loss margin: 0.2500
+#> [acceptance] max loss margin: NA
 cat('[acceptance] PASS:', row$validation_status == 'pass', '\n')
 #> [acceptance] PASS: TRUE
 ```

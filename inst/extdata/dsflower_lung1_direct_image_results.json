@@ -1,0 +1,82 @@
+{
+  "output_dir": "/Users/david/Documents/GitHub/dsFlower-framework/dsflower_output/direct_dsimaging_images/20260511_140204",
+  "model_output_dir": "./dsflower_output/pytorch_resnet18_FedAvg_1r_20260511_140550",
+  "saved_model": "./dsflower_output/pytorch_resnet18_FedAvg_1r_20260511_140550/model.rds",
+  "resource": "dsdemo.lung1_study",
+  "target": "os_2yr_alive",
+  "model": "pytorch_resnet18",
+  "template": "pytorch_resnet18",
+  "privacy": "sandbox_open",
+  "rounds": 1,
+  "status": 0,
+  "run_id": "12188684698149675604",
+  "history": [
+    {
+      "round": 1,
+      "loss": 0.584744469987022,
+      "n_clients": 3,
+      "n_failures": 0
+    }
+  ],
+  "local_baseline": {
+    "mode": "centralized",
+    "workdir": "/private/tmp/dsimaging_lung1_study",
+    "target": "os_2yr_alive",
+    "n_samples": 9,
+    "class_counts": {
+      "0": 7,
+      "1": 2
+    },
+    "epochs": 1,
+    "batch_size": 1,
+    "learning_rate": 0.0005,
+    "device": "cpu",
+    "train_loss_by_epoch": [
+      0.707024057706197
+    ],
+    "eval": {
+      "loss": 0.554012457529704,
+      "accuracy": 0.777777777777778,
+      "n_samples": 9
+    },
+    "status": "ok",
+    "log": "/Users/david/Documents/GitHub/dsFlower-framework/dsflower_output/direct_dsimaging_images/20260511_140204/local_baseline.log"
+  },
+  "local_vs_federated": {
+    "note": "Same small LUNG1 demo cohort; this is a smoke comparison of the training/evaluation path, not an external clinical validation.",
+    "federated": {
+      "mode": "federated",
+      "rounds": 1,
+      "clients": 3,
+      "loss": 0.584744469987022,
+      "n_failures": 0,
+      "output_dir": "./dsflower_output/pytorch_resnet18_FedAvg_1r_20260511_140550",
+      "saved_model": "./dsflower_output/pytorch_resnet18_FedAvg_1r_20260511_140550/model.rds"
+    },
+    "centralized": {
+      "mode": "centralized",
+      "epochs": 1,
+      "n_samples": 9,
+      "class_counts": {
+        "0": 7,
+        "1": 2
+      },
+      "device": "cpu",
+      "loss": 0.554012457529704,
+      "accuracy": 0.777777777777778
+    },
+    "delta": {
+      "loss_federated_minus_centralized": 0.0307320124573178
+    }
+  },
+  "metadata_n": {
+    "opal1": 3,
+    "opal2": 3,
+    "opal3": 3
+  },
+  "active_supernodes_after": {
+    "opal1": 0,
+    "opal2": 0,
+    "opal3": 0
+  }
+}

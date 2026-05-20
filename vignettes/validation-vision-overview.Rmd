@@ -17,6 +17,9 @@ paths <- c(
 result_path <- paths[nzchar(paths) & file.exists(paths)][1]
 validation <- jsonlite::fromJSON(result_path)
 results <- validation$results
+if (!"acceptable_loss" %in% names(results)) {
+  results$acceptable_loss <- results$validation_status == "pass"
+}
 ```
 
 This macro-vignette summarizes the live dsFlower vision-template validation.

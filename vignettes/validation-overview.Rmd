@@ -25,6 +25,9 @@ vision_paths <- c(
 vision_result_path <- vision_paths[nzchar(vision_paths) & file.exists(vision_paths)][1]
 vision_validation <- if (!is.na(vision_result_path)) jsonlite::fromJSON(vision_result_path) else NULL
 vision_results <- if (!is.null(vision_validation)) vision_validation$results else NULL
+column_or <- function(frame, name, default) {
+  if (name %in% names(frame)) frame[[name]] else rep(default, nrow(frame))
+}
 method_display <- data.frame(
   suite = 'tabular_sequence_survival',
   method = method_results$method,
@@ -47,7 +50,8 @@ vision_display <- if (!is.null(vision_results)) data.frame(
   federated_status = vision_results$federated_status,
   federated_loss = vision_results$federated_loss,
   delta_loss = vision_results$delta_loss,
-  acceptable_loss = vision_results$acceptable_loss,
+  acceptable_loss = column_or(vision_results, 'acceptable_loss',
+                              vision_results$validation_status == 'pass'),
   validation_status = vision_results$validation_status,
   stringsAsFactors = FALSE
 ) else method_display[0, ]

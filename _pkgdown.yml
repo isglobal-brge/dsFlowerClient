@@ -30,10 +30,14 @@ navbar:
           href: articles/demo-medmnist.html
         - text: "Direct Image ResNet Smoke Demo"
           href: articles/direct-image-resnet.html
+        - text: "LUNG1 Direct dsImaging ResNet Evidence"
+          href: articles/lung1-direct-image-dsimaging-resnet.html
         - text: "Radiomics Benchmark"
           href: articles/demo-lung1-radiomics.html
         - text: "Radiomics To Flower"
           href: articles/radiomics-to-flower.html
+        - text: "LUNG1 dsImaging Radiomics Evidence"
+          href: articles/lung1-radiomics-to-flower.html
         - text: "Method Validation Overview"
           href: articles/validation-overview.html
         - text: "Vision Validation Overview"
@@ -49,8 +53,10 @@ articles:
       - demo-heart-disease
       - demo-medmnist
       - direct-image-resnet
+      - lung1-direct-image-dsimaging-resnet
       - demo-lung1-radiomics
       - radiomics-to-flower
+      - lung1-radiomics-to-flower
   - title: Method validation
     desc: "Per-template validation against centralized baselines."
     contents:

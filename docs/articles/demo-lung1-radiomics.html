@@ -38,8 +38,10 @@
     <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
   </ul>
@@ -79,7 +81,7 @@
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">||</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="va">y</span> <span class="kw">else</span> <span class="va">x</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Live Opal/DataSHIELD execution:"</span>, <span class="va">live</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Live Opal/DataSHIELD execution: TRUE</span></span></code></pre>
+<pre><code><span><span class="co">## Live Opal/DataSHIELD execution: FALSE</span></span></code></pre>
 <p>This vignette is a complete downstream radiomics-modeling notebook.
 It creates or loads a radiomics feature table, trains a centralized
 baseline, then trains the same feature set through dsFlower on three
@@ -110,9 +112,9 @@ modeling stage on the derived features.</p>
 <span><span class="co">#&gt; 2 opal2 https://localhost:8444 dsflower_demo</span></span>
 <span><span class="co">#&gt; 3 opal3 https://localhost:8445 dsflower_demo</span></span>
 <span><span class="co">#&gt;                             upload_prefix</span></span>
-<span><span class="co">#&gt; 1 vignette_lung1_radiomics_20260513030944</span></span>
-<span><span class="co">#&gt; 2 vignette_lung1_radiomics_20260513030944</span></span>
-<span><span class="co">#&gt; 3 vignette_lung1_radiomics_20260513030944</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 vignette_lung1_radiomics_20260520134725</span></span>
+<span><span class="co">#&gt; 2 vignette_lung1_radiomics_20260520134725</span></span>
+<span><span class="co">#&gt; 3 vignette_lung1_radiomics_20260520134725</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="build-or-load-the-radiomics-feature-table">2. Build Or Load The Radiomics Feature Table<a class="anchor" aria-label="anchor" href="#build-or-load-the-radiomics-feature-table"></a>
@@ -380,72 +382,14 @@ modeling stage on the derived features.</p>
 <span>  <span class="va">post_caps</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="va">n_sites</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>active_supernodes <span class="op">=</span> <span class="fl">0L</span><span class="op">)</span>, simplify <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[non-live render] using committed output from the last live vignette-equivalent run\n"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
-<span><span class="co">#&gt; Warning in opalr::opal.table_save(opal, site_tables[[i]], project =</span></span>
-<span><span class="co">#&gt; opal_project, : Coercing data.frame to a tibble...</span></span>
-<span><span class="co">#&gt; [upload] https://localhost:8443 -&gt; dsflower_demo.vignette_lung1_radiomics_20260513030944_site1</span></span>
-<span><span class="co">#&gt; Warning in opalr::opal.table_save(opal, site_tables[[i]], project =</span></span>
-<span><span class="co">#&gt; opal_project, : Coercing data.frame to a tibble...</span></span>
-<span><span class="co">#&gt; [upload] https://localhost:8444 -&gt; dsflower_demo.vignette_lung1_radiomics_20260513030944_site2</span></span>
-<span><span class="co">#&gt; Warning in opalr::opal.table_save(opal, site_tables[[i]], project =</span></span>
-<span><span class="co">#&gt; opal_project, : Coercing data.frame to a tibble...</span></span>
-<span><span class="co">#&gt; [upload] https://localhost:8445 -&gt; dsflower_demo.vignette_lung1_radiomics_20260513030944_site3</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Logging into the collaborating servers</span></span>
-<span><span class="co">#&gt; [DataSHIELD] connected nodes: 3</span></span>
-<span><span class="co">#&gt; SuperLink started (PID: 19756)</span></span>
-<span><span class="co">#&gt;   Fleet API (SuperNodes): 127.0.0.1:9092</span></span>
-<span><span class="co">#&gt;   Control API (flwr run): 127.0.0.1:9093</span></span>
-<span><span class="co">#&gt;   opal1: SuperLink reachable at host.docker.internal:9092</span></span>
-<span><span class="co">#&gt;   opal2: SuperLink reachable at host.docker.internal:9092</span></span>
-<span><span class="co">#&gt;   opal3: SuperLink reachable at host.docker.internal:9092</span></span>
-<span><span class="co">#&gt;   opal1: SuperNode connected</span></span>
-<span><span class="co">#&gt;   opal2: SuperNode connected</span></span>
-<span><span class="co">#&gt;   opal3: SuperNode connected</span></span>
-<span><span class="co">#&gt;   Code verification passed on all servers</span></span>
-<span><span class="co">#&gt; Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp3pbA7O/dsflower_app/sklearn_logreg/pyproject.toml':</span></span>
-<span><span class="co">#&gt; - Recommended property "description" missing in [project]</span></span>
-<span><span class="co">#&gt; - Recommended property "license" missing in [project]</span></span>
-<span><span class="co">#&gt; 🎊 Successfully started run 9815345757704908012</span></span>
-<span><span class="co">#&gt; INFO :      Start `flwr-serverapp` process</span></span>
-<span><span class="co">#&gt; 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp3pbA7O/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.9718bee1.</span></span>
-<span><span class="co">#&gt; INFO :      Starting Flower ServerApp, config: num_rounds=2, no round_timeout</span></span>
-<span><span class="co">#&gt; INFO :      </span></span>
-<span><span class="co">#&gt; INFO :      [INIT]</span></span>
-<span><span class="co">#&gt; INFO :      Requesting initial parameters from one random client</span></span>
-<span><span class="co">#&gt; INFO :      Received initial parameters from one random client</span></span>
-<span><span class="co">#&gt; INFO :      Starting evaluation of initial global parameters</span></span>
-<span><span class="co">#&gt; INFO :      Evaluation returned no results (`None`)</span></span>
-<span><span class="co">#&gt; INFO :      </span></span>
-<span><span class="co">#&gt; INFO :      [ROUND 1]</span></span>
-<span><span class="co">#&gt; INFO :      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; INFO :      aggregate_fit: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; WARNING :   No fit_metrics_aggregation_fn provided</span></span>
-<span><span class="co">#&gt; INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; INFO :      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; WARNING :   No evaluate_metrics_aggregation_fn provided</span></span>
-<span><span class="co">#&gt; INFO :      </span></span>
-<span><span class="co">#&gt; INFO :      [ROUND 2]</span></span>
-<span><span class="co">#&gt; INFO :      configure_fit: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; INFO :      aggregate_fit: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)</span></span>
-<span><span class="co">#&gt; INFO :      aggregate_evaluate: received 3 results and 0 failures</span></span>
-<span><span class="co">#&gt; INFO :      </span></span>
-<span><span class="co">#&gt; INFO :      [SUMMARY]</span></span>
-<span><span class="co">#&gt; INFO :      Run finished 2 round(s) in 47.78s</span></span>
-<span><span class="co">#&gt; INFO :       History (loss, distributed):</span></span>
-<span><span class="co">#&gt; INFO :           round 1: 0.5903610595803475</span></span>
-<span><span class="co">#&gt; INFO :           round 2: 0.5903584807406189</span></span>
-<span><span class="co">#&gt; INFO :      </span></span>
-<span><span class="co">#&gt; INFO :</span></span>
-<span><span class="co">#&gt; Model saved to ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_031146</span></span>
-<span><span class="co">#&gt; SuperLink stopped.</span></span>
+<span><span class="co">#&gt; [non-live render] using committed output from the last live vignette-equivalent run</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[dsFlower] output_dir:"</span>, <span class="va">output_dir</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_031146</span></span>
+<span><span class="co">#&gt; [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_162114</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">history</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   round      loss n_clients n_failures</span></span>
-<span><span class="co">#&gt; 1     1 0.5903611         3          0</span></span>
-<span><span class="co">#&gt; 2     2 0.5903585         3          0</span></span></code></pre></div>
+<span><span class="co">#&gt;   round   loss n_clients n_failures</span></span>
+<span><span class="co">#&gt; 1     1 0.5904         3          0</span></span>
+<span><span class="co">#&gt; 2     2 0.5904         3          0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="compare-centralized-vs-dsflower">6. Compare Centralized vs dsFlower<a class="anchor" aria-label="anchor" href="#compare-centralized-vs-dsflower"></a>
@@ -472,7 +416,7 @@ modeling stage on the derived features.</p>
 <td align="left">auc</td>
 <td align="right">0.7217</td>
 <td align="right">0.7205</td>
-<td align="right">-0.0011</td>
+<td align="right">-0.0012</td>
 </tr>
 <tr class="even">
 <td align="left">accuracy</td>

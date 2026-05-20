@@ -38,8 +38,10 @@
     <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
   </ul>
@@ -142,7 +144,7 @@ not a clinical performance benchmark.</p>
 </tr>
 <tr class="even">
 <td align="left">federated_loss</td>
-<td align="left">0.6415</td>
+<td align="left">0.6503</td>
 </tr>
 <tr class="odd">
 <td align="left">federated_n_failures</td>
@@ -150,7 +152,7 @@ not a clinical performance benchmark.</p>
 </tr>
 <tr class="even">
 <td align="left">delta_loss</td>
-<td align="left">0.0483</td>
+<td align="left">0.0571</td>
 </tr>
 <tr class="odd">
 <td align="left">acceptance_max_loss_ratio</td>
@@ -243,12 +245,12 @@ describing the API shape.</p>
 </tr>
 <tr class="odd">
 <td align="left">5. Materialize Opal tables</td>
-<td align="left">dsflower_demo.method_validation_20260512162133_site1</td>
+<td align="left">dsflower_demo.method_validation_20260511181239_site1</td>
 </tr>
 </tbody>
 </table>
-<p>dsflower_demo.method_validation_20260512162133_site2
-dsflower_demo.method_validation_20260512162133_site3 |</p>
+<p>dsflower_demo.method_validation_20260511181239_site2
+dsflower_demo.method_validation_20260511181239_site3 |</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">centralized_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  step <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -348,11 +350,11 @@ sandbox_open</td>
 </tr>
 <tr class="odd">
 <td align="left">3. Start Flower SuperLink/SuperNodes</td>
-<td align="left">federated_run_id = 12031893148505455123</td>
+<td align="left">federated_run_id = 8904418686476332073</td>
 </tr>
 <tr class="even">
 <td align="left">4. Run federated training</td>
-<td align="left">rounds = 1 | federated_loss = 0.6415 | client_failures
+<td align="left">rounds = 1 | federated_loss = 0.6503 | client_failures
 = 0.0000</td>
 </tr>
 <tr class="odd">
@@ -375,11 +377,11 @@ sandbox_open</td>
 <span>  sep <span class="op">=</span> <span class="st">''</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; [dsFlower] DataSHIELD login: 3 nodes</span></span>
-<span><span class="co">#&gt; [dsFlower] table paths: dsflower_demo.method_validation_20260512162133_site1 | dsflower_demo.method_validation_20260512162133_site2 | dsflower_demo.method_validation_20260512162133_site3</span></span>
+<span><span class="co">#&gt; [dsFlower] table paths: dsflower_demo.method_validation_20260511181239_site1 | dsflower_demo.method_validation_20260511181239_site2 | dsflower_demo.method_validation_20260511181239_site3</span></span>
 <span><span class="co">#&gt; [dsFlower] model: pytorch_multilabel | strategy: fedavg | rounds: 1</span></span>
-<span><span class="co">#&gt; [dsFlower] run id: 12031893148505455123</span></span>
+<span><span class="co">#&gt; [dsFlower] run id: 8904418686476332073</span></span>
 <span><span class="co">#&gt; [Flower] aggregate_fit/evaluate: clients=3 failures=0.0000</span></span>
-<span><span class="co">#&gt; [Flower] final federated loss: 0.6415</span></span>
+<span><span class="co">#&gt; [Flower] final federated loss: 0.6503</span></span>
 <span><span class="co">#&gt; [cleanup] status: ok</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">acceptance_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -410,7 +412,7 @@ sandbox_open</td>
 </tr></thead>
 <tbody><tr class="odd">
 <td align="right">0.5933</td>
-<td align="right">0.6415</td>
+<td align="right">0.6503</td>
 <td align="right">1.7332</td>
 <td align="right">0</td>
 <td align="left">TRUE</td>

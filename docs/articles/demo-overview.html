@@ -38,8 +38,10 @@
     <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
   </ul>
@@ -89,7 +91,9 @@ resulting federated model.</p>
 <span>    <span class="st">"MedMNIST Benchmark"</span>,</span>
 <span>    <span class="st">"Radiomics Benchmark"</span>,</span>
 <span>    <span class="st">"Radiomics To Flower"</span>,</span>
-<span>    <span class="st">"Direct Image ResNet"</span>,</span>
+<span>    <span class="st">"Direct Image ResNet Smoke Demo"</span>,</span>
+<span>    <span class="st">"LUNG1 Direct dsImaging Image Evidence"</span>,</span>
+<span>    <span class="st">"LUNG1 dsImaging Radiomics Evidence"</span>,</span>
 <span>    <span class="st">"Method Validation Suite"</span>,</span>
 <span>    <span class="st">"Vision Method Validation"</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -100,6 +104,8 @@ resulting federated model.</p>
 <span>    <span class="st">"demo-lung1-radiomics.html"</span>,</span>
 <span>    <span class="st">"radiomics-to-flower.html"</span>,</span>
 <span>    <span class="st">"direct-image-resnet.html"</span>,</span>
+<span>    <span class="st">"lung1-direct-image-dsimaging-resnet.html"</span>,</span>
+<span>    <span class="st">"lung1-radiomics-to-flower.html"</span>,</span>
 <span>    <span class="st">"validation-overview.html"</span>,</span>
 <span>    <span class="st">"validation-vision-overview.html"</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -108,19 +114,23 @@ resulting federated model.</p>
 <span>    <span class="st">"UCI Cleveland or deterministic fallback"</span>,</span>
 <span>    <span class="st">"BreastMNIST pooled image features"</span>,</span>
 <span>    <span class="st">"LUNG1-style radiomics features"</span>,</span>
+<span>    <span class="st">"deterministic LUNG1-style derived radiomics fixture"</span>,</span>
+<span>    <span class="st">"Synthetic PNG image resource"</span>,</span>
+<span>    <span class="st">"dsImaging direct LUNG1 NIfTI resource"</span>,</span>
 <span>    <span class="st">"dsImaging-derived LUNG1 radiomics table"</span>,</span>
-<span>    <span class="st">"dsImaging direct NIfTI image resource"</span>,</span>
 <span>    <span class="st">"Synthetic tabular/sequence/survival cohort"</span>,</span>
 <span>    <span class="st">"Synthetic PNG image/mask cohort"</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span><span class="op">)</span>,</span>
+<span>  sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span><span class="op">)</span>,</span>
 <span>  central_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"AUC 0.9878"</span>,</span>
 <span>    <span class="st">"AUC 0.8919"</span>,</span>
 <span>    <span class="st">"AUC 0.7654"</span>,</span>
 <span>    <span class="st">"AUC 0.7217"</span>,</span>
-<span>    <span class="st">"not applicable"</span>,</span>
+<span>    <span class="st">"AUC 0.7217"</span>,</span>
+<span>    <span class="st">"loss 0.5605"</span>,</span>
 <span>    <span class="st">"loss 0.5540"</span>,</span>
+<span>    <span class="st">"not applicable"</span>,</span>
 <span>    <span class="st">"17/17 methods pass"</span>,</span>
 <span>    <span class="st">"3/3 methods pass"</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -129,24 +139,26 @@ resulting federated model.</p>
 <span>    <span class="st">"AUC 0.8926"</span>,</span>
 <span>    <span class="st">"AUC 0.7985"</span>,</span>
 <span>    <span class="st">"AUC 0.7205"</span>,</span>
-<span>    <span class="st">"loss 0.6503 -&gt; 0.6474"</span>,</span>
+<span>    <span class="st">"AUC 0.7205"</span>,</span>
+<span>    <span class="st">"loss 0.6322"</span>,</span>
 <span>    <span class="st">"loss 0.5847"</span>,</span>
+<span>    <span class="st">"loss 0.6503 -&gt; 0.6474"</span>,</span>
 <span>    <span class="st">"17/17 acceptable"</span>,</span>
 <span>    <span class="st">"3/3 acceptable"</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  failures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
+<span>  failures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
 <span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">demo_results</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="16%">
 <col width="20%">
+<col width="21%">
 <col width="27%">
 <col width="3%">
-<col width="12%">
-<col width="14%">
-<col width="5%">
+<col width="10%">
+<col width="11%">
+<col width="4%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">demo</th>
@@ -197,19 +209,38 @@ resulting federated model.</p>
 <tr class="odd">
 <td align="left">Radiomics To Flower</td>
 <td align="left">radiomics-to-flower.html</td>
+<td align="left">deterministic LUNG1-style derived radiomics
+fixture</td>
+<td align="right">3</td>
+<td align="left">AUC 0.7217</td>
+<td align="left">AUC 0.7205</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">Direct Image ResNet Smoke Demo</td>
+<td align="left">direct-image-resnet.html</td>
+<td align="left">Synthetic PNG image resource</td>
+<td align="right">3</td>
+<td align="left">loss 0.5605</td>
+<td align="left">loss 0.6322</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">LUNG1 Direct dsImaging Image Evidence</td>
+<td align="left">lung1-direct-image-dsimaging-resnet.html</td>
+<td align="left">dsImaging direct LUNG1 NIfTI resource</td>
+<td align="right">3</td>
+<td align="left">loss 0.5540</td>
+<td align="left">loss 0.5847</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">LUNG1 dsImaging Radiomics Evidence</td>
+<td align="left">lung1-radiomics-to-flower.html</td>
 <td align="left">dsImaging-derived LUNG1 radiomics table</td>
 <td align="right">3</td>
 <td align="left">not applicable</td>
 <td align="left">loss 0.6503 -&gt; 0.6474</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">Direct Image ResNet</td>
-<td align="left">direct-image-resnet.html</td>
-<td align="left">dsImaging direct NIfTI image resource</td>
-<td align="right">3</td>
-<td align="left">loss 0.5540</td>
-<td align="left">loss 0.5847</td>
 <td align="right">0</td>
 </tr>
 <tr class="odd">
@@ -244,6 +275,10 @@ resulting federated model.</p>
 <li><a href="demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
 <li><a href="radiomics-to-flower.html">Radiomics To Flower</a></li>
 <li><a href="direct-image-resnet.html">Direct Image ResNet</a></li>
+<li><a href="lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct
+dsImaging Image Evidence</a></li>
+<li><a href="lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics
+Evidence</a></li>
 <li><a href="validation-overview.html">All Method Validation
 Overview</a></li>
 <li><a href="validation-vision-overview.html">Vision Method Validation

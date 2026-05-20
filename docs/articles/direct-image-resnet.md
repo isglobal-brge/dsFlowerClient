@@ -10,7 +10,7 @@ live <- identical(tolower(Sys.getenv("DSFLOWER_RENDER_LIVE_VIGNETTES")), "true")
 cat("Live Opal/DataSHIELD execution:", live, "\n")
 ```
 
-    ## Live Opal/DataSHIELD execution: TRUE
+    ## Live Opal/DataSHIELD execution: FALSE
 
 This vignette is a complete direct-image dsFlower run. It creates
 synthetic PNG images on the client machine, copies each site’s files
@@ -77,9 +77,9 @@ data.frame(
 #> 2 opal2 https://localhost:8444 dsflower_demo
 #> 3 opal3 https://localhost:8445 dsflower_demo
 #>                          upload_prefix rock_container
-#> 1 vignette_direct_image_20260513031406     opal1-rock
-#> 2 vignette_direct_image_20260513031406     opal2-rock
-#> 3 vignette_direct_image_20260513031406     opal3-rock
+#> 1 vignette_direct_image_20260520134731     opal1-rock
+#> 2 vignette_direct_image_20260520134731     opal2-rock
+#> 3 vignette_direct_image_20260520134731     opal3-rock
 #>                 server_image_root
 #> 1 /tmp/dsflower_direct_image_demo
 #> 2 /tmp/dsflower_direct_image_demo
@@ -160,9 +160,9 @@ samples_csv <- file.path(local_root, "pooled_samples.csv")
 utils::write.csv(pooled, samples_csv, row.names = FALSE)
 
 cat("[data] local image root:", normalizePath(local_root, mustWork = FALSE), "\n")
-#> [data] local image root: /private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpjoRPOm/dsflower_direct_image_demo
+#> [data] local image root: /private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp6hXLdW/dsflower_direct_image_demo
 cat("[data] pooled samples CSV:", samples_csv, "\n")
-#> [data] pooled samples CSV: /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//RtmpjoRPOm/dsflower_direct_image_demo/pooled_samples.csv
+#> [data] pooled samples CSV: /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//Rtmp6hXLdW/dsflower_direct_image_demo/pooled_samples.csv
 do.call(rbind, lapply(seq_along(site_tables), function(i) {
   data.frame(
     site = paste0("opal", i),
@@ -302,11 +302,7 @@ run_central_resnet <- function(samples, image_root, size, epochs = 1L) {
 }
 
 central <- run_central_resnet(samples_csv, local_root, image_size, epochs = 1L)
-#> [centralized] engine: PyTorch ResNet-18
-#> [centralized] samples: 12
-#> [centralized] device: cpu
-#> [centralized] loss: 0.493180
-#> [centralized] accuracy: 1.000000
+#> [non-live render] using committed direct-image validation output
 data.frame(
   engine = "local PyTorch ResNet-18",
   samples = central$n_samples,
@@ -314,8 +310,8 @@ data.frame(
   loss = central$loss,
   accuracy = central$accuracy
 )
-#>                    engine samples device      loss accuracy
-#> 1 local PyTorch ResNet-18      12    cpu 0.4931796        1
+#>                    engine samples   device   loss accuracy
+#> 1 local PyTorch ResNet-18      12 recorded 0.5605      0.5
 ```
 
 ## 4. Upload Metadata, Stage Files, And Run dsFlower
@@ -514,67 +510,13 @@ if (live) {
   post_caps <- replicate(n_sites, list(active_supernodes = 0L), simplify = FALSE)
   cat("[non-live render] using committed direct-image validation output\n")
 }
-#> [copy] site 1 -> opal1-rock : /tmp/dsflower_direct_image_demo 
-#> [copy] site 2 -> opal2-rock : /tmp/dsflower_direct_image_demo 
-#> [copy] site 3 -> opal3-rock : /tmp/dsflower_direct_image_demo
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8443 -> dsflower_demo.vignette_direct_image_20260513031406_site1
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8444 -> dsflower_demo.vignette_direct_image_20260513031406_site2
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8445 -> dsflower_demo.vignette_direct_image_20260513031406_site3
-#> 
-#> Logging into the collaborating servers
-#> [DataSHIELD] connected nodes: 3
-#> SuperLink started (PID: 20760)
-#>   Fleet API (SuperNodes): 127.0.0.1:9092
-#>   Control API (flwr run): 127.0.0.1:9093
-#>   opal1: SuperLink reachable at host.docker.internal:9092
-#>   opal2: SuperLink reachable at host.docker.internal:9092
-#>   opal3: SuperLink reachable at host.docker.internal:9092
-#>   opal1: SuperNode connected
-#>   opal2: SuperNode connected
-#>   opal3: SuperNode connected
-#>   Code verification passed on all servers
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpjoRPOm/dsflower_app/pytorch_resnet18/pyproject.toml':
-#> - Recommended property "description" missing in [project]
-#> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 11179191229769106627
-#> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed pytorch_resnet18 to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpjoRPOm/dsflower_superlink/apps/dsflower.pytorch_resnet18.0.1.0.5eda836e.
-#> INFO :      Starting Flower ServerApp, config: num_rounds=1, no round_timeout
-#> INFO :      
-#> INFO :      [INIT]
-#> INFO :      Requesting initial parameters from one random client
-#> INFO :      Received initial parameters from one random client
-#> INFO :      Starting evaluation of initial global parameters
-#> INFO :      Evaluation returned no results (`None`)
-#> INFO :      
-#> INFO :      [ROUND 1]
-#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_fit: received 3 results and 0 failures
-#> WARNING :   No fit_metrics_aggregation_fn provided
-#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_evaluate: received 3 results and 0 failures
-#> WARNING :   No evaluate_metrics_aggregation_fn provided
-#> INFO :      
-#> INFO :      [SUMMARY]
-#> INFO :      Run finished 1 round(s) in 123.57s
-#> INFO :       History (loss, distributed):
-#> INFO :           round 1: 0.6399528135855993
-#> INFO :      
-#> INFO :
-#> Model saved to ./dsflower_output/pytorch_resnet18_FedAvg_1r_20260513_031750
-#> SuperLink stopped.
+#> [non-live render] using committed direct-image validation output
 
 cat("[dsFlower] output_dir:", output_dir, "\n")
-#> [dsFlower] output_dir: ./dsflower_output/pytorch_resnet18_FedAvg_1r_20260513_031750
+#> [dsFlower] output_dir: recorded dsflower_vision_validation_results.json
 print(history)
-#>   round      loss n_clients n_failures
-#> 1     1 0.6399528         3          0
+#>   round   loss n_failures
+#> 1     1 0.5399          0
 ```
 
 ## 5. Compare Centralized vs Federated Output
@@ -606,8 +548,8 @@ knitr::kable(comparison, digits = 4)
 
 | run | engine | samples | sites_or_clients | rounds_or_epochs | loss | accuracy | client_failures |
 |:---|:---|---:|---:|---:|---:|---:|---:|
-| centralized local | PyTorch ResNet-18 | 12 | 1 | 1 | 0.4932 | 1 | NA |
-| federated dsFlower | DataSHIELD + Flower ResNet-18 | 12 | 3 | 1 | 0.6400 | NA | 0 |
+| centralized local | PyTorch ResNet-18 | 12 | 1 | 1 | 0.5605 | 0.5 | NA |
+| federated dsFlower | DataSHIELD + Flower ResNet-18 | 12 | 3 | 1 | 0.5399 | NA | 0 |
 
 ``` r
 
@@ -620,9 +562,9 @@ pass <- is.finite(federated_loss) &&
   (length(active_supernodes) == 0L || all(active_supernodes == 0L))
 
 cat("[acceptance] centralized loss:", sprintf("%.6f", as.numeric(central$loss)), "\n")
-#> [acceptance] centralized loss: 0.493180
+#> [acceptance] centralized loss: 0.560500
 cat("[acceptance] federated loss:", sprintf("%.6f", federated_loss), "\n")
-#> [acceptance] federated loss: 0.639953
+#> [acceptance] federated loss: 0.539900
 cat("[acceptance] allowed absolute margin:", sprintf("%.6f", max_loss_margin), "\n")
 #> [acceptance] allowed absolute margin: 0.500000
 cat("[acceptance] Flower client failures:", failure_count, "\n")

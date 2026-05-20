@@ -29,8 +29,8 @@ knitr::kable(summary_table)
 
 | suite | generated_at | privacy_profile | n_sites | n_total | secagg_supported |
 |:---|:---|:---|---:|---:|:---|
-| tabular_sequence_survival | 2026-05-12T16:48:18+0200 | sandbox_open | 3 | 270 | FALSE |
-| vision | 2026-05-12T14:54:38.270Z | sandbox_open | 3 | 12 | NA |
+| tabular_sequence_survival | 2026-05-11T18:45:11+0200 | sandbox_open | 3 | 270 | FALSE |
+| vision | 2026-05-11T14:01:13.113Z | sandbox_open | 3 | 12 | NA |
 
 ``` r
 
@@ -39,26 +39,32 @@ knitr::kable(results)
 
 | suite | method | task | centralized_metric | centralized_loss | federated_status | federated_loss | delta_loss | acceptable_loss | validation_status |
 |:---|:---|:---|:---|---:|:---|---:|---:|:---|:---|
-| tabular_sequence_survival | sklearn_logreg | classification | log_loss | 0.2051486 | ok | 0.2334913 | 0.0283427 | TRUE | pass |
+| tabular_sequence_survival | sklearn_logreg | classification | log_loss | 0.2051486 | ok | 0.2334975 | 0.0283488 | TRUE | pass |
 | tabular_sequence_survival | sklearn_ridge | classification | ridge_decision_mse | 0.4977802 | ok | 0.5091765 | 0.0113963 | TRUE | pass |
-| tabular_sequence_survival | sklearn_sgd | classification | log_loss | 0.1955451 | ok | 0.2008949 | 0.0053498 | TRUE | pass |
-| tabular_sequence_survival | sklearn_svm | classification | hinge_loss | 0.8285259 | ok | 1.8000502 | 0.9715243 | TRUE | pass |
-| tabular_sequence_survival | sklearn_elastic_net | classification | log_loss | 0.1964865 | ok | 0.2000316 | 0.0035451 | TRUE | pass |
-| tabular_sequence_survival | pytorch_logreg | classification | binary_cross_entropy | 0.6188036 | ok | 0.6002623 | -0.0185413 | TRUE | pass |
-| tabular_sequence_survival | pytorch_mlp | classification | binary_cross_entropy | 0.7006344 | ok | 0.6847426 | -0.0158919 | TRUE | pass |
-| tabular_sequence_survival | pytorch_linear_regression | regression | mse | 3.2117758 | ok | 3.5989498 | 0.3871740 | TRUE | pass |
-| tabular_sequence_survival | pytorch_multiclass | classification | cross_entropy | 0.9693452 | ok | 0.9260484 | -0.0432968 | TRUE | pass |
-| tabular_sequence_survival | pytorch_multilabel | classification | multilabel_bce | 0.5932636 | ok | 0.6415418 | 0.0482783 | TRUE | pass |
-| tabular_sequence_survival | pytorch_poisson | regression | poisson_nll | 0.8903766 | ok | 1.0228395 | 0.1324629 | TRUE | pass |
-| tabular_sequence_survival | pytorch_coxph | survival | cox_partial_likelihood | 4.8610749 | ok | 2.6362184 | -2.2248566 | TRUE | pass |
-| tabular_sequence_survival | pytorch_lognormal_aft | survival | lognormal_aft_nll | 3.4966099 | ok | 3.6048540 | 0.1082441 | TRUE | pass |
-| tabular_sequence_survival | pytorch_cause_specific_cox | survival | cause_specific_cox_loss | 4.6180305 | ok | 2.4723849 | -2.1456457 | TRUE | pass |
-| tabular_sequence_survival | pytorch_lstm | classification | binary_cross_entropy | 0.6957106 | ok | 0.6933520 | -0.0023586 | TRUE | pass |
-| tabular_sequence_survival | pytorch_tcn | classification | binary_cross_entropy | 0.6658388 | ok | 0.6879575 | 0.0221187 | TRUE | pass |
+| tabular_sequence_survival | sklearn_sgd | classification | log_loss | 0.1955451 | ok | 0.2010754 | 0.0055303 | TRUE | pass |
+| tabular_sequence_survival | sklearn_svm | classification | hinge_loss | 0.8285259 | ok | 1.0934755 | 0.2649496 | TRUE | pass |
+| tabular_sequence_survival | sklearn_elastic_net | classification | log_loss | 0.1964865 | ok | 0.1999917 | 0.0035052 | TRUE | pass |
+| tabular_sequence_survival | pytorch_logreg | classification | binary_cross_entropy | 0.6188036 | ok | 0.6153246 | -0.0034790 | TRUE | pass |
+| tabular_sequence_survival | pytorch_mlp | classification | binary_cross_entropy | 0.7006344 | ok | 0.6729940 | -0.0276404 | TRUE | pass |
+| tabular_sequence_survival | pytorch_linear_regression | regression | mse | 3.2117758 | ok | 3.2979894 | 0.0862137 | TRUE | pass |
+| tabular_sequence_survival | pytorch_multiclass | classification | cross_entropy | 0.9693452 | ok | 1.1560042 | 0.1866590 | TRUE | pass |
+| tabular_sequence_survival | pytorch_multilabel | classification | multilabel_bce | 0.5932636 | ok | 0.6503268 | 0.0570632 | TRUE | pass |
+| tabular_sequence_survival | pytorch_poisson | regression | poisson_nll | 0.8903766 | ok | 1.2140644 | 0.3236878 | TRUE | pass |
+| tabular_sequence_survival | pytorch_coxph | survival | cox_partial_likelihood | 4.8610749 | ok | 2.7456091 | -2.1154658 | TRUE | pass |
+| tabular_sequence_survival | pytorch_lognormal_aft | survival | lognormal_aft_nll | 3.4966099 | ok | 3.6833530 | 0.1867431 | TRUE | pass |
+| tabular_sequence_survival | pytorch_cause_specific_cox | survival | cause_specific_cox_loss | 4.6180305 | ok | 2.6027638 | -2.0152668 | TRUE | pass |
+| tabular_sequence_survival | pytorch_lstm | classification | binary_cross_entropy | 0.6957106 | ok | 0.6962039 | 0.0004933 | TRUE | pass |
+| tabular_sequence_survival | pytorch_tcn | classification | binary_cross_entropy | 0.6658388 | ok | 0.6795301 | 0.0136913 | TRUE | pass |
 | tabular_sequence_survival | xgboost | classification | log_loss | 0.4348304 | ok | 0.6931472 | 0.2583168 | TRUE | pass |
-| vision | pytorch_resnet18 | classification | cross_entropy | 0.5605000 | ok | 0.6322000 | 0.0717000 | TRUE | pass |
-| vision | pytorch_densenet121 | classification | cross_entropy | 0.6033000 | ok | 0.8186000 | 0.2152000 | TRUE | pass |
-| vision | pytorch_unet2d | segmentation | dice_bce_loss | 1.3099000 | ok | 1.3597000 | 0.0499000 | TRUE | pass |
+| vision | pytorch_resnet18 | classification | cross_entropy | 0.5605000 | ok | 0.5399000 | -0.0206000 | TRUE | pass |
+| vision | pytorch_densenet121 | classification | cross_entropy | 0.6033000 | ok | 0.9373000 | 0.3339000 | TRUE | pass |
+| vision | pytorch_unet2d | segmentation | dice_bce_loss | 1.3099000 | ok | 1.4397000 | 0.1298000 | TRUE | pass |
+| vision | pytorch_resnet18 | classification | cross_entropy | 0.5605000 | ok | 0.5399000 | -0.0206000 | TRUE | pass |
+| vision | pytorch_densenet121 | classification | cross_entropy | 0.6033000 | ok | 0.9373000 | 0.3339000 | TRUE | pass |
+| vision | pytorch_unet2d | segmentation | dice_bce_loss | 1.3099000 | ok | 1.4397000 | 0.1298000 | TRUE | pass |
+| vision | pytorch_resnet18 | classification | cross_entropy | 0.5605000 | ok | 0.5399000 | -0.0206000 | TRUE | pass |
+| vision | pytorch_densenet121 | classification | cross_entropy | 0.6033000 | ok | 0.9373000 | 0.3339000 | TRUE | pass |
+| vision | pytorch_unet2d | segmentation | dice_bce_loss | 1.3099000 | ok | 1.4397000 | 0.1298000 | TRUE | pass |
 
 ``` r
 

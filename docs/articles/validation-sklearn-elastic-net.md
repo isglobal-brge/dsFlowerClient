@@ -108,10 +108,10 @@ knitr::kable(input_trace)
 | 2\. Split across sites | 3 sites x 90 rows per site |
 | 3\. Select task target | outcome |
 | 4\. Select model features | 12 features: x1..x12 |
-| 5\. Materialize Opal tables | dsflower_demo.method_validation_20260512162133_site1 |
+| 5\. Materialize Opal tables | dsflower_demo.method_validation_20260511181239_site1 |
 
-dsflower_demo.method_validation_20260512162133_site2
-dsflower_demo.method_validation_20260512162133_site3 \|
+dsflower_demo.method_validation_20260511181239_site2
+dsflower_demo.method_validation_20260511181239_site3 \|
 
 ``` r
 
@@ -186,7 +186,7 @@ knitr::kable(dsflower_output)
 |:---|:---|
 | 1\. Login through DataSHIELD | 3 Opal/Rock nodes connected |
 | 2\. Prepare server-side dsFlower nodes | template = sklearn_elastic_net \| privacy = sandbox_open |
-| 3\. Start Flower SuperLink/SuperNodes | federated_run_id = 1327604402382892628 |
+| 3\. Start Flower SuperLink/SuperNodes | federated_run_id = 14263938729917282557 |
 | 4\. Run federated training | rounds = 1 \| federated_loss = 0.2000 \| client_failures = 0.0000 |
 | 5\. Collect metrics and cleanup | federated_status = ok \| validation_status = pass |
 
@@ -205,9 +205,9 @@ cat(
   sep = ''
 )
 #> [dsFlower] DataSHIELD login: 3 nodes
-#> [dsFlower] table paths: dsflower_demo.method_validation_20260512162133_site1 | dsflower_demo.method_validation_20260512162133_site2 | dsflower_demo.method_validation_20260512162133_site3
+#> [dsFlower] table paths: dsflower_demo.method_validation_20260511181239_site1 | dsflower_demo.method_validation_20260511181239_site2 | dsflower_demo.method_validation_20260511181239_site3
 #> [dsFlower] model: sklearn_elastic_net | strategy: fedavg | rounds: 1
-#> [dsFlower] run id: 1327604402382892628
+#> [dsFlower] run id: 14263938729917282557
 #> [Flower] aggregate_fit/evaluate: clients=3 failures=0.0000
 #> [Flower] final federated loss: 0.2000
 #> [cleanup] status: ok

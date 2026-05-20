@@ -10,7 +10,7 @@ live <- identical(tolower(Sys.getenv("DSFLOWER_RENDER_LIVE_VIGNETTES")), "true")
 cat("Live Opal/DataSHIELD execution:", live, "\n")
 ```
 
-    ## Live Opal/DataSHIELD execution: TRUE
+    ## Live Opal/DataSHIELD execution: FALSE
 
 This vignette shows the downstream handoff from `dsImaging` to
 `dsFlowerClient`. The imaging package owns CT segmentation and radiomics
@@ -48,9 +48,9 @@ data.frame(
 #> 2 opal2 https://localhost:8444 dsflower_demo
 #> 3 opal3 https://localhost:8445 dsflower_demo
 #>                               upload_prefix
-#> 1 vignette_radiomics_handoff_20260513031815
-#> 2 vignette_radiomics_handoff_20260513031815
-#> 3 vignette_radiomics_handoff_20260513031815
+#> 1 vignette_radiomics_handoff_20260520134738
+#> 2 vignette_radiomics_handoff_20260520134738
+#> 3 vignette_radiomics_handoff_20260520134738
 ```
 
 ## 2. Build Or Load A Derived Radiomics Table
@@ -339,72 +339,14 @@ if (live) {
   post_caps <- replicate(n_sites, list(active_supernodes = 0L), simplify = FALSE)
   cat("[non-live render] using committed output from the last live equivalent run\n")
 }
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8443 -> dsflower_demo.vignette_radiomics_handoff_20260513031815_site1
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8444 -> dsflower_demo.vignette_radiomics_handoff_20260513031815_site2
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8445 -> dsflower_demo.vignette_radiomics_handoff_20260513031815_site3
-#> 
-#> Logging into the collaborating servers
-#> [DataSHIELD] connected nodes: 3
-#> SuperLink started (PID: 21666)
-#>   Fleet API (SuperNodes): 127.0.0.1:9092
-#>   Control API (flwr run): 127.0.0.1:9093
-#>   opal1: SuperLink reachable at host.docker.internal:9092
-#>   opal2: SuperLink reachable at host.docker.internal:9092
-#>   opal3: SuperLink reachable at host.docker.internal:9092
-#>   opal1: SuperNode connected
-#>   opal2: SuperNode connected
-#>   opal3: SuperNode connected
-#>   Code verification passed on all servers
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpIcx60D/dsflower_app/sklearn_logreg/pyproject.toml':
-#> - Recommended property "description" missing in [project]
-#> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 5347349380240008512
-#> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpIcx60D/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.0bcdeec6.
-#> INFO :      Starting Flower ServerApp, config: num_rounds=2, no round_timeout
-#> INFO :      
-#> INFO :      [INIT]
-#> INFO :      Requesting initial parameters from one random client
-#> INFO :      Received initial parameters from one random client
-#> INFO :      Starting evaluation of initial global parameters
-#> INFO :      Evaluation returned no results (`None`)
-#> INFO :      
-#> INFO :      [ROUND 1]
-#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_fit: received 3 results and 0 failures
-#> WARNING :   No fit_metrics_aggregation_fn provided
-#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_evaluate: received 3 results and 0 failures
-#> WARNING :   No evaluate_metrics_aggregation_fn provided
-#> INFO :      
-#> INFO :      [ROUND 2]
-#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_fit: received 3 results and 0 failures
-#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_evaluate: received 3 results and 0 failures
-#> INFO :      
-#> INFO :      [SUMMARY]
-#> INFO :      Run finished 2 round(s) in 58.52s
-#> INFO :       History (loss, distributed):
-#> INFO :           round 1: 0.5401713538686527
-#> INFO :           round 2: 0.5401704271003624
-#> INFO :      
-#> INFO :
-#> Model saved to ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_032047
-#> SuperLink stopped.
+#> [non-live render] using committed output from the last live equivalent run
 
 cat("[dsFlower] output_dir:", output_dir, "\n")
-#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_032047
+#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_162114
 print(history)
-#>   round      loss n_clients n_failures
-#> 1     1 0.5401714         3          0
-#> 2     2 0.5401704         3          0
+#>   round   loss n_clients n_failures
+#> 1     1 0.5904         3          0
+#> 2     2 0.5904         3          0
 ```
 
 ## 6. Compare Centralized vs dsFlower
@@ -422,10 +364,10 @@ knitr::kable(comparison, digits = 4)
 
 |          | metric   | centralized | dsFlower |   delta |
 |:---------|:---------|------------:|---------:|--------:|
-| auc      | auc      |      0.7375 |   0.7308 | -0.0066 |
-| accuracy | accuracy |      0.7788 |   0.7692 | -0.0096 |
-| log_loss | log_loss |      0.5521 |   0.5547 |  0.0027 |
-| brier    | brier    |      0.1798 |   0.1809 |  0.0011 |
+| auc      | auc      |      0.7375 |   0.7205 | -0.0170 |
+| accuracy | accuracy |      0.7788 |   0.6635 | -0.1153 |
+| log_loss | log_loss |      0.5521 |   0.6175 |  0.0654 |
+| brier    | brier    |      0.1798 |   0.2135 |  0.0337 |
 
 ``` r
 

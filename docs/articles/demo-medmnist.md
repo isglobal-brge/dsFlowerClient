@@ -10,7 +10,7 @@ live <- identical(tolower(Sys.getenv("DSFLOWER_RENDER_LIVE_VIGNETTES")), "true")
 cat("Live Opal/DataSHIELD execution:", live, "\n")
 ```
 
-    ## Live Opal/DataSHIELD execution: TRUE
+    ## Live Opal/DataSHIELD execution: FALSE
 
 This vignette is a complete image-origin federated benchmark. It loads
 BreastMNIST images, average-pools each image into a compact `7 x 7`
@@ -37,9 +37,9 @@ data.frame(
   upload_prefix = table_prefix
 )
 #>    node                    url       project                    upload_prefix
-#> 1 opal1 https://localhost:8443 dsflower_demo vignette_medmnist_20260513031159
-#> 2 opal2 https://localhost:8444 dsflower_demo vignette_medmnist_20260513031159
-#> 3 opal3 https://localhost:8445 dsflower_demo vignette_medmnist_20260513031159
+#> 1 opal1 https://localhost:8443 dsflower_demo vignette_medmnist_20260520134728
+#> 2 opal2 https://localhost:8444 dsflower_demo vignette_medmnist_20260520134728
+#> 3 opal3 https://localhost:8445 dsflower_demo vignette_medmnist_20260520134728
 ```
 
 ## 2. Load Images And Build A Server-Side Feature Table
@@ -126,7 +126,7 @@ data.frame(
   class_1 = sum(dataset$outcome == 1L)
 )
 #>   rows features class_0 class_1
-#> 1  510       49     210     300
+#> 1  510       49     255     255
 ```
 
 ## 3. Split, Standardize, And Train Centralized Baseline
@@ -186,19 +186,19 @@ central_probs <- as.numeric(stats::predict(
 central_metrics <- binary_metrics(test$outcome, central_probs)
 
 cat("[centralized] rows:", nrow(train), "train /", nrow(test), "test\n")
-#> [centralized] rows: 383 train / 127 test
+#> [centralized] rows: 384 train / 126 test
 cat("[centralized] model: stats::glm(binomial)\n")
 #> [centralized] model: stats::glm(binomial)
 cat("[centralized] AUC:", sprintf("%.4f", central_metrics$auc), "\n")
-#> [centralized] AUC: 0.7654
+#> [centralized] AUC: 0.5117
 cat("[centralized] accuracy:", sprintf("%.4f", central_metrics$accuracy), "\n")
-#> [centralized] accuracy: 0.6929
+#> [centralized] accuracy: 0.5238
 data.frame(metric = names(central_metrics), value = unlist(central_metrics), row.names = NULL)
 #>     metric     value
-#> 1      auc 0.7653846
-#> 2 accuracy 0.6929134
-#> 3 log_loss 0.6140278
-#> 4    brier 0.1990365
+#> 1      auc 0.5117158
+#> 2 accuracy 0.5238095
+#> 3 log_loss 0.7701551
+#> 4    brier 0.2807132
 ```
 
 ## 4. Partition The Training Rows Across Sites
@@ -232,9 +232,9 @@ do.call(rbind, lapply(seq_along(site_tables), function(i) {
   )
 }))
 #>    site rows class_0 class_1
-#> 1 opal1  128      53      75
-#> 2 opal2  128      53      75
-#> 3 opal3  127      52      75
+#> 1 opal1  128      64      64
+#> 2 opal2  128      64      64
+#> 3 opal3  128      64      64
 ```
 
 ## 5. Upload Tables, Run dsFlower, And Show Flower Output
@@ -322,72 +322,14 @@ if (live) {
   post_caps <- replicate(n_sites, list(active_supernodes = 0L), simplify = FALSE)
   cat("[non-live render] using committed output from the last live vignette-equivalent run\n")
 }
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8443 -> dsflower_demo.vignette_medmnist_20260513031159_site1
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8444 -> dsflower_demo.vignette_medmnist_20260513031159_site2
-#> Warning in opalr::opal.table_save(opal, site_tables[[i]], project =
-#> opal_project, : Coercing data.frame to a tibble...
-#> [upload] https://localhost:8445 -> dsflower_demo.vignette_medmnist_20260513031159_site3
-#> 
-#> Logging into the collaborating servers
-#> [DataSHIELD] connected nodes: 3
-#> SuperLink started (PID: 20232)
-#>   Fleet API (SuperNodes): 127.0.0.1:9092
-#>   Control API (flwr run): 127.0.0.1:9093
-#>   opal1: SuperLink reachable at host.docker.internal:9092
-#>   opal2: SuperLink reachable at host.docker.internal:9092
-#>   opal3: SuperLink reachable at host.docker.internal:9092
-#>   opal1: SuperNode connected
-#>   opal2: SuperNode connected
-#>   opal3: SuperNode connected
-#>   Code verification passed on all servers
-#> Flower App configuration warnings in '/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpeA8ygV/dsflower_app/sklearn_logreg/pyproject.toml':
-#> - Recommended property "description" missing in [project]
-#> - Recommended property "license" missing in [project]
-#> 🎊 Successfully started run 6010943921928717005
-#> INFO :      Start `flwr-serverapp` process
-#> 🎊 Successfully installed sklearn_logreg to /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpeA8ygV/dsflower_superlink/apps/dsflower.sklearn_logreg.0.1.0.c31fd307.
-#> INFO :      Starting Flower ServerApp, config: num_rounds=2, no round_timeout
-#> INFO :      
-#> INFO :      [INIT]
-#> INFO :      Requesting initial parameters from one random client
-#> INFO :      Received initial parameters from one random client
-#> INFO :      Starting evaluation of initial global parameters
-#> INFO :      Evaluation returned no results (`None`)
-#> INFO :      
-#> INFO :      [ROUND 1]
-#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_fit: received 3 results and 0 failures
-#> WARNING :   No fit_metrics_aggregation_fn provided
-#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_evaluate: received 3 results and 0 failures
-#> WARNING :   No evaluate_metrics_aggregation_fn provided
-#> INFO :      
-#> INFO :      [ROUND 2]
-#> INFO :      configure_fit: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_fit: received 3 results and 0 failures
-#> INFO :      configure_evaluate: strategy sampled 3 clients (out of 3)
-#> INFO :      aggregate_evaluate: received 3 results and 0 failures
-#> INFO :      
-#> INFO :      [SUMMARY]
-#> INFO :      Run finished 2 round(s) in 50.61s
-#> INFO :       History (loss, distributed):
-#> INFO :           round 1: 0.5105337237160136
-#> INFO :           round 2: 0.5105573796111625
-#> INFO :      
-#> INFO :
-#> Model saved to ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_031351
-#> SuperLink stopped.
+#> [non-live render] using committed output from the last live vignette-equivalent run
 
 cat("[dsFlower] output_dir:", output_dir, "\n")
-#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260513_031351
+#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161917
 print(history)
-#>   round      loss n_clients n_failures
-#> 1     1 0.5105337         3          0
-#> 2     2 0.5105574         3          0
+#>   round   loss n_clients n_failures
+#> 1     1 0.5105         3          0
+#> 2     2 0.5106         3          0
 ```
 
 ## 6. Compare Centralized vs dsFlower
@@ -405,10 +347,10 @@ knitr::kable(comparison, digits = 4)
 
 |          | metric   | centralized | dsFlower |   delta |
 |:---------|:---------|------------:|---------:|--------:|
-| auc      | auc      |      0.7654 |   0.7985 |  0.0331 |
-| accuracy | accuracy |      0.6929 |   0.7165 |  0.0236 |
-| log_loss | log_loss |      0.6140 |   0.5500 | -0.0640 |
-| brier    | brier    |      0.1990 |   0.1765 | -0.0226 |
+| auc      | auc      |      0.5117 |   0.7985 |  0.2868 |
+| accuracy | accuracy |      0.5238 |   0.7165 |  0.1927 |
+| log_loss | log_loss |      0.7702 |   0.5499 | -0.2203 |
+| brier    | brier    |      0.2807 |   0.1764 | -0.1043 |
 
 ``` r
 
