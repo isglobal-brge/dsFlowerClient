@@ -82,16 +82,15 @@
 <div class="section level2">
 <h2 id="benchmark-demos">Benchmark demos<a class="anchor" aria-label="anchor" href="#benchmark-demos"></a>
 </h2>
-<p>The <code>inst/demos</code> directory also includes four central-vs-federated benchmark scripts. Each script uploads site partitions to the configured Opal servers, runs Flower through DataSHIELD, compares the federated model with a local baseline, and writes <code>summary.json</code> plus <code>benchmark.rds</code> under <code>dsflower_output/demo_benchmarks</code>.</p>
+<p>The <code>inst/demos</code> directory also includes three public central-vs-federated benchmark scripts. Each script uploads site partitions to the configured Opal servers, runs Flower through DataSHIELD, compares the federated model with a local baseline, and writes <code>summary.json</code> plus <code>benchmark.rds</code> under <code>dsflower_output/demo_benchmarks</code>.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_OPAL_URLS</span><span class="op">=</span><span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span></span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_USER</span><span class="op">=</span><span class="st">"administrator"</span></span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_PASSWORD</span><span class="op">=</span><span class="st">"admin123"</span></span>
 <span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a></span>
 <span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_breast_cancer.R</span>
 <span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_heart_disease.R</span>
-<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_medmnist.R</span>
-<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_lung1_radiomics.R</span></code></pre></div>
-<p>The same demos are documented as pkgdown articles. Set <code>DSFLOWER_RUN_VIGNETTE_DEMOS=true</code> before rendering if the vignettes should execute the Opal runs instead of only showing the runnable workflow.</p>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_medmnist.R</span></code></pre></div>
+<p>The same demos are documented as pkgdown articles. Set <code>DSFLOWER_RENDER_LIVE_VIGNETTES=true</code> before rendering if the vignettes should execute the Opal runs instead of showing the recorded output from the latest live run.</p>
 <p>For a direct-image smoke test, <code>inst/demos/direct_image_resnet_smoke.R</code> generates small synthetic PNG files, places them on the Rock filesystem, uploads only metadata tables to Opal, and trains one federated ResNet-18 round:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_OPAL_URLS</span><span class="op">=</span><span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_USER</span><span class="op">=</span><span class="st">"administrator"</span></span>
@@ -100,7 +99,7 @@
 <p>This demo uses <code>sandbox_open</code> by default because it is intentionally tiny. Clinical direct-image runs should use larger cohorts and a SecAgg-capable runtime/profile.</p>
 <p>For a direct handoff from <code>dsImaging</code>, <code>inst/demos/dsimaging_direct_image_resnet.R</code> connects to an Opal imaging resource, stages the image assets through the server-side <code>dsFlower</code>/<code>dsImaging</code> descriptor path, and trains a federated ResNet-18 model directly from the stored image files. When <code>DSFLOWER_IMAGING_LOCAL_WORKDIR</code> points to a local copy of the same study, the script also trains a centralized ResNet-18 baseline and writes <code>local_vs_federated.json</code>:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_OPAL_URLS</span><span class="op">=</span><span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_RESOURCE</span><span class="op">=</span><span class="st">"dsdemo.lung1_study"</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_RESOURCE</span><span class="op">=</span><span class="st">"dsdemo.imaging_demo"</span></span>
 <span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_TARGET</span><span class="op">=</span><span class="st">"os_2yr_alive"</span></span>
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_LOCAL_WORKDIR</span><span class="op">=</span><span class="st">"/tmp/dsimaging_lung1_study"</span></span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/dsimaging_direct_image_resnet.R</span></code></pre></div>

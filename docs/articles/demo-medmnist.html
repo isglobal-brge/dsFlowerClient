@@ -107,9 +107,9 @@ nodes.</p>
 <span>  upload_prefix <span class="op">=</span> <span class="va">table_prefix</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt;    node                    url       project                    upload_prefix</span></span>
-<span><span class="co">#&gt; 1 opal1 https://localhost:8443 dsflower_demo vignette_medmnist_20260520134728</span></span>
-<span><span class="co">#&gt; 2 opal2 https://localhost:8444 dsflower_demo vignette_medmnist_20260520134728</span></span>
-<span><span class="co">#&gt; 3 opal3 https://localhost:8445 dsflower_demo vignette_medmnist_20260520134728</span></span></code></pre></div>
+<span><span class="co">#&gt; 1 opal1 https://localhost:8443 dsflower_demo vignette_medmnist_20260526181526</span></span>
+<span><span class="co">#&gt; 2 opal2 https://localhost:8444 dsflower_demo vignette_medmnist_20260526181526</span></span>
+<span><span class="co">#&gt; 3 opal3 https://localhost:8445 dsflower_demo vignette_medmnist_20260526181526</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="load-images-and-build-a-server-side-feature-table">2. Load Images And Build A Server-Side Feature Table<a class="anchor" aria-label="anchor" href="#load-images-and-build-a-server-side-feature-table"></a>
@@ -320,6 +320,9 @@ nodes.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">fallback_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">".."</span>, <span class="st">"inst"</span>, <span class="st">"extdata"</span>, <span class="st">"dsflower_public_benchmark_results.json"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"inst"</span>, <span class="st">"extdata"</span>, <span class="st">"dsflower_public_benchmark_results.json"</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"dsflower_public_benchmark_results.json"</span>, package <span class="op">=</span> <span class="st">"dsFlowerClient"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">".."</span>, <span class="st">"inst"</span>, <span class="st">"extdata"</span>, <span class="st">"dsflower_demo_benchmark_results.json"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"inst"</span>, <span class="st">"extdata"</span>, <span class="st">"dsflower_demo_benchmark_results.json"</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"dsflower_demo_benchmark_results.json"</span>, package <span class="op">=</span> <span class="st">"dsFlowerClient"</span><span class="op">)</span></span>
@@ -391,7 +394,7 @@ nodes.</p>
 <span><span class="co">#&gt; [non-live render] using committed output from the last live vignette-equivalent run</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[dsFlower] output_dir:"</span>, <span class="va">output_dir</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161917</span></span>
+<span><span class="co">#&gt; [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_180253</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">history</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   round   loss n_clients n_failures</span></span>
 <span><span class="co">#&gt; 1     1 0.5105         3          0</span></span>

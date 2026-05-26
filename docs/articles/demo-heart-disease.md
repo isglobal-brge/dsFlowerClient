@@ -41,9 +41,9 @@ data.frame(
 #> 2 opal2 https://localhost:8444 dsflower_demo
 #> 3 opal3 https://localhost:8445 dsflower_demo
 #>                           upload_prefix
-#> 1 vignette_heart_disease_20260520134722
-#> 2 vignette_heart_disease_20260520134722
-#> 3 vignette_heart_disease_20260520134722
+#> 1 vignette_heart_disease_20260526181523
+#> 2 vignette_heart_disease_20260526181523
+#> 3 vignette_heart_disease_20260526181523
 ```
 
 ## 2. Load And Clean The Clinical Dataset
@@ -244,6 +244,9 @@ predict_sklearn_logreg_weights <- function(weights, x) {
 }
 
 fallback_path <- c(
+  file.path("..", "inst", "extdata", "dsflower_public_benchmark_results.json"),
+  file.path("inst", "extdata", "dsflower_public_benchmark_results.json"),
+  system.file("extdata", "dsflower_public_benchmark_results.json", package = "dsFlowerClient"),
   file.path("..", "inst", "extdata", "dsflower_demo_benchmark_results.json"),
   file.path("inst", "extdata", "dsflower_demo_benchmark_results.json"),
   system.file("extdata", "dsflower_demo_benchmark_results.json", package = "dsFlowerClient")
@@ -318,7 +321,7 @@ if (live) {
 #> [non-live render] using committed output from the last live vignette-equivalent run
 
 cat("[dsFlower] output_dir:", output_dir, "\n")
-#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161657
+#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_175945
 print(history)
 #>   round   loss n_clients n_failures
 #> 1     1 0.3425         3          0

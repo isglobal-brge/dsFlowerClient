@@ -1,43 +1,12 @@
 # LUNG1 Direct dsImaging Image ResNet Evidence
 
-``` r
-
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-artifact_paths <- c(
-  file.path("..", "inst", "extdata", "dsflower_lung1_direct_image_results.json"),
-  file.path("inst", "extdata", "dsflower_lung1_direct_image_results.json"),
-  system.file("extdata", "dsflower_lung1_direct_image_results.json",
-              package = "dsFlowerClient")
-)
-artifact_path <- artifact_paths[nzchar(artifact_paths) & file.exists(artifact_paths)][1]
-evidence <- jsonlite::fromJSON(artifact_path, simplifyVector = FALSE)
-cat("Evidence artifact:", basename(artifact_path), "\n")
-```
-
-    ## Evidence artifact: dsflower_lung1_direct_image_results.json
-
-``` r
-
-cat("Source script: inst/demos/dsimaging_direct_image_resnet.R\n")
-```
-
-    ## Source script: inst/demos/dsimaging_direct_image_resnet.R
-
-``` r
-
-cat("Recorded run_id:", evidence$run_id, "\n")
-```
-
-    ## Recorded run_id: 12188684698149675604
-
 This article records the LUNG1 direct-image run used as thesis evidence.
 The run trained `pytorch_resnet18` directly from NIfTI assets resolved
 by `dsImaging`, without first converting the images into radiomic
-features. It is a technical path validation: the cohort is deliberately
-tiny, and the comparison is not intended as a clinical imaging result.
-
-The committed JSON is the raw `summary.json` emitted by the live May
-2026 workflow.
+features. It is a technical path validation rather than a clinical
+imaging result. The rendered article uses the recorded output of the
+live May 2026 workflow so that package checks do not require active Opal
+servers.
 
 The validation path is:
 
@@ -51,6 +20,14 @@ The validation path is:
     for a path-level comparison.
 5.  Cleanup leaves no active SuperNodes.
 
+``` r
+
+cat("Source script: inst/demos/dsimaging_direct_image_resnet.R\n")
+#> Source script: inst/demos/dsimaging_direct_image_resnet.R
+cat("Recorded run_id:", evidence$run_id, "\n")
+#> Recorded run_id: 12188684698149675604
+```
+
 ## Reproduction Command
 
 ``` r
@@ -59,7 +36,7 @@ Sys.setenv(
   DSFLOWER_OPAL_URLS = "https://localhost:8443,https://localhost:8444,https://localhost:8445",
   OPAL_USER = "administrator",
   OPAL_PASSWORD = "admin123",
-  DSFLOWER_IMAGING_RESOURCE = "dsdemo.lung1_study",
+  DSFLOWER_IMAGING_RESOURCE = "dsdemo.imaging_demo",
   DSFLOWER_IMAGING_TARGET = "os_2yr_alive",
   DSFLOWER_IMAGING_PRIVACY = "sandbox_open",
   DSFLOWER_IMAGING_ROUNDS = "1",
@@ -114,8 +91,8 @@ data.frame(
   total_samples = sum(site_counts$samples),
   stringsAsFactors = FALSE
 )
-#>             resource image_type       target total_samples
-#> 1 dsdemo.lung1_study      NIfTI os_2yr_alive             9
+#>              resource image_type       target total_samples
+#> 1 dsdemo.imaging_demo      NIfTI os_2yr_alive             9
 ```
 
 ## Training Configuration
@@ -239,11 +216,10 @@ cat("[cleanup] PASS:", all(cleanup$active_supernodes == 0L), "\n")
 ``` r
 
 scope <- data.frame(
-  item = c("Validated claim", "Explicit non-claim", "Recorded output dir"),
+  item = c("Validated claim", "Explicit non-claim"),
   value = c(
     "End-to-end functional validation that dsFlower can consume dsImaging-resolved server-side NIfTI image assets and train a vision template without transferring image pixels to the researcher.",
-    "This nine-image run is a technical path validation, not a clinical imaging benchmark.",
-    evidence$output_dir
+    "This nine-image run is a technical path validation, not a clinical imaging benchmark."
   ),
   stringsAsFactors = FALSE
 )
@@ -254,4 +230,3 @@ knitr::kable(scope)
 |:---|:---|
 | Validated claim | End-to-end functional validation that dsFlower can consume dsImaging-resolved server-side NIfTI image assets and train a vision template without transferring image pixels to the researcher. |
 | Explicit non-claim | This nine-image run is a technical path validation, not a clinical imaging benchmark. |
-| Recorded output dir | /Users/david/Documents/GitHub/dsFlower-framework/dsflower_output/direct_dsimaging_images/20260511_140204 |

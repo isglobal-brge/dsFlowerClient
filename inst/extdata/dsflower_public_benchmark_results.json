@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-13T00:07:24+0200",
-  "source": "live three-Opal demo benchmark summaries",
-  "n_demos": 4,
+  "generated_at": "2026-05-26T18:05:00+0200",
+  "source": "live three-Opal public benchmark summaries",
+  "n_demos": 3,
   "results": {
     "breast_cancer_wisconsin": {
       "demo_id": "breast_cancer_wisconsin",
@@ -40,7 +40,7 @@
         "accuracy": 0.0176,
         "log_loss": -0.0395
       },
-      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161454",
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_175626",
       "history": [
         {
           "round": 1,
@@ -56,55 +56,58 @@
         }
       ]
     },
-    "lung1_radiomics": {
-      "demo_id": "lung1_radiomics",
-      "dataset_label": "LUNG1-style radiomics federated benchmark",
-      "data_mode": "deterministic LUNG1-style derived radiomics fixture",
-      "n_total": 420,
-      "n_train": 316,
-      "n_test": 104,
+    "uci_heart_disease": {
+      "demo_id": "uci_heart_disease",
+      "dataset_label": "UCI Heart Disease federated benchmark",
+      "data_mode": "UCI Heart Disease processed Cleveland",
+      "n_total": 297,
+      "n_train": 223,
+      "n_test": 74,
       "n_sites": 3,
       "rounds": 2,
       "features": [
         "age",
-        "stage",
-        "original_shape_VoxelVolume",
-        "original_firstorder_Energy",
-        "original_shape_Compactness2",
-        "original_glrlm_RunLengthNonUniformity",
-        "wavelet_HLH_glrlm_RunLengthNonUniformity",
-        "original_firstorder_Entropy",
-        "original_shape_Sphericity",
-        "original_gldm_DependenceNonUniformity"
+        "sex",
+        "cp",
+        "trestbps",
+        "chol",
+        "fbs",
+        "restecg",
+        "thalach",
+        "exang",
+        "oldpeak",
+        "slope",
+        "ca",
+        "thal"
       ],
       "central_metrics": {
-        "auc": 0.7217,
-        "accuracy": 0.6827,
-        "log_loss": 0.6116,
-        "brier": 0.2114
+        "auc": 0.8919,
+        "accuracy": 0.8378,
+        "log_loss": 0.4102,
+        "brier": 0.1204
       },
       "federated_metrics": {
-        "auc": 0.7205,
-        "accuracy": 0.6635,
-        "log_loss": 0.6175,
-        "brier": 0.2135
+        "auc": 0.8926,
+        "accuracy": 0.8514,
+        "log_loss": 0.3954,
+        "brier": 0.118
       },
       "metric_delta": {
-        "auc": -0.0011,
-        "accuracy": -0.0192,
-        "log_loss": 0.0059
+        "auc": 0.0007,
+        "accuracy": 0.0135,
+        "log_loss": -0.0149
       },
-      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_162114",
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_175945",
       "history": [
         {
           "round": 1,
-          "loss": 0.5904,
+          "loss": 0.3425,
           "n_clients": 3,
           "n_failures": 0
         },
         {
           "round": 2,
-          "loss": 0.5904,
+          "loss": 0.3425,
           "n_clients": 3,
           "n_failures": 0
         }
@@ -187,7 +190,7 @@
         "accuracy": 0.0236,
         "log_loss": -0.0641
       },
-      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161917",
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_180253",
       "history": [
         {
           "round": 1,
@@ -198,63 +201,6 @@
         {
           "round": 2,
           "loss": 0.5106,
-          "n_clients": 3,
-          "n_failures": 0
-        }
-      ]
-    },
-    "uci_heart_disease": {
-      "demo_id": "uci_heart_disease",
-      "dataset_label": "UCI Heart Disease federated benchmark",
-      "data_mode": "UCI Heart Disease processed Cleveland",
-      "n_total": 297,
-      "n_train": 223,
-      "n_test": 74,
-      "n_sites": 3,
-      "rounds": 2,
-      "features": [
-        "age",
-        "sex",
-        "cp",
-        "trestbps",
-        "chol",
-        "fbs",
-        "restecg",
-        "thalach",
-        "exang",
-        "oldpeak",
-        "slope",
-        "ca",
-        "thal"
-      ],
-      "central_metrics": {
-        "auc": 0.8919,
-        "accuracy": 0.8378,
-        "log_loss": 0.4102,
-        "brier": 0.1204
-      },
-      "federated_metrics": {
-        "auc": 0.8926,
-        "accuracy": 0.8514,
-        "log_loss": 0.3954,
-        "brier": 0.118
-      },
-      "metric_delta": {
-        "auc": 0.0007,
-        "accuracy": 0.0135,
-        "log_loss": -0.0149
-      },
-      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161657",
-      "history": [
-        {
-          "round": 1,
-          "loss": 0.3425,
-          "n_clients": 3,
-          "n_failures": 0
-        },
-        {
-          "round": 2,
-          "loss": 0.3425,
           "n_clients": 3,
           "n_failures": 0
         }

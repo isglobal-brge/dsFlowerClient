@@ -2,7 +2,7 @@
   "output_dir": "/Users/david/Documents/GitHub/dsFlower-framework/dsflower_output/direct_dsimaging_images/20260511_140204",
   "model_output_dir": "./dsflower_output/pytorch_resnet18_FedAvg_1r_20260511_140550",
   "saved_model": "./dsflower_output/pytorch_resnet18_FedAvg_1r_20260511_140550/model.rds",
-  "resource": "dsdemo.lung1_study",
+  "resource": "dsdemo.imaging_demo",
   "target": "os_2yr_alive",
   "model": "pytorch_resnet18",
   "template": "pytorch_resnet18",

@@ -10,7 +10,7 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 artifact_paths <- c(
   file.path("..", "inst", "extdata", "dsflower_lung1_direct_image_results.json"),
@@ -20,19 +20,14 @@ artifact_paths <- c(
 )
 artifact_path <- artifact_paths[nzchar(artifact_paths) & file.exists(artifact_paths)][1]
 evidence <- jsonlite::fromJSON(artifact_path, simplifyVector = FALSE)
-cat("Evidence artifact:", basename(artifact_path), "\n")
-cat("Source script: inst/demos/dsimaging_direct_image_resnet.R\n")
-cat("Recorded run_id:", evidence$run_id, "\n")
 ```
 
 This article records the LUNG1 direct-image run used as thesis evidence. The
 run trained `pytorch_resnet18` directly from NIfTI assets resolved by
 `dsImaging`, without first converting the images into radiomic features. It is a
-technical path validation: the cohort is deliberately tiny, and the comparison
-is not intended as a clinical imaging result.
-
-The committed JSON is the raw `summary.json` emitted by the live May 2026
-workflow.
+technical path validation rather than a clinical imaging result. The rendered
+article uses the recorded output of the live May 2026 workflow so that package
+checks do not require active Opal servers.
 
 The validation path is:
 
@@ -46,6 +41,11 @@ The validation path is:
    path-level comparison.
 5. Cleanup leaves no active SuperNodes.
 
+```{r recorded-run}
+cat("Source script: inst/demos/dsimaging_direct_image_resnet.R\n")
+cat("Recorded run_id:", evidence$run_id, "\n")
+```
+
 ## Reproduction Command
 
 ```{r reproduction-command, eval=FALSE}
@@ -53,7 +53,7 @@ Sys.setenv(
   DSFLOWER_OPAL_URLS = "https://localhost:8443,https://localhost:8444,https://localhost:8445",
   OPAL_USER = "administrator",
   OPAL_PASSWORD = "admin123",
-  DSFLOWER_IMAGING_RESOURCE = "dsdemo.lung1_study",
+  DSFLOWER_IMAGING_RESOURCE = "dsdemo.imaging_demo",
   DSFLOWER_IMAGING_TARGET = "os_2yr_alive",
   DSFLOWER_IMAGING_PRIVACY = "sandbox_open",
   DSFLOWER_IMAGING_ROUNDS = "1",
@@ -173,11 +173,10 @@ cat("[cleanup] PASS:", all(cleanup$active_supernodes == 0L), "\n")
 
 ```{r evidence-scope}
 scope <- data.frame(
-  item = c("Validated claim", "Explicit non-claim", "Recorded output dir"),
+  item = c("Validated claim", "Explicit non-claim"),
   value = c(
     "End-to-end functional validation that dsFlower can consume dsImaging-resolved server-side NIfTI image assets and train a vision template without transferring image pixels to the researcher.",
-    "This nine-image run is a technical path validation, not a clinical imaging benchmark.",
-    evidence$output_dir
+    "This nine-image run is a technical path validation, not a clinical imaging benchmark."
   ),
   stringsAsFactors = FALSE
 )

@@ -31,11 +31,12 @@ connected servers report `secure_aggregation_supported = TRUE`.
 
 ## Benchmark demos
 
-The `inst/demos` directory also includes four central-vs-federated
-benchmark scripts. Each script uploads site partitions to the configured
-Opal servers, runs Flower through DataSHIELD, compares the federated
-model with a local baseline, and writes `summary.json` plus
-`benchmark.rds` under `dsflower_output/demo_benchmarks`.
+The `inst/demos` directory also includes three public
+central-vs-federated benchmark scripts. Each script uploads site
+partitions to the configured Opal servers, runs Flower through
+DataSHIELD, compares the federated model with a local baseline, and
+writes `summary.json` plus `benchmark.rds` under
+`dsflower_output/demo_benchmarks`.
 
 ``` sh
 export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
@@ -45,13 +46,12 @@ export OPAL_PASSWORD="admin123"
 Rscript inst/demos/benchmark_breast_cancer.R
 Rscript inst/demos/benchmark_heart_disease.R
 Rscript inst/demos/benchmark_medmnist.R
-Rscript inst/demos/benchmark_lung1_radiomics.R
 ```
 
 The same demos are documented as pkgdown articles. Set
-`DSFLOWER_RUN_VIGNETTE_DEMOS=true` before rendering if the vignettes
-should execute the Opal runs instead of only showing the runnable
-workflow.
+`DSFLOWER_RENDER_LIVE_VIGNETTES=true` before rendering if the vignettes
+should execute the Opal runs instead of showing the recorded output from
+the latest live run.
 
 For a direct-image smoke test, `inst/demos/direct_image_resnet_smoke.R`
 generates small synthetic PNG files, places them on the Rock filesystem,
@@ -80,7 +80,7 @@ writes `local_vs_federated.json`:
 
 ``` sh
 export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
-export DSFLOWER_IMAGING_RESOURCE="dsdemo.lung1_study"
+export DSFLOWER_IMAGING_RESOURCE="dsdemo.imaging_demo"
 export DSFLOWER_IMAGING_TARGET="os_2yr_alive"
 export DSFLOWER_IMAGING_LOCAL_WORKDIR="/tmp/dsimaging_lung1_study"
 Rscript inst/demos/dsimaging_direct_image_resnet.R

@@ -1,96 +1,111 @@
 # Demo Results Overview
 
-This page is the landing point for the rendered dsFlowerClient demos. It
-links to each transparent workflow article and records the final
-validation numbers that were available at handoff time. The demos are
-intended to show how the researcher connects to Opal/DataSHIELD, stages
-or references server-side data, launches Flower training, and checks the
-resulting federated model.
+This page is the landing point for the rendered dsFlowerClient demos.
+The main evidence is split into three groups: public benchmark runs with
+centralised and federated test metrics, LUNG1 imaging handoff runs that
+show composition with dsImaging, and the template validation suite that
+exercises every authorised method. Together they show the same
+DataSHIELD execution pattern: the researcher connects to Opal,
+references or stages server-side data, launches Flower training, and
+inspects approved model-scale outputs.
 
-## Demo Results
+## Public Benchmark Results
 
 ``` r
 
-demo_results <- data.frame(
+public_benchmarks <- data.frame(
   demo = c(
     "Breast Cancer Benchmark",
     "Heart Disease Benchmark",
-    "MedMNIST Benchmark",
-    "Radiomics Benchmark",
-    "Radiomics To Flower",
-    "Direct Image ResNet Smoke Demo",
-    "LUNG1 Direct dsImaging Image Evidence",
-    "LUNG1 dsImaging Radiomics Evidence",
-    "Method Validation Suite",
-    "Vision Method Validation"
+    "MedMNIST Benchmark"
   ),
   article = c(
     "demo-breast-cancer.html",
     "demo-heart-disease.html",
-    "demo-medmnist.html",
-    "demo-lung1-radiomics.html",
-    "radiomics-to-flower.html",
-    "direct-image-resnet.html",
-    "lung1-direct-image-dsimaging-resnet.html",
-    "lung1-radiomics-to-flower.html",
-    "validation-overview.html",
-    "validation-vision-overview.html"
+    "demo-medmnist.html"
   ),
   data_path = c(
-    "mlbench BreastCancer table",
-    "UCI Cleveland or deterministic fallback",
-    "BreastMNIST pooled image features",
-    "LUNG1-style radiomics features",
-    "deterministic LUNG1-style derived radiomics fixture",
-    "Synthetic PNG image resource",
-    "dsImaging direct LUNG1 NIfTI resource",
-    "dsImaging-derived LUNG1 radiomics table",
-    "Synthetic tabular/sequence/survival cohort",
-    "Synthetic PNG image/mask cohort"
+    "UCI Breast Cancer Wisconsin (Original)",
+    "UCI Heart Disease processed Cleveland",
+    "MedMNIST BreastMNIST pooled image features"
   ),
-  sites = c(3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L, 3L),
+  sites = c(3L, 3L, 3L),
   central_metric = c(
     "AUC 0.9878",
     "AUC 0.8919",
-    "AUC 0.7654",
-    "AUC 0.7217",
-    "AUC 0.7217",
-    "loss 0.5605",
-    "loss 0.5540",
-    "not applicable",
-    "17/17 methods pass",
-    "3/3 methods pass"
+    "AUC 0.7654"
   ),
   federated_metric = c(
     "AUC 0.9908",
     "AUC 0.8926",
-    "AUC 0.7985",
-    "AUC 0.7205",
-    "AUC 0.7205",
-    "loss 0.6322",
-    "loss 0.5847",
-    "loss 0.6503 -> 0.6474",
-    "17/17 acceptable",
-    "3/3 acceptable"
+    "AUC 0.7985"
   ),
-  failures = c(0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L, 0L),
+  failures = c(0L, 0L, 0L),
   stringsAsFactors = FALSE
 )
-knitr::kable(demo_results)
+knitr::kable(public_benchmarks)
 ```
 
 | demo | article | data_path | sites | central_metric | federated_metric | failures |
 |:---|:---|:---|---:|:---|:---|---:|
-| Breast Cancer Benchmark | demo-breast-cancer.html | mlbench BreastCancer table | 3 | AUC 0.9878 | AUC 0.9908 | 0 |
-| Heart Disease Benchmark | demo-heart-disease.html | UCI Cleveland or deterministic fallback | 3 | AUC 0.8919 | AUC 0.8926 | 0 |
-| MedMNIST Benchmark | demo-medmnist.html | BreastMNIST pooled image features | 3 | AUC 0.7654 | AUC 0.7985 | 0 |
-| Radiomics Benchmark | demo-lung1-radiomics.html | LUNG1-style radiomics features | 3 | AUC 0.7217 | AUC 0.7205 | 0 |
-| Radiomics To Flower | radiomics-to-flower.html | deterministic LUNG1-style derived radiomics fixture | 3 | AUC 0.7217 | AUC 0.7205 | 0 |
-| Direct Image ResNet Smoke Demo | direct-image-resnet.html | Synthetic PNG image resource | 3 | loss 0.5605 | loss 0.6322 | 0 |
-| LUNG1 Direct dsImaging Image Evidence | lung1-direct-image-dsimaging-resnet.html | dsImaging direct LUNG1 NIfTI resource | 3 | loss 0.5540 | loss 0.5847 | 0 |
-| LUNG1 dsImaging Radiomics Evidence | lung1-radiomics-to-flower.html | dsImaging-derived LUNG1 radiomics table | 3 | not applicable | loss 0.6503 -\> 0.6474 | 0 |
-| Method Validation Suite | validation-overview.html | Synthetic tabular/sequence/survival cohort | 3 | 17/17 methods pass | 17/17 acceptable | 0 |
-| Vision Method Validation | validation-vision-overview.html | Synthetic PNG image/mask cohort | 3 | 3/3 methods pass | 3/3 acceptable | 0 |
+| Breast Cancer Benchmark | demo-breast-cancer.html | UCI Breast Cancer Wisconsin (Original) | 3 | AUC 0.9878 | AUC 0.9908 | 0 |
+| Heart Disease Benchmark | demo-heart-disease.html | UCI Heart Disease processed Cleveland | 3 | AUC 0.8919 | AUC 0.8926 | 0 |
+| MedMNIST Benchmark | demo-medmnist.html | MedMNIST BreastMNIST pooled image features | 3 | AUC 0.7654 | AUC 0.7985 | 0 |
+
+## Imaging Handoff Results
+
+``` r
+
+imaging_results <- data.frame(
+  demo = c(
+    "LUNG1 dsImaging Radiomics Evidence",
+    "LUNG1 Direct dsImaging Image Evidence"
+  ),
+  article = c(
+    "lung1-radiomics-to-flower.html",
+    "lung1-direct-image-dsimaging-resnet.html"
+  ),
+  data_path = c(
+    "dsImaging-derived LUNG1 radiomics table",
+    "dsImaging-resolved LUNG1 NIfTI assets"
+  ),
+  sites = c(3L, 3L),
+  result = c(
+    "422 rows; loss 0.6503 -> 0.6474; 0 client failures",
+    "9 images; central loss 0.5540; federated loss 0.5847; 0 client failures"
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(imaging_results)
+```
+
+| demo | article | data_path | sites | result |
+|:---|:---|:---|---:|:---|
+| LUNG1 dsImaging Radiomics Evidence | lung1-radiomics-to-flower.html | dsImaging-derived LUNG1 radiomics table | 3 | 422 rows; loss 0.6503 -\> 0.6474; 0 client failures |
+| LUNG1 Direct dsImaging Image Evidence | lung1-direct-image-dsimaging-resnet.html | dsImaging-resolved LUNG1 NIfTI assets | 3 | 9 images; central loss 0.5540; federated loss 0.5847; 0 client failures |
+
+## Template Validation Coverage
+
+``` r
+
+validation_results <- data.frame(
+  suite = c("Non-vision method validation", "Vision method validation"),
+  article = c("validation-overview.html", "validation-vision-overview.html"),
+  data_path = c(
+    "Controlled tabular, sequence and survival cohort",
+    "Controlled image and mask cohort"
+  ),
+  sites = c(3L, 3L),
+  result = c("17/17 methods pass", "3/3 methods pass"),
+  stringsAsFactors = FALSE
+)
+knitr::kable(validation_results)
+```
+
+| suite | article | data_path | sites | result |
+|:---|:---|:---|---:|:---|
+| Non-vision method validation | validation-overview.html | Controlled tabular, sequence and survival cohort | 3 | 17/17 methods pass |
+| Vision method validation | validation-vision-overview.html | Controlled image and mask cohort | 3 | 3/3 methods pass |
 
 ## Article Links
 
@@ -102,12 +117,6 @@ knitr::kable(demo_results)
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-heart-disease.md)
 - [MedMNIST
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-medmnist.md)
-- [Radiomics
-  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-lung1-radiomics.md)
-- [Radiomics To
-  Flower](https://isglobal-brge.github.io/dsFlowerClient/articles/radiomics-to-flower.md)
-- [Direct Image
-  ResNet](https://isglobal-brge.github.io/dsFlowerClient/articles/direct-image-resnet.md)
 - [LUNG1 Direct dsImaging Image
   Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-direct-image-dsimaging-resnet.md)
 - [LUNG1 dsImaging Radiomics
@@ -116,6 +125,12 @@ knitr::kable(demo_results)
   Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-overview.md)
 - [Vision Method Validation
   Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-vision-overview.md)
+
+The repository also keeps self-contained smoke demos for development
+(`demo-lung1-radiomics.html`, `radiomics-to-flower.html` and
+`direct-image-resnet.html`). They are useful for checking the mechanics
+without external data, but the thesis evidence above uses public
+datasets or dsImaging assets.
 
 ## Common Execution Shape
 

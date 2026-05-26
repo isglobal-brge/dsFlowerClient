@@ -37,9 +37,9 @@ data.frame(
   upload_prefix = table_prefix
 )
 #>    node                    url       project                    upload_prefix
-#> 1 opal1 https://localhost:8443 dsflower_demo vignette_medmnist_20260520134728
-#> 2 opal2 https://localhost:8444 dsflower_demo vignette_medmnist_20260520134728
-#> 3 opal3 https://localhost:8445 dsflower_demo vignette_medmnist_20260520134728
+#> 1 opal1 https://localhost:8443 dsflower_demo vignette_medmnist_20260526181526
+#> 2 opal2 https://localhost:8444 dsflower_demo vignette_medmnist_20260526181526
+#> 3 opal3 https://localhost:8445 dsflower_demo vignette_medmnist_20260526181526
 ```
 
 ## 2. Load Images And Build A Server-Side Feature Table
@@ -254,6 +254,9 @@ predict_sklearn_logreg_weights <- function(weights, x) {
 }
 
 fallback_path <- c(
+  file.path("..", "inst", "extdata", "dsflower_public_benchmark_results.json"),
+  file.path("inst", "extdata", "dsflower_public_benchmark_results.json"),
+  system.file("extdata", "dsflower_public_benchmark_results.json", package = "dsFlowerClient"),
   file.path("..", "inst", "extdata", "dsflower_demo_benchmark_results.json"),
   file.path("inst", "extdata", "dsflower_demo_benchmark_results.json"),
   system.file("extdata", "dsflower_demo_benchmark_results.json", package = "dsFlowerClient")
@@ -325,7 +328,7 @@ if (live) {
 #> [non-live render] using committed output from the last live vignette-equivalent run
 
 cat("[dsFlower] output_dir:", output_dir, "\n")
-#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260512_161917
+#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_180253
 print(history)
 #>   round   loss n_clients n_failures
 #> 1     1 0.5105         3          0

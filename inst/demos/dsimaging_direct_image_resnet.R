@@ -160,7 +160,7 @@ if (length(users) != length(urls) || length(passwords) != length(urls)) {
 }
 
 servers <- paste0("opal", seq_along(urls))
-resource <- demo_env("DSFLOWER_IMAGING_RESOURCE", "dsdemo.lung1_study")
+resource <- demo_env("DSFLOWER_IMAGING_RESOURCE", "dsdemo.imaging_demo")
 target <- demo_env("DSFLOWER_IMAGING_TARGET", "os_2yr_alive")
 privacy <- demo_env("DSFLOWER_IMAGING_PRIVACY", "sandbox_open")
 rounds <- as.integer(demo_env("DSFLOWER_IMAGING_ROUNDS", "1"))

@@ -1,43 +1,12 @@
 # LUNG1 dsImaging Radiomics To dsFlower Evidence
 
-``` r
-
-knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
-artifact_paths <- c(
-  file.path("..", "inst", "extdata", "dsflower_lung1_radiomics_results.json"),
-  file.path("inst", "extdata", "dsflower_lung1_radiomics_results.json"),
-  system.file("extdata", "dsflower_lung1_radiomics_results.json",
-              package = "dsFlowerClient")
-)
-artifact_path <- artifact_paths[nzchar(artifact_paths) & file.exists(artifact_paths)][1]
-evidence <- jsonlite::fromJSON(artifact_path, simplifyVector = FALSE)
-cat("Evidence artifact:", basename(artifact_path), "\n")
-```
-
-    ## Evidence artifact: dsflower_lung1_radiomics_results.json
-
-``` r
-
-cat("Source script: inst/demos/lung1_radiomics_to_flower.R\n")
-```
-
-    ## Source script: inst/demos/lung1_radiomics_to_flower.R
-
-``` r
-
-cat("Recorded run_id:", evidence$run_id, "\n")
-```
-
-    ## Recorded run_id: 17493579680844882070
-
 This article records the real LUNG1 radiomics handoff run used as thesis
-evidence. It is intentionally rendered from the committed JSON artifact
-so that the pkgdown site and package checks do not require live Opal
-servers. The live workflow is implemented in
+evidence. The rendered article uses the recorded output of the live May
+2026 workflow so that package checks do not require active Opal servers.
+The live workflow is implemented in
 `inst/demos/lung1_radiomics_to_flower.R`.
 
-The committed JSON is the raw `summary.json` emitted by the live May
-2026 workflow. The validation path is:
+The validation path is:
 
 1.  `dsImaging` resolves the LUNG1 imaging resource and radiomics
     assets.
@@ -46,6 +15,14 @@ The committed JSON is the raw `summary.json` emitted by the live May
 3.  `dsFlowerClient` trains `sklearn_logreg` with FedAvg over the
     server-side tables.
 4.  Only aggregate training history and model parameters are returned.
+
+``` r
+
+cat("Source script: inst/demos/lung1_radiomics_to_flower.R\n")
+#> Source script: inst/demos/lung1_radiomics_to_flower.R
+cat("Recorded run_id:", evidence$run_id, "\n")
+#> Recorded run_id: 17493579680844882070
+```
 
 ## Reproduction Command
 

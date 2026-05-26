@@ -30,7 +30,7 @@ run_dsflower_benchmark(
   data = dataset,
   features = features,
   demo_id = "breast_cancer_wisconsin",
-  dataset_label = "Breast Cancer Wisconsin diagnostic benchmark",
-  data_mode = "mlbench::BreastCancer",
+  dataset_label = "Breast Cancer Wisconsin (Original) benchmark",
+  data_mode = "mlbench::BreastCancer / UCI Breast Cancer Wisconsin (Original)",
   default_rounds = 2L
 )

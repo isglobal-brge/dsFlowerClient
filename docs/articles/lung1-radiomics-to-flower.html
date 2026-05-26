@@ -74,31 +74,12 @@
 
     
     
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/knitr/man/opts_chunk.html" class="external-link">opts_chunk</a></span><span class="op">$</span><span class="fu">set</span><span class="op">(</span>collapse <span class="op">=</span> <span class="cn">TRUE</span>, comment <span class="op">=</span> <span class="st">"#&gt;"</span><span class="op">)</span></span>
-<span><span class="va">artifact_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">".."</span>, <span class="st">"inst"</span>, <span class="st">"extdata"</span>, <span class="st">"dsflower_lung1_radiomics_results.json"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"inst"</span>, <span class="st">"extdata"</span>, <span class="st">"dsflower_lung1_radiomics_results.json"</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata"</span>, <span class="st">"dsflower_lung1_radiomics_results.json"</span>,</span>
-<span>              package <span class="op">=</span> <span class="st">"dsFlowerClient"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">artifact_path</span> <span class="op">&lt;-</span> <span class="va">artifact_paths</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">artifact_paths</span><span class="op">)</span> <span class="op">&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">artifact_paths</span><span class="op">)</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="va">evidence</span> <span class="op">&lt;-</span> <span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span><span class="va">artifact_path</span>, simplifyVector <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Evidence artifact:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/basename.html" class="external-link">basename</a></span><span class="op">(</span><span class="va">artifact_path</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Evidence artifact: dsflower_lung1_radiomics_results.json</span></span></code></pre>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Source script: inst/demos/lung1_radiomics_to_flower.R\n"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Source script: inst/demos/lung1_radiomics_to_flower.R</span></span></code></pre>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Recorded run_id:"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">run_id</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## Recorded run_id: 17493579680844882070</span></span></code></pre>
 <p>This article records the real LUNG1 radiomics handoff run used as
-thesis evidence. It is intentionally rendered from the committed JSON
-artifact so that the pkgdown site and package checks do not require live
-Opal servers. The live workflow is implemented in
+thesis evidence. The rendered article uses the recorded output of the
+live May 2026 workflow so that package checks do not require active Opal
+servers. The live workflow is implemented in
 <code>inst/demos/lung1_radiomics_to_flower.R</code>.</p>
-<p>The committed JSON is the raw <code>summary.json</code> emitted by
-the live May 2026 workflow. The validation path is:</p>
+<p>The validation path is:</p>
 <ol style="list-style-type: decimal">
 <li>
 <code>dsImaging</code> resolves the LUNG1 imaging resource and
@@ -112,10 +93,15 @@ FedAvg over the server-side tables.</li>
 <li>Only aggregate training history and model parameters are
 returned.</li>
 </ol>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Source script: inst/demos/lung1_radiomics_to_flower.R\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Source script: inst/demos/lung1_radiomics_to_flower.R</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Recorded run_id:"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">run_id</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Recorded run_id: 17493579680844882070</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="reproduction-command">Reproduction Command<a class="anchor" aria-label="anchor" href="#reproduction-command"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_OPAL_URLS <span class="op">=</span> <span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span>,</span>
 <span>  OPAL_USER <span class="op">=</span> <span class="st">"administrator"</span>,</span>
@@ -132,7 +118,7 @@ returned.</li>
 <div class="section level2">
 <h2 id="server-side-cohort">Server-Side Cohort<a class="anchor" aria-label="anchor" href="#server-side-cohort"></a>
 </h2>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">site_dim_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"opal"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">dimensions</span><span class="op">)</span>, value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">site_dims</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">site_dim_names</span>, <span class="kw">function</span><span class="op">(</span><span class="va">name</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">dims</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">dimensions</span><span class="op">[[</span><span class="va">name</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
@@ -168,7 +154,7 @@ returned.</li>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  resource <span class="op">=</span> <span class="va">evidence</span><span class="op">$</span><span class="va">resource</span>,</span>
@@ -183,7 +169,7 @@ returned.</li>
 <div class="section level2">
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h2>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">feature_roles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"radiomic"</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"metadata"</span>, <span class="st">"metadata"</span><span class="op">)</span></span>
 <span><span class="va">feature_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  feature <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">features</span><span class="op">)</span>,</span>
@@ -227,7 +213,7 @@ returned.</li>
 <div class="section level2">
 <h2 id="federated-training">Federated Training<a class="anchor" aria-label="anchor" href="#federated-training"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">training</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  model <span class="op">=</span> <span class="st">"sklearn_logreg"</span>,</span>
 <span>  strategy <span class="op">=</span> <span class="st">"fedavg"</span>,</span>
@@ -253,7 +239,7 @@ returned.</li>
 <td align="right">100</td>
 </tr></tbody>
 </table>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">history</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    round <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">round</span>,</span>
@@ -285,7 +271,7 @@ returned.</li>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[dsFlower] run_id:"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">run_id</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [dsFlower] run_id: 17493579680844882070</span></span>
@@ -301,7 +287,7 @@ returned.</li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] PASS:"</span>,</span>
 <span>    <span class="va">evidence</span><span class="op">$</span><span class="va">status</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">n_failures</span><span class="op">)</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [acceptance] PASS: TRUE</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">history</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">round</span>, y <span class="op">=</span> <span class="va">loss</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#2C6F7D"</span>, linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
@@ -322,7 +308,7 @@ returned.</li>
 <div class="section level2">
 <h2 id="evidence-scope">Evidence Scope<a class="anchor" aria-label="anchor" href="#evidence-scope"></a>
 </h2>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">scope</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  item <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Validated claim"</span>, <span class="st">"Explicit non-claim"</span>, <span class="st">"Global model shape"</span><span class="op">)</span>,</span>
 <span>  value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>

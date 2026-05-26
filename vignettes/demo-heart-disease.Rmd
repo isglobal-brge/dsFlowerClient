@@ -218,6 +218,9 @@ predict_sklearn_logreg_weights <- function(weights, x) {
 }
 
 fallback_path <- c(
+  file.path("..", "inst", "extdata", "dsflower_public_benchmark_results.json"),
+  file.path("inst", "extdata", "dsflower_public_benchmark_results.json"),
+  system.file("extdata", "dsflower_public_benchmark_results.json", package = "dsFlowerClient"),
   file.path("..", "inst", "extdata", "dsflower_demo_benchmark_results.json"),
   file.path("inst", "extdata", "dsflower_demo_benchmark_results.json"),
   system.file("extdata", "dsflower_demo_benchmark_results.json", package = "dsFlowerClient")
