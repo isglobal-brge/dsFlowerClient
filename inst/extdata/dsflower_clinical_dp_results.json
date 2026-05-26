@@ -1,0 +1,133 @@
+{
+  "generated_at": "2026-05-26T20:49:42+0200",
+  "demo_id": "clinical_algorithm_matrix",
+  "description": "Three-site dsFlower benchmark matrix on public clinical datasets, comparing centralized and federated held-out performance.",
+  "privacy_profile": "high_sensitivity_dp",
+  "n_sites": 3,
+  "datasets": {
+    "cdc_diabetes_health_indicators": {
+      "dataset_id": "cdc_diabetes_health_indicators",
+      "dataset_label": "CDC Diabetes Health Indicators",
+      "domain": "population health / diabetes",
+      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
+      "n_total": 9000,
+      "n_train": 6751,
+      "n_test": 2249,
+      "n_features": 21,
+      "site_train_n": {
+        "opal1": 2251,
+        "opal2": 2251,
+        "opal3": 2249
+      },
+      "train_prevalence": 0.1394,
+      "test_prevalence": 0.1392
+    }
+  },
+  "model_specs": [
+    {
+      "id": "pytorch_mlp",
+      "label": "PyTorch MLP",
+      "family": "neural network",
+      "min_rows_per_site": 250,
+      "model_params": {
+        "hidden_layers": "32,16",
+        "learning_rate": 0.005,
+        "batch_size": 64,
+        "local_epochs": 1
+      },
+      "rounds": 6
+    }
+  ],
+  "results": {
+    "cdc_diabetes_health_indicators.pytorch_mlp": {
+      "dataset_id": "cdc_diabetes_health_indicators",
+      "dataset_label": "CDC Diabetes Health Indicators",
+      "domain": "population health / diabetes",
+      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
+      "model_id": "pytorch_mlp",
+      "model_label": "PyTorch MLP",
+      "family": "neural network",
+      "status": "pass",
+      "n_total": 9000,
+      "n_train": 6751,
+      "n_test": 2249,
+      "n_features": 21,
+      "site_train_n": {
+        "opal1": 2251,
+        "opal2": 2251,
+        "opal3": 2249
+      },
+      "privacy_profile": "high_sensitivity_dp",
+      "privacy_parameters": {
+        "mode": "high_sensitivity_dp",
+        "epsilon": 8,
+        "delta": 1e-05,
+        "clipping_norm": 1
+      },
+      "rounds": 6,
+      "model_params": {
+        "hidden_layers": "32,16",
+        "learning_rate": 0.005,
+        "batch_size": 64,
+        "local_epochs": 1
+      },
+      "central_metrics": {
+        "auc": 0.818,
+        "accuracy": 0.8666,
+        "log_loss": 0.3227,
+        "brier": 0.0988
+      },
+      "federated_metrics": {
+        "auc": 0.818,
+        "accuracy": 0.8608,
+        "log_loss": 0.4326,
+        "brier": 0.1207
+      },
+      "metric_delta": {
+        "auc": -0.0001,
+        "accuracy": -0.0058,
+        "log_loss": 0.1099,
+        "brier": 0.0218
+      },
+      "flower_output_dir": "./dsflower_output/pytorch_mlp_FedAvg_6r_20260526_204931",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 3,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 4,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 5,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 6,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ]
+    }
+  }
+}

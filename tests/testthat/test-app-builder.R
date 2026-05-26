@@ -10,6 +10,7 @@ test_that(".template_dependencies returns correct sklearn deps", {
 test_that(".template_dependencies returns correct pytorch deps", {
   deps <- dsFlowerClient:::.template_dependencies("pytorch")
   expect_true("torch>=2.0.0" %in% deps)
+  expect_true("opacus>=1.4.0" %in% deps)
   expect_true(any(grepl("flwr", deps)))
 })
 

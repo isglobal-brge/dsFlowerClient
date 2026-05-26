@@ -163,6 +163,7 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
 
   conns <- flower$conns
   symbol <- flower$symbol
+  n_clients <- length(conns)
 
   # Resolve template from model (never require the user to pass it)
   template_name <- recipe$model$template
@@ -190,6 +191,16 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
   if (is.null(feature_columns)) feature_columns <- character(0)
 
   .enforce_server_runtime_capabilities(caps, recipe, privacy)
+  recipe$strategy$params$min_fit_clients <- as.integer(n_clients)
+  recipe$strategy$params$min_available_clients <- as.integer(n_clients)
+  if (!is.null(caps)) {
+    any_fixed <- any(vapply(caps, function(c) {
+      isTRUE(c$trust_profile$fixed_client_sampling)
+    }, logical(1)))
+    if (any_fixed) {
+      recipe$strategy$params$fraction_fit <- 1.0
+    }
+  }
 
   # Step 1: Prepare (only if config changed since last prepare)
   current_hash <- digest::digest(list(
@@ -209,6 +220,19 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
     flower$prepare_hash <- current_hash
     .dsflower_client_env$.connection <- flower
   }
+
+  # Build the Flower app before starting remote SuperNodes. This keeps the
+  # DataSHIELD template-transfer step outside the highest-resource phase of
+  # the run and avoids stressing Opal/Rock while SuperNode processes are live.
+  .ensure_client_framework(recipe$model$framework)
+  prebuilt_results_dir <- file.path(tempdir(), "dsflower_results",
+                                    format(Sys.time(), "%Y%m%d_%H%M%S"))
+  dir.create(prebuilt_results_dir, recursive = TRUE, showWarnings = FALSE)
+  prebuilt_app_dir <- .build_flower_app(
+    recipe,
+    conns = conns,
+    results_dir = prebuilt_results_dir
+  )
 
   # Step 2: SuperLink (start if not running)
   started_superlink <- FALSE
@@ -244,7 +268,13 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
 
   # Step 4: Run training
   run <- tryCatch(
-    ds.flower.run.start(recipe, conns, verbose = verbose),
+    ds.flower.run.start(
+      recipe, conns,
+      app_dir = prebuilt_app_dir,
+      results_dir = prebuilt_results_dir,
+      symbol = symbol,
+      verbose = verbose
+    ),
     error = function(e) {
       if (nodes_ensured) cleanup_nodes()
       if (started_superlink && !detached) ds.flower.superlink.stop()

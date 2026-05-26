@@ -14,8 +14,9 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 This page is the landing point for the rendered dsFlowerClient demos. The main
 evidence is split into three groups: public benchmark runs with centralised and
 federated test metrics, LUNG1 imaging handoff runs that show composition with
-dsImaging, and the template validation suite that exercises every authorised
-method. Together they show the same DataSHIELD execution pattern: the
+dsImaging, clinical privacy-profile benchmarks, and the template validation
+suite that exercises every authorised method. Together they show the same
+DataSHIELD execution pattern: the
 researcher connects to Opal, references or stages server-side data, launches
 Flower training, and inspects approved model-scale outputs.
 
@@ -81,6 +82,32 @@ imaging_results <- data.frame(
 knitr::kable(imaging_results)
 ```
 
+## Clinical Privacy Benchmarks
+
+```{r clinical-privacy-results}
+clinical_privacy <- data.frame(
+  profile = c("trusted_internal", "clinical_default", "high_sensitivity_dp"),
+  article = "clinical-privacy-benchmarks.html",
+  data_path = c(
+    "Breast Cancer, Heart Disease, Pima Diabetes and CDC Diabetes",
+    "Breast Cancer, Pima Diabetes and CDC Diabetes",
+    "CDC Diabetes"
+  ),
+  mechanism = c(
+    "Controlled federated execution",
+    "Secure Aggregation plus stricter metric/count policy",
+    "Secure Aggregation plus Opacus DP-SGD"
+  ),
+  result = c(
+    "6/6 runs pass, 0 client failures",
+    "4/4 runs pass, 0 client failures",
+    "1/1 run passes, 0 client failures"
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(clinical_privacy)
+```
+
 ## Template Validation Coverage
 
 ```{r template-validation-coverage}
@@ -104,6 +131,7 @@ knitr::kable(validation_results)
 - [Breast Cancer Benchmark](demo-breast-cancer.html)
 - [Heart Disease Benchmark](demo-heart-disease.html)
 - [MedMNIST Benchmark](demo-medmnist.html)
+- [Clinical Privacy Benchmarks](clinical-privacy-benchmarks.html)
 - [LUNG1 Direct dsImaging Image Evidence](lung1-direct-image-dsimaging-resnet.html)
 - [LUNG1 dsImaging Radiomics Evidence](lung1-radiomics-to-flower.html)
 - [All Method Validation Overview](validation-overview.html)

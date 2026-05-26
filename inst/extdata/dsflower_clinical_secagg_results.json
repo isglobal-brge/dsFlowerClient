@@ -1,0 +1,357 @@
+{
+  "generated_at": "2026-05-26T22:16:09+0200",
+  "demo_id": "clinical_algorithm_matrix",
+  "description": "Three-site dsFlower benchmark matrix on public clinical datasets, comparing centralized and federated held-out performance.",
+  "privacy_profile": "clinical_default",
+  "n_sites": 3,
+  "datasets": {
+    "breast_cancer_wisconsin": {
+      "dataset_id": "breast_cancer_wisconsin",
+      "dataset_label": "Breast Cancer Wisconsin (Original)",
+      "domain": "cytology / oncology",
+      "source": "mlbench::BreastCancer / UCI Breast Cancer Wisconsin (Original)",
+      "n_total": 683,
+      "n_train": 513,
+      "n_test": 170,
+      "n_features": 9,
+      "site_train_n": {
+        "opal1": 171,
+        "opal2": 171,
+        "opal3": 171
+      },
+      "train_prevalence": 0.3509,
+      "test_prevalence": 0.3471
+    },
+    "pima_indians_diabetes": {
+      "dataset_id": "pima_indians_diabetes",
+      "dataset_label": "Pima Indians Diabetes",
+      "domain": "endocrinology / diabetes",
+      "source": "mlbench::PimaIndiansDiabetes / UCI Pima Indians Diabetes",
+      "n_total": 768,
+      "n_train": 576,
+      "n_test": 192,
+      "n_features": 8,
+      "site_train_n": {
+        "opal1": 192,
+        "opal2": 192,
+        "opal3": 192
+      },
+      "train_prevalence": 0.349,
+      "test_prevalence": 0.349
+    },
+    "cdc_diabetes_health_indicators": {
+      "dataset_id": "cdc_diabetes_health_indicators",
+      "dataset_label": "CDC Diabetes Health Indicators",
+      "domain": "population health / diabetes",
+      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
+      "n_total": 9000,
+      "n_train": 6751,
+      "n_test": 2249,
+      "n_features": 21,
+      "site_train_n": {
+        "opal1": 2251,
+        "opal2": 2251,
+        "opal3": 2249
+      },
+      "train_prevalence": 0.1394,
+      "test_prevalence": 0.1392
+    }
+  },
+  "model_specs": [
+    {
+      "id": "sklearn_logreg",
+      "label": "Logistic regression",
+      "family": "linear classifier",
+      "validation_datasets": ["breast_cancer_wisconsin", "uci_heart_disease", "pima_indians_diabetes", "cdc_diabetes_health_indicators"],
+      "clinical_validation_datasets": ["breast_cancer_wisconsin", "pima_indians_diabetes", "cdc_diabetes_health_indicators"],
+      "min_rows_per_site": 50,
+      "model_params": {
+        "max_iter": 200
+      },
+      "rounds": 2
+    },
+    {
+      "id": "pytorch_mlp",
+      "label": "PyTorch MLP",
+      "family": "neural network",
+      "validation_datasets": "cdc_diabetes_health_indicators",
+      "min_rows_per_site": 250,
+      "model_params": {
+        "hidden_layers": "32,16",
+        "learning_rate": 0.005,
+        "batch_size": 64,
+        "local_epochs": 1
+      },
+      "rounds": 6
+    }
+  ],
+  "results": {
+    "breast_cancer_wisconsin.sklearn_logreg": {
+      "dataset_id": "breast_cancer_wisconsin",
+      "dataset_label": "Breast Cancer Wisconsin (Original)",
+      "domain": "cytology / oncology",
+      "source": "mlbench::BreastCancer / UCI Breast Cancer Wisconsin (Original)",
+      "model_id": "sklearn_logreg",
+      "model_label": "Logistic regression",
+      "family": "linear classifier",
+      "status": "pass",
+      "n_total": 683,
+      "n_train": 513,
+      "n_test": 170,
+      "n_features": 9,
+      "site_train_n": {
+        "opal1": 171,
+        "opal2": 171,
+        "opal3": 171
+      },
+      "privacy_profile": "clinical_default",
+      "privacy_parameters": {
+        "mode": "clinical_default"
+      },
+      "rounds": 2,
+      "model_params": {
+        "max_iter": 200
+      },
+      "central_metrics": {
+        "auc": 0.9902,
+        "accuracy": 0.9529,
+        "log_loss": 0.1338,
+        "brier": 0.036
+      },
+      "federated_metrics": {
+        "auc": 0.9908,
+        "accuracy": 0.9647,
+        "log_loss": 0.124,
+        "brier": 0.0333
+      },
+      "metric_delta": {
+        "auc": 0.0006,
+        "accuracy": 0.0118,
+        "log_loss": -0.0099,
+        "brier": -0.0027
+      },
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_220248",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ]
+    },
+    "pima_indians_diabetes.sklearn_logreg": {
+      "dataset_id": "pima_indians_diabetes",
+      "dataset_label": "Pima Indians Diabetes",
+      "domain": "endocrinology / diabetes",
+      "source": "mlbench::PimaIndiansDiabetes / UCI Pima Indians Diabetes",
+      "model_id": "sklearn_logreg",
+      "model_label": "Logistic regression",
+      "family": "linear classifier",
+      "status": "pass",
+      "n_total": 768,
+      "n_train": 576,
+      "n_test": 192,
+      "n_features": 8,
+      "site_train_n": {
+        "opal1": 192,
+        "opal2": 192,
+        "opal3": 192
+      },
+      "privacy_profile": "clinical_default",
+      "privacy_parameters": {
+        "mode": "clinical_default"
+      },
+      "rounds": 2,
+      "model_params": {
+        "max_iter": 200
+      },
+      "central_metrics": {
+        "auc": 0.8253,
+        "accuracy": 0.776,
+        "log_loss": 0.4946,
+        "brier": 0.159
+      },
+      "federated_metrics": {
+        "auc": 0.8266,
+        "accuracy": 0.7708,
+        "log_loss": 0.496,
+        "brier": 0.1591
+      },
+      "metric_delta": {
+        "auc": 0.0013,
+        "accuracy": -0.0052,
+        "log_loss": 0.0014,
+        "brier": 0.0001
+      },
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_220522",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ]
+    },
+    "cdc_diabetes_health_indicators.sklearn_logreg": {
+      "dataset_id": "cdc_diabetes_health_indicators",
+      "dataset_label": "CDC Diabetes Health Indicators",
+      "domain": "population health / diabetes",
+      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
+      "model_id": "sklearn_logreg",
+      "model_label": "Logistic regression",
+      "family": "linear classifier",
+      "status": "pass",
+      "n_total": 9000,
+      "n_train": 6751,
+      "n_test": 2249,
+      "n_features": 21,
+      "site_train_n": {
+        "opal1": 2251,
+        "opal2": 2251,
+        "opal3": 2249
+      },
+      "privacy_profile": "clinical_default",
+      "privacy_parameters": {
+        "mode": "clinical_default"
+      },
+      "rounds": 2,
+      "model_params": {
+        "max_iter": 200
+      },
+      "central_metrics": {
+        "auc": 0.8293,
+        "accuracy": 0.8635,
+        "log_loss": 0.3171,
+        "brier": 0.0985
+      },
+      "federated_metrics": {
+        "auc": 0.8298,
+        "accuracy": 0.8635,
+        "log_loss": 0.3169,
+        "brier": 0.0985
+      },
+      "metric_delta": {
+        "auc": 0.0004,
+        "accuracy": 0,
+        "log_loss": -0.0001,
+        "brier": -0
+      },
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_220808",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ]
+    },
+    "cdc_diabetes_health_indicators.pytorch_mlp": {
+      "dataset_id": "cdc_diabetes_health_indicators",
+      "dataset_label": "CDC Diabetes Health Indicators",
+      "domain": "population health / diabetes",
+      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
+      "model_id": "pytorch_mlp",
+      "model_label": "PyTorch MLP",
+      "family": "neural network",
+      "status": "pass",
+      "n_total": 9000,
+      "n_train": 6751,
+      "n_test": 2249,
+      "n_features": 21,
+      "site_train_n": {
+        "opal1": 2251,
+        "opal2": 2251,
+        "opal3": 2249
+      },
+      "privacy_profile": "clinical_default",
+      "privacy_parameters": {
+        "mode": "clinical_default"
+      },
+      "rounds": 6,
+      "model_params": {
+        "hidden_layers": "32,16",
+        "learning_rate": 0.005,
+        "batch_size": 64,
+        "local_epochs": 1
+      },
+      "central_metrics": {
+        "auc": 0.818,
+        "accuracy": 0.8666,
+        "log_loss": 0.3227,
+        "brier": 0.0988
+      },
+      "federated_metrics": {
+        "auc": 0.825,
+        "accuracy": 0.8648,
+        "log_loss": 0.316,
+        "brier": 0.0983
+      },
+      "metric_delta": {
+        "auc": 0.007,
+        "accuracy": -0.0018,
+        "log_loss": -0.0067,
+        "brier": -0.0006
+      },
+      "flower_output_dir": "./dsflower_output/pytorch_mlp_FedAvg_6r_20260526_221557",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 3,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 4,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 5,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 6,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ]
+    }
+  }
+}

@@ -10,6 +10,8 @@ ds.flower.run.start(
   app_dir = NULL,
   run_config = list(),
   output_dir = NULL,
+  results_dir = NULL,
+  symbol = "flower",
   verbose = TRUE
 )
 }
@@ -26,6 +28,12 @@ from the server. If NULL, uses the connections stored during
 
 \item{output_dir}{Character; persistent directory for model output.
 Defaults to \code{"dsflower_output/<timestamp>"} in the working directory.}
+
+\item{results_dir}{Character; temporary directory where the Flower ServerApp
+writes model artefacts. Usually generated automatically.}
+
+\item{symbol}{Character; server-side Flower handle symbol. Low-level callers
+that initialise the default handle can leave this as \code{"flower"}.}
 
 \item{verbose}{Logical; print flwr output (default TRUE).}
 }

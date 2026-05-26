@@ -16,11 +16,17 @@
 #' @param run_config Named list; additional run config overrides.
 #' @param output_dir Character; persistent directory for model output.
 #'   Defaults to \code{"dsflower_output/<timestamp>"} in the working directory.
+#' @param results_dir Character; temporary directory where the Flower ServerApp
+#'   writes model artefacts. Usually generated automatically.
+#' @param symbol Character; server-side Flower handle symbol. Low-level callers
+#'   that initialise the default handle can leave this as \code{"flower"}.
 #' @param verbose Logical; print flwr output (default TRUE).
 #' @return A \code{dsflower_run} object with weights, history, and predictions.
 #' @export
 ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                  run_config = list(), output_dir = NULL,
+                                 results_dir = NULL,
+                                 symbol = "flower",
                                  verbose = TRUE) {
   .require_flwr_cli()
 
@@ -35,9 +41,11 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
          call. = FALSE)
   }
 
-  # Results directory for model weights and metrics
-  results_dir <- file.path(tempdir(), "dsflower_results",
-                           format(Sys.time(), "%Y%m%d_%H%M%S"))
+  # Results directory for model weights and metrics.
+  if (is.null(results_dir)) {
+    results_dir <- file.path(tempdir(), "dsflower_results",
+                             format(Sys.time(), "%Y%m%d_%H%M%S"))
+  }
   dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
   # Get connections for template fetching
@@ -98,7 +106,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   app_hash <- .compute_app_hash(app_dir, template_name)
   verification <- .ds_safe_aggregate(
     conns,
-    expr = call("flowerVerifyAppHashDS", "flower", app_hash, template_name)
+    expr = call("flowerVerifyAppHashDS", symbol, app_hash, template_name)
   )
   for (srv in names(verification)) {
     if (!isTRUE(verification[[srv]]$verified)) {

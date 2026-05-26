@@ -1,0 +1,186 @@
+---
+title: "Clinical Privacy Benchmarks"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Clinical Privacy Benchmarks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+find_evidence <- function(file) {
+  candidates <- c(
+    file.path("..", "inst", "extdata", file),
+    file.path("inst", "extdata", file),
+    system.file("extdata", file, package = "dsFlowerClient")
+  )
+  candidates[nzchar(candidates) & file.exists(candidates)][1]
+}
+read_evidence <- function(file) {
+  path <- find_evidence(file)
+  if (is.na(path)) stop("Evidence file not found: ", file, call. = FALSE)
+  jsonlite::fromJSON(path, simplifyVector = FALSE)
+}
+flat_results <- function(x, label) {
+  rows <- lapply(names(x$results), function(id) {
+    r <- x$results[[id]]
+    history <- r$history %||% list()
+    failures <- sum(vapply(history, function(h) h$n_failures %||% 0L, integer(1)))
+    data.frame(
+      evidence = label,
+      privacy_profile = x$privacy_profile,
+      dataset = r$dataset_label,
+      model = r$model_label,
+      status = r$status,
+      n = r$n_total,
+      train_test = paste(r$n_train, r$n_test, sep = "/"),
+      sites = paste(unlist(r$site_train_n), collapse = "/"),
+      central_auc = r$central_metrics$auc,
+      federated_auc = r$federated_metrics$auc,
+      delta_auc = r$metric_delta$auc,
+      central_accuracy = r$central_metrics$accuracy,
+      federated_accuracy = r$federated_metrics$accuracy,
+      delta_accuracy = r$metric_delta$accuracy,
+      failures = failures,
+      stringsAsFactors = FALSE
+    )
+  })
+  do.call(rbind, rows)
+}
+`%||%` <- function(x, y) {
+  if (is.null(x) || length(x) == 0 || (length(x) == 1 && is.na(x))) y else x
+}
+trusted <- read_evidence("dsflower_clinical_algorithm_results.json")
+secagg <- read_evidence("dsflower_clinical_secagg_results.json")
+dp <- read_evidence("dsflower_clinical_dp_results.json")
+results <- rbind(
+  flat_results(trusted, "trusted_internal"),
+  flat_results(secagg, "clinical_default_secagg"),
+  flat_results(dp, "high_sensitivity_dp")
+)
+```
+
+This vignette reports public clinical benchmark runs executed through the same
+DataSHIELD/Flower path used by dsFlower applications. Each run partitions the
+training data over three Opal/Rock servers, launches the selected authorised
+template through `ds.flower.fit()`, trains a centralised baseline on the same
+training split, evaluates both models on the same held-out test set, and records
+the approved output metrics.
+
+The datasets are public health or biomedical classification datasets:
+Breast Cancer Wisconsin (Original), UCI Heart Disease processed Cleveland,
+Pima Indians Diabetes, and CDC Diabetes Health Indicators. The clinical privacy
+profile uses only dataset/model combinations that satisfy the active
+server-side minimum-row policy; Heart Disease is therefore used in the trusted
+internal run, while Pima Indians Diabetes is used for the stricter clinical
+profile.
+
+## Re-running the evidence
+
+The commands below reproduce the committed benchmark evidence against a local
+three-Opal stack.
+
+```{r rerun-trusted, eval=FALSE}
+Sys.setenv(
+  DSFLOWER_DEMO_PRIVACY_PROFILE = "trusted_internal",
+  DSFLOWER_CDC_DIABETES_LIMIT = "9000",
+  DSFLOWER_CLINICAL_EVIDENCE_FILE =
+    "inst/extdata/dsflower_clinical_algorithm_results.json"
+)
+source(system.file(
+  "demos", "benchmark_clinical_algorithms.R",
+  package = "dsFlowerClient"
+))
+```
+
+```{r rerun-secagg, eval=FALSE}
+Sys.setenv(
+  DSFLOWER_DEMO_PRIVACY_PROFILE = "clinical_default",
+  DSFLOWER_CLINICAL_MODELS = "sklearn_logreg,pytorch_mlp",
+  DSFLOWER_CDC_DIABETES_LIMIT = "9000",
+  DSFLOWER_CLINICAL_EVIDENCE_FILE =
+    "inst/extdata/dsflower_clinical_secagg_results.json"
+)
+source(system.file(
+  "demos", "benchmark_clinical_algorithms.R",
+  package = "dsFlowerClient"
+))
+```
+
+```{r rerun-dp, eval=FALSE}
+Sys.setenv(
+  DSFLOWER_DEMO_PRIVACY_PROFILE = "high_sensitivity_dp",
+  DSFLOWER_CLINICAL_DATASETS = "cdc_diabetes_health_indicators",
+  DSFLOWER_CLINICAL_MODELS = "pytorch_mlp",
+  DSFLOWER_CDC_DIABETES_LIMIT = "9000",
+  DSFLOWER_CLINICAL_DP_EPSILON = "8",
+  DSFLOWER_CLINICAL_DP_DELTA = "1e-5",
+  DSFLOWER_CLINICAL_DP_CLIP = "1",
+  DSFLOWER_CLINICAL_EVIDENCE_FILE =
+    "inst/extdata/dsflower_clinical_dp_results.json"
+)
+source(system.file(
+  "demos", "benchmark_clinical_algorithms.R",
+  package = "dsFlowerClient"
+))
+```
+
+## Result tables
+
+```{r trusted-table}
+knitr::kable(
+  subset(results, evidence == "trusted_internal"),
+  digits = 4,
+  row.names = FALSE
+)
+```
+
+```{r secagg-table}
+knitr::kable(
+  subset(results, evidence == "clinical_default_secagg"),
+  digits = 4,
+  row.names = FALSE
+)
+```
+
+```{r dp-table}
+knitr::kable(
+  subset(results, evidence == "high_sensitivity_dp"),
+  digits = 4,
+  row.names = FALSE
+)
+```
+
+The `clinical_default` runs require Secure Aggregation, suppress per-node
+metrics and avoid exact per-site count release. The `high_sensitivity_dp` run
+uses the PyTorch MLP template with Opacus DP-SGD, requested
+`epsilon = 8`, `delta = 1e-5` and clipping norm `1`, in addition to the
+Secure Aggregation requirement.
+
+## Centralised versus federated AUC
+
+```{r auc-plot, fig.width=8, fig.height=5, fig.alt="Federated minus centralised AUC deltas by dataset, model and privacy profile."}
+plot_df <- results
+plot_df$label <- paste(plot_df$privacy_profile, plot_df$dataset, plot_df$model, sep = " / ")
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  ggplot2::ggplot(
+    plot_df,
+    ggplot2::aes(x = stats::reorder(label, delta_auc), y = delta_auc,
+                 fill = privacy_profile)
+  ) +
+    ggplot2::geom_hline(yintercept = 0, linewidth = 0.3, color = "grey35") +
+    ggplot2::geom_col(width = 0.72) +
+    ggplot2::coord_flip() +
+    ggplot2::labs(x = NULL, y = "Federated AUC - centralised AUC") +
+    ggplot2::theme_minimal(base_size = 11) +
+    ggplot2::theme(legend.position = "bottom")
+}
+```
+
+All reported runs completed with status `pass` and zero recorded client
+failures. The XGBoost histogram template is included in the trusted internal
+validation on Breast Cancer Wisconsin, where its histogram protocol has a close
+centralised/federated AUC match. The stricter Secure Aggregation evidence shown
+here is limited to templates whose update representation is compatible with
+Flower SecAgg+ in the current product surface.
