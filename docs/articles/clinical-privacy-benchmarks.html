@@ -87,10 +87,10 @@ metrics.</p>
 <p>The datasets are public health or biomedical classification datasets:
 Breast Cancer Wisconsin (Original), UCI Heart Disease processed
 Cleveland, Pima Indians Diabetes, and CDC Diabetes Health Indicators.
-The clinical privacy profile uses only dataset/model combinations that
-satisfy the active server-side minimum-row policy; Heart Disease is
-therefore used only in the trusted internal run. The stricter clinical
-and DP evidence uses larger datasets so that the per-site row policy is
+The benchmark matrix matches each privacy profile to dataset/model
+combinations that satisfy the active server-side row policy. Heart
+Disease contributes to the trusted-internal evidence, while the stricter
+clinical and DP profiles use larger datasets so that the row policy is
 satisfied before training starts.</p>
 <div class="section level2">
 <h2 id="re-running-the-evidence">Re-running the evidence<a class="anchor" aria-label="anchor" href="#re-running-the-evidence"></a>
@@ -133,7 +133,7 @@ a local three-Opal stack.</p>
 <span>  DSFLOWER_CLINICAL_XGB_TREES <span class="op">=</span> <span class="st">"5"</span>,</span>
 <span>  DSFLOWER_CLINICAL_XGB_DEPTH <span class="op">=</span> <span class="st">"1"</span>,</span>
 <span>  DSFLOWER_CLINICAL_XGB_BINS <span class="op">=</span> <span class="st">"16"</span>,</span>
-<span>  DSFLOWER_CLINICAL_DP_EPSILON <span class="op">=</span> <span class="st">"8"</span>,</span>
+<span>  DSFLOWER_CLINICAL_DP_EPSILON <span class="op">=</span> <span class="st">"12"</span>,</span>
 <span>  DSFLOWER_CLINICAL_DP_DELTA <span class="op">=</span> <span class="st">"1e-5"</span>,</span>
 <span>  DSFLOWER_CLINICAL_DP_CLIP <span class="op">=</span> <span class="st">"5"</span>,</span>
 <span>  DSFLOWER_CLINICAL_EVIDENCE_FILE <span class="op">=</span></span>
@@ -215,6 +215,58 @@ a local three-Opal stack.</p>
 <h2 id="result-tables">Result tables<a class="anchor" aria-label="anchor" href="#result-tables"></a>
 </h2>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">policy_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span></span>
+<span>  <span class="va">results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"evidence"</span>, <span class="st">"privacy_profile"</span>, <span class="st">"privacy_mechanism"</span>,</span>
+<span>              <span class="st">"secagg_required"</span>, <span class="st">"dp_scope"</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">policy_table</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<table style="width:100%;" class="table">
+<colgroup>
+<col width="22%">
+<col width="16%">
+<col width="33%">
+<col width="11%">
+<col width="15%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">evidence</th>
+<th align="left">privacy_profile</th>
+<th align="left">privacy_mechanism</th>
+<th align="left">secagg_required</th>
+<th align="left">dp_scope</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">trusted_internal</td>
+<td align="left">trusted_internal</td>
+<td align="left">none</td>
+<td align="left">FALSE</td>
+<td align="left">none</td>
+</tr>
+<tr class="even">
+<td align="left">clinical_default_secagg</td>
+<td align="left">clinical_default</td>
+<td align="left">secure_aggregation</td>
+<td align="left">TRUE</td>
+<td align="left">none</td>
+</tr>
+<tr class="odd">
+<td align="left">high_sensitivity_dp</td>
+<td align="left">high_sensitivity_dp</td>
+<td align="left">secure_aggregation_plus_patient_level_dp_sgd</td>
+<td align="left">TRUE</td>
+<td align="left">patient_level_dp_sgd</td>
+</tr>
+<tr class="even">
+<td align="left">xgboost_histogram_update_noise</td>
+<td align="left">clinical_update_noise</td>
+<td align="left">secure_aggregation_plus_update_noise</td>
+<td align="left">TRUE</td>
+<td align="left">update_noise_only</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"trusted_internal"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -222,26 +274,34 @@ a local three-Opal stack.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="7%">
-<col width="7%">
-<col width="16%">
-<col width="8%">
+<col width="5%">
+<col width="5%">
+<col width="6%">
+<col width="5%">
 <col width="3%">
 <col width="2%">
+<col width="13%">
+<col width="7%">
+<col width="2%">
+<col width="1%">
+<col width="3%">
+<col width="5%">
+<col width="2%">
 <col width="4%">
-<col width="6%">
+<col width="4%">
 <col width="3%">
 <col width="5%">
 <col width="6%">
-<col width="4%">
-<col width="7%">
-<col width="8%">
-<col width="6%">
+<col width="5%">
 <col width="3%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">evidence</th>
 <th align="left">privacy_profile</th>
+<th align="left">privacy_mechanism</th>
+<th align="left">secagg_required</th>
+<th align="left">dp_scope</th>
+<th align="right">epsilon</th>
 <th align="left">dataset</th>
 <th align="left">model</th>
 <th align="left">status</th>
@@ -261,6 +321,10 @@ a local three-Opal stack.</p>
 <tr class="odd">
 <td align="left">trusted_internal</td>
 <td align="left">trusted_internal</td>
+<td align="left">none</td>
+<td align="left">FALSE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">Breast Cancer Wisconsin (Original)</td>
 <td align="left">Logistic regression</td>
 <td align="left">pass</td>
@@ -279,6 +343,10 @@ a local three-Opal stack.</p>
 <tr class="even">
 <td align="left">trusted_internal</td>
 <td align="left">trusted_internal</td>
+<td align="left">none</td>
+<td align="left">FALSE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">Breast Cancer Wisconsin (Original)</td>
 <td align="left">Histogram XGBoost</td>
 <td align="left">pass</td>
@@ -297,6 +365,10 @@ a local three-Opal stack.</p>
 <tr class="odd">
 <td align="left">trusted_internal</td>
 <td align="left">trusted_internal</td>
+<td align="left">none</td>
+<td align="left">FALSE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">UCI Heart Disease processed Cleveland</td>
 <td align="left">Logistic regression</td>
 <td align="left">pass</td>
@@ -315,6 +387,10 @@ a local three-Opal stack.</p>
 <tr class="even">
 <td align="left">trusted_internal</td>
 <td align="left">trusted_internal</td>
+<td align="left">none</td>
+<td align="left">FALSE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">Pima Indians Diabetes</td>
 <td align="left">Logistic regression</td>
 <td align="left">pass</td>
@@ -333,6 +409,10 @@ a local three-Opal stack.</p>
 <tr class="odd">
 <td align="left">trusted_internal</td>
 <td align="left">trusted_internal</td>
+<td align="left">none</td>
+<td align="left">FALSE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">Logistic regression</td>
 <td align="left">pass</td>
@@ -351,6 +431,10 @@ a local three-Opal stack.</p>
 <tr class="even">
 <td align="left">trusted_internal</td>
 <td align="left">trusted_internal</td>
+<td align="left">none</td>
+<td align="left">FALSE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">PyTorch MLP</td>
 <td align="left">pass</td>
@@ -368,34 +452,42 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"clinical_default_secagg"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  row.names <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<table style="width:100%;" class="table">
+<table class="table">
 <colgroup>
-<col width="9%">
-<col width="6%">
-<col width="14%">
-<col width="11%">
-<col width="2%">
-<col width="2%">
-<col width="4%">
-<col width="6%">
-<col width="2%">
-<col width="4%">
+<col width="8%">
 <col width="5%">
+<col width="6%">
+<col width="5%">
+<col width="3%">
+<col width="2%">
+<col width="11%">
+<col width="9%">
+<col width="2%">
+<col width="1%">
+<col width="3%">
+<col width="5%">
+<col width="2%">
 <col width="4%">
+<col width="4%">
+<col width="3%">
+<col width="5%">
 <col width="6%">
-<col width="7%">
-<col width="6%">
+<col width="5%">
 <col width="3%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">evidence</th>
 <th align="left">privacy_profile</th>
+<th align="left">privacy_mechanism</th>
+<th align="left">secagg_required</th>
+<th align="left">dp_scope</th>
+<th align="right">epsilon</th>
 <th align="left">dataset</th>
 <th align="left">model</th>
 <th align="left">status</th>
@@ -415,6 +507,10 @@ a local three-Opal stack.</p>
 <tr class="odd">
 <td align="left">clinical_default_secagg</td>
 <td align="left">clinical_default</td>
+<td align="left">secure_aggregation</td>
+<td align="left">TRUE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">Breast Cancer Wisconsin (Original)</td>
 <td align="left">Logistic regression</td>
 <td align="left">pass</td>
@@ -433,6 +529,10 @@ a local three-Opal stack.</p>
 <tr class="even">
 <td align="left">clinical_default_secagg</td>
 <td align="left">clinical_default</td>
+<td align="left">secure_aggregation</td>
+<td align="left">TRUE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">Pima Indians Diabetes</td>
 <td align="left">Logistic regression</td>
 <td align="left">pass</td>
@@ -451,6 +551,10 @@ a local three-Opal stack.</p>
 <tr class="odd">
 <td align="left">clinical_default_secagg</td>
 <td align="left">clinical_default</td>
+<td align="left">secure_aggregation</td>
+<td align="left">TRUE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">Logistic regression</td>
 <td align="left">pass</td>
@@ -469,6 +573,10 @@ a local three-Opal stack.</p>
 <tr class="even">
 <td align="left">clinical_default_secagg</td>
 <td align="left">clinical_default</td>
+<td align="left">secure_aggregation</td>
+<td align="left">TRUE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">Histogram XGBoost</td>
 <td align="left">pass</td>
@@ -487,6 +595,10 @@ a local three-Opal stack.</p>
 <tr class="odd">
 <td align="left">clinical_default_secagg</td>
 <td align="left">clinical_default</td>
+<td align="left">secure_aggregation</td>
+<td align="left">TRUE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">Ridge classifier</td>
 <td align="left">pass</td>
@@ -505,6 +617,10 @@ a local three-Opal stack.</p>
 <tr class="even">
 <td align="left">clinical_default_secagg</td>
 <td align="left">clinical_default</td>
+<td align="left">secure_aggregation</td>
+<td align="left">TRUE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">SGD logistic classifier</td>
 <td align="left">pass</td>
@@ -523,6 +639,10 @@ a local three-Opal stack.</p>
 <tr class="odd">
 <td align="left">clinical_default_secagg</td>
 <td align="left">clinical_default</td>
+<td align="left">secure_aggregation</td>
+<td align="left">TRUE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">PyTorch logistic regression</td>
 <td align="left">pass</td>
@@ -541,6 +661,10 @@ a local three-Opal stack.</p>
 <tr class="even">
 <td align="left">clinical_default_secagg</td>
 <td align="left">clinical_default</td>
+<td align="left">secure_aggregation</td>
+<td align="left">TRUE</td>
+<td align="left">none</td>
+<td align="right">NA</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">PyTorch MLP</td>
 <td align="left">pass</td>
@@ -558,7 +682,7 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"high_sensitivity_dp"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -566,26 +690,34 @@ a local three-Opal stack.</p>
 <span><span class="op">)</span></span></code></pre></div>
 <table style="width:100%;" class="table">
 <colgroup>
-<col width="8%">
-<col width="8%">
-<col width="12%">
-<col width="11%">
-<col width="2%">
-<col width="2%">
+<col width="6%">
+<col width="6%">
+<col width="13%">
 <col width="4%">
 <col width="6%">
 <col width="2%">
-<col width="5%">
-<col width="5%">
-<col width="4%">
-<col width="7%">
-<col width="7%">
-<col width="6%">
+<col width="9%">
+<col width="8%">
+<col width="2%">
+<col width="1%">
 <col width="3%">
+<col width="4%">
+<col width="2%">
+<col width="3%">
+<col width="4%">
+<col width="3%">
+<col width="5%">
+<col width="5%">
+<col width="4%">
+<col width="2%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">evidence</th>
 <th align="left">privacy_profile</th>
+<th align="left">privacy_mechanism</th>
+<th align="left">secagg_required</th>
+<th align="left">dp_scope</th>
+<th align="right">epsilon</th>
 <th align="left">dataset</th>
 <th align="left">model</th>
 <th align="left">status</th>
@@ -605,6 +737,10 @@ a local three-Opal stack.</p>
 <tr class="odd">
 <td align="left">high_sensitivity_dp</td>
 <td align="left">high_sensitivity_dp</td>
+<td align="left">secure_aggregation_plus_patient_level_dp_sgd</td>
+<td align="left">TRUE</td>
+<td align="left">patient_level_dp_sgd</td>
+<td align="right">8</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">PyTorch MLP</td>
 <td align="left">pass</td>
@@ -623,6 +759,10 @@ a local three-Opal stack.</p>
 <tr class="even">
 <td align="left">high_sensitivity_dp</td>
 <td align="left">high_sensitivity_dp</td>
+<td align="left">secure_aggregation_plus_patient_level_dp_sgd</td>
+<td align="left">TRUE</td>
+<td align="left">patient_level_dp_sgd</td>
+<td align="right">8</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">PyTorch logistic regression</td>
 <td align="left">pass</td>
@@ -640,34 +780,42 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"xgboost_histogram_update_noise"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
 <span>  row.names <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<table class="table">
+<table style="width:100%;" class="table">
 <colgroup>
-<col width="12%">
 <col width="9%">
-<col width="12%">
-<col width="7%">
-<col width="2%">
-<col width="2%">
-<col width="4%">
 <col width="6%">
-<col width="2%">
+<col width="11%">
 <col width="4%">
 <col width="5%">
-<col width="4%">
-<col width="6%">
-<col width="7%">
-<col width="6%">
+<col width="2%">
+<col width="9%">
+<col width="5%">
+<col width="2%">
+<col width="1%">
 <col width="3%">
+<col width="4%">
+<col width="2%">
+<col width="3%">
+<col width="4%">
+<col width="3%">
+<col width="5%">
+<col width="5%">
+<col width="4%">
+<col width="2%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">evidence</th>
 <th align="left">privacy_profile</th>
+<th align="left">privacy_mechanism</th>
+<th align="left">secagg_required</th>
+<th align="left">dp_scope</th>
+<th align="right">epsilon</th>
 <th align="left">dataset</th>
 <th align="left">model</th>
 <th align="left">status</th>
@@ -686,6 +834,10 @@ a local three-Opal stack.</p>
 <tbody><tr class="odd">
 <td align="left">xgboost_histogram_update_noise</td>
 <td align="left">clinical_update_noise</td>
+<td align="left">secure_aggregation_plus_update_noise</td>
+<td align="left">TRUE</td>
+<td align="left">update_noise_only</td>
+<td align="right">12</td>
 <td align="left">CDC Diabetes Health Indicators</td>
 <td align="left">Histogram XGBoost</td>
 <td align="left">pass</td>
@@ -694,8 +846,8 @@ a local three-Opal stack.</p>
 <td align="left">2251/2251/2249</td>
 <td align="right">1</td>
 <td align="right">0.7998</td>
-<td align="right">0.6968</td>
-<td align="right">-0.1031</td>
+<td align="right">0.7477</td>
+<td align="right">-0.0521</td>
 <td align="right">0.8608</td>
 <td align="right">0.8608</td>
 <td align="right">0</td>
@@ -710,8 +862,10 @@ histogram template. In this secure path, each boosting round aggregates
 one fixed-shape root histogram under SecAgg+; the server derives one
 split and two leaf values from the protected aggregate, and the next
 round asks clients to apply the previous stump before building the next
-encrypted histogram. The <code>clinical_update_noise</code> XGBoost run
-adds Gaussian noise to the bounded histogram contribution before
+encrypted histogram. The representative
+<code>clinical_update_noise</code> XGBoost row uses the
+<code>epsilon = 12</code> point from the committed update-noise curve:
+Gaussian noise is added to the bounded histogram contribution before
 aggregation, which demonstrates the stricter privacy profile and its
 utility cost. The <code>high_sensitivity_dp</code> evidence uses Opacus
 DP-SGD with <code>delta = 1e-5</code> and clipping norm <code>1</code>
@@ -721,7 +875,7 @@ Secure Aggregation requirement.</p>
 <div class="section level2">
 <h2 id="dp-utility-curve">DP Utility Curve<a class="anchor" aria-label="anchor" href="#dp-utility-curve"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">curve_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"epsilon"</span>, <span class="st">"dataset"</span>, <span class="st">"model"</span>, <span class="st">"rounds"</span>, <span class="st">"central_auc"</span>,</span>
 <span>                    <span class="st">"federated_auc"</span>, <span class="st">"delta_auc"</span>, <span class="st">"failures"</span><span class="op">)</span><span class="op">]</span>,</span>
@@ -812,7 +966,7 @@ Secure Aggregation requirement.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">central_lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">curve_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"model"</span>, <span class="st">"central_auc"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
@@ -843,7 +997,7 @@ Secure Aggregation requirement.</p>
 <div class="section level2">
 <h2 id="xgboost-histogram-update-noise-curve">XGBoost Histogram Update-Noise Curve<a class="anchor" aria-label="anchor" href="#xgboost-histogram-update-noise-curve"></a>
 </h2>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">xgb_curve_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"epsilon"</span>, <span class="st">"dataset"</span>, <span class="st">"model"</span>, <span class="st">"central_auc"</span>,</span>
 <span>                        <span class="st">"federated_auc"</span>, <span class="st">"delta_auc"</span>, <span class="st">"failures"</span><span class="op">)</span><span class="op">]</span>,</span>
@@ -899,7 +1053,7 @@ Secure Aggregation requirement.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
 <span>    <span class="va">xgb_curve_results</span>,</span>
@@ -925,15 +1079,15 @@ Secure Aggregation requirement.</p>
 <p>The XGBoost curve uses the <code>clinical_update_noise</code> profile
 rather than patient-level DP-SGD. The noise is added to bounded
 histogram contributions before protected aggregation, so it demonstrates
-the utility trade-off for a stricter histogram-update profile. An
-additional local stress run at <code>epsilon = 4</code> completed with
-zero client failures but collapsed held-out utility, so it is not
-included in the committed validation envelope.</p>
+the utility trade-off for a stricter histogram-update profile. The
+retained curve shows the expected pattern: the most aggressive budget
+has the largest utility cost, while the moderate and relaxed budgets
+move back toward the SecAgg-only reference.</p>
 </div>
 <div class="section level2">
 <h2 id="centralised-versus-federated-auc">Centralised versus federated AUC<a class="anchor" aria-label="anchor" href="#centralised-versus-federated-auc"></a>
 </h2>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_df</span> <span class="op">&lt;-</span> <span class="va">results</span></span>
 <span><span class="va">plot_df</span><span class="op">$</span><span class="va">label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">plot_df</span><span class="op">$</span><span class="va">privacy_profile</span>, <span class="va">plot_df</span><span class="op">$</span><span class="va">dataset</span>, <span class="va">plot_df</span><span class="op">$</span><span class="va">model</span>, sep <span class="op">=</span> <span class="st">" / "</span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>

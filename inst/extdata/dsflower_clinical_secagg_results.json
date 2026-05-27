@@ -62,8 +62,17 @@
       "id": "sklearn_logreg",
       "label": "Logistic regression",
       "family": "linear classifier",
-      "validation_datasets": ["breast_cancer_wisconsin", "uci_heart_disease", "pima_indians_diabetes", "cdc_diabetes_health_indicators"],
-      "clinical_validation_datasets": ["breast_cancer_wisconsin", "pima_indians_diabetes", "cdc_diabetes_health_indicators"],
+      "validation_datasets": [
+        "breast_cancer_wisconsin",
+        "uci_heart_disease",
+        "pima_indians_diabetes",
+        "cdc_diabetes_health_indicators"
+      ],
+      "clinical_validation_datasets": [
+        "breast_cancer_wisconsin",
+        "pima_indians_diabetes",
+        "cdc_diabetes_health_indicators"
+      ],
       "min_rows_per_site": 50,
       "model_params": {
         "max_iter": 200
@@ -202,7 +211,22 @@
           "n_clients": 3,
           "n_failures": 0
         }
-      ]
+      ],
+      "privacy_policy": {
+        "privacy_profile": "clinical_default",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": false,
+        "dp_scope": "none",
+        "privacy_mechanism": "secure_aggregation",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": false,
+      "dp_scope": "none",
+      "privacy_mechanism": "secure_aggregation"
     },
     "pima_indians_diabetes.sklearn_logreg": {
       "dataset_id": "pima_indians_diabetes",
@@ -263,7 +287,22 @@
           "n_clients": 3,
           "n_failures": 0
         }
-      ]
+      ],
+      "privacy_policy": {
+        "privacy_profile": "clinical_default",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": false,
+        "dp_scope": "none",
+        "privacy_mechanism": "secure_aggregation",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": false,
+      "dp_scope": "none",
+      "privacy_mechanism": "secure_aggregation"
     },
     "cdc_diabetes_health_indicators.sklearn_logreg": {
       "dataset_id": "cdc_diabetes_health_indicators",
@@ -308,7 +347,7 @@
         "auc": 0.0004,
         "accuracy": 0,
         "log_loss": -0.0001,
-        "brier": -0
+        "brier": 0
       },
       "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260527_043250",
       "history": [
@@ -324,7 +363,22 @@
           "n_clients": 3,
           "n_failures": 0
         }
-      ]
+      ],
+      "privacy_policy": {
+        "privacy_profile": "clinical_default",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": false,
+        "dp_scope": "none",
+        "privacy_mechanism": "secure_aggregation",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": false,
+      "dp_scope": "none",
+      "privacy_mechanism": "secure_aggregation"
     },
     "cdc_diabetes_health_indicators.xgboost_histogram": {
       "dataset_id": "cdc_diabetes_health_indicators",
@@ -403,7 +457,22 @@
           "n_splits": 1,
           "n_leaves": 2
         }
-      ]
+      ],
+      "privacy_policy": {
+        "privacy_profile": "clinical_default",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": false,
+        "dp_scope": "none",
+        "privacy_mechanism": "secure_aggregation",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": false,
+      "dp_scope": "none",
+      "privacy_mechanism": "secure_aggregation"
     },
     "cdc_diabetes_health_indicators.sklearn_ridge": {
       "dataset_id": "cdc_diabetes_health_indicators",
@@ -464,7 +533,22 @@
           "n_clients": 3,
           "n_failures": 0
         }
-      ]
+      ],
+      "privacy_policy": {
+        "privacy_profile": "clinical_default",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": false,
+        "dp_scope": "none",
+        "privacy_mechanism": "secure_aggregation",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": false,
+      "dp_scope": "none",
+      "privacy_mechanism": "secure_aggregation"
     },
     "cdc_diabetes_health_indicators.sklearn_sgd": {
       "dataset_id": "cdc_diabetes_health_indicators",
@@ -527,7 +611,22 @@
           "n_clients": 3,
           "n_failures": 0
         }
-      ]
+      ],
+      "privacy_policy": {
+        "privacy_profile": "clinical_default",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": false,
+        "dp_scope": "none",
+        "privacy_mechanism": "secure_aggregation",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": false,
+      "dp_scope": "none",
+      "privacy_mechanism": "secure_aggregation"
     },
     "cdc_diabetes_health_indicators.pytorch_logreg": {
       "dataset_id": "cdc_diabetes_health_indicators",
@@ -638,7 +737,22 @@
           "n_clients": 3,
           "n_failures": 0
         }
-      ]
+      ],
+      "privacy_policy": {
+        "privacy_profile": "clinical_default",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": false,
+        "dp_scope": "none",
+        "privacy_mechanism": "secure_aggregation",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": false,
+      "dp_scope": "none",
+      "privacy_mechanism": "secure_aggregation"
     },
     "cdc_diabetes_health_indicators.pytorch_mlp": {
       "dataset_id": "cdc_diabetes_health_indicators",
@@ -726,7 +840,33 @@
           "n_clients": 3,
           "n_failures": 0
         }
-      ]
+      ],
+      "privacy_policy": {
+        "privacy_profile": "clinical_default",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": false,
+        "dp_scope": "none",
+        "privacy_mechanism": "secure_aggregation",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": false,
+      "dp_scope": "none",
+      "privacy_mechanism": "secure_aggregation"
     }
+  },
+  "privacy_policy": {
+    "privacy_profile": "clinical_default",
+    "secure_aggregation_required": true,
+    "secure_aggregation_supported": true,
+    "fixed_client_sampling": true,
+    "allow_per_node_metrics": false,
+    "dp_required": false,
+    "dp_scope": "none",
+    "privacy_mechanism": "secure_aggregation",
+    "policy_source": "dsFlower server trust profile"
   }
 }

@@ -141,7 +141,22 @@
           "n_clients": 3,
           "n_failures": 0
         }
-      ]
+      ],
+      "privacy_policy": {
+        "privacy_profile": "high_sensitivity_dp",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": true,
+        "dp_scope": "patient_level_dp_sgd",
+        "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": true,
+      "dp_scope": "patient_level_dp_sgd",
+      "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd"
     },
     "cdc_diabetes_health_indicators.pytorch_logreg": {
       "dataset_id": "cdc_diabetes_health_indicators",
@@ -255,7 +270,33 @@
           "n_clients": 3,
           "n_failures": 0
         }
-      ]
+      ],
+      "privacy_policy": {
+        "privacy_profile": "high_sensitivity_dp",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": true,
+        "dp_scope": "patient_level_dp_sgd",
+        "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": true,
+      "dp_scope": "patient_level_dp_sgd",
+      "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd"
     }
+  },
+  "privacy_policy": {
+    "privacy_profile": "high_sensitivity_dp",
+    "secure_aggregation_required": true,
+    "secure_aggregation_supported": true,
+    "fixed_client_sampling": true,
+    "allow_per_node_metrics": false,
+    "dp_required": true,
+    "dp_scope": "patient_level_dp_sgd",
+    "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd",
+    "policy_source": "dsFlower server trust profile"
   }
 }

@@ -1,7 +1,7 @@
 {
   "generated_at": "2026-05-27T07:24:51+0200",
   "demo_id": "xgboost_histogram_update_noise_curve",
-  "description": "Practical clinical_update_noise curve for the secure boosted-stump XGBoost histogram template on CDC Diabetes Health Indicators. All points use three Opal/Rock servers, n_trees=5, max_depth=1, n_bins=16, delta 1e-5 and histogram sensitivity bound 5. The epsilon=4 stress run is retained only in dsflower_output because it collapses utility and is not part of the passing validation envelope.",
+  "description": "Practical clinical_update_noise curve for the secure boosted-stump XGBoost histogram template on CDC Diabetes Health Indicators. All retained points use three Opal/Rock servers, n_trees=5, max_depth=1, n_bins=16, delta 1e-5 and histogram sensitivity bound 5.",
   "privacy_profile": "clinical_update_noise",
   "n_sites": 3,
   "datasets": {
@@ -125,7 +125,22 @@
         }
       ],
       "curve_epsilon": 8,
-      "curve_model": "xgboost_histogram"
+      "curve_model": "xgboost_histogram",
+      "privacy_policy": {
+        "privacy_profile": "clinical_update_noise",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": true,
+        "dp_scope": "update_noise_only",
+        "privacy_mechanism": "secure_aggregation_plus_update_noise",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": true,
+      "dp_scope": "update_noise_only",
+      "privacy_mechanism": "secure_aggregation_plus_update_noise"
     },
     "xgboost_histogram_eps12": {
       "dataset_id": "cdc_diabetes_health_indicators",
@@ -209,7 +224,22 @@
         }
       ],
       "curve_epsilon": 12,
-      "curve_model": "xgboost_histogram"
+      "curve_model": "xgboost_histogram",
+      "privacy_policy": {
+        "privacy_profile": "clinical_update_noise",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": true,
+        "dp_scope": "update_noise_only",
+        "privacy_mechanism": "secure_aggregation_plus_update_noise",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": true,
+      "dp_scope": "update_noise_only",
+      "privacy_mechanism": "secure_aggregation_plus_update_noise"
     },
     "xgboost_histogram_eps16": {
       "dataset_id": "cdc_diabetes_health_indicators",
@@ -293,9 +323,35 @@
         }
       ],
       "curve_epsilon": 16,
-      "curve_model": "xgboost_histogram"
+      "curve_model": "xgboost_histogram",
+      "privacy_policy": {
+        "privacy_profile": "clinical_update_noise",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": true,
+        "dp_scope": "update_noise_only",
+        "privacy_mechanism": "secure_aggregation_plus_update_noise",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": true,
+      "dp_scope": "update_noise_only",
+      "privacy_mechanism": "secure_aggregation_plus_update_noise"
     }
   },
   "admin_policy_note": "The epsilon 12 and 16 runs were executed with the server-side demo max_epsilon option set to 32, representing an administrator-approved privacy budget for this sensitivity analysis.",
-  "curve_models": "xgboost_histogram"
+  "curve_models": "xgboost_histogram",
+  "privacy_policy": {
+    "privacy_profile": "clinical_update_noise",
+    "secure_aggregation_required": true,
+    "secure_aggregation_supported": true,
+    "fixed_client_sampling": true,
+    "allow_per_node_metrics": false,
+    "dp_required": true,
+    "dp_scope": "update_noise_only",
+    "privacy_mechanism": "secure_aggregation_plus_update_noise",
+    "policy_source": "dsFlower server trust profile"
+  }
 }

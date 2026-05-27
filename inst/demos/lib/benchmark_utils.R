@@ -278,6 +278,45 @@ safe_history <- function(run) {
   if (is.data.frame(hist)) hist else as.data.frame(hist)
 }
 
+privacy_policy_summary <- function(profile, post_capabilities = NULL) {
+  profile <- profile %||% "trusted_internal"
+  secure_profiles <- c(
+    "consortium_internal", "clinical_default", "clinical_hardened",
+    "clinical_update_noise", "high_sensitivity_dp"
+  )
+  dp_profiles <- c("clinical_update_noise", "high_sensitivity_dp")
+  dp_scope <- switch(profile,
+    clinical_update_noise = "update_noise_only",
+    high_sensitivity_dp = "patient_level_dp_sgd",
+    "none"
+  )
+  mechanism <- switch(profile,
+    clinical_update_noise = "secure_aggregation_plus_update_noise",
+    high_sensitivity_dp = "secure_aggregation_plus_patient_level_dp_sgd",
+    clinical_default = "secure_aggregation",
+    clinical_hardened = "secure_aggregation",
+    consortium_internal = "secure_aggregation",
+    "none"
+  )
+  secagg_supported <- NA
+  if (!is.null(post_capabilities) && length(post_capabilities)) {
+    secagg_supported <- all(vapply(post_capabilities, function(x) {
+      isTRUE(x$secure_aggregation_supported)
+    }, logical(1)))
+  }
+  list(
+    privacy_profile = profile,
+    secure_aggregation_required = profile %in% secure_profiles,
+    secure_aggregation_supported = secagg_supported,
+    fixed_client_sampling = profile %in% secure_profiles,
+    allow_per_node_metrics = !profile %in% secure_profiles,
+    dp_required = profile %in% dp_profiles,
+    dp_scope = dp_scope,
+    privacy_mechanism = mechanism,
+    policy_source = "dsFlower server trust profile"
+  )
+}
+
 validate_run <- function(run, post_capabilities = NULL) {
   if (!is.null(run$status) && !identical(as.integer(run$status), 0L)) {
     stop("Federated run finished with non-zero status: ", run$status, call. = FALSE)

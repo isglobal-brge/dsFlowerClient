@@ -617,6 +617,7 @@ run_clinical_dataset <- function(dataset, specs, cfg, target = "outcome",
         smallest_site_train_n = min(site_counts),
         privacy_profile = cfg$profile,
         privacy_parameters = privacy_summary(cfg$privacy),
+        privacy_policy = privacy_policy_summary(cfg$profile),
         note = paste0(
           "The active privacy profile requires a larger per-site training ",
           "set for this model family."
@@ -649,6 +650,7 @@ run_clinical_dataset <- function(dataset, specs, cfg, target = "outcome",
       error = function(e) NULL
     )
     validate_run(run, post_caps)
+    policy_meta <- privacy_policy_summary(cfg$profile, post_caps)
     fed_probs <- predict_federated_model(run, spec, test, dataset$features)
     fed_metrics <- binary_metrics(test[[target]], fed_probs)
     central_metrics <- central$metrics
@@ -669,6 +671,7 @@ run_clinical_dataset <- function(dataset, specs, cfg, target = "outcome",
       site_train_n = as.list(site_counts),
       privacy_profile = cfg$profile,
       privacy_parameters = privacy_summary(cfg$privacy),
+      privacy_policy = policy_meta,
       privacy_ledger_namespace = ledger_namespace,
       rounds = spec$rounds,
       model_params = spec$model_params,
@@ -754,6 +757,7 @@ run_clinical_algorithm_matrix <- function() {
       "comparing centralized and federated held-out performance."
     ),
     privacy_profile = cfg$profile,
+    privacy_policy = privacy_policy_summary(cfg$profile),
     n_sites = length(cfg$urls),
     datasets = lapply(dataset_results, function(x) x[setdiff(names(x), "results")]),
     model_specs = lapply(specs, function(x) x[setdiff(names(x), c("model", "central"))]),

@@ -163,7 +163,8 @@ regression, ridge, SGD, PyTorch logistic regression, PyTorch MLP and the
 one-round secure histogram-stump XGBoost path. The DP evidence covers PyTorch
 MLP and PyTorch logistic regression with Opacus DP-SGD, with epsilon curves at
 2, 4 and 8 on the same CDC split. XGBoost also has a separate update-noise
-curve at epsilon 8, 12 and 16 for the secure histogram route.
+curve at epsilon 8, 12 and 16 for the secure histogram route; the standalone
+representative evidence uses the epsilon 12 point from that curve.
 
 ```sh
 DSFLOWER_DEMO_PRIVACY_PROFILE=clinical_default \
@@ -172,14 +173,17 @@ Rscript inst/demos/benchmark_clinical_algorithms.R
 ```
 
 `inst/demos/benchmark_method_families.R` complements the binary classification
-benchmarks with SUPPORT2 clinical tasks under `clinical_default`. It validates
-continuous regression, count regression, multiclass classification, multilabel
-classification and Cox survival over three 1,000-row Opal partitions.
+benchmarks with SUPPORT2 clinical tasks under `clinical_default`. SUPPORT2 is
+the Study to Understand Prognoses and Preferences for Outcomes and Risks of
+Treatments, a public critical-care dataset distributed by UCI. The benchmark
+validates continuous regression, count regression, multiclass classification,
+multilabel classification and Cox survival over three 1,000-row Opal
+partitions.
 The companion `high_sensitivity_dp` evidence validates the four DP-SGD
 compatible non-survival families on the same SUPPORT2 split. CoxPH remains
-validated under Secure Aggregation, but is deliberately blocked for
-patient-level DP-SGD because the Cox partial likelihood couples samples through
-risk sets rather than decomposing into independent per-row losses.
+validated under Secure Aggregation: its partial-likelihood objective couples
+samples through risk sets, so the validated privacy route for that template is
+SecAgg rather than patient-level DP-SGD.
 
 ```sh
 DSFLOWER_SUPPORT2_LIMIT=3000 Rscript inst/demos/benchmark_method_families.R

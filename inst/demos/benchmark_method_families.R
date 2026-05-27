@@ -375,6 +375,7 @@ main <- function() {
   secagg_supported <- !is.null(caps) && all(vapply(caps, function(x) {
     isTRUE(x$secure_aggregation_supported)
   }, logical(1)))
+  policy_meta <- privacy_policy_summary(cfg$profile, caps)
 
   python <- validation_fn("find_validation_python")()
   baseline_script <- validation_fn("validation_python_script")()
@@ -404,6 +405,10 @@ main <- function() {
 
   results <- do.call(rbind, records)
   rownames(results) <- NULL
+  results$secure_aggregation_required <- policy_meta$secure_aggregation_required
+  results$dp_required <- policy_meta$dp_required
+  results$dp_scope <- policy_meta$dp_scope
+  results$privacy_mechanism <- policy_meta$privacy_mechanism
   site_counts <- as.integer(table(factor(data$site, levels = seq_along(cfg$urls))))
   names(site_counts) <- paste0("opal", seq_along(cfg$urls))
   event_counts <- tapply(data$event, data$site, sum)
@@ -415,6 +420,7 @@ main <- function() {
     dataset_label = "SUPPORT2 Study",
     dataset_source = "UCI ML Repository SUPPORT2, derived clinical endpoints",
     privacy_profile = cfg$profile,
+    privacy_policy = policy_meta,
     n_sites = length(cfg$urls),
     n_total = nrow(data),
     n_features = length(features),

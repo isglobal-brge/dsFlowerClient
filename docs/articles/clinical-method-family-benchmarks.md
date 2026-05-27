@@ -1,10 +1,11 @@
 # Clinical method-family benchmarks
 
 This vignette records the non-binary clinical method-family validation
-used for the dsFlower thesis evidence. The benchmark uses the SUPPORT2
-study from the UCI Machine Learning Repository and executes PyTorch
-templates under the `clinical_default` profile, so server-side row
-policies and Secure Aggregation are active. A second evidence file
+used for the dsFlower thesis evidence. The benchmark uses SUPPORT2, the
+Study to Understand Prognoses and Preferences for Outcomes and Risks of
+Treatments, from the UCI Machine Learning Repository and executes
+PyTorch templates under the `clinical_default` profile, so server-side
+row policies and Secure Aggregation are active. A second evidence file
 repeats the DP-compatible non-survival families under
 `high_sensitivity_dp`, where SecAgg+ is combined with Opacus DP-SGD.
 
@@ -115,14 +116,48 @@ dp_results[, c(
 #> 4              pass
 ```
 
-The DP-SGD table is narrower than the `clinical_default` table because
-Cox partial likelihood contains risk-set dependencies and is not
-included in the Opacus per-example-gradient whitelist. The four
-non-survival families shown here all complete under the stricter profile
-and remain within their declared utility envelopes. Multiclass
+The DP-SGD table is defined over the SUPPORT2 routes whose losses
+decompose by sample. CoxPH is validated under Secure Aggregation in the
+table above; its partial-likelihood objective couples samples through
+risk sets, so its validated privacy route is SecAgg rather than Opacus
+DP-SGD. The four non-survival families shown here are the
+DP-SGD-compatible SUPPORT2 routes; all four complete under the stricter
+profile and remain within their declared utility envelopes. Multiclass
 classification uses six federated rounds in this profile because the
 stricter DP-SGD optimiser required a slightly longer training budget
 than the non-DP family run.
+
+``` r
+
+compatibility <- data.frame(
+  family = c(
+    "Continuous regression",
+    "Count regression",
+    "Multiclass classification",
+    "Multilabel classification",
+    "Survival"
+  ),
+  clinical_default = c("pass", "pass", "pass", "pass", "pass"),
+  high_sensitivity_dp = c("pass", "pass", "pass", "pass", "SecAgg route"),
+  reason = c(
+    "MSE is decomposable by row.",
+    "Poisson NLL is decomposable by row.",
+    "Cross entropy is decomposable by row.",
+    "Binary cross entropy is decomposable by row.",
+    "Cox partial likelihood is validated under SecAgg."
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(compatibility)
+```
+
+| family | clinical_default | high_sensitivity_dp | reason |
+|:---|:---|:---|:---|
+| Continuous regression | pass | pass | MSE is decomposable by row. |
+| Count regression | pass | pass | Poisson NLL is decomposable by row. |
+| Multiclass classification | pass | pass | Cross entropy is decomposable by row. |
+| Multilabel classification | pass | pass | Binary cross entropy is decomposable by row. |
+| Survival | pass | SecAgg route | Cox partial likelihood is validated under SecAgg. |
 
 ``` r
 

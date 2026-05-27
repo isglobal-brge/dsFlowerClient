@@ -17,8 +17,10 @@ privacy benchmark use `clinical_default`, `clinical_update_noise` or
 guards and, where applicable, DP-SGD epsilon curves or update-level
 histogram-noise curves are active. The SUPPORT2 DP-SGD evidence is
 interpreted over the four templates whose losses decompose by sample.
-CoxPH is still validated in the Secure Aggregation run, but its risk-set
-partial likelihood is intentionally blocked from `high_sensitivity_dp`.
+CoxPH is still validated in the Secure Aggregation run; because its
+risk-set partial likelihood is not a per-example loss,
+`high_sensitivity_dp` is not the matching privacy profile for that
+route.
 
 ``` r
 

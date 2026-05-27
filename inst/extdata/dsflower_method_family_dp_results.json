@@ -18,8 +18,16 @@
     259,
     259
   ],
-  "opal_urls": ["https://localhost:8443", "https://localhost:8444", "https://localhost:8445"],
-  "table_paths": ["dsflower_demo.method_family_dp_4of4_site1", "dsflower_demo.method_family_dp_4of4_site2", "dsflower_demo.method_family_dp_4of4_site3"],
+  "opal_urls": [
+    "https://localhost:8443",
+    "https://localhost:8444",
+    "https://localhost:8445"
+  ],
+  "table_paths": [
+    "dsflower_demo.method_family_dp_4of4_site1",
+    "dsflower_demo.method_family_dp_4of4_site2",
+    "dsflower_demo.method_family_dp_4of4_site3"
+  ],
   "secagg_supported": true,
   "python": "/opt/homebrew/opt/python@3.11/libexec/bin/python",
   "results": [
@@ -32,10 +40,10 @@
       "centralized_status": "ok",
       "centralized_metric": "mse",
       "centralized_loss": 0.57412314414978,
-      "centralized_accuracy": null,
+      "centralized_accuracy": {},
       "federated_status": "ok",
       "federated_loss": 0.607757747173309,
-      "federated_accuracy": null,
+      "federated_accuracy": {},
       "federated_n_failures": 0,
       "federated_run_id": "14978633373266227191",
       "delta_loss": 0.0336346030235291,
@@ -45,7 +53,22 @@
       "validation_status": "pass",
       "notes": "SUPPORT2 severity-score regression with MSE loss.",
       "error": "",
-      "family": "continuous outcome regression"
+      "family": "continuous outcome regression",
+      "privacy_policy": {
+        "privacy_profile": "high_sensitivity_dp",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": true,
+        "dp_scope": "patient_level_dp_sgd",
+        "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": true,
+      "dp_scope": "patient_level_dp_sgd",
+      "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd"
     },
     {
       "method": "pytorch_poisson",
@@ -56,10 +79,10 @@
       "centralized_status": "ok",
       "centralized_metric": "poisson_nll",
       "centralized_loss": 0.304713100194931,
-      "centralized_accuracy": null,
+      "centralized_accuracy": {},
       "federated_status": "ok",
       "federated_loss": 0.527311265468597,
-      "federated_accuracy": null,
+      "federated_accuracy": {},
       "federated_n_failures": 0,
       "federated_run_id": "8558867475052400508",
       "delta_loss": 0.222598165273666,
@@ -69,7 +92,22 @@
       "validation_status": "pass",
       "notes": "SUPPORT2 comorbidity-count Poisson regression.",
       "error": "",
-      "family": "count regression"
+      "family": "count regression",
+      "privacy_policy": {
+        "privacy_profile": "high_sensitivity_dp",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": true,
+        "dp_scope": "patient_level_dp_sgd",
+        "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": true,
+      "dp_scope": "patient_level_dp_sgd",
+      "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd"
     },
     {
       "method": "pytorch_multiclass",
@@ -93,7 +131,22 @@
       "validation_status": "pass",
       "notes": "SUPPORT2 diagnosis-class multiclass classifier.",
       "error": "",
-      "family": "multiclass classification"
+      "family": "multiclass classification",
+      "privacy_policy": {
+        "privacy_profile": "high_sensitivity_dp",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": true,
+        "dp_scope": "patient_level_dp_sgd",
+        "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": true,
+      "dp_scope": "patient_level_dp_sgd",
+      "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd"
     },
     {
       "method": "pytorch_multilabel",
@@ -117,7 +170,33 @@
       "validation_status": "pass",
       "notes": "SUPPORT2 simultaneous death, hospital-death and diabetes labels.",
       "error": "",
-      "family": "multilabel classification"
+      "family": "multilabel classification",
+      "privacy_policy": {
+        "privacy_profile": "high_sensitivity_dp",
+        "secure_aggregation_required": true,
+        "secure_aggregation_supported": true,
+        "fixed_client_sampling": true,
+        "allow_per_node_metrics": false,
+        "dp_required": true,
+        "dp_scope": "patient_level_dp_sgd",
+        "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd",
+        "policy_source": "dsFlower server trust profile"
+      },
+      "secure_aggregation_required": true,
+      "dp_required": true,
+      "dp_scope": "patient_level_dp_sgd",
+      "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd"
     }
-  ]
+  ],
+  "privacy_policy": {
+    "privacy_profile": "high_sensitivity_dp",
+    "secure_aggregation_required": true,
+    "secure_aggregation_supported": true,
+    "fixed_client_sampling": true,
+    "allow_per_node_metrics": false,
+    "dp_required": true,
+    "dp_scope": "patient_level_dp_sgd",
+    "privacy_mechanism": "secure_aggregation_plus_patient_level_dp_sgd",
+    "policy_source": "dsFlower server trust profile"
+  }
 }

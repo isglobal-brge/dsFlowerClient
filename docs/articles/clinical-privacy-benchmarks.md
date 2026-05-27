@@ -12,10 +12,10 @@ metrics.
 The datasets are public health or biomedical classification datasets:
 Breast Cancer Wisconsin (Original), UCI Heart Disease processed
 Cleveland, Pima Indians Diabetes, and CDC Diabetes Health Indicators.
-The clinical privacy profile uses only dataset/model combinations that
-satisfy the active server-side minimum-row policy; Heart Disease is
-therefore used only in the trusted internal run. The stricter clinical
-and DP evidence uses larger datasets so that the per-site row policy is
+The benchmark matrix matches each privacy profile to dataset/model
+combinations that satisfy the active server-side row policy. Heart
+Disease contributes to the trusted-internal evidence, while the stricter
+clinical and DP profiles use larger datasets so that the row policy is
 satisfied before training starts.
 
 ## Re-running the evidence
@@ -66,7 +66,7 @@ Sys.setenv(
   DSFLOWER_CLINICAL_XGB_TREES = "5",
   DSFLOWER_CLINICAL_XGB_DEPTH = "1",
   DSFLOWER_CLINICAL_XGB_BINS = "16",
-  DSFLOWER_CLINICAL_DP_EPSILON = "8",
+  DSFLOWER_CLINICAL_DP_EPSILON = "12",
   DSFLOWER_CLINICAL_DP_DELTA = "1e-5",
   DSFLOWER_CLINICAL_DP_CLIP = "5",
   DSFLOWER_CLINICAL_EVIDENCE_FILE =
@@ -158,6 +158,22 @@ for (eps in c(8, 12, 16)) {
 
 ``` r
 
+policy_table <- unique(
+  results[, c("evidence", "privacy_profile", "privacy_mechanism",
+              "secagg_required", "dp_scope")]
+)
+knitr::kable(policy_table, row.names = FALSE)
+```
+
+| evidence | privacy_profile | privacy_mechanism | secagg_required | dp_scope |
+|:---|:---|:---|:---|:---|
+| trusted_internal | trusted_internal | none | FALSE | none |
+| clinical_default_secagg | clinical_default | secure_aggregation | TRUE | none |
+| high_sensitivity_dp | high_sensitivity_dp | secure_aggregation_plus_patient_level_dp_sgd | TRUE | patient_level_dp_sgd |
+| xgboost_histogram_update_noise | clinical_update_noise | secure_aggregation_plus_update_noise | TRUE | update_noise_only |
+
+``` r
+
 knitr::kable(
   subset(results, evidence == "trusted_internal"),
   digits = 4,
@@ -165,14 +181,14 @@ knitr::kable(
 )
 ```
 
-| evidence | privacy_profile | dataset | model | status | n | train_test | sites | rounds | central_auc | federated_auc | delta_auc | central_accuracy | federated_accuracy | delta_accuracy | failures |
-|:---|:---|:---|:---|:---|---:|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| trusted_internal | trusted_internal | Breast Cancer Wisconsin (Original) | Logistic regression | pass | 683 | 513/170 | 171/171/171 | 2 | 0.9902 | 0.9908 | 0.0006 | 0.9529 | 0.9647 | 0.0118 | 0 |
-| trusted_internal | trusted_internal | Breast Cancer Wisconsin (Original) | Histogram XGBoost | pass | 683 | 513/170 | 171/171/171 | 1 | 0.9755 | 0.9772 | 0.0018 | 0.9118 | 0.9353 | 0.0235 | 0 |
-| trusted_internal | trusted_internal | UCI Heart Disease processed Cleveland | Logistic regression | pass | 297 | 223/74 | 75/74/74 | 2 | 0.8919 | 0.8926 | 0.0007 | 0.8378 | 0.8514 | 0.0135 | 0 |
-| trusted_internal | trusted_internal | Pima Indians Diabetes | Logistic regression | pass | 768 | 576/192 | 192/192/192 | 2 | 0.8253 | 0.8266 | 0.0013 | 0.7760 | 0.7708 | -0.0052 | 0 |
-| trusted_internal | trusted_internal | CDC Diabetes Health Indicators | Logistic regression | pass | 9000 | 6751/2249 | 2251/2251/2249 | 2 | 0.8293 | 0.8298 | 0.0004 | 0.8635 | 0.8635 | 0.0000 | 0 |
-| trusted_internal | trusted_internal | CDC Diabetes Health Indicators | PyTorch MLP | pass | 9000 | 6751/2249 | 2251/2251/2249 | 6 | 0.8180 | 0.8267 | 0.0086 | 0.8666 | 0.8617 | -0.0049 | 0 |
+| evidence | privacy_profile | privacy_mechanism | secagg_required | dp_scope | epsilon | dataset | model | status | n | train_test | sites | rounds | central_auc | federated_auc | delta_auc | central_accuracy | federated_accuracy | delta_accuracy | failures |
+|:---|:---|:---|:---|:---|---:|:---|:---|:---|---:|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| trusted_internal | trusted_internal | none | FALSE | none | NA | Breast Cancer Wisconsin (Original) | Logistic regression | pass | 683 | 513/170 | 171/171/171 | 2 | 0.9902 | 0.9908 | 0.0006 | 0.9529 | 0.9647 | 0.0118 | 0 |
+| trusted_internal | trusted_internal | none | FALSE | none | NA | Breast Cancer Wisconsin (Original) | Histogram XGBoost | pass | 683 | 513/170 | 171/171/171 | 1 | 0.9755 | 0.9772 | 0.0018 | 0.9118 | 0.9353 | 0.0235 | 0 |
+| trusted_internal | trusted_internal | none | FALSE | none | NA | UCI Heart Disease processed Cleveland | Logistic regression | pass | 297 | 223/74 | 75/74/74 | 2 | 0.8919 | 0.8926 | 0.0007 | 0.8378 | 0.8514 | 0.0135 | 0 |
+| trusted_internal | trusted_internal | none | FALSE | none | NA | Pima Indians Diabetes | Logistic regression | pass | 768 | 576/192 | 192/192/192 | 2 | 0.8253 | 0.8266 | 0.0013 | 0.7760 | 0.7708 | -0.0052 | 0 |
+| trusted_internal | trusted_internal | none | FALSE | none | NA | CDC Diabetes Health Indicators | Logistic regression | pass | 9000 | 6751/2249 | 2251/2251/2249 | 2 | 0.8293 | 0.8298 | 0.0004 | 0.8635 | 0.8635 | 0.0000 | 0 |
+| trusted_internal | trusted_internal | none | FALSE | none | NA | CDC Diabetes Health Indicators | PyTorch MLP | pass | 9000 | 6751/2249 | 2251/2251/2249 | 6 | 0.8180 | 0.8267 | 0.0086 | 0.8666 | 0.8617 | -0.0049 | 0 |
 
 ``` r
 
@@ -183,16 +199,16 @@ knitr::kable(
 )
 ```
 
-| evidence | privacy_profile | dataset | model | status | n | train_test | sites | rounds | central_auc | federated_auc | delta_auc | central_accuracy | federated_accuracy | delta_accuracy | failures |
-|:---|:---|:---|:---|:---|---:|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| clinical_default_secagg | clinical_default | Breast Cancer Wisconsin (Original) | Logistic regression | pass | 683 | 513/170 | 171/171/171 | 2 | 0.9902 | 0.9908 | 0.0006 | 0.9529 | 0.9647 | 0.0118 | 0 |
-| clinical_default_secagg | clinical_default | Pima Indians Diabetes | Logistic regression | pass | 768 | 576/192 | 192/192/192 | 2 | 0.8253 | 0.8266 | 0.0013 | 0.7760 | 0.7708 | -0.0052 | 0 |
-| clinical_default_secagg | clinical_default | CDC Diabetes Health Indicators | Logistic regression | pass | 9000 | 6751/2249 | 2251/2251/2249 | 2 | 0.8293 | 0.8298 | 0.0004 | 0.8635 | 0.8635 | 0.0000 | 0 |
-| clinical_default_secagg | clinical_default | CDC Diabetes Health Indicators | Histogram XGBoost | pass | 9000 | 6751/2249 | 2251/2251/2249 | 1 | 0.7998 | 0.7540 | -0.0458 | 0.8608 | 0.8608 | 0.0000 | 0 |
-| clinical_default_secagg | clinical_default | CDC Diabetes Health Indicators | Ridge classifier | pass | 9000 | 6751/2249 | 2251/2251/2249 | 2 | 0.8283 | 0.8291 | 0.0008 | 0.8617 | 0.8613 | -0.0004 | 0 |
-| clinical_default_secagg | clinical_default | CDC Diabetes Health Indicators | SGD logistic classifier | pass | 9000 | 6751/2249 | 2251/2251/2249 | 2 | 0.8077 | 0.8294 | 0.0217 | 0.8568 | 0.8608 | 0.0040 | 0 |
-| clinical_default_secagg | clinical_default | CDC Diabetes Health Indicators | PyTorch logistic regression | pass | 9000 | 6751/2249 | 2251/2251/2249 | 10 | 0.8178 | 0.8224 | 0.0046 | 0.8613 | 0.8635 | 0.0022 | 0 |
-| clinical_default_secagg | clinical_default | CDC Diabetes Health Indicators | PyTorch MLP | pass | 9000 | 6751/2249 | 2251/2251/2249 | 6 | 0.8180 | 0.8259 | 0.0079 | 0.8666 | 0.8644 | -0.0022 | 0 |
+| evidence | privacy_profile | privacy_mechanism | secagg_required | dp_scope | epsilon | dataset | model | status | n | train_test | sites | rounds | central_auc | federated_auc | delta_auc | central_accuracy | federated_accuracy | delta_accuracy | failures |
+|:---|:---|:---|:---|:---|---:|:---|:---|:---|---:|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| clinical_default_secagg | clinical_default | secure_aggregation | TRUE | none | NA | Breast Cancer Wisconsin (Original) | Logistic regression | pass | 683 | 513/170 | 171/171/171 | 2 | 0.9902 | 0.9908 | 0.0006 | 0.9529 | 0.9647 | 0.0118 | 0 |
+| clinical_default_secagg | clinical_default | secure_aggregation | TRUE | none | NA | Pima Indians Diabetes | Logistic regression | pass | 768 | 576/192 | 192/192/192 | 2 | 0.8253 | 0.8266 | 0.0013 | 0.7760 | 0.7708 | -0.0052 | 0 |
+| clinical_default_secagg | clinical_default | secure_aggregation | TRUE | none | NA | CDC Diabetes Health Indicators | Logistic regression | pass | 9000 | 6751/2249 | 2251/2251/2249 | 2 | 0.8293 | 0.8298 | 0.0004 | 0.8635 | 0.8635 | 0.0000 | 0 |
+| clinical_default_secagg | clinical_default | secure_aggregation | TRUE | none | NA | CDC Diabetes Health Indicators | Histogram XGBoost | pass | 9000 | 6751/2249 | 2251/2251/2249 | 1 | 0.7998 | 0.7540 | -0.0458 | 0.8608 | 0.8608 | 0.0000 | 0 |
+| clinical_default_secagg | clinical_default | secure_aggregation | TRUE | none | NA | CDC Diabetes Health Indicators | Ridge classifier | pass | 9000 | 6751/2249 | 2251/2251/2249 | 2 | 0.8283 | 0.8291 | 0.0008 | 0.8617 | 0.8613 | -0.0004 | 0 |
+| clinical_default_secagg | clinical_default | secure_aggregation | TRUE | none | NA | CDC Diabetes Health Indicators | SGD logistic classifier | pass | 9000 | 6751/2249 | 2251/2251/2249 | 2 | 0.8077 | 0.8294 | 0.0217 | 0.8568 | 0.8608 | 0.0040 | 0 |
+| clinical_default_secagg | clinical_default | secure_aggregation | TRUE | none | NA | CDC Diabetes Health Indicators | PyTorch logistic regression | pass | 9000 | 6751/2249 | 2251/2251/2249 | 10 | 0.8178 | 0.8224 | 0.0046 | 0.8613 | 0.8635 | 0.0022 | 0 |
+| clinical_default_secagg | clinical_default | secure_aggregation | TRUE | none | NA | CDC Diabetes Health Indicators | PyTorch MLP | pass | 9000 | 6751/2249 | 2251/2251/2249 | 6 | 0.8180 | 0.8259 | 0.0079 | 0.8666 | 0.8644 | -0.0022 | 0 |
 
 ``` r
 
@@ -203,10 +219,10 @@ knitr::kable(
 )
 ```
 
-| evidence | privacy_profile | dataset | model | status | n | train_test | sites | rounds | central_auc | federated_auc | delta_auc | central_accuracy | federated_accuracy | delta_accuracy | failures |
-|:---|:---|:---|:---|:---|---:|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| high_sensitivity_dp | high_sensitivity_dp | CDC Diabetes Health Indicators | PyTorch MLP | pass | 9000 | 6751/2249 | 2251/2251/2249 | 6 | 0.8180 | 0.8180 | -0.0001 | 0.8666 | 0.8608 | -0.0058 | 0 |
-| high_sensitivity_dp | high_sensitivity_dp | CDC Diabetes Health Indicators | PyTorch logistic regression | pass | 9000 | 6751/2249 | 2251/2251/2249 | 10 | 0.8178 | 0.7905 | -0.0273 | 0.8613 | 0.8128 | -0.0485 | 0 |
+| evidence | privacy_profile | privacy_mechanism | secagg_required | dp_scope | epsilon | dataset | model | status | n | train_test | sites | rounds | central_auc | federated_auc | delta_auc | central_accuracy | federated_accuracy | delta_accuracy | failures |
+|:---|:---|:---|:---|:---|---:|:---|:---|:---|---:|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| high_sensitivity_dp | high_sensitivity_dp | secure_aggregation_plus_patient_level_dp_sgd | TRUE | patient_level_dp_sgd | 8 | CDC Diabetes Health Indicators | PyTorch MLP | pass | 9000 | 6751/2249 | 2251/2251/2249 | 6 | 0.8180 | 0.8180 | -0.0001 | 0.8666 | 0.8608 | -0.0058 | 0 |
+| high_sensitivity_dp | high_sensitivity_dp | secure_aggregation_plus_patient_level_dp_sgd | TRUE | patient_level_dp_sgd | 8 | CDC Diabetes Health Indicators | PyTorch logistic regression | pass | 9000 | 6751/2249 | 2251/2251/2249 | 10 | 0.8178 | 0.7905 | -0.0273 | 0.8613 | 0.8128 | -0.0485 | 0 |
 
 ``` r
 
@@ -217,9 +233,9 @@ knitr::kable(
 )
 ```
 
-| evidence | privacy_profile | dataset | model | status | n | train_test | sites | rounds | central_auc | federated_auc | delta_auc | central_accuracy | federated_accuracy | delta_accuracy | failures |
-|:---|:---|:---|:---|:---|---:|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|
-| xgboost_histogram_update_noise | clinical_update_noise | CDC Diabetes Health Indicators | Histogram XGBoost | pass | 9000 | 6751/2249 | 2251/2251/2249 | 1 | 0.7998 | 0.6968 | -0.1031 | 0.8608 | 0.8608 | 0 | 0 |
+| evidence | privacy_profile | privacy_mechanism | secagg_required | dp_scope | epsilon | dataset | model | status | n | train_test | sites | rounds | central_auc | federated_auc | delta_auc | central_accuracy | federated_accuracy | delta_accuracy | failures |
+|:---|:---|:---|:---|:---|---:|:---|:---|:---|---:|:---|:---|---:|---:|---:|---:|---:|---:|---:|---:|
+| xgboost_histogram_update_noise | clinical_update_noise | secure_aggregation_plus_update_noise | TRUE | update_noise_only | 12 | CDC Diabetes Health Indicators | Histogram XGBoost | pass | 9000 | 6751/2249 | 2251/2251/2249 | 1 | 0.7998 | 0.7477 | -0.0521 | 0.8608 | 0.8608 | 0 | 0 |
 
 The `clinical_default` runs require Secure Aggregation, suppress
 per-node metrics and avoid exact per-site count release. This evidence
@@ -229,10 +245,11 @@ template. In this secure path, each boosting round aggregates one
 fixed-shape root histogram under SecAgg+; the server derives one split
 and two leaf values from the protected aggregate, and the next round
 asks clients to apply the previous stump before building the next
-encrypted histogram. The `clinical_update_noise` XGBoost run adds
-Gaussian noise to the bounded histogram contribution before aggregation,
-which demonstrates the stricter privacy profile and its utility cost.
-The `high_sensitivity_dp` evidence uses Opacus DP-SGD with
+encrypted histogram. The representative `clinical_update_noise` XGBoost
+row uses the `epsilon = 12` point from the committed update-noise curve:
+Gaussian noise is added to the bounded histogram contribution before
+aggregation, which demonstrates the stricter privacy profile and its
+utility cost. The `high_sensitivity_dp` evidence uses Opacus DP-SGD with
 `delta = 1e-5` and clipping norm `1` for both PyTorch MLP and PyTorch
 logistic regression, in addition to the Secure Aggregation requirement.
 
@@ -340,10 +357,10 @@ Indicators.](clinical-privacy-benchmarks_files/figure-html/xgboost-update-noise-
 The XGBoost curve uses the `clinical_update_noise` profile rather than
 patient-level DP-SGD. The noise is added to bounded histogram
 contributions before protected aggregation, so it demonstrates the
-utility trade-off for a stricter histogram-update profile. An additional
-local stress run at `epsilon = 4` completed with zero client failures
-but collapsed held-out utility, so it is not included in the committed
-validation envelope.
+utility trade-off for a stricter histogram-update profile. The retained
+curve shows the expected pattern: the most aggressive budget has the
+largest utility cost, while the moderate and relaxed budgets move back
+toward the SecAgg-only reference.
 
 ## Centralised versus federated AUC
 

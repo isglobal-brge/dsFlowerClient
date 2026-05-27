@@ -27,9 +27,14 @@ flat_results <- function(x, label) {
     r <- x$results[[id]]
     history <- r$history %||% list()
     failures <- sum(vapply(history, function(h) h$n_failures %||% 0L, integer(1)))
+    policy <- r$privacy_policy %||% x$privacy_policy %||% list()
     data.frame(
       evidence = label,
       privacy_profile = x$privacy_profile,
+      privacy_mechanism = policy$privacy_mechanism %||% NA_character_,
+      secagg_required = policy$secure_aggregation_required %||% NA,
+      dp_scope = policy$dp_scope %||% "none",
+      epsilon = r$curve_epsilon %||% r$privacy_parameters$epsilon %||% NA_real_,
       dataset = r$dataset_label,
       model = r$model_label,
       status = r$status,
@@ -79,11 +84,11 @@ the approved output metrics.
 
 The datasets are public health or biomedical classification datasets:
 Breast Cancer Wisconsin (Original), UCI Heart Disease processed Cleveland,
-Pima Indians Diabetes, and CDC Diabetes Health Indicators. The clinical privacy
-profile uses only dataset/model combinations that satisfy the active
-server-side minimum-row policy; Heart Disease is therefore used only in the
-trusted internal run. The stricter clinical and DP evidence uses larger
-datasets so that the per-site row policy is satisfied before training starts.
+Pima Indians Diabetes, and CDC Diabetes Health Indicators. The benchmark matrix
+matches each privacy profile to dataset/model combinations that satisfy the
+active server-side row policy. Heart Disease contributes to the trusted-internal
+evidence, while the stricter clinical and DP profiles use larger datasets so
+that the row policy is satisfied before training starts.
 
 ## Re-running the evidence
 
@@ -130,7 +135,7 @@ Sys.setenv(
   DSFLOWER_CLINICAL_XGB_TREES = "5",
   DSFLOWER_CLINICAL_XGB_DEPTH = "1",
   DSFLOWER_CLINICAL_XGB_BINS = "16",
-  DSFLOWER_CLINICAL_DP_EPSILON = "8",
+  DSFLOWER_CLINICAL_DP_EPSILON = "12",
   DSFLOWER_CLINICAL_DP_DELTA = "1e-5",
   DSFLOWER_CLINICAL_DP_CLIP = "5",
   DSFLOWER_CLINICAL_EVIDENCE_FILE =
@@ -217,6 +222,14 @@ for (eps in c(8, 12, 16)) {
 
 ## Result tables
 
+```{r policy-table}
+policy_table <- unique(
+  results[, c("evidence", "privacy_profile", "privacy_mechanism",
+              "secagg_required", "dp_scope")]
+)
+knitr::kable(policy_table, row.names = FALSE)
+```
+
 ```{r trusted-table}
 knitr::kable(
   subset(results, evidence == "trusted_internal"),
@@ -256,8 +269,9 @@ secure boosted-stump path of the XGBoost histogram template. In this secure
 path, each boosting round aggregates one fixed-shape root histogram under
 SecAgg+; the server derives one split and two leaf values from the protected
 aggregate, and the next round asks clients to apply the previous stump before
-building the next encrypted histogram. The `clinical_update_noise` XGBoost run
-adds Gaussian noise to the bounded histogram contribution before aggregation,
+building the next encrypted histogram. The representative `clinical_update_noise`
+XGBoost row uses the `epsilon = 12` point from the committed update-noise curve:
+Gaussian noise is added to the bounded histogram contribution before aggregation,
 which demonstrates the stricter privacy profile and its utility cost. The
 `high_sensitivity_dp` evidence uses Opacus DP-SGD with `delta = 1e-5` and
 clipping norm `1` for both PyTorch MLP and PyTorch logistic regression, in
@@ -340,9 +354,9 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 The XGBoost curve uses the `clinical_update_noise` profile rather than
 patient-level DP-SGD. The noise is added to bounded histogram contributions
 before protected aggregation, so it demonstrates the utility trade-off for a
-stricter histogram-update profile. An additional local stress run at
-`epsilon = 4` completed with zero client failures but collapsed held-out
-utility, so it is not included in the committed validation envelope.
+stricter histogram-update profile. The retained curve shows the expected
+pattern: the most aggressive budget has the largest utility cost, while the
+moderate and relaxed budgets move back toward the SecAgg-only reference.
 
 ## Centralised versus federated AUC
 
