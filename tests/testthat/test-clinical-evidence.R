@@ -272,3 +272,98 @@ test_that("SUPPORT2 DP-SGD method-family evidence covers compatible non-survival
     6
   )
 })
+
+test_that("thesis-facing privacy validation matrix remains covered", {
+  secagg <- jsonlite::fromJSON(system.file(
+    "extdata", "dsflower_clinical_secagg_results.json",
+    package = "dsFlowerClient"
+  ), simplifyVector = FALSE)
+  dp <- jsonlite::fromJSON(system.file(
+    "extdata", "dsflower_clinical_dp_results.json",
+    package = "dsFlowerClient"
+  ), simplifyVector = FALSE)
+  dp_curve <- jsonlite::fromJSON(system.file(
+    "extdata", "dsflower_clinical_dp_curve_results.json",
+    package = "dsFlowerClient"
+  ), simplifyVector = FALSE)
+  xgb_noise <- jsonlite::fromJSON(system.file(
+    "extdata", "dsflower_xgboost_histogram_privacy_results.json",
+    package = "dsFlowerClient"
+  ), simplifyVector = FALSE)
+  xgb_curve <- jsonlite::fromJSON(system.file(
+    "extdata", "dsflower_xgboost_histogram_privacy_curve_results.json",
+    package = "dsFlowerClient"
+  ), simplifyVector = FALSE)
+  family <- jsonlite::fromJSON(system.file(
+    "extdata", "dsflower_method_family_results.json",
+    package = "dsFlowerClient"
+  ))
+  family_dp <- jsonlite::fromJSON(system.file(
+    "extdata", "dsflower_method_family_dp_results.json",
+    package = "dsFlowerClient"
+  ))
+
+  secagg_models <- sort(unique(vapply(secagg$results, `[[`, character(1), "model_id")))
+  expect_equal(
+    secagg_models,
+    sort(c(
+      "sklearn_logreg", "sklearn_ridge", "sklearn_sgd",
+      "pytorch_logreg", "pytorch_mlp", "xgboost_histogram"
+    ))
+  )
+  expect_true(all(vapply(secagg$results, function(x) {
+    identical(x$status, "pass") &&
+      isTRUE(x$secure_aggregation_required) &&
+      !isTRUE(x$dp_required)
+  }, logical(1))))
+
+  dp_models <- sort(unique(vapply(dp$results, `[[`, character(1), "model_id")))
+  expect_equal(dp_models, sort(c("pytorch_logreg", "pytorch_mlp")))
+  expect_true(all(vapply(dp$results, function(x) {
+    identical(x$status, "pass") &&
+      isTRUE(x$secure_aggregation_required) &&
+      isTRUE(x$dp_required) &&
+      identical(x$dp_scope, "patient_level_dp_sgd")
+  }, logical(1))))
+
+  curve_keys <- paste(
+    vapply(dp_curve$results, `[[`, character(1), "model_id"),
+    vapply(dp_curve$results, `[[`, numeric(1), "curve_epsilon"),
+    sep = ":"
+  )
+  expect_equal(
+    sort(curve_keys),
+    sort(c(
+      "pytorch_logreg:2", "pytorch_logreg:4", "pytorch_logreg:8",
+      "pytorch_mlp:2", "pytorch_mlp:4", "pytorch_mlp:8"
+    ))
+  )
+
+  representative <- xgb_noise$results[[1]]
+  expect_equal(representative$model_id, "xgboost_histogram")
+  expect_equal(representative$privacy_profile, "clinical_update_noise")
+  expect_true(isTRUE(representative$secure_aggregation_required))
+  expect_true(isTRUE(representative$dp_required))
+  expect_equal(representative$dp_scope, "update_noise_only")
+  expect_equal(representative$curve_epsilon, 12)
+  expect_equal(unname(sort(vapply(
+    xgb_curve$results, `[[`, numeric(1), "curve_epsilon"
+  ))), c(8, 12, 16))
+
+  expect_equal(
+    sort(family$results$method),
+    sort(c(
+      "pytorch_linear_regression", "pytorch_poisson",
+      "pytorch_multiclass", "pytorch_multilabel", "pytorch_coxph"
+    ))
+  )
+  expect_equal(
+    sort(family_dp$results$method),
+    sort(c(
+      "pytorch_linear_regression", "pytorch_poisson",
+      "pytorch_multiclass", "pytorch_multilabel"
+    ))
+  )
+  expect_true(all(family$results$validation_status == "pass"))
+  expect_true(all(family_dp$results$validation_status == "pass"))
+})

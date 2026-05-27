@@ -1,11 +1,11 @@
 # All Method Validation Overview
 
-This macro-vignette summarizes the live dsFlower validation suite across
-tabular, sequence, survival, XGBoost, image-classification, and
-segmentation templates. Each method has its own vignette. The core
-method-validation suite uses deterministic synthetic fixtures for broad
-template coverage; the clinical benchmarks add real public datasets for
-the thesis-facing evidence.
+This macro-vignette summarizes the current committed dsFlower validation
+evidence across tabular, sequence, survival, XGBoost,
+image-classification, and segmentation templates. Each method has its
+own vignette. The core method-validation suite uses deterministic
+synthetic fixtures for broad template coverage; the clinical benchmarks
+add real public datasets for the thesis-facing evidence.
 
 The suite is deliberately a functional and numerical sanity check, not a
 privacy claim and not, by itself, a clinical benchmark. It uses
@@ -21,6 +21,88 @@ CoxPH is still validated in the Secure Aggregation run; because its
 risk-set partial likelihood is not a per-example loss,
 `high_sensitivity_dp` is not the matching privacy profile for that
 route.
+
+The thesis-facing evidence is broader than the synthetic catalogue
+checks. It includes public clinical benchmark datasets, SUPPORT2
+method-family tasks, LUNG1 radiomics features produced by dsImaging, a
+LUNG1 direct-image path check and a larger PathMNIST direct-image
+benchmark.
+
+``` r
+
+thesis_evidence <- data.frame(
+  layer = c(
+    'clinical trusted benchmark',
+    'clinical SecAgg benchmark',
+    'clinical DP-SGD benchmark',
+    'XGBoost histogram update-noise',
+    'SUPPORT2 SecAgg families',
+    'SUPPORT2 DP-SGD families',
+    'LUNG1 radiomics handoff',
+    'LUNG1 direct-image handoff',
+    'PathMNIST direct-image benchmark'
+  ),
+  data = c(
+    'Breast Cancer, Heart Disease, Pima, CDC Diabetes',
+    'Breast Cancer, Pima, CDC Diabetes',
+    'CDC Diabetes',
+    'CDC Diabetes',
+    'SUPPORT2',
+    'SUPPORT2',
+    paste0(lung1_rad$dimensions[['dimensions of rad in combined studies']][[1]], ' LUNG1-derived rows'),
+    paste0(sum(as.integer(unlist(lung1_img$metadata_n))), ' LUNG1 NIfTI assets'),
+    paste0(pathmnist$n_total, ' PathMNIST images')
+  ),
+  profile = c(
+    clinical_trusted$privacy_profile,
+    clinical_secagg$privacy_profile,
+    clinical_dp$privacy_profile,
+    xgb_noise$privacy_profile,
+    if (!is.null(family_validation)) family_validation$privacy_profile else NA,
+    if (!is.null(family_dp_validation)) family_dp_validation$privacy_profile else NA,
+    lung1_rad$privacy,
+    lung1_img$privacy,
+    'trusted_internal + consortium_internal'
+  ),
+  runs_or_routes = c(
+    count_results(clinical_trusted),
+    count_results(clinical_secagg),
+    count_results(clinical_dp),
+    count_results(xgb_noise),
+    if (!is.null(family_results)) nrow(family_results) else NA,
+    if (!is.null(family_dp_results)) nrow(family_dp_results) else NA,
+    length(lung1_rad$history),
+    length(lung1_img$history),
+    length(pathmnist$profile_results)
+  ),
+  failures = c(
+    count_failures(clinical_trusted),
+    count_failures(clinical_secagg),
+    count_failures(clinical_dp),
+    count_failures(xgb_noise),
+    if (!is.null(family_results)) sum(family_results$federated_n_failures) else NA,
+    if (!is.null(family_dp_results)) sum(family_dp_results$federated_n_failures) else NA,
+    sum(vapply(lung1_rad$history, `[[`, numeric(1), 'n_failures')),
+    lung1_img$local_vs_federated$federated$n_failures,
+    pathmnist$trusted_internal_comparison$federated_failures +
+      pathmnist$consortium_internal_secagg$federated_failures
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(thesis_evidence, row.names = FALSE)
+```
+
+| layer | data | profile | runs_or_routes | failures |
+|:---|:---|:---|---:|---:|
+| clinical trusted benchmark | Breast Cancer, Heart Disease, Pima, CDC Diabetes | trusted_internal | 6 | 0 |
+| clinical SecAgg benchmark | Breast Cancer, Pima, CDC Diabetes | clinical_default | 8 | 0 |
+| clinical DP-SGD benchmark | CDC Diabetes | high_sensitivity_dp | 2 | 0 |
+| XGBoost histogram update-noise | CDC Diabetes | clinical_update_noise | 1 | 0 |
+| SUPPORT2 SecAgg families | SUPPORT2 | clinical_default | 5 | 0 |
+| SUPPORT2 DP-SGD families | SUPPORT2 | high_sensitivity_dp | 4 | 0 |
+| LUNG1 radiomics handoff | 422 LUNG1-derived rows | trusted_internal | 2 | 0 |
+| LUNG1 direct-image handoff | 9 LUNG1 NIfTI assets | sandbox_open | 1 | 0 |
+| PathMNIST direct-image benchmark | 1500 PathMNIST images | trusted_internal + consortium_internal | 2 | 0 |
 
 ``` r
 

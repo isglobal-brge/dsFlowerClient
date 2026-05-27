@@ -69,14 +69,14 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Clinical Privacy Benchmarks</h1>
-            
-      
+
+
 
       <div class="d-none name"><code>clinical-privacy-benchmarks.Rmd</code></div>
     </div>
 
-    
-    
+
+
 <p>This vignette reports public clinical benchmark runs executed through
 the same DataSHIELD/Flower path used by dsFlower applications. Each run
 partitions the training data over three Opal/Rock servers, launches the
@@ -93,11 +93,118 @@ Disease contributes to the trusted-internal evidence, while the stricter
 clinical and DP profiles use larger datasets so that the row policy is
 satisfied before training starts.</p>
 <div class="section level2">
+<h2 id="evidence-map">Evidence map<a class="anchor" aria-label="anchor" href="#evidence-map"></a>
+</h2>
+<p>The committed evidence is split by privacy posture. The
+<code>trusted_internal</code> profile exercises ordinary federated
+training on public datasets. The <code>clinical_default</code> profile
+requires Secure Aggregation, fixed three-client participation and
+suppressed per-node metrics. <code>high_sensitivity_dp</code> adds
+patient-level DP-SGD for compatible PyTorch losses, and
+<code>clinical_update_noise</code> applies bounded histogram noise to
+the secure XGBoost histogram route.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">evidence_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  evidence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"trusted_internal"</span>,</span>
+<span>    <span class="st">"clinical_default_secagg"</span>,</span>
+<span>    <span class="st">"high_sensitivity_dp"</span>,</span>
+<span>    <span class="st">"xgboost_histogram_update_noise"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  datasets <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"trusted_internal"</span><span class="op">)</span><span class="op">$</span><span class="va">dataset</span><span class="op">)</span>,</span>
+<span>          collapse <span class="op">=</span> <span class="st">"; "</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"clinical_default_secagg"</span><span class="op">)</span><span class="op">$</span><span class="va">dataset</span><span class="op">)</span>,</span>
+<span>          collapse <span class="op">=</span> <span class="st">"; "</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"high_sensitivity_dp"</span><span class="op">)</span><span class="op">$</span><span class="va">dataset</span><span class="op">)</span>,</span>
+<span>          collapse <span class="op">=</span> <span class="st">"; "</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"xgboost_histogram_update_noise"</span><span class="op">)</span><span class="op">$</span><span class="va">dataset</span><span class="op">)</span>,</span>
+<span>          collapse <span class="op">=</span> <span class="st">"; "</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  templates <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"trusted_internal"</span><span class="op">)</span><span class="op">$</span><span class="va">model</span><span class="op">)</span>,</span>
+<span>          collapse <span class="op">=</span> <span class="st">"; "</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"clinical_default_secagg"</span><span class="op">)</span><span class="op">$</span><span class="va">model</span><span class="op">)</span>,</span>
+<span>          collapse <span class="op">=</span> <span class="st">"; "</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"high_sensitivity_dp"</span><span class="op">)</span><span class="op">$</span><span class="va">model</span><span class="op">)</span>,</span>
+<span>          collapse <span class="op">=</span> <span class="st">"; "</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"xgboost_histogram_update_noise"</span><span class="op">)</span><span class="op">$</span><span class="va">model</span><span class="op">)</span>,</span>
+<span>          collapse <span class="op">=</span> <span class="st">"; "</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  n_runs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"trusted_internal"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"clinical_default_secagg"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"high_sensitivity_dp"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"xgboost_histogram_update_noise"</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  failures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"trusted_internal"</span><span class="op">)</span><span class="op">$</span><span class="va">failures</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"clinical_default_secagg"</span><span class="op">)</span><span class="op">$</span><span class="va">failures</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"high_sensitivity_dp"</span><span class="op">)</span><span class="op">$</span><span class="va">failures</span><span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"xgboost_histogram_update_noise"</span><span class="op">)</span><span class="op">$</span><span class="va">failures</span><span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">evidence_map</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="10%">
+<col width="43%">
+<col width="41%">
+<col width="2%">
+<col width="3%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">evidence</th>
+<th align="left">datasets</th>
+<th align="left">templates</th>
+<th align="right">n_runs</th>
+<th align="right">failures</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">trusted_internal</td>
+<td align="left">Breast Cancer Wisconsin (Original); UCI Heart Disease
+processed Cleveland; Pima Indians Diabetes; CDC Diabetes Health
+Indicators</td>
+<td align="left">Logistic regression; Histogram XGBoost; PyTorch
+MLP</td>
+<td align="right">6</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">clinical_default_secagg</td>
+<td align="left">Breast Cancer Wisconsin (Original); Pima Indians
+Diabetes; CDC Diabetes Health Indicators</td>
+<td align="left">Logistic regression; Histogram XGBoost; Ridge
+classifier; SGD logistic classifier; PyTorch logistic regression;
+PyTorch MLP</td>
+<td align="right">8</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">high_sensitivity_dp</td>
+<td align="left">CDC Diabetes Health Indicators</td>
+<td align="left">PyTorch MLP; PyTorch logistic regression</td>
+<td align="right">2</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">xgboost_histogram_update_noise</td>
+<td align="left">CDC Diabetes Health Indicators</td>
+<td align="left">Histogram XGBoost</td>
+<td align="right">1</td>
+<td align="right">0</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level2">
 <h2 id="re-running-the-evidence">Re-running the evidence<a class="anchor" aria-label="anchor" href="#re-running-the-evidence"></a>
 </h2>
 <p>The commands below reproduce the committed benchmark evidence against
 a local three-Opal stack.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_DEMO_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"trusted_internal"</span>,</span>
 <span>  DSFLOWER_CDC_DIABETES_LIMIT <span class="op">=</span> <span class="st">"9000"</span>,</span>
@@ -108,7 +215,7 @@ a local three-Opal stack.</p>
 <span>  <span class="st">"demos"</span>, <span class="st">"benchmark_clinical_algorithms.R"</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">"dsFlowerClient"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_DEMO_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"clinical_default"</span>,</span>
 <span>  DSFLOWER_CLINICAL_MODELS <span class="op">=</span></span>
@@ -124,7 +231,7 @@ a local three-Opal stack.</p>
 <span>  <span class="st">"demos"</span>, <span class="st">"benchmark_clinical_algorithms.R"</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">"dsFlowerClient"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_DEMO_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"clinical_update_noise"</span>,</span>
 <span>  DSFLOWER_CLINICAL_DATASETS <span class="op">=</span> <span class="st">"cdc_diabetes_health_indicators"</span>,</span>
@@ -143,7 +250,7 @@ a local three-Opal stack.</p>
 <span>  <span class="st">"demos"</span>, <span class="st">"benchmark_clinical_algorithms.R"</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">"dsFlowerClient"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_DEMO_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"high_sensitivity_dp"</span>,</span>
 <span>  DSFLOWER_CLINICAL_DATASETS <span class="op">=</span> <span class="st">"cdc_diabetes_health_indicators"</span>,</span>
@@ -159,7 +266,7 @@ a local three-Opal stack.</p>
 <span>  <span class="st">"demos"</span>, <span class="st">"benchmark_clinical_algorithms.R"</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">"dsFlowerClient"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">model</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pytorch_logreg"</span>, <span class="st">"pytorch_mlp"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">eps</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="va">model</span> <span class="op">==</span> <span class="st">"pytorch_logreg"</span><span class="op">)</span> <span class="op">{</span></span>
@@ -186,7 +293,7 @@ a local three-Opal stack.</p>
 <span>    <span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">eps</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">12</span>, <span class="fl">16</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>    DSFLOWER_DEMO_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"clinical_update_noise"</span>,</span>
@@ -214,7 +321,7 @@ a local three-Opal stack.</p>
 <div class="section level2">
 <h2 id="result-tables">Result tables<a class="anchor" aria-label="anchor" href="#result-tables"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">policy_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span></span>
 <span>  <span class="va">results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"evidence"</span>, <span class="st">"privacy_profile"</span>, <span class="st">"privacy_mechanism"</span>,</span>
 <span>              <span class="st">"secagg_required"</span>, <span class="st">"dp_scope"</span><span class="op">)</span><span class="op">]</span></span>
@@ -266,7 +373,7 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"trusted_internal"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -452,7 +559,7 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"clinical_default_secagg"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -682,7 +789,7 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"high_sensitivity_dp"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -780,7 +887,7 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"xgboost_histogram_update_noise"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -875,7 +982,7 @@ Secure Aggregation requirement.</p>
 <div class="section level2">
 <h2 id="dp-utility-curve">DP Utility Curve<a class="anchor" aria-label="anchor" href="#dp-utility-curve"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">curve_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"epsilon"</span>, <span class="st">"dataset"</span>, <span class="st">"model"</span>, <span class="st">"rounds"</span>, <span class="st">"central_auc"</span>,</span>
 <span>                    <span class="st">"federated_auc"</span>, <span class="st">"delta_auc"</span>, <span class="st">"failures"</span><span class="op">)</span><span class="op">]</span>,</span>
@@ -966,7 +1073,7 @@ Secure Aggregation requirement.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">central_lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">curve_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"model"</span>, <span class="st">"central_auc"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
@@ -997,7 +1104,7 @@ Secure Aggregation requirement.</p>
 <div class="section level2">
 <h2 id="xgboost-histogram-update-noise-curve">XGBoost Histogram Update-Noise Curve<a class="anchor" aria-label="anchor" href="#xgboost-histogram-update-noise-curve"></a>
 </h2>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">xgb_curve_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"epsilon"</span>, <span class="st">"dataset"</span>, <span class="st">"model"</span>, <span class="st">"central_auc"</span>,</span>
 <span>                        <span class="st">"federated_auc"</span>, <span class="st">"delta_auc"</span>, <span class="st">"failures"</span><span class="op">)</span><span class="op">]</span>,</span>
@@ -1053,7 +1160,7 @@ Secure Aggregation requirement.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
 <span>    <span class="va">xgb_curve_results</span>,</span>
@@ -1087,7 +1194,7 @@ move back toward the SecAgg-only reference.</p>
 <div class="section level2">
 <h2 id="centralised-versus-federated-auc">Centralised versus federated AUC<a class="anchor" aria-label="anchor" href="#centralised-versus-federated-auc"></a>
 </h2>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_df</span> <span class="op">&lt;-</span> <span class="va">results</span></span>
 <span><span class="va">plot_df</span><span class="op">$</span><span class="va">label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">plot_df</span><span class="op">$</span><span class="va">privacy_profile</span>, <span class="va">plot_df</span><span class="op">$</span><span class="va">dataset</span>, <span class="va">plot_df</span><span class="op">$</span><span class="va">model</span>, sep <span class="op">=</span> <span class="st">" / "</span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>

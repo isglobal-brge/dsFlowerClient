@@ -18,6 +18,69 @@ Disease contributes to the trusted-internal evidence, while the stricter
 clinical and DP profiles use larger datasets so that the row policy is
 satisfied before training starts.
 
+## Evidence map
+
+The committed evidence is split by privacy posture. The
+`trusted_internal` profile exercises ordinary federated training on
+public datasets. The `clinical_default` profile requires Secure
+Aggregation, fixed three-client participation and suppressed per-node
+metrics. `high_sensitivity_dp` adds patient-level DP-SGD for compatible
+PyTorch losses, and `clinical_update_noise` applies bounded histogram
+noise to the secure XGBoost histogram route.
+
+``` r
+
+evidence_map <- data.frame(
+  evidence = c(
+    "trusted_internal",
+    "clinical_default_secagg",
+    "high_sensitivity_dp",
+    "xgboost_histogram_update_noise"
+  ),
+  datasets = c(
+    paste(unique(subset(results, evidence == "trusted_internal")$dataset),
+          collapse = "; "),
+    paste(unique(subset(results, evidence == "clinical_default_secagg")$dataset),
+          collapse = "; "),
+    paste(unique(subset(results, evidence == "high_sensitivity_dp")$dataset),
+          collapse = "; "),
+    paste(unique(subset(results, evidence == "xgboost_histogram_update_noise")$dataset),
+          collapse = "; ")
+  ),
+  templates = c(
+    paste(unique(subset(results, evidence == "trusted_internal")$model),
+          collapse = "; "),
+    paste(unique(subset(results, evidence == "clinical_default_secagg")$model),
+          collapse = "; "),
+    paste(unique(subset(results, evidence == "high_sensitivity_dp")$model),
+          collapse = "; "),
+    paste(unique(subset(results, evidence == "xgboost_histogram_update_noise")$model),
+          collapse = "; ")
+  ),
+  n_runs = c(
+    nrow(subset(results, evidence == "trusted_internal")),
+    nrow(subset(results, evidence == "clinical_default_secagg")),
+    nrow(subset(results, evidence == "high_sensitivity_dp")),
+    nrow(subset(results, evidence == "xgboost_histogram_update_noise"))
+  ),
+  failures = c(
+    sum(subset(results, evidence == "trusted_internal")$failures),
+    sum(subset(results, evidence == "clinical_default_secagg")$failures),
+    sum(subset(results, evidence == "high_sensitivity_dp")$failures),
+    sum(subset(results, evidence == "xgboost_histogram_update_noise")$failures)
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(evidence_map, row.names = FALSE)
+```
+
+| evidence | datasets | templates | n_runs | failures |
+|:---|:---|:---|---:|---:|
+| trusted_internal | Breast Cancer Wisconsin (Original); UCI Heart Disease processed Cleveland; Pima Indians Diabetes; CDC Diabetes Health Indicators | Logistic regression; Histogram XGBoost; PyTorch MLP | 6 | 0 |
+| clinical_default_secagg | Breast Cancer Wisconsin (Original); Pima Indians Diabetes; CDC Diabetes Health Indicators | Logistic regression; Histogram XGBoost; Ridge classifier; SGD logistic classifier; PyTorch logistic regression; PyTorch MLP | 8 | 0 |
+| high_sensitivity_dp | CDC Diabetes Health Indicators | PyTorch MLP; PyTorch logistic regression | 2 | 0 |
+| xgboost_histogram_update_noise | CDC Diabetes Health Indicators | Histogram XGBoost | 1 | 0 |
+
 ## Re-running the evidence
 
 The commands below reproduce the committed benchmark evidence against a

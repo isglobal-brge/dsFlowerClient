@@ -41,6 +41,40 @@ family_dp_paths <- c(
 family_dp_result_path <- family_dp_paths[nzchar(family_dp_paths) & file.exists(family_dp_paths)][1]
 family_dp_validation <- if (!is.na(family_dp_result_path)) jsonlite::fromJSON(family_dp_result_path) else NULL
 family_dp_results <- if (!is.null(family_dp_validation)) family_dp_validation$results else NULL
+find_extdata <- function(file) {
+  paths <- c(
+    file.path('..', 'inst', 'extdata', file),
+    file.path('inst', 'extdata', file),
+    system.file('extdata', file, package = 'dsFlowerClient')
+  )
+  paths[nzchar(paths) & file.exists(paths)][1]
+}
+read_extdata <- function(file) {
+  path <- find_extdata(file)
+  if (is.na(path)) return(NULL)
+  jsonlite::fromJSON(path, simplifyVector = FALSE)
+}
+count_results <- function(x) {
+  if (is.null(x) || is.null(x$results)) return(NA_integer_)
+  length(x$results)
+}
+`%||%` <- function(x, y) {
+  if (is.null(x) || length(x) == 0 || (length(x) == 1 && is.na(x))) y else x
+}
+count_failures <- function(x) {
+  if (is.null(x) || is.null(x$results)) return(NA_integer_)
+  sum(vapply(x$results, function(r) {
+    sum(vapply(r$history %||% list(), function(h) h$n_failures %||% 0L,
+               integer(1)))
+  }, integer(1)))
+}
+clinical_trusted <- read_extdata('dsflower_clinical_algorithm_results.json')
+clinical_secagg <- read_extdata('dsflower_clinical_secagg_results.json')
+clinical_dp <- read_extdata('dsflower_clinical_dp_results.json')
+xgb_noise <- read_extdata('dsflower_xgboost_histogram_privacy_results.json')
+lung1_rad <- read_extdata('dsflower_lung1_radiomics_results.json')
+lung1_img <- read_extdata('dsflower_lung1_direct_image_results.json')
+pathmnist <- read_extdata('dsflower_pathmnist_direct_image_results.json')
 column_or <- function(frame, name, default) {
   if (name %in% names(frame)) frame[[name]] else rep(default, nrow(frame))
 }
@@ -100,7 +134,7 @@ family_dp_display <- if (!is.null(family_dp_results)) data.frame(
 results <- rbind(method_display, vision_display, family_display, family_dp_display)
 ```
 
-This macro-vignette summarizes the live dsFlower validation suite across
+This macro-vignette summarizes the current committed dsFlower validation evidence across
 tabular, sequence, survival, XGBoost, image-classification, and segmentation
 templates. Each method has its own vignette. The core method-validation suite
 uses deterministic synthetic fixtures for broad template coverage; the clinical
@@ -118,6 +152,74 @@ The SUPPORT2 DP-SGD evidence is interpreted over the four templates whose
 losses decompose by sample. CoxPH is still validated in the Secure Aggregation
 run; because its risk-set partial likelihood is not a per-example loss,
 `high_sensitivity_dp` is not the matching privacy profile for that route.
+
+The thesis-facing evidence is broader than the synthetic catalogue checks. It
+includes public clinical benchmark datasets, SUPPORT2 method-family tasks,
+LUNG1 radiomics features produced by dsImaging, a LUNG1 direct-image path check
+and a larger PathMNIST direct-image benchmark.
+
+```{r thesis-facing-evidence}
+thesis_evidence <- data.frame(
+  layer = c(
+    'clinical trusted benchmark',
+    'clinical SecAgg benchmark',
+    'clinical DP-SGD benchmark',
+    'XGBoost histogram update-noise',
+    'SUPPORT2 SecAgg families',
+    'SUPPORT2 DP-SGD families',
+    'LUNG1 radiomics handoff',
+    'LUNG1 direct-image handoff',
+    'PathMNIST direct-image benchmark'
+  ),
+  data = c(
+    'Breast Cancer, Heart Disease, Pima, CDC Diabetes',
+    'Breast Cancer, Pima, CDC Diabetes',
+    'CDC Diabetes',
+    'CDC Diabetes',
+    'SUPPORT2',
+    'SUPPORT2',
+    paste0(lung1_rad$dimensions[['dimensions of rad in combined studies']][[1]], ' LUNG1-derived rows'),
+    paste0(sum(as.integer(unlist(lung1_img$metadata_n))), ' LUNG1 NIfTI assets'),
+    paste0(pathmnist$n_total, ' PathMNIST images')
+  ),
+  profile = c(
+    clinical_trusted$privacy_profile,
+    clinical_secagg$privacy_profile,
+    clinical_dp$privacy_profile,
+    xgb_noise$privacy_profile,
+    if (!is.null(family_validation)) family_validation$privacy_profile else NA,
+    if (!is.null(family_dp_validation)) family_dp_validation$privacy_profile else NA,
+    lung1_rad$privacy,
+    lung1_img$privacy,
+    'trusted_internal + consortium_internal'
+  ),
+  runs_or_routes = c(
+    count_results(clinical_trusted),
+    count_results(clinical_secagg),
+    count_results(clinical_dp),
+    count_results(xgb_noise),
+    if (!is.null(family_results)) nrow(family_results) else NA,
+    if (!is.null(family_dp_results)) nrow(family_dp_results) else NA,
+    length(lung1_rad$history),
+    length(lung1_img$history),
+    length(pathmnist$profile_results)
+  ),
+  failures = c(
+    count_failures(clinical_trusted),
+    count_failures(clinical_secagg),
+    count_failures(clinical_dp),
+    count_failures(xgb_noise),
+    if (!is.null(family_results)) sum(family_results$federated_n_failures) else NA,
+    if (!is.null(family_dp_results)) sum(family_dp_results$federated_n_failures) else NA,
+    sum(vapply(lung1_rad$history, `[[`, numeric(1), 'n_failures')),
+    lung1_img$local_vs_federated$federated$n_failures,
+    pathmnist$trusted_internal_comparison$federated_failures +
+      pathmnist$consortium_internal_secagg$federated_failures
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(thesis_evidence, row.names = FALSE)
+```
 
 ```{r}
 summary_table <- data.frame(

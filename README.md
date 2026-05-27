@@ -102,7 +102,7 @@ federated checkpoint accuracy `0.9860`. The `consortium_internal` branch
 requires Secure Aggregation, suppresses per-node metrics, produces a global
 checkpoint, and passes with zero client failures.
 
-## Method validation suite
+## Catalogue method validation suite
 
 `inst/demos/validate_methods.R` validates the tabular, survival, sequence, and
 XGBoost method templates against centralized baselines. It creates one synthetic
@@ -116,17 +116,19 @@ DSFLOWER_VALIDATE_METHODS=pytorch_multilabel Rscript inst/demos/validate_methods
 ```
 
 Validation run on 2026-05-11: all 17 non-vision methods passed against
-centralized baselines with zero client failures. XGBoost now validates in the
-trusted sandbox profile through the histogram template and native model-artifact
-evaluation; clinical/consortium profiles still enforce SecAgg through the
-DataSHIELD trust policy.
+centralized baselines with zero client failures. This suite is a deterministic
+catalogue-coverage check; thesis-facing clinical evidence is recorded in the
+public benchmark and SUPPORT2 runs below. XGBoost validates in the trusted
+sandbox profile through the histogram template and native model-artifact
+evaluation; clinical/consortium profiles enforce SecAgg through the DataSHIELD
+trust policy.
 
 The suite fails fast when a method has client failures, missing finite losses,
 or a federated loss outside the configured acceptance envelope. The generated
 JSON records the centralized loss, federated loss, delta, acceptance margin, and
 per-method pass/fail status used by the validation vignettes.
 
-## Vision method validation
+## Catalogue vision method validation
 
 `inst/demos/validate_vision_methods.R` validates the image templates separately
 from the tabular suite. It generates synthetic PNG images and masks, copies the
@@ -140,9 +142,11 @@ DSFLOWER_VALIDATE_VISION_METHODS=pytorch_unet2d Rscript inst/demos/validate_visi
 
 Validation run on 2026-05-11: `pytorch_resnet18`, `pytorch_densenet121`, and
 `pytorch_unet2d` all passed on three Opal/Rock nodes with zero client failures.
-The run writes `inst/extdata/dsflower_vision_validation_results.json` for the
-vision validation pkgdown articles, including the same acceptance fields used by
-the non-vision suite.
+As above, this is the catalogue-coverage layer. The larger PathMNIST run below
+is the public direct-image benchmark used for thesis-facing evidence. The run
+writes `inst/extdata/dsflower_vision_validation_results.json` for the vision
+validation pkgdown articles, including the same acceptance fields used by the
+non-vision suite.
 
 For a real imaging handoff, `inst/demos/lung1_radiomics_to_flower.R` consumes
 published `dsImaging` radiomics assets, loads them as a server-side `rad` table,
