@@ -161,9 +161,10 @@ ds.flower.templates <- function(conns) {
     config_lines <- c(config_lines, .toml_kv(paste0("privacy-", nm), val))
   }
 
-  # SecAgg and metric suppression flags (passed via run_config to server_app)
-  # These are informational in pyproject.toml; the server enforces via manifest.
-  secagg_profiles <- c("clinical_default", "clinical_hardened",
+  # SecAgg and metric suppression flags are consumed by the generated
+  # ServerApp; the DataSHIELD manifest enforces the same policy server-side.
+  secagg_profiles <- c("consortium_internal",
+                       "clinical_default", "clinical_hardened",
                        "clinical_update_noise", "high_sensitivity_dp",
                        "secure", "dp")
   if (recipe$privacy$mode %in% secagg_profiles) {

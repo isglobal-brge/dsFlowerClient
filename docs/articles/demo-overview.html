@@ -38,6 +38,7 @@
     <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
+    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
@@ -78,9 +79,9 @@
     
 <p>This page is the landing point for the rendered dsFlowerClient demos.
 The main evidence is split into four groups: public benchmark runs with
-centralised and federated test metrics, LUNG1 imaging handoff runs that
-show composition with dsImaging, clinical privacy-profile and
-method-family benchmarks, and the template validation suite that
+centralised and federated test metrics, imaging runs that cover LUNG1
+handoff and direct PathMNIST image learning, clinical privacy-profile
+and method-family benchmarks, and the template validation suite that
 exercises every authorised method. Together they show the same
 DataSHIELD execution pattern: the researcher connects to Opal,
 references or stages server-side data, launches Flower training, and
@@ -177,31 +178,35 @@ inspects approved model-scale outputs.</p>
 <code class="sourceCode R"><span><span class="va">imaging_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  demo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"LUNG1 dsImaging Radiomics Evidence"</span>,</span>
-<span>    <span class="st">"LUNG1 Direct dsImaging Image Evidence"</span></span>
+<span>    <span class="st">"LUNG1 Direct dsImaging Image Evidence"</span>,</span>
+<span>    <span class="st">"PathMNIST Direct Image ResNet Benchmark"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"lung1-radiomics-to-flower.html"</span>,</span>
-<span>    <span class="st">"lung1-direct-image-dsimaging-resnet.html"</span></span>
+<span>    <span class="st">"lung1-direct-image-dsimaging-resnet.html"</span>,</span>
+<span>    <span class="st">"pathmnist-direct-image-resnet.html"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"dsImaging-derived LUNG1 radiomics table"</span>,</span>
-<span>    <span class="st">"dsImaging-resolved LUNG1 NIfTI assets"</span></span>
+<span>    <span class="st">"dsImaging-resolved LUNG1 NIfTI assets"</span>,</span>
+<span>    <span class="st">"MedMNIST PathMNIST server-side PNG files"</span></span>
 <span>  <span class="op">)</span>,</span>
-<span>  sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">3L</span><span class="op">)</span>,</span>
+<span>  sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span><span class="op">)</span>,</span>
 <span>  result <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"422 rows; loss 0.6503 -&gt; 0.6474; 0 client failures"</span>,</span>
-<span>    <span class="st">"9 images; central loss 0.5540; federated loss 0.5847; 0 client failures"</span></span>
+<span>    <span class="st">"9 images; central loss 0.5540; federated loss 0.5847; 0 client failures"</span>,</span>
+<span>    <span class="st">"1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">imaging_results</span><span class="op">)</span></span></code></pre></div>
-<table style="width:100%;" class="table">
+<table class="table">
 <colgroup>
+<col width="18%">
 <col width="19%">
-<col width="20%">
-<col width="20%">
-<col width="3%">
-<col width="36%">
+<col width="19%">
+<col width="2%">
+<col width="39%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">demo</th>
@@ -226,6 +231,14 @@ failures</td>
 <td align="right">3</td>
 <td align="left">9 images; central loss 0.5540; federated loss 0.5847; 0
 client failures</td>
+</tr>
+<tr class="odd">
+<td align="left">PathMNIST Direct Image ResNet Benchmark</td>
+<td align="left">pathmnist-direct-image-resnet.html</td>
+<td align="left">MedMNIST PathMNIST server-side PNG files</td>
+<td align="right">3</td>
+<td align="left">1,500 images; central accuracy 0.9947; federated
+accuracy 0.9860; SecAgg branch pass</td>
 </tr>
 </tbody>
 </table>
@@ -419,6 +432,8 @@ families</td>
 Benchmarks</a></li>
 <li><a href="clinical-method-family-benchmarks.html">Clinical
 Method-Family Benchmarks</a></li>
+<li><a href="pathmnist-direct-image-resnet.html">PathMNIST Direct Image
+ResNet Benchmark</a></li>
 <li><a href="lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct
 dsImaging Image Evidence</a></li>
 <li><a href="lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics

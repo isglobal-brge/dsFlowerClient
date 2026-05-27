@@ -91,6 +91,28 @@ images, one federated round, zero client failures, federated loss
 `0.5847` vs centralized local loss `0.5540` on the same tiny smoke
 cohort.
 
+For a larger public direct-image benchmark,
+`inst/demos/benchmark_pathmnist_direct_image.R` uses a balanced
+PathMNIST binary subset from MedMNIST v2. It writes PNG files to the
+Rock-side image root, uploads only metadata and relative paths to Opal,
+trains a centralized ResNet-18 baseline, then runs the federated
+ResNet-18 template under `trusted_internal` and `consortium_internal`:
+
+``` sh
+export DSFLOWER_OPAL_URLS="https://localhost:8443,https://localhost:8444,https://localhost:8445"
+export OPAL_USER="administrator"
+export OPAL_PASSWORD="admin123"
+export DSFLOWER_PATHMNIST_N_PER_SITE=500
+Rscript inst/demos/benchmark_pathmnist_direct_image.R
+```
+
+Validation run on 2026-05-27: three Opal/Rock clients, 1,500 PathMNIST
+images, two federated rounds, zero client failures, centralized accuracy
+`0.9947` vs federated checkpoint accuracy `0.9860`. The
+`consortium_internal` branch requires Secure Aggregation, suppresses
+per-node metrics, produces a global checkpoint, and passes with zero
+client failures.
+
 ## Method validation suite
 
 `inst/demos/validate_methods.R` validates the tabular, survival,

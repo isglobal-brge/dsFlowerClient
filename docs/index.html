@@ -40,6 +40,7 @@
     <li><a class="dropdown-item" href="articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
     <li><a class="dropdown-item" href="articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
     <li><a class="dropdown-item" href="articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
+    <li><a class="dropdown-item" href="articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
     <li><a class="dropdown-item" href="articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
     <li><a class="dropdown-item" href="articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
@@ -106,13 +107,20 @@
 <span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_LOCAL_WORKDIR</span><span class="op">=</span><span class="st">"/tmp/dsimaging_lung1_study"</span></span>
 <span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/dsimaging_direct_image_resnet.R</span></code></pre></div>
 <p>Validation run on 2026-05-11: three Opal/Rock clients, nine LUNG1 NIfTI images, one federated round, zero client failures, federated loss <code>0.5847</code> vs centralized local loss <code>0.5540</code> on the same tiny smoke cohort.</p>
+<p>For a larger public direct-image benchmark, <code>inst/demos/benchmark_pathmnist_direct_image.R</code> uses a balanced PathMNIST binary subset from MedMNIST v2. It writes PNG files to the Rock-side image root, uploads only metadata and relative paths to Opal, trains a centralized ResNet-18 baseline, then runs the federated ResNet-18 template under <code>trusted_internal</code> and <code>consortium_internal</code>:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_OPAL_URLS</span><span class="op">=</span><span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_USER</span><span class="op">=</span><span class="st">"administrator"</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_PASSWORD</span><span class="op">=</span><span class="st">"admin123"</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_PATHMNIST_N_PER_SITE</span><span class="op">=</span>500</span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_pathmnist_direct_image.R</span></code></pre></div>
+<p>Validation run on 2026-05-27: three Opal/Rock clients, 1,500 PathMNIST images, two federated rounds, zero client failures, centralized accuracy <code>0.9947</code> vs federated checkpoint accuracy <code>0.9860</code>. The <code>consortium_internal</code> branch requires Secure Aggregation, suppresses per-node metrics, produces a global checkpoint, and passes with zero client failures.</p>
 </div>
 <div class="section level2">
 <h2 id="method-validation-suite">Method validation suite<a class="anchor" aria-label="anchor" href="#method-validation-suite"></a>
 </h2>
 <p><code>inst/demos/validate_methods.R</code> validates the tabular, survival, sequence, and XGBoost method templates against centralized baselines. It creates one synthetic cohort, uploads site partitions to three Opal/Rock nodes, runs each federated template, and writes <code>inst/extdata/dsflower_method_validation_results.json</code> for the pkgdown validation vignettes.</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/validate_methods.R</span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="va">DSFLOWER_VALIDATE_METHODS</span><span class="op">=</span>pytorch_multilabel <span class="ex">Rscript</span> inst/demos/validate_methods.R</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/validate_methods.R</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="va">DSFLOWER_VALIDATE_METHODS</span><span class="op">=</span>pytorch_multilabel <span class="ex">Rscript</span> inst/demos/validate_methods.R</span></code></pre></div>
 <p>Validation run on 2026-05-11: all 17 non-vision methods passed against centralized baselines with zero client failures. XGBoost now validates in the trusted sandbox profile through the histogram template and native model-artifact evaluation; clinical/consortium profiles still enforce SecAgg through the DataSHIELD trust policy.</p>
 <p>The suite fails fast when a method has client failures, missing finite losses, or a federated loss outside the configured acceptance envelope. The generated JSON records the centralized loss, federated loss, delta, acceptance margin, and per-method pass/fail status used by the validation vignettes.</p>
 </div>
@@ -120,28 +128,28 @@
 <h2 id="vision-method-validation">Vision method validation<a class="anchor" aria-label="anchor" href="#vision-method-validation"></a>
 </h2>
 <p><code>inst/demos/validate_vision_methods.R</code> validates the image templates separately from the tabular suite. It generates synthetic PNG images and masks, copies the files to the Rock-side image root, uploads only metadata tables to Opal, and compares federated training with centralized PyTorch baselines.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/validate_vision_methods.R</span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="va">DSFLOWER_VALIDATE_VISION_METHODS</span><span class="op">=</span>pytorch_unet2d <span class="ex">Rscript</span> inst/demos/validate_vision_methods.R</span></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/validate_vision_methods.R</span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="va">DSFLOWER_VALIDATE_VISION_METHODS</span><span class="op">=</span>pytorch_unet2d <span class="ex">Rscript</span> inst/demos/validate_vision_methods.R</span></code></pre></div>
 <p>Validation run on 2026-05-11: <code>pytorch_resnet18</code>, <code>pytorch_densenet121</code>, and <code>pytorch_unet2d</code> all passed on three Opal/Rock nodes with zero client failures. The run writes <code>inst/extdata/dsflower_vision_validation_results.json</code> for the vision validation pkgdown articles, including the same acceptance fields used by the non-vision suite.</p>
 <p>For a real imaging handoff, <code>inst/demos/lung1_radiomics_to_flower.R</code> consumes published <code>dsImaging</code> radiomics assets, loads them as a server-side <code>rad</code> table, and trains a federated model with <code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code>:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">LUNG1_WORKDIR</span><span class="op">=</span><span class="st">"/tmp/dsimaging_lung1_full"</span></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">LUNG1_OPAL_RESOURCE</span><span class="op">=</span><span class="st">"lung1_full_study"</span></span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/lung1_radiomics_to_flower.R</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">LUNG1_WORKDIR</span><span class="op">=</span><span class="st">"/tmp/dsimaging_lung1_full"</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">LUNG1_OPAL_RESOURCE</span><span class="op">=</span><span class="st">"lung1_full_study"</span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/lung1_radiomics_to_flower.R</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="clinical-privacy-and-method-family-validation">Clinical privacy and method-family validation<a class="anchor" aria-label="anchor" href="#clinical-privacy-and-method-family-validation"></a>
 </h2>
 <p><code>inst/demos/benchmark_clinical_algorithms.R</code> runs public clinical central-vs-federated benchmarks under <code>trusted_internal</code>, <code>clinical_default</code> and <code>high_sensitivity_dp</code>. The clinical profile evidence covers logistic regression, ridge, SGD, PyTorch logistic regression, PyTorch MLP and the one-round secure histogram-stump XGBoost path. The DP evidence covers PyTorch MLP and PyTorch logistic regression with Opacus DP-SGD, with epsilon curves at 2, 4 and 8 on the same CDC split. XGBoost also has a separate update-noise curve at epsilon 8, 12 and 16 for the secure histogram route.</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="va">DSFLOWER_DEMO_PRIVACY_PROFILE</span><span class="op">=</span>clinical_default <span class="dt">\</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="va">DSFLOWER_CLINICAL_MODELS</span><span class="op">=</span>sklearn_logreg,sklearn_ridge,sklearn_sgd,pytorch_logreg,pytorch_mlp,xgboost_histogram <span class="dt">\</span></span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_clinical_algorithms.R</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="va">DSFLOWER_DEMO_PRIVACY_PROFILE</span><span class="op">=</span>clinical_default <span class="dt">\</span></span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="va">DSFLOWER_CLINICAL_MODELS</span><span class="op">=</span>sklearn_logreg,sklearn_ridge,sklearn_sgd,pytorch_logreg,pytorch_mlp,xgboost_histogram <span class="dt">\</span></span>
+<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_clinical_algorithms.R</span></code></pre></div>
 <p><code>inst/demos/benchmark_method_families.R</code> complements the binary classification benchmarks with SUPPORT2 clinical tasks under <code>clinical_default</code>. It validates continuous regression, count regression, multiclass classification, multilabel classification and Cox survival over three 1,000-row Opal partitions.</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="va">DSFLOWER_SUPPORT2_LIMIT</span><span class="op">=</span>3000 <span class="ex">Rscript</span> inst/demos/benchmark_method_families.R</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="va">DSFLOWER_SUPPORT2_LIMIT</span><span class="op">=</span>3000 <span class="ex">Rscript</span> inst/demos/benchmark_method_families.R</span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="usage">Usage<a class="anchor" aria-label="anchor" href="#usage"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>

@@ -138,3 +138,44 @@ test_that("committed LUNG1 direct-image evidence matches thesis constants", {
   expect_equal(evidence$local_vs_federated$federated$n_failures, 0)
   expect_true(all(as.integer(unlist(evidence$active_supernodes_after)) == 0))
 })
+
+test_that("committed PathMNIST direct-image evidence matches thesis constants", {
+  path <- extdata_evidence("dsflower_pathmnist_direct_image_results.json")
+  evidence <- jsonlite::fromJSON(path)
+
+  expect_equal(evidence$demo_id, "pathmnist_direct_image_resnet")
+  expect_equal(evidence$citation_key, "yang2023medmnist")
+  expect_equal(evidence$dataset$dataset, "PathMNIST")
+  expect_equal(evidence$n_sites, 3)
+  expect_equal(evidence$n_per_site, 500)
+  expect_equal(evidence$n_total, 1500)
+  expect_equal(evidence$rounds, 2)
+  expect_equal(evidence$model, "pytorch_resnet18")
+
+  expect_equal(evidence$site_counts$rows, c(500L, 500L, 500L))
+  expect_equal(evidence$site_counts$label0, c(250L, 250L, 250L))
+  expect_equal(evidence$site_counts$label1, c(250L, 250L, 250L))
+
+  trusted <- evidence$trusted_internal_comparison
+  expect_equal(trusted$centralized_loss, 0.014300979613016, tolerance = 1e-12)
+  expect_equal(trusted$centralized_accuracy, 0.994666666666667,
+               tolerance = 1e-12)
+  expect_equal(trusted$federated_checkpoint_loss, 0.0535419425964355,
+               tolerance = 1e-12)
+  expect_equal(trusted$federated_checkpoint_accuracy, 0.986,
+               tolerance = 1e-12)
+  expect_equal(trusted$delta_loss, 0.0392409629834195, tolerance = 1e-12)
+  expect_equal(trusted$delta_accuracy, -0.00866666666666671,
+               tolerance = 1e-12)
+  expect_equal(trusted$federated_failures, 0)
+  expect_equal(trusted$validation_status, "pass")
+
+  secagg <- evidence$consortium_internal_secagg
+  expect_equal(secagg$status, "ok")
+  expect_equal(secagg$federated_failures, 0)
+  expect_true(secagg$secure_aggregation_required)
+  expect_equal(secagg$aggregation_workflow,
+               "Flower SecAggPlusWorkflow requested by consortium_internal")
+  expect_true(secagg$saved_model_exists)
+  expect_equal(secagg$validation_status, "pass")
+})

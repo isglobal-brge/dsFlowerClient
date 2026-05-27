@@ -1,0 +1,186 @@
+{
+  "generated_at": "2026-05-27T06:07:16.587Z",
+  "demo_id": "pathmnist_direct_image_resnet",
+  "dataset": {
+    "binary_mapping": {
+      "0": 0,
+      "8": 1
+    },
+    "classes": {
+      "0": "adipose",
+      "8": "colorectal adenocarcinoma epithelium"
+    },
+    "dataset": "PathMNIST",
+    "n_per_site": 500,
+    "n_sites": 3,
+    "n_total": 1500,
+    "seed": 4242,
+    "source": "MedMNIST v2 train split"
+  },
+  "citation_key": "yang2023medmnist",
+  "data_mode": "MedMNIST PathMNIST PNG files + Opal metadata tables",
+  "n_sites": 3,
+  "n_per_site": 500,
+  "n_total": 1500,
+  "site_counts": [
+    {
+      "site": "opal1",
+      "rows": 500,
+      "label0": 250,
+      "label1": 250
+    },
+    {
+      "site": "opal2",
+      "rows": 500,
+      "label0": 250,
+      "label1": 250
+    },
+    {
+      "site": "opal3",
+      "rows": 500,
+      "label0": 250,
+      "label1": 250
+    }
+  ],
+  "image_size": 32,
+  "server_root": "/tmp/dsflower_pathmnist_direct_image",
+  "local_root": "/private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmp7SewQI/dsflower_pathmnist_direct_image",
+  "rounds": 2,
+  "model": "pytorch_resnet18",
+  "template": "pytorch_resnet18",
+  "strategy": "FedAvg",
+  "centralized": {
+    "batch_size": 64,
+    "checkpoint": null,
+    "class_counts": {
+      "0": 750,
+      "1": 750
+    },
+    "device": "cpu",
+    "epochs": 2,
+    "eval": {
+      "accuracy": 0.994666666666667,
+      "loss": 0.014300979613016,
+      "n_samples": 1500
+    },
+    "image_root": "/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//Rtmp7SewQI/dsflower_pathmnist_direct_image",
+    "image_size": 32,
+    "learning_rate": 0.001,
+    "mode": "centralized",
+    "n_samples": 1500,
+    "train_loss_by_epoch": [
+      0.174466680745284,
+      0.0459829547510793
+    ]
+  },
+  "profile_results": {
+    "trusted_internal": {
+      "profile": "trusted_internal",
+      "status": "ok",
+      "model": "pytorch_resnet18",
+      "template": "pytorch_resnet18",
+      "privacy": "trusted_internal",
+      "rounds": 2,
+      "history": [
+        {
+          "round": 1,
+          "loss": 0.148390331586202,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0.0535419380441308,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ],
+      "final_history_loss": 0.0535419380441308,
+      "final_history_failures": 0,
+      "output_dir": "./dsflower_output/pytorch_resnet18_FedAvg_2r_20260527_080115",
+      "saved_model": "./dsflower_output/pytorch_resnet18_FedAvg_2r_20260527_080115/model.pt",
+      "saved_model_exists": true,
+      "checkpoint_eval": {
+        "batch_size": 64,
+        "checkpoint": "./dsflower_output/pytorch_resnet18_FedAvg_2r_20260527_080115/model.pt",
+        "class_counts": {
+          "0": 750,
+          "1": 750
+        },
+        "device": "cpu",
+        "epochs": 1,
+        "eval": {
+          "accuracy": 0.986,
+          "loss": 0.0535419425964355,
+          "n_samples": 1500
+        },
+        "image_root": "/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//Rtmp7SewQI/dsflower_pathmnist_direct_image",
+        "image_size": 32,
+        "learning_rate": 0.001,
+        "mode": "checkpoint",
+        "n_samples": 1500,
+        "train_loss_by_epoch": []
+      },
+      "active_supernodes_after": {
+        "opal1": 0,
+        "opal2": 0,
+        "opal3": 0
+      }
+    },
+    "consortium_internal": {
+      "profile": "consortium_internal",
+      "status": "ok",
+      "model": "pytorch_resnet18",
+      "template": "pytorch_resnet18",
+      "privacy": "consortium_internal",
+      "rounds": 2,
+      "history": [
+        {
+          "round": 1,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ],
+      "final_history_loss": 0,
+      "final_history_failures": 0,
+      "output_dir": "./dsflower_output/pytorch_resnet18_FedAvg_2r_20260527_080655",
+      "saved_model": "./dsflower_output/pytorch_resnet18_FedAvg_2r_20260527_080655/model.pt",
+      "saved_model_exists": true,
+      "checkpoint_eval": null,
+      "active_supernodes_after": {
+        "opal1": 0,
+        "opal2": 0,
+        "opal3": 0
+      }
+    }
+  },
+  "trusted_internal_comparison": {
+    "centralized_loss": 0.014300979613016,
+    "centralized_accuracy": 0.994666666666667,
+    "federated_checkpoint_loss": 0.0535419425964355,
+    "federated_checkpoint_accuracy": 0.986,
+    "federated_history_loss": 0.0535419380441308,
+    "federated_failures": 0,
+    "delta_loss": 0.0392409629834195,
+    "delta_accuracy": -0.00866666666666671,
+    "acceptance_max_loss_ratio": 2.5,
+    "acceptance_max_loss_margin": 0.25,
+    "validation_status": "pass"
+  },
+  "consortium_internal_secagg": {
+    "status": "ok",
+    "federated_failures": 0,
+    "metric_release": "suppressed by consortium_internal profile",
+    "secure_aggregation_required": true,
+    "aggregation_workflow": "Flower SecAggPlusWorkflow requested by consortium_internal",
+    "saved_model_exists": true,
+    "validation_status": "pass"
+  }
+}

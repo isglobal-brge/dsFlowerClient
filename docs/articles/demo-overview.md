@@ -2,9 +2,9 @@
 
 This page is the landing point for the rendered dsFlowerClient demos.
 The main evidence is split into four groups: public benchmark runs with
-centralised and federated test metrics, LUNG1 imaging handoff runs that
-show composition with dsImaging, clinical privacy-profile and
-method-family benchmarks, and the template validation suite that
+centralised and federated test metrics, imaging runs that cover LUNG1
+handoff and direct PathMNIST image learning, clinical privacy-profile
+and method-family benchmarks, and the template validation suite that
 exercises every authorised method. Together they show the same
 DataSHIELD execution pattern: the researcher connects to Opal,
 references or stages server-side data, launches Flower training, and
@@ -60,20 +60,24 @@ knitr::kable(public_benchmarks)
 imaging_results <- data.frame(
   demo = c(
     "LUNG1 dsImaging Radiomics Evidence",
-    "LUNG1 Direct dsImaging Image Evidence"
+    "LUNG1 Direct dsImaging Image Evidence",
+    "PathMNIST Direct Image ResNet Benchmark"
   ),
   article = c(
     "lung1-radiomics-to-flower.html",
-    "lung1-direct-image-dsimaging-resnet.html"
+    "lung1-direct-image-dsimaging-resnet.html",
+    "pathmnist-direct-image-resnet.html"
   ),
   data_path = c(
     "dsImaging-derived LUNG1 radiomics table",
-    "dsImaging-resolved LUNG1 NIfTI assets"
+    "dsImaging-resolved LUNG1 NIfTI assets",
+    "MedMNIST PathMNIST server-side PNG files"
   ),
-  sites = c(3L, 3L),
+  sites = c(3L, 3L, 3L),
   result = c(
     "422 rows; loss 0.6503 -> 0.6474; 0 client failures",
-    "9 images; central loss 0.5540; federated loss 0.5847; 0 client failures"
+    "9 images; central loss 0.5540; federated loss 0.5847; 0 client failures",
+    "1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass"
   ),
   stringsAsFactors = FALSE
 )
@@ -84,6 +88,7 @@ knitr::kable(imaging_results)
 |:---|:---|:---|---:|:---|
 | LUNG1 dsImaging Radiomics Evidence | lung1-radiomics-to-flower.html | dsImaging-derived LUNG1 radiomics table | 3 | 422 rows; loss 0.6503 -\> 0.6474; 0 client failures |
 | LUNG1 Direct dsImaging Image Evidence | lung1-direct-image-dsimaging-resnet.html | dsImaging-resolved LUNG1 NIfTI assets | 3 | 9 images; central loss 0.5540; federated loss 0.5847; 0 client failures |
+| PathMNIST Direct Image ResNet Benchmark | pathmnist-direct-image-resnet.html | MedMNIST PathMNIST server-side PNG files | 3 | 1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass |
 
 ## Clinical Privacy Benchmarks
 
@@ -183,6 +188,8 @@ knitr::kable(validation_results)
   Benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-privacy-benchmarks.md)
 - [Clinical Method-Family
   Benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-method-family-benchmarks.md)
+- [PathMNIST Direct Image ResNet
+  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/pathmnist-direct-image-resnet.md)
 - [LUNG1 Direct dsImaging Image
   Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-direct-image-dsimaging-resnet.md)
 - [LUNG1 dsImaging Radiomics

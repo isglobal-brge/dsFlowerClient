@@ -30,6 +30,8 @@ navbar:
           href: articles/demo-medmnist.html
         - text: "Direct Image ResNet Smoke Demo"
           href: articles/direct-image-resnet.html
+        - text: "PathMNIST Direct Image ResNet Benchmark"
+          href: articles/pathmnist-direct-image-resnet.html
         - text: "LUNG1 Direct dsImaging ResNet Evidence"
           href: articles/lung1-direct-image-dsimaging-resnet.html
         - text: "Radiomics Benchmark"
@@ -57,6 +59,7 @@ articles:
       - demo-heart-disease
       - demo-medmnist
       - direct-image-resnet
+      - pathmnist-direct-image-resnet
       - lung1-direct-image-dsimaging-resnet
       - demo-lung1-radiomics
       - radiomics-to-flower

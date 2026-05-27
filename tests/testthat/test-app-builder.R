@@ -76,3 +76,31 @@ test_that(".write_pyproject_toml generates valid content", {
   expect_true(grepl("C = 0.5", content_str))
   expect_true(grepl('strategy = "FedAvg"', content_str))
 })
+
+test_that(".write_pyproject_toml enables SecAgg for consortium_internal", {
+  recipe <- ds.flower.recipe(
+    task = ds.flower.task.classification(),
+    model = ds.flower.model.pytorch_resnet18(n_classes = 2L),
+    strategy = ds.flower.strategy.fedavg(),
+    privacy = ds.flower.privacy.consortium_internal(),
+    num_rounds = 2L,
+    target = "label"
+  )
+
+  app_dir <- tempfile("app_test")
+  dir.create(app_dir, recursive = TRUE)
+  on.exit(unlink(app_dir, recursive = TRUE))
+
+  dsFlowerClient:::.write_pyproject_toml(app_dir, recipe)
+  content_str <- paste(readLines(file.path(app_dir, "pyproject.toml")),
+                       collapse = "\n")
+
+  expect_true(grepl('privacy-mode = "consortium_internal"', content_str,
+                    fixed = TRUE))
+  expect_true(grepl("require-secure-aggregation = true", content_str,
+                    fixed = TRUE))
+  expect_true(grepl("allow-per-node-metrics = false", content_str,
+                    fixed = TRUE))
+  expect_true(grepl("fixed-client-sampling = true", content_str,
+                    fixed = TRUE))
+})

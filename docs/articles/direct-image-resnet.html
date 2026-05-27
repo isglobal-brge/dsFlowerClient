@@ -38,6 +38,7 @@
     <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
+    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
@@ -147,9 +148,9 @@ filesystem, or an object-storage mount.</p>
 <span><span class="co">#&gt; 2 opal2 https://localhost:8444 dsflower_demo</span></span>
 <span><span class="co">#&gt; 3 opal3 https://localhost:8445 dsflower_demo</span></span>
 <span><span class="co">#&gt;                          upload_prefix rock_container</span></span>
-<span><span class="co">#&gt; 1 vignette_direct_image_20260527073025     opal1-rock</span></span>
-<span><span class="co">#&gt; 2 vignette_direct_image_20260527073025     opal2-rock</span></span>
-<span><span class="co">#&gt; 3 vignette_direct_image_20260527073025     opal3-rock</span></span>
+<span><span class="co">#&gt; 1 vignette_direct_image_20260527081606     opal1-rock</span></span>
+<span><span class="co">#&gt; 2 vignette_direct_image_20260527081606     opal2-rock</span></span>
+<span><span class="co">#&gt; 3 vignette_direct_image_20260527081606     opal3-rock</span></span>
 <span><span class="co">#&gt;                 server_image_root</span></span>
 <span><span class="co">#&gt; 1 /tmp/dsflower_direct_image_demo</span></span>
 <span><span class="co">#&gt; 2 /tmp/dsflower_direct_image_demo</span></span>
@@ -229,9 +230,9 @@ filesystem, or an object-storage mount.</p>
 <span><span class="fu">utils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">pooled</span>, <span class="va">samples_csv</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[data] local image root:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/normalizePath.html" class="external-link">normalizePath</a></span><span class="op">(</span><span class="va">local_root</span>, mustWork <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [data] local image root: /private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpYVpxlQ/dsflower_direct_image_demo</span></span>
+<span><span class="co">#&gt; [data] local image root: /private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpSWNuK1/dsflower_direct_image_demo</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[data] pooled samples CSV:"</span>, <span class="va">samples_csv</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [data] pooled samples CSV: /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//RtmpYVpxlQ/dsflower_direct_image_demo/pooled_samples.csv</span></span>
+<span><span class="co">#&gt; [data] pooled samples CSV: /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//RtmpSWNuK1/dsflower_direct_image_demo/pooled_samples.csv</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">site_tables</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    site <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"opal"</span>, <span class="va">i</span><span class="op">)</span>,</span>

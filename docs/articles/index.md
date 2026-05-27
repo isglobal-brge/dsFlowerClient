@@ -14,6 +14,8 @@
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-medmnist.md):
 - [Direct Image ResNet
   Demo](https://isglobal-brge.github.io/dsFlowerClient/articles/direct-image-resnet.md):
+- [PathMNIST Direct Image ResNet
+  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/pathmnist-direct-image-resnet.md):
 - [LUNG1 Direct dsImaging Image ResNet
   Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-direct-image-dsimaging-resnet.md):
 - [Radiomics Federated
