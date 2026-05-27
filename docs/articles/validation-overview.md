@@ -1,32 +1,24 @@
-# All Method Validation Overview
+# dsFlower Validation Evidence Overview
 
-This macro-vignette summarizes the current committed dsFlower validation
-evidence across tabular, sequence, survival, XGBoost,
-image-classification, and segmentation templates. Each method has its
-own vignette. The core method-validation suite uses deterministic
-synthetic fixtures for broad template coverage; the clinical benchmarks
-add real public datasets for the thesis-facing evidence.
+This macro-vignette summarizes the committed dsFlower validation
+evidence. The current presentation layer is the public biomedical
+evidence: clinical benchmarks, SUPPORT2 method-family tasks, LUNG1
+imaging handoffs and the PathMNIST direct-image benchmark. The synthetic
+method and vision suites provide catalogue coverage: they confirm that
+every authorised template can be staged, executed, aggregated, persisted
+and cleaned up across three Opal/Rock servers. They complement the
+biomedical reports by checking the full template surface under
+deterministic conditions.
 
-The suite is deliberately a functional and numerical sanity check, not a
-privacy claim and not, by itself, a clinical benchmark. It uses
-`sandbox_open` so that per-node diagnostics can be observed during
-development. Production studies should use the stricter DataSHIELD
-privacy profiles. The SUPPORT2 method-family benchmark and the clinical
-privacy benchmark use `clinical_default`, `clinical_update_noise` or
-`high_sensitivity_dp`, so Secure Aggregation, profile-level disclosure
-guards and, where applicable, DP-SGD epsilon curves or update-level
-histogram-noise curves are active. The SUPPORT2 DP-SGD evidence is
-interpreted over the four templates whose losses decompose by sample.
-CoxPH is still validated in the Secure Aggregation run; because its
-risk-set partial likelihood is not a per-example loss,
+The clinical and method-family benchmarks use `clinical_default`,
+`clinical_update_noise` or `high_sensitivity_dp`, so Secure Aggregation,
+profile-level disclosure guards and, where applicable, DP-SGD epsilon
+curves or bounded histogram-noise curves are active. The SUPPORT2 DP-SGD
+evidence is interpreted over the four templates whose losses decompose
+by sample. CoxPH is still validated in the Secure Aggregation run;
+because its risk-set partial likelihood is not a per-example loss,
 `high_sensitivity_dp` is not the matching privacy profile for that
 route.
-
-The thesis-facing evidence is broader than the synthetic catalogue
-checks. It includes public clinical benchmark datasets, SUPPORT2
-method-family tasks, LUNG1 radiomics features produced by dsImaging, a
-LUNG1 direct-image path check and a larger PathMNIST direct-image
-benchmark.
 
 ``` r
 

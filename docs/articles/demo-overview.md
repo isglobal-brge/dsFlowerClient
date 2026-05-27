@@ -1,96 +1,17 @@
 # Demo Results Overview
 
 This page is the landing point for the rendered dsFlowerClient demos.
-The main evidence is split into four groups: public benchmark runs with
-centralised and federated test metrics, imaging runs that cover LUNG1
-handoff and direct PathMNIST image learning, clinical privacy-profile
-and method-family benchmarks, and the template validation suite that
-exercises every authorised method. Together they show the same
-DataSHIELD execution pattern: the researcher connects to Opal,
-references or stages server-side data, launches Flower training, and
-inspects approved model-scale outputs.
+The current evidence is split into four groups: clinical privacy-profile
+runs, SUPPORT2 method-family runs, imaging handoff/direct-image runs and
+catalogue coverage. The older self-contained public demos remain useful
+for installation checks, but the presentation evidence is the recent
+clinical, imaging and privacy-profile matrix.
 
-## Public Benchmark Results
+All live demos use the same DataSHIELD execution pattern: the researcher
+connects to Opal, references or stages server-side data, launches Flower
+training, and inspects approved model-scale outputs.
 
-``` r
-
-public_benchmarks <- data.frame(
-  demo = c(
-    "Breast Cancer Benchmark",
-    "Heart Disease Benchmark",
-    "MedMNIST Benchmark"
-  ),
-  article = c(
-    "demo-breast-cancer.html",
-    "demo-heart-disease.html",
-    "demo-medmnist.html"
-  ),
-  data_path = c(
-    "UCI Breast Cancer Wisconsin (Original)",
-    "UCI Heart Disease processed Cleveland",
-    "MedMNIST BreastMNIST pooled image features"
-  ),
-  sites = c(3L, 3L, 3L),
-  central_metric = c(
-    "AUC 0.9878",
-    "AUC 0.8919",
-    "AUC 0.7654"
-  ),
-  federated_metric = c(
-    "AUC 0.9908",
-    "AUC 0.8926",
-    "AUC 0.7985"
-  ),
-  failures = c(0L, 0L, 0L),
-  stringsAsFactors = FALSE
-)
-knitr::kable(public_benchmarks)
-```
-
-| demo | article | data_path | sites | central_metric | federated_metric | failures |
-|:---|:---|:---|---:|:---|:---|---:|
-| Breast Cancer Benchmark | demo-breast-cancer.html | UCI Breast Cancer Wisconsin (Original) | 3 | AUC 0.9878 | AUC 0.9908 | 0 |
-| Heart Disease Benchmark | demo-heart-disease.html | UCI Heart Disease processed Cleveland | 3 | AUC 0.8919 | AUC 0.8926 | 0 |
-| MedMNIST Benchmark | demo-medmnist.html | MedMNIST BreastMNIST pooled image features | 3 | AUC 0.7654 | AUC 0.7985 | 0 |
-
-## Imaging Handoff Results
-
-``` r
-
-imaging_results <- data.frame(
-  demo = c(
-    "LUNG1 dsImaging Radiomics Evidence",
-    "LUNG1 Direct dsImaging Image Evidence",
-    "PathMNIST Direct Image ResNet Benchmark"
-  ),
-  article = c(
-    "lung1-radiomics-to-flower.html",
-    "lung1-direct-image-dsimaging-resnet.html",
-    "pathmnist-direct-image-resnet.html"
-  ),
-  data_path = c(
-    "dsImaging-derived LUNG1 radiomics table",
-    "dsImaging-resolved LUNG1 NIfTI assets",
-    "MedMNIST PathMNIST server-side PNG files"
-  ),
-  sites = c(3L, 3L, 3L),
-  result = c(
-    "422 rows; loss 0.6503 -> 0.6474; 0 client failures",
-    "9 images; central loss 0.5540; federated loss 0.5847; 0 client failures",
-    "1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass"
-  ),
-  stringsAsFactors = FALSE
-)
-knitr::kable(imaging_results)
-```
-
-| demo | article | data_path | sites | result |
-|:---|:---|:---|---:|:---|
-| LUNG1 dsImaging Radiomics Evidence | lung1-radiomics-to-flower.html | dsImaging-derived LUNG1 radiomics table | 3 | 422 rows; loss 0.6503 -\> 0.6474; 0 client failures |
-| LUNG1 Direct dsImaging Image Evidence | lung1-direct-image-dsimaging-resnet.html | dsImaging-resolved LUNG1 NIfTI assets | 3 | 9 images; central loss 0.5540; federated loss 0.5847; 0 client failures |
-| PathMNIST Direct Image ResNet Benchmark | pathmnist-direct-image-resnet.html | MedMNIST PathMNIST server-side PNG files | 3 | 1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass |
-
-## Clinical Privacy Benchmarks
+## Current Clinical And Privacy Results
 
 ``` r
 
@@ -101,8 +22,7 @@ clinical_privacy <- data.frame(
               "XGBoost update-noise curve",
               "clinical_default method families",
               "high_sensitivity_dp method families"),
-  article = c(rep("clinical-privacy-benchmarks.html", 5),
-              "clinical-privacy-benchmarks.html",
+  article = c(rep("clinical-privacy-benchmarks.html", 6),
               "clinical-method-family-benchmarks.html",
               "clinical-method-family-benchmarks.html"),
   data_path = c(
@@ -151,7 +71,44 @@ knitr::kable(clinical_privacy)
 | clinical_default method families | clinical-method-family-benchmarks.html | SUPPORT2 | Secure Aggregation plus family-specific loss validation | 5/5 runs pass, 0 client failures |
 | high_sensitivity_dp method families | clinical-method-family-benchmarks.html | SUPPORT2 | Secure Aggregation plus Opacus DP-SGD for the four compatible SUPPORT2 families | 4/4 DP-SGD-compatible runs pass, 0 client failures |
 
-## Template Validation Coverage
+## Imaging Handoff Results
+
+``` r
+
+imaging_results <- data.frame(
+  demo = c(
+    "LUNG1 dsImaging Radiomics Evidence",
+    "LUNG1 Direct dsImaging Image Evidence",
+    "PathMNIST Direct Image ResNet Benchmark"
+  ),
+  article = c(
+    "lung1-radiomics-to-flower.html",
+    "lung1-direct-image-dsimaging-resnet.html",
+    "pathmnist-direct-image-resnet.html"
+  ),
+  data_path = c(
+    "dsImaging-derived LUNG1 radiomics table",
+    "dsImaging-resolved LUNG1 NIfTI assets",
+    "MedMNIST PathMNIST server-side PNG files"
+  ),
+  sites = c(3L, 3L, 3L),
+  result = c(
+    "422 rows; loss 0.6503 -> 0.6474; 0 client failures",
+    "9 images; central loss 0.5540; federated loss 0.5847; 0 client failures",
+    "1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass"
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(imaging_results)
+```
+
+| demo | article | data_path | sites | result |
+|:---|:---|:---|---:|:---|
+| LUNG1 dsImaging Radiomics Evidence | lung1-radiomics-to-flower.html | dsImaging-derived LUNG1 radiomics table | 3 | 422 rows; loss 0.6503 -\> 0.6474; 0 client failures |
+| LUNG1 Direct dsImaging Image Evidence | lung1-direct-image-dsimaging-resnet.html | dsImaging-resolved LUNG1 NIfTI assets | 3 | 9 images; central loss 0.5540; federated loss 0.5847; 0 client failures |
+| PathMNIST Direct Image ResNet Benchmark | pathmnist-direct-image-resnet.html | MedMNIST PathMNIST server-side PNG files | 3 | 1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass |
+
+## Catalogue Coverage
 
 ``` r
 
@@ -164,15 +121,59 @@ validation_results <- data.frame(
   ),
   sites = c(3L, 3L),
   result = c("17/17 methods pass", "3/3 methods pass"),
+  role = c("template catalogue coverage", "vision path coverage"),
   stringsAsFactors = FALSE
 )
 knitr::kable(validation_results)
 ```
 
-| suite | article | data_path | sites | result |
-|:---|:---|:---|---:|:---|
-| Non-vision method validation | validation-overview.html | Controlled tabular, sequence and survival cohort | 3 | 17/17 methods pass |
-| Vision method validation | validation-vision-overview.html | Controlled image and mask cohort | 3 | 3/3 methods pass |
+| suite | article | data_path | sites | result | role |
+|:---|:---|:---|---:|:---|:---|
+| Non-vision method validation | validation-overview.html | Controlled tabular, sequence and survival cohort | 3 | 17/17 methods pass | template catalogue coverage |
+| Vision method validation | validation-vision-overview.html | Controlled image and mask cohort | 3 | 3/3 methods pass | vision path coverage |
+
+## Development Public Demos
+
+``` r
+
+public_benchmarks <- data.frame(
+  demo = c(
+    "Breast Cancer Benchmark",
+    "Heart Disease Benchmark",
+    "MedMNIST Benchmark"
+  ),
+  article = c(
+    "demo-breast-cancer.html",
+    "demo-heart-disease.html",
+    "demo-medmnist.html"
+  ),
+  data_path = c(
+    "UCI Breast Cancer Wisconsin (Original)",
+    "UCI Heart Disease processed Cleveland",
+    "MedMNIST BreastMNIST pooled image features"
+  ),
+  sites = c(3L, 3L, 3L),
+  central_metric = c(
+    "AUC 0.9878",
+    "AUC 0.8919",
+    "AUC 0.7654"
+  ),
+  federated_metric = c(
+    "AUC 0.9908",
+    "AUC 0.8926",
+    "AUC 0.7985"
+  ),
+  failures = c(0L, 0L, 0L),
+  stringsAsFactors = FALSE
+)
+knitr::kable(public_benchmarks)
+```
+
+| demo | article | data_path | sites | central_metric | federated_metric | failures |
+|:---|:---|:---|---:|:---|:---|---:|
+| Breast Cancer Benchmark | demo-breast-cancer.html | UCI Breast Cancer Wisconsin (Original) | 3 | AUC 0.9878 | AUC 0.9908 | 0 |
+| Heart Disease Benchmark | demo-heart-disease.html | UCI Heart Disease processed Cleveland | 3 | AUC 0.8919 | AUC 0.8926 | 0 |
+| MedMNIST Benchmark | demo-medmnist.html | MedMNIST BreastMNIST pooled image features | 3 | AUC 0.7654 | AUC 0.7985 | 0 |
 
 ## Article Links
 
@@ -194,7 +195,7 @@ knitr::kable(validation_results)
   Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-direct-image-dsimaging-resnet.md)
 - [LUNG1 dsImaging Radiomics
   Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-radiomics-to-flower.md)
-- [All Method Validation
+- [Validation Evidence
   Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-overview.md)
 - [Vision Method Validation
   Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-vision-overview.md)

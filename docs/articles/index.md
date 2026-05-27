@@ -1,11 +1,27 @@
 # Articles
 
-### Federated benchmark demos
+### Current validation evidence
 
 - [API
   Quickstart](https://isglobal-brge.github.io/dsFlowerClient/articles/api-quickstart.md):
 - [Demo Results
   Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-overview.md):
+- [PathMNIST Direct Image ResNet
+  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/pathmnist-direct-image-resnet.md):
+- [LUNG1 Direct dsImaging Image ResNet
+  Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-direct-image-dsimaging-resnet.md):
+- [LUNG1 dsImaging Radiomics To dsFlower
+  Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-radiomics-to-flower.md):
+- [Clinical Privacy
+  Benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-privacy-benchmarks.md):
+- [Clinical method-family
+  benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-method-family-benchmarks.md):
+
+### Development and smoke demos
+
+Small self-contained demos retained for installation and connectivity
+checks.
+
 - [Breast Cancer Federated
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-breast-cancer.md):
 - [Heart Disease Federated
@@ -14,24 +30,14 @@
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-medmnist.md):
 - [Direct Image ResNet
   Demo](https://isglobal-brge.github.io/dsFlowerClient/articles/direct-image-resnet.md):
-- [PathMNIST Direct Image ResNet
-  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/pathmnist-direct-image-resnet.md):
-- [LUNG1 Direct dsImaging Image ResNet
-  Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-direct-image-dsimaging-resnet.md):
 - [Radiomics Federated
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-lung1-radiomics.md):
 - [Radiomics To Federated
   Learning](https://isglobal-brge.github.io/dsFlowerClient/articles/radiomics-to-flower.md):
-- [LUNG1 dsImaging Radiomics To dsFlower
-  Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-radiomics-to-flower.md):
-- [Clinical Privacy
-  Benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-privacy-benchmarks.md):
-- [Clinical method-family
-  benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-method-family-benchmarks.md):
 
 ### Method validation
 
-Per-template validation against centralized baselines.
+Synthetic catalogue coverage against centralized baselines.
 
 - [Validation:
   sklearn_logreg](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-sklearn-logreg.md):
@@ -67,7 +73,7 @@ Per-template validation against centralized baselines.
   pytorch_tcn](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-pytorch-tcn.md):
 - [Validation:
   xgboost](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-xgboost.md):
-- [All Method Validation
+- [dsFlower Validation Evidence
   Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-overview.md):
 
 ### Vision method validation

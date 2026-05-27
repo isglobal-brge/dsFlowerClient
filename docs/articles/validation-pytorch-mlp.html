@@ -33,20 +33,15 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Demo Results Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-breast-cancer.html">Breast Cancer Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
+    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Development Smoke Demos</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -69,20 +64,21 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Validation: pytorch_mlp</h1>
-            
-      
+
+
 
       <div class="d-none name"><code>validation-pytorch-mlp.Rmd</code></div>
     </div>
 
-    
-    
-<p>This vignette records a live validation of the method against a
-centralized baseline. The federated run used three Opal/Rock nodes and
+
+
+<p>This vignette records the catalogue coverage check for this
+authorised template. The federated run used three Opal/Rock nodes and
 the same pooled synthetic validation cohort was used for the local
 baseline. The purpose is method-path validation: data staging, template
-verification, Flower execution, result persistence, and cleanup. It is
-not a clinical performance benchmark.</p>
+verification, Flower execution, result persistence, and cleanup. It
+complements the biomedical reports by checking the full template surface
+under deterministic conditions.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">overview</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  Field <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -194,11 +190,10 @@ not a clinical performance benchmark.</p>
 <div class="section level2">
 <h2 id="step-by-step-run-output">Step-By-Step Run Output<a class="anchor" aria-label="anchor" href="#step-by-step-run-output"></a>
 </h2>
-<p>The following chunks print the audit trail for the actual run stored
-in <code>inst/extdata/dsflower_method_validation_results.json</code>.
-They are evaluated when pkgdown renders the vignette, so the page shows
-the concrete centralized and federated outputs rather than only
-describing the API shape.</p>
+<p>The following chunks print the audit trail for the committed
+catalogue coverage run. They are evaluated when pkgdown renders the
+vignette, so the page shows concrete centralized and federated outputs
+rather than only describing the API shape.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">target_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">target</span>, <span class="st">','</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">site_table_paths</span> <span class="op">&lt;-</span> <span class="va">validation</span><span class="op">$</span><span class="va">table_paths</span></span>
@@ -426,9 +421,8 @@ dsflower_demo.method_validation_20260511181239_site3 |</p>
 <h2 id="inline-execution-path">Inline Execution Path<a class="anchor" aria-label="anchor" href="#inline-execution-path"></a>
 </h2>
 <p>The validation row above was generated by running this method through
-the same inline DataSHIELD/Flower flow shown below. The vignette does
-not delegate execution to an external launcher; the rendered result is
-loaded from the versioned JSON artifact written by the live run.</p>
+the same inline DataSHIELD/Flower flow shown below. The rendered result
+is loaded from the committed evidence artifact written by that run.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>

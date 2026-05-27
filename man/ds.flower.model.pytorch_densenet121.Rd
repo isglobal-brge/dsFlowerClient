@@ -27,5 +27,5 @@ ds.flower.model.pytorch_densenet121(
 A \code{dsflower_model} S3 object.
 }
 \description{
-Medical imaging classification (chest X-ray, etc.).
+Image classification backbone with densely connected convolutional blocks.
 }

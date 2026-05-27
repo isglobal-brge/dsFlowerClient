@@ -33,20 +33,15 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Demo Results Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-breast-cancer.html">Breast Cancer Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
+    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Development Smoke Demos</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -91,6 +86,86 @@ classification and XGBoost are covered there, while this vignette covers
 continuous regression, count regression, multiclass classification,
 multilabel classification and time-to-event survival.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">task_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"Continuous regression"</span>,</span>
+<span>    <span class="st">"Count regression"</span>,</span>
+<span>    <span class="st">"Multiclass classification"</span>,</span>
+<span>    <span class="st">"Multilabel classification"</span>,</span>
+<span>    <span class="st">"Survival"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"Severity score derived from SUPPORT2 variables"</span>,</span>
+<span>    <span class="st">"Comorbidity count"</span>,</span>
+<span>    <span class="st">"Diagnosis class"</span>,</span>
+<span>    <span class="st">"Death, hospital death and diabetes labels"</span>,</span>
+<span>    <span class="st">"Hospital time-to-event with event indicator"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  template <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"pytorch_linear_regression"</span>,</span>
+<span>    <span class="st">"pytorch_poisson"</span>,</span>
+<span>    <span class="st">"pytorch_multiclass"</span>,</span>
+<span>    <span class="st">"pytorch_multilabel"</span>,</span>
+<span>    <span class="st">"pytorch_coxph"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  privacy_route <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"SecAgg and DP-SGD"</span>,</span>
+<span>    <span class="st">"SecAgg and DP-SGD"</span>,</span>
+<span>    <span class="st">"SecAgg and DP-SGD"</span>,</span>
+<span>    <span class="st">"SecAgg and DP-SGD"</span>,</span>
+<span>    <span class="st">"SecAgg only: Cox partial likelihood is risk-set based"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">task_map</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="16%">
+<col width="30%">
+<col width="16%">
+<col width="35%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">family</th>
+<th align="left">target</th>
+<th align="left">template</th>
+<th align="left">privacy_route</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Continuous regression</td>
+<td align="left">Severity score derived from SUPPORT2 variables</td>
+<td align="left">pytorch_linear_regression</td>
+<td align="left">SecAgg and DP-SGD</td>
+</tr>
+<tr class="even">
+<td align="left">Count regression</td>
+<td align="left">Comorbidity count</td>
+<td align="left">pytorch_poisson</td>
+<td align="left">SecAgg and DP-SGD</td>
+</tr>
+<tr class="odd">
+<td align="left">Multiclass classification</td>
+<td align="left">Diagnosis class</td>
+<td align="left">pytorch_multiclass</td>
+<td align="left">SecAgg and DP-SGD</td>
+</tr>
+<tr class="even">
+<td align="left">Multilabel classification</td>
+<td align="left">Death, hospital death and diabetes labels</td>
+<td align="left">pytorch_multilabel</td>
+<td align="left">SecAgg and DP-SGD</td>
+</tr>
+<tr class="odd">
+<td align="left">Survival</td>
+<td align="left">Hospital time-to-event with event indicator</td>
+<td align="left">pytorch_coxph</td>
+<td align="left">SecAgg only: Cox partial likelihood is risk-set
+based</td>
+</tr>
+</tbody>
+</table>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">evidence_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span></span>
 <span>  <span class="st">"extdata"</span>, <span class="st">"dsflower_method_family_results.json"</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">"dsFlowerClient"</span></span>
@@ -115,7 +190,7 @@ multilabel classification and time-to-event survival.</p>
 <span><span class="co">#&gt; 1  1000  1000  1000</span></span></code></pre></div>
 <p>The rows are split evenly across three DataSHIELD servers. The event
 count shown below is used by the survival route disclosure guard.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">site_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  server <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">site_train_n</span><span class="op">)</span>,</span>
 <span>  train_n <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">site_train_n</span>, use.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -132,7 +207,7 @@ saved by dsFlower after the SecAgg run completed. The route is accepted
 only when all clients complete without failures and the federated loss
 remains within the declared validation envelope for that method
 family.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">results</span> <span class="op">&lt;-</span> <span class="va">evidence</span><span class="op">$</span><span class="va">results</span></span>
 <span><span class="va">results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"family"</span>, <span class="st">"method"</span>, <span class="st">"centralized_metric"</span>, <span class="st">"centralized_loss"</span>,</span>
@@ -157,7 +232,7 @@ family.</p>
 <span><span class="co">#&gt; 3                    0              pass</span></span>
 <span><span class="co">#&gt; 4                    0              pass</span></span>
 <span><span class="co">#&gt; 5                    0              pass</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">dp_results</span> <span class="op">&lt;-</span> <span class="va">dp_evidence</span><span class="op">$</span><span class="va">results</span></span>
 <span><span class="va">dp_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"family"</span>, <span class="st">"method"</span>, <span class="st">"centralized_metric"</span>, <span class="st">"centralized_loss"</span>,</span>
@@ -189,7 +264,7 @@ profile and remain within their declared utility envelopes. Multiclass
 classification uses six federated rounds in this profile because the
 stricter DP-SGD optimiser required a slightly longer training budget
 than the non-DP family run.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">compatibility</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  family <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"Continuous regression"</span>,</span>
@@ -256,7 +331,7 @@ than the non-DP family run.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">plot_data</span> <span class="op">&lt;-</span> <span class="va">results</span></span>
 <span>  <span class="va">plot_data</span><span class="op">$</span><span class="va">label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^pytorch_"</span>, <span class="st">""</span>, <span class="va">plot_data</span><span class="op">$</span><span class="va">method</span><span class="op">)</span></span>
@@ -275,7 +350,7 @@ than the non-DP family run.</p>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p><img src="clinical-method-family-benchmarks_files/figure-html/loss-plot-1.png" class="r-plt" alt="Point-range chart comparing centralized and federated SUPPORT2 losses across method families." width="672"></p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">plot_data</span> <span class="op">&lt;-</span> <span class="va">dp_results</span></span>
 <span>  <span class="va">plot_data</span><span class="op">$</span><span class="va">label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">sub</a></span><span class="op">(</span><span class="st">"^pytorch_"</span>, <span class="st">""</span>, <span class="va">plot_data</span><span class="op">$</span><span class="va">method</span><span class="op">)</span></span>
@@ -296,7 +371,7 @@ than the non-DP family run.</p>
 <p><img src="clinical-method-family-benchmarks_files/figure-html/dp-loss-plot-1.png" class="r-plt" alt="Bar chart comparing DP-SGD federated-centralized SUPPORT2 losses for DP-compatible method families." width="672"></p>
 <p>The canonical run can be regenerated from a local three-Opal
 demonstration deployment with:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_SUPPORT2_LIMIT <span class="op">=</span> <span class="st">"3000"</span>,</span>
 <span>  DSFLOWER_FAMILY_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"clinical_default"</span></span>
@@ -305,7 +380,7 @@ demonstration deployment with:</p>
 <span>  <span class="st">"demos"</span>, <span class="st">"benchmark_method_families.R"</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">"dsFlowerClient"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_SUPPORT2_LIMIT <span class="op">=</span> <span class="st">"3000"</span>,</span>
 <span>  DSFLOWER_FAMILY_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"high_sensitivity_dp"</span>,</span>

@@ -63,8 +63,9 @@ ds.flower.model.sklearn_sgd <- function(loss = "log_loss", alpha = 0.0001,
 #' Create a Linear SVM model spec
 #'
 #' Convenience constructor for a linear Support Vector Machine. Internally
-#' uses the \code{sklearn_sgd} template with \code{loss = "hinge"}, which
-#' is mathematically equivalent to \code{sklearn.svm.LinearSVC}.
+#' uses the \code{sklearn_sgd} template with \code{loss = "hinge"}, i.e. a
+#' linear hinge-loss classifier trained incrementally through the federated
+#' SGD template.
 #'
 #' Only linear SVMs are supported in federated learning because kernel SVMs
 #' require the full pairwise kernel matrix (all data in one place).
@@ -315,7 +316,7 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
 
 #' Create a PyTorch DenseNet-121 model spec
 #'
-#' Medical imaging classification (chest X-ray, etc.).
+#' Image classification backbone with densely connected convolutional blocks.
 #'
 #' @param n_classes Integer; number of output classes.
 #' @param learning_rate Numeric; learning rate.

@@ -33,20 +33,15 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Demo Results Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-breast-cancer.html">Breast Cancer Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
+    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Development Smoke Demos</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -69,184 +64,27 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Demo Results Overview</h1>
-            
-      
+
+
 
       <div class="d-none name"><code>demo-overview.Rmd</code></div>
     </div>
 
-    
-    
+
+
 <p>This page is the landing point for the rendered dsFlowerClient demos.
-The main evidence is split into four groups: public benchmark runs with
-centralised and federated test metrics, imaging runs that cover LUNG1
-handoff and direct PathMNIST image learning, clinical privacy-profile
-and method-family benchmarks, and the template validation suite that
-exercises every authorised method. Together they show the same
-DataSHIELD execution pattern: the researcher connects to Opal,
-references or stages server-side data, launches Flower training, and
-inspects approved model-scale outputs.</p>
+The current evidence is split into four groups: clinical privacy-profile
+runs, SUPPORT2 method-family runs, imaging handoff/direct-image runs and
+catalogue coverage. The older self-contained public demos remain useful
+for installation checks, but the presentation evidence is the recent
+clinical, imaging and privacy-profile matrix.</p>
+<p>All live demos use the same DataSHIELD execution pattern: the
+researcher connects to Opal, references or stages server-side data,
+launches Flower training, and inspects approved model-scale outputs.</p>
 <div class="section level2">
-<h2 id="public-benchmark-results">Public Benchmark Results<a class="anchor" aria-label="anchor" href="#public-benchmark-results"></a>
+<h2 id="current-clinical-and-privacy-results">Current Clinical And Privacy Results<a class="anchor" aria-label="anchor" href="#current-clinical-and-privacy-results"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">public_benchmarks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  demo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"Breast Cancer Benchmark"</span>,</span>
-<span>    <span class="st">"Heart Disease Benchmark"</span>,</span>
-<span>    <span class="st">"MedMNIST Benchmark"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"demo-breast-cancer.html"</span>,</span>
-<span>    <span class="st">"demo-heart-disease.html"</span>,</span>
-<span>    <span class="st">"demo-medmnist.html"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"UCI Breast Cancer Wisconsin (Original)"</span>,</span>
-<span>    <span class="st">"UCI Heart Disease processed Cleveland"</span>,</span>
-<span>    <span class="st">"MedMNIST BreastMNIST pooled image features"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span><span class="op">)</span>,</span>
-<span>  central_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"AUC 0.9878"</span>,</span>
-<span>    <span class="st">"AUC 0.8919"</span>,</span>
-<span>    <span class="st">"AUC 0.7654"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  federated_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"AUC 0.9908"</span>,</span>
-<span>    <span class="st">"AUC 0.8926"</span>,</span>
-<span>    <span class="st">"AUC 0.7985"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  failures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">public_benchmarks</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="17%">
-<col width="17%">
-<col width="31%">
-<col width="4%">
-<col width="10%">
-<col width="12%">
-<col width="6%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">demo</th>
-<th align="left">article</th>
-<th align="left">data_path</th>
-<th align="right">sites</th>
-<th align="left">central_metric</th>
-<th align="left">federated_metric</th>
-<th align="right">failures</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Breast Cancer Benchmark</td>
-<td align="left">demo-breast-cancer.html</td>
-<td align="left">UCI Breast Cancer Wisconsin (Original)</td>
-<td align="right">3</td>
-<td align="left">AUC 0.9878</td>
-<td align="left">AUC 0.9908</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">Heart Disease Benchmark</td>
-<td align="left">demo-heart-disease.html</td>
-<td align="left">UCI Heart Disease processed Cleveland</td>
-<td align="right">3</td>
-<td align="left">AUC 0.8919</td>
-<td align="left">AUC 0.8926</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">MedMNIST Benchmark</td>
-<td align="left">demo-medmnist.html</td>
-<td align="left">MedMNIST BreastMNIST pooled image features</td>
-<td align="right">3</td>
-<td align="left">AUC 0.7654</td>
-<td align="left">AUC 0.7985</td>
-<td align="right">0</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level2">
-<h2 id="imaging-handoff-results">Imaging Handoff Results<a class="anchor" aria-label="anchor" href="#imaging-handoff-results"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">imaging_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  demo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"LUNG1 dsImaging Radiomics Evidence"</span>,</span>
-<span>    <span class="st">"LUNG1 Direct dsImaging Image Evidence"</span>,</span>
-<span>    <span class="st">"PathMNIST Direct Image ResNet Benchmark"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"lung1-radiomics-to-flower.html"</span>,</span>
-<span>    <span class="st">"lung1-direct-image-dsimaging-resnet.html"</span>,</span>
-<span>    <span class="st">"pathmnist-direct-image-resnet.html"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"dsImaging-derived LUNG1 radiomics table"</span>,</span>
-<span>    <span class="st">"dsImaging-resolved LUNG1 NIfTI assets"</span>,</span>
-<span>    <span class="st">"MedMNIST PathMNIST server-side PNG files"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span><span class="op">)</span>,</span>
-<span>  result <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"422 rows; loss 0.6503 -&gt; 0.6474; 0 client failures"</span>,</span>
-<span>    <span class="st">"9 images; central loss 0.5540; federated loss 0.5847; 0 client failures"</span>,</span>
-<span>    <span class="st">"1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">imaging_results</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="18%">
-<col width="19%">
-<col width="19%">
-<col width="2%">
-<col width="39%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">demo</th>
-<th align="left">article</th>
-<th align="left">data_path</th>
-<th align="right">sites</th>
-<th align="left">result</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">LUNG1 dsImaging Radiomics Evidence</td>
-<td align="left">lung1-radiomics-to-flower.html</td>
-<td align="left">dsImaging-derived LUNG1 radiomics table</td>
-<td align="right">3</td>
-<td align="left">422 rows; loss 0.6503 -&gt; 0.6474; 0 client
-failures</td>
-</tr>
-<tr class="even">
-<td align="left">LUNG1 Direct dsImaging Image Evidence</td>
-<td align="left">lung1-direct-image-dsimaging-resnet.html</td>
-<td align="left">dsImaging-resolved LUNG1 NIfTI assets</td>
-<td align="right">3</td>
-<td align="left">9 images; central loss 0.5540; federated loss 0.5847; 0
-client failures</td>
-</tr>
-<tr class="odd">
-<td align="left">PathMNIST Direct Image ResNet Benchmark</td>
-<td align="left">pathmnist-direct-image-resnet.html</td>
-<td align="left">MedMNIST PathMNIST server-side PNG files</td>
-<td align="right">3</td>
-<td align="left">1,500 images; central accuracy 0.9947; federated
-accuracy 0.9860; SecAgg branch pass</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level2">
-<h2 id="clinical-privacy-benchmarks">Clinical Privacy Benchmarks<a class="anchor" aria-label="anchor" href="#clinical-privacy-benchmarks"></a>
-</h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">clinical_privacy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  profile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"trusted_internal"</span>, <span class="st">"clinical_default"</span>,</span>
 <span>              <span class="st">"clinical_update_noise XGBoost"</span>,</span>
@@ -254,8 +92,7 @@ accuracy 0.9860; SecAgg branch pass</td>
 <span>              <span class="st">"XGBoost update-noise curve"</span>,</span>
 <span>              <span class="st">"clinical_default method families"</span>,</span>
 <span>              <span class="st">"high_sensitivity_dp method families"</span><span class="op">)</span>,</span>
-<span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"clinical-privacy-benchmarks.html"</span>, <span class="fl">5</span><span class="op">)</span>,</span>
-<span>              <span class="st">"clinical-privacy-benchmarks.html"</span>,</span>
+<span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"clinical-privacy-benchmarks.html"</span>, <span class="fl">6</span><span class="op">)</span>,</span>
 <span>              <span class="st">"clinical-method-family-benchmarks.html"</span>,</span>
 <span>              <span class="st">"clinical-method-family-benchmarks.html"</span><span class="op">)</span>,</span>
 <span>  data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -372,9 +209,81 @@ compatible SUPPORT2 families</td>
 </table>
 </div>
 <div class="section level2">
-<h2 id="template-validation-coverage">Template Validation Coverage<a class="anchor" aria-label="anchor" href="#template-validation-coverage"></a>
+<h2 id="imaging-handoff-results">Imaging Handoff Results<a class="anchor" aria-label="anchor" href="#imaging-handoff-results"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">imaging_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  demo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"LUNG1 dsImaging Radiomics Evidence"</span>,</span>
+<span>    <span class="st">"LUNG1 Direct dsImaging Image Evidence"</span>,</span>
+<span>    <span class="st">"PathMNIST Direct Image ResNet Benchmark"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"lung1-radiomics-to-flower.html"</span>,</span>
+<span>    <span class="st">"lung1-direct-image-dsimaging-resnet.html"</span>,</span>
+<span>    <span class="st">"pathmnist-direct-image-resnet.html"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"dsImaging-derived LUNG1 radiomics table"</span>,</span>
+<span>    <span class="st">"dsImaging-resolved LUNG1 NIfTI assets"</span>,</span>
+<span>    <span class="st">"MedMNIST PathMNIST server-side PNG files"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span><span class="op">)</span>,</span>
+<span>  result <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"422 rows; loss 0.6503 -&gt; 0.6474; 0 client failures"</span>,</span>
+<span>    <span class="st">"9 images; central loss 0.5540; federated loss 0.5847; 0 client failures"</span>,</span>
+<span>    <span class="st">"1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">imaging_results</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="18%">
+<col width="19%">
+<col width="19%">
+<col width="2%">
+<col width="39%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">demo</th>
+<th align="left">article</th>
+<th align="left">data_path</th>
+<th align="right">sites</th>
+<th align="left">result</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">LUNG1 dsImaging Radiomics Evidence</td>
+<td align="left">lung1-radiomics-to-flower.html</td>
+<td align="left">dsImaging-derived LUNG1 radiomics table</td>
+<td align="right">3</td>
+<td align="left">422 rows; loss 0.6503 -&gt; 0.6474; 0 client
+failures</td>
+</tr>
+<tr class="even">
+<td align="left">LUNG1 Direct dsImaging Image Evidence</td>
+<td align="left">lung1-direct-image-dsimaging-resnet.html</td>
+<td align="left">dsImaging-resolved LUNG1 NIfTI assets</td>
+<td align="right">3</td>
+<td align="left">9 images; central loss 0.5540; federated loss 0.5847; 0
+client failures</td>
+</tr>
+<tr class="odd">
+<td align="left">PathMNIST Direct Image ResNet Benchmark</td>
+<td align="left">pathmnist-direct-image-resnet.html</td>
+<td align="left">MedMNIST PathMNIST server-side PNG files</td>
+<td align="right">3</td>
+<td align="left">1,500 images; central accuracy 0.9947; federated
+accuracy 0.9860; SecAgg branch pass</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level2">
+<h2 id="catalogue-coverage">Catalogue Coverage<a class="anchor" aria-label="anchor" href="#catalogue-coverage"></a>
+</h2>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">validation_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  suite <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Non-vision method validation"</span>, <span class="st">"Vision method validation"</span><span class="op">)</span>,</span>
 <span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"validation-overview.html"</span>, <span class="st">"validation-vision-overview.html"</span><span class="op">)</span>,</span>
@@ -384,16 +293,18 @@ compatible SUPPORT2 families</td>
 <span>  <span class="op">)</span>,</span>
 <span>  sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">3L</span><span class="op">)</span>,</span>
 <span>  result <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"17/17 methods pass"</span>, <span class="st">"3/3 methods pass"</span><span class="op">)</span>,</span>
+<span>  role <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"template catalogue coverage"</span>, <span class="st">"vision path coverage"</span><span class="op">)</span>,</span>
 <span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">validation_results</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="21%">
-<col width="23%">
-<col width="36%">
-<col width="4%">
-<col width="14%">
+<col width="17%">
+<col width="19%">
+<col width="30%">
+<col width="3%">
+<col width="11%">
+<col width="17%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">suite</th>
@@ -401,6 +312,7 @@ compatible SUPPORT2 families</td>
 <th align="left">data_path</th>
 <th align="right">sites</th>
 <th align="left">result</th>
+<th align="left">role</th>
 </tr></thead>
 <tbody>
 <tr class="odd">
@@ -409,6 +321,7 @@ compatible SUPPORT2 families</td>
 <td align="left">Controlled tabular, sequence and survival cohort</td>
 <td align="right">3</td>
 <td align="left">17/17 methods pass</td>
+<td align="left">template catalogue coverage</td>
 </tr>
 <tr class="even">
 <td align="left">Vision method validation</td>
@@ -416,6 +329,92 @@ compatible SUPPORT2 families</td>
 <td align="left">Controlled image and mask cohort</td>
 <td align="right">3</td>
 <td align="left">3/3 methods pass</td>
+<td align="left">vision path coverage</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level2">
+<h2 id="development-public-demos">Development Public Demos<a class="anchor" aria-label="anchor" href="#development-public-demos"></a>
+</h2>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">public_benchmarks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  demo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"Breast Cancer Benchmark"</span>,</span>
+<span>    <span class="st">"Heart Disease Benchmark"</span>,</span>
+<span>    <span class="st">"MedMNIST Benchmark"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"demo-breast-cancer.html"</span>,</span>
+<span>    <span class="st">"demo-heart-disease.html"</span>,</span>
+<span>    <span class="st">"demo-medmnist.html"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"UCI Breast Cancer Wisconsin (Original)"</span>,</span>
+<span>    <span class="st">"UCI Heart Disease processed Cleveland"</span>,</span>
+<span>    <span class="st">"MedMNIST BreastMNIST pooled image features"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span><span class="op">)</span>,</span>
+<span>  central_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"AUC 0.9878"</span>,</span>
+<span>    <span class="st">"AUC 0.8919"</span>,</span>
+<span>    <span class="st">"AUC 0.7654"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  federated_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"AUC 0.9908"</span>,</span>
+<span>    <span class="st">"AUC 0.8926"</span>,</span>
+<span>    <span class="st">"AUC 0.7985"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  failures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">public_benchmarks</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="17%">
+<col width="17%">
+<col width="31%">
+<col width="4%">
+<col width="10%">
+<col width="12%">
+<col width="6%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">demo</th>
+<th align="left">article</th>
+<th align="left">data_path</th>
+<th align="right">sites</th>
+<th align="left">central_metric</th>
+<th align="left">federated_metric</th>
+<th align="right">failures</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Breast Cancer Benchmark</td>
+<td align="left">demo-breast-cancer.html</td>
+<td align="left">UCI Breast Cancer Wisconsin (Original)</td>
+<td align="right">3</td>
+<td align="left">AUC 0.9878</td>
+<td align="left">AUC 0.9908</td>
+<td align="right">0</td>
+</tr>
+<tr class="even">
+<td align="left">Heart Disease Benchmark</td>
+<td align="left">demo-heart-disease.html</td>
+<td align="left">UCI Heart Disease processed Cleveland</td>
+<td align="right">3</td>
+<td align="left">AUC 0.8919</td>
+<td align="left">AUC 0.8926</td>
+<td align="right">0</td>
+</tr>
+<tr class="odd">
+<td align="left">MedMNIST Benchmark</td>
+<td align="left">demo-medmnist.html</td>
+<td align="left">MedMNIST BreastMNIST pooled image features</td>
+<td align="right">3</td>
+<td align="left">AUC 0.7654</td>
+<td align="left">AUC 0.7985</td>
+<td align="right">0</td>
 </tr>
 </tbody>
 </table>
@@ -438,7 +437,7 @@ ResNet Benchmark</a></li>
 dsImaging Image Evidence</a></li>
 <li><a href="lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics
 Evidence</a></li>
-<li><a href="validation-overview.html">All Method Validation
+<li><a href="validation-overview.html">Validation Evidence
 Overview</a></li>
 <li><a href="validation-vision-overview.html">Vision Method Validation
 Overview</a></li>

@@ -1,10 +1,12 @@
 # Vision Method Validation Overview
 
-This macro-vignette summarizes the live dsFlower vision-template
-validation. The experiment uses synthetic image and mask files staged on
-the Rock servers, while metadata remains in Opal tables. Each federated
-run is compared with a centralized PyTorch baseline trained over the
-pooled files.
+This macro-vignette summarizes the catalogue coverage check for the
+dsFlower vision templates. The experiment uses synthetic image and mask
+files staged on the Rock servers, while metadata remains in Opal tables.
+Each federated run is compared with a centralized PyTorch baseline
+trained over the pooled files. The current biomedical direct-image
+evidence is reported separately in the PathMNIST and LUNG1 dsImaging
+vignettes.
 
 ``` r
 
@@ -59,5 +61,5 @@ loss.](validation-vision-overview_files/figure-html/unnamed-chunk-4-1.png)
 
 The complete vision suite is produced by repeating the inline
 Opal/DataSHIELD/Flower workflow shown in each per-method vignette for
-all vision templates listed above. The persisted JSON artifact is the
-audit trail consumed by this pkgdown page.
+all vision templates listed above. The committed evidence artifact is
+the audit trail consumed by this pkgdown page.

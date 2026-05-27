@@ -33,20 +33,15 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Demo Results Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-breast-cancer.html">Breast Cancer Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
+    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Development Smoke Demos</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -69,20 +64,22 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Vision Validation: pytorch_resnet18</h1>
-            
-      
+
+
 
       <div class="d-none name"><code>validation-vision-pytorch-resnet18.Rmd</code></div>
     </div>
 
-    
-    
-<p>This vignette records a live validation of a dsFlower vision
-template. Synthetic PNG images were split across three Opal/Rock nodes,
-trained federatively through DataSHIELD, and compared with a centralized
-PyTorch baseline trained on the pooled synthetic cohort. This is a path
-validation for image staging, template execution, result persistence,
-and cleanup; it is not a clinical imaging benchmark.</p>
+
+
+<p>This vignette records the catalogue coverage check for a dsFlower
+vision template. Synthetic PNG images were split across three Opal/Rock
+nodes, trained federatively through DataSHIELD, and compared with a
+centralized PyTorch baseline trained on the pooled synthetic cohort.
+This is a path validation for image staging, template execution, result
+persistence, and cleanup; the current biomedical direct-image benchmark
+is the PathMNIST vignette, and the dsImaging handoff evidence is
+reported in the LUNG1 vignettes.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">overview</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  Field <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -202,9 +199,9 @@ and cleanup; it is not a clinical imaging benchmark.</p>
 <div class="section level2">
 <h2 id="step-by-step-run-output">Step-By-Step Run Output<a class="anchor" aria-label="anchor" href="#step-by-step-run-output"></a>
 </h2>
-<p>The validation artifact stores the output of the live centralized and
-federated runs. The chunks below render that output explicitly so the
-reader can inspect the full path instead of seeing only a summary
+<p>The committed catalogue artifact stores the output of the centralized
+and federated runs. The chunks below render that output explicitly so
+the reader can inspect the full path instead of seeing only a summary
 table.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">input_trace</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -359,10 +356,9 @@ label</td>
 <h2 id="inline-execution-path">Inline Execution Path<a class="anchor" aria-label="anchor" href="#inline-execution-path"></a>
 </h2>
 <p>The validation row above was generated by running this vision
-template through the inline workflow shown below. The vignette does not
-delegate to an opaque benchmark wrapper; the rendered tables and console
-trace above are loaded from the JSON artifact written by that live
-run.</p>
+template through the inline workflow shown below. The rendered tables
+and console trace above are loaded from the committed evidence artifact
+written by that run.</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>

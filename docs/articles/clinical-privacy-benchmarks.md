@@ -18,6 +18,39 @@ Disease contributes to the trusted-internal evidence, while the stricter
 clinical and DP profiles use larger datasets so that the row policy is
 satisfied before training starts.
 
+``` r
+
+dataset_map <- data.frame(
+  dataset = c(
+    "Breast Cancer Wisconsin (Original)",
+    "UCI Heart Disease processed Cleveland",
+    "Pima Indians Diabetes",
+    "CDC Diabetes Health Indicators"
+  ),
+  role = c(
+    "Small cytology classification task used for trusted and SecAgg checks.",
+    "Cardiology classification task retained in trusted-internal evidence; the clinical row policy intentionally excludes it.",
+    "Medium-size diabetes-onset task used for clinical SecAgg logistic regression.",
+    "Larger population-health diabetes task used for the broader clinical, DP-SGD and XGBoost privacy-profile evidence."
+  ),
+  validated_profiles = c(
+    "trusted_internal; clinical_default",
+    "trusted_internal",
+    "trusted_internal; clinical_default",
+    "trusted_internal; clinical_default; clinical_update_noise; high_sensitivity_dp"
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(dataset_map)
+```
+
+| dataset | role | validated_profiles |
+|:---|:---|:---|
+| Breast Cancer Wisconsin (Original) | Small cytology classification task used for trusted and SecAgg checks. | trusted_internal; clinical_default |
+| UCI Heart Disease processed Cleveland | Cardiology classification task retained in trusted-internal evidence; the clinical row policy intentionally excludes it. | trusted_internal |
+| Pima Indians Diabetes | Medium-size diabetes-onset task used for clinical SecAgg logistic regression. | trusted_internal; clinical_default |
+| CDC Diabetes Health Indicators | Larger population-health diabetes task used for the broader clinical, DP-SGD and XGBoost privacy-profile evidence. | trusted_internal; clinical_default; clinical_update_noise; high_sensitivity_dp |
+
 ## Evidence map
 
 The committed evidence is split by privacy posture. The

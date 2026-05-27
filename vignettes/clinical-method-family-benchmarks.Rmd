@@ -26,6 +26,41 @@ XGBoost are covered there, while this vignette covers continuous regression,
 count regression, multiclass classification, multilabel classification and
 time-to-event survival.
 
+```{r task-map}
+task_map <- data.frame(
+  family = c(
+    "Continuous regression",
+    "Count regression",
+    "Multiclass classification",
+    "Multilabel classification",
+    "Survival"
+  ),
+  target = c(
+    "Severity score derived from SUPPORT2 variables",
+    "Comorbidity count",
+    "Diagnosis class",
+    "Death, hospital death and diabetes labels",
+    "Hospital time-to-event with event indicator"
+  ),
+  template = c(
+    "pytorch_linear_regression",
+    "pytorch_poisson",
+    "pytorch_multiclass",
+    "pytorch_multilabel",
+    "pytorch_coxph"
+  ),
+  privacy_route = c(
+    "SecAgg and DP-SGD",
+    "SecAgg and DP-SGD",
+    "SecAgg and DP-SGD",
+    "SecAgg and DP-SGD",
+    "SecAgg only: Cox partial likelihood is risk-set based"
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(task_map)
+```
+
 ```{r load-evidence}
 evidence_path <- system.file(
   "extdata", "dsflower_method_family_results.json",

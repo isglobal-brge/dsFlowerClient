@@ -1,7 +1,9 @@
 # Create a high_sensitivity_dp privacy spec
 
-The most restrictive profile. Requires patient-level DP-SGD, SecAgg, and
-3+ clients.
+High-sensitivity profile for patient-level DP-SGD. The server allows
+this profile only for templates validated for Opacus per-example
+gradients and still requires Secure Aggregation and the profile's
+minimum client policy.
 
 ## Usage
 

@@ -16,6 +16,50 @@ classification and time-to-event survival.
 
 ``` r
 
+task_map <- data.frame(
+  family = c(
+    "Continuous regression",
+    "Count regression",
+    "Multiclass classification",
+    "Multilabel classification",
+    "Survival"
+  ),
+  target = c(
+    "Severity score derived from SUPPORT2 variables",
+    "Comorbidity count",
+    "Diagnosis class",
+    "Death, hospital death and diabetes labels",
+    "Hospital time-to-event with event indicator"
+  ),
+  template = c(
+    "pytorch_linear_regression",
+    "pytorch_poisson",
+    "pytorch_multiclass",
+    "pytorch_multilabel",
+    "pytorch_coxph"
+  ),
+  privacy_route = c(
+    "SecAgg and DP-SGD",
+    "SecAgg and DP-SGD",
+    "SecAgg and DP-SGD",
+    "SecAgg and DP-SGD",
+    "SecAgg only: Cox partial likelihood is risk-set based"
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(task_map)
+```
+
+| family | target | template | privacy_route |
+|:---|:---|:---|:---|
+| Continuous regression | Severity score derived from SUPPORT2 variables | pytorch_linear_regression | SecAgg and DP-SGD |
+| Count regression | Comorbidity count | pytorch_poisson | SecAgg and DP-SGD |
+| Multiclass classification | Diagnosis class | pytorch_multiclass | SecAgg and DP-SGD |
+| Multilabel classification | Death, hospital death and diabetes labels | pytorch_multilabel | SecAgg and DP-SGD |
+| Survival | Hospital time-to-event with event indicator | pytorch_coxph | SecAgg only: Cox partial likelihood is risk-set based |
+
+``` r
+
 evidence_path <- system.file(
   "extdata", "dsflower_method_family_results.json",
   package = "dsFlowerClient"

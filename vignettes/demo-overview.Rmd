@@ -11,82 +11,18 @@ vignette: >
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 ```
 
-This page is the landing point for the rendered dsFlowerClient demos. The main
-evidence is split into four groups: public benchmark runs with centralised and
-federated test metrics, imaging runs that cover LUNG1 handoff and direct
-PathMNIST image learning, clinical privacy-profile and method-family benchmarks,
-and the template validation suite that exercises every authorised method. Together they show the same
-DataSHIELD execution pattern: the
-researcher connects to Opal, references or stages server-side data, launches
-Flower training, and inspects approved model-scale outputs.
+This page is the landing point for the rendered dsFlowerClient demos. The
+current evidence is split into four groups: clinical privacy-profile runs,
+SUPPORT2 method-family runs, imaging handoff/direct-image runs and catalogue
+coverage. The older self-contained public demos remain useful for installation
+checks, but the presentation evidence is the recent clinical, imaging and
+privacy-profile matrix.
 
-## Public Benchmark Results
+All live demos use the same DataSHIELD execution pattern: the researcher
+connects to Opal, references or stages server-side data, launches Flower
+training, and inspects approved model-scale outputs.
 
-```{r public-benchmark-results}
-public_benchmarks <- data.frame(
-  demo = c(
-    "Breast Cancer Benchmark",
-    "Heart Disease Benchmark",
-    "MedMNIST Benchmark"
-  ),
-  article = c(
-    "demo-breast-cancer.html",
-    "demo-heart-disease.html",
-    "demo-medmnist.html"
-  ),
-  data_path = c(
-    "UCI Breast Cancer Wisconsin (Original)",
-    "UCI Heart Disease processed Cleveland",
-    "MedMNIST BreastMNIST pooled image features"
-  ),
-  sites = c(3L, 3L, 3L),
-  central_metric = c(
-    "AUC 0.9878",
-    "AUC 0.8919",
-    "AUC 0.7654"
-  ),
-  federated_metric = c(
-    "AUC 0.9908",
-    "AUC 0.8926",
-    "AUC 0.7985"
-  ),
-  failures = c(0L, 0L, 0L),
-  stringsAsFactors = FALSE
-)
-knitr::kable(public_benchmarks)
-```
-
-## Imaging Handoff Results
-
-```{r imaging-handoff-results}
-imaging_results <- data.frame(
-  demo = c(
-    "LUNG1 dsImaging Radiomics Evidence",
-    "LUNG1 Direct dsImaging Image Evidence",
-    "PathMNIST Direct Image ResNet Benchmark"
-  ),
-  article = c(
-    "lung1-radiomics-to-flower.html",
-    "lung1-direct-image-dsimaging-resnet.html",
-    "pathmnist-direct-image-resnet.html"
-  ),
-  data_path = c(
-    "dsImaging-derived LUNG1 radiomics table",
-    "dsImaging-resolved LUNG1 NIfTI assets",
-    "MedMNIST PathMNIST server-side PNG files"
-  ),
-  sites = c(3L, 3L, 3L),
-  result = c(
-    "422 rows; loss 0.6503 -> 0.6474; 0 client failures",
-    "9 images; central loss 0.5540; federated loss 0.5847; 0 client failures",
-    "1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass"
-  ),
-  stringsAsFactors = FALSE
-)
-knitr::kable(imaging_results)
-```
-
-## Clinical Privacy Benchmarks
+## Current Clinical And Privacy Results
 
 ```{r clinical-privacy-results}
 clinical_privacy <- data.frame(
@@ -96,8 +32,7 @@ clinical_privacy <- data.frame(
               "XGBoost update-noise curve",
               "clinical_default method families",
               "high_sensitivity_dp method families"),
-  article = c(rep("clinical-privacy-benchmarks.html", 5),
-              "clinical-privacy-benchmarks.html",
+  article = c(rep("clinical-privacy-benchmarks.html", 6),
               "clinical-method-family-benchmarks.html",
               "clinical-method-family-benchmarks.html"),
   data_path = c(
@@ -135,7 +70,37 @@ clinical_privacy <- data.frame(
 knitr::kable(clinical_privacy)
 ```
 
-## Template Validation Coverage
+## Imaging Handoff Results
+
+```{r imaging-handoff-results}
+imaging_results <- data.frame(
+  demo = c(
+    "LUNG1 dsImaging Radiomics Evidence",
+    "LUNG1 Direct dsImaging Image Evidence",
+    "PathMNIST Direct Image ResNet Benchmark"
+  ),
+  article = c(
+    "lung1-radiomics-to-flower.html",
+    "lung1-direct-image-dsimaging-resnet.html",
+    "pathmnist-direct-image-resnet.html"
+  ),
+  data_path = c(
+    "dsImaging-derived LUNG1 radiomics table",
+    "dsImaging-resolved LUNG1 NIfTI assets",
+    "MedMNIST PathMNIST server-side PNG files"
+  ),
+  sites = c(3L, 3L, 3L),
+  result = c(
+    "422 rows; loss 0.6503 -> 0.6474; 0 client failures",
+    "9 images; central loss 0.5540; federated loss 0.5847; 0 client failures",
+    "1,500 images; central accuracy 0.9947; federated accuracy 0.9860; SecAgg branch pass"
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(imaging_results)
+```
+
+## Catalogue Coverage
 
 ```{r template-validation-coverage}
 validation_results <- data.frame(
@@ -147,9 +112,46 @@ validation_results <- data.frame(
   ),
   sites = c(3L, 3L),
   result = c("17/17 methods pass", "3/3 methods pass"),
+  role = c("template catalogue coverage", "vision path coverage"),
   stringsAsFactors = FALSE
 )
 knitr::kable(validation_results)
+```
+
+## Development Public Demos
+
+```{r public-benchmark-results}
+public_benchmarks <- data.frame(
+  demo = c(
+    "Breast Cancer Benchmark",
+    "Heart Disease Benchmark",
+    "MedMNIST Benchmark"
+  ),
+  article = c(
+    "demo-breast-cancer.html",
+    "demo-heart-disease.html",
+    "demo-medmnist.html"
+  ),
+  data_path = c(
+    "UCI Breast Cancer Wisconsin (Original)",
+    "UCI Heart Disease processed Cleveland",
+    "MedMNIST BreastMNIST pooled image features"
+  ),
+  sites = c(3L, 3L, 3L),
+  central_metric = c(
+    "AUC 0.9878",
+    "AUC 0.8919",
+    "AUC 0.7654"
+  ),
+  federated_metric = c(
+    "AUC 0.9908",
+    "AUC 0.8926",
+    "AUC 0.7985"
+  ),
+  failures = c(0L, 0L, 0L),
+  stringsAsFactors = FALSE
+)
+knitr::kable(public_benchmarks)
 ```
 
 ## Article Links
@@ -163,7 +165,7 @@ knitr::kable(validation_results)
 - [PathMNIST Direct Image ResNet Benchmark](pathmnist-direct-image-resnet.html)
 - [LUNG1 Direct dsImaging Image Evidence](lung1-direct-image-dsimaging-resnet.html)
 - [LUNG1 dsImaging Radiomics Evidence](lung1-radiomics-to-flower.html)
-- [All Method Validation Overview](validation-overview.html)
+- [Validation Evidence Overview](validation-overview.html)
 - [Vision Method Validation Overview](validation-vision-overview.html)
 
 The repository also keeps self-contained smoke demos for development

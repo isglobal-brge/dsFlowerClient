@@ -81,13 +81,16 @@ ds.flower.privacy.clinical_hardened <- function() {
 
 #' Create a clinical_update_noise privacy spec
 #'
-#' Update-level differential privacy hardening: clips weight updates and
-#' adds calibrated Gaussian noise before aggregation. SecAgg enforced.
+#' Update-level hardening profile. Where the selected template supports it,
+#' model updates or histogram contributions are clipped and perturbed with
+#' calibrated Gaussian noise before aggregation. SecAgg is enforced by the
+#' server profile.
 #'
-#' NOTE: This is NOT patient-level DP-SGD. It protects against an honest-but-
-#' curious aggregator seeing individual updates, but does not provide formal
-#' per-example privacy guarantees. For formal DP, use
-#' \code{ds.flower.privacy.high_sensitivity_dp()} which uses Opacus DP-SGD.
+#' This is not patient-level DP-SGD. It is useful when a study wants a stricter
+#' update-sharing posture, but it should not be reported as formal per-example
+#' Differential Privacy. For that setting use
+#' \code{ds.flower.privacy.high_sensitivity_dp()} with a compatible PyTorch
+#' template.
 #'
 #' @param epsilon Numeric; privacy budget (default 1.0).
 #' @param delta Numeric; probability of privacy leakage (default 1e-5).
@@ -113,8 +116,9 @@ ds.flower.privacy.clinical_update_noise <- function(epsilon = 1.0, delta = 1e-5,
 
 #' Create a high_sensitivity_dp privacy spec
 #'
-#' The most restrictive profile. Requires patient-level DP-SGD, SecAgg,
-#' and 3+ clients.
+#' High-sensitivity profile for patient-level DP-SGD. The server allows this
+#' profile only for templates validated for Opacus per-example gradients and
+#' still requires Secure Aggregation and the profile's minimum client policy.
 #'
 #' @param epsilon Numeric; privacy budget (default 1.0).
 #' @param delta Numeric; probability of privacy leakage (default 1e-5).

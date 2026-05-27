@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>All Method Validation Overview • dsFlowerClient</title>
+<title>dsFlower Validation Evidence Overview • dsFlowerClient</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="All Method Validation Overview">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="dsFlower Validation Evidence Overview">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -33,20 +33,15 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Demo Results Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-breast-cancer.html">Breast Cancer Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
+    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Development Smoke Demos</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -68,7 +63,7 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>All Method Validation Overview</h1>
+      <h1>dsFlower Validation Evidence Overview</h1>
 
 
 
@@ -77,31 +72,25 @@
 
 
 
-<p>This macro-vignette summarizes the current committed dsFlower
-validation evidence across tabular, sequence, survival, XGBoost,
-image-classification, and segmentation templates. Each method has its
-own vignette. The core method-validation suite uses deterministic
-synthetic fixtures for broad template coverage; the clinical benchmarks
-add real public datasets for the thesis-facing evidence.</p>
-<p>The suite is deliberately a functional and numerical sanity check,
-not a privacy claim and not, by itself, a clinical benchmark. It uses
-<code>sandbox_open</code> so that per-node diagnostics can be observed
-during development. Production studies should use the stricter
-DataSHIELD privacy profiles. The SUPPORT2 method-family benchmark and
-the clinical privacy benchmark use <code>clinical_default</code>,
-<code>clinical_update_noise</code> or <code>high_sensitivity_dp</code>,
-so Secure Aggregation, profile-level disclosure guards and, where
-applicable, DP-SGD epsilon curves or update-level histogram-noise curves
-are active. The SUPPORT2 DP-SGD evidence is interpreted over the four
-templates whose losses decompose by sample. CoxPH is still validated in
-the Secure Aggregation run; because its risk-set partial likelihood is
-not a per-example loss, <code>high_sensitivity_dp</code> is not the
-matching privacy profile for that route.</p>
-<p>The thesis-facing evidence is broader than the synthetic catalogue
-checks. It includes public clinical benchmark datasets, SUPPORT2
-method-family tasks, LUNG1 radiomics features produced by dsImaging, a
-LUNG1 direct-image path check and a larger PathMNIST direct-image
-benchmark.</p>
+<p>This macro-vignette summarizes the committed dsFlower validation
+evidence. The current presentation layer is the public biomedical
+evidence: clinical benchmarks, SUPPORT2 method-family tasks, LUNG1
+imaging handoffs and the PathMNIST direct-image benchmark. The synthetic
+method and vision suites provide catalogue coverage: they confirm that
+every authorised template can be staged, executed, aggregated, persisted
+and cleaned up across three Opal/Rock servers. They complement the
+biomedical reports by checking the full template surface under
+deterministic conditions.</p>
+<p>The clinical and method-family benchmarks use
+<code>clinical_default</code>, <code>clinical_update_noise</code> or
+<code>high_sensitivity_dp</code>, so Secure Aggregation, profile-level
+disclosure guards and, where applicable, DP-SGD epsilon curves or
+bounded histogram-noise curves are active. The SUPPORT2 DP-SGD evidence
+is interpreted over the four templates whose losses decompose by sample.
+CoxPH is still validated in the Secure Aggregation run; because its
+risk-set partial likelihood is not a per-example loss,
+<code>high_sensitivity_dp</code> is not the matching privacy profile for
+that route.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">thesis_evidence</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  layer <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>

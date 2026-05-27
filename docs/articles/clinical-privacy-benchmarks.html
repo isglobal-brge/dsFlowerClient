@@ -33,20 +33,15 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Demo Results Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-breast-cancer.html">Breast Cancer Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
+    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Development Smoke Demos</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -92,6 +87,69 @@ combinations that satisfy the active server-side row policy. Heart
 Disease contributes to the trusted-internal evidence, while the stricter
 clinical and DP profiles use larger datasets so that the row policy is
 satisfied before training starts.</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">dataset_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  dataset <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"Breast Cancer Wisconsin (Original)"</span>,</span>
+<span>    <span class="st">"UCI Heart Disease processed Cleveland"</span>,</span>
+<span>    <span class="st">"Pima Indians Diabetes"</span>,</span>
+<span>    <span class="st">"CDC Diabetes Health Indicators"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  role <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"Small cytology classification task used for trusted and SecAgg checks."</span>,</span>
+<span>    <span class="st">"Cardiology classification task retained in trusted-internal evidence; the clinical row policy intentionally excludes it."</span>,</span>
+<span>    <span class="st">"Medium-size diabetes-onset task used for clinical SecAgg logistic regression."</span>,</span>
+<span>    <span class="st">"Larger population-health diabetes task used for the broader clinical, DP-SGD and XGBoost privacy-profile evidence."</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  validated_profiles <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"trusted_internal; clinical_default"</span>,</span>
+<span>    <span class="st">"trusted_internal"</span>,</span>
+<span>    <span class="st">"trusted_internal; clinical_default"</span>,</span>
+<span>    <span class="st">"trusted_internal; clinical_default; clinical_update_noise; high_sensitivity_dp"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">dataset_map</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="15%">
+<col width="50%">
+<col width="33%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">dataset</th>
+<th align="left">role</th>
+<th align="left">validated_profiles</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Breast Cancer Wisconsin (Original)</td>
+<td align="left">Small cytology classification task used for trusted and
+SecAgg checks.</td>
+<td align="left">trusted_internal; clinical_default</td>
+</tr>
+<tr class="even">
+<td align="left">UCI Heart Disease processed Cleveland</td>
+<td align="left">Cardiology classification task retained in
+trusted-internal evidence; the clinical row policy intentionally
+excludes it.</td>
+<td align="left">trusted_internal</td>
+</tr>
+<tr class="odd">
+<td align="left">Pima Indians Diabetes</td>
+<td align="left">Medium-size diabetes-onset task used for clinical
+SecAgg logistic regression.</td>
+<td align="left">trusted_internal; clinical_default</td>
+</tr>
+<tr class="even">
+<td align="left">CDC Diabetes Health Indicators</td>
+<td align="left">Larger population-health diabetes task used for the
+broader clinical, DP-SGD and XGBoost privacy-profile evidence.</td>
+<td align="left">trusted_internal; clinical_default;
+clinical_update_noise; high_sensitivity_dp</td>
+</tr>
+</tbody>
+</table>
 <div class="section level2">
 <h2 id="evidence-map">Evidence map<a class="anchor" aria-label="anchor" href="#evidence-map"></a>
 </h2>
@@ -103,7 +161,7 @@ suppressed per-node metrics. <code>high_sensitivity_dp</code> adds
 patient-level DP-SGD for compatible PyTorch losses, and
 <code>clinical_update_noise</code> applies bounded histogram noise to
 the secure XGBoost histogram route.</p>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">evidence_map</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  evidence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"trusted_internal"</span>,</span>
@@ -204,7 +262,7 @@ PyTorch MLP</td>
 </h2>
 <p>The commands below reproduce the committed benchmark evidence against
 a local three-Opal stack.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_DEMO_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"trusted_internal"</span>,</span>
 <span>  DSFLOWER_CDC_DIABETES_LIMIT <span class="op">=</span> <span class="st">"9000"</span>,</span>
@@ -215,7 +273,7 @@ a local three-Opal stack.</p>
 <span>  <span class="st">"demos"</span>, <span class="st">"benchmark_clinical_algorithms.R"</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">"dsFlowerClient"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_DEMO_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"clinical_default"</span>,</span>
 <span>  DSFLOWER_CLINICAL_MODELS <span class="op">=</span></span>
@@ -231,7 +289,7 @@ a local three-Opal stack.</p>
 <span>  <span class="st">"demos"</span>, <span class="st">"benchmark_clinical_algorithms.R"</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">"dsFlowerClient"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_DEMO_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"clinical_update_noise"</span>,</span>
 <span>  DSFLOWER_CLINICAL_DATASETS <span class="op">=</span> <span class="st">"cdc_diabetes_health_indicators"</span>,</span>
@@ -250,7 +308,7 @@ a local three-Opal stack.</p>
 <span>  <span class="st">"demos"</span>, <span class="st">"benchmark_clinical_algorithms.R"</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">"dsFlowerClient"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>  DSFLOWER_DEMO_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"high_sensitivity_dp"</span>,</span>
 <span>  DSFLOWER_CLINICAL_DATASETS <span class="op">=</span> <span class="st">"cdc_diabetes_health_indicators"</span>,</span>
@@ -266,7 +324,7 @@ a local three-Opal stack.</p>
 <span>  <span class="st">"demos"</span>, <span class="st">"benchmark_clinical_algorithms.R"</span>,</span>
 <span>  package <span class="op">=</span> <span class="st">"dsFlowerClient"</span></span>
 <span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">model</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"pytorch_logreg"</span>, <span class="st">"pytorch_mlp"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">for</span> <span class="op">(</span><span class="va">eps</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">8</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="va">model</span> <span class="op">==</span> <span class="st">"pytorch_logreg"</span><span class="op">)</span> <span class="op">{</span></span>
@@ -293,7 +351,7 @@ a local three-Opal stack.</p>
 <span>    <span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">}</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">for</span> <span class="op">(</span><span class="va">eps</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">12</span>, <span class="fl">16</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
 <span>    DSFLOWER_DEMO_PRIVACY_PROFILE <span class="op">=</span> <span class="st">"clinical_update_noise"</span>,</span>
@@ -321,7 +379,7 @@ a local three-Opal stack.</p>
 <div class="section level2">
 <h2 id="result-tables">Result tables<a class="anchor" aria-label="anchor" href="#result-tables"></a>
 </h2>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">policy_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span></span>
 <span>  <span class="va">results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"evidence"</span>, <span class="st">"privacy_profile"</span>, <span class="st">"privacy_mechanism"</span>,</span>
 <span>              <span class="st">"secagg_required"</span>, <span class="st">"dp_scope"</span><span class="op">)</span><span class="op">]</span></span>
@@ -373,7 +431,7 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"trusted_internal"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -559,7 +617,7 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"clinical_default_secagg"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -789,7 +847,7 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"high_sensitivity_dp"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -887,7 +945,7 @@ a local three-Opal stack.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">results</span>, <span class="va">evidence</span> <span class="op">==</span> <span class="st">"xgboost_histogram_update_noise"</span><span class="op">)</span>,</span>
 <span>  digits <span class="op">=</span> <span class="fl">4</span>,</span>
@@ -982,7 +1040,7 @@ Secure Aggregation requirement.</p>
 <div class="section level2">
 <h2 id="dp-utility-curve">DP Utility Curve<a class="anchor" aria-label="anchor" href="#dp-utility-curve"></a>
 </h2>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">curve_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"epsilon"</span>, <span class="st">"dataset"</span>, <span class="st">"model"</span>, <span class="st">"rounds"</span>, <span class="st">"central_auc"</span>,</span>
 <span>                    <span class="st">"federated_auc"</span>, <span class="st">"delta_auc"</span>, <span class="st">"failures"</span><span class="op">)</span><span class="op">]</span>,</span>
@@ -1073,7 +1131,7 @@ Secure Aggregation requirement.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">central_lines</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unique.html" class="external-link">unique</a></span><span class="op">(</span><span class="va">curve_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"model"</span>, <span class="st">"central_auc"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
@@ -1104,7 +1162,7 @@ Secure Aggregation requirement.</p>
 <div class="section level2">
 <h2 id="xgboost-histogram-update-noise-curve">XGBoost Histogram Update-Noise Curve<a class="anchor" aria-label="anchor" href="#xgboost-histogram-update-noise-curve"></a>
 </h2>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span></span>
 <span>  <span class="va">xgb_curve_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"epsilon"</span>, <span class="st">"dataset"</span>, <span class="st">"model"</span>, <span class="st">"central_auc"</span>,</span>
 <span>                        <span class="st">"federated_auc"</span>, <span class="st">"delta_auc"</span>, <span class="st">"failures"</span><span class="op">)</span><span class="op">]</span>,</span>
@@ -1160,7 +1218,7 @@ Secure Aggregation requirement.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span></span>
 <span>    <span class="va">xgb_curve_results</span>,</span>
@@ -1194,7 +1252,7 @@ move back toward the SecAgg-only reference.</p>
 <div class="section level2">
 <h2 id="centralised-versus-federated-auc">Centralised versus federated AUC<a class="anchor" aria-label="anchor" href="#centralised-versus-federated-auc"></a>
 </h2>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_df</span> <span class="op">&lt;-</span> <span class="va">results</span></span>
 <span><span class="va">plot_df</span><span class="op">$</span><span class="va">label</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">plot_df</span><span class="op">$</span><span class="va">privacy_profile</span>, <span class="va">plot_df</span><span class="op">$</span><span class="va">dataset</span>, <span class="va">plot_df</span><span class="op">$</span><span class="va">model</span>, sep <span class="op">=</span> <span class="st">" / "</span><span class="op">)</span></span>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>

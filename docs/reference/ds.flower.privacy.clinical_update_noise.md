@@ -1,7 +1,9 @@
 # Create a clinical_update_noise privacy spec
 
-Update-level differential privacy hardening: clips weight updates and
-adds calibrated Gaussian noise before aggregation. SecAgg enforced.
+Update-level hardening profile. Where the selected template supports it,
+model updates or histogram contributions are clipped and perturbed with
+calibrated Gaussian noise before aggregation. SecAgg is enforced by the
+server profile.
 
 ## Usage
 
@@ -33,8 +35,8 @@ A `dsflower_privacy` S3 object with mode = "clinical_update_noise".
 
 ## Details
 
-NOTE: This is NOT patient-level DP-SGD. It protects against an
-honest-but- curious aggregator seeing individual updates, but does not
-provide formal per-example privacy guarantees. For formal DP, use
+This is not patient-level DP-SGD. It is useful when a study wants a
+stricter update-sharing posture, but it should not be reported as formal
+per-example Differential Privacy. For that setting use
 [`ds.flower.privacy.high_sensitivity_dp()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.high_sensitivity_dp.md)
-which uses Opacus DP-SGD.
+with a compatible PyTorch template.

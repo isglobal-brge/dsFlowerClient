@@ -1,6 +1,7 @@
 # Create a PyTorch DenseNet-121 model spec
 
-Medical imaging classification (chest X-ray, etc.).
+Image classification backbone with densely connected convolutional
+blocks.
 
 ## Usage
 

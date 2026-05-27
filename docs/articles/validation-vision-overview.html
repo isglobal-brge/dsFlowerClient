@@ -33,20 +33,15 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Demo Results Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-breast-cancer.html">Breast Cancer Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-heart-disease.html">Heart Disease Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-medmnist.html">MedMNIST Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Direct Image ResNet Smoke Demo</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
+    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Development Smoke Demos</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -69,19 +64,21 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Vision Method Validation Overview</h1>
-            
-      
+
+
 
       <div class="d-none name"><code>validation-vision-overview.Rmd</code></div>
     </div>
 
-    
-    
-<p>This macro-vignette summarizes the live dsFlower vision-template
-validation. The experiment uses synthetic image and mask files staged on
-the Rock servers, while metadata remains in Opal tables. Each federated
-run is compared with a centralized PyTorch baseline trained over the
-pooled files.</p>
+
+
+<p>This macro-vignette summarizes the catalogue coverage check for the
+dsFlower vision templates. The experiment uses synthetic image and mask
+files staged on the Rock servers, while metadata remains in Opal tables.
+Each federated run is compared with a centralized PyTorch baseline
+trained over the pooled files. The current biomedical direct-image
+evidence is reported separately in the PathMNIST and LUNG1 dsImaging
+vignettes.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">summary_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  Field <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'generated_at'</span>, <span class="st">'privacy_profile'</span>, <span class="st">'n_sites'</span>, <span class="st">'n_per_site'</span>, <span class="st">'n_total'</span>, <span class="st">'image_size'</span><span class="op">)</span>,</span>
@@ -200,8 +197,8 @@ pooled files.</p>
 <p><img src="validation-vision-overview_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="Horizontal bar chart of vision-template federated minus centralized loss." width="672"></p>
 <p>The complete vision suite is produced by repeating the inline
 Opal/DataSHIELD/Flower workflow shown in each per-method vignette for
-all vision templates listed above. The persisted JSON artifact is the
-audit trail consumed by this pkgdown page.</p>
+all vision templates listed above. The committed evidence artifact is
+the audit trail consumed by this pkgdown page.</p>
   </main>
 </div>
 

@@ -20,54 +20,47 @@ navbar:
       menu:
         - text: "API Quickstart"
           href: articles/api-quickstart.html
-        - text: "Demo Results Overview"
+        - text: "Validation Evidence Overview"
           href: articles/demo-overview.html
-        - text: "Breast Cancer Benchmark"
-          href: articles/demo-breast-cancer.html
-        - text: "Heart Disease Benchmark"
-          href: articles/demo-heart-disease.html
-        - text: "MedMNIST Benchmark"
-          href: articles/demo-medmnist.html
-        - text: "Direct Image ResNet Smoke Demo"
-          href: articles/direct-image-resnet.html
-        - text: "PathMNIST Direct Image ResNet Benchmark"
-          href: articles/pathmnist-direct-image-resnet.html
-        - text: "LUNG1 Direct dsImaging ResNet Evidence"
-          href: articles/lung1-direct-image-dsimaging-resnet.html
-        - text: "Radiomics Benchmark"
-          href: articles/demo-lung1-radiomics.html
-        - text: "Radiomics To Flower"
-          href: articles/radiomics-to-flower.html
-        - text: "LUNG1 dsImaging Radiomics Evidence"
-          href: articles/lung1-radiomics-to-flower.html
         - text: "Clinical Privacy Benchmarks"
           href: articles/clinical-privacy-benchmarks.html
         - text: "Clinical Method-Family Benchmarks"
           href: articles/clinical-method-family-benchmarks.html
+        - text: "PathMNIST Direct Image ResNet Benchmark"
+          href: articles/pathmnist-direct-image-resnet.html
+        - text: "LUNG1 Direct dsImaging ResNet Evidence"
+          href: articles/lung1-direct-image-dsimaging-resnet.html
+        - text: "LUNG1 dsImaging Radiomics Evidence"
+          href: articles/lung1-radiomics-to-flower.html
         - text: "Method Validation Overview"
           href: articles/validation-overview.html
         - text: "Vision Validation Overview"
           href: articles/validation-vision-overview.html
+        - text: "Development Smoke Demos"
+          href: articles/direct-image-resnet.html
 
 articles:
-  - title: Federated benchmark demos
+  - title: Current validation evidence
     navbar: ~
     contents:
       - api-quickstart
       - demo-overview
+      - pathmnist-direct-image-resnet
+      - lung1-direct-image-dsimaging-resnet
+      - lung1-radiomics-to-flower
+      - clinical-privacy-benchmarks
+      - clinical-method-family-benchmarks
+  - title: Development and smoke demos
+    desc: "Small self-contained demos retained for installation and connectivity checks."
+    contents:
       - demo-breast-cancer
       - demo-heart-disease
       - demo-medmnist
       - direct-image-resnet
-      - pathmnist-direct-image-resnet
-      - lung1-direct-image-dsimaging-resnet
       - demo-lung1-radiomics
       - radiomics-to-flower
-      - lung1-radiomics-to-flower
-      - clinical-privacy-benchmarks
-      - clinical-method-family-benchmarks
   - title: Method validation
-    desc: "Per-template validation against centralized baselines."
+    desc: "Synthetic catalogue coverage against centralized baselines."
     contents:
       - validation-sklearn-logreg
       - validation-sklearn-ridge

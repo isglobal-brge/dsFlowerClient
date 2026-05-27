@@ -26,8 +26,9 @@ A \code{dsflower_model} S3 object using the sklearn_sgd template.
 }
 \description{
 Convenience constructor for a linear Support Vector Machine. Internally
-uses the \code{sklearn_sgd} template with \code{loss = "hinge"}, which
-is mathematically equivalent to \code{sklearn.svm.LinearSVC}.
+uses the \code{sklearn_sgd} template with \code{loss = "hinge"}, i.e. a
+linear hinge-loss classifier trained incrementally through the federated
+SGD template.
 }
 \details{
 Only linear SVMs are supported in federated learning because kernel SVMs

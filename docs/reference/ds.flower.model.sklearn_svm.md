@@ -1,8 +1,9 @@
 # Create a Linear SVM model spec
 
 Convenience constructor for a linear Support Vector Machine. Internally
-uses the `sklearn_sgd` template with `loss = "hinge"`, which is
-mathematically equivalent to `sklearn.svm.LinearSVC`.
+uses the `sklearn_sgd` template with `loss = "hinge"`, i.e. a linear
+hinge-loss classifier trained incrementally through the federated SGD
+template.
 
 ## Usage
 
