@@ -141,8 +141,9 @@ central-vs-federated benchmarks under `trusted_internal`, `clinical_default`
 and `high_sensitivity_dp`. The clinical profile evidence covers logistic
 regression, ridge, SGD, PyTorch logistic regression, PyTorch MLP and the
 one-round secure histogram-stump XGBoost path. The DP evidence covers PyTorch
-MLP and PyTorch logistic regression with Opacus DP-SGD, and the DP curve records
-PyTorch logistic regression at epsilon 2, 4 and 8 on the same CDC split.
+MLP and PyTorch logistic regression with Opacus DP-SGD, with epsilon curves at
+2, 4 and 8 on the same CDC split. XGBoost also has a separate update-noise
+curve at epsilon 8, 12 and 16 for the secure histogram route.
 
 ```sh
 DSFLOWER_DEMO_PRIVACY_PROFILE=clinical_default \

@@ -14,8 +14,8 @@ development. Production studies should use the stricter DataSHIELD
 privacy profiles. The SUPPORT2 method-family benchmark and the clinical
 privacy benchmark use `clinical_default`, `clinical_update_noise` or
 `high_sensitivity_dp`, so Secure Aggregation, profile-level disclosure
-guards and, where applicable, DP-SGD or update-level histogram noise are
-active.
+guards and, where applicable, DP-SGD epsilon curves or update-level
+histogram-noise curves are active.
 
 ``` r
 

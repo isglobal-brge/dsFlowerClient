@@ -92,15 +92,19 @@ knitr::kable(imaging_results)
 clinical_privacy <- data.frame(
   profile = c("trusted_internal", "clinical_default",
               "clinical_update_noise XGBoost",
-              "high_sensitivity_dp", "clinical_default method families",
+              "high_sensitivity_dp", "DP-SGD epsilon curves",
+              "XGBoost update-noise curve",
+              "clinical_default method families",
               "high_sensitivity_dp method families"),
-  article = c(rep("clinical-privacy-benchmarks.html", 3),
+  article = c(rep("clinical-privacy-benchmarks.html", 5),
               "clinical-privacy-benchmarks.html",
               "clinical-method-family-benchmarks.html",
               "clinical-method-family-benchmarks.html"),
   data_path = c(
     "Breast Cancer, Heart Disease, Pima Diabetes and CDC Diabetes",
     "Breast Cancer, Pima Diabetes and CDC Diabetes",
+    "CDC Diabetes",
+    "CDC Diabetes",
     "CDC Diabetes",
     "CDC Diabetes",
     "SUPPORT2",
@@ -111,6 +115,8 @@ clinical_privacy <- data.frame(
     "Secure Aggregation plus stricter metric/count policy",
     "Secure Aggregation plus histogram update noise",
     "Secure Aggregation plus Opacus DP-SGD",
+    "Opacus DP-SGD at epsilon 2, 4 and 8 for two PyTorch templates",
+    "Histogram update noise at epsilon 8, 12 and 16",
     "Secure Aggregation plus family-specific loss validation",
     "Secure Aggregation plus Opacus DP-SGD for accepted families"
   ),
@@ -119,6 +125,8 @@ clinical_privacy <- data.frame(
     "8/8 runs pass, 0 client failures",
     "1/1 run passes, 0 client failures",
     "2/2 runs pass, 0 client failures",
+    "6/6 curve points pass, 0 client failures",
+    "3/3 curve points pass, 0 client failures",
     "5/5 runs pass, 0 client failures",
     "4/4 runs pass, 0 client failures"
   ),
@@ -133,6 +141,8 @@ knitr::kable(clinical_privacy)
 | clinical_default | clinical-privacy-benchmarks.html | Breast Cancer, Pima Diabetes and CDC Diabetes | Secure Aggregation plus stricter metric/count policy | 8/8 runs pass, 0 client failures |
 | clinical_update_noise XGBoost | clinical-privacy-benchmarks.html | CDC Diabetes | Secure Aggregation plus histogram update noise | 1/1 run passes, 0 client failures |
 | high_sensitivity_dp | clinical-privacy-benchmarks.html | CDC Diabetes | Secure Aggregation plus Opacus DP-SGD | 2/2 runs pass, 0 client failures |
+| DP-SGD epsilon curves | clinical-privacy-benchmarks.html | CDC Diabetes | Opacus DP-SGD at epsilon 2, 4 and 8 for two PyTorch templates | 6/6 curve points pass, 0 client failures |
+| XGBoost update-noise curve | clinical-privacy-benchmarks.html | CDC Diabetes | Histogram update noise at epsilon 8, 12 and 16 | 3/3 curve points pass, 0 client failures |
 | clinical_default method families | clinical-method-family-benchmarks.html | SUPPORT2 | Secure Aggregation plus family-specific loss validation | 5/5 runs pass, 0 client failures |
 | high_sensitivity_dp method families | clinical-method-family-benchmarks.html | SUPPORT2 | Secure Aggregation plus Opacus DP-SGD for accepted families | 4/4 runs pass, 0 client failures |
 

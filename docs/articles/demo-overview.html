@@ -237,15 +237,19 @@ client failures</td>
 <code class="sourceCode R"><span><span class="va">clinical_privacy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  profile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"trusted_internal"</span>, <span class="st">"clinical_default"</span>,</span>
 <span>              <span class="st">"clinical_update_noise XGBoost"</span>,</span>
-<span>              <span class="st">"high_sensitivity_dp"</span>, <span class="st">"clinical_default method families"</span>,</span>
+<span>              <span class="st">"high_sensitivity_dp"</span>, <span class="st">"DP-SGD epsilon curves"</span>,</span>
+<span>              <span class="st">"XGBoost update-noise curve"</span>,</span>
+<span>              <span class="st">"clinical_default method families"</span>,</span>
 <span>              <span class="st">"high_sensitivity_dp method families"</span><span class="op">)</span>,</span>
-<span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"clinical-privacy-benchmarks.html"</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"clinical-privacy-benchmarks.html"</span>, <span class="fl">5</span><span class="op">)</span>,</span>
 <span>              <span class="st">"clinical-privacy-benchmarks.html"</span>,</span>
 <span>              <span class="st">"clinical-method-family-benchmarks.html"</span>,</span>
 <span>              <span class="st">"clinical-method-family-benchmarks.html"</span><span class="op">)</span>,</span>
 <span>  data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"Breast Cancer, Heart Disease, Pima Diabetes and CDC Diabetes"</span>,</span>
 <span>    <span class="st">"Breast Cancer, Pima Diabetes and CDC Diabetes"</span>,</span>
+<span>    <span class="st">"CDC Diabetes"</span>,</span>
+<span>    <span class="st">"CDC Diabetes"</span>,</span>
 <span>    <span class="st">"CDC Diabetes"</span>,</span>
 <span>    <span class="st">"CDC Diabetes"</span>,</span>
 <span>    <span class="st">"SUPPORT2"</span>,</span>
@@ -256,6 +260,8 @@ client failures</td>
 <span>    <span class="st">"Secure Aggregation plus stricter metric/count policy"</span>,</span>
 <span>    <span class="st">"Secure Aggregation plus histogram update noise"</span>,</span>
 <span>    <span class="st">"Secure Aggregation plus Opacus DP-SGD"</span>,</span>
+<span>    <span class="st">"Opacus DP-SGD at epsilon 2, 4 and 8 for two PyTorch templates"</span>,</span>
+<span>    <span class="st">"Histogram update noise at epsilon 8, 12 and 16"</span>,</span>
 <span>    <span class="st">"Secure Aggregation plus family-specific loss validation"</span>,</span>
 <span>    <span class="st">"Secure Aggregation plus Opacus DP-SGD for accepted families"</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -264,6 +270,8 @@ client failures</td>
 <span>    <span class="st">"8/8 runs pass, 0 client failures"</span>,</span>
 <span>    <span class="st">"1/1 run passes, 0 client failures"</span>,</span>
 <span>    <span class="st">"2/2 runs pass, 0 client failures"</span>,</span>
+<span>    <span class="st">"6/6 curve points pass, 0 client failures"</span>,</span>
+<span>    <span class="st">"3/3 curve points pass, 0 client failures"</span>,</span>
 <span>    <span class="st">"5/5 runs pass, 0 client failures"</span>,</span>
 <span>    <span class="st">"4/4 runs pass, 0 client failures"</span></span>
 <span>  <span class="op">)</span>,</span>
@@ -274,9 +282,9 @@ client failures</td>
 <colgroup>
 <col width="15%">
 <col width="16%">
-<col width="26%">
-<col width="26%">
-<col width="14%">
+<col width="25%">
+<col width="25%">
+<col width="17%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">profile</th>
@@ -315,6 +323,21 @@ policy</td>
 <td align="left">CDC Diabetes</td>
 <td align="left">Secure Aggregation plus Opacus DP-SGD</td>
 <td align="left">2/2 runs pass, 0 client failures</td>
+</tr>
+<tr class="odd">
+<td align="left">DP-SGD epsilon curves</td>
+<td align="left">clinical-privacy-benchmarks.html</td>
+<td align="left">CDC Diabetes</td>
+<td align="left">Opacus DP-SGD at epsilon 2, 4 and 8 for two PyTorch
+templates</td>
+<td align="left">6/6 curve points pass, 0 client failures</td>
+</tr>
+<tr class="even">
+<td align="left">XGBoost update-noise curve</td>
+<td align="left">clinical-privacy-benchmarks.html</td>
+<td align="left">CDC Diabetes</td>
+<td align="left">Histogram update noise at epsilon 8, 12 and 16</td>
+<td align="left">3/3 curve points pass, 0 client failures</td>
 </tr>
 <tr class="odd">
 <td align="left">clinical_default method families</td>

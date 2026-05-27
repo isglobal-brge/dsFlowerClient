@@ -7,6 +7,7 @@ test_that("clinical benchmark evidence contains only completed runs", {
     "dsflower_clinical_algorithm_results.json",
     "dsflower_clinical_secagg_results.json",
     "dsflower_xgboost_histogram_privacy_results.json",
+    "dsflower_xgboost_histogram_privacy_curve_results.json",
     "dsflower_clinical_dp_results.json",
     "dsflower_clinical_dp_curve_results.json"
   )
@@ -89,25 +90,53 @@ test_that("high_sensitivity_dp evidence uses DP-compatible data volume", {
   }
 })
 
-test_that("DP epsilon curve is comparable and monotone in utility", {
+test_that("DP epsilon curves are comparable within each PyTorch template", {
   path <- system.file(
     "extdata", "dsflower_clinical_dp_curve_results.json",
     package = "dsFlowerClient"
   )
   evidence <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  models <- vapply(evidence$results, `[[`, character(1), "model_id")
+
+  expect_equal(sort(unique(models)), c("pytorch_logreg", "pytorch_mlp"))
+  for (model in unique(models)) {
+    rows <- evidence$results[models == model]
+    eps <- vapply(rows, `[[`, numeric(1), "curve_epsilon")
+    auc <- vapply(rows, function(x) x$federated_metrics$auc, numeric(1))
+    failures <- vapply(rows, function(x) {
+      sum(vapply(x$history %||% list(), function(round) round$n_failures %||% 0L, integer(1)))
+    }, integer(1))
+
+    expect_equal(unname(sort(eps)), c(2, 4, 8), info = model)
+    expect_true(all(failures == 0L), info = model)
+    expect_true(all(diff(auc[order(eps)]) >= -1e-6), info = model)
+    expect_true(all(vapply(rows, function(x) {
+      x$n_total == 9000L &&
+        identical(x$privacy_parameters$delta, 1e-5) &&
+        identical(x$privacy_parameters$clipping_norm, 1L)
+    }, logical(1))), info = model)
+  }
+})
+
+test_that("XGBoost update-noise curve covers practical histogram-noise budgets", {
+  path <- system.file(
+    "extdata", "dsflower_xgboost_histogram_privacy_curve_results.json",
+    package = "dsFlowerClient"
+  )
+  evidence <- jsonlite::fromJSON(path, simplifyVector = FALSE)
   eps <- vapply(evidence$results, `[[`, numeric(1), "curve_epsilon")
   auc <- vapply(evidence$results, function(x) x$federated_metrics$auc, numeric(1))
-  failures <- vapply(evidence$results, function(x) {
-    sum(vapply(x$history %||% list(), function(round) round$n_failures %||% 0L, integer(1)))
-  }, integer(1))
 
-  expect_equal(unname(sort(eps)), c(2, 4, 8))
-  expect_true(all(failures == 0L))
+  expect_equal(evidence$privacy_profile, "clinical_update_noise")
+  expect_equal(unname(sort(eps)), c(8, 12, 16))
   expect_true(all(diff(auc[order(eps)]) >= -1e-6))
   expect_true(all(vapply(evidence$results, function(x) {
-    x$n_total == 9000L && x$rounds == 10L &&
+    x$dataset_id == "cdc_diabetes_health_indicators" &&
+      x$model_id == "xgboost_histogram" &&
+      x$n_total == 9000L &&
       identical(x$privacy_parameters$delta, 1e-5) &&
-      identical(x$privacy_parameters$clipping_norm, 1L)
+      identical(x$privacy_parameters$clipping_norm, 5L) &&
+      abs(x$metric_delta$auc) <= 0.12
   }, logical(1))))
 })
 

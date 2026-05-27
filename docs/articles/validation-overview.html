@@ -90,7 +90,8 @@ DataSHIELD privacy profiles. The SUPPORT2 method-family benchmark and
 the clinical privacy benchmark use <code>clinical_default</code>,
 <code>clinical_update_noise</code> or <code>high_sensitivity_dp</code>,
 so Secure Aggregation, profile-level disclosure guards and, where
-applicable, DP-SGD or update-level histogram noise are active.</p>
+applicable, DP-SGD epsilon curves or update-level histogram-noise curves
+are active.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">summary_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  suite <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'tabular_sequence_survival'</span>, <span class="st">'vision'</span>, <span class="st">'clinical_support2_secagg'</span>,</span>
