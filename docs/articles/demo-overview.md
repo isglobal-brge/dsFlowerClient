@@ -123,7 +123,7 @@ clinical_privacy <- data.frame(
     "Opacus DP-SGD at epsilon 2, 4 and 8 for two PyTorch templates",
     "Histogram update noise at epsilon 8, 12 and 16",
     "Secure Aggregation plus family-specific loss validation",
-    "Secure Aggregation plus Opacus DP-SGD for accepted families"
+    "Secure Aggregation plus Opacus DP-SGD for the four compatible SUPPORT2 families"
   ),
   result = c(
     "6/6 runs pass, 0 client failures",
@@ -133,7 +133,7 @@ clinical_privacy <- data.frame(
     "6/6 curve points pass, 0 client failures",
     "3/3 curve points pass, 0 client failures",
     "5/5 runs pass, 0 client failures",
-    "4/4 runs pass, 0 client failures"
+    "4/4 DP-SGD-compatible runs pass, 0 client failures"
   ),
   stringsAsFactors = FALSE
 )
@@ -149,7 +149,7 @@ knitr::kable(clinical_privacy)
 | DP-SGD epsilon curves | clinical-privacy-benchmarks.html | CDC Diabetes | Opacus DP-SGD at epsilon 2, 4 and 8 for two PyTorch templates | 6/6 curve points pass, 0 client failures |
 | XGBoost update-noise curve | clinical-privacy-benchmarks.html | CDC Diabetes | Histogram update noise at epsilon 8, 12 and 16 | 3/3 curve points pass, 0 client failures |
 | clinical_default method families | clinical-method-family-benchmarks.html | SUPPORT2 | Secure Aggregation plus family-specific loss validation | 5/5 runs pass, 0 client failures |
-| high_sensitivity_dp method families | clinical-method-family-benchmarks.html | SUPPORT2 | Secure Aggregation plus Opacus DP-SGD for accepted families | 4/4 runs pass, 0 client failures |
+| high_sensitivity_dp method families | clinical-method-family-benchmarks.html | SUPPORT2 | Secure Aggregation plus Opacus DP-SGD for the four compatible SUPPORT2 families | 4/4 DP-SGD-compatible runs pass, 0 client failures |
 
 ## Template Validation Coverage
 

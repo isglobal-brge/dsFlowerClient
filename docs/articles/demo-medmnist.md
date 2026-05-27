@@ -37,9 +37,9 @@ data.frame(
   upload_prefix = table_prefix
 )
 #>    node                    url       project                    upload_prefix
-#> 1 opal1 https://localhost:8443 dsflower_demo vignette_medmnist_20260527081602
-#> 2 opal2 https://localhost:8444 dsflower_demo vignette_medmnist_20260527081602
-#> 3 opal3 https://localhost:8445 dsflower_demo vignette_medmnist_20260527081602
+#> 1 opal1 https://localhost:8443 dsflower_demo vignette_medmnist_20260527083133
+#> 2 opal2 https://localhost:8444 dsflower_demo vignette_medmnist_20260527083133
+#> 3 opal3 https://localhost:8445 dsflower_demo vignette_medmnist_20260527083133
 ```
 
 ## 2. Load Images And Build A Server-Side Feature Table

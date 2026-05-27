@@ -276,7 +276,7 @@ accuracy 0.9860; SecAgg branch pass</td>
 <span>    <span class="st">"Opacus DP-SGD at epsilon 2, 4 and 8 for two PyTorch templates"</span>,</span>
 <span>    <span class="st">"Histogram update noise at epsilon 8, 12 and 16"</span>,</span>
 <span>    <span class="st">"Secure Aggregation plus family-specific loss validation"</span>,</span>
-<span>    <span class="st">"Secure Aggregation plus Opacus DP-SGD for accepted families"</span></span>
+<span>    <span class="st">"Secure Aggregation plus Opacus DP-SGD for the four compatible SUPPORT2 families"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  result <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"6/6 runs pass, 0 client failures"</span>,</span>
@@ -286,18 +286,18 @@ accuracy 0.9860; SecAgg branch pass</td>
 <span>    <span class="st">"6/6 curve points pass, 0 client failures"</span>,</span>
 <span>    <span class="st">"3/3 curve points pass, 0 client failures"</span>,</span>
 <span>    <span class="st">"5/5 runs pass, 0 client failures"</span>,</span>
-<span>    <span class="st">"4/4 runs pass, 0 client failures"</span></span>
+<span>    <span class="st">"4/4 DP-SGD-compatible runs pass, 0 client failures"</span></span>
 <span>  <span class="op">)</span>,</span>
 <span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">clinical_privacy</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <colgroup>
-<col width="15%">
-<col width="16%">
-<col width="25%">
-<col width="25%">
-<col width="17%">
+<col width="13%">
+<col width="14%">
+<col width="22%">
+<col width="29%">
+<col width="19%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">profile</th>
@@ -364,9 +364,9 @@ validation</td>
 <td align="left">high_sensitivity_dp method families</td>
 <td align="left">clinical-method-family-benchmarks.html</td>
 <td align="left">SUPPORT2</td>
-<td align="left">Secure Aggregation plus Opacus DP-SGD for accepted
-families</td>
-<td align="left">4/4 runs pass, 0 client failures</td>
+<td align="left">Secure Aggregation plus Opacus DP-SGD for the four
+compatible SUPPORT2 families</td>
+<td align="left">4/4 DP-SGD-compatible runs pass, 0 client failures</td>
 </tr>
 </tbody>
 </table>

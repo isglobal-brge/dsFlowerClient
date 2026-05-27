@@ -77,9 +77,9 @@ data.frame(
 #> 2 opal2 https://localhost:8444 dsflower_demo
 #> 3 opal3 https://localhost:8445 dsflower_demo
 #>                          upload_prefix rock_container
-#> 1 vignette_direct_image_20260527081606     opal1-rock
-#> 2 vignette_direct_image_20260527081606     opal2-rock
-#> 3 vignette_direct_image_20260527081606     opal3-rock
+#> 1 vignette_direct_image_20260527083137     opal1-rock
+#> 2 vignette_direct_image_20260527083137     opal2-rock
+#> 3 vignette_direct_image_20260527083137     opal3-rock
 #>                 server_image_root
 #> 1 /tmp/dsflower_direct_image_demo
 #> 2 /tmp/dsflower_direct_image_demo
@@ -160,9 +160,9 @@ samples_csv <- file.path(local_root, "pooled_samples.csv")
 utils::write.csv(pooled, samples_csv, row.names = FALSE)
 
 cat("[data] local image root:", normalizePath(local_root, mustWork = FALSE), "\n")
-#> [data] local image root: /private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/RtmpSWNuK1/dsflower_direct_image_demo
+#> [data] local image root: /private/var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T/Rtmpw1XIG1/dsflower_direct_image_demo
 cat("[data] pooled samples CSV:", samples_csv, "\n")
-#> [data] pooled samples CSV: /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//RtmpSWNuK1/dsflower_direct_image_demo/pooled_samples.csv
+#> [data] pooled samples CSV: /var/folders/tn/qg45ss_91k375mrb66zqhx_m0000gn/T//Rtmpw1XIG1/dsflower_direct_image_demo/pooled_samples.csv
 do.call(rbind, lapply(seq_along(site_tables), function(i) {
   data.frame(
     site = paste0("opal", i),

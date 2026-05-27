@@ -114,6 +114,10 @@ method-family benchmark and the clinical privacy benchmark use
 `clinical_default`, `clinical_update_noise` or `high_sensitivity_dp`, so Secure
 Aggregation, profile-level disclosure guards and, where applicable, DP-SGD
 epsilon curves or update-level histogram-noise curves are active.
+The SUPPORT2 DP-SGD evidence is interpreted over the four templates whose
+losses decompose by sample. CoxPH is still validated in the Secure Aggregation
+run, but its risk-set partial likelihood is intentionally blocked from
+`high_sensitivity_dp`.
 
 ```{r}
 summary_table <- data.frame(

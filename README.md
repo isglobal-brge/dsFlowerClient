@@ -175,6 +175,11 @@ Rscript inst/demos/benchmark_clinical_algorithms.R
 benchmarks with SUPPORT2 clinical tasks under `clinical_default`. It validates
 continuous regression, count regression, multiclass classification, multilabel
 classification and Cox survival over three 1,000-row Opal partitions.
+The companion `high_sensitivity_dp` evidence validates the four DP-SGD
+compatible non-survival families on the same SUPPORT2 split. CoxPH remains
+validated under Secure Aggregation, but is deliberately blocked for
+patient-level DP-SGD because the Cox partial likelihood couples samples through
+risk sets rather than decomposing into independent per-row losses.
 
 ```sh
 DSFLOWER_SUPPORT2_LIMIT=3000 Rscript inst/demos/benchmark_method_families.R
