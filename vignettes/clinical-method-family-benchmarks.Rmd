@@ -1,0 +1,100 @@
+---
+title: "Clinical method-family benchmarks"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Clinical method-family benchmarks}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(dsFlowerClient)
+```
+
+This vignette records the non-binary clinical method-family validation used for
+the dsFlower thesis evidence. The benchmark uses the SUPPORT2 study from the
+UCI Machine Learning Repository and executes five PyTorch templates under the
+`clinical_default` profile, so server-side row policies and Secure Aggregation
+are active.
+
+The benchmark complements the binary clinical benchmarks: classification and
+XGBoost are covered there, while this vignette covers continuous regression,
+count regression, multiclass classification, multilabel classification and
+time-to-event survival.
+
+```{r load-evidence}
+evidence_path <- system.file(
+  "extdata", "dsflower_method_family_results.json",
+  package = "dsFlowerClient"
+)
+evidence <- jsonlite::fromJSON(evidence_path)
+
+cat("Dataset:", evidence$dataset_label, "\n")
+cat("Privacy profile:", evidence$privacy_profile, "\n")
+cat("Secure Aggregation supported:", evidence$secagg_supported, "\n")
+cat("Rows:", evidence$n_total, "\n")
+print(as.data.frame(evidence$site_train_n))
+```
+
+The rows are split evenly across three DataSHIELD servers. The event count shown
+below is used by the survival route disclosure guard.
+
+```{r site-events}
+site_summary <- data.frame(
+  server = names(evidence$site_train_n),
+  train_n = as.integer(unlist(evidence$site_train_n, use.names = FALSE)),
+  event_n = as.integer(unlist(evidence$site_event_n, use.names = FALSE))
+)
+site_summary
+```
+
+Each row in the result table compares the centralized PyTorch loss against the
+loss obtained by evaluating the federated model artefact saved by dsFlower after
+the SecAgg run completed. The route is accepted only when all clients complete
+without failures and the federated loss remains within the declared validation
+envelope for that method family.
+
+```{r results-table}
+results <- evidence$results
+results[, c(
+  "family", "method", "centralized_metric", "centralized_loss",
+  "federated_loss", "delta_loss", "federated_n_failures",
+  "validation_status"
+)]
+```
+
+```{r loss-plot, fig.width=7, fig.height=4.2, fig.alt="Point-range chart comparing centralized and federated SUPPORT2 losses across method families."}
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  plot_data <- results
+  plot_data$label <- sub("^pytorch_", "", plot_data$method)
+  plot_data$abs_delta <- abs(plot_data$delta_loss)
+  ggplot2::ggplot(plot_data, ggplot2::aes(
+    x = stats::reorder(label, abs_delta),
+    y = abs_delta
+  )) +
+    ggplot2::geom_col(width = 0.68, fill = "#4D6A7F") +
+    ggplot2::coord_flip() +
+    ggplot2::labs(
+      x = NULL,
+      y = "Absolute federated-centralized loss delta",
+      title = "SUPPORT2 method-family validation under clinical_default"
+    ) +
+    ggplot2::theme_minimal(base_size = 12)
+}
+```
+
+The canonical run can be regenerated from a local three-Opal demonstration
+deployment with:
+
+```{r rerun-command, eval=FALSE}
+Sys.setenv(
+  DSFLOWER_SUPPORT2_LIMIT = "3000",
+  DSFLOWER_FAMILY_PRIVACY_PROFILE = "clinical_default"
+)
+source(system.file(
+  "demos", "benchmark_method_families.R",
+  package = "dsFlowerClient"
+))
+```
+

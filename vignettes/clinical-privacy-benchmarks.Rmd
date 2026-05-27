@@ -54,11 +54,14 @@ flat_results <- function(x, label) {
 trusted <- read_evidence("dsflower_clinical_algorithm_results.json")
 secagg <- read_evidence("dsflower_clinical_secagg_results.json")
 dp <- read_evidence("dsflower_clinical_dp_results.json")
+dp_curve <- read_evidence("dsflower_clinical_dp_curve_results.json")
 results <- rbind(
   flat_results(trusted, "trusted_internal"),
   flat_results(secagg, "clinical_default_secagg"),
   flat_results(dp, "high_sensitivity_dp")
 )
+curve_results <- flat_results(dp_curve, "dp_epsilon_curve")
+curve_results$epsilon <- vapply(dp_curve$results, `[[`, numeric(1), "curve_epsilon")
 ```
 
 This vignette reports public clinical benchmark runs executed through the same
@@ -72,9 +75,9 @@ The datasets are public health or biomedical classification datasets:
 Breast Cancer Wisconsin (Original), UCI Heart Disease processed Cleveland,
 Pima Indians Diabetes, and CDC Diabetes Health Indicators. The clinical privacy
 profile uses only dataset/model combinations that satisfy the active
-server-side minimum-row policy; Heart Disease is therefore used in the trusted
-internal run, while Pima Indians Diabetes is used for the stricter clinical
-profile.
+server-side minimum-row policy; Heart Disease is therefore used only in the
+trusted internal run. The stricter clinical and DP evidence uses larger
+datasets so that the per-site row policy is satisfied before training starts.
 
 ## Re-running the evidence
 
@@ -97,8 +100,12 @@ source(system.file(
 ```{r rerun-secagg, eval=FALSE}
 Sys.setenv(
   DSFLOWER_DEMO_PRIVACY_PROFILE = "clinical_default",
-  DSFLOWER_CLINICAL_MODELS = "sklearn_logreg,pytorch_mlp",
+  DSFLOWER_CLINICAL_MODELS =
+    "sklearn_logreg,sklearn_ridge,sklearn_sgd,pytorch_logreg,pytorch_mlp,xgboost_histogram",
   DSFLOWER_CDC_DIABETES_LIMIT = "9000",
+  DSFLOWER_CLINICAL_XGB_TREES = "1",
+  DSFLOWER_CLINICAL_XGB_DEPTH = "1",
+  DSFLOWER_CLINICAL_XGB_BINS = "8",
   DSFLOWER_CLINICAL_EVIDENCE_FILE =
     "inst/extdata/dsflower_clinical_secagg_results.json"
 )
@@ -112,7 +119,7 @@ source(system.file(
 Sys.setenv(
   DSFLOWER_DEMO_PRIVACY_PROFILE = "high_sensitivity_dp",
   DSFLOWER_CLINICAL_DATASETS = "cdc_diabetes_health_indicators",
-  DSFLOWER_CLINICAL_MODELS = "pytorch_mlp",
+  DSFLOWER_CLINICAL_MODELS = "pytorch_mlp,pytorch_logreg",
   DSFLOWER_CDC_DIABETES_LIMIT = "9000",
   DSFLOWER_CLINICAL_DP_EPSILON = "8",
   DSFLOWER_CLINICAL_DP_DELTA = "1e-5",
@@ -124,6 +131,29 @@ source(system.file(
   "demos", "benchmark_clinical_algorithms.R",
   package = "dsFlowerClient"
 ))
+```
+
+```{r rerun-dp-curve, eval=FALSE}
+for (eps in c(2, 4, 8)) {
+  Sys.setenv(
+    DSFLOWER_DEMO_PRIVACY_PROFILE = "high_sensitivity_dp",
+    DSFLOWER_CLINICAL_DATASETS = "cdc_diabetes_health_indicators",
+    DSFLOWER_CLINICAL_MODELS = "pytorch_logreg",
+    DSFLOWER_CDC_DIABETES_LIMIT = "9000",
+    DSFLOWER_CLINICAL_TORCH_LOGREG_ROUNDS = "10",
+    DSFLOWER_CLINICAL_DP_EPSILON = as.character(eps),
+    DSFLOWER_CLINICAL_DP_DELTA = "1e-5",
+    DSFLOWER_CLINICAL_DP_CLIP = "1",
+    DSFLOWER_DEMO_PRIVACY_LEDGER_NAMESPACE =
+      paste0("dp_curve_rebuild_eps", eps),
+    DSFLOWER_CLINICAL_EVIDENCE_FILE =
+      paste0("dsflower_output/dp_curve_eps", eps, ".json")
+  )
+  source(system.file(
+    "demos", "benchmark_clinical_algorithms.R",
+    package = "dsFlowerClient"
+  ))
+}
 ```
 
 ## Result tables
@@ -153,10 +183,47 @@ knitr::kable(
 ```
 
 The `clinical_default` runs require Secure Aggregation, suppress per-node
-metrics and avoid exact per-site count release. The `high_sensitivity_dp` run
-uses the PyTorch MLP template with Opacus DP-SGD, requested
-`epsilon = 8`, `delta = 1e-5` and clipping norm `1`, in addition to the
-Secure Aggregation requirement.
+metrics and avoid exact per-site count release. This evidence covers logistic
+regression, ridge, SGD, PyTorch MLP, PyTorch logistic regression and the
+one-round secure histogram-stump path of the XGBoost template. The
+`high_sensitivity_dp` evidence uses Opacus DP-SGD with `epsilon = 8`,
+`delta = 1e-5` and clipping norm `1` for both PyTorch MLP and PyTorch logistic
+regression, in addition to the Secure Aggregation requirement.
+
+## DP Utility Curve
+
+```{r dp-curve-table}
+knitr::kable(
+  curve_results[, c("epsilon", "dataset", "model", "central_auc",
+                    "federated_auc", "delta_auc", "failures")],
+  digits = 4,
+  row.names = FALSE
+)
+```
+
+```{r dp-curve-plot, fig.width=5.5, fig.height=3.4, fig.alt="Differential-privacy utility curve for PyTorch logistic regression on CDC Diabetes Health Indicators."}
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  ggplot2::ggplot(
+    curve_results,
+    ggplot2::aes(x = epsilon, y = federated_auc)
+  ) +
+    ggplot2::geom_hline(
+      yintercept = curve_results$central_auc[[1]],
+      linewidth = 0.3,
+      linetype = "dashed",
+      color = "grey35"
+    ) +
+    ggplot2::geom_line(linewidth = 0.5, color = "#1F4E79") +
+    ggplot2::geom_point(size = 2.2, color = "#1F4E79") +
+    ggplot2::scale_x_continuous(breaks = c(2, 4, 8)) +
+    ggplot2::labs(
+      x = "Requested epsilon",
+      y = "Held-out AUC",
+      caption = "Dashed line: centralised non-DP baseline on the same split."
+    ) +
+    ggplot2::theme_minimal(base_size = 11)
+}
+```
 
 ## Centralised versus federated AUC
 
@@ -179,8 +246,9 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 ```
 
 All reported runs completed with status `pass` and zero recorded client
-failures. The XGBoost histogram template is included in the trusted internal
-validation on Breast Cancer Wisconsin, where its histogram protocol has a close
-centralised/federated AUC match. The stricter Secure Aggregation evidence shown
-here is limited to templates whose update representation is compatible with
-Flower SecAgg+ in the current product surface.
+failures. The full XGBoost histogram implementation remains available for
+trusted internal validation, while the clinical-default evidence exercises the
+secure one-round histogram-stump route. That route is intentionally narrower
+than multi-tree boosting, but it validates the privacy-relevant part of the
+template: histogram construction on each server and protected aggregation
+before the split and leaf values are computed.

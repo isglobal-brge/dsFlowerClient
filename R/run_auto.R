@@ -205,7 +205,7 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
   # Step 1: Prepare (only if config changed since last prepare)
   current_hash <- digest::digest(list(
     target_column, feature_columns, label_set, template_name,
-    privacy$mode, recipe$masks), algo = "sha256")
+    recipe$task$type, privacy$mode, recipe$masks), algo = "sha256")
 
   needs_prepare <- is.null(flower$prepare_hash) ||
                    !identical(flower$prepare_hash, current_hash)
@@ -214,6 +214,7 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
     ds.flower.nodes.prepare(conns, symbol,
       target_column   = target_column,
       feature_columns = if (length(feature_columns) > 0) feature_columns else NULL,
+      run_config      = list("task-type" = recipe$task$type),
       privacy         = privacy,
       template_name   = template_name,
       label_set       = label_set)

@@ -25,6 +25,14 @@ vision_paths <- c(
 vision_result_path <- vision_paths[nzchar(vision_paths) & file.exists(vision_paths)][1]
 vision_validation <- if (!is.na(vision_result_path)) jsonlite::fromJSON(vision_result_path) else NULL
 vision_results <- if (!is.null(vision_validation)) vision_validation$results else NULL
+family_paths <- c(
+  file.path('..', 'inst', 'extdata', 'dsflower_method_family_results.json'),
+  file.path('inst', 'extdata', 'dsflower_method_family_results.json'),
+  system.file('extdata', 'dsflower_method_family_results.json', package = 'dsFlowerClient')
+)
+family_result_path <- family_paths[nzchar(family_paths) & file.exists(family_paths)][1]
+family_validation <- if (!is.na(family_result_path)) jsonlite::fromJSON(family_result_path) else NULL
+family_results <- if (!is.null(family_validation)) family_validation$results else NULL
 column_or <- function(frame, name, default) {
   if (name %in% names(frame)) frame[[name]] else rep(default, nrow(frame))
 }
@@ -55,30 +63,64 @@ vision_display <- if (!is.null(vision_results)) data.frame(
   validation_status = vision_results$validation_status,
   stringsAsFactors = FALSE
 ) else method_display[0, ]
-results <- rbind(method_display, vision_display)
+family_display <- if (!is.null(family_results)) data.frame(
+  suite = 'clinical_support2_secagg',
+  method = family_results$method,
+  task = family_results$task,
+  centralized_metric = family_results$centralized_metric,
+  centralized_loss = family_results$centralized_loss,
+  federated_status = family_results$federated_status,
+  federated_loss = family_results$federated_loss,
+  delta_loss = family_results$delta_loss,
+  acceptable_loss = family_results$acceptable_loss,
+  validation_status = family_results$validation_status,
+  stringsAsFactors = FALSE
+) else method_display[0, ]
+results <- rbind(method_display, vision_display, family_display)
 ```
 
 This macro-vignette summarizes the live dsFlower validation suite across
 tabular, sequence, survival, XGBoost, image-classification, and segmentation
-templates. Each method has its own vignette, and each federated run is
-compared with a centralized baseline trained on the corresponding pooled
-synthetic cohort.
+templates. Each method has its own vignette. The core method-validation suite
+uses deterministic synthetic fixtures for broad template coverage; the clinical
+benchmarks add real public datasets for the thesis-facing evidence.
 
 The suite is deliberately a functional and numerical sanity check, not a
-privacy claim and not a clinical benchmark. It uses `sandbox_open` so that
-per-node diagnostics can be observed during development. Production studies
-should use the stricter DataSHIELD privacy profiles. XGBoost is validated
-in this trusted demo mode; profiles that require Secure Aggregation still
-enforce SecAgg before execution.
+privacy claim and not, by itself, a clinical benchmark. It uses `sandbox_open`
+so that per-node diagnostics can be observed during development. Production
+studies should use the stricter DataSHIELD privacy profiles. The SUPPORT2
+method-family benchmark and the clinical privacy benchmark use
+`clinical_default` or `high_sensitivity_dp`, so Secure Aggregation and the
+profile-level disclosure guards are active.
 
 ```{r}
 summary_table <- data.frame(
-  suite = c('tabular_sequence_survival', 'vision'),
-  generated_at = c(method_validation$generated_at, if (!is.null(vision_validation)) vision_validation$generated_at else NA),
-  privacy_profile = c(method_validation$privacy_profile, if (!is.null(vision_validation)) vision_validation$privacy_profile else NA),
-  n_sites = c(method_validation$n_sites, if (!is.null(vision_validation)) vision_validation$n_sites else NA),
-  n_total = c(method_validation$n_total, if (!is.null(vision_validation)) vision_validation$n_total else NA),
-  secagg_supported = c(method_validation$secagg_supported, NA),
+  suite = c('tabular_sequence_survival', 'vision', 'clinical_support2_secagg'),
+  generated_at = c(
+    method_validation$generated_at,
+    if (!is.null(vision_validation)) vision_validation$generated_at else NA,
+    if (!is.null(family_validation)) family_validation$generated_at else NA
+  ),
+  privacy_profile = c(
+    method_validation$privacy_profile,
+    if (!is.null(vision_validation)) vision_validation$privacy_profile else NA,
+    if (!is.null(family_validation)) family_validation$privacy_profile else NA
+  ),
+  n_sites = c(
+    method_validation$n_sites,
+    if (!is.null(vision_validation)) vision_validation$n_sites else NA,
+    if (!is.null(family_validation)) family_validation$n_sites else NA
+  ),
+  n_total = c(
+    method_validation$n_total,
+    if (!is.null(vision_validation)) vision_validation$n_total else NA,
+    if (!is.null(family_validation)) family_validation$n_total else NA
+  ),
+  secagg_supported = c(
+    method_validation$secagg_supported,
+    NA,
+    if (!is.null(family_validation)) family_validation$secagg_supported else NA
+  ),
   stringsAsFactors = FALSE
 )
 knitr::kable(summary_table)
@@ -102,6 +144,8 @@ if (nrow(plot_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
 ```
 
 Per-method vignettes:
+
+- [clinical method-family benchmarks](clinical-method-family-benchmarks.html)
 
 - [sklearn_logreg](validation-sklearn-logreg.html)
 - [sklearn_ridge](validation-sklearn-ridge.html)

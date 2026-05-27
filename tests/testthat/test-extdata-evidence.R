@@ -45,6 +45,30 @@ test_that("committed vision validation evidence matches thesis constants", {
   expect_equal(unet$delta_loss, 0.1298, tolerance = 1e-6)
 })
 
+test_that("committed SUPPORT2 method-family evidence matches thesis constants", {
+  path <- extdata_evidence("dsflower_method_family_results.json")
+  evidence <- jsonlite::fromJSON(path)
+
+  expect_equal(evidence$dataset_id, "support2")
+  expect_equal(evidence$privacy_profile, "clinical_default")
+  expect_equal(evidence$n_total, 3000)
+  expect_equal(unlist(evidence$site_train_n, use.names = FALSE), c(1000, 1000, 1000))
+  expect_equal(unlist(evidence$site_event_n, use.names = FALSE), c(259, 259, 259))
+  expect_true(all(evidence$results$validation_status == "pass"))
+
+  row <- evidence$results[evidence$results$method == "pytorch_linear_regression", ]
+  expect_equal(row$federated_loss, 0.5671876, tolerance = 1e-6)
+  expect_equal(row$delta_loss, -0.006935537, tolerance = 1e-6)
+
+  row <- evidence$results[evidence$results$method == "pytorch_multilabel", ]
+  expect_equal(row$federated_loss, 0.4596463, tolerance = 1e-6)
+  expect_equal(row$delta_loss, 0.0668259, tolerance = 1e-6)
+
+  row <- evidence$results[evidence$results$method == "pytorch_coxph", ]
+  expect_equal(row$federated_loss, 6.3498344, tolerance = 1e-6)
+  expect_equal(row$delta_loss, 0.08799553, tolerance = 1e-6)
+})
+
 test_that("committed LUNG1 radiomics evidence matches thesis constants", {
   path <- extdata_evidence("dsflower_lung1_radiomics_results.json")
   evidence <- jsonlite::fromJSON(path, simplifyVector = FALSE)

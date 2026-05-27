@@ -187,6 +187,7 @@ clinical_model_specs <- function() {
       label = "Histogram XGBoost",
       family = "tree ensemble",
       validation_datasets = c("breast_cancer_wisconsin"),
+      clinical_validation_datasets = c("cdc_diabetes_health_indicators"),
       min_rows_per_site = 100L,
       model = "xgboost",
       model_params = list(
@@ -199,6 +200,52 @@ clinical_model_specs <- function() {
       ),
       rounds = 1L,
       central = "xgboost"
+    ),
+    list(
+      id = "sklearn_ridge",
+      label = "Ridge classifier",
+      family = "linear classifier",
+      validation_datasets = c("cdc_diabetes_health_indicators"),
+      clinical_validation_datasets = c("cdc_diabetes_health_indicators"),
+      min_rows_per_site = 50L,
+      model = "sklearn_ridge",
+      model_params = list(
+        alpha = as.numeric(demo_env("DSFLOWER_CLINICAL_RIDGE_ALPHA", 1.0))
+      ),
+      rounds = as.integer(demo_env("DSFLOWER_CLINICAL_RIDGE_ROUNDS", 2L)),
+      central = "sklearn_ridge"
+    ),
+    list(
+      id = "sklearn_sgd",
+      label = "SGD logistic classifier",
+      family = "linear classifier",
+      validation_datasets = c("cdc_diabetes_health_indicators"),
+      clinical_validation_datasets = c("cdc_diabetes_health_indicators"),
+      min_rows_per_site = 100L,
+      model = "sklearn_sgd",
+      model_params = list(
+        loss = "log_loss",
+        alpha = as.numeric(demo_env("DSFLOWER_CLINICAL_SGD_ALPHA", 1e-4)),
+        max_iter = as.integer(demo_env("DSFLOWER_CLINICAL_SGD_MAX_ITER", 1000L))
+      ),
+      rounds = as.integer(demo_env("DSFLOWER_CLINICAL_SGD_ROUNDS", 2L)),
+      central = "sklearn_sgd"
+    ),
+    list(
+      id = "pytorch_logreg",
+      label = "PyTorch logistic regression",
+      family = "neural network",
+      validation_datasets = c("cdc_diabetes_health_indicators"),
+      clinical_validation_datasets = c("cdc_diabetes_health_indicators"),
+      min_rows_per_site = 250L,
+      model = "pytorch_logreg",
+      model_params = list(
+        learning_rate = as.numeric(demo_env("DSFLOWER_CLINICAL_TORCH_LOGREG_LR", 0.05)),
+        batch_size = as.integer(demo_env("DSFLOWER_CLINICAL_TORCH_LOGREG_BATCH", 128L)),
+        local_epochs = as.integer(demo_env("DSFLOWER_CLINICAL_TORCH_LOGREG_LOCAL_EPOCHS", 1L))
+      ),
+      rounds = as.integer(demo_env("DSFLOWER_CLINICAL_TORCH_LOGREG_ROUNDS", 10L)),
+      central = "pytorch_logreg"
     ),
     list(
       id = "pytorch_mlp",
@@ -310,7 +357,10 @@ privacy_summary <- function(privacy) {
 python_classifier_metrics <- function(train, test, features, target, spec, seed = 4242L) {
   framework <- switch(spec$central,
     sklearn_logreg = "sklearn",
+    sklearn_ridge = "sklearn",
+    sklearn_sgd = "sklearn",
     xgboost = "xgboost",
+    pytorch_logreg = "pytorch",
     pytorch_mlp = "pytorch",
     "sklearn"
   )
@@ -331,6 +381,7 @@ python_classifier_metrics <- function(train, test, features, target, spec, seed 
     target = target,
     model = spec$central,
     params = spec$model_params,
+    rounds = spec$rounds,
     seed = seed
   )
   payload_json <- tempfile(fileext = ".json")
@@ -359,6 +410,26 @@ python_classifier_metrics <- function(train, test, features, target, spec, seed 
     "    clf = LogisticRegression(max_iter=int(params.get('max_iter', 200)), solver='lbfgs')",
     "    clf.fit(X_train, y_train)",
     "    prob = clf.predict_proba(X_test)[:, 1]",
+    "elif model == 'sklearn_ridge':",
+    "    from sklearn.linear_model import RidgeClassifier",
+    "    clf = RidgeClassifier(alpha=float(params.get('alpha', 1.0)))",
+    "    clf.fit(X_train, y_train)",
+    "    score = clf.decision_function(X_test)",
+    "    prob = 1.0 / (1.0 + np.exp(-score))",
+    "elif model == 'sklearn_sgd':",
+    "    from sklearn.linear_model import SGDClassifier",
+    "    clf = SGDClassifier(",
+    "        loss=params.get('loss', 'log_loss'),",
+    "        penalty=params.get('penalty', 'l2'),",
+    "        alpha=float(params.get('alpha', 1e-4)),",
+    "        max_iter=int(params.get('max_iter', 1000)),",
+    "        tol=1e-4, random_state=int(cfg['seed']))",
+    "    clf.fit(X_train, y_train)",
+    "    if hasattr(clf, 'predict_proba'):",
+    "        prob = clf.predict_proba(X_test)[:, 1]",
+    "    else:",
+    "        score = clf.decision_function(X_test)",
+    "        prob = 1.0 / (1.0 + np.exp(-score))",
     "elif model == 'xgboost':",
     "    import xgboost as xgb",
     "    clf = xgb.XGBClassifier(",
@@ -371,20 +442,21 @@ python_classifier_metrics <- function(train, test, features, target, spec, seed 
     "        random_state=int(cfg['seed']), n_jobs=1, verbosity=0)",
     "    clf.fit(X_train, y_train)",
     "    prob = clf.predict_proba(X_test)[:, 1]",
-    "elif model == 'pytorch_mlp':",
+    "elif model in ('pytorch_logreg', 'pytorch_mlp'):",
     "    import torch",
     "    torch.manual_seed(int(cfg['seed']))",
-    "    hidden_raw = params.get('hidden_layers', '32,16')",
-    "    if isinstance(hidden_raw, str):",
-    "        hidden = [int(x) for x in hidden_raw.split(',') if str(x).strip()]",
-    "    else:",
-    "        hidden = [int(x) for x in hidden_raw]",
     "    layers = []",
     "    prev = X_train.shape[1]",
-    "    for h in hidden:",
-    "        layers.append(torch.nn.Linear(prev, h))",
-    "        layers.append(torch.nn.ReLU())",
-    "        prev = h",
+    "    if model == 'pytorch_mlp':",
+    "        hidden_raw = params.get('hidden_layers', '32,16')",
+    "        if isinstance(hidden_raw, str):",
+    "            hidden = [int(x) for x in hidden_raw.split(',') if str(x).strip()]",
+    "        else:",
+    "            hidden = [int(x) for x in hidden_raw]",
+    "        for h in hidden:",
+    "            layers.append(torch.nn.Linear(prev, h))",
+    "            layers.append(torch.nn.ReLU())",
+    "            prev = h",
     "    layers.append(torch.nn.Linear(prev, 1))",
     "    net = torch.nn.Sequential(*layers)",
     "    opt = torch.optim.Adam(net.parameters(), lr=float(params.get('learning_rate', 0.005)))",
@@ -467,13 +539,13 @@ predict_dsflower_xgboost_artifact <- function(output_dir, x) {
 }
 
 predict_federated_model <- function(run, spec, test, features) {
-  if (identical(spec$id, "sklearn_logreg")) {
+  if (spec$id %in% c("sklearn_logreg", "sklearn_ridge", "sklearn_sgd")) {
     return(predict_sklearn_logreg_weights(run$weights, test[features]))
   }
   if (identical(spec$id, "xgboost_histogram")) {
     return(predict_dsflower_xgboost_artifact(run$output_dir, test[features]))
   }
-  if (identical(spec$id, "pytorch_mlp")) {
+  if (spec$id %in% c("pytorch_logreg", "pytorch_mlp")) {
     return(as.numeric(ds.flower.predict(run, test[features], type = "prob")))
   }
   stop("No prediction adapter for model spec: ", spec$id, call. = FALSE)
@@ -497,7 +569,14 @@ run_clinical_dataset <- function(dataset, specs, cfg, target = "outcome",
   for (i in seq_len(n_sites)) {
     opal <- opal_login(cfg, i)
     ensure_project(opal, cfg$project)
-    set_privacy_profile(opal, cfg$profile)
+    set_privacy_profile(
+      opal,
+      cfg$profile,
+      ledger_namespace = privacy_ledger_namespace_for_run(
+        cfg, dataset_id = dataset$id, model_id = "dataset", privacy = cfg$privacy),
+      max_epsilon = cfg$privacy_max_epsilon,
+      max_delta = cfg$privacy_max_delta
+    )
     table_name <- paste0(cfg$table_prefix, "_", dataset$id, "_site", i)
     table_paths[[i]] <- upload_site_table(opal, cfg$project, table_name,
                                           site_tables[[as.character(i)]])
@@ -551,6 +630,7 @@ run_clinical_dataset <- function(dataset, specs, cfg, target = "outcome",
     strategy_spec <- ds.flower.strategy.fedavg(fraction_fit = 1.0, fraction_evaluate = 1.0)
     strategy_spec$params$min_fit_clients <- n_sites
     strategy_spec$params$min_available_clients <- n_sites
+    ledger_namespace <- set_run_privacy_options(cfg, dataset$id, spec$id)
 
     run <- ds.flower.fit(
       conns,
@@ -589,6 +669,7 @@ run_clinical_dataset <- function(dataset, specs, cfg, target = "outcome",
       site_train_n = as.list(site_counts),
       privacy_profile = cfg$profile,
       privacy_parameters = privacy_summary(cfg$privacy),
+      privacy_ledger_namespace = ledger_namespace,
       rounds = spec$rounds,
       model_params = spec$model_params,
       central_metrics = central_metrics,

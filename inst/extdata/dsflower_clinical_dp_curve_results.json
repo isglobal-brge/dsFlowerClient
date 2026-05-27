@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-27T02:09:38+0200",
-  "demo_id": "clinical_algorithm_matrix",
-  "description": "Three-site high_sensitivity_dp benchmark evidence on CDC Diabetes Health Indicators. Both PyTorch MLP and PyTorch logistic-regression templates use patient-level DP-SGD with epsilon 8, delta 1e-5 and clipping norm 1.",
+  "generated_at": "2026-05-27T02:09:55+0200",
+  "demo_id": "clinical_dp_epsilon_curve",
+  "description": "Comparable high_sensitivity_dp utility-privacy curve for PyTorch logistic regression on a 9000-row CDC Diabetes Health Indicators stratified sample. Each point uses three Opal/Rock servers, 10 federated rounds, delta 1e-5 and clipping norm 1.",
   "privacy_profile": "high_sensitivity_dp",
   "n_sites": 3,
   "datasets": {
@@ -24,42 +24,16 @@
     }
   },
   "model_specs": {
-    "pytorch_mlp": {
-      "id": "pytorch_mlp",
-      "label": "PyTorch MLP",
-      "family": "neural network",
-      "min_rows_per_site": 250,
-      "model_params": {
-        "hidden_layers": "32,16",
-        "learning_rate": 0.005,
-        "batch_size": 64,
-        "local_epochs": 1
-      },
-      "rounds": 6
-    },
-    "pytorch_logreg": {
-      "id": "pytorch_logreg",
-      "label": "PyTorch logistic regression",
-      "family": "neural network",
-      "validation_datasets": "cdc_diabetes_health_indicators",
-      "clinical_validation_datasets": "cdc_diabetes_health_indicators",
-      "min_rows_per_site": 250,
-      "model_params": {
-        "learning_rate": 0.05,
-        "batch_size": 128,
-        "local_epochs": 1
-      },
-      "rounds": 10
-    }
+    "pytorch_logreg": {}
   },
   "results": {
-    "cdc_diabetes_health_indicators.pytorch_mlp": {
+    "pytorch_logreg_eps2": {
       "dataset_id": "cdc_diabetes_health_indicators",
       "dataset_label": "CDC Diabetes Health Indicators",
       "domain": "population health / diabetes",
       "source": "UCI CDC Diabetes Health Indicators, stratified sample",
-      "model_id": "pytorch_mlp",
-      "model_label": "PyTorch MLP",
+      "model_id": "pytorch_logreg",
+      "model_label": "PyTorch logistic regression",
       "family": "neural network",
       "status": "pass",
       "n_total": 9000,
@@ -74,36 +48,36 @@
       "privacy_profile": "high_sensitivity_dp",
       "privacy_parameters": {
         "mode": "high_sensitivity_dp",
-        "epsilon": 8,
+        "epsilon": 2,
         "delta": 1e-05,
         "clipping_norm": 1
       },
-      "rounds": 6,
+      "privacy_ledger_namespace": "dp_curve_canonical_20260527_eps2_cdc_diabetes_health_indicators_pytorch_logreg_eps2",
+      "rounds": 10,
       "model_params": {
-        "hidden_layers": "32,16",
-        "learning_rate": 0.005,
-        "batch_size": 64,
+        "learning_rate": 0.05,
+        "batch_size": 128,
         "local_epochs": 1
       },
       "central_metrics": {
-        "auc": 0.818,
-        "accuracy": 0.8666,
-        "log_loss": 0.3227,
-        "brier": 0.0988
+        "auc": 0.8178,
+        "accuracy": 0.8613,
+        "log_loss": 0.3279,
+        "brier": 0.1021
       },
       "federated_metrics": {
-        "auc": 0.818,
-        "accuracy": 0.8608,
-        "log_loss": 0.4326,
-        "brier": 0.1207
+        "auc": 0.7665,
+        "accuracy": 0.8195,
+        "log_loss": 0.413,
+        "brier": 0.1297
       },
       "metric_delta": {
-        "auc": -0.0001,
-        "accuracy": -0.0058,
-        "log_loss": 0.1099,
-        "brier": 0.0218
+        "auc": -0.0513,
+        "accuracy": -0.0418,
+        "log_loss": 0.0851,
+        "brier": 0.0276
       },
-      "flower_output_dir": "./dsflower_output/pytorch_mlp_FedAvg_6r_20260526_204931",
+      "flower_output_dir": "./dsflower_output/pytorch_logreg_FedAvg_10r_20260527_020836",
       "history": [
         {
           "round": 1,
@@ -140,10 +114,150 @@
           "loss": 0,
           "n_clients": 3,
           "n_failures": 0
+        },
+        {
+          "round": 7,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 8,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 9,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 10,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
         }
-      ]
+      ],
+      "curve_epsilon": 2
     },
-    "cdc_diabetes_health_indicators.pytorch_logreg": {
+    "pytorch_logreg_eps4": {
+      "dataset_id": "cdc_diabetes_health_indicators",
+      "dataset_label": "CDC Diabetes Health Indicators",
+      "domain": "population health / diabetes",
+      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
+      "model_id": "pytorch_logreg",
+      "model_label": "PyTorch logistic regression",
+      "family": "neural network",
+      "status": "pass",
+      "n_total": 9000,
+      "n_train": 6751,
+      "n_test": 2249,
+      "n_features": 21,
+      "site_train_n": {
+        "opal1": 2251,
+        "opal2": 2251,
+        "opal3": 2249
+      },
+      "privacy_profile": "high_sensitivity_dp",
+      "privacy_parameters": {
+        "mode": "high_sensitivity_dp",
+        "epsilon": 4,
+        "delta": 1e-05,
+        "clipping_norm": 1
+      },
+      "privacy_ledger_namespace": "dp_curve_canonical_20260527_eps4_cdc_diabetes_health_indicators_pytorch_logreg_eps4",
+      "rounds": 10,
+      "model_params": {
+        "learning_rate": 0.05,
+        "batch_size": 128,
+        "local_epochs": 1
+      },
+      "central_metrics": {
+        "auc": 0.8178,
+        "accuracy": 0.8613,
+        "log_loss": 0.3279,
+        "brier": 0.1021
+      },
+      "federated_metrics": {
+        "auc": 0.7697,
+        "accuracy": 0.8164,
+        "log_loss": 0.4223,
+        "brier": 0.1329
+      },
+      "metric_delta": {
+        "auc": -0.0481,
+        "accuracy": -0.0449,
+        "log_loss": 0.0944,
+        "brier": 0.0308
+      },
+      "flower_output_dir": "./dsflower_output/pytorch_logreg_FedAvg_10r_20260527_015402",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 3,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 4,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 5,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 6,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 7,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 8,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 9,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 10,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ],
+      "curve_epsilon": 4
+    },
+    "pytorch_logreg_eps8": {
       "dataset_id": "cdc_diabetes_health_indicators",
       "dataset_label": "CDC Diabetes Health Indicators",
       "domain": "population health / diabetes",
@@ -255,7 +369,13 @@
           "n_clients": 3,
           "n_failures": 0
         }
-      ]
+      ],
+      "curve_epsilon": 8
     }
-  }
+  },
+  "epsilon_values": [
+    2,
+    4,
+    8
+  ]
 }

@@ -393,6 +393,11 @@ ds.flower.fit <- function(conns,
   } else {
     do.call(ds.flower.model, c(list(model), model_params))
   }
+  if (identical(model_spec$template, "xgboost") &&
+      is.null(model_spec$params$n_features) &&
+      !is.null(features)) {
+    model_spec$params$n_features <- as.integer(length(features))
+  }
 
   strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
     if (length(strategy_params)) stop("'strategy_params' cannot be used with a strategy object.", call. = FALSE)

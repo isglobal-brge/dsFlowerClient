@@ -20,6 +20,11 @@ demo_env <- function(name, default = NULL) {
   if (is.na(value) || !nzchar(value)) default else value
 }
 
+demo_bool <- function(name, default = FALSE) {
+  value <- demo_env(name, if (isTRUE(default)) "TRUE" else "FALSE")
+  isTRUE(toupper(value) %in% c("1", "TRUE", "YES", "Y"))
+}
+
 demo_config <- function(demo_id, default_rounds = 2L) {
   urls <- strsplit(demo_env(
     "DSFLOWER_OPAL_URLS",
@@ -47,7 +52,12 @@ demo_config <- function(demo_id, default_rounds = 2L) {
     rounds = as.integer(demo_env("DSFLOWER_DEMO_ROUNDS", default_rounds)),
     max_iter = as.integer(demo_env("DSFLOWER_DEMO_MAX_ITER", 100L)),
     seed = as.integer(demo_env("DSFLOWER_DEMO_SEED", 4242L)),
-    profile = demo_env("DSFLOWER_DEMO_PRIVACY_PROFILE", demo_env("DSFLOWER_DEMO_PRIVACY", "trusted_internal"))
+    profile = demo_env("DSFLOWER_DEMO_PRIVACY_PROFILE", demo_env("DSFLOWER_DEMO_PRIVACY", "trusted_internal")),
+    privacy_ledger_namespace = demo_env("DSFLOWER_PRIVACY_LEDGER_NAMESPACE",
+                                        demo_env("DSFLOWER_DEMO_PRIVACY_LEDGER_NAMESPACE", NULL)),
+    privacy_ledger_isolate_dp = demo_bool("DSFLOWER_DEMO_ISOLATE_DP_BUDGET", TRUE),
+    privacy_max_epsilon = demo_env("DSFLOWER_PRIVACY_MAX_EPSILON", NULL),
+    privacy_max_delta = demo_env("DSFLOWER_PRIVACY_MAX_DELTA", NULL)
   )
 }
 
@@ -76,12 +86,57 @@ ensure_project <- function(opal, project) {
   invisible(TRUE)
 }
 
-set_privacy_profile <- function(opal, profile) {
+set_privacy_profile <- function(opal, profile, ledger_namespace = NULL,
+                                max_epsilon = NULL, max_delta = NULL) {
   opalr::dsadmin.set_option(opal, "dsflower.privacy_profile", profile, profile = "default")
+  if (!is.null(ledger_namespace) && nzchar(ledger_namespace)) {
+    opalr::dsadmin.set_option(opal, "dsflower.privacy_ledger_namespace",
+                              ledger_namespace, profile = "default")
+  }
+  if (!is.null(max_epsilon) && nzchar(as.character(max_epsilon))) {
+    opalr::dsadmin.set_option(opal, "dsflower.max_epsilon",
+                              as.character(max_epsilon), profile = "default")
+  }
+  if (!is.null(max_delta) && nzchar(as.character(max_delta))) {
+    opalr::dsadmin.set_option(opal, "dsflower.max_delta",
+                              as.character(max_delta), profile = "default")
+  }
   if (identical(profile, "sandbox_open")) {
     opalr::dsadmin.set_option(opal, "dsflower.allow_sandbox", "TRUE", profile = "default")
   }
   invisible(TRUE)
+}
+
+privacy_ledger_namespace_for_run <- function(cfg, dataset_id = NULL,
+                                             model_id = NULL,
+                                             privacy = NULL) {
+  base <- cfg$privacy_ledger_namespace %||%
+    paste("clinical_benchmark", cfg$profile, cfg$seed, sep = "_")
+  if (isTRUE(cfg$privacy_ledger_isolate_dp) &&
+      cfg$profile %in% c("clinical_update_noise", "high_sensitivity_dp")) {
+    eps <- privacy$params$epsilon %||% NA
+    parts <- c(base, dataset_id, model_id, paste0("eps", eps))
+    return(paste(parts[!is.na(parts) & nzchar(parts)], collapse = "_"))
+  }
+  base
+}
+
+set_run_privacy_options <- function(cfg, dataset_id = NULL, model_id = NULL) {
+  namespace <- privacy_ledger_namespace_for_run(
+    cfg, dataset_id = dataset_id, model_id = model_id, privacy = cfg$privacy)
+  for (i in seq_along(cfg$urls)) {
+    opal <- opal_login(cfg, i)
+    on.exit(try(opalr::opal.logout(opal), silent = TRUE), add = TRUE)
+    set_privacy_profile(
+      opal,
+      cfg$profile,
+      ledger_namespace = namespace,
+      max_epsilon = cfg$privacy_max_epsilon,
+      max_delta = cfg$privacy_max_delta
+    )
+    opalr::opal.logout(opal)
+  }
+  invisible(namespace)
 }
 
 upload_site_table <- function(opal, project, table, data) {
