@@ -157,7 +157,12 @@ family_specs <- function(features, n_classes) {
          acceptance = list(max_loss_ratio = 1.50, max_loss_margin = 0.25)),
     list(method = "pytorch_multiclass", model = "pytorch_multiclass", task = "classification",
          target = "diagnosis_class", features = features,
-         model_params = modifyList(common, list(hidden_layers = "", n_classes = as.integer(n_classes), learning_rate = 0.02)), rounds = 3L,
+         model_params = modifyList(common, list(
+           hidden_layers = demo_env("DSFLOWER_FAMILY_MULTICLASS_HIDDEN", ""),
+           n_classes = as.integer(n_classes),
+           learning_rate = as.numeric(demo_env("DSFLOWER_FAMILY_MULTICLASS_LR", 0.02))
+         )),
+         rounds = as.integer(demo_env("DSFLOWER_FAMILY_MULTICLASS_ROUNDS", 3L)),
          family = "multiclass classification",
          notes = "SUPPORT2 diagnosis-class multiclass classifier.",
          acceptance = list(max_loss_ratio = 1.35, max_loss_margin = 0.20)),
@@ -323,6 +328,16 @@ main <- function() {
     "DSFLOWER_FAMILY_PRIVACY_PROFILE",
     demo_env("DSFLOWER_DEMO_PRIVACY_PROFILE", "clinical_default")
   )
+  if (cfg$profile %in% c("clinical_update_noise", "high_sensitivity_dp")) {
+    cfg$privacy <- ds.flower.privacy(
+      cfg$profile,
+      epsilon = as.numeric(demo_env("DSFLOWER_FAMILY_DP_EPSILON", 8)),
+      delta = as.numeric(demo_env("DSFLOWER_FAMILY_DP_DELTA", 1e-5)),
+      clipping_norm = as.numeric(demo_env("DSFLOWER_FAMILY_DP_CLIP", 1))
+    )
+  } else {
+    cfg$privacy <- ds.flower.privacy(cfg$profile)
+  }
   cfg$table_prefix <- demo_env(
     "DSFLOWER_FAMILY_TABLE_PREFIX",
     paste0("method_family_", format(Sys.time(), "%Y%m%d%H%M%S"))
@@ -370,7 +385,7 @@ main <- function() {
       spec, data_csv, out_dir, python, baseline_script, cfg$seed
     )
     federated <- validation_fn("run_federated_method")(
-      spec, conns, cfg$profile, secagg_supported, data_csv
+      spec, conns, cfg$privacy, secagg_supported, data_csv
     )
     artifact_eval <- evaluate_pytorch_artifact(
       federated$output_dir %||% "", data_csv, spec, python
@@ -417,13 +432,12 @@ main <- function() {
                        auto_unbox = TRUE, pretty = TRUE, na = "null",
                        digits = NA)
 
-  extdata_dir <- file.path(getwd(), "inst", "extdata")
-  if (dir.exists("inst") || basename(getwd()) == "dsFlowerClient") {
-    dir.create(extdata_dir, recursive = TRUE, showWarnings = FALSE)
-    file.copy(result_json,
-              file.path(extdata_dir, "dsflower_method_family_results.json"),
-              overwrite = TRUE)
-  }
+  evidence_file <- demo_env(
+    "DSFLOWER_FAMILY_EVIDENCE_FILE",
+    file.path(getwd(), "inst", "extdata", "dsflower_method_family_results.json")
+  )
+  dir.create(dirname(evidence_file), recursive = TRUE, showWarnings = FALSE)
+  file.copy(result_json, evidence_file, overwrite = TRUE)
 
   print(results[, c("family", "method", "centralized_loss", "federated_loss",
                     "delta_loss", "acceptable_loss", "validation_status")])

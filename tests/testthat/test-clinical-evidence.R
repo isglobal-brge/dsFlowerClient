@@ -6,6 +6,7 @@ test_that("clinical benchmark evidence contains only completed runs", {
   files <- c(
     "dsflower_clinical_algorithm_results.json",
     "dsflower_clinical_secagg_results.json",
+    "dsflower_xgboost_histogram_privacy_results.json",
     "dsflower_clinical_dp_results.json",
     "dsflower_clinical_dp_curve_results.json"
   )
@@ -20,7 +21,12 @@ test_that("clinical benchmark evidence contains only completed runs", {
       expect_equal(result$status, "pass", info = file)
       expect_true(is.finite(result$central_metrics$auc), info = file)
       expect_true(is.finite(result$federated_metrics$auc), info = file)
-      auc_limit <- if (identical(result$privacy_profile, "high_sensitivity_dp")) {
+      auc_limit <- if (identical(result$privacy_profile, "clinical_update_noise") &&
+                       identical(result$model_id, "xgboost_histogram")) {
+        0.12
+      } else if (identical(result$model_id, "xgboost_histogram")) {
+        0.05
+      } else if (identical(result$privacy_profile, "high_sensitivity_dp")) {
         0.06
       } else if (identical(result$model_id, "sklearn_sgd")) {
         0.025
@@ -129,4 +135,33 @@ test_that("SUPPORT2 method-family evidence covers non-binary families under SecA
   expect_true(all(evidence$results$validation_status == "pass"))
   expect_true(all(evidence$results$acceptable_loss))
   expect_true(all(evidence$results$federated_n_failures == 0))
+})
+
+test_that("SUPPORT2 DP-SGD method-family evidence covers compatible non-survival families", {
+  path <- system.file(
+    "extdata", "dsflower_method_family_dp_results.json",
+    package = "dsFlowerClient"
+  )
+  expect_true(file.exists(path))
+  evidence <- jsonlite::fromJSON(path)
+
+  expect_equal(evidence$dataset_id, "support2")
+  expect_equal(evidence$privacy_profile, "high_sensitivity_dp")
+  expect_true(isTRUE(evidence$secagg_supported))
+  expect_equal(evidence$n_total, 3000)
+  expect_true(all(unlist(evidence$site_train_n, use.names = FALSE) >= 1000))
+  expect_equal(
+    sort(evidence$results$method),
+    sort(c(
+      "pytorch_linear_regression", "pytorch_poisson",
+      "pytorch_multiclass", "pytorch_multilabel"
+    ))
+  )
+  expect_true(all(evidence$results$validation_status == "pass"))
+  expect_true(all(evidence$results$acceptable_loss))
+  expect_true(all(evidence$results$federated_n_failures == 0))
+  expect_equal(
+    evidence$results$rounds[evidence$results$method == "pytorch_multiclass"],
+    6
+  )
 })

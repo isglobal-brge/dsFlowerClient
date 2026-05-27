@@ -33,6 +33,8 @@ output_dir after training completes."></head><body>
     <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
     <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
+    <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
   </ul></li>
@@ -67,6 +69,8 @@ Model weights and training history are automatically saved to
 <span>  app_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  run_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  output_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  results_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  symbol <span class="op">=</span> <span class="st">"flower"</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -96,6 +100,16 @@ from the server. If NULL, uses the connections stored during
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
 <dd><p>Character; persistent directory for model output.
 Defaults to <code>"dsflower_output/&lt;timestamp&gt;"</code> in the working directory.</p></dd>
+
+
+<dt id="arg-results-dir">results_dir<a class="anchor" aria-label="anchor" href="#arg-results-dir"></a></dt>
+<dd><p>Character; temporary directory where the Flower ServerApp
+writes model artefacts. Usually generated automatically.</p></dd>
+
+
+<dt id="arg-symbol">symbol<a class="anchor" aria-label="anchor" href="#arg-symbol"></a></dt>
+<dd><p>Character; server-side Flower handle symbol. Low-level callers
+that initialise the default handle can leave this as <code>"flower"</code>.</p></dd>
 
 
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>

@@ -1,9 +1,10 @@
 # Demo Results Overview
 
 This page is the landing point for the rendered dsFlowerClient demos.
-The main evidence is split into three groups: public benchmark runs with
+The main evidence is split into four groups: public benchmark runs with
 centralised and federated test metrics, LUNG1 imaging handoff runs that
-show composition with dsImaging, and the template validation suite that
+show composition with dsImaging, clinical privacy-profile and
+method-family benchmarks, and the template validation suite that
 exercises every authorised method. Together they show the same
 DataSHIELD execution pattern: the researcher connects to Opal,
 references or stages server-side data, launches Flower training, and
@@ -84,6 +85,57 @@ knitr::kable(imaging_results)
 | LUNG1 dsImaging Radiomics Evidence | lung1-radiomics-to-flower.html | dsImaging-derived LUNG1 radiomics table | 3 | 422 rows; loss 0.6503 -\> 0.6474; 0 client failures |
 | LUNG1 Direct dsImaging Image Evidence | lung1-direct-image-dsimaging-resnet.html | dsImaging-resolved LUNG1 NIfTI assets | 3 | 9 images; central loss 0.5540; federated loss 0.5847; 0 client failures |
 
+## Clinical Privacy Benchmarks
+
+``` r
+
+clinical_privacy <- data.frame(
+  profile = c("trusted_internal", "clinical_default",
+              "clinical_update_noise XGBoost",
+              "high_sensitivity_dp", "clinical_default method families",
+              "high_sensitivity_dp method families"),
+  article = c(rep("clinical-privacy-benchmarks.html", 3),
+              "clinical-privacy-benchmarks.html",
+              "clinical-method-family-benchmarks.html",
+              "clinical-method-family-benchmarks.html"),
+  data_path = c(
+    "Breast Cancer, Heart Disease, Pima Diabetes and CDC Diabetes",
+    "Breast Cancer, Pima Diabetes and CDC Diabetes",
+    "CDC Diabetes",
+    "CDC Diabetes",
+    "SUPPORT2",
+    "SUPPORT2"
+  ),
+  mechanism = c(
+    "Controlled federated execution",
+    "Secure Aggregation plus stricter metric/count policy",
+    "Secure Aggregation plus histogram update noise",
+    "Secure Aggregation plus Opacus DP-SGD",
+    "Secure Aggregation plus family-specific loss validation",
+    "Secure Aggregation plus Opacus DP-SGD for accepted families"
+  ),
+  result = c(
+    "6/6 runs pass, 0 client failures",
+    "8/8 runs pass, 0 client failures",
+    "1/1 run passes, 0 client failures",
+    "2/2 runs pass, 0 client failures",
+    "5/5 runs pass, 0 client failures",
+    "4/4 runs pass, 0 client failures"
+  ),
+  stringsAsFactors = FALSE
+)
+knitr::kable(clinical_privacy)
+```
+
+| profile | article | data_path | mechanism | result |
+|:---|:---|:---|:---|:---|
+| trusted_internal | clinical-privacy-benchmarks.html | Breast Cancer, Heart Disease, Pima Diabetes and CDC Diabetes | Controlled federated execution | 6/6 runs pass, 0 client failures |
+| clinical_default | clinical-privacy-benchmarks.html | Breast Cancer, Pima Diabetes and CDC Diabetes | Secure Aggregation plus stricter metric/count policy | 8/8 runs pass, 0 client failures |
+| clinical_update_noise XGBoost | clinical-privacy-benchmarks.html | CDC Diabetes | Secure Aggregation plus histogram update noise | 1/1 run passes, 0 client failures |
+| high_sensitivity_dp | clinical-privacy-benchmarks.html | CDC Diabetes | Secure Aggregation plus Opacus DP-SGD | 2/2 runs pass, 0 client failures |
+| clinical_default method families | clinical-method-family-benchmarks.html | SUPPORT2 | Secure Aggregation plus family-specific loss validation | 5/5 runs pass, 0 client failures |
+| high_sensitivity_dp method families | clinical-method-family-benchmarks.html | SUPPORT2 | Secure Aggregation plus Opacus DP-SGD for accepted families | 4/4 runs pass, 0 client failures |
+
 ## Template Validation Coverage
 
 ``` r
@@ -117,6 +169,10 @@ knitr::kable(validation_results)
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-heart-disease.md)
 - [MedMNIST
   Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-medmnist.md)
+- [Clinical Privacy
+  Benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-privacy-benchmarks.md)
+- [Clinical Method-Family
+  Benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-method-family-benchmarks.md)
 - [LUNG1 Direct dsImaging Image
   Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-direct-image-dsimaging-resnet.md)
 - [LUNG1 dsImaging Radiomics

@@ -191,8 +191,8 @@ clinical_model_specs <- function() {
       min_rows_per_site = 100L,
       model = "xgboost",
       model_params = list(
-        n_trees = as.integer(demo_env("DSFLOWER_CLINICAL_XGB_TREES", 2L)),
-        max_depth = as.integer(demo_env("DSFLOWER_CLINICAL_XGB_DEPTH", 2L)),
+        n_trees = as.integer(demo_env("DSFLOWER_CLINICAL_XGB_TREES", 5L)),
+        max_depth = as.integer(demo_env("DSFLOWER_CLINICAL_XGB_DEPTH", 1L)),
         eta = as.numeric(demo_env("DSFLOWER_CLINICAL_XGB_ETA", 0.25)),
         reg_lambda = as.numeric(demo_env("DSFLOWER_CLINICAL_XGB_LAMBDA", 1.0)),
         n_bins = as.integer(demo_env("DSFLOWER_CLINICAL_XGB_BINS", 16L)),
@@ -297,7 +297,7 @@ profile_min_rows <- function(spec, profile) {
       consortium_internal = 100L,
       clinical_default = 200L,
       clinical_hardened = 300L,
-      clinical_update_noise = Inf,
+      clinical_update_noise = 500L,
       high_sensitivity_dp = Inf,
       spec$min_rows_per_site
     )

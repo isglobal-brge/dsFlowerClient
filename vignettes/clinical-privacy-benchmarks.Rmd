@@ -54,11 +54,13 @@ flat_results <- function(x, label) {
 trusted <- read_evidence("dsflower_clinical_algorithm_results.json")
 secagg <- read_evidence("dsflower_clinical_secagg_results.json")
 dp <- read_evidence("dsflower_clinical_dp_results.json")
+xgb_noise <- read_evidence("dsflower_xgboost_histogram_privacy_results.json")
 dp_curve <- read_evidence("dsflower_clinical_dp_curve_results.json")
 results <- rbind(
   flat_results(trusted, "trusted_internal"),
   flat_results(secagg, "clinical_default_secagg"),
-  flat_results(dp, "high_sensitivity_dp")
+  flat_results(dp, "high_sensitivity_dp"),
+  flat_results(xgb_noise, "xgboost_histogram_update_noise")
 )
 curve_results <- flat_results(dp_curve, "dp_epsilon_curve")
 curve_results$epsilon <- vapply(dp_curve$results, `[[`, numeric(1), "curve_epsilon")
@@ -103,11 +105,32 @@ Sys.setenv(
   DSFLOWER_CLINICAL_MODELS =
     "sklearn_logreg,sklearn_ridge,sklearn_sgd,pytorch_logreg,pytorch_mlp,xgboost_histogram",
   DSFLOWER_CDC_DIABETES_LIMIT = "9000",
-  DSFLOWER_CLINICAL_XGB_TREES = "1",
+  DSFLOWER_CLINICAL_XGB_TREES = "5",
   DSFLOWER_CLINICAL_XGB_DEPTH = "1",
-  DSFLOWER_CLINICAL_XGB_BINS = "8",
+  DSFLOWER_CLINICAL_XGB_BINS = "16",
   DSFLOWER_CLINICAL_EVIDENCE_FILE =
     "inst/extdata/dsflower_clinical_secagg_results.json"
+)
+source(system.file(
+  "demos", "benchmark_clinical_algorithms.R",
+  package = "dsFlowerClient"
+))
+```
+
+```{r rerun-xgb-update-noise, eval=FALSE}
+Sys.setenv(
+  DSFLOWER_DEMO_PRIVACY_PROFILE = "clinical_update_noise",
+  DSFLOWER_CLINICAL_DATASETS = "cdc_diabetes_health_indicators",
+  DSFLOWER_CLINICAL_MODELS = "xgboost_histogram",
+  DSFLOWER_CDC_DIABETES_LIMIT = "9000",
+  DSFLOWER_CLINICAL_XGB_TREES = "5",
+  DSFLOWER_CLINICAL_XGB_DEPTH = "1",
+  DSFLOWER_CLINICAL_XGB_BINS = "16",
+  DSFLOWER_CLINICAL_DP_EPSILON = "8",
+  DSFLOWER_CLINICAL_DP_DELTA = "1e-5",
+  DSFLOWER_CLINICAL_DP_CLIP = "5",
+  DSFLOWER_CLINICAL_EVIDENCE_FILE =
+    "inst/extdata/dsflower_xgboost_histogram_privacy_results.json"
 )
 source(system.file(
   "demos", "benchmark_clinical_algorithms.R",
@@ -182,10 +205,24 @@ knitr::kable(
 )
 ```
 
+```{r xgboost-update-noise-table}
+knitr::kable(
+  subset(results, evidence == "xgboost_histogram_update_noise"),
+  digits = 4,
+  row.names = FALSE
+)
+```
+
 The `clinical_default` runs require Secure Aggregation, suppress per-node
 metrics and avoid exact per-site count release. This evidence covers logistic
 regression, ridge, SGD, PyTorch MLP, PyTorch logistic regression and the
-one-round secure histogram-stump path of the XGBoost template. The
+secure boosted-stump path of the XGBoost histogram template. In this secure
+path, each boosting round aggregates one fixed-shape root histogram under
+SecAgg+; the server derives one split and two leaf values from the protected
+aggregate, and the next round asks clients to apply the previous stump before
+building the next encrypted histogram. The `clinical_update_noise` XGBoost run
+adds Gaussian noise to the bounded histogram contribution before aggregation,
+which demonstrates the stricter privacy profile and its utility cost. The
 `high_sensitivity_dp` evidence uses Opacus DP-SGD with `epsilon = 8`,
 `delta = 1e-5` and clipping norm `1` for both PyTorch MLP and PyTorch logistic
 regression, in addition to the Secure Aggregation requirement.
@@ -247,8 +284,9 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 
 All reported runs completed with status `pass` and zero recorded client
 failures. The full XGBoost histogram implementation remains available for
-trusted internal validation, while the clinical-default evidence exercises the
-secure one-round histogram-stump route. That route is intentionally narrower
-than multi-tree boosting, but it validates the privacy-relevant part of the
-template: histogram construction on each server and protected aggregation
-before the split and leaf values are computed.
+trusted internal validation. Clinical profiles use secure boosted stumps rather
+than arbitrary-depth tree construction because the latter requires variable
+split and leaf-control phases that are not a stable fit for SecAgg+ workflows.
+The secure route still validates the privacy-relevant computation: histogram
+construction on each server, protected aggregation of those histograms, and
+server-side split and leaf computation from the aggregate only.

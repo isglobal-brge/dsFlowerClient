@@ -42,6 +42,8 @@
     <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
     <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
+    <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
   </ul>
@@ -76,35 +78,64 @@
     
 <p>This macro-vignette summarizes the live dsFlower validation suite
 across tabular, sequence, survival, XGBoost, image-classification, and
-segmentation templates. Each method has its own vignette, and each
-federated run is compared with a centralized baseline trained on the
-corresponding pooled synthetic cohort.</p>
+segmentation templates. Each method has its own vignette. The core
+method-validation suite uses deterministic synthetic fixtures for broad
+template coverage; the clinical benchmarks add real public datasets for
+the thesis-facing evidence.</p>
 <p>The suite is deliberately a functional and numerical sanity check,
-not a privacy claim and not a clinical benchmark. It uses
+not a privacy claim and not, by itself, a clinical benchmark. It uses
 <code>sandbox_open</code> so that per-node diagnostics can be observed
 during development. Production studies should use the stricter
-DataSHIELD privacy profiles. XGBoost is validated in this trusted demo
-mode; profiles that require Secure Aggregation still enforce SecAgg
-before execution.</p>
+DataSHIELD privacy profiles. The SUPPORT2 method-family benchmark and
+the clinical privacy benchmark use <code>clinical_default</code>,
+<code>clinical_update_noise</code> or <code>high_sensitivity_dp</code>,
+so Secure Aggregation, profile-level disclosure guards and, where
+applicable, DP-SGD or update-level histogram noise are active.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">summary_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  suite <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'tabular_sequence_survival'</span>, <span class="st">'vision'</span><span class="op">)</span>,</span>
-<span>  generated_at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">method_validation</span><span class="op">$</span><span class="va">generated_at</span>, <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">vision_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">vision_validation</span><span class="op">$</span><span class="va">generated_at</span> <span class="kw">else</span> <span class="cn">NA</span><span class="op">)</span>,</span>
-<span>  privacy_profile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">method_validation</span><span class="op">$</span><span class="va">privacy_profile</span>, <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">vision_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">vision_validation</span><span class="op">$</span><span class="va">privacy_profile</span> <span class="kw">else</span> <span class="cn">NA</span><span class="op">)</span>,</span>
-<span>  n_sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">method_validation</span><span class="op">$</span><span class="va">n_sites</span>, <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">vision_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">vision_validation</span><span class="op">$</span><span class="va">n_sites</span> <span class="kw">else</span> <span class="cn">NA</span><span class="op">)</span>,</span>
-<span>  n_total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">method_validation</span><span class="op">$</span><span class="va">n_total</span>, <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">vision_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">vision_validation</span><span class="op">$</span><span class="va">n_total</span> <span class="kw">else</span> <span class="cn">NA</span><span class="op">)</span>,</span>
-<span>  secagg_supported <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">method_validation</span><span class="op">$</span><span class="va">secagg_supported</span>, <span class="cn">NA</span><span class="op">)</span>,</span>
+<span>  suite <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'tabular_sequence_survival'</span>, <span class="st">'vision'</span>, <span class="st">'clinical_support2_secagg'</span>,</span>
+<span>            <span class="st">'clinical_support2_dp_sgd'</span><span class="op">)</span>,</span>
+<span>  generated_at <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="va">method_validation</span><span class="op">$</span><span class="va">generated_at</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">vision_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">vision_validation</span><span class="op">$</span><span class="va">generated_at</span> <span class="kw">else</span> <span class="cn">NA</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">family_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">family_validation</span><span class="op">$</span><span class="va">generated_at</span> <span class="kw">else</span> <span class="cn">NA</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">family_dp_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">family_dp_validation</span><span class="op">$</span><span class="va">generated_at</span> <span class="kw">else</span> <span class="cn">NA</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  privacy_profile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="va">method_validation</span><span class="op">$</span><span class="va">privacy_profile</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">vision_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">vision_validation</span><span class="op">$</span><span class="va">privacy_profile</span> <span class="kw">else</span> <span class="cn">NA</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">family_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">family_validation</span><span class="op">$</span><span class="va">privacy_profile</span> <span class="kw">else</span> <span class="cn">NA</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">family_dp_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">family_dp_validation</span><span class="op">$</span><span class="va">privacy_profile</span> <span class="kw">else</span> <span class="cn">NA</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  n_sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="va">method_validation</span><span class="op">$</span><span class="va">n_sites</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">vision_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">vision_validation</span><span class="op">$</span><span class="va">n_sites</span> <span class="kw">else</span> <span class="cn">NA</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">family_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">family_validation</span><span class="op">$</span><span class="va">n_sites</span> <span class="kw">else</span> <span class="cn">NA</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">family_dp_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">family_dp_validation</span><span class="op">$</span><span class="va">n_sites</span> <span class="kw">else</span> <span class="cn">NA</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  n_total <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="va">method_validation</span><span class="op">$</span><span class="va">n_total</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">vision_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">vision_validation</span><span class="op">$</span><span class="va">n_total</span> <span class="kw">else</span> <span class="cn">NA</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">family_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">family_validation</span><span class="op">$</span><span class="va">n_total</span> <span class="kw">else</span> <span class="cn">NA</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">family_dp_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">family_dp_validation</span><span class="op">$</span><span class="va">n_total</span> <span class="kw">else</span> <span class="cn">NA</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  secagg_supported <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="va">method_validation</span><span class="op">$</span><span class="va">secagg_supported</span>,</span>
+<span>    <span class="cn">NA</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">family_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">family_validation</span><span class="op">$</span><span class="va">secagg_supported</span> <span class="kw">else</span> <span class="cn">NA</span>,</span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">family_dp_validation</span><span class="op">)</span><span class="op">)</span> <span class="va">family_dp_validation</span><span class="op">$</span><span class="va">secagg_supported</span> <span class="kw">else</span> <span class="cn">NA</span></span>
+<span>  <span class="op">)</span>,</span>
 <span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">summary_table</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
+<table style="width:100%;" class="table">
 <colgroup>
-<col width="26%">
 <col width="25%">
+<col width="24%">
+<col width="19%">
+<col width="7%">
+<col width="7%">
 <col width="16%">
-<col width="8%">
-<col width="8%">
-<col width="17%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">suite</th>
@@ -130,6 +161,22 @@ before execution.</p>
 <td align="right">3</td>
 <td align="right">12</td>
 <td align="left">NA</td>
+</tr>
+<tr class="odd">
+<td align="left">clinical_support2_secagg</td>
+<td align="left">2026-05-27T03:47:51+0200</td>
+<td align="left">clinical_default</td>
+<td align="right">3</td>
+<td align="right">3000</td>
+<td align="left">TRUE</td>
+</tr>
+<tr class="even">
+<td align="left">clinical_support2_dp_sgd</td>
+<td align="left">2026-05-27T06:34:21+0200</td>
+<td align="left">high_sensitivity_dp</td>
+<td align="right">3</td>
+<td align="right">3000</td>
+<td align="left">TRUE</td>
 </tr>
 </tbody>
 </table>
@@ -473,6 +520,114 @@ before execution.</p>
 <td align="left">TRUE</td>
 <td align="left">pass</td>
 </tr>
+<tr class="odd">
+<td align="left">clinical_support2_secagg</td>
+<td align="left">pytorch_linear_regression</td>
+<td align="left">regression</td>
+<td align="left">mse</td>
+<td align="right">0.5741231</td>
+<td align="left">ok</td>
+<td align="right">0.5671876</td>
+<td align="right">-0.0069355</td>
+<td align="left">TRUE</td>
+<td align="left">pass</td>
+</tr>
+<tr class="even">
+<td align="left">clinical_support2_secagg</td>
+<td align="left">pytorch_poisson</td>
+<td align="left">regression</td>
+<td align="left">poisson_nll</td>
+<td align="right">0.3047131</td>
+<td align="left">ok</td>
+<td align="right">0.4711799</td>
+<td align="right">0.1664668</td>
+<td align="left">TRUE</td>
+<td align="left">pass</td>
+</tr>
+<tr class="odd">
+<td align="left">clinical_support2_secagg</td>
+<td align="left">pytorch_multiclass</td>
+<td align="left">classification</td>
+<td align="left">cross_entropy</td>
+<td align="right">0.0517221</td>
+<td align="left">ok</td>
+<td align="right">0.1897127</td>
+<td align="right">0.1379906</td>
+<td align="left">TRUE</td>
+<td align="left">pass</td>
+</tr>
+<tr class="even">
+<td align="left">clinical_support2_secagg</td>
+<td align="left">pytorch_multilabel</td>
+<td align="left">classification</td>
+<td align="left">multilabel_bce</td>
+<td align="right">0.3928204</td>
+<td align="left">ok</td>
+<td align="right">0.4596463</td>
+<td align="right">0.0668259</td>
+<td align="left">TRUE</td>
+<td align="left">pass</td>
+</tr>
+<tr class="odd">
+<td align="left">clinical_support2_secagg</td>
+<td align="left">pytorch_coxph</td>
+<td align="left">survival</td>
+<td align="left">cox_partial_likelihood</td>
+<td align="right">6.2618389</td>
+<td align="left">ok</td>
+<td align="right">6.3498344</td>
+<td align="right">0.0879955</td>
+<td align="left">TRUE</td>
+<td align="left">pass</td>
+</tr>
+<tr class="even">
+<td align="left">clinical_support2_dp_sgd</td>
+<td align="left">pytorch_linear_regression</td>
+<td align="left">regression</td>
+<td align="left">mse</td>
+<td align="right">0.5741231</td>
+<td align="left">ok</td>
+<td align="right">0.6077577</td>
+<td align="right">0.0336346</td>
+<td align="left">TRUE</td>
+<td align="left">pass</td>
+</tr>
+<tr class="odd">
+<td align="left">clinical_support2_dp_sgd</td>
+<td align="left">pytorch_poisson</td>
+<td align="left">regression</td>
+<td align="left">poisson_nll</td>
+<td align="right">0.3047131</td>
+<td align="left">ok</td>
+<td align="right">0.5273113</td>
+<td align="right">0.2225982</td>
+<td align="left">TRUE</td>
+<td align="left">pass</td>
+</tr>
+<tr class="even">
+<td align="left">clinical_support2_dp_sgd</td>
+<td align="left">pytorch_multiclass</td>
+<td align="left">classification</td>
+<td align="left">cross_entropy</td>
+<td align="right">0.0205827</td>
+<td align="left">ok</td>
+<td align="right">0.0597022</td>
+<td align="right">0.0391194</td>
+<td align="left">TRUE</td>
+<td align="left">pass</td>
+</tr>
+<tr class="odd">
+<td align="left">clinical_support2_dp_sgd</td>
+<td align="left">pytorch_multilabel</td>
+<td align="left">classification</td>
+<td align="left">multilabel_bce</td>
+<td align="right">0.3928204</td>
+<td align="left">ok</td>
+<td align="right">0.4936543</td>
+<td align="right">0.1008338</td>
+<td align="left">TRUE</td>
+<td align="left">pass</td>
+</tr>
 </tbody>
 </table>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
@@ -489,23 +644,25 @@ before execution.</p>
 <p><img src="validation-overview_files/figure-html/unnamed-chunk-4-1.png" class="r-plt" alt="Horizontal bar chart of federated minus centralized loss by method." width="768"></p>
 <p>Per-method vignettes:</p>
 <ul>
-<li><a href="validation-sklearn-logreg.html">sklearn_logreg</a></li>
-<li><a href="validation-sklearn-ridge.html">sklearn_ridge</a></li>
-<li><a href="validation-sklearn-sgd.html">sklearn_sgd</a></li>
-<li><a href="validation-sklearn-svm.html">sklearn_svm</a></li>
-<li><a href="validation-sklearn-elastic-net.html">sklearn_elastic_net</a></li>
-<li><a href="validation-pytorch-logreg.html">pytorch_logreg</a></li>
-<li><a href="validation-pytorch-mlp.html">pytorch_mlp</a></li>
-<li><a href="validation-pytorch-linear-regression.html">pytorch_linear_regression</a></li>
-<li><a href="validation-pytorch-multiclass.html">pytorch_multiclass</a></li>
-<li><a href="validation-pytorch-multilabel.html">pytorch_multilabel</a></li>
-<li><a href="validation-pytorch-poisson.html">pytorch_poisson</a></li>
-<li><a href="validation-pytorch-coxph.html">pytorch_coxph</a></li>
-<li><a href="validation-pytorch-lognormal-aft.html">pytorch_lognormal_aft</a></li>
-<li><a href="validation-pytorch-cause-specific-cox.html">pytorch_cause_specific_cox</a></li>
-<li><a href="validation-pytorch-lstm.html">pytorch_lstm</a></li>
-<li><a href="validation-pytorch-tcn.html">pytorch_tcn</a></li>
-<li><a href="validation-xgboost.html">xgboost</a></li>
+<li><p><a href="clinical-method-family-benchmarks.html">clinical
+method-family benchmarks</a></p></li>
+<li><p><a href="validation-sklearn-logreg.html">sklearn_logreg</a></p></li>
+<li><p><a href="validation-sklearn-ridge.html">sklearn_ridge</a></p></li>
+<li><p><a href="validation-sklearn-sgd.html">sklearn_sgd</a></p></li>
+<li><p><a href="validation-sklearn-svm.html">sklearn_svm</a></p></li>
+<li><p><a href="validation-sklearn-elastic-net.html">sklearn_elastic_net</a></p></li>
+<li><p><a href="validation-pytorch-logreg.html">pytorch_logreg</a></p></li>
+<li><p><a href="validation-pytorch-mlp.html">pytorch_mlp</a></p></li>
+<li><p><a href="validation-pytorch-linear-regression.html">pytorch_linear_regression</a></p></li>
+<li><p><a href="validation-pytorch-multiclass.html">pytorch_multiclass</a></p></li>
+<li><p><a href="validation-pytorch-multilabel.html">pytorch_multilabel</a></p></li>
+<li><p><a href="validation-pytorch-poisson.html">pytorch_poisson</a></p></li>
+<li><p><a href="validation-pytorch-coxph.html">pytorch_coxph</a></p></li>
+<li><p><a href="validation-pytorch-lognormal-aft.html">pytorch_lognormal_aft</a></p></li>
+<li><p><a href="validation-pytorch-cause-specific-cox.html">pytorch_cause_specific_cox</a></p></li>
+<li><p><a href="validation-pytorch-lstm.html">pytorch_lstm</a></p></li>
+<li><p><a href="validation-pytorch-tcn.html">pytorch_tcn</a></p></li>
+<li><p><a href="validation-xgboost.html">xgboost</a></p></li>
 </ul>
 <p>Vision method vignettes:</p>
 <ul>

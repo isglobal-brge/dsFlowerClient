@@ -14,6 +14,8 @@ ds.flower.run.start(
   app_dir = NULL,
   run_config = list(),
   output_dir = NULL,
+  results_dir = NULL,
+  symbol = "flower",
   verbose = TRUE
 )
 ```
@@ -42,6 +44,16 @@ ds.flower.run.start(
 
   Character; persistent directory for model output. Defaults to
   `"dsflower_output/<timestamp>"` in the working directory.
+
+- results_dir:
+
+  Character; temporary directory where the Flower ServerApp writes model
+  artefacts. Usually generated automatically.
+
+- symbol:
+
+  Character; server-side Flower handle symbol. Low-level callers that
+  initialise the default handle can leave this as `"flower"`.
 
 - verbose:
 

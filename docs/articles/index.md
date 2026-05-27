@@ -22,6 +22,10 @@
   Learning](https://isglobal-brge.github.io/dsFlowerClient/articles/radiomics-to-flower.md):
 - [LUNG1 dsImaging Radiomics To dsFlower
   Evidence](https://isglobal-brge.github.io/dsFlowerClient/articles/lung1-radiomics-to-flower.md):
+- [Clinical Privacy
+  Benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-privacy-benchmarks.md):
+- [Clinical method-family
+  benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-method-family-benchmarks.md):
 
 ### Method validation
 

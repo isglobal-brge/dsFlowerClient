@@ -1,0 +1,129 @@
+{
+  "generated_at": "2026-05-27T05:24:22+0200",
+  "demo_id": "clinical_algorithm_matrix",
+  "description": "Three-site dsFlower benchmark matrix on public clinical datasets, comparing centralized and federated held-out performance.",
+  "privacy_profile": "clinical_update_noise",
+  "n_sites": 3,
+  "datasets": {
+    "cdc_diabetes_health_indicators": {
+      "dataset_id": "cdc_diabetes_health_indicators",
+      "dataset_label": "CDC Diabetes Health Indicators",
+      "domain": "population health / diabetes",
+      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
+      "n_total": 9000,
+      "n_train": 6751,
+      "n_test": 2249,
+      "n_features": 21,
+      "site_train_n": {
+        "opal1": 2251,
+        "opal2": 2251,
+        "opal3": 2249
+      },
+      "train_prevalence": 0.1394,
+      "test_prevalence": 0.1392
+    }
+  },
+  "model_specs": [
+    {
+      "id": "xgboost_histogram",
+      "label": "Histogram XGBoost",
+      "family": "tree ensemble",
+      "validation_datasets": "breast_cancer_wisconsin",
+      "clinical_validation_datasets": "cdc_diabetes_health_indicators",
+      "min_rows_per_site": 100,
+      "model_params": {
+        "n_trees": 5,
+        "max_depth": 1,
+        "eta": 0.25,
+        "reg_lambda": 1,
+        "n_bins": 16,
+        "objective": "binary:logistic"
+      },
+      "rounds": 1
+    }
+  ],
+  "results": {
+    "cdc_diabetes_health_indicators.xgboost_histogram": {
+      "dataset_id": "cdc_diabetes_health_indicators",
+      "dataset_label": "CDC Diabetes Health Indicators",
+      "domain": "population health / diabetes",
+      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
+      "model_id": "xgboost_histogram",
+      "model_label": "Histogram XGBoost",
+      "family": "tree ensemble",
+      "status": "pass",
+      "n_total": 9000,
+      "n_train": 6751,
+      "n_test": 2249,
+      "n_features": 21,
+      "site_train_n": {
+        "opal1": 2251,
+        "opal2": 2251,
+        "opal3": 2249
+      },
+      "privacy_profile": "clinical_update_noise",
+      "privacy_parameters": {
+        "mode": "clinical_update_noise",
+        "epsilon": 8,
+        "delta": 1e-05,
+        "clipping_norm": 5
+      },
+      "privacy_ledger_namespace": "clinical_benchmark_clinical_update_noise_4242_cdc_diabetes_health_indicators_xgboost_histogram_eps8",
+      "rounds": 1,
+      "model_params": {
+        "n_trees": 5,
+        "max_depth": 1,
+        "eta": 0.25,
+        "reg_lambda": 1,
+        "n_bins": 16,
+        "objective": "binary:logistic"
+      },
+      "central_metrics": {
+        "auc": 0.7998,
+        "accuracy": 0.8608,
+        "log_loss": 0.3551,
+        "brier": 0.1075
+      },
+      "federated_metrics": {
+        "auc": 0.6968,
+        "accuracy": 0.8608,
+        "log_loss": 0.4203,
+        "brier": 0.1249
+      },
+      "metric_delta": {
+        "auc": -0.1031,
+        "accuracy": 0,
+        "log_loss": 0.0652,
+        "brier": 0.0174
+      },
+      "flower_output_dir": "./dsflower_output/xgboost_FedAvg_1r_20260527_052415",
+      "history": [
+        {
+          "tree": 0,
+          "n_splits": 1,
+          "n_leaves": 2
+        },
+        {
+          "tree": 1,
+          "n_splits": 1,
+          "n_leaves": 2
+        },
+        {
+          "tree": 2,
+          "n_splits": 1,
+          "n_leaves": 2
+        },
+        {
+          "tree": 3,
+          "n_splits": 1,
+          "n_leaves": 2
+        },
+        {
+          "tree": 4,
+          "n_splits": 1,
+          "n_leaves": 2
+        }
+      ]
+    }
+  }
+}

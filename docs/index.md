@@ -148,6 +148,33 @@ export LUNG1_OPAL_RESOURCE="lung1_full_study"
 Rscript inst/demos/lung1_radiomics_to_flower.R
 ```
 
+## Clinical privacy and method-family validation
+
+`inst/demos/benchmark_clinical_algorithms.R` runs public clinical
+central-vs-federated benchmarks under `trusted_internal`,
+`clinical_default` and `high_sensitivity_dp`. The clinical profile
+evidence covers logistic regression, ridge, SGD, PyTorch logistic
+regression, PyTorch MLP and the one-round secure histogram-stump XGBoost
+path. The DP evidence covers PyTorch MLP and PyTorch logistic regression
+with Opacus DP-SGD, and the DP curve records PyTorch logistic regression
+at epsilon 2, 4 and 8 on the same CDC split.
+
+``` sh
+DSFLOWER_DEMO_PRIVACY_PROFILE=clinical_default \
+DSFLOWER_CLINICAL_MODELS=sklearn_logreg,sklearn_ridge,sklearn_sgd,pytorch_logreg,pytorch_mlp,xgboost_histogram \
+Rscript inst/demos/benchmark_clinical_algorithms.R
+```
+
+`inst/demos/benchmark_method_families.R` complements the binary
+classification benchmarks with SUPPORT2 clinical tasks under
+`clinical_default`. It validates continuous regression, count
+regression, multiclass classification, multilabel classification and Cox
+survival over three 1,000-row Opal partitions.
+
+``` sh
+DSFLOWER_SUPPORT2_LIMIT=3000 Rscript inst/demos/benchmark_method_families.R
+```
+
 ## Usage
 
 ``` r

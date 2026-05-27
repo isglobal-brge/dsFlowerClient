@@ -33,6 +33,14 @@ family_paths <- c(
 family_result_path <- family_paths[nzchar(family_paths) & file.exists(family_paths)][1]
 family_validation <- if (!is.na(family_result_path)) jsonlite::fromJSON(family_result_path) else NULL
 family_results <- if (!is.null(family_validation)) family_validation$results else NULL
+family_dp_paths <- c(
+  file.path('..', 'inst', 'extdata', 'dsflower_method_family_dp_results.json'),
+  file.path('inst', 'extdata', 'dsflower_method_family_dp_results.json'),
+  system.file('extdata', 'dsflower_method_family_dp_results.json', package = 'dsFlowerClient')
+)
+family_dp_result_path <- family_dp_paths[nzchar(family_dp_paths) & file.exists(family_dp_paths)][1]
+family_dp_validation <- if (!is.na(family_dp_result_path)) jsonlite::fromJSON(family_dp_result_path) else NULL
+family_dp_results <- if (!is.null(family_dp_validation)) family_dp_validation$results else NULL
 column_or <- function(frame, name, default) {
   if (name %in% names(frame)) frame[[name]] else rep(default, nrow(frame))
 }
@@ -76,7 +84,20 @@ family_display <- if (!is.null(family_results)) data.frame(
   validation_status = family_results$validation_status,
   stringsAsFactors = FALSE
 ) else method_display[0, ]
-results <- rbind(method_display, vision_display, family_display)
+family_dp_display <- if (!is.null(family_dp_results)) data.frame(
+  suite = 'clinical_support2_dp_sgd',
+  method = family_dp_results$method,
+  task = family_dp_results$task,
+  centralized_metric = family_dp_results$centralized_metric,
+  centralized_loss = family_dp_results$centralized_loss,
+  federated_status = family_dp_results$federated_status,
+  federated_loss = family_dp_results$federated_loss,
+  delta_loss = family_dp_results$delta_loss,
+  acceptable_loss = family_dp_results$acceptable_loss,
+  validation_status = family_dp_results$validation_status,
+  stringsAsFactors = FALSE
+) else method_display[0, ]
+results <- rbind(method_display, vision_display, family_display, family_dp_display)
 ```
 
 This macro-vignette summarizes the live dsFlower validation suite across
@@ -90,36 +111,43 @@ privacy claim and not, by itself, a clinical benchmark. It uses `sandbox_open`
 so that per-node diagnostics can be observed during development. Production
 studies should use the stricter DataSHIELD privacy profiles. The SUPPORT2
 method-family benchmark and the clinical privacy benchmark use
-`clinical_default` or `high_sensitivity_dp`, so Secure Aggregation and the
-profile-level disclosure guards are active.
+`clinical_default`, `clinical_update_noise` or `high_sensitivity_dp`, so Secure
+Aggregation, profile-level disclosure guards and, where applicable, DP-SGD or
+update-level histogram noise are active.
 
 ```{r}
 summary_table <- data.frame(
-  suite = c('tabular_sequence_survival', 'vision', 'clinical_support2_secagg'),
+  suite = c('tabular_sequence_survival', 'vision', 'clinical_support2_secagg',
+            'clinical_support2_dp_sgd'),
   generated_at = c(
     method_validation$generated_at,
     if (!is.null(vision_validation)) vision_validation$generated_at else NA,
-    if (!is.null(family_validation)) family_validation$generated_at else NA
+    if (!is.null(family_validation)) family_validation$generated_at else NA,
+    if (!is.null(family_dp_validation)) family_dp_validation$generated_at else NA
   ),
   privacy_profile = c(
     method_validation$privacy_profile,
     if (!is.null(vision_validation)) vision_validation$privacy_profile else NA,
-    if (!is.null(family_validation)) family_validation$privacy_profile else NA
+    if (!is.null(family_validation)) family_validation$privacy_profile else NA,
+    if (!is.null(family_dp_validation)) family_dp_validation$privacy_profile else NA
   ),
   n_sites = c(
     method_validation$n_sites,
     if (!is.null(vision_validation)) vision_validation$n_sites else NA,
-    if (!is.null(family_validation)) family_validation$n_sites else NA
+    if (!is.null(family_validation)) family_validation$n_sites else NA,
+    if (!is.null(family_dp_validation)) family_dp_validation$n_sites else NA
   ),
   n_total = c(
     method_validation$n_total,
     if (!is.null(vision_validation)) vision_validation$n_total else NA,
-    if (!is.null(family_validation)) family_validation$n_total else NA
+    if (!is.null(family_validation)) family_validation$n_total else NA,
+    if (!is.null(family_dp_validation)) family_dp_validation$n_total else NA
   ),
   secagg_supported = c(
     method_validation$secagg_supported,
     NA,
-    if (!is.null(family_validation)) family_validation$secagg_supported else NA
+    if (!is.null(family_validation)) family_validation$secagg_supported else NA,
+    if (!is.null(family_dp_validation)) family_dp_validation$secagg_supported else NA
   ),
   stringsAsFactors = FALSE
 )

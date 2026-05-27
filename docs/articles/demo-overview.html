@@ -42,6 +42,8 @@
     <li><a class="dropdown-item" href="../articles/demo-lung1-radiomics.html">Radiomics Benchmark</a></li>
     <li><a class="dropdown-item" href="../articles/radiomics-to-flower.html">Radiomics To Flower</a></li>
     <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
+    <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
+    <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
   </ul>
@@ -75,9 +77,10 @@
     
     
 <p>This page is the landing point for the rendered dsFlowerClient demos.
-The main evidence is split into three groups: public benchmark runs with
+The main evidence is split into four groups: public benchmark runs with
 centralised and federated test metrics, LUNG1 imaging handoff runs that
-show composition with dsImaging, and the template validation suite that
+show composition with dsImaging, clinical privacy-profile and
+method-family benchmarks, and the template validation suite that
 exercises every authorised method. Together they show the same
 DataSHIELD execution pattern: the researcher connects to Opal,
 references or stages server-side data, launches Flower training, and
@@ -228,9 +231,114 @@ client failures</td>
 </table>
 </div>
 <div class="section level2">
-<h2 id="template-validation-coverage">Template Validation Coverage<a class="anchor" aria-label="anchor" href="#template-validation-coverage"></a>
+<h2 id="clinical-privacy-benchmarks">Clinical Privacy Benchmarks<a class="anchor" aria-label="anchor" href="#clinical-privacy-benchmarks"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">clinical_privacy</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  profile <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"trusted_internal"</span>, <span class="st">"clinical_default"</span>,</span>
+<span>              <span class="st">"clinical_update_noise XGBoost"</span>,</span>
+<span>              <span class="st">"high_sensitivity_dp"</span>, <span class="st">"clinical_default method families"</span>,</span>
+<span>              <span class="st">"high_sensitivity_dp method families"</span><span class="op">)</span>,</span>
+<span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"clinical-privacy-benchmarks.html"</span>, <span class="fl">3</span><span class="op">)</span>,</span>
+<span>              <span class="st">"clinical-privacy-benchmarks.html"</span>,</span>
+<span>              <span class="st">"clinical-method-family-benchmarks.html"</span>,</span>
+<span>              <span class="st">"clinical-method-family-benchmarks.html"</span><span class="op">)</span>,</span>
+<span>  data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"Breast Cancer, Heart Disease, Pima Diabetes and CDC Diabetes"</span>,</span>
+<span>    <span class="st">"Breast Cancer, Pima Diabetes and CDC Diabetes"</span>,</span>
+<span>    <span class="st">"CDC Diabetes"</span>,</span>
+<span>    <span class="st">"CDC Diabetes"</span>,</span>
+<span>    <span class="st">"SUPPORT2"</span>,</span>
+<span>    <span class="st">"SUPPORT2"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  mechanism <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"Controlled federated execution"</span>,</span>
+<span>    <span class="st">"Secure Aggregation plus stricter metric/count policy"</span>,</span>
+<span>    <span class="st">"Secure Aggregation plus histogram update noise"</span>,</span>
+<span>    <span class="st">"Secure Aggregation plus Opacus DP-SGD"</span>,</span>
+<span>    <span class="st">"Secure Aggregation plus family-specific loss validation"</span>,</span>
+<span>    <span class="st">"Secure Aggregation plus Opacus DP-SGD for accepted families"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  result <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"6/6 runs pass, 0 client failures"</span>,</span>
+<span>    <span class="st">"8/8 runs pass, 0 client failures"</span>,</span>
+<span>    <span class="st">"1/1 run passes, 0 client failures"</span>,</span>
+<span>    <span class="st">"2/2 runs pass, 0 client failures"</span>,</span>
+<span>    <span class="st">"5/5 runs pass, 0 client failures"</span>,</span>
+<span>    <span class="st">"4/4 runs pass, 0 client failures"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">clinical_privacy</span><span class="op">)</span></span></code></pre></div>
+<table class="table">
+<colgroup>
+<col width="15%">
+<col width="16%">
+<col width="26%">
+<col width="26%">
+<col width="14%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">profile</th>
+<th align="left">article</th>
+<th align="left">data_path</th>
+<th align="left">mechanism</th>
+<th align="left">result</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">trusted_internal</td>
+<td align="left">clinical-privacy-benchmarks.html</td>
+<td align="left">Breast Cancer, Heart Disease, Pima Diabetes and CDC
+Diabetes</td>
+<td align="left">Controlled federated execution</td>
+<td align="left">6/6 runs pass, 0 client failures</td>
+</tr>
+<tr class="even">
+<td align="left">clinical_default</td>
+<td align="left">clinical-privacy-benchmarks.html</td>
+<td align="left">Breast Cancer, Pima Diabetes and CDC Diabetes</td>
+<td align="left">Secure Aggregation plus stricter metric/count
+policy</td>
+<td align="left">8/8 runs pass, 0 client failures</td>
+</tr>
+<tr class="odd">
+<td align="left">clinical_update_noise XGBoost</td>
+<td align="left">clinical-privacy-benchmarks.html</td>
+<td align="left">CDC Diabetes</td>
+<td align="left">Secure Aggregation plus histogram update noise</td>
+<td align="left">1/1 run passes, 0 client failures</td>
+</tr>
+<tr class="even">
+<td align="left">high_sensitivity_dp</td>
+<td align="left">clinical-privacy-benchmarks.html</td>
+<td align="left">CDC Diabetes</td>
+<td align="left">Secure Aggregation plus Opacus DP-SGD</td>
+<td align="left">2/2 runs pass, 0 client failures</td>
+</tr>
+<tr class="odd">
+<td align="left">clinical_default method families</td>
+<td align="left">clinical-method-family-benchmarks.html</td>
+<td align="left">SUPPORT2</td>
+<td align="left">Secure Aggregation plus family-specific loss
+validation</td>
+<td align="left">5/5 runs pass, 0 client failures</td>
+</tr>
+<tr class="even">
+<td align="left">high_sensitivity_dp method families</td>
+<td align="left">clinical-method-family-benchmarks.html</td>
+<td align="left">SUPPORT2</td>
+<td align="left">Secure Aggregation plus Opacus DP-SGD for accepted
+families</td>
+<td align="left">4/4 runs pass, 0 client failures</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level2">
+<h2 id="template-validation-coverage">Template Validation Coverage<a class="anchor" aria-label="anchor" href="#template-validation-coverage"></a>
+</h2>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">validation_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  suite <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Non-vision method validation"</span>, <span class="st">"Vision method validation"</span><span class="op">)</span>,</span>
 <span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"validation-overview.html"</span>, <span class="st">"validation-vision-overview.html"</span><span class="op">)</span>,</span>
@@ -284,6 +392,10 @@ client failures</td>
 <li><a href="demo-breast-cancer.html">Breast Cancer Benchmark</a></li>
 <li><a href="demo-heart-disease.html">Heart Disease Benchmark</a></li>
 <li><a href="demo-medmnist.html">MedMNIST Benchmark</a></li>
+<li><a href="clinical-privacy-benchmarks.html">Clinical Privacy
+Benchmarks</a></li>
+<li><a href="clinical-method-family-benchmarks.html">Clinical
+Method-Family Benchmarks</a></li>
 <li><a href="lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct
 dsImaging Image Evidence</a></li>
 <li><a href="lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics
@@ -307,7 +419,7 @@ public datasets or dsImaging assets.</p>
 assign a server-side symbol, call <code><a href="../reference/ds.flower.fit.html">ds.flower.fit()</a></code> or the
 lower-level <code>connect -&gt; prepare -&gt; run</code> flow, then
 inspect metrics and cleanup state.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>

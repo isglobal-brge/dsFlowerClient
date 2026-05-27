@@ -14,9 +14,11 @@ library(dsFlowerClient)
 
 This vignette records the non-binary clinical method-family validation used for
 the dsFlower thesis evidence. The benchmark uses the SUPPORT2 study from the
-UCI Machine Learning Repository and executes five PyTorch templates under the
+UCI Machine Learning Repository and executes PyTorch templates under the
 `clinical_default` profile, so server-side row policies and Secure Aggregation
-are active.
+are active. A second evidence file repeats the DP-compatible non-survival
+families under `high_sensitivity_dp`, where SecAgg+ is combined with Opacus
+DP-SGD.
 
 The benchmark complements the binary clinical benchmarks: classification and
 XGBoost are covered there, while this vignette covers continuous regression,
@@ -29,6 +31,11 @@ evidence_path <- system.file(
   package = "dsFlowerClient"
 )
 evidence <- jsonlite::fromJSON(evidence_path)
+dp_evidence_path <- system.file(
+  "extdata", "dsflower_method_family_dp_results.json",
+  package = "dsFlowerClient"
+)
+dp_evidence <- jsonlite::fromJSON(dp_evidence_path)
 
 cat("Dataset:", evidence$dataset_label, "\n")
 cat("Privacy profile:", evidence$privacy_profile, "\n")
@@ -64,6 +71,23 @@ results[, c(
 )]
 ```
 
+```{r dp-results-table}
+dp_results <- dp_evidence$results
+dp_results[, c(
+  "family", "method", "centralized_metric", "centralized_loss",
+  "federated_loss", "delta_loss", "federated_n_failures",
+  "validation_status"
+)]
+```
+
+The DP-SGD table is narrower than the `clinical_default` table because Cox
+partial likelihood contains risk-set dependencies and is not included in the
+Opacus per-example-gradient whitelist. The four non-survival families shown
+here all complete under the stricter profile and remain within their declared
+utility envelopes. Multiclass classification uses six federated rounds in this
+profile because the stricter DP-SGD optimiser required a slightly longer
+training budget than the non-DP family run.
+
 ```{r loss-plot, fig.width=7, fig.height=4.2, fig.alt="Point-range chart comparing centralized and federated SUPPORT2 losses across method families."}
 if (requireNamespace("ggplot2", quietly = TRUE)) {
   plot_data <- results
@@ -84,6 +108,26 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 }
 ```
 
+```{r dp-loss-plot, fig.width=7, fig.height=3.8, fig.alt="Bar chart comparing DP-SGD federated-centralized SUPPORT2 losses for DP-compatible method families."}
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  plot_data <- dp_results
+  plot_data$label <- sub("^pytorch_", "", plot_data$method)
+  plot_data$abs_delta <- abs(plot_data$delta_loss)
+  ggplot2::ggplot(plot_data, ggplot2::aes(
+    x = stats::reorder(label, abs_delta),
+    y = abs_delta
+  )) +
+    ggplot2::geom_col(width = 0.68, fill = "#6F5B3E") +
+    ggplot2::coord_flip() +
+    ggplot2::labs(
+      x = NULL,
+      y = "Absolute federated-centralized loss delta",
+      title = "SUPPORT2 DP-SGD subset under high_sensitivity_dp"
+    ) +
+    ggplot2::theme_minimal(base_size = 12)
+}
+```
+
 The canonical run can be regenerated from a local three-Opal demonstration
 deployment with:
 
@@ -98,3 +142,21 @@ source(system.file(
 ))
 ```
 
+```{r rerun-dp-command, eval=FALSE}
+Sys.setenv(
+  DSFLOWER_SUPPORT2_LIMIT = "3000",
+  DSFLOWER_FAMILY_PRIVACY_PROFILE = "high_sensitivity_dp",
+  DSFLOWER_FAMILY_MODELS =
+    "pytorch_linear_regression,pytorch_poisson,pytorch_multiclass,pytorch_multilabel",
+  DSFLOWER_FAMILY_MULTICLASS_ROUNDS = "6",
+  DSFLOWER_FAMILY_DP_EPSILON = "8",
+  DSFLOWER_FAMILY_DP_DELTA = "1e-5",
+  DSFLOWER_FAMILY_DP_CLIP = "1",
+  DSFLOWER_FAMILY_EVIDENCE_FILE =
+    "inst/extdata/dsflower_method_family_dp_results.json"
+)
+source(system.file(
+  "demos", "benchmark_method_families.R",
+  package = "dsFlowerClient"
+))
+```

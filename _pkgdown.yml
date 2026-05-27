@@ -38,6 +38,10 @@ navbar:
           href: articles/radiomics-to-flower.html
         - text: "LUNG1 dsImaging Radiomics Evidence"
           href: articles/lung1-radiomics-to-flower.html
+        - text: "Clinical Privacy Benchmarks"
+          href: articles/clinical-privacy-benchmarks.html
+        - text: "Clinical Method-Family Benchmarks"
+          href: articles/clinical-method-family-benchmarks.html
         - text: "Method Validation Overview"
           href: articles/validation-overview.html
         - text: "Vision Validation Overview"
@@ -57,6 +61,8 @@ articles:
       - demo-lung1-radiomics
       - radiomics-to-flower
       - lung1-radiomics-to-flower
+      - clinical-privacy-benchmarks
+      - clinical-method-family-benchmarks
   - title: Method validation
     desc: "Per-template validation against centralized baselines."
     contents:

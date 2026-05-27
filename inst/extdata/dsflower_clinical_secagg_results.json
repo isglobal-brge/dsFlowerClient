@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-27T02:09:38+0200",
+  "generated_at": "2026-05-27T04:58:34+0200",
   "demo_id": "clinical_algorithm_matrix",
-  "description": "Three-site dsFlower clinical_default benchmark evidence. The file combines public clinical runs for logistic regression, neural-network, linear, SGD, ridge and secure histogram-stump XGBoost templates under server-enforced Secure Aggregation where required by the profile.",
+  "description": "Three-site dsFlower benchmark matrix on public clinical datasets, comparing centralized and federated held-out performance.",
   "privacy_profile": "clinical_default",
   "n_sites": 3,
   "datasets": {
@@ -57,43 +57,20 @@
       "test_prevalence": 0.1392
     }
   },
-  "model_specs": {
-    "sklearn_logreg": {
+  "model_specs": [
+    {
       "id": "sklearn_logreg",
       "label": "Logistic regression",
       "family": "linear classifier",
-      "validation_datasets": [
-        "breast_cancer_wisconsin",
-        "uci_heart_disease",
-        "pima_indians_diabetes",
-        "cdc_diabetes_health_indicators"
-      ],
-      "clinical_validation_datasets": [
-        "breast_cancer_wisconsin",
-        "pima_indians_diabetes",
-        "cdc_diabetes_health_indicators"
-      ],
+      "validation_datasets": ["breast_cancer_wisconsin", "uci_heart_disease", "pima_indians_diabetes", "cdc_diabetes_health_indicators"],
+      "clinical_validation_datasets": ["breast_cancer_wisconsin", "pima_indians_diabetes", "cdc_diabetes_health_indicators"],
       "min_rows_per_site": 50,
       "model_params": {
         "max_iter": 200
       },
       "rounds": 2
     },
-    "pytorch_mlp": {
-      "id": "pytorch_mlp",
-      "label": "PyTorch MLP",
-      "family": "neural network",
-      "validation_datasets": "cdc_diabetes_health_indicators",
-      "min_rows_per_site": 250,
-      "model_params": {
-        "hidden_layers": "32,16",
-        "learning_rate": 0.005,
-        "batch_size": 64,
-        "local_epochs": 1
-      },
-      "rounds": 6
-    },
-    "xgboost_histogram": {
+    {
       "id": "xgboost_histogram",
       "label": "Histogram XGBoost",
       "family": "tree ensemble",
@@ -101,16 +78,16 @@
       "clinical_validation_datasets": "cdc_diabetes_health_indicators",
       "min_rows_per_site": 100,
       "model_params": {
-        "n_trees": 1,
+        "n_trees": 5,
         "max_depth": 1,
         "eta": 0.25,
         "reg_lambda": 1,
-        "n_bins": 8,
+        "n_bins": 16,
         "objective": "binary:logistic"
       },
       "rounds": 1
     },
-    "sklearn_ridge": {
+    {
       "id": "sklearn_ridge",
       "label": "Ridge classifier",
       "family": "linear classifier",
@@ -122,7 +99,7 @@
       },
       "rounds": 2
     },
-    "sklearn_sgd": {
+    {
       "id": "sklearn_sgd",
       "label": "SGD logistic classifier",
       "family": "linear classifier",
@@ -136,7 +113,7 @@
       },
       "rounds": 2
     },
-    "pytorch_logreg": {
+    {
       "id": "pytorch_logreg",
       "label": "PyTorch logistic regression",
       "family": "neural network",
@@ -149,8 +126,22 @@
         "local_epochs": 1
       },
       "rounds": 10
+    },
+    {
+      "id": "pytorch_mlp",
+      "label": "PyTorch MLP",
+      "family": "neural network",
+      "validation_datasets": "cdc_diabetes_health_indicators",
+      "min_rows_per_site": 250,
+      "model_params": {
+        "hidden_layers": "32,16",
+        "learning_rate": 0.005,
+        "batch_size": 64,
+        "local_epochs": 1
+      },
+      "rounds": 6
     }
-  },
+  ],
   "results": {
     "breast_cancer_wisconsin.sklearn_logreg": {
       "dataset_id": "breast_cancer_wisconsin",
@@ -174,6 +165,7 @@
       "privacy_parameters": {
         "mode": "clinical_default"
       },
+      "privacy_ledger_namespace": "clinical_benchmark_clinical_default_4242",
       "rounds": 2,
       "model_params": {
         "max_iter": 200
@@ -196,7 +188,7 @@
         "log_loss": -0.0099,
         "brier": -0.0027
       },
-      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_220248",
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260527_042744",
       "history": [
         {
           "round": 1,
@@ -234,6 +226,7 @@
       "privacy_parameters": {
         "mode": "clinical_default"
       },
+      "privacy_ledger_namespace": "clinical_benchmark_clinical_default_4242",
       "rounds": 2,
       "model_params": {
         "max_iter": 200
@@ -256,7 +249,7 @@
         "log_loss": 0.0014,
         "brier": 0.0001
       },
-      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_220522",
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260527_043020",
       "history": [
         {
           "round": 1,
@@ -294,6 +287,7 @@
       "privacy_parameters": {
         "mode": "clinical_default"
       },
+      "privacy_ledger_namespace": "clinical_benchmark_clinical_default_4242",
       "rounds": 2,
       "model_params": {
         "max_iter": 200
@@ -314,9 +308,9 @@
         "auc": 0.0004,
         "accuracy": 0,
         "log_loss": -0.0001,
-        "brier": 0
+        "brier": -0
       },
-      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260526_220808",
+      "flower_output_dir": "./dsflower_output/sklearn_logreg_FedAvg_2r_20260527_043250",
       "history": [
         {
           "round": 1,
@@ -326,93 +320,6 @@
         },
         {
           "round": 2,
-          "loss": 0,
-          "n_clients": 3,
-          "n_failures": 0
-        }
-      ]
-    },
-    "cdc_diabetes_health_indicators.pytorch_mlp": {
-      "dataset_id": "cdc_diabetes_health_indicators",
-      "dataset_label": "CDC Diabetes Health Indicators",
-      "domain": "population health / diabetes",
-      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
-      "model_id": "pytorch_mlp",
-      "model_label": "PyTorch MLP",
-      "family": "neural network",
-      "status": "pass",
-      "n_total": 9000,
-      "n_train": 6751,
-      "n_test": 2249,
-      "n_features": 21,
-      "site_train_n": {
-        "opal1": 2251,
-        "opal2": 2251,
-        "opal3": 2249
-      },
-      "privacy_profile": "clinical_default",
-      "privacy_parameters": {
-        "mode": "clinical_default"
-      },
-      "rounds": 6,
-      "model_params": {
-        "hidden_layers": "32,16",
-        "learning_rate": 0.005,
-        "batch_size": 64,
-        "local_epochs": 1
-      },
-      "central_metrics": {
-        "auc": 0.818,
-        "accuracy": 0.8666,
-        "log_loss": 0.3227,
-        "brier": 0.0988
-      },
-      "federated_metrics": {
-        "auc": 0.825,
-        "accuracy": 0.8648,
-        "log_loss": 0.316,
-        "brier": 0.0983
-      },
-      "metric_delta": {
-        "auc": 0.007,
-        "accuracy": -0.0018,
-        "log_loss": -0.0067,
-        "brier": -0.0006
-      },
-      "flower_output_dir": "./dsflower_output/pytorch_mlp_FedAvg_6r_20260526_221557",
-      "history": [
-        {
-          "round": 1,
-          "loss": 0,
-          "n_clients": 3,
-          "n_failures": 0
-        },
-        {
-          "round": 2,
-          "loss": 0,
-          "n_clients": 3,
-          "n_failures": 0
-        },
-        {
-          "round": 3,
-          "loss": 0,
-          "n_clients": 3,
-          "n_failures": 0
-        },
-        {
-          "round": 4,
-          "loss": 0,
-          "n_clients": 3,
-          "n_failures": 0
-        },
-        {
-          "round": 5,
-          "loss": 0,
-          "n_clients": 3,
-          "n_failures": 0
-        },
-        {
-          "round": 6,
           "loss": 0,
           "n_clients": 3,
           "n_failures": 0
@@ -441,38 +348,58 @@
       "privacy_parameters": {
         "mode": "clinical_default"
       },
-      "privacy_ledger_namespace": "secagg_extra_20260527",
+      "privacy_ledger_namespace": "clinical_benchmark_clinical_default_4242",
       "rounds": 1,
       "model_params": {
-        "n_trees": 1,
+        "n_trees": 5,
         "max_depth": 1,
         "eta": 0.25,
         "reg_lambda": 1,
-        "n_bins": 8,
+        "n_bins": 16,
         "objective": "binary:logistic"
       },
       "central_metrics": {
-        "auc": 0.6968,
+        "auc": 0.7998,
         "accuracy": 0.8608,
-        "log_loss": 0.3876,
-        "brier": 0.1159
+        "log_loss": 0.3551,
+        "brier": 0.1075
       },
       "federated_metrics": {
-        "auc": 0.6968,
+        "auc": 0.754,
         "accuracy": 0.8608,
-        "log_loss": 0.5635,
-        "brier": 0.186
+        "log_loss": 0.3986,
+        "brier": 0.118
       },
       "metric_delta": {
-        "auc": 1.1102e-16,
+        "auc": -0.0458,
         "accuracy": 0,
-        "log_loss": 0.1759,
-        "brier": 0.0701
+        "log_loss": 0.0434,
+        "brier": 0.0105
       },
-      "flower_output_dir": "./dsflower_output/xgboost_FedAvg_1r_20260527_004546",
+      "flower_output_dir": "./dsflower_output/xgboost_FedAvg_1r_20260527_043555",
       "history": [
         {
           "tree": 0,
+          "n_splits": 1,
+          "n_leaves": 2
+        },
+        {
+          "tree": 1,
+          "n_splits": 1,
+          "n_leaves": 2
+        },
+        {
+          "tree": 2,
+          "n_splits": 1,
+          "n_leaves": 2
+        },
+        {
+          "tree": 3,
+          "n_splits": 1,
+          "n_leaves": 2
+        },
+        {
+          "tree": 4,
           "n_splits": 1,
           "n_leaves": 2
         }
@@ -500,7 +427,7 @@
       "privacy_parameters": {
         "mode": "clinical_default"
       },
-      "privacy_ledger_namespace": "secagg_extra_20260527",
+      "privacy_ledger_namespace": "clinical_benchmark_clinical_default_4242",
       "rounds": 2,
       "model_params": {
         "alpha": 1
@@ -523,7 +450,7 @@
         "log_loss": -0.0002,
         "brier": -0.0001
       },
-      "flower_output_dir": "./dsflower_output/sklearn_ridge_FedAvg_2r_20260527_004756",
+      "flower_output_dir": "./dsflower_output/sklearn_ridge_FedAvg_2r_20260527_043758",
       "history": [
         {
           "round": 1,
@@ -561,7 +488,7 @@
       "privacy_parameters": {
         "mode": "clinical_default"
       },
-      "privacy_ledger_namespace": "secagg_extra_20260527",
+      "privacy_ledger_namespace": "clinical_benchmark_clinical_default_4242",
       "rounds": 2,
       "model_params": {
         "loss": "log_loss",
@@ -575,18 +502,18 @@
         "brier": 0.1035
       },
       "federated_metrics": {
-        "auc": 0.8284,
-        "accuracy": 0.8622,
-        "log_loss": 0.3265,
-        "brier": 0.1004
+        "auc": 0.8294,
+        "accuracy": 0.8608,
+        "log_loss": 0.3274,
+        "brier": 0.1003
       },
       "metric_delta": {
-        "auc": 0.0207,
-        "accuracy": 0.0053,
-        "log_loss": -0.0067,
-        "brier": -0.0031
+        "auc": 0.0217,
+        "accuracy": 0.004,
+        "log_loss": -0.0057,
+        "brier": -0.0032
       },
-      "flower_output_dir": "./dsflower_output/sklearn_sgd_FedAvg_2r_20260527_005006",
+      "flower_output_dir": "./dsflower_output/sklearn_sgd_FedAvg_2r_20260527_044006",
       "history": [
         {
           "round": 1,
@@ -624,7 +551,7 @@
       "privacy_parameters": {
         "mode": "clinical_default"
       },
-      "privacy_ledger_namespace": "secagg_extra_20260527",
+      "privacy_ledger_namespace": "clinical_benchmark_clinical_default_4242",
       "rounds": 10,
       "model_params": {
         "learning_rate": 0.05,
@@ -638,18 +565,18 @@
         "brier": 0.1021
       },
       "federated_metrics": {
-        "auc": 0.8229,
-        "accuracy": 0.8608,
-        "log_loss": 0.3518,
-        "brier": 0.1047
+        "auc": 0.8224,
+        "accuracy": 0.8635,
+        "log_loss": 0.3504,
+        "brier": 0.1041
       },
       "metric_delta": {
-        "auc": 0.0051,
-        "accuracy": -0.0004,
-        "log_loss": 0.024,
-        "brier": 0.0027
+        "auc": 0.0046,
+        "accuracy": 0.0022,
+        "log_loss": 0.0225,
+        "brier": 0.0021
       },
-      "flower_output_dir": "./dsflower_output/pytorch_logreg_FedAvg_10r_20260527_010354",
+      "flower_output_dir": "./dsflower_output/pytorch_logreg_FedAvg_10r_20260527_045119",
       "history": [
         {
           "round": 1,
@@ -707,6 +634,94 @@
         },
         {
           "round": 10,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        }
+      ]
+    },
+    "cdc_diabetes_health_indicators.pytorch_mlp": {
+      "dataset_id": "cdc_diabetes_health_indicators",
+      "dataset_label": "CDC Diabetes Health Indicators",
+      "domain": "population health / diabetes",
+      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
+      "model_id": "pytorch_mlp",
+      "model_label": "PyTorch MLP",
+      "family": "neural network",
+      "status": "pass",
+      "n_total": 9000,
+      "n_train": 6751,
+      "n_test": 2249,
+      "n_features": 21,
+      "site_train_n": {
+        "opal1": 2251,
+        "opal2": 2251,
+        "opal3": 2249
+      },
+      "privacy_profile": "clinical_default",
+      "privacy_parameters": {
+        "mode": "clinical_default"
+      },
+      "privacy_ledger_namespace": "clinical_benchmark_clinical_default_4242",
+      "rounds": 6,
+      "model_params": {
+        "hidden_layers": "32,16",
+        "learning_rate": 0.005,
+        "batch_size": 64,
+        "local_epochs": 1
+      },
+      "central_metrics": {
+        "auc": 0.818,
+        "accuracy": 0.8666,
+        "log_loss": 0.3227,
+        "brier": 0.0988
+      },
+      "federated_metrics": {
+        "auc": 0.8259,
+        "accuracy": 0.8644,
+        "log_loss": 0.3146,
+        "brier": 0.0983
+      },
+      "metric_delta": {
+        "auc": 0.0079,
+        "accuracy": -0.0022,
+        "log_loss": -0.0081,
+        "brier": -0.0006
+      },
+      "flower_output_dir": "./dsflower_output/pytorch_mlp_FedAvg_6r_20260527_045821",
+      "history": [
+        {
+          "round": 1,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 2,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 3,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 4,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 5,
+          "loss": 0,
+          "n_clients": 3,
+          "n_failures": 0
+        },
+        {
+          "round": 6,
           "loss": 0,
           "n_clients": 3,
           "n_failures": 0

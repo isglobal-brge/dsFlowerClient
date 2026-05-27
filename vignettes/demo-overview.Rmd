@@ -86,27 +86,37 @@ knitr::kable(imaging_results)
 
 ```{r clinical-privacy-results}
 clinical_privacy <- data.frame(
-  profile = c("trusted_internal", "clinical_default", "high_sensitivity_dp",
-              "clinical_default method families"),
+  profile = c("trusted_internal", "clinical_default",
+              "clinical_update_noise XGBoost",
+              "high_sensitivity_dp", "clinical_default method families",
+              "high_sensitivity_dp method families"),
   article = c(rep("clinical-privacy-benchmarks.html", 3),
+              "clinical-privacy-benchmarks.html",
+              "clinical-method-family-benchmarks.html",
               "clinical-method-family-benchmarks.html"),
   data_path = c(
     "Breast Cancer, Heart Disease, Pima Diabetes and CDC Diabetes",
     "Breast Cancer, Pima Diabetes and CDC Diabetes",
     "CDC Diabetes",
+    "CDC Diabetes",
+    "SUPPORT2",
     "SUPPORT2"
   ),
   mechanism = c(
     "Controlled federated execution",
     "Secure Aggregation plus stricter metric/count policy",
+    "Secure Aggregation plus histogram update noise",
     "Secure Aggregation plus Opacus DP-SGD",
-    "Secure Aggregation plus family-specific loss validation"
+    "Secure Aggregation plus family-specific loss validation",
+    "Secure Aggregation plus Opacus DP-SGD for accepted families"
   ),
   result = c(
     "6/6 runs pass, 0 client failures",
     "8/8 runs pass, 0 client failures",
+    "1/1 run passes, 0 client failures",
     "2/2 runs pass, 0 client failures",
-    "5/5 runs pass, 0 client failures"
+    "5/5 runs pass, 0 client failures",
+    "4/4 runs pass, 0 client failures"
   ),
   stringsAsFactors = FALSE
 )
