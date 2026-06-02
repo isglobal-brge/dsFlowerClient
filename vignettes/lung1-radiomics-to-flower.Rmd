@@ -36,26 +36,103 @@ The validation path is:
    tables.
 4. Only aggregate training history and model parameters are returned.
 
+## Tutorial: Running The dsImaging To dsFlower Handoff
+
+The commands below are the live workflow from
+`inst/demos/lung1_radiomics_to_flower.R`. They show how the dsImaging calls
+feed server-side radiomic feature tables straight into a federated dsFlower
+fit, without images, masks or row-level features ever leaving the nodes. This
+article first walks through these commands, then loads the recorded results
+of the run below. The chunks are shown for reference and are not executed when
+the article renders.
+
+**1. Configure the nodes and the imaging resource.** Point at the three
+Opal/Rock nodes and the LUNG1 study resource registered in each.
+
+```{r tutorial-config, eval=FALSE}
+library(DSI)
+library(DSOpal)
+library(dsImagingClient)
+library(dsFlowerClient)
+
+urls <- trimws(strsplit(Sys.getenv(
+  "DSFLOWER_OPAL_URLS",
+  "https://localhost:8443,https://localhost:8444,https://localhost:8445"
+), ",", fixed = TRUE)[[1]])
+users <- rep(Sys.getenv("OPAL_USER", "administrator"), length(urls))
+passwords <- rep(Sys.getenv("OPAL_PASSWORD", "admin123"), length(urls))
+
+logins <- data.frame(
+  server = paste0("opal", seq_along(urls)),
+  url = urls, user = users, password = passwords,
+  driver = "OpalDriver",
+  options = "list(ssl_verifyhost=0L, ssl_verifypeer=0L)",
+  stringsAsFactors = FALSE
+)
+conns <- DSI::datashield.login(logins = logins, assign = FALSE)
+
+resource <- paste0(Sys.getenv("LUNG1_OPAL_PROJECT", "dsdemo"), ".",
+                   Sys.getenv("LUNG1_OPAL_RESOURCE", "lung1_full_study"))
+```
+
+**2. Initialise dsImaging and load radiomic features server-side.**
+`ds.imaging.init()` binds the imaging resource; then, per site,
+`ds.imaging.radiomics.load_features()` materialises the derived feature table
+into the server-side symbol `rad`. The images and masks never move.
+
+```{r tutorial-dsimaging, eval=FALSE}
+ds.imaging.init(conns, resource, symbol = "img")
+
+radiomics_result <- readRDS(
+  file.path(Sys.getenv("LUNG1_WORKDIR", "/tmp/dsimaging_lung1_full"),
+            "datashield_radiomics_result.rds")
+)
+for (srv in names(radiomics_result)) {
+  item <- radiomics_result[[srv]]
+  ds.imaging.radiomics.load_features(
+    conns[srv],
+    dataset_id = item$dataset_id,
+    asset_id = item$asset_id,
+    symbol = "rad",
+    include_metadata = TRUE,
+    syntactic_names = TRUE
+  )
+}
+```
+
+**3. Train the federated model on the derived features.** Hand the
+server-side `rad` table to `ds.flower.fit()` with logistic regression and
+FedAvg. Only aggregate training history and model parameters come back.
+
+```{r tutorial-fit, eval=FALSE}
+features <- c(
+  "original_firstorder_Energy",
+  "original_shape_Compactness1",
+  "original_glrlm_RunLengthNonUniformity",
+  "wavelet.HLH_glrlm_RunLengthNonUniformity",
+  "age",
+  "gender_male"
+)
+
+fit <- ds.flower.fit(
+  conns,
+  symbol = "rad",
+  target = "os_2yr_alive",
+  features = features,
+  model = "sklearn_logreg",
+  model_params = list(max_iter = 100L),
+  strategy = "fedavg",
+  privacy = Sys.getenv("DSFLOWER_RADFLOWER_PRIVACY", "trusted_internal"),
+  rounds = as.integer(Sys.getenv("DSFLOWER_RADFLOWER_ROUNDS", "2"))
+)
+DSI::datashield.logout(conns)
+```
+
+## Recorded Results
+
 ```{r recorded-run}
 cat("Source script: inst/demos/lung1_radiomics_to_flower.R\n")
 cat("Recorded run_id:", evidence$run_id, "\n")
-```
-
-## Reproduction Command
-
-```{r reproduction-command, eval=FALSE}
-Sys.setenv(
-  DSFLOWER_OPAL_URLS = "https://localhost:8443,https://localhost:8444,https://localhost:8445",
-  OPAL_USER = "administrator",
-  OPAL_PASSWORD = "admin123",
-  LUNG1_WORKDIR = "/tmp/dsimaging_lung1_full",
-  LUNG1_OPAL_PROJECT = "dsdemo",
-  LUNG1_OPAL_RESOURCE = "lung1_full_study",
-  DSFLOWER_RADFLOWER_ROUNDS = "2",
-  DSFLOWER_RADFLOWER_PRIVACY = "trusted_internal"
-)
-source(system.file("demos", "lung1_radiomics_to_flower.R",
-                   package = "dsFlowerClient"))
 ```
 
 ## Server-Side Cohort

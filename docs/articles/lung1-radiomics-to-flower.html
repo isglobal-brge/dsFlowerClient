@@ -64,14 +64,14 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>LUNG1 dsImaging Radiomics To dsFlower Evidence</h1>
-
-
+            
+      
 
       <div class="d-none name"><code>lung1-radiomics-to-flower.Rmd</code></div>
     </div>
 
-
-
+    
+    
 <p>This article records the real LUNG1 radiomics handoff run used as
 thesis evidence. The rendered article uses the recorded output of the
 live May 2026 workflow so that package checks do not require active Opal
@@ -83,7 +83,7 @@ servers. The live workflow is implemented in
 <code>dsImaging</code> resolves the LUNG1 imaging resource and
 radiomics assets.</li>
 <li>
-<code>ds.imaging.radiomics.load_features()</code> loads each site’s
+<code><a href="https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.load_asset.html" class="external-link">ds.imaging.radiomics.load_features()</a></code> loads each site’s
 derived feature table into a server-side DataSHIELD symbol.</li>
 <li>
 <code>dsFlowerClient</code> trains <code>sklearn_logreg</code> with
@@ -91,32 +91,107 @@ FedAvg over the server-side tables.</li>
 <li>Only aggregate training history and model parameters are
 returned.</li>
 </ol>
+<div class="section level2">
+<h2 id="tutorial-running-the-dsimaging-to-dsflower-handoff">Tutorial: Running The dsImaging To dsFlower Handoff<a class="anchor" aria-label="anchor" href="#tutorial-running-the-dsimaging-to-dsflower-handoff"></a>
+</h2>
+<p>The commands below are the live workflow from
+<code>inst/demos/lung1_radiomics_to_flower.R</code>. They show how the
+dsImaging calls feed server-side radiomic feature tables straight into a
+federated dsFlower fit, without images, masks or row-level features ever
+leaving the nodes. This article first walks through these commands, then
+loads the recorded results of the run below. The chunks are shown for
+reference and are not executed when the article renders.</p>
+<p><strong>1. Configure the nodes and the imaging resource.</strong>
+Point at the three Opal/Rock nodes and the LUNG1 study resource
+registered in each.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsImagingClient/" class="external-link">dsImagingClient</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">urls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span></span>
+<span>  <span class="st">"DSFLOWER_OPAL_URLS"</span>,</span>
+<span>  <span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span></span>
+<span><span class="op">)</span>, <span class="st">","</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">users</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"OPAL_USER"</span>, <span class="st">"administrator"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">urls</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">passwords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"OPAL_PASSWORD"</span>, <span class="st">"admin123"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">urls</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">logins</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  server <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"opal"</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">urls</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  url <span class="op">=</span> <span class="va">urls</span>, user <span class="op">=</span> <span class="va">users</span>, password <span class="op">=</span> <span class="va">passwords</span>,</span>
+<span>  driver <span class="op">=</span> <span class="st">"OpalDriver"</span>,</span>
+<span>  options <span class="op">=</span> <span class="st">"list(ssl_verifyhost=0L, ssl_verifypeer=0L)"</span>,</span>
+<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">conns</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.login.html" class="external-link">datashield.login</a></span><span class="op">(</span>logins <span class="op">=</span> <span class="va">logins</span>, assign <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">resource</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"LUNG1_OPAL_PROJECT"</span>, <span class="st">"dsdemo"</span><span class="op">)</span>, <span class="st">"."</span>,</span>
+<span>                   <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"LUNG1_OPAL_RESOURCE"</span>, <span class="st">"lung1_full_study"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<p><strong>2. Initialise dsImaging and load radiomic features
+server-side.</strong> <code><a href="https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.init.html" class="external-link">ds.imaging.init()</a></code> binds the imaging
+resource; then, per site,
+<code><a href="https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.load_asset.html" class="external-link">ds.imaging.radiomics.load_features()</a></code> materialises the
+derived feature table into the server-side symbol <code>rad</code>. The
+images and masks never move.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.init.html" class="external-link">ds.imaging.init</a></span><span class="op">(</span><span class="va">conns</span>, <span class="va">resource</span>, symbol <span class="op">=</span> <span class="st">"img"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">radiomics_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"LUNG1_WORKDIR"</span>, <span class="st">"/tmp/dsimaging_lung1_full"</span><span class="op">)</span>,</span>
+<span>            <span class="st">"datashield_radiomics_result.rds"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="kw">for</span> <span class="op">(</span><span class="va">srv</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">radiomics_result</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">item</span> <span class="op">&lt;-</span> <span class="va">radiomics_result</span><span class="op">[[</span><span class="va">srv</span><span class="op">]</span><span class="op">]</span></span>
+<span>  <span class="fu"><a href="https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.load_asset.html" class="external-link">ds.imaging.radiomics.load_features</a></span><span class="op">(</span></span>
+<span>    <span class="va">conns</span><span class="op">[</span><span class="va">srv</span><span class="op">]</span>,</span>
+<span>    dataset_id <span class="op">=</span> <span class="va">item</span><span class="op">$</span><span class="va">dataset_id</span>,</span>
+<span>    asset_id <span class="op">=</span> <span class="va">item</span><span class="op">$</span><span class="va">asset_id</span>,</span>
+<span>    symbol <span class="op">=</span> <span class="st">"rad"</span>,</span>
+<span>    include_metadata <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>    syntactic_names <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p><strong>3. Train the federated model on the derived
+features.</strong> Hand the server-side <code>rad</code> table to
+<code><a href="../reference/ds.flower.fit.html">ds.flower.fit()</a></code> with logistic regression and FedAvg. Only
+aggregate training history and model parameters come back.</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"original_firstorder_Energy"</span>,</span>
+<span>  <span class="st">"original_shape_Compactness1"</span>,</span>
+<span>  <span class="st">"original_glrlm_RunLengthNonUniformity"</span>,</span>
+<span>  <span class="st">"wavelet.HLH_glrlm_RunLengthNonUniformity"</span>,</span>
+<span>  <span class="st">"age"</span>,</span>
+<span>  <span class="st">"gender_male"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>,</span>
+<span>  symbol <span class="op">=</span> <span class="st">"rad"</span>,</span>
+<span>  target <span class="op">=</span> <span class="st">"os_2yr_alive"</span>,</span>
+<span>  features <span class="op">=</span> <span class="va">features</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"sklearn_logreg"</span>,</span>
+<span>  model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>max_iter <span class="op">=</span> <span class="fl">100L</span><span class="op">)</span>,</span>
+<span>  strategy <span class="op">=</span> <span class="st">"fedavg"</span>,</span>
+<span>  privacy <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"DSFLOWER_RADFLOWER_PRIVACY"</span>, <span class="st">"trusted_internal"</span><span class="op">)</span>,</span>
+<span>  rounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"DSFLOWER_RADFLOWER_ROUNDS"</span>, <span class="st">"2"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="recorded-results">Recorded Results<a class="anchor" aria-label="anchor" href="#recorded-results"></a>
+</h2>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Source script: inst/demos/lung1_radiomics_to_flower.R\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Source script: inst/demos/lung1_radiomics_to_flower.R</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Recorded run_id:"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">run_id</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Recorded run_id: 17493579680844882070</span></span></code></pre></div>
-<div class="section level2">
-<h2 id="reproduction-command">Reproduction Command<a class="anchor" aria-label="anchor" href="#reproduction-command"></a>
-</h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
-<span>  DSFLOWER_OPAL_URLS <span class="op">=</span> <span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span>,</span>
-<span>  OPAL_USER <span class="op">=</span> <span class="st">"administrator"</span>,</span>
-<span>  OPAL_PASSWORD <span class="op">=</span> <span class="st">"admin123"</span>,</span>
-<span>  LUNG1_WORKDIR <span class="op">=</span> <span class="st">"/tmp/dsimaging_lung1_full"</span>,</span>
-<span>  LUNG1_OPAL_PROJECT <span class="op">=</span> <span class="st">"dsdemo"</span>,</span>
-<span>  LUNG1_OPAL_RESOURCE <span class="op">=</span> <span class="st">"lung1_full_study"</span>,</span>
-<span>  DSFLOWER_RADFLOWER_ROUNDS <span class="op">=</span> <span class="st">"2"</span>,</span>
-<span>  DSFLOWER_RADFLOWER_PRIVACY <span class="op">=</span> <span class="st">"trusted_internal"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"demos"</span>, <span class="st">"lung1_radiomics_to_flower.R"</span>,</span>
-<span>                   package <span class="op">=</span> <span class="st">"dsFlowerClient"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="server-side-cohort">Server-Side Cohort<a class="anchor" aria-label="anchor" href="#server-side-cohort"></a>
 </h2>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">site_dim_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"opal"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">dimensions</span><span class="op">)</span>, value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">site_dims</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">site_dim_names</span>, <span class="kw">function</span><span class="op">(</span><span class="va">name</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">dims</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">dimensions</span><span class="op">[[</span><span class="va">name</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
@@ -152,7 +227,7 @@ returned.</li>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  resource <span class="op">=</span> <span class="va">evidence</span><span class="op">$</span><span class="va">resource</span>,</span>
@@ -167,7 +242,7 @@ returned.</li>
 <div class="section level2">
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">feature_roles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"radiomic"</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"metadata"</span>, <span class="st">"metadata"</span><span class="op">)</span></span>
 <span><span class="va">feature_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  feature <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">features</span><span class="op">)</span>,</span>
@@ -211,7 +286,7 @@ returned.</li>
 <div class="section level2">
 <h2 id="federated-training">Federated Training<a class="anchor" aria-label="anchor" href="#federated-training"></a>
 </h2>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">training</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  model <span class="op">=</span> <span class="st">"sklearn_logreg"</span>,</span>
 <span>  strategy <span class="op">=</span> <span class="st">"fedavg"</span>,</span>
@@ -237,7 +312,7 @@ returned.</li>
 <td align="right">100</td>
 </tr></tbody>
 </table>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">history</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    round <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">round</span>,</span>
@@ -269,7 +344,7 @@ returned.</li>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[dsFlower] run_id:"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">run_id</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [dsFlower] run_id: 17493579680844882070</span></span>
@@ -285,7 +360,7 @@ returned.</li>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] PASS:"</span>,</span>
 <span>    <span class="va">evidence</span><span class="op">$</span><span class="va">status</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">n_failures</span><span class="op">)</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [acceptance] PASS: TRUE</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">history</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">round</span>, y <span class="op">=</span> <span class="va">loss</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#2C6F7D"</span>, linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
@@ -306,7 +381,7 @@ returned.</li>
 <div class="section level2">
 <h2 id="evidence-scope">Evidence Scope<a class="anchor" aria-label="anchor" href="#evidence-scope"></a>
 </h2>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">scope</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  item <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Validated claim"</span>, <span class="st">"Explicit non-claim"</span>, <span class="st">"Global model shape"</span><span class="op">)</span>,</span>
 <span>  value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
