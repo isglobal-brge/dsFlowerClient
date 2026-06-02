@@ -79,126 +79,57 @@ baseline. The purpose is method-path validation: data staging, template
 verification, Flower execution, result persistence, and cleanup. It
 complements the biomedical reports by checking the full template surface
 under deterministic conditions.</p>
-<p>It is laid out as a short tutorial: first the exact commands you
-would run to reproduce the validation, then the recorded results of that
-run loaded from the committed evidence artifact. No live Opal servers
-are required to render this page; the command chunks are shown for
-reference and are not executed.</p>
+<p>It is laid out as a short tutorial: first the commands you would run
+to reproduce the validation, then the recorded results of that run
+loaded from the committed evidence artifact. No live Opal servers are
+required to render this page; the command chunks are shown for reference
+and are not executed.</p>
 <div class="section level2">
-<h2 id="tutorial-commands-to-reproduce-this-validation">Tutorial: Commands To Reproduce This Validation<a class="anchor" aria-label="anchor" href="#tutorial-commands-to-reproduce-this-validation"></a>
+<h2 id="tutorial-how-to-run-this-validation">Tutorial: How To Run This Validation<a class="anchor" aria-label="anchor" href="#tutorial-how-to-run-this-validation"></a>
 </h2>
-<p>The steps below walk through the full DataSHIELD/Flower flow for this
-template, from node configuration to the acceptance check.</p>
-<p><strong>1. Configure the DataSHIELD/Opal nodes.</strong> Point the
-workflow at the three development nodes and the demo project that will
-hold the staged tables.</p>
+<p>To check this template we compare a <strong>centralized</strong>
+baseline against the <strong>federated</strong> dsFlower run. The
+validation cohort is one synthetic dataset: the centralized baseline is
+fit on the pooled copy, and the very same rows are partitioned across
+three local Opal nodes that are already set up and serving the table
+<code>dsflower_demo.validation_cohort</code>. The federated fit never
+sees the pooled data, only the three node-resident partitions.</p>
+<p><strong>1. Connect to the DataSHIELD nodes.</strong> Open a single
+session across the three Opal nodes that hold the partitioned validation
+cohort.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/obiba/opalr/" class="external-link">opalr</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">opal_urls</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span></span>
-<span>  <span class="st">'DSFLOWER_OPAL_URLS'</span>,</span>
-<span>  <span class="st">'https://localhost:8443,https://localhost:8444,https://localhost:8445'</span></span>
-<span><span class="op">)</span>, <span class="st">','</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="va">opal_users</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">'OPAL_USER'</span>, <span class="st">'administrator'</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">opal_urls</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">opal_passwords</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">'OPAL_PASSWORD'</span>, <span class="st">'admin123'</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">opal_urls</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">project</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">'DSFLOWER_DEMO_PROJECT'</span>, <span class="st">'dsflower_demo'</span><span class="op">)</span></span></code></pre></div>
-<p><strong>2. Build the synthetic validation cohort.</strong> Generate
-the deterministic cohort (fixed seed) that is split across the sites,
-with columns covering every task family in the catalogue.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">4242</span><span class="op">)</span></span>
-<span><span class="va">n_sites</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">opal_urls</span><span class="op">)</span></span>
-<span><span class="va">n_per_site</span> <span class="op">&lt;-</span> <span class="va">validation</span><span class="op">$</span><span class="va">n_per_site</span></span>
-<span><span class="va">n</span> <span class="op">&lt;-</span> <span class="va">n_sites</span> <span class="op">*</span> <span class="va">n_per_site</span></span>
-<span><span class="va">p</span> <span class="op">&lt;-</span> <span class="va">row</span><span class="op">$</span><span class="va">n_features</span></span>
-<span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/scale.html" class="external-link">scale</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span> <span class="op">*</span> <span class="va">p</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="va">n</span>, ncol <span class="op">=</span> <span class="va">p</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">colnames</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'x'</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">p</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">cohort</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>id <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'mv_%04d'</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span><span class="op">)</span>, <span class="va">x</span><span class="op">)</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">outcome</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fl">0.9</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">-</span> <span class="fl">0.7</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">+</span></span>
-<span>                             <span class="fl">0.45</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span> <span class="op">+</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, sd <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fl">1.4</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">-</span> <span class="fl">1.1</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">4</span><span class="op">]</span> <span class="op">+</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">7</span><span class="op">]</span> <span class="op">+</span></span>
-<span>            <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, sd <span class="op">=</span> <span class="fl">0.45</span><span class="op">)</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">class3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/cut.html" class="external-link">cut</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">-</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">5</span><span class="op">]</span> <span class="op">+</span> <span class="fl">0.35</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">8</span><span class="op">]</span>,</span>
-<span>                               breaks <span class="op">=</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/quantile.html" class="external-link">quantile</a></span><span class="op">(</span></span>
-<span>                                 <span class="va">x</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">-</span> <span class="fl">0.5</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">5</span><span class="op">]</span> <span class="op">+</span> <span class="fl">0.35</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">8</span><span class="op">]</span>,</span>
-<span>                                 probs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span> <span class="op">/</span> <span class="fl">3</span>, <span class="fl">2</span> <span class="op">/</span> <span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span></span>
-<span>                               <span class="op">)</span>, include.lowest <span class="op">=</span> <span class="cn">TRUE</span>, labels <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1L</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">label_a</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">6</span><span class="op">]</span> <span class="op">+</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">label_b</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="op">-</span><span class="va">x</span><span class="op">[</span>, <span class="fl">2</span><span class="op">]</span> <span class="op">+</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">7</span><span class="op">]</span> <span class="op">+</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">label_c</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">x</span><span class="op">[</span>, <span class="fl">3</span><span class="op">]</span> <span class="op">-</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">8</span><span class="op">]</span> <span class="op">+</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, sd <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">count</span> <span class="op">&lt;-</span> <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Poisson.html" class="external-link">rpois</a></span><span class="op">(</span><span class="va">n</span>, lambda <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0.2</span> <span class="op">+</span> <span class="fl">0.35</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">-</span></span>
-<span>                                                    <span class="fl">0.25</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">9</span><span class="op">]</span>, <span class="op">-</span><span class="fl">2</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">time</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="fl">2.0</span> <span class="op">-</span> <span class="fl">0.25</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="fl">0.18</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">5</span><span class="op">]</span> <span class="op">+</span></span>
-<span>                   <span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n</span>, sd <span class="op">=</span> <span class="fl">0.35</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">event</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="va">n</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0.35</span><span class="op">)</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">event_type</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">cohort</span><span class="op">$</span><span class="va">event</span> <span class="op">==</span> <span class="fl">0L</span>, <span class="fl">0L</span>,</span>
-<span>                            <span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="fl">0.6</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">10</span><span class="op">]</span> <span class="op">-</span> <span class="fl">0.45</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span>, <span class="fl">11</span><span class="op">]</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="fl">1L</span>, <span class="fl">2L</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">cohort</span><span class="op">$</span><span class="va">site</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_sites</span><span class="op">)</span>, length.out <span class="op">=</span> <span class="va">n</span><span class="op">)</span></span></code></pre></div>
-<p><strong>3. Materialise one Opal table per site and connect.</strong>
-Upload each site’s slice as an Opal table, then open a single DataSHIELD
-session across all nodes.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">table_paths</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="va">n_sites</span><span class="op">)</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">opal</span> <span class="op">&lt;-</span> <span class="fu">opalr</span><span class="fu">::</span><span class="fu"><a href="https://www.obiba.org/opalr/reference/opal.login.html" class="external-link">opal.login</a></span><span class="op">(</span></span>
-<span>    username <span class="op">=</span> <span class="va">opal_users</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, password <span class="op">=</span> <span class="va">opal_passwords</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>    url <span class="op">=</span> <span class="va">opal_urls</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>    opts <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>ssl_verifyhost <span class="op">=</span> <span class="fl">0L</span>, ssl_verifypeer <span class="op">=</span> <span class="fl">0L</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span>
-<span>  <span class="va">table_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'method_validation_'</span>, <span class="va">method_id</span>, <span class="st">'_site'</span>, <span class="va">i</span><span class="op">)</span></span>
-<span>  <span class="va">site_data</span> <span class="op">&lt;-</span> <span class="va">cohort</span><span class="op">[</span><span class="va">cohort</span><span class="op">$</span><span class="va">site</span> <span class="op">==</span> <span class="va">i</span>, <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cohort</span><span class="op">)</span>, <span class="st">'site'</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
-<span>  <span class="fu">opalr</span><span class="fu">::</span><span class="fu"><a href="https://www.obiba.org/opalr/reference/opal.table_save.html" class="external-link">opal.table_save</a></span><span class="op">(</span><span class="va">opal</span>, <span class="va">site_data</span>, project <span class="op">=</span> <span class="va">project</span>, table <span class="op">=</span> <span class="va">table_name</span>,</span>
-<span>                         id.name <span class="op">=</span> <span class="st">'id'</span>, policy <span class="op">=</span> <span class="st">'generate'</span>,</span>
-<span>                         overwrite <span class="op">=</span> <span class="cn">TRUE</span>, force <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>  <span class="va">table_paths</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">project</span>, <span class="va">table_name</span>, sep <span class="op">=</span> <span class="st">'.'</span><span class="op">)</span></span>
-<span>  <span class="fu">opalr</span><span class="fu">::</span><span class="fu"><a href="https://www.obiba.org/opalr/reference/opal.logout.html" class="external-link">opal.logout</a></span><span class="op">(</span><span class="va">opal</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
 <span></span>
 <span><span class="va">builder</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/newDSLoginBuilder.html" class="external-link">newDSLoginBuilder</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_sites</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'opal'</span>, <span class="va">i</span><span class="op">)</span>, url <span class="op">=</span> <span class="va">opal_urls</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>                 user <span class="op">=</span> <span class="va">opal_users</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, password <span class="op">=</span> <span class="va">opal_passwords</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>                 table <span class="op">=</span> <span class="va">table_paths</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, driver <span class="op">=</span> <span class="st">'OpalDriver'</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
+<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="st">'node1'</span>, url <span class="op">=</span> <span class="st">'https://opal-node-1.example.org'</span>,</span>
+<span>               user <span class="op">=</span> <span class="st">'researcher'</span>, password <span class="op">=</span> <span class="st">'********'</span>,</span>
+<span>               table <span class="op">=</span> <span class="st">'dsflower_demo.validation_cohort'</span><span class="op">)</span></span>
+<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="st">'node2'</span>, url <span class="op">=</span> <span class="st">'https://opal-node-2.example.org'</span>,</span>
+<span>               user <span class="op">=</span> <span class="st">'researcher'</span>, password <span class="op">=</span> <span class="st">'********'</span>,</span>
+<span>               table <span class="op">=</span> <span class="st">'dsflower_demo.validation_cohort'</span><span class="op">)</span></span>
+<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="st">'node3'</span>, url <span class="op">=</span> <span class="st">'https://opal-node-3.example.org'</span>,</span>
+<span>               user <span class="op">=</span> <span class="st">'researcher'</span>, password <span class="op">=</span> <span class="st">'********'</span>,</span>
+<span>               table <span class="op">=</span> <span class="st">'dsflower_demo.validation_cohort'</span><span class="op">)</span></span>
 <span><span class="va">conns</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.login.html" class="external-link">datashield.login</a></span><span class="op">(</span><span class="va">builder</span><span class="op">$</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span>, assign <span class="op">=</span> <span class="cn">TRUE</span>, symbol <span class="op">=</span> <span class="st">'D'</span><span class="op">)</span></span></code></pre></div>
-<p><strong>4. Run the federated fit.</strong> Train this template
-through dsFlower with FedAvg, then read back the negotiated capabilities
-and log out.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">targets</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">target</span>, <span class="st">','</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="va">features</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'x'</span>, <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">n_features</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
+<p><strong>2. Run the federated fit.</strong> Train this template
+through dsFlower with FedAvg over the server-side table, then log out.
+Only aggregate training history and model parameters are returned to the
+researcher.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">conns</span>,</span>
-<span>  symbol <span class="op">=</span> <span class="st">'D'</span>,</span>
-<span>  target <span class="op">=</span> <span class="va">targets</span>,</span>
-<span>  features <span class="op">=</span> <span class="va">features</span>,</span>
-<span>  model <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">method</span>,</span>
+<span>  symbol   <span class="op">=</span> <span class="st">'D'</span>,</span>
+<span>  target   <span class="op">=</span> <span class="st">'outcome'</span>,</span>
+<span>  features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'x'</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">12</span><span class="op">)</span>,</span>
+<span>  model    <span class="op">=</span> <span class="st">'sklearn_logreg'</span>,</span>
 <span>  strategy <span class="op">=</span> <span class="st">'fedavg'</span>,</span>
-<span>  privacy <span class="op">=</span> <span class="st">'sandbox_open'</span>,</span>
-<span>  rounds <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">rounds</span>,</span>
-<span>  task <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">task</span></span>
+<span>  privacy  <span class="op">=</span> <span class="st">'sandbox_open'</span>,</span>
+<span>  rounds   <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">post_caps</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.aggregate.html" class="external-link">datashield.aggregate</a></span><span class="op">(</span></span>
-<span>  <span class="va">conns</span>, expr <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/call.html" class="external-link">call</a></span><span class="op">(</span><span class="st">'flowerGetCapabilitiesDS'</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
 <span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
-<p><strong>5. Apply the acceptance envelope.</strong> The run passes
-when there are no client failures and the federated loss stays within
-the allowed margin of the centralized baseline.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">history</span> <span class="op">&lt;-</span> <span class="va">fit</span><span class="op">$</span><span class="va">history</span></span>
-<span><span class="va">federated_loss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/na.fail.html" class="external-link">na.omit</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">loss</span><span class="op">)</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="va">federated_failures</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">n_failures</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">acceptable</span> <span class="op">&lt;-</span> <span class="va">federated_failures</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span></span>
-<span>  <span class="va">federated_loss</span> <span class="op">&lt;=</span> <span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span> <span class="op">*</span> <span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_ratio</span> <span class="op">+</span></span>
-<span>                    <span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_margin</span></span>
-<span><span class="va">acceptable</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="recorded-results">Recorded Results<a class="anchor" aria-label="anchor" href="#recorded-results"></a>
@@ -207,7 +138,7 @@ the allowed margin of the centralized baseline.</p>
 They load the committed evidence artifact for the run above and report
 the centralized vs. federated comparison, the audit trail, and the
 acceptance decision.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">overview</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  Field <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">'method'</span>, <span class="st">'task'</span>, <span class="st">'target'</span>, <span class="st">'n_features'</span>, <span class="st">'rounds'</span>,</span>
@@ -299,7 +230,7 @@ acceptance decision.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">loss_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Centralized'</span>, <span class="st">'Federated'</span><span class="op">)</span>,</span>
 <span>  loss <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span><span class="op">)</span></span>
@@ -321,7 +252,7 @@ acceptance decision.</p>
 <p>The following chunks print the audit trail for the committed
 catalogue coverage run, reconstructed from the persisted evidence
 artifact.</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">target_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">target</span>, <span class="st">','</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="va">site_table_paths</span> <span class="op">&lt;-</span> <span class="va">validation</span><span class="op">$</span><span class="va">table_paths</span></span>
 <span><span class="va">input_trace</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -376,7 +307,7 @@ artifact.</p>
 </table>
 <p>dsflower_demo.method_validation_20260511181239_site2
 dsflower_demo.method_validation_20260511181239_site3 |</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">centralized_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  step <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">'1. Load pooled validation cohort'</span>,</span>
@@ -416,7 +347,7 @@ dsflower_demo.method_validation_20260511181239_site3 |</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] method: %s\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">method</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] task: %s | target: %s | features: %s\n'</span>,</span>
@@ -431,7 +362,7 @@ dsflower_demo.method_validation_20260511181239_site3 |</p>
 <span><span class="co">#&gt; [centralized] status: ok</span></span>
 <span><span class="co">#&gt; [centralized] log_loss: 0.2051</span></span>
 <span><span class="co">#&gt; [centralized] accuracy: 0.9074</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">max_allowed_loss</span> <span class="op">&lt;-</span> <span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span> <span class="op">*</span> <span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_ratio</span> <span class="op">+</span></span>
 <span>  <span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_margin</span></span>
 <span><span class="va">dsflower_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -487,7 +418,7 @@ dsflower_demo.method_validation_20260511181239_site3 |</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[dsFlower] DataSHIELD login: %s nodes\n'</span>, <span class="va">validation</span><span class="op">$</span><span class="va">n_sites</span><span class="op">)</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[dsFlower] table paths: %s\n'</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">site_table_paths</span>, collapse <span class="op">=</span> <span class="st">' | '</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -507,7 +438,7 @@ dsflower_demo.method_validation_20260511181239_site3 |</p>
 <span><span class="co">#&gt; [Flower] aggregate_fit/evaluate: clients=3 failures=0.0000</span></span>
 <span><span class="co">#&gt; [Flower] final federated loss: 0.2335</span></span>
 <span><span class="co">#&gt; [cleanup] status: ok</span></span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">acceptance_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  centralized_loss <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span>,</span>
 <span>  federated_loss <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span>,</span>
@@ -543,7 +474,7 @@ dsflower_demo.method_validation_20260511181239_site3 |</p>
 <td align="left">pass</td>
 </tr></tbody>
 </table>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">error</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">error</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>

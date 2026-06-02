@@ -38,16 +38,16 @@ The validation path is:
 
 ## Tutorial: Running The dsImaging To dsFlower Handoff
 
-The commands below are the live workflow from
-`inst/demos/lung1_radiomics_to_flower.R`. They show how the dsImaging calls
-feed server-side radiomic feature tables straight into a federated dsFlower
-fit, without images, masks or row-level features ever leaving the nodes. This
-article first walks through these commands, then loads the recorded results
-of the run below. The chunks are shown for reference and are not executed when
-the article renders.
+The steps below walk through the dsImaging to dsFlower handoff: connect to the
+nodes, load the server-side radiomic feature tables with dsImaging, and train a
+federated model with dsFlower. The LUNG1 study is already registered as an
+imaging resource on three Opal/Rock nodes, each holding its own slice of
+patients; images, masks and row-level features never leave those nodes. The
+chunks are shown for reference and are not executed when the article renders;
+the recorded results of the real run follow.
 
-**1. Configure the nodes and the imaging resource.** Point at the three
-Opal/Rock nodes and the LUNG1 study resource registered in each.
+**1. Connect to the DataSHIELD nodes.** Open a single session across the three
+Opal nodes that serve the LUNG1 imaging resource.
 
 ```{r tutorial-config, eval=FALSE}
 library(DSI)
@@ -55,49 +55,37 @@ library(DSOpal)
 library(dsImagingClient)
 library(dsFlowerClient)
 
-urls <- trimws(strsplit(Sys.getenv(
-  "DSFLOWER_OPAL_URLS",
-  "https://localhost:8443,https://localhost:8444,https://localhost:8445"
-), ",", fixed = TRUE)[[1]])
-users <- rep(Sys.getenv("OPAL_USER", "administrator"), length(urls))
-passwords <- rep(Sys.getenv("OPAL_PASSWORD", "admin123"), length(urls))
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = "node1", url = "https://opal-node-1.example.org",
+               user = "researcher", password = "********")
+builder$append(server = "node2", url = "https://opal-node-2.example.org",
+               user = "researcher", password = "********")
+builder$append(server = "node3", url = "https://opal-node-3.example.org",
+               user = "researcher", password = "********")
+conns <- DSI::datashield.login(builder$build(), assign = FALSE)
 
-logins <- data.frame(
-  server = paste0("opal", seq_along(urls)),
-  url = urls, user = users, password = passwords,
-  driver = "OpalDriver",
-  options = "list(ssl_verifyhost=0L, ssl_verifypeer=0L)",
-  stringsAsFactors = FALSE
-)
-conns <- DSI::datashield.login(logins = logins, assign = FALSE)
-
-resource <- paste0(Sys.getenv("LUNG1_OPAL_PROJECT", "dsdemo"), ".",
-                   Sys.getenv("LUNG1_OPAL_RESOURCE", "lung1_full_study"))
+resource <- "dsdemo.lung1_full_study"
 ```
 
-**2. Initialise dsImaging and load radiomic features server-side.**
-`ds.imaging.init()` binds the imaging resource; then, per site,
-`ds.imaging.radiomics.load_features()` materialises the derived feature table
-into the server-side symbol `rad`. The images and masks never move.
+**2. Load radiomic features server-side with dsImaging.** `ds.imaging.init()`
+binds the imaging resource; `ds.imaging.radiomics.load_features()` then
+materialises the derived feature table into the server-side symbol `rad`. The
+`dataset_id` and `asset_id` identify the radiomic asset produced by the
+dsImaging feature-extraction step on each node; `include_metadata = TRUE` adds
+the clinical columns and `syntactic_names = TRUE` makes the pyradiomics names
+R-safe. The images and masks never move.
 
 ```{r tutorial-dsimaging, eval=FALSE}
 ds.imaging.init(conns, resource, symbol = "img")
 
-radiomics_result <- readRDS(
-  file.path(Sys.getenv("LUNG1_WORKDIR", "/tmp/dsimaging_lung1_full"),
-            "datashield_radiomics_result.rds")
+ds.imaging.radiomics.load_features(
+  conns,
+  dataset_id       = "lung1_full_study",
+  asset_id         = "pyradiomics_features",
+  symbol           = "rad",
+  include_metadata = TRUE,
+  syntactic_names  = TRUE
 )
-for (srv in names(radiomics_result)) {
-  item <- radiomics_result[[srv]]
-  ds.imaging.radiomics.load_features(
-    conns[srv],
-    dataset_id = item$dataset_id,
-    asset_id = item$asset_id,
-    symbol = "rad",
-    include_metadata = TRUE,
-    syntactic_names = TRUE
-  )
-}
 ```
 
 **3. Train the federated model on the derived features.** Hand the
@@ -116,15 +104,16 @@ features <- c(
 
 fit <- ds.flower.fit(
   conns,
-  symbol = "rad",
-  target = "os_2yr_alive",
-  features = features,
-  model = "sklearn_logreg",
+  symbol       = "rad",
+  target       = "os_2yr_alive",
+  features     = features,
+  model        = "sklearn_logreg",
   model_params = list(max_iter = 100L),
-  strategy = "fedavg",
-  privacy = Sys.getenv("DSFLOWER_RADFLOWER_PRIVACY", "trusted_internal"),
-  rounds = as.integer(Sys.getenv("DSFLOWER_RADFLOWER_ROUNDS", "2"))
+  strategy     = "fedavg",
+  privacy      = "trusted_internal",
+  rounds       = 2
 )
+
 DSI::datashield.logout(conns)
 ```
 
