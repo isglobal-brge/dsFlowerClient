@@ -166,7 +166,7 @@ fit <- ds.flower.fit(
   rounds = 2L
 )
 
-ds.flower.metrics(fit)
+fit$history
 DSI::datashield.logout(conns)
 ```
 
