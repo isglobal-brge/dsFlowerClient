@@ -91,31 +91,34 @@ DSI::datashield.logout(conns)
 
 ## Recorded Results
 
-The remaining chunks are evaluated when pkgdown renders the article. They
-load the committed evidence artifact for the run above and report the
-centralized vs. federated comparison, the audit trail, and the acceptance
-decision.
+The values below come from the committed evidence artifact for the run
+described above; no live servers are contacted when the article renders.
 
-```{r}
-overview <- data.frame(
-  Field = c(
-    'method', 'task', 'target', 'n_features', 'rounds',
-    'centralized_metric', 'centralized_loss', 'centralized_accuracy',
-    'federated_status', 'federated_loss', 'federated_n_failures',
-    'delta_loss', 'acceptance_max_loss_ratio',
-    'acceptance_max_loss_margin', 'acceptable_loss',
-    'validation_status'
-  ),
-  Value = c(
-    row$method, row$task, row$target, row$n_features, row$rounds,
-    row$centralized_metric, fmt(row$centralized_loss), fmt(row$centralized_accuracy),
-    row$federated_status, fmt(row$federated_loss), fmt(row$federated_n_failures),
-    fmt(row$delta_loss), fmt(row$acceptance_max_loss_ratio),
-    fmt(row$acceptance_max_loss_margin), row$acceptable_loss,
-    row$validation_status
-  )
+This run trained the `r row$method` template on the `r row$task` task
+(target `r row$target`, `r row$n_features` synthetic features) for
+`r row$rounds` federated round(s) under the `r validation$privacy_profile`
+profile, across `r validation$n_sites` Opal/Rock nodes holding the same
+pooled cohort used for the centralized baseline.
+
+The centralized baseline reached a `r row$centralized_metric` of
+`r fmt(row$centralized_loss)`; the federated run reached
+`r fmt(row$federated_loss)` with `r row$federated_n_failures` client
+failures, leaving this template **`r row$validation_status`**. The
+acceptance comparison is shown below, followed by the centralized vs.
+federated loss.
+
+```{r acceptance-output}
+max_allowed_loss <- row$centralized_loss * row$acceptance_max_loss_ratio +
+  row$acceptance_max_loss_margin
+acceptance_output <- data.frame(
+  centralized_loss = row$centralized_loss,
+  federated_loss = row$federated_loss,
+  max_allowed_loss = max_allowed_loss,
+  federated_n_failures = row$federated_n_failures,
+  acceptable_loss = row$acceptable_loss,
+  validation_status = row$validation_status
 )
-knitr::kable(overview)
+knitr::kable(acceptance_output, digits = 4)
 ```
 
 ```{r, fig.width=5.5, fig.height=3.2, fig.alt="Bar chart comparing centralized and federated validation loss for sklearn_logreg."}
@@ -133,118 +136,4 @@ if (nrow(loss_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
   plot.new()
   text(0.5, 0.5, 'No federated loss available for this method')
 }
-```
-
-### Step-By-Step Run Output
-
-The following chunks print the audit trail for the committed catalogue
-coverage run, reconstructed from the persisted evidence artifact.
-
-```{r step-inputs}
-target_cols <- trimws(strsplit(row$target, ',', fixed = TRUE)[[1]])
-site_table_paths <- validation$table_paths
-input_trace <- data.frame(
-  step = c(
-    '1. Build validation cohort',
-    '2. Split across sites',
-    '3. Select task target',
-    '4. Select model features',
-    '5. Materialize Opal tables'
-  ),
-  observed_output = c(
-    paste(validation$n_total, 'synthetic rows generated for this suite'),
-    paste(validation$n_sites, 'sites x', validation$n_per_site, 'rows per site'),
-    paste(target_cols, collapse = ', '),
-    paste(row$n_features, 'features:', paste0('x1..x', row$n_features)),
-    paste(site_table_paths, collapse = '\n')
-  ),
-  stringsAsFactors = FALSE
-)
-knitr::kable(input_trace)
-```
-
-```{r centralized-output}
-centralized_output <- data.frame(
-  step = c(
-    '1. Load pooled validation cohort',
-    '2. Train centralized baseline',
-    '3. Evaluate centralized baseline'
-  ),
-  observed_output = c(
-    paste(validation$n_total, 'pooled rows with', row$n_features, 'features'),
-    paste('status =', row$centralized_status, '| metric =', row$centralized_metric),
-    paste('loss =', fmt(row$centralized_loss),
-          '| accuracy =', fmt(row$centralized_accuracy))
-  ),
-  stringsAsFactors = FALSE
-)
-knitr::kable(centralized_output)
-```
-
-```{r centralized-console}
-cat(
-  sprintf('[centralized] method: %s\n', row$method),
-  sprintf('[centralized] task: %s | target: %s | features: %s\n',
-          row$task, row$target, paste0('x1..x', row$n_features)),
-  sprintf('[centralized] status: %s\n', row$centralized_status),
-  sprintf('[centralized] %s: %.4f\n', row$centralized_metric, row$centralized_loss),
-  sprintf('[centralized] accuracy: %s\n', fmt(row$centralized_accuracy)),
-  sep = ''
-)
-```
-
-```{r dsflower-output}
-max_allowed_loss <- row$centralized_loss * row$acceptance_max_loss_ratio +
-  row$acceptance_max_loss_margin
-dsflower_output <- data.frame(
-  step = c(
-    '1. Login through DataSHIELD',
-    '2. Prepare server-side dsFlower nodes',
-    '3. Start Flower SuperLink/SuperNodes',
-    '4. Run federated training',
-    '5. Collect metrics and cleanup'
-  ),
-  observed_output = c(
-    paste(validation$n_sites, 'Opal/Rock nodes connected'),
-    paste('template =', row$method, '| privacy =', validation$privacy_profile),
-    paste('federated_run_id =', row$federated_run_id),
-    paste('rounds =', row$rounds, '| federated_loss =', fmt(row$federated_loss),
-          '| client_failures =', fmt(row$federated_n_failures)),
-    paste('federated_status =', row$federated_status,
-          '| validation_status =', row$validation_status)
-  ),
-  stringsAsFactors = FALSE
-)
-knitr::kable(dsflower_output)
-```
-
-```{r dsflower-console}
-cat(
-  sprintf('[dsFlower] DataSHIELD login: %s nodes\n', validation$n_sites),
-  sprintf('[dsFlower] table paths: %s\n', paste(site_table_paths, collapse = ' | ')),
-  sprintf('[dsFlower] model: %s | strategy: fedavg | rounds: %s\n',
-          row$method, row$rounds),
-  sprintf('[dsFlower] run id: %s\n', row$federated_run_id),
-  sprintf('[Flower] aggregate_fit/evaluate: clients=%s failures=%s\n',
-          validation$n_sites, fmt(row$federated_n_failures)),
-  sprintf('[Flower] final federated loss: %.4f\n', row$federated_loss),
-  sprintf('[cleanup] status: %s\n', row$federated_status),
-  sep = ''
-)
-```
-
-```{r acceptance-output}
-acceptance_output <- data.frame(
-  centralized_loss = row$centralized_loss,
-  federated_loss = row$federated_loss,
-  max_allowed_loss = max_allowed_loss,
-  federated_n_failures = row$federated_n_failures,
-  acceptable_loss = row$acceptable_loss,
-  validation_status = row$validation_status
-)
-knitr::kable(acceptance_output, digits = 4)
-```
-
-```{r}
-if (nzchar(row$error)) cat(row$error)
 ```

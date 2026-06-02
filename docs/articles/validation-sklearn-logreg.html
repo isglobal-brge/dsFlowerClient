@@ -134,312 +134,21 @@ researcher.</p>
 <div class="section level2">
 <h2 id="recorded-results">Recorded Results<a class="anchor" aria-label="anchor" href="#recorded-results"></a>
 </h2>
-<p>The remaining chunks are evaluated when pkgdown renders the article.
-They load the committed evidence artifact for the run above and report
-the centralized vs. federated comparison, the audit trail, and the
-acceptance decision.</p>
+<p>The values below come from the committed evidence artifact for the
+run described above; no live servers are contacted when the article
+renders.</p>
+<p>This run trained the sklearn_logreg template on the classification
+task (target outcome, 12 synthetic features) for 1 federated round(s)
+under the sandbox_open profile, across 3 Opal/Rock nodes holding the
+same pooled cohort used for the centralized baseline.</p>
+<p>The centralized baseline reached a log_loss of 0.2051; the federated
+run reached 0.2335 with 0 client failures, leaving this template
+<strong>pass</strong>. The acceptance comparison is shown below,
+followed by the centralized vs. federated loss.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">overview</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  Field <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">'method'</span>, <span class="st">'task'</span>, <span class="st">'target'</span>, <span class="st">'n_features'</span>, <span class="st">'rounds'</span>,</span>
-<span>    <span class="st">'centralized_metric'</span>, <span class="st">'centralized_loss'</span>, <span class="st">'centralized_accuracy'</span>,</span>
-<span>    <span class="st">'federated_status'</span>, <span class="st">'federated_loss'</span>, <span class="st">'federated_n_failures'</span>,</span>
-<span>    <span class="st">'delta_loss'</span>, <span class="st">'acceptance_max_loss_ratio'</span>,</span>
-<span>    <span class="st">'acceptance_max_loss_margin'</span>, <span class="st">'acceptable_loss'</span>,</span>
-<span>    <span class="st">'validation_status'</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  Value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="va">row</span><span class="op">$</span><span class="va">method</span>, <span class="va">row</span><span class="op">$</span><span class="va">task</span>, <span class="va">row</span><span class="op">$</span><span class="va">target</span>, <span class="va">row</span><span class="op">$</span><span class="va">n_features</span>, <span class="va">row</span><span class="op">$</span><span class="va">rounds</span>,</span>
-<span>    <span class="va">row</span><span class="op">$</span><span class="va">centralized_metric</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span><span class="op">)</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_accuracy</span><span class="op">)</span>,</span>
-<span>    <span class="va">row</span><span class="op">$</span><span class="va">federated_status</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span><span class="op">)</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">federated_n_failures</span><span class="op">)</span>,</span>
-<span>    <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">delta_loss</span><span class="op">)</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_ratio</span><span class="op">)</span>,</span>
-<span>    <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_margin</span><span class="op">)</span>, <span class="va">row</span><span class="op">$</span><span class="va">acceptable_loss</span>,</span>
-<span>    <span class="va">row</span><span class="op">$</span><span class="va">validation_status</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">overview</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left">Field</th>
-<th align="left">Value</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">method</td>
-<td align="left">sklearn_logreg</td>
-</tr>
-<tr class="even">
-<td align="left">task</td>
-<td align="left">classification</td>
-</tr>
-<tr class="odd">
-<td align="left">target</td>
-<td align="left">outcome</td>
-</tr>
-<tr class="even">
-<td align="left">n_features</td>
-<td align="left">12</td>
-</tr>
-<tr class="odd">
-<td align="left">rounds</td>
-<td align="left">1</td>
-</tr>
-<tr class="even">
-<td align="left">centralized_metric</td>
-<td align="left">log_loss</td>
-</tr>
-<tr class="odd">
-<td align="left">centralized_loss</td>
-<td align="left">0.2051</td>
-</tr>
-<tr class="even">
-<td align="left">centralized_accuracy</td>
-<td align="left">0.9074</td>
-</tr>
-<tr class="odd">
-<td align="left">federated_status</td>
-<td align="left">ok</td>
-</tr>
-<tr class="even">
-<td align="left">federated_loss</td>
-<td align="left">0.2335</td>
-</tr>
-<tr class="odd">
-<td align="left">federated_n_failures</td>
-<td align="left">0.0000</td>
-</tr>
-<tr class="even">
-<td align="left">delta_loss</td>
-<td align="left">0.0283</td>
-</tr>
-<tr class="odd">
-<td align="left">acceptance_max_loss_ratio</td>
-<td align="left">2.5000</td>
-</tr>
-<tr class="even">
-<td align="left">acceptance_max_loss_margin</td>
-<td align="left">0.2500</td>
-</tr>
-<tr class="odd">
-<td align="left">acceptable_loss</td>
-<td align="left">TRUE</td>
-</tr>
-<tr class="even">
-<td align="left">validation_status</td>
-<td align="left">pass</td>
-</tr>
-</tbody>
-</table>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">loss_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Centralized'</span>, <span class="st">'Federated'</span><span class="op">)</span>,</span>
-<span>  loss <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">loss_df</span> <span class="op">&lt;-</span> <span class="va">loss_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">loss_df</span><span class="op">$</span><span class="va">loss</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">loss_df</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">'ggplot2'</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">loss_df</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">mode</span>, y <span class="op">=</span> <span class="va">loss</span>, fill <span class="op">=</span> <span class="va">mode</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.65</span>, show.legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">centralized_metric</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, title <span class="op">=</span> <span class="va">method_id</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/frame.html" class="external-link">plot.new</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="st">'No federated loss available for this method'</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p><img src="validation-sklearn-logreg_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="Bar chart comparing centralized and federated validation loss for sklearn_logreg." width="528"></p>
-<div class="section level3">
-<h3 id="step-by-step-run-output">Step-By-Step Run Output<a class="anchor" aria-label="anchor" href="#step-by-step-run-output"></a>
-</h3>
-<p>The following chunks print the audit trail for the committed
-catalogue coverage run, reconstructed from the persisted evidence
-artifact.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">target_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/trimws.html" class="external-link">trimws</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/strsplit.html" class="external-link">strsplit</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">target</span>, <span class="st">','</span>, fixed <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="va">site_table_paths</span> <span class="op">&lt;-</span> <span class="va">validation</span><span class="op">$</span><span class="va">table_paths</span></span>
-<span><span class="va">input_trace</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  step <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">'1. Build validation cohort'</span>,</span>
-<span>    <span class="st">'2. Split across sites'</span>,</span>
-<span>    <span class="st">'3. Select task target'</span>,</span>
-<span>    <span class="st">'4. Select model features'</span>,</span>
-<span>    <span class="st">'5. Materialize Opal tables'</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  observed_output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">validation</span><span class="op">$</span><span class="va">n_total</span>, <span class="st">'synthetic rows generated for this suite'</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">validation</span><span class="op">$</span><span class="va">n_sites</span>, <span class="st">'sites x'</span>, <span class="va">validation</span><span class="op">$</span><span class="va">n_per_site</span>, <span class="st">'rows per site'</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">target_cols</span>, collapse <span class="op">=</span> <span class="st">', '</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">n_features</span>, <span class="st">'features:'</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'x1..x'</span>, <span class="va">row</span><span class="op">$</span><span class="va">n_features</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">site_table_paths</span>, collapse <span class="op">=</span> <span class="st">'\n'</span><span class="op">)</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">input_trace</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="14%">
-<col width="85%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">step</th>
-<th align="left">observed_output</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">1. Build validation cohort</td>
-<td align="left">270 synthetic rows generated for this suite</td>
-</tr>
-<tr class="even">
-<td align="left">2. Split across sites</td>
-<td align="left">3 sites x 90 rows per site</td>
-</tr>
-<tr class="odd">
-<td align="left">3. Select task target</td>
-<td align="left">outcome</td>
-</tr>
-<tr class="even">
-<td align="left">4. Select model features</td>
-<td align="left">12 features: x1..x12</td>
-</tr>
-<tr class="odd">
-<td align="left">5. Materialize Opal tables</td>
-<td align="left">dsflower_demo.method_validation_20260511181239_site1</td>
-</tr>
-</tbody>
-</table>
-<p>dsflower_demo.method_validation_20260511181239_site2
-dsflower_demo.method_validation_20260511181239_site3 |</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">centralized_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  step <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">'1. Load pooled validation cohort'</span>,</span>
-<span>    <span class="st">'2. Train centralized baseline'</span>,</span>
-<span>    <span class="st">'3. Evaluate centralized baseline'</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  observed_output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">validation</span><span class="op">$</span><span class="va">n_total</span>, <span class="st">'pooled rows with'</span>, <span class="va">row</span><span class="op">$</span><span class="va">n_features</span>, <span class="st">'features'</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'status ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">centralized_status</span>, <span class="st">'| metric ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">centralized_metric</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'loss ='</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span><span class="op">)</span>,</span>
-<span>          <span class="st">'| accuracy ='</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_accuracy</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">centralized_output</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="45%">
-<col width="54%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">step</th>
-<th align="left">observed_output</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">1. Load pooled validation cohort</td>
-<td align="left">270 pooled rows with 12 features</td>
-</tr>
-<tr class="even">
-<td align="left">2. Train centralized baseline</td>
-<td align="left">status = ok | metric = log_loss</td>
-</tr>
-<tr class="odd">
-<td align="left">3. Evaluate centralized baseline</td>
-<td align="left">loss = 0.2051 | accuracy = 0.9074</td>
-</tr>
-</tbody>
-</table>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] method: %s\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">method</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] task: %s | target: %s | features: %s\n'</span>,</span>
-<span>          <span class="va">row</span><span class="op">$</span><span class="va">task</span>, <span class="va">row</span><span class="op">$</span><span class="va">target</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">'x1..x'</span>, <span class="va">row</span><span class="op">$</span><span class="va">n_features</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] status: %s\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">centralized_status</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] %s: %.4f\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">centralized_metric</span>, <span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[centralized] accuracy: %s\n'</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_accuracy</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  sep <span class="op">=</span> <span class="st">''</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; [centralized] method: sklearn_logreg</span></span>
-<span><span class="co">#&gt; [centralized] task: classification | target: outcome | features: x1..x12</span></span>
-<span><span class="co">#&gt; [centralized] status: ok</span></span>
-<span><span class="co">#&gt; [centralized] log_loss: 0.2051</span></span>
-<span><span class="co">#&gt; [centralized] accuracy: 0.9074</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">max_allowed_loss</span> <span class="op">&lt;-</span> <span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span> <span class="op">*</span> <span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_ratio</span> <span class="op">+</span></span>
 <span>  <span class="va">row</span><span class="op">$</span><span class="va">acceptance_max_loss_margin</span></span>
-<span><span class="va">dsflower_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  step <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">'1. Login through DataSHIELD'</span>,</span>
-<span>    <span class="st">'2. Prepare server-side dsFlower nodes'</span>,</span>
-<span>    <span class="st">'3. Start Flower SuperLink/SuperNodes'</span>,</span>
-<span>    <span class="st">'4. Run federated training'</span>,</span>
-<span>    <span class="st">'5. Collect metrics and cleanup'</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  observed_output <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">validation</span><span class="op">$</span><span class="va">n_sites</span>, <span class="st">'Opal/Rock nodes connected'</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'template ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">method</span>, <span class="st">'| privacy ='</span>, <span class="va">validation</span><span class="op">$</span><span class="va">privacy_profile</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'federated_run_id ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_run_id</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'rounds ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">rounds</span>, <span class="st">'| federated_loss ='</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span><span class="op">)</span>,</span>
-<span>          <span class="st">'| client_failures ='</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">federated_n_failures</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="st">'federated_status ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_status</span>,</span>
-<span>          <span class="st">'| validation_status ='</span>, <span class="va">row</span><span class="op">$</span><span class="va">validation_status</span><span class="op">)</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">dsflower_output</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="33%">
-<col width="66%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">step</th>
-<th align="left">observed_output</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">1. Login through DataSHIELD</td>
-<td align="left">3 Opal/Rock nodes connected</td>
-</tr>
-<tr class="even">
-<td align="left">2. Prepare server-side dsFlower nodes</td>
-<td align="left">template = sklearn_logreg | privacy = sandbox_open</td>
-</tr>
-<tr class="odd">
-<td align="left">3. Start Flower SuperLink/SuperNodes</td>
-<td align="left">federated_run_id = 15893771875214115455</td>
-</tr>
-<tr class="even">
-<td align="left">4. Run federated training</td>
-<td align="left">rounds = 1 | federated_loss = 0.2335 | client_failures
-= 0.0000</td>
-</tr>
-<tr class="odd">
-<td align="left">5. Collect metrics and cleanup</td>
-<td align="left">federated_status = ok | validation_status = pass</td>
-</tr>
-</tbody>
-</table>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[dsFlower] DataSHIELD login: %s nodes\n'</span>, <span class="va">validation</span><span class="op">$</span><span class="va">n_sites</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[dsFlower] table paths: %s\n'</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">site_table_paths</span>, collapse <span class="op">=</span> <span class="st">' | '</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[dsFlower] model: %s | strategy: fedavg | rounds: %s\n'</span>,</span>
-<span>          <span class="va">row</span><span class="op">$</span><span class="va">method</span>, <span class="va">row</span><span class="op">$</span><span class="va">rounds</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[dsFlower] run id: %s\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_run_id</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[Flower] aggregate_fit/evaluate: clients=%s failures=%s\n'</span>,</span>
-<span>          <span class="va">validation</span><span class="op">$</span><span class="va">n_sites</span>, <span class="fu">fmt</span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">federated_n_failures</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[Flower] final federated loss: %.4f\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">'[cleanup] status: %s\n'</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_status</span><span class="op">)</span>,</span>
-<span>  sep <span class="op">=</span> <span class="st">''</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt; [dsFlower] DataSHIELD login: 3 nodes</span></span>
-<span><span class="co">#&gt; [dsFlower] table paths: dsflower_demo.method_validation_20260511181239_site1 | dsflower_demo.method_validation_20260511181239_site2 | dsflower_demo.method_validation_20260511181239_site3</span></span>
-<span><span class="co">#&gt; [dsFlower] model: sklearn_logreg | strategy: fedavg | rounds: 1</span></span>
-<span><span class="co">#&gt; [dsFlower] run id: 15893771875214115455</span></span>
-<span><span class="co">#&gt; [Flower] aggregate_fit/evaluate: clients=3 failures=0.0000</span></span>
-<span><span class="co">#&gt; [Flower] final federated loss: 0.2335</span></span>
-<span><span class="co">#&gt; [cleanup] status: ok</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">acceptance_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span><span class="va">acceptance_output</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  centralized_loss <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span>,</span>
 <span>  federated_loss <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span>,</span>
 <span>  max_allowed_loss <span class="op">=</span> <span class="va">max_allowed_loss</span>,</span>
@@ -474,9 +183,22 @@ dsflower_demo.method_validation_20260511181239_site3 |</p>
 <td align="left">pass</td>
 </tr></tbody>
 </table>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">error</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">error</span><span class="op">)</span></span></code></pre></div>
-</div>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">loss_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  mode <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'Centralized'</span>, <span class="st">'Federated'</span><span class="op">)</span>,</span>
+<span>  loss <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">row</span><span class="op">$</span><span class="va">centralized_loss</span>, <span class="va">row</span><span class="op">$</span><span class="va">federated_loss</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">loss_df</span> <span class="op">&lt;-</span> <span class="va">loss_df</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">loss_df</span><span class="op">$</span><span class="va">loss</span><span class="op">)</span>, , drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">loss_df</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">'ggplot2'</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">loss_df</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">mode</span>, y <span class="op">=</span> <span class="va">loss</span>, fill <span class="op">=</span> <span class="va">mode</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.65</span>, show.legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="va">row</span><span class="op">$</span><span class="va">centralized_metric</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>, title <span class="op">=</span> <span class="va">method_id</span><span class="op">)</span> <span class="op">+</span></span>
+<span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span>base_size <span class="op">=</span> <span class="fl">11</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/frame.html" class="external-link">plot.new</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/graphics/text.html" class="external-link">text</a></span><span class="op">(</span><span class="fl">0.5</span>, <span class="fl">0.5</span>, <span class="st">'No federated loss available for this method'</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p><img src="validation-sklearn-logreg_files/figure-html/unnamed-chunk-2-1.png" class="r-plt" alt="Bar chart comparing centralized and federated validation loss for sklearn_logreg." width="528"></p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

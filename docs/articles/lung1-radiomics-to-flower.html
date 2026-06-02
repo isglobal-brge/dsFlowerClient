@@ -172,16 +172,14 @@ aggregate training history and model parameters come back.</p>
 <div class="section level2">
 <h2 id="recorded-results">Recorded Results<a class="anchor" aria-label="anchor" href="#recorded-results"></a>
 </h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Source script: inst/demos/lung1_radiomics_to_flower.R\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Source script: inst/demos/lung1_radiomics_to_flower.R</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Recorded run_id:"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">run_id</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Recorded run_id: 17493579680844882070</span></span></code></pre></div>
+<p>These results are loaded from the committed evidence artifact for run
+17493579680844882070; no live Opal servers are contacted when the
+article renders.</p>
 </div>
 <div class="section level2">
 <h2 id="server-side-cohort">Server-Side Cohort<a class="anchor" aria-label="anchor" href="#server-side-cohort"></a>
 </h2>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">site_dim_names</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grep</a></span><span class="op">(</span><span class="st">"opal"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">dimensions</span><span class="op">)</span>, value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="va">site_dims</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">site_dim_names</span>, <span class="kw">function</span><span class="op">(</span><span class="va">name</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">dims</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">dimensions</span><span class="op">[[</span><span class="va">name</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
@@ -217,22 +215,14 @@ aggregate training history and model parameters come back.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  resource <span class="op">=</span> <span class="va">evidence</span><span class="op">$</span><span class="va">resource</span>,</span>
-<span>  target <span class="op">=</span> <span class="va">evidence</span><span class="op">$</span><span class="va">target</span>,</span>
-<span>  combined_rows <span class="op">=</span> <span class="va">combined_dims</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>  combined_columns <span class="op">=</span> <span class="va">combined_dims</span><span class="op">[[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="co">#&gt;                  resource       target combined_rows combined_columns</span></span>
-<span><span class="co">#&gt; 1 dsdemo.lung1_full_study os_2yr_alive           422               20</span></span></code></pre></div>
+<p>Pooled across the three nodes, the dsdemo.lung1_full_study cohort
+holds 422 rows and 20 columns, with os_2yr_alive as the federated
+target.</p>
 </div>
 <div class="section level2">
 <h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">feature_roles</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"radiomic"</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"metadata"</span>, <span class="st">"metadata"</span><span class="op">)</span></span>
 <span><span class="va">feature_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  feature <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">features</span><span class="op">)</span>,</span>
@@ -276,7 +266,7 @@ aggregate training history and model parameters come back.</p>
 <div class="section level2">
 <h2 id="federated-training">Federated Training<a class="anchor" aria-label="anchor" href="#federated-training"></a>
 </h2>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">training</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  model <span class="op">=</span> <span class="st">"sklearn_logreg"</span>,</span>
 <span>  strategy <span class="op">=</span> <span class="st">"fedavg"</span>,</span>
@@ -302,7 +292,7 @@ aggregate training history and model parameters come back.</p>
 <td align="right">100</td>
 </tr></tbody>
 </table>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">history</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">history</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>    round <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">round</span>,</span>
@@ -311,6 +301,9 @@ aggregate training history and model parameters come back.</p>
 <span>    n_failures <span class="op">=</span> <span class="va">x</span><span class="op">$</span><span class="va">n_failures</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">final_loss</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">loss</span>, <span class="fl">1L</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span></span>
+<span><span class="va">total_failures</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">n_failures</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">run_status</span> <span class="op">&lt;-</span> <span class="kw">if</span> <span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">status</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="va">total_failures</span> <span class="op">==</span> <span class="fl">0</span><span class="op">)</span> <span class="st">"passed"</span> <span class="kw">else</span> <span class="st">"failed"</span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">history</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -334,23 +327,10 @@ aggregate training history and model parameters come back.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[dsFlower] run_id:"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">run_id</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [dsFlower] run_id: 17493579680844882070</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[dsFlower] model_id:"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">model_id</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [dsFlower] model_id: sklearn_logreg_FedAvg_2r_20260510_161938</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[dsFlower] output_dir:"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">flower_output_dir</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260510_161938</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] final loss:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.4f"</span>, <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">tail</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">loss</span>, <span class="fl">1L</span><span class="op">)</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [acceptance] final loss: 0.6474</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] total client failures:"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">n_failures</span><span class="op">)</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [acceptance] total client failures: 0</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[acceptance] PASS:"</span>,</span>
-<span>    <span class="va">evidence</span><span class="op">$</span><span class="va">status</span> <span class="op">==</span> <span class="fl">0</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="va">history</span><span class="op">$</span><span class="va">n_failures</span><span class="op">)</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [acceptance] PASS: TRUE</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<p>The run finished with a final federated loss of 0.6474 and 0 total
+client failures across 2 round(s); the acceptance check
+<strong>passed</strong>.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">history</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">round</span>, y <span class="op">=</span> <span class="va">loss</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#2C6F7D"</span>, linewidth <span class="op">=</span> <span class="fl">0.8</span><span class="op">)</span> <span class="op">+</span></span>
@@ -371,44 +351,14 @@ aggregate training history and model parameters come back.</p>
 <div class="section level2">
 <h2 id="evidence-scope">Evidence Scope<a class="anchor" aria-label="anchor" href="#evidence-scope"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">scope</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  item <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Validated claim"</span>, <span class="st">"Explicit non-claim"</span>, <span class="st">"Global model shape"</span><span class="op">)</span>,</span>
-<span>  value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"End-to-end functional validation that dsFlower can train on dsImaging-derived radiomic feature tables without moving images, masks or row-level feature data to the researcher."</span>,</span>
-<span>    <span class="st">"This two-round logistic-regression run is not a clinical performance claim."</span>,</span>
-<span>    <span class="st">"1 x 6 coefficients plus intercept"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">scope</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="9%">
-<col width="90%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">item</th>
-<th align="left">value</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Validated claim</td>
-<td align="left">End-to-end functional validation that dsFlower can
-train on dsImaging-derived radiomic feature tables without moving
-images, masks or row-level feature data to the researcher.</td>
-</tr>
-<tr class="even">
-<td align="left">Explicit non-claim</td>
-<td align="left">This two-round logistic-regression run is not a
-clinical performance claim.</td>
-</tr>
-<tr class="odd">
-<td align="left">Global model shape</td>
-<td align="left">1 x 6 coefficients plus intercept</td>
-</tr>
-</tbody>
-</table>
+<p><strong>Validated claim.</strong> End-to-end functional validation
+that dsFlower can train on dsImaging-derived radiomic feature tables
+without moving images, masks or row-level feature data to the
+researcher.</p>
+<p><strong>Explicit non-claim.</strong> This two-round
+logistic-regression run is not a clinical performance claim.</p>
+<p><strong>Global model shape.</strong> 1 x 6 coefficients plus
+intercept.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
