@@ -5,16 +5,10 @@ articles:
   api-quickstart: api-quickstart.html
   clinical-method-family-benchmarks: clinical-method-family-benchmarks.html
   clinical-privacy-benchmarks: clinical-privacy-benchmarks.html
-  demo-breast-cancer: demo-breast-cancer.html
-  demo-heart-disease: demo-heart-disease.html
-  demo-lung1-radiomics: demo-lung1-radiomics.html
-  demo-medmnist: demo-medmnist.html
   demo-overview: demo-overview.html
-  direct-image-resnet: direct-image-resnet.html
   lung1-direct-image-dsimaging-resnet: lung1-direct-image-dsimaging-resnet.html
   lung1-radiomics-to-flower: lung1-radiomics-to-flower.html
   pathmnist-direct-image-resnet: pathmnist-direct-image-resnet.html
-  radiomics-to-flower: radiomics-to-flower.html
   validation-overview: validation-overview.html
   validation-pytorch-cause-specific-cox: validation-pytorch-cause-specific-cox.html
   validation-pytorch-coxph: validation-pytorch-coxph.html
@@ -37,7 +31,7 @@ articles:
   validation-vision-pytorch-resnet18: validation-vision-pytorch-resnet18.html
   validation-vision-pytorch-unet2d: validation-vision-pytorch-unet2d.html
   validation-xgboost: validation-xgboost.html
-last_built: 2026-06-02T18:18Z
+last_built: 2026-06-02T18:54Z
 urls:
   reference: https://isglobal-brge.github.io/dsFlowerClient/reference
   article: https://isglobal-brge.github.io/dsFlowerClient/articles

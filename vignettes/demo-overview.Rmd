@@ -14,9 +14,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 This page is the landing point for the rendered dsFlowerClient demos. The
 current evidence is split into four groups: clinical privacy-profile runs,
 SUPPORT2 method-family runs, imaging handoff/direct-image runs and catalogue
-coverage. The older self-contained public demos remain useful for installation
-checks, but the presentation evidence is the recent clinical, imaging and
-privacy-profile matrix.
+coverage.
 
 All live demos use the same DataSHIELD execution pattern: the researcher
 connects to Opal, references or stages server-side data, launches Flower
@@ -118,48 +116,9 @@ validation_results <- data.frame(
 knitr::kable(validation_results)
 ```
 
-## Development Public Demos
-
-```{r public-benchmark-results}
-public_benchmarks <- data.frame(
-  demo = c(
-    "Breast Cancer Benchmark",
-    "Heart Disease Benchmark",
-    "MedMNIST Benchmark"
-  ),
-  article = c(
-    "demo-breast-cancer.html",
-    "demo-heart-disease.html",
-    "demo-medmnist.html"
-  ),
-  data_path = c(
-    "UCI Breast Cancer Wisconsin (Original)",
-    "UCI Heart Disease processed Cleveland",
-    "MedMNIST BreastMNIST pooled image features"
-  ),
-  sites = c(3L, 3L, 3L),
-  central_metric = c(
-    "AUC 0.9878",
-    "AUC 0.8919",
-    "AUC 0.7654"
-  ),
-  federated_metric = c(
-    "AUC 0.9908",
-    "AUC 0.8926",
-    "AUC 0.7985"
-  ),
-  failures = c(0L, 0L, 0L),
-  stringsAsFactors = FALSE
-)
-knitr::kable(public_benchmarks)
-```
-
 ## Article Links
 
 - [API Quickstart](api-quickstart.html)
-- [Breast Cancer Benchmark](demo-breast-cancer.html)
-- [Heart Disease Benchmark](demo-heart-disease.html)
-- [MedMNIST Benchmark](demo-medmnist.html)
 - [Clinical Privacy Benchmarks](clinical-privacy-benchmarks.html)
 - [Clinical Method-Family Benchmarks](clinical-method-family-benchmarks.html)
 - [PathMNIST Direct Image ResNet Benchmark](pathmnist-direct-image-resnet.html)
@@ -167,12 +126,6 @@ knitr::kable(public_benchmarks)
 - [LUNG1 dsImaging Radiomics Evidence](lung1-radiomics-to-flower.html)
 - [Validation Evidence Overview](validation-overview.html)
 - [Vision Method Validation Overview](validation-vision-overview.html)
-
-The repository also keeps self-contained smoke demos for development
-(`demo-lung1-radiomics.html`, `radiomics-to-flower.html` and
-`direct-image-resnet.html`). They are useful for checking the mechanics without
-external data, but the thesis evidence above uses public datasets or dsImaging
-assets.
 
 ## Common Execution Shape
 

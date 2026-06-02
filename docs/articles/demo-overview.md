@@ -3,9 +3,7 @@
 This page is the landing point for the rendered dsFlowerClient demos.
 The current evidence is split into four groups: clinical privacy-profile
 runs, SUPPORT2 method-family runs, imaging handoff/direct-image runs and
-catalogue coverage. The older self-contained public demos remain useful
-for installation checks, but the presentation evidence is the recent
-clinical, imaging and privacy-profile matrix.
+catalogue coverage.
 
 All live demos use the same DataSHIELD execution pattern: the researcher
 connects to Opal, references or stages server-side data, launches Flower
@@ -132,59 +130,10 @@ knitr::kable(validation_results)
 | Non-vision method validation | validation-overview.html | Controlled tabular, sequence and survival cohort | 3 | 17/17 methods pass | template catalogue coverage |
 | Vision method validation | validation-vision-overview.html | Controlled image and mask cohort | 3 | 3/3 methods pass | vision path coverage |
 
-## Development Public Demos
-
-``` r
-
-public_benchmarks <- data.frame(
-  demo = c(
-    "Breast Cancer Benchmark",
-    "Heart Disease Benchmark",
-    "MedMNIST Benchmark"
-  ),
-  article = c(
-    "demo-breast-cancer.html",
-    "demo-heart-disease.html",
-    "demo-medmnist.html"
-  ),
-  data_path = c(
-    "UCI Breast Cancer Wisconsin (Original)",
-    "UCI Heart Disease processed Cleveland",
-    "MedMNIST BreastMNIST pooled image features"
-  ),
-  sites = c(3L, 3L, 3L),
-  central_metric = c(
-    "AUC 0.9878",
-    "AUC 0.8919",
-    "AUC 0.7654"
-  ),
-  federated_metric = c(
-    "AUC 0.9908",
-    "AUC 0.8926",
-    "AUC 0.7985"
-  ),
-  failures = c(0L, 0L, 0L),
-  stringsAsFactors = FALSE
-)
-knitr::kable(public_benchmarks)
-```
-
-| demo | article | data_path | sites | central_metric | federated_metric | failures |
-|:---|:---|:---|---:|:---|:---|---:|
-| Breast Cancer Benchmark | demo-breast-cancer.html | UCI Breast Cancer Wisconsin (Original) | 3 | AUC 0.9878 | AUC 0.9908 | 0 |
-| Heart Disease Benchmark | demo-heart-disease.html | UCI Heart Disease processed Cleveland | 3 | AUC 0.8919 | AUC 0.8926 | 0 |
-| MedMNIST Benchmark | demo-medmnist.html | MedMNIST BreastMNIST pooled image features | 3 | AUC 0.7654 | AUC 0.7985 | 0 |
-
 ## Article Links
 
 - [API
   Quickstart](https://isglobal-brge.github.io/dsFlowerClient/articles/api-quickstart.md)
-- [Breast Cancer
-  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-breast-cancer.md)
-- [Heart Disease
-  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-heart-disease.md)
-- [MedMNIST
-  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-medmnist.md)
 - [Clinical Privacy
   Benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-privacy-benchmarks.md)
 - [Clinical Method-Family
@@ -199,12 +148,6 @@ knitr::kable(public_benchmarks)
   Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-overview.md)
 - [Vision Method Validation
   Overview](https://isglobal-brge.github.io/dsFlowerClient/articles/validation-vision-overview.md)
-
-The repository also keeps self-contained smoke demos for development
-(`demo-lung1-radiomics.html`, `radiomics-to-flower.html` and
-`direct-image-resnet.html`). They are useful for checking the mechanics
-without external data, but the thesis evidence above uses public
-datasets or dsImaging assets.
 
 ## Common Execution Shape
 

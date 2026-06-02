@@ -572,24 +572,6 @@ Catch-all index for exported helpers not listed above.
 - [Clinical method-family
   benchmarks](https://isglobal-brge.github.io/dsFlowerClient/articles/clinical-method-family-benchmarks.md):
 
-### Development and smoke demos
-
-Small self-contained demos retained for installation and connectivity
-checks.
-
-- [Breast Cancer Federated
-  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-breast-cancer.md):
-- [Heart Disease Federated
-  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-heart-disease.md):
-- [MedMNIST Federated
-  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-medmnist.md):
-- [Direct Image ResNet
-  Demo](https://isglobal-brge.github.io/dsFlowerClient/articles/direct-image-resnet.md):
-- [Radiomics Federated
-  Benchmark](https://isglobal-brge.github.io/dsFlowerClient/articles/demo-lung1-radiomics.md):
-- [Radiomics To Federated
-  Learning](https://isglobal-brge.github.io/dsFlowerClient/articles/radiomics-to-flower.md):
-
 ### Method validation
 
 Synthetic catalogue coverage against centralized baselines.

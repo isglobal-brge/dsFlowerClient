@@ -41,7 +41,6 @@
     <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
     <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
     <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/direct-image-resnet.html">Development Smoke Demos</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -75,9 +74,7 @@
 <p>This page is the landing point for the rendered dsFlowerClient demos.
 The current evidence is split into four groups: clinical privacy-profile
 runs, SUPPORT2 method-family runs, imaging handoff/direct-image runs and
-catalogue coverage. The older self-contained public demos remain useful
-for installation checks, but the presentation evidence is the recent
-clinical, imaging and privacy-profile matrix.</p>
+catalogue coverage.</p>
 <p>All live demos use the same DataSHIELD execution pattern: the
 researcher connects to Opal, references or stages server-side data,
 launches Flower training, and inspects approved model-scale outputs.</p>
@@ -335,98 +332,10 @@ accuracy 0.9860; SecAgg branch pass</td>
 </table>
 </div>
 <div class="section level2">
-<h2 id="development-public-demos">Development Public Demos<a class="anchor" aria-label="anchor" href="#development-public-demos"></a>
-</h2>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">public_benchmarks</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  demo <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"Breast Cancer Benchmark"</span>,</span>
-<span>    <span class="st">"Heart Disease Benchmark"</span>,</span>
-<span>    <span class="st">"MedMNIST Benchmark"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  article <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"demo-breast-cancer.html"</span>,</span>
-<span>    <span class="st">"demo-heart-disease.html"</span>,</span>
-<span>    <span class="st">"demo-medmnist.html"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  data_path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"UCI Breast Cancer Wisconsin (Original)"</span>,</span>
-<span>    <span class="st">"UCI Heart Disease processed Cleveland"</span>,</span>
-<span>    <span class="st">"MedMNIST BreastMNIST pooled image features"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  sites <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3L</span>, <span class="fl">3L</span>, <span class="fl">3L</span><span class="op">)</span>,</span>
-<span>  central_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"AUC 0.9878"</span>,</span>
-<span>    <span class="st">"AUC 0.8919"</span>,</span>
-<span>    <span class="st">"AUC 0.7654"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  federated_metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"AUC 0.9908"</span>,</span>
-<span>    <span class="st">"AUC 0.8926"</span>,</span>
-<span>    <span class="st">"AUC 0.7985"</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  failures <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">0L</span>, <span class="fl">0L</span><span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">public_benchmarks</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="17%">
-<col width="17%">
-<col width="31%">
-<col width="4%">
-<col width="10%">
-<col width="12%">
-<col width="6%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">demo</th>
-<th align="left">article</th>
-<th align="left">data_path</th>
-<th align="right">sites</th>
-<th align="left">central_metric</th>
-<th align="left">federated_metric</th>
-<th align="right">failures</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Breast Cancer Benchmark</td>
-<td align="left">demo-breast-cancer.html</td>
-<td align="left">UCI Breast Cancer Wisconsin (Original)</td>
-<td align="right">3</td>
-<td align="left">AUC 0.9878</td>
-<td align="left">AUC 0.9908</td>
-<td align="right">0</td>
-</tr>
-<tr class="even">
-<td align="left">Heart Disease Benchmark</td>
-<td align="left">demo-heart-disease.html</td>
-<td align="left">UCI Heart Disease processed Cleveland</td>
-<td align="right">3</td>
-<td align="left">AUC 0.8919</td>
-<td align="left">AUC 0.8926</td>
-<td align="right">0</td>
-</tr>
-<tr class="odd">
-<td align="left">MedMNIST Benchmark</td>
-<td align="left">demo-medmnist.html</td>
-<td align="left">MedMNIST BreastMNIST pooled image features</td>
-<td align="right">3</td>
-<td align="left">AUC 0.7654</td>
-<td align="left">AUC 0.7985</td>
-<td align="right">0</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level2">
 <h2 id="article-links">Article Links<a class="anchor" aria-label="anchor" href="#article-links"></a>
 </h2>
 <ul>
 <li><a href="api-quickstart.html">API Quickstart</a></li>
-<li><a href="demo-breast-cancer.html">Breast Cancer Benchmark</a></li>
-<li><a href="demo-heart-disease.html">Heart Disease Benchmark</a></li>
-<li><a href="demo-medmnist.html">MedMNIST Benchmark</a></li>
 <li><a href="clinical-privacy-benchmarks.html">Clinical Privacy
 Benchmarks</a></li>
 <li><a href="clinical-method-family-benchmarks.html">Clinical
@@ -442,12 +351,6 @@ Overview</a></li>
 <li><a href="validation-vision-overview.html">Vision Method Validation
 Overview</a></li>
 </ul>
-<p>The repository also keeps self-contained smoke demos for development
-(<code>demo-lung1-radiomics.html</code>,
-<code>radiomics-to-flower.html</code> and
-<code>direct-image-resnet.html</code>). They are useful for checking the
-mechanics without external data, but the thesis evidence above uses
-public datasets or dsImaging assets.</p>
 </div>
 <div class="section level2">
 <h2 id="common-execution-shape">Common Execution Shape<a class="anchor" aria-label="anchor" href="#common-execution-shape"></a>
@@ -456,7 +359,7 @@ public datasets or dsImaging assets.</p>
 assign a server-side symbol, call <code><a href="../reference/ds.flower.fit.html">ds.flower.fit()</a></code> or the
 lower-level <code>connect -&gt; prepare -&gt; run</code> flow, then
 inspect metrics and cleanup state.</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>

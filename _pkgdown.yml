@@ -36,8 +36,6 @@ navbar:
           href: articles/validation-overview.html
         - text: "Vision Validation Overview"
           href: articles/validation-vision-overview.html
-        - text: "Development Smoke Demos"
-          href: articles/direct-image-resnet.html
 
 articles:
   - title: Current validation evidence
@@ -50,15 +48,6 @@ articles:
       - lung1-radiomics-to-flower
       - clinical-privacy-benchmarks
       - clinical-method-family-benchmarks
-  - title: Development and smoke demos
-    desc: "Small self-contained demos retained for installation and connectivity checks."
-    contents:
-      - demo-breast-cancer
-      - demo-heart-disease
-      - demo-medmnist
-      - direct-image-resnet
-      - demo-lung1-radiomics
-      - radiomics-to-flower
   - title: Method validation
     desc: "Synthetic catalogue coverage against centralized baselines."
     contents:
