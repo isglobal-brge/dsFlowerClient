@@ -36,7 +36,7 @@ The validation path is:
    tables.
 4. Only aggregate training history and model parameters are returned.
 
-## Tutorial: Running The dsImaging To dsFlower Handoff
+## Running The dsImaging To dsFlower Handoff
 
 The steps below walk through the dsImaging to dsFlower handoff: connect to the
 nodes, load the server-side radiomic feature tables with dsImaging, and train a
@@ -49,7 +49,7 @@ the recorded results of the real run follow.
 **1. Connect to the DataSHIELD nodes.** Open a single session across the three
 Opal nodes that serve the LUNG1 imaging resource.
 
-```{r tutorial-config, eval=FALSE}
+```{r connect, eval=FALSE}
 library(DSI)
 library(DSOpal)
 library(dsImagingClient)
@@ -75,7 +75,7 @@ dsImaging feature-extraction step on each node; `include_metadata = TRUE` adds
 the clinical columns and `syntactic_names = TRUE` makes the pyradiomics names
 R-safe. The images and masks never move.
 
-```{r tutorial-dsimaging, eval=FALSE}
+```{r load-features, eval=FALSE}
 ds.imaging.init(conns, resource, symbol = "img")
 
 ds.imaging.radiomics.load_features(
@@ -92,7 +92,7 @@ ds.imaging.radiomics.load_features(
 server-side `rad` table to `ds.flower.fit()` with logistic regression and
 FedAvg. Only aggregate training history and model parameters come back.
 
-```{r tutorial-fit, eval=FALSE}
+```{r fit, eval=FALSE}
 features <- c(
   "original_firstorder_Energy",
   "original_shape_Compactness1",

@@ -64,14 +64,14 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>PathMNIST Direct Image ResNet Benchmark</h1>
-
-
+            
+      
 
       <div class="d-none name"><code>pathmnist-direct-image-resnet.Rmd</code></div>
     </div>
 
-
-
+    
+    
 <p>This vignette records a direct-image dsFlower benchmark on PathMNIST,
 a MedMNIST v2 histopathology image dataset. The run uses a balanced
 binary subset of adipose tissue versus colorectal adenocarcinoma
@@ -84,24 +84,82 @@ PyTorch baseline over the same 1,500 images. The
 <code>consortium_internal</code> branch repeats the federated execution
 under the profile that requires Secure Aggregation, suppresses per-node
 metrics and still produces a global model checkpoint.</p>
+<p>It is laid out in two parts: first the commands you would run to
+reproduce the benchmark, then the recorded results of that run loaded
+from the committed evidence artifact. No live Opal servers are required
+to render this page; the command chunks are shown for reference and are
+not executed.</p>
 <div class="section level2">
-<h2 id="reproduction-command">Reproduction Command<a class="anchor" aria-label="anchor" href="#reproduction-command"></a>
+<h2 id="running-this-benchmark">Running This Benchmark<a class="anchor" aria-label="anchor" href="#running-this-benchmark"></a>
 </h2>
+<p>Each node holds an image metadata table (<code>label</code> plus the
+relative image paths) while the PNG files stay on the matching Rock
+server; only aggregate training history and model parameters return to
+the researcher.</p>
+<p><strong>1. Connect to the DataSHIELD nodes.</strong> Open a single
+session across the three Opal nodes that serve the PathMNIST metadata
+table.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span></span>
-<span>  DSFLOWER_OPAL_URLS <span class="op">=</span> <span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span>,</span>
-<span>  OPAL_USER <span class="op">=</span> <span class="st">"administrator"</span>,</span>
-<span>  OPAL_PASSWORD <span class="op">=</span> <span class="st">"admin123"</span>,</span>
-<span>  DSFLOWER_PATHMNIST_N_PER_SITE <span class="op">=</span> <span class="st">"500"</span>,</span>
-<span>  DSFLOWER_PATHMNIST_PRIVACY_PROFILES <span class="op">=</span> <span class="st">"trusted_internal,consortium_internal"</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">builder</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/newDSLoginBuilder.html" class="external-link">newDSLoginBuilder</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="st">"node1"</span>, url <span class="op">=</span> <span class="st">"https://opal-node-1.example.org"</span>,</span>
+<span>               user <span class="op">=</span> <span class="st">"researcher"</span>, password <span class="op">=</span> <span class="st">"********"</span>,</span>
+<span>               table <span class="op">=</span> <span class="st">"dsflower_demo.pathmnist_cohort"</span><span class="op">)</span></span>
+<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="st">"node2"</span>, url <span class="op">=</span> <span class="st">"https://opal-node-2.example.org"</span>,</span>
+<span>               user <span class="op">=</span> <span class="st">"researcher"</span>, password <span class="op">=</span> <span class="st">"********"</span>,</span>
+<span>               table <span class="op">=</span> <span class="st">"dsflower_demo.pathmnist_cohort"</span><span class="op">)</span></span>
+<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="st">"node3"</span>, url <span class="op">=</span> <span class="st">"https://opal-node-3.example.org"</span>,</span>
+<span>               user <span class="op">=</span> <span class="st">"researcher"</span>, password <span class="op">=</span> <span class="st">"********"</span>,</span>
+<span>               table <span class="op">=</span> <span class="st">"dsflower_demo.pathmnist_cohort"</span><span class="op">)</span></span>
+<span><span class="va">conns</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.login.html" class="external-link">datashield.login</a></span><span class="op">(</span><span class="va">builder</span><span class="op">$</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span>, assign <span class="op">=</span> <span class="cn">TRUE</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span></code></pre></div>
+<p><strong>2. Run the federated fit.</strong> Build the ResNet-18 model
+and recipe, stage the nodes, run FedAvg over the server-side image
+tables, then clean up and log out.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.model.pytorch_resnet18.html">ds.flower.model.pytorch_resnet18</a></span><span class="op">(</span></span>
+<span>  n_classes <span class="op">=</span> <span class="fl">2L</span>, learning_rate <span class="op">=</span> <span class="fl">0.001</span>, batch_size <span class="op">=</span> <span class="fl">64L</span>,</span>
+<span>  local_epochs <span class="op">=</span> <span class="fl">1L</span>, image_size <span class="op">=</span> <span class="fl">32L</span></span>
 <span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/source.html" class="external-link">source</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"demos"</span>, <span class="st">"benchmark_pathmnist_direct_image.R"</span>,</span>
-<span>                   package <span class="op">=</span> <span class="st">"dsFlowerClient"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span></span>
+<span><span class="va">recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.recipe.html">ds.flower.recipe</a></span><span class="op">(</span></span>
+<span>  model      <span class="op">=</span> <span class="va">model</span>,</span>
+<span>  strategy   <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.strategy.fedavg.html">ds.flower.strategy.fedavg</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  privacy    <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.privacy.trusted_internal.html">ds.flower.privacy.trusted_internal</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  target     <span class="op">=</span> <span class="st">"label"</span>,</span>
+<span>  num_rounds <span class="op">=</span> <span class="fl">2</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/ds.flower.nodes.init.html">ds.flower.nodes.init</a></span><span class="op">(</span><span class="va">conns</span>, data <span class="op">=</span> <span class="st">"D"</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ds.flower.nodes.prepare.html">ds.flower.nodes.prepare</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span>,</span>
+<span>  target_column <span class="op">=</span> <span class="st">"label"</span>,</span>
+<span>  run_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">recipe</span><span class="op">$</span><span class="va">model</span><span class="op">$</span><span class="va">params</span>, <span class="va">recipe</span><span class="op">$</span><span class="va">strategy</span><span class="op">$</span><span class="va">params</span>,</span>
+<span>                 <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>data_type <span class="op">=</span> <span class="st">"image"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  privacy <span class="op">=</span> <span class="va">recipe</span><span class="op">$</span><span class="va">privacy</span>, template_name <span class="op">=</span> <span class="va">recipe</span><span class="op">$</span><span class="va">model</span><span class="op">$</span><span class="va">template</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ds.flower.nodes.ensure.html">ds.flower.nodes.ensure</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span>, template_name <span class="op">=</span> <span class="va">recipe</span><span class="op">$</span><span class="va">model</span><span class="op">$</span><span class="va">template</span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.start.html">ds.flower.run.start</a></span><span class="op">(</span><span class="va">recipe</span>, conns <span class="op">=</span> <span class="va">conns</span>, verbose <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/ds.flower.nodes.cleanup.html">ds.flower.nodes.cleanup</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"flower"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
+<p>The <code>consortium_internal</code> branch repeats the same run with
+<code>privacy = ds.flower.privacy.consortium_internal()</code>, which
+enforces Secure Aggregation and suppresses the per-node metrics.</p>
+</div>
+<div class="section level2">
+<h2 id="recorded-results">Recorded Results<a class="anchor" aria-label="anchor" href="#recorded-results"></a>
+</h2>
+<p>The values below come from the committed evidence artifact for the
+run described above; no live servers are contacted when the article
+renders.</p>
 </div>
 <div class="section level2">
 <h2 id="dataset-and-split">Dataset And Split<a class="anchor" aria-label="anchor" href="#dataset-and-split"></a>
 </h2>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">class_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  source_class <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">dataset</span><span class="op">$</span><span class="va">classes</span><span class="op">)</span>,</span>
 <span>  binary_label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">dataset</span><span class="op">$</span><span class="va">binary_mapping</span><span class="op">)</span><span class="op">)</span>,</span>
@@ -109,20 +167,6 @@ metrics and still produces a global model checkpoint.</p>
 <span>  row.names <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span>
 <span><span class="va">site_table</span> <span class="op">&lt;-</span> <span class="va">evidence</span><span class="op">$</span><span class="va">site_counts</span></span>
-<span></span>
-<span><span class="va">summary_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  field <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dataset"</span>, <span class="st">"source"</span>, <span class="st">"sites"</span>, <span class="st">"rows per site"</span>,</span>
-<span>            <span class="st">"total rows"</span>, <span class="st">"image size"</span>, <span class="st">"model"</span>, <span class="st">"rounds"</span><span class="op">)</span>,</span>
-<span>  value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">dataset</span><span class="op">$</span><span class="va">dataset</span>,</span>
-<span>            <span class="va">evidence</span><span class="op">$</span><span class="va">dataset</span><span class="op">$</span><span class="va">source</span>,</span>
-<span>            <span class="va">evidence</span><span class="op">$</span><span class="va">n_sites</span>,</span>
-<span>            <span class="va">evidence</span><span class="op">$</span><span class="va">n_per_site</span>,</span>
-<span>            <span class="va">evidence</span><span class="op">$</span><span class="va">n_total</span>,</span>
-<span>            <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">evidence</span><span class="op">$</span><span class="va">image_size</span>, <span class="st">" x "</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">image_size</span><span class="op">)</span>,</span>
-<span>            <span class="va">evidence</span><span class="op">$</span><span class="va">model</span>,</span>
-<span>            <span class="va">evidence</span><span class="op">$</span><span class="va">rounds</span><span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">class_table</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
@@ -144,7 +188,7 @@ metrics and still produces a global model checkpoint.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">site_table</span><span class="op">)</span></span></code></pre></div>
 <table class="table">
 <thead><tr class="header">
@@ -174,48 +218,9 @@ metrics and still produces a global model checkpoint.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">summary_table</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<thead><tr class="header">
-<th align="left">field</th>
-<th align="left">value</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">dataset</td>
-<td align="left">PathMNIST</td>
-</tr>
-<tr class="even">
-<td align="left">source</td>
-<td align="left">MedMNIST v2 train split</td>
-</tr>
-<tr class="odd">
-<td align="left">sites</td>
-<td align="left">3</td>
-</tr>
-<tr class="even">
-<td align="left">rows per site</td>
-<td align="left">500</td>
-</tr>
-<tr class="odd">
-<td align="left">total rows</td>
-<td align="left">1500</td>
-</tr>
-<tr class="even">
-<td align="left">image size</td>
-<td align="left">32 x 32</td>
-</tr>
-<tr class="odd">
-<td align="left">model</td>
-<td align="left">pytorch_resnet18</td>
-</tr>
-<tr class="even">
-<td align="left">rounds</td>
-<td align="left">2</td>
-</tr>
-</tbody>
-</table>
+<p>The benchmark draws 1500 PathMNIST images from MedMNIST v2 train
+split, split into 500 rows on each of 3 nodes, resized to 32x32, and
+trains pytorch_resnet18 for 2 federated rounds.</p>
 </div>
 <div class="section level2">
 <h2 id="centralized-baseline">Centralized Baseline<a class="anchor" aria-label="anchor" href="#centralized-baseline"></a>
@@ -246,23 +251,13 @@ metrics and still produces a global model checkpoint.</p>
 <td align="right">0.9947</td>
 </tr></tbody>
 </table>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[centralized] epoch losses:"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.6f"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">centralized</span><span class="op">$</span><span class="va">train_loss_by_epoch</span><span class="op">)</span>,</span>
-<span>          collapse <span class="op">=</span> <span class="st">" -&gt; "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [centralized] epoch losses: 0.174467 -&gt; 0.045983</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[centralized] eval loss:"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.6f"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">centralized</span><span class="op">$</span><span class="va">eval</span><span class="op">$</span><span class="va">loss</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [centralized] eval loss: 0.014301</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[centralized] eval accuracy:"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.4f"</span>, <span class="va">evidence</span><span class="op">$</span><span class="va">centralized</span><span class="op">$</span><span class="va">eval</span><span class="op">$</span><span class="va">accuracy</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [centralized] eval accuracy: 0.9947</span></span></code></pre></div>
+<p>The centralized PyTorch baseline trained on 1500 samples for 2
+epoch(s), reaching an evaluation loss of 0.0143 and accuracy 0.9947.</p>
 </div>
 <div class="section level2">
 <h2 id="federated-trusted-branch">Federated Trusted Branch<a class="anchor" aria-label="anchor" href="#federated-trusted-branch"></a>
 </h2>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">trusted_profile</span> <span class="op">&lt;-</span> <span class="va">evidence</span><span class="op">$</span><span class="va">profile_results</span><span class="op">$</span><span class="va">trusted_internal</span></span>
 <span><span class="va">trusted_history</span> <span class="op">&lt;-</span> <span class="va">trusted_profile</span><span class="op">$</span><span class="va">history</span></span>
 <span><span class="va">comparison</span> <span class="op">&lt;-</span> <span class="va">evidence</span><span class="op">$</span><span class="va">trusted_internal_comparison</span></span>
@@ -290,7 +285,7 @@ metrics and still produces a global model checkpoint.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="va">trusted_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  run <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"centralized"</span>, <span class="st">"federated checkpoint"</span><span class="op">)</span>,</span>
@@ -324,20 +319,10 @@ metrics and still produces a global model checkpoint.</p>
 </tr>
 </tbody>
 </table>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[federated] final history loss:"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.6f"</span>, <span class="va">comparison</span><span class="op">$</span><span class="va">federated_history_loss</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [federated] final history loss: 0.053542</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[delta] checkpoint loss - centralized loss:"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.6f"</span>, <span class="va">comparison</span><span class="op">$</span><span class="va">delta_loss</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [delta] checkpoint loss - centralized loss: 0.039241</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[delta] checkpoint accuracy - centralized accuracy:"</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.4f"</span>, <span class="va">comparison</span><span class="op">$</span><span class="va">delta_accuracy</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [delta] checkpoint accuracy - centralized accuracy: -0.0087</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"[validation] status:"</span>, <span class="va">comparison</span><span class="op">$</span><span class="va">validation_status</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [validation] status: pass</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<p>The federated checkpoint’s final history loss was 0.0535; against the
+centralized baseline the checkpoint loss delta was 0.0392 and the
+accuracy delta -0.0087, leaving this branch <strong>pass</strong>.</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plot_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
 <span>  run <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"centralized"</span>, <span class="st">"federated"</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>,</span>
 <span>  metric <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"loss"</span>, <span class="st">"accuracy"</span><span class="op">)</span>, each <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
@@ -350,8 +335,6 @@ metrics and still produces a global model checkpoint.</p>
 <span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">plot_df</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">run</span>, y <span class="op">=</span> <span class="va">value</span>, fill <span class="op">=</span> <span class="va">run</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_bar.html" class="external-link">geom_col</a></span><span class="op">(</span>width <span class="op">=</span> <span class="fl">0.62</span>, show.legend <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_text.html" class="external-link">geom_text</a></span><span class="op">(</span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>label <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"%.4f"</span>, <span class="va">value</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                       vjust <span class="op">=</span> <span class="op">-</span><span class="fl">0.35</span>, size <span class="op">=</span> <span class="fl">3.3</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/facet_wrap.html" class="external-link">facet_wrap</a></span><span class="op">(</span><span class="op">~</span> <span class="va">metric</span>, scales <span class="op">=</span> <span class="st">"free_y"</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_fill_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"#4C78A8"</span>, <span class="st">"#F58518"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>    <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="cn">NULL</span>, y <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op">+</span></span>
@@ -371,57 +354,13 @@ metrics and still produces a global model checkpoint.</p>
 <div class="section level2">
 <h2 id="secure-aggregation-branch">Secure Aggregation Branch<a class="anchor" aria-label="anchor" href="#secure-aggregation-branch"></a>
 </h2>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">secagg</span> <span class="op">&lt;-</span> <span class="va">evidence</span><span class="op">$</span><span class="va">consortium_internal_secagg</span></span>
-<span><span class="va">secagg_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  field <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"privacy profile"</span>, <span class="st">"secure aggregation required"</span>,</span>
-<span>            <span class="st">"metric release"</span>, <span class="st">"federated failures"</span>,</span>
-<span>            <span class="st">"global checkpoint produced"</span>, <span class="st">"validation status"</span><span class="op">)</span>,</span>
-<span>  value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"consortium_internal"</span>,</span>
-<span>            <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">secagg</span><span class="op">$</span><span class="va">secure_aggregation_required</span><span class="op">)</span>,</span>
-<span>            <span class="va">secagg</span><span class="op">$</span><span class="va">metric_release</span>,</span>
-<span>            <span class="va">secagg</span><span class="op">$</span><span class="va">federated_failures</span>,</span>
-<span>            <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">secagg</span><span class="op">$</span><span class="va">saved_model_exists</span><span class="op">)</span>,</span>
-<span>            <span class="va">secagg</span><span class="op">$</span><span class="va">validation_status</span><span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">secagg_table</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="40%">
-<col width="60%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">field</th>
-<th align="left">value</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">privacy profile</td>
-<td align="left">consortium_internal</td>
-</tr>
-<tr class="even">
-<td align="left">secure aggregation required</td>
-<td align="left">TRUE</td>
-</tr>
-<tr class="odd">
-<td align="left">metric release</td>
-<td align="left">suppressed by consortium_internal profile</td>
-</tr>
-<tr class="even">
-<td align="left">federated failures</td>
-<td align="left">0</td>
-</tr>
-<tr class="odd">
-<td align="left">global checkpoint produced</td>
-<td align="left">TRUE</td>
-</tr>
-<tr class="even">
-<td align="left">validation status</td>
-<td align="left">pass</td>
-</tr>
-</tbody>
-</table>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">secagg</span> <span class="op">&lt;-</span> <span class="va">evidence</span><span class="op">$</span><span class="va">consortium_internal_secagg</span></span></code></pre></div>
+<p>The <code>consortium_internal</code> branch ran with Secure
+Aggregation required, metric release set to suppressed by
+consortium_internal profile, 0 federated client failures, and a
+persisted global checkpoint (TRUE), leaving the branch
+<strong>pass</strong>.</p>
 <p>The SecAgg branch is not interpreted through its loss value because
 <code>consortium_internal</code> suppresses released per-node metrics.
 The validation criteria for this branch are run completion, zero
@@ -431,48 +370,15 @@ requirement and production of the global model artefact.</p>
 <div class="section level2">
 <h2 id="evidence-scope">Evidence Scope<a class="anchor" aria-label="anchor" href="#evidence-scope"></a>
 </h2>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">scope</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
-<span>  claim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Direct-image learning path"</span>,</span>
-<span>            <span class="st">"Centralized-versus-federated utility"</span>,</span>
-<span>            <span class="st">"SecAgg profile execution"</span><span class="op">)</span>,</span>
-<span>  evidence <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>    <span class="st">"1,500 PathMNIST PNG images remain file-backed on the server side while Opal tables expose only metadata and relative paths."</span>,</span>
-<span>    <span class="st">"The federated ResNet-18 checkpoint reaches 0.9860 accuracy versus 0.9947 for the centralized PyTorch baseline on the same image table."</span>,</span>
-<span>    <span class="st">"The consortium profile completes with zero client failures, metric suppression and a persisted global checkpoint."</span></span>
-<span>  <span class="op">)</span>,</span>
-<span>  stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span><span class="op">)</span></span>
-<span><span class="fu">knitr</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/knitr/man/kable.html" class="external-link">kable</a></span><span class="op">(</span><span class="va">scope</span><span class="op">)</span></span></code></pre></div>
-<table class="table">
-<colgroup>
-<col width="21%">
-<col width="78%">
-</colgroup>
-<thead><tr class="header">
-<th align="left">claim</th>
-<th align="left">evidence</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td align="left">Direct-image learning path</td>
-<td align="left">1,500 PathMNIST PNG images remain file-backed on the
-server side while Opal tables expose only metadata and relative
-paths.</td>
-</tr>
-<tr class="even">
-<td align="left">Centralized-versus-federated utility</td>
-<td align="left">The federated ResNet-18 checkpoint reaches 0.9860
-accuracy versus 0.9947 for the centralized PyTorch baseline on the same
-image table.</td>
-</tr>
-<tr class="odd">
-<td align="left">SecAgg profile execution</td>
-<td align="left">The consortium profile completes with zero client
-failures, metric suppression and a persisted global checkpoint.</td>
-</tr>
-</tbody>
-</table>
+<p><strong>Direct-image learning path.</strong> 1500 PathMNIST PNG
+images remain file-backed on the server side while Opal tables expose
+only metadata and relative paths.</p>
+<p><strong>Centralized-versus-federated utility.</strong> The federated
+ResNet-18 checkpoint reaches 0.986 accuracy versus 0.9947 for the
+centralized PyTorch baseline on the same image table.</p>
+<p><strong>SecAgg profile execution.</strong> The consortium profile
+completes with zero client failures, metric suppression and a persisted
+global checkpoint.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

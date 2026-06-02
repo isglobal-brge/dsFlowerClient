@@ -58,6 +58,86 @@ knitr::kable(task_map)
 | Multilabel classification | Death, hospital death and diabetes labels | pytorch_multilabel | SecAgg and DP-SGD |
 | Survival | Hospital time-to-event with event indicator | pytorch_coxph | SecAgg only: Cox partial likelihood is risk-set based |
 
+It is laid out in two parts: first the commands you would run to
+reproduce the benchmark, then the recorded results of that run loaded
+from the committed evidence artifacts. No live Opal servers are required
+to render this page; the command chunks are shown for reference and are
+not executed.
+
+## Running This Benchmark
+
+The SUPPORT2 cohort is partitioned across three Opal nodes that are
+already set up and serving the table `dsflower_demo.support2_cohort`.
+Each family is one
+[`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
+call over the server-side partitions; only aggregate training history
+and model parameters are returned to the researcher.
+
+**1. Connect to the DataSHIELD nodes.** Open a single session across the
+three Opal nodes that hold the partitioned SUPPORT2 cohort.
+
+``` r
+
+library(DSI)
+library(DSOpal)
+library(dsFlowerClient)
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = "node1", url = "https://opal-node-1.example.org",
+               user = "researcher", password = "********",
+               table = "dsflower_demo.support2_cohort")
+builder$append(server = "node2", url = "https://opal-node-2.example.org",
+               user = "researcher", password = "********",
+               table = "dsflower_demo.support2_cohort")
+builder$append(server = "node3", url = "https://opal-node-3.example.org",
+               user = "researcher", password = "********",
+               table = "dsflower_demo.support2_cohort")
+conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "D")
+```
+
+**2. Run a method family.** Train one template through dsFlower with
+FedAvg over the server-side table. The continuous-regression family is
+shown here; the standardized numeric SUPPORT2 columns are the features
+and the derived severity score is the target.
+
+``` r
+
+support2_features <- c(
+  "age", "num_co", "scoma", "meanbp", "hrt",
+  "resp", "temp", "crea", "sod", "wblc"
+)
+
+fit <- ds.flower.fit(
+  conns,
+  symbol   = "D",
+  target   = "severity_score",
+  features = support2_features,
+  model    = "pytorch_linear_regression",
+  strategy = "fedavg",
+  privacy  = "clinical_default",
+  rounds   = 3
+)
+
+DSI::datashield.logout(conns)
+```
+
+The other four families reuse the same
+[`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
+call, swapping the model template and target: `pytorch_poisson` on
+`comorbidity_count`, `pytorch_multiclass` on `diagnosis_class`,
+`pytorch_multilabel` on the
+`c("label_death", "label_hospital_death", "label_diabetes")` labels, and
+`pytorch_coxph` on the `c("time", "event")` survival pair, each over
+three federated rounds. To run the DP-SGD subset, swap the profile to
+`privacy = "high_sensitivity_dp"`; the four non-survival families remain
+compatible, with multiclass using six rounds for the longer DP optimiser
+budget, while CoxPH stays on its SecAgg route.
+
+## Recorded Results
+
+The values below come from the committed evidence artifacts for the runs
+described above; no live servers are contacted when the article renders.
+
 ``` r
 
 evidence_path <- system.file(
@@ -70,22 +150,12 @@ dp_evidence_path <- system.file(
   package = "dsFlowerClient"
 )
 dp_evidence <- jsonlite::fromJSON(dp_evidence_path)
-
-cat("Dataset:", evidence$dataset_label, "\n")
-#> Dataset: SUPPORT2 Study
-cat("Privacy profile:", evidence$privacy_profile, "\n")
-#> Privacy profile: clinical_default
-cat("Secure Aggregation supported:", evidence$secagg_supported, "\n")
-#> Secure Aggregation supported: TRUE
-cat("Rows:", evidence$n_total, "\n")
-#> Rows: 3000
-print(as.data.frame(evidence$site_train_n))
-#>   opal1 opal2 opal3
-#> 1  1000  1000  1000
 ```
 
-The rows are split evenly across three DataSHIELD servers. The event
-count shown below is used by the survival route disclosure guard.
+The benchmark uses the SUPPORT2 Study (3000 rows) under the
+clinical_default profile, with Secure Aggregation support TRUE. The rows
+are split evenly across three DataSHIELD servers; the per-site training
+and event counts below are used by the survival route disclosure guard.
 
 ``` r
 
@@ -94,12 +164,14 @@ site_summary <- data.frame(
   train_n = as.integer(unlist(evidence$site_train_n, use.names = FALSE)),
   event_n = as.integer(unlist(evidence$site_event_n, use.names = FALSE))
 )
-site_summary
-#>   server train_n event_n
-#> 1  opal1    1000     259
-#> 2  opal2    1000     259
-#> 3  opal3    1000     259
+knitr::kable(site_summary)
 ```
+
+| server | train_n | event_n |
+|:-------|--------:|--------:|
+| opal1  |    1000 |     259 |
+| opal2  |    1000 |     259 |
+| opal3  |    1000 |     259 |
 
 Each row in the result table compares the centralized PyTorch loss
 against the loss obtained by evaluating the federated model artefact
@@ -110,55 +182,37 @@ remains within the declared validation envelope for that method family.
 ``` r
 
 results <- evidence$results
-results[, c(
+knitr::kable(results[, c(
   "family", "method", "centralized_metric", "centralized_loss",
   "federated_loss", "delta_loss", "federated_n_failures",
   "validation_status"
-)]
-#>                          family                    method
-#> 1 continuous outcome regression pytorch_linear_regression
-#> 2              count regression           pytorch_poisson
-#> 3     multiclass classification        pytorch_multiclass
-#> 4     multilabel classification        pytorch_multilabel
-#> 5        time-to-event survival             pytorch_coxph
-#>       centralized_metric centralized_loss federated_loss   delta_loss
-#> 1                    mse       0.57412314      0.5671876 -0.006935537
-#> 2            poisson_nll       0.30471310      0.4711799  0.166466832
-#> 3          cross_entropy       0.05172214      0.1897127  0.137990564
-#> 4         multilabel_bce       0.39282042      0.4596463  0.066825897
-#> 5 cox_partial_likelihood       6.26183891      6.3498344  0.087995529
-#>   federated_n_failures validation_status
-#> 1                    0              pass
-#> 2                    0              pass
-#> 3                    0              pass
-#> 4                    0              pass
-#> 5                    0              pass
+)], digits = 4)
 ```
+
+| family | method | centralized_metric | centralized_loss | federated_loss | delta_loss | federated_n_failures | validation_status |
+|:---|:---|:---|---:|---:|---:|---:|:---|
+| continuous outcome regression | pytorch_linear_regression | mse | 0.5741 | 0.5672 | -0.0069 | 0 | pass |
+| count regression | pytorch_poisson | poisson_nll | 0.3047 | 0.4712 | 0.1665 | 0 | pass |
+| multiclass classification | pytorch_multiclass | cross_entropy | 0.0517 | 0.1897 | 0.1380 | 0 | pass |
+| multilabel classification | pytorch_multilabel | multilabel_bce | 0.3928 | 0.4596 | 0.0668 | 0 | pass |
+| time-to-event survival | pytorch_coxph | cox_partial_likelihood | 6.2618 | 6.3498 | 0.0880 | 0 | pass |
 
 ``` r
 
 dp_results <- dp_evidence$results
-dp_results[, c(
+knitr::kable(dp_results[, c(
   "family", "method", "centralized_metric", "centralized_loss",
   "federated_loss", "delta_loss", "federated_n_failures",
   "validation_status"
-)]
-#>                          family                    method centralized_metric
-#> 1 continuous outcome regression pytorch_linear_regression                mse
-#> 2              count regression           pytorch_poisson        poisson_nll
-#> 3     multiclass classification        pytorch_multiclass      cross_entropy
-#> 4     multilabel classification        pytorch_multilabel     multilabel_bce
-#>   centralized_loss federated_loss delta_loss federated_n_failures
-#> 1       0.57412314     0.60775775 0.03363460                    0
-#> 2       0.30471310     0.52731127 0.22259817                    0
-#> 3       0.02058272     0.05970215 0.03911944                    0
-#> 4       0.39282042     0.49365425 0.10083383                    0
-#>   validation_status
-#> 1              pass
-#> 2              pass
-#> 3              pass
-#> 4              pass
+)], digits = 4)
 ```
+
+| family | method | centralized_metric | centralized_loss | federated_loss | delta_loss | federated_n_failures | validation_status |
+|:---|:---|:---|---:|---:|---:|---:|:---|
+| continuous outcome regression | pytorch_linear_regression | mse | 0.5741 | 0.6078 | 0.0336 | 0 | pass |
+| count regression | pytorch_poisson | poisson_nll | 0.3047 | 0.5273 | 0.2226 | 0 | pass |
+| multiclass classification | pytorch_multiclass | cross_entropy | 0.0206 | 0.0597 | 0.0391 | 0 | pass |
+| multilabel classification | pytorch_multilabel | multilabel_bce | 0.3928 | 0.4937 | 0.1008 | 0 | pass |
 
 The DP-SGD table is defined over the SUPPORT2 routes whose losses
 decompose by sample. CoxPH is validated under Secure Aggregation in the
@@ -224,8 +278,8 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 }
 ```
 
-![Point-range chart comparing centralized and federated SUPPORT2 losses
-across method
+![Bar chart comparing centralized and federated SUPPORT2 losses across
+method
 families.](clinical-method-family-benchmarks_files/figure-html/loss-plot-1.png)
 
 ``` r
@@ -252,38 +306,3 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 ![Bar chart comparing DP-SGD federated-centralized SUPPORT2 losses for
 DP-compatible method
 families.](clinical-method-family-benchmarks_files/figure-html/dp-loss-plot-1.png)
-
-The canonical run can be regenerated from a local three-Opal
-demonstration deployment with:
-
-``` r
-
-Sys.setenv(
-  DSFLOWER_SUPPORT2_LIMIT = "3000",
-  DSFLOWER_FAMILY_PRIVACY_PROFILE = "clinical_default"
-)
-source(system.file(
-  "demos", "benchmark_method_families.R",
-  package = "dsFlowerClient"
-))
-```
-
-``` r
-
-Sys.setenv(
-  DSFLOWER_SUPPORT2_LIMIT = "3000",
-  DSFLOWER_FAMILY_PRIVACY_PROFILE = "high_sensitivity_dp",
-  DSFLOWER_FAMILY_MODELS =
-    "pytorch_linear_regression,pytorch_poisson,pytorch_multiclass,pytorch_multilabel",
-  DSFLOWER_FAMILY_MULTICLASS_ROUNDS = "6",
-  DSFLOWER_FAMILY_DP_EPSILON = "8",
-  DSFLOWER_FAMILY_DP_DELTA = "1e-5",
-  DSFLOWER_FAMILY_DP_CLIP = "1",
-  DSFLOWER_FAMILY_EVIDENCE_FILE =
-    "inst/extdata/dsflower_method_family_dp_results.json"
-)
-source(system.file(
-  "demos", "benchmark_method_families.R",
-  package = "dsFlowerClient"
-))
-```

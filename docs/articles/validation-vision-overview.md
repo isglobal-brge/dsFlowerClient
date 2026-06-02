@@ -8,40 +8,24 @@ trained over the pooled files. The current biomedical direct-image
 evidence is reported separately in the PathMNIST and LUNG1 dsImaging
 vignettes.
 
-``` r
-
-summary_table <- data.frame(
-  Field = c('generated_at', 'privacy_profile', 'n_sites', 'n_per_site', 'n_total', 'image_size'),
-  Value = c(validation$generated_at, validation$privacy_profile, validation$n_sites,
-            validation$n_per_site, validation$n_total, validation$image_size)
-)
-knitr::kable(summary_table)
-```
-
-| Field           | Value                    |
-|:----------------|:-------------------------|
-| generated_at    | 2026-05-11T14:01:13.113Z |
-| privacy_profile | sandbox_open             |
-| n_sites         | 3                        |
-| n_per_site      | 4                        |
-| n_total         | 12                       |
-| image_size      | 64                       |
+This suite was generated on 2026-05-11T14:01:13.113Z under the
+sandbox_open profile, across 3 Opal/Rock nodes holding 4 samples each
+(12 total) at 64x64 resolution.
 
 ``` r
 
 display <- results[, c(
   'method', 'task', 'centralized_metric', 'centralized_loss',
-  'federated_status', 'federated_loss', 'delta_loss',
-  'acceptable_loss', 'validation_status'
+  'federated_status', 'federated_loss', 'delta_loss', 'validation_status'
 )]
-knitr::kable(display)
+knitr::kable(display, digits = 4)
 ```
 
-| method | task | centralized_metric | centralized_loss | federated_status | federated_loss | delta_loss | acceptable_loss | validation_status |
-|:---|:---|:---|---:|:---|---:|---:|:---|:---|
-| pytorch_resnet18 | classification | cross_entropy | 0.5605 | ok | 0.5399 | -0.0206 | TRUE | pass |
-| pytorch_densenet121 | classification | cross_entropy | 0.6033 | ok | 0.9373 | 0.3339 | TRUE | pass |
-| pytorch_unet2d | segmentation | dice_bce_loss | 1.3099 | ok | 1.4397 | 0.1298 | TRUE | pass |
+| method | task | centralized_metric | centralized_loss | federated_status | federated_loss | delta_loss | validation_status |
+|:---|:---|:---|---:|:---|---:|---:|:---|
+| pytorch_resnet18 | classification | cross_entropy | 0.5605 | ok | 0.5399 | -0.0206 | pass |
+| pytorch_densenet121 | classification | cross_entropy | 0.6033 | ok | 0.9373 | 0.3339 | pass |
+| pytorch_unet2d | segmentation | dice_bce_loss | 1.3099 | ok | 1.4397 | 0.1298 | pass |
 
 ``` r
 
@@ -57,9 +41,8 @@ if (nrow(plot_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
 ```
 
 ![Horizontal bar chart of vision-template federated minus centralized
-loss.](validation-vision-overview_files/figure-html/unnamed-chunk-4-1.png)
+loss.](validation-vision-overview_files/figure-html/unnamed-chunk-3-1.png)
 
-The complete vision suite is produced by repeating the inline
-Opal/DataSHIELD/Flower workflow shown in each per-method vignette for
-all vision templates listed above. The committed evidence artifact is
-the audit trail consumed by this pkgdown page.
+Each vision template has its own per-method vignette with the full
+DataSHIELD/Flower commands and recorded results. The committed evidence
+artifact is the audit trail consumed by this pkgdown page.

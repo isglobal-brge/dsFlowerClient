@@ -6,46 +6,96 @@ by `dsImaging`, without first converting the images into radiomic
 features. It is a technical path validation rather than a clinical
 imaging result. The rendered article uses the recorded output of the
 live May 2026 workflow so that package checks do not require active Opal
-servers.
+servers. The live workflow is implemented in
+`inst/demos/dsimaging_direct_image_resnet.R`.
 
 The validation path is:
 
-1.  `dsFlowerClient` connects to a `dsImaging` resource with
-    `ds.flower.connect(resource = ...)`.
-2.  Server-side metadata and image asset descriptors are staged into
-    Flower manifests inside each Rock.
-3.  A Flower SuperNode on each Rock trains the `pytorch_resnet18`
-    template from local NIfTI files.
-4.  A centralized PyTorch baseline trains on the same local demo workdir
-    for a path-level comparison.
-5.  Cleanup leaves no active SuperNodes.
+1.  `dsImaging` resolves the LUNG1 imaging resource server-side with
+    [`ds.imaging.init()`](https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.init.html).
+2.  `dsFlowerClient` wraps that server-side imaging handle with
+    [`ds.flower.connect()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.connect.md)
+    and trains the `pytorch_resnet18` template directly from the local
+    NIfTI files, never moving image pixels.
+3.  A centralized PyTorch baseline on the pooled demo cohort provides a
+    path-level comparison.
+4.  Only aggregate training history and model parameters are returned.
+
+## Running This Validation
+
+The steps below walk through the dsImaging to dsFlower handoff: connect
+to the nodes, resolve the server-side image resource with dsImaging, and
+train a federated vision model with dsFlower. The LUNG1 study is already
+registered as an imaging resource on three Opal/Rock nodes, each holding
+its own slice of patients; the NIfTI pixels never leave those nodes. The
+chunks are shown for reference and are not executed when the article
+renders; the recorded results of the real run follow.
+
+**1. Connect to the DataSHIELD nodes.** Open a single session across the
+three Opal nodes that serve the LUNG1 imaging resource.
 
 ``` r
 
-cat("Source script: inst/demos/dsimaging_direct_image_resnet.R\n")
-#> Source script: inst/demos/dsimaging_direct_image_resnet.R
-cat("Recorded run_id:", evidence$run_id, "\n")
-#> Recorded run_id: 12188684698149675604
+library(DSI)
+library(DSOpal)
+library(dsImagingClient)
+library(dsFlowerClient)
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = "node1", url = "https://opal-node-1.example.org",
+               user = "researcher", password = "********")
+builder$append(server = "node2", url = "https://opal-node-2.example.org",
+               user = "researcher", password = "********")
+builder$append(server = "node3", url = "https://opal-node-3.example.org",
+               user = "researcher", password = "********")
+conns <- DSI::datashield.login(builder$build(), assign = FALSE)
+
+resource <- "dsdemo.imaging_demo"
 ```
 
-## Reproduction Command
+**2. Resolve the image resource with dsImaging.**
+[`ds.imaging.init()`](https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.init.html)
+binds the imaging resource into the server-side symbol `img`; the NIfTI
+pixels stay on each Rock.
 
 ``` r
 
-Sys.setenv(
-  DSFLOWER_OPAL_URLS = "https://localhost:8443,https://localhost:8444,https://localhost:8445",
-  OPAL_USER = "administrator",
-  OPAL_PASSWORD = "admin123",
-  DSFLOWER_IMAGING_RESOURCE = "dsdemo.imaging_demo",
-  DSFLOWER_IMAGING_TARGET = "os_2yr_alive",
-  DSFLOWER_IMAGING_PRIVACY = "sandbox_open",
-  DSFLOWER_IMAGING_ROUNDS = "1",
-  DSFLOWER_IMAGING_LOCAL_WORKDIR = "/tmp/dsimaging_lung1_study",
-  DSFLOWER_IMAGING_LOCAL_BASELINE = "true"
+ds.imaging.init(conns, resource, symbol = "img")
+```
+
+**3. Train the federated model with dsFlower.** Hand the server-side
+`img` handle to
+[`ds.flower.connect()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.connect.md),
+build a recipe around the `pytorch_resnet18` template, run FedAvg, then
+disconnect and log out. Only aggregate training history and model
+parameters come back.
+
+``` r
+
+flower <- ds.flower.connect(conns, symbol = "img")
+
+recipe <- ds.flower.recipe(
+  model      = ds.flower.model.pytorch_resnet18(
+    n_classes = 2L, learning_rate = 0.0005,
+    batch_size = 1L, local_epochs = 1L
+  ),
+  strategy   = ds.flower.strategy.fedavg(),
+  privacy    = ds.flower.privacy.sandbox_open(),
+  target     = "os_2yr_alive",
+  num_rounds = 1
 )
-source(system.file("demos", "dsimaging_direct_image_resnet.R",
-                   package = "dsFlowerClient"))
+
+run <- ds.flower.run(flower, recipe, verbose = TRUE)
+
+ds.flower.disconnect(flower)
+DSI::datashield.logout(conns)
 ```
+
+## Recorded Results
+
+These results are loaded from the committed evidence artifact for run
+12188684698149675604; no live Opal servers are contacted when the
+article renders.
 
 ## Server-Side Image Resource
 
@@ -81,19 +131,8 @@ knitr::kable(class_counts)
 | 0     |       7 |
 | 1     |       2 |
 
-``` r
-
-
-data.frame(
-  resource = evidence$resource,
-  image_type = "NIfTI",
-  target = evidence$target,
-  total_samples = sum(site_counts$samples),
-  stringsAsFactors = FALSE
-)
-#>              resource image_type       target total_samples
-#> 1 dsdemo.imaging_demo      NIfTI os_2yr_alive             9
-```
+The dsdemo.imaging_demo resource exposes NIfTI images across the three
+nodes, 9 samples in total, with os_2yr_alive as the federated target.
 
 ## Training Configuration
 
@@ -140,26 +179,9 @@ knitr::kable(comparison, digits = 4)
 | centralized local | PyTorch ResNet18 | 9 | 1 | 1 | 0.5540 | 0.7778 | NA |
 | federated dsFlower | DataSHIELD + Flower ResNet18 | 9 | 3 | 1 | 0.5847 | NA | 0 |
 
-``` r
-
-
-cat("[centralized] train loss epoch 1:",
-    sprintf("%.6f", unlist(evidence$local_baseline$train_loss_by_epoch)[[1]]), "\n")
-#> [centralized] train loss epoch 1: 0.707024
-cat("[centralized] eval loss:",
-    sprintf("%.6f", evidence$local_baseline$eval$loss), "\n")
-#> [centralized] eval loss: 0.554012
-cat("[federated] round 1 loss:",
-    sprintf("%.6f", evidence$local_vs_federated$federated$loss), "\n")
-#> [federated] round 1 loss: 0.584744
-cat("[delta] federated - centralized:",
-    sprintf("%.6f",
-            evidence$local_vs_federated$delta$loss_federated_minus_centralized), "\n")
-#> [delta] federated - centralized: 0.030732
-cat("[acceptance] federated client failures:",
-    evidence$local_vs_federated$federated$n_failures, "\n")
-#> [acceptance] federated client failures: 0
-```
+The centralized PyTorch baseline reached an evaluation loss of 0.554;
+the federated dsFlower run reached 0.5847 over 1 round(s) (delta 0.0307)
+with 0 client failures.
 
 ``` r
 
@@ -170,10 +192,7 @@ plot_data <- data.frame(
 if (requireNamespace("ggplot2", quietly = TRUE)) {
   ggplot2::ggplot(plot_data, ggplot2::aes(x = run, y = loss, fill = run)) +
     ggplot2::geom_col(width = 0.62, show.legend = FALSE) +
-    ggplot2::geom_text(ggplot2::aes(label = sprintf("%.4f", loss)),
-                       vjust = -0.35, size = 3.5) +
     ggplot2::scale_fill_manual(values = c("#4C78A8", "#F58518")) +
-    ggplot2::coord_cartesian(ylim = c(0, max(plot_data$loss) + 0.15)) +
     ggplot2::labs(x = NULL, y = "Loss",
                   title = "LUNG1 direct-image ResNet path validation") +
     ggplot2::theme_minimal(base_size = 11)
@@ -207,26 +226,12 @@ knitr::kable(cleanup)
 | opal2 |                 0 |
 | opal3 |                 0 |
 
-``` r
+After the run, every node reported zero active SuperNodes, so the
+cleanup step **passed**.
 
-cat("[cleanup] PASS:", all(cleanup$active_supernodes == 0L), "\n")
-#> [cleanup] PASS: TRUE
-```
+**Validated claim.** End-to-end functional validation that dsFlower can
+consume dsImaging-resolved server-side NIfTI image assets and train a
+vision template without transferring image pixels to the researcher.
 
-``` r
-
-scope <- data.frame(
-  item = c("Validated claim", "Explicit non-claim"),
-  value = c(
-    "End-to-end functional validation that dsFlower can consume dsImaging-resolved server-side NIfTI image assets and train a vision template without transferring image pixels to the researcher.",
-    "This nine-image run is a technical path validation, not a clinical imaging benchmark."
-  ),
-  stringsAsFactors = FALSE
-)
-knitr::kable(scope)
-```
-
-| item | value |
-|:---|:---|
-| Validated claim | End-to-end functional validation that dsFlower can consume dsImaging-resolved server-side NIfTI image assets and train a vision template without transferring image pixels to the researcher. |
-| Explicit non-claim | This nine-image run is a technical path validation, not a clinical imaging benchmark. |
+**Explicit non-claim.** This nine-image run is a technical path
+validation, not a clinical imaging benchmark.

@@ -17,34 +17,27 @@ paths <- c(
 result_path <- paths[nzchar(paths) & file.exists(paths)][1]
 validation <- jsonlite::fromJSON(result_path)
 results <- validation$results
-if (!"acceptable_loss" %in% names(results)) {
-  results$acceptable_loss <- results$validation_status == "pass"
-}
 ```
 
-This macro-vignette summarizes the catalogue coverage check for the dsFlower
-vision templates. The experiment uses synthetic image and mask files staged on
-the Rock servers, while metadata remains in Opal tables. Each federated run is
-compared with a centralized PyTorch baseline trained over the pooled files.
-The current biomedical direct-image evidence is reported separately in the
-PathMNIST and LUNG1 dsImaging vignettes.
+This macro-vignette summarizes the catalogue coverage check for the
+dsFlower vision templates. The experiment uses synthetic image and mask
+files staged on the Rock servers, while metadata remains in Opal tables.
+Each federated run is compared with a centralized PyTorch baseline trained
+over the pooled files. The current biomedical direct-image evidence is
+reported separately in the PathMNIST and LUNG1 dsImaging vignettes.
 
-```{r}
-summary_table <- data.frame(
-  Field = c('generated_at', 'privacy_profile', 'n_sites', 'n_per_site', 'n_total', 'image_size'),
-  Value = c(validation$generated_at, validation$privacy_profile, validation$n_sites,
-            validation$n_per_site, validation$n_total, validation$image_size)
-)
-knitr::kable(summary_table)
-```
+This suite was generated on `r validation$generated_at` under the
+`r validation$privacy_profile` profile, across `r validation$n_sites`
+Opal/Rock nodes holding `r validation$n_per_site` samples each
+(`r validation$n_total` total) at
+`r validation$image_size`x`r validation$image_size` resolution.
 
 ```{r}
 display <- results[, c(
   'method', 'task', 'centralized_metric', 'centralized_loss',
-  'federated_status', 'federated_loss', 'delta_loss',
-  'acceptable_loss', 'validation_status'
+  'federated_status', 'federated_loss', 'delta_loss', 'validation_status'
 )]
-knitr::kable(display)
+knitr::kable(display, digits = 4)
 ```
 
 ```{r, fig.width=7, fig.height=3.5, fig.alt="Horizontal bar chart of vision-template federated minus centralized loss."}
@@ -59,7 +52,6 @@ if (nrow(plot_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
 }
 ```
 
-The complete vision suite is produced by repeating the inline
-Opal/DataSHIELD/Flower workflow shown in each per-method vignette for all
-vision templates listed above. The committed evidence artifact is the audit
-trail consumed by this pkgdown page.
+Each vision template has its own per-method vignette with the full
+DataSHIELD/Flower commands and recorded results. The committed evidence
+artifact is the audit trail consumed by this pkgdown page.

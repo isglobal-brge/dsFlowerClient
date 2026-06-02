@@ -10,37 +10,108 @@ The validation path is:
 
 1.  `dsImaging` resolves the LUNG1 imaging resource and radiomics
     assets.
-2.  `ds.imaging.radiomics.load_features()` loads each site’s derived
-    feature table into a server-side DataSHIELD symbol.
+2.  [`ds.imaging.radiomics.load_features()`](https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.load_asset.html)
+    loads each site’s derived feature table into a server-side
+    DataSHIELD symbol.
 3.  `dsFlowerClient` trains `sklearn_logreg` with FedAvg over the
     server-side tables.
 4.  Only aggregate training history and model parameters are returned.
 
+## Running The dsImaging To dsFlower Handoff
+
+The steps below walk through the dsImaging to dsFlower handoff: connect
+to the nodes, load the server-side radiomic feature tables with
+dsImaging, and train a federated model with dsFlower. The LUNG1 study is
+already registered as an imaging resource on three Opal/Rock nodes, each
+holding its own slice of patients; images, masks and row-level features
+never leave those nodes. The chunks are shown for reference and are not
+executed when the article renders; the recorded results of the real run
+follow.
+
+**1. Connect to the DataSHIELD nodes.** Open a single session across the
+three Opal nodes that serve the LUNG1 imaging resource.
+
 ``` r
 
-cat("Source script: inst/demos/lung1_radiomics_to_flower.R\n")
-#> Source script: inst/demos/lung1_radiomics_to_flower.R
-cat("Recorded run_id:", evidence$run_id, "\n")
-#> Recorded run_id: 17493579680844882070
+library(DSI)
+library(DSOpal)
+library(dsImagingClient)
+library(dsFlowerClient)
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = "node1", url = "https://opal-node-1.example.org",
+               user = "researcher", password = "********")
+builder$append(server = "node2", url = "https://opal-node-2.example.org",
+               user = "researcher", password = "********")
+builder$append(server = "node3", url = "https://opal-node-3.example.org",
+               user = "researcher", password = "********")
+conns <- DSI::datashield.login(builder$build(), assign = FALSE)
+
+resource <- "dsdemo.lung1_full_study"
 ```
 
-## Reproduction Command
+**2. Load radiomic features server-side with dsImaging.**
+[`ds.imaging.init()`](https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.init.html)
+binds the imaging resource;
+[`ds.imaging.radiomics.load_features()`](https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.load_asset.html)
+then materialises the derived feature table into the server-side symbol
+`rad`. The `dataset_id` and `asset_id` identify the radiomic asset
+produced by the dsImaging feature-extraction step on each node;
+`include_metadata = TRUE` adds the clinical columns and
+`syntactic_names = TRUE` makes the pyradiomics names R-safe. The images
+and masks never move.
 
 ``` r
 
-Sys.setenv(
-  DSFLOWER_OPAL_URLS = "https://localhost:8443,https://localhost:8444,https://localhost:8445",
-  OPAL_USER = "administrator",
-  OPAL_PASSWORD = "admin123",
-  LUNG1_WORKDIR = "/tmp/dsimaging_lung1_full",
-  LUNG1_OPAL_PROJECT = "dsdemo",
-  LUNG1_OPAL_RESOURCE = "lung1_full_study",
-  DSFLOWER_RADFLOWER_ROUNDS = "2",
-  DSFLOWER_RADFLOWER_PRIVACY = "trusted_internal"
+ds.imaging.init(conns, resource, symbol = "img")
+
+ds.imaging.radiomics.load_features(
+  conns,
+  dataset_id       = "lung1_full_study",
+  asset_id         = "pyradiomics_features",
+  symbol           = "rad",
+  include_metadata = TRUE,
+  syntactic_names  = TRUE
 )
-source(system.file("demos", "lung1_radiomics_to_flower.R",
-                   package = "dsFlowerClient"))
 ```
+
+**3. Train the federated model on the derived features.** Hand the
+server-side `rad` table to
+[`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
+with logistic regression and FedAvg. Only aggregate training history and
+model parameters come back.
+
+``` r
+
+features <- c(
+  "original_firstorder_Energy",
+  "original_shape_Compactness1",
+  "original_glrlm_RunLengthNonUniformity",
+  "wavelet.HLH_glrlm_RunLengthNonUniformity",
+  "age",
+  "gender_male"
+)
+
+fit <- ds.flower.fit(
+  conns,
+  symbol       = "rad",
+  target       = "os_2yr_alive",
+  features     = features,
+  model        = "sklearn_logreg",
+  model_params = list(max_iter = 100L),
+  strategy     = "fedavg",
+  privacy      = "trusted_internal",
+  rounds       = 2
+)
+
+DSI::datashield.logout(conns)
+```
+
+## Recorded Results
+
+These results are loaded from the committed evidence artifact for run
+17493579680844882070; no live Opal servers are contacted when the
+article renders.
 
 ## Server-Side Cohort
 
@@ -65,19 +136,8 @@ knitr::kable(site_dims)
 | opal2 |  143 |      20 |
 | opal3 |  137 |      20 |
 
-``` r
-
-
-data.frame(
-  resource = evidence$resource,
-  target = evidence$target,
-  combined_rows = combined_dims[[1]],
-  combined_columns = combined_dims[[2]],
-  stringsAsFactors = FALSE
-)
-#>                  resource       target combined_rows combined_columns
-#> 1 dsdemo.lung1_full_study os_2yr_alive           422               20
-```
+Pooled across the three nodes, the dsdemo.lung1_full_study cohort holds
+422 rows and 20 columns, with os_2yr_alive as the federated target.
 
 ## Features
 
@@ -130,6 +190,9 @@ history <- do.call(rbind, lapply(evidence$history, function(x) {
     n_failures = x$n_failures
   )
 }))
+final_loss <- round(tail(history$loss, 1L), 4)
+total_failures <- sum(as.integer(history$n_failures))
+run_status <- if (evidence$status == 0 && total_failures == 0) "passed" else "failed"
 knitr::kable(history, digits = 4)
 ```
 
@@ -138,24 +201,8 @@ knitr::kable(history, digits = 4)
 |     1 | 0.6503 |         3 |          0 |
 |     2 | 0.6474 |         3 |          0 |
 
-``` r
-
-
-cat("[dsFlower] run_id:", evidence$run_id, "\n")
-#> [dsFlower] run_id: 17493579680844882070
-cat("[dsFlower] model_id:", evidence$model_id, "\n")
-#> [dsFlower] model_id: sklearn_logreg_FedAvg_2r_20260510_161938
-cat("[dsFlower] output_dir:", evidence$flower_output_dir, "\n")
-#> [dsFlower] output_dir: ./dsflower_output/sklearn_logreg_FedAvg_2r_20260510_161938
-cat("[acceptance] final loss:", sprintf("%.4f", tail(history$loss, 1L)), "\n")
-#> [acceptance] final loss: 0.6474
-cat("[acceptance] total client failures:",
-    sum(as.integer(history$n_failures)), "\n")
-#> [acceptance] total client failures: 0
-cat("[acceptance] PASS:",
-    evidence$status == 0 && sum(as.integer(history$n_failures)) == 0, "\n")
-#> [acceptance] PASS: TRUE
-```
+The run finished with a final federated loss of 0.6474 and 0 total
+client failures across 2 round(s); the acceptance check **passed**.
 
 ``` r
 
@@ -182,22 +229,11 @@ cohort.](lung1-radiomics-to-flower_files/figure-html/loss-plot-1.png)
 
 ## Evidence Scope
 
-``` r
+**Validated claim.** End-to-end functional validation that dsFlower can
+train on dsImaging-derived radiomic feature tables without moving
+images, masks or row-level feature data to the researcher.
 
-scope <- data.frame(
-  item = c("Validated claim", "Explicit non-claim", "Global model shape"),
-  value = c(
-    "End-to-end functional validation that dsFlower can train on dsImaging-derived radiomic feature tables without moving images, masks or row-level feature data to the researcher.",
-    "This two-round logistic-regression run is not a clinical performance claim.",
-    "1 x 6 coefficients plus intercept"
-  ),
-  stringsAsFactors = FALSE
-)
-knitr::kable(scope)
-```
+**Explicit non-claim.** This two-round logistic-regression run is not a
+clinical performance claim.
 
-| item | value |
-|:---|:---|
-| Validated claim | End-to-end functional validation that dsFlower can train on dsImaging-derived radiomic feature tables without moving images, masks or row-level feature data to the researcher. |
-| Explicit non-claim | This two-round logistic-regression run is not a clinical performance claim. |
-| Global model shape | 1 x 6 coefficients plus intercept |
+**Global model shape.** 1 x 6 coefficients plus intercept.

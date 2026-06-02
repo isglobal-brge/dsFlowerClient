@@ -3,55 +3,114 @@
 This vignette records the catalogue coverage check for a dsFlower vision
 template. Synthetic PNG images were split across three Opal/Rock nodes,
 trained federatively through DataSHIELD, and compared with a centralized
-PyTorch baseline trained on the pooled synthetic cohort. This is a path
-validation for image staging, template execution, result persistence,
-and cleanup; the current biomedical direct-image benchmark is the
-PathMNIST vignette, and the dsImaging handoff evidence is reported in
-the LUNG1 vignettes.
+PyTorch baseline trained on the pooled synthetic cohort. The purpose is
+method-path validation: image staging, template execution, result
+persistence, and cleanup. The current biomedical direct-image benchmark
+is the PathMNIST vignette, and the dsImaging handoff evidence is
+reported in the LUNG1 vignettes.
+
+It is laid out in two parts: first the commands you would run to
+reproduce the validation, then the recorded results of that run loaded
+from the committed evidence artifact. No live Opal servers are required
+to render this page; the command chunks are shown for reference and are
+not executed.
+
+## Running This Validation
+
+The federated run trains this vision template through dsFlower and
+compares it with a centralized PyTorch baseline. Each node holds an
+image metadata table (`id`, `relative_path`, `mask_path`, `label`) while
+the PNG files stay on the matching Rock server; only aggregate training
+history and model parameters return to the researcher.
+
+**1. Connect to the DataSHIELD nodes.** Open a single session across the
+three Opal nodes that serve the image metadata table.
 
 ``` r
 
-overview <- data.frame(
-  Field = c(
-    'method', 'task', 'target', 'n_total', 'image_size', 'rounds',
-    'centralized_metric', 'centralized_loss', 'centralized_accuracy',
-    'centralized_dice', 'federated_status', 'federated_loss',
-    'federated_n_failures', 'delta_loss',
-    'acceptance_max_loss_ratio', 'acceptance_max_loss_margin',
-    'acceptable_loss', 'validation_status'
-  ),
-  Value = c(
-    row$method, row$task, row$target, row$n_total, validation$image_size, row$rounds,
-    row$centralized_metric, fmt(row$centralized_loss), fmt(row$centralized_accuracy),
-    fmt(row$centralized_dice), row$federated_status, fmt(row$federated_loss),
-    fmt(row$federated_n_failures), fmt(row$delta_loss),
-    fmt(row$acceptance_max_loss_ratio), fmt(row$acceptance_max_loss_margin),
-    row$acceptable_loss, row$validation_status
-  )
-)
-knitr::kable(overview)
+library(DSI)
+library(DSOpal)
+library(dsFlowerClient)
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = 'node1', url = 'https://opal-node-1.example.org',
+               user = 'researcher', password = '********',
+               table = 'dsflower_demo.vision_cohort')
+builder$append(server = 'node2', url = 'https://opal-node-2.example.org',
+               user = 'researcher', password = '********',
+               table = 'dsflower_demo.vision_cohort')
+builder$append(server = 'node3', url = 'https://opal-node-3.example.org',
+               user = 'researcher', password = '********',
+               table = 'dsflower_demo.vision_cohort')
+conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = 'D')
 ```
 
-| Field                      | Value               |
-|:---------------------------|:--------------------|
-| method                     | pytorch_densenet121 |
-| task                       | classification      |
-| target                     | label               |
-| n_total                    | 12                  |
-| image_size                 | 64                  |
-| rounds                     | 1                   |
-| centralized_metric         | cross_entropy       |
-| centralized_loss           | 0.6033              |
-| centralized_accuracy       | 0.5000              |
-| centralized_dice           | NA                  |
-| federated_status           | ok                  |
-| federated_loss             | 0.9373              |
-| federated_n_failures       | 0.0000              |
-| delta_loss                 | 0.3339              |
-| acceptance_max_loss_ratio  | NA                  |
-| acceptance_max_loss_margin | NA                  |
-| acceptable_loss            | TRUE                |
-| validation_status          | pass                |
+**2. Run the federated fit.** Build the model and recipe, stage the
+nodes, run FedAvg over the server-side image tables, then clean up and
+log out. Only aggregate training history and model parameters are
+returned to the researcher.
+
+``` r
+
+model <- ds.flower.model.pytorch_densenet121(
+  n_classes = 2L, learning_rate = 0.001,
+  batch_size = 2L, local_epochs = 1L, image_size = 64L
+)
+
+recipe <- ds.flower.recipe(
+  model      = model,
+  strategy   = ds.flower.strategy.fedavg(),
+  privacy    = ds.flower.privacy.sandbox_open(),
+  target     = 'label',
+  num_rounds = 1
+)
+
+ds.flower.nodes.init(conns, data = 'D', symbol = 'flower')
+ds.flower.nodes.prepare(
+  conns, symbol = 'flower',
+  target_column = 'label',
+  run_config = c(recipe$model$params, recipe$strategy$params,
+                 list(data_type = 'image')),
+  privacy = recipe$privacy, template_name = recipe$model$template
+)
+ds.flower.nodes.ensure(conns, symbol = 'flower', template_name = recipe$model$template)
+fit <- ds.flower.run.start(recipe, conns = conns, verbose = TRUE)
+ds.flower.nodes.cleanup(conns, symbol = 'flower')
+
+DSI::datashield.logout(conns)
+```
+
+## Recorded Results
+
+The values below come from the committed evidence artifact for the run
+described above; no live servers are contacted when the article renders.
+
+This run trained the pytorch_densenet121 template on the classification
+task (target label) for 1 federated round(s) under the sandbox_open
+profile, across 3 Opal/Rock nodes that staged 12 synthetic 64x64 PNG
+samples.
+
+The centralized baseline reached a cross_entropy of 0.6033; the
+federated run reached 0.9373 (delta 0.3339) with 0 client failures,
+leaving this template **pass**. The comparison is shown below, followed
+by the centralized vs. federated loss.
+
+``` r
+
+comparison <- data.frame(
+  centralized_loss = row$centralized_loss,
+  centralized_accuracy = row$centralized_accuracy,
+  federated_loss = row$federated_loss,
+  delta_loss = row$delta_loss,
+  federated_n_failures = row$federated_n_failures,
+  validation_status = row$validation_status
+)
+knitr::kable(comparison, digits = 4)
+```
+
+| centralized_loss | centralized_accuracy | federated_loss | delta_loss | federated_n_failures | validation_status |
+|---:|---:|---:|---:|---:|:---|
+| 0.6033 | 0.5 | 0.9373 | 0.3339 | 0 | pass |
 
 ``` r
 
@@ -72,250 +131,4 @@ if (nrow(loss_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
 ```
 
 ![Bar chart comparing centralized and federated validation loss for
-pytorch_densenet121.](validation-vision-pytorch-densenet121_files/figure-html/unnamed-chunk-3-1.png)
-
-## Step-By-Step Run Output
-
-The committed catalogue artifact stores the output of the centralized
-and federated runs. The chunks below render that output explicitly so
-the reader can inspect the full path instead of seeing only a summary
-table.
-
-``` r
-
-input_trace <- data.frame(
-  step = c('generate_images', 'split_sites', 'upload_metadata', 'federated_rounds'),
-  output = c(
-    paste(row$n_total, 'synthetic PNG samples at', validation$image_size, 'x', validation$image_size),
-    paste(row$n_sites, 'Opal/Rock nodes with', row$n_per_site, 'rows each'),
-    'metadata tables only: id, relative_path, mask_path, label',
-    paste(row$rounds, 'round(s) through DataSHIELD + Flower')
-  )
-)
-knitr::kable(input_trace)
-```
-
-| step | output |
-|:---|:---|
-| generate_images | 12 synthetic PNG samples at 64 x 64 |
-| split_sites | 3 Opal/Rock nodes with 4 rows each |
-| upload_metadata | metadata tables only: id, relative_path, mask_path, label |
-| federated_rounds | 1 round(s) through DataSHIELD + Flower |
-
-``` r
-
-centralized_output <- data.frame(
-  metric = c('status', row$centralized_metric, 'accuracy', 'dice', 'samples'),
-  value = c(
-    row$centralized_status,
-    fmt(row$centralized_loss),
-    fmt(row$centralized_accuracy),
-    fmt(row$centralized_dice),
-    row$n_total
-  )
-)
-knitr::kable(centralized_output)
-```
-
-| metric        | value  |
-|:--------------|:-------|
-| status        | ok     |
-| cross_entropy | 0.6033 |
-| accuracy      | 0.5000 |
-| dice          | NA     |
-| samples       | 12     |
-
-``` r
-
-cat('[centralized] engine: local PyTorch baseline\n')
-#> [centralized] engine: local PyTorch baseline
-cat('[centralized] method:', row$method, '\n')
-#> [centralized] method: pytorch_densenet121
-cat('[centralized] metric:', row$centralized_metric, '\n')
-#> [centralized] metric: cross_entropy
-cat('[centralized] loss:', fmt(row$centralized_loss), '\n')
-#> [centralized] loss: 0.6033
-cat('[centralized] accuracy:', fmt(row$centralized_accuracy), '\n')
-#> [centralized] accuracy: 0.5000
-cat('[centralized] dice:', fmt(row$centralized_dice), '\n')
-#> [centralized] dice: NA
-```
-
-``` r
-
-dsflower_output <- data.frame(
-  metric = c('status', 'loss', 'client_failures', 'accepted', 'validation_status'),
-  value = c(
-    row$federated_status,
-    fmt(row$federated_loss),
-    fmt(row$federated_n_failures),
-    row$acceptable_loss,
-    row$validation_status
-  )
-)
-knitr::kable(dsflower_output)
-```
-
-| metric            | value  |
-|:------------------|:-------|
-| status            | ok     |
-| loss              | 0.9373 |
-| client_failures   | 0.0000 |
-| accepted          | TRUE   |
-| validation_status | pass   |
-
-``` r
-
-cat('[DataSHIELD] connected nodes:', row$n_sites, '\n')
-#> [DataSHIELD] connected nodes: 3
-cat('[dsFlower] model template:', row$method, '\n')
-#> [dsFlower] model template: pytorch_densenet121
-cat('[Flower] final federated loss:', fmt(row$federated_loss), '\n')
-#> [Flower] final federated loss: 0.9373
-cat('[Flower] client failures:', fmt(row$federated_n_failures), '\n')
-#> [Flower] client failures: 0.0000
-cat('[acceptance] max loss ratio:', fmt(row$acceptance_max_loss_ratio), '\n')
-#> [acceptance] max loss ratio: NA
-cat('[acceptance] max loss margin:', fmt(row$acceptance_max_loss_margin), '\n')
-#> [acceptance] max loss margin: NA
-cat('[acceptance] PASS:', row$validation_status == 'pass', '\n')
-#> [acceptance] PASS: TRUE
-```
-
-## Inline Execution Path
-
-The validation row above was generated by running this vision template
-through the inline workflow shown below. The rendered tables and console
-trace above are loaded from the committed evidence artifact written by
-that run.
-
-``` r
-
-library(DSI)
-library(DSOpal)
-library(dsFlowerClient)
-library(opalr)
-
-opal_urls <- trimws(strsplit(Sys.getenv(
-  'DSFLOWER_OPAL_URLS',
-  'https://localhost:8443,https://localhost:8444,https://localhost:8445'
-), ',', fixed = TRUE)[[1]])
-opal_users <- rep(Sys.getenv('OPAL_USER', 'administrator'), length(opal_urls))
-opal_passwords <- rep(Sys.getenv('OPAL_PASSWORD', 'admin123'), length(opal_urls))
-project <- Sys.getenv('DSFLOWER_DEMO_PROJECT', 'dsflower_demo')
-image_root <- Sys.getenv('DSFLOWER_IMAGE_ROOT', '/tmp/dsflower_vision_method_validation')
-```
-
-``` r
-
-make_png <- function(path, label, size = validation$image_size) {
-  dir.create(dirname(path), recursive = TRUE, showWarnings = FALSE)
-  grid <- seq(0, 1, length.out = size)
-  img <- outer(grid, grid, function(x, y) if (label == 1L) x else y)
-  grDevices::png(path, width = size, height = size)
-  old_par <- graphics::par(mar = c(0, 0, 0, 0))
-  graphics::plot.new()
-  graphics::rasterImage(grDevices::as.raster(img), 0, 0, 1, 1)
-  graphics::par(old_par)
-  grDevices::dev.off()
-}
-
-site_tables <- vector('list', length(opal_urls))
-for (site in seq_along(opal_urls)) {
-  rows <- vector('list', validation$n_per_site)
-  for (i in seq_len(validation$n_per_site)) {
-    label <- as.integer(i %% 2L)
-    rel <- file.path(paste0('site', site), 'images', sprintf('img_%03d.png', i))
-    mask <- file.path(paste0('site', site), 'masks', sprintf('mask_%03d.png', i))
-    make_png(file.path(image_root, rel), label)
-    make_png(file.path(image_root, mask), label)
-    rows[[i]] <- data.frame(id = sprintf('vision_site%d_%03d', site, i),
-                            relative_path = rel, mask_path = mask,
-                            label = label)
-  }
-  site_tables[[site]] <- do.call(rbind, rows)
-}
-```
-
-``` r
-
-table_paths <- character(length(opal_urls))
-for (i in seq_along(opal_urls)) {
-  opal <- opalr::opal.login(
-    username = opal_users[[i]], password = opal_passwords[[i]],
-    url = opal_urls[[i]],
-    opts = list(ssl_verifyhost = 0L, ssl_verifypeer = 0L)
-  )
-  opalr::dsadmin.set_option(opal, 'dsflower.image_data_root',
-                            image_root, profile = 'default')
-  table_name <- paste0('vision_validation_', method_id, '_site', i)
-  opalr::opal.table_save(opal, site_tables[[i]], project = project,
-                         table = table_name, id.name = 'id',
-                         policy = 'generate', overwrite = TRUE, force = TRUE)
-  table_paths[[i]] <- paste(project, table_name, sep = '.')
-  opalr::opal.logout(opal)
-}
-
-builder <- DSI::newDSLoginBuilder()
-for (i in seq_along(opal_urls)) {
-  builder$append(server = paste0('opal', i), url = opal_urls[[i]],
-                 user = opal_users[[i]], password = opal_passwords[[i]],
-                 table = table_paths[[i]], driver = 'OpalDriver')
-}
-conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = 'D')
-```
-
-``` r
-
-model <- switch(
-  method_id,
-  pytorch_resnet18 = ds.flower.model.pytorch_resnet18(
-    n_classes = 2L, image_size = validation$image_size,
-    batch_size = 2L, local_epochs = 1L
-  ),
-  pytorch_densenet121 = ds.flower.model.pytorch_densenet121(
-    n_classes = 2L, image_size = validation$image_size,
-    batch_size = 2L, local_epochs = 1L
-  ),
-  pytorch_unet2d = ds.flower.model.pytorch_unet2d(
-    n_classes = 1L, image_size = validation$image_size,
-    batch_size = 1L, local_epochs = 1L, base_channels = 8L
-  )
-)
-
-recipe <- ds.flower.recipe(
-  model = model,
-  strategy = ds.flower.strategy.fedavg(),
-  privacy = ds.flower.privacy.sandbox_open(),
-  target = row$target,
-  num_rounds = row$rounds
-)
-
-symbol <- paste0('flower_', method_id)
-ds.flower.nodes.init(conns, data = 'D', symbol = symbol)
-ds.flower.nodes.prepare(
-  conns, symbol = symbol, target_column = row$target,
-  run_config = c(model$params, list(data_type = 'image')),
-  privacy = recipe$privacy, template_name = model$template
-)
-ds.flower.nodes.ensure(conns, symbol = symbol, template_name = model$template)
-fit <- ds.flower.run.start(recipe, conns = conns, verbose = TRUE)
-ds.flower.nodes.cleanup(conns, symbol = symbol)
-DSI::datashield.logout(conns)
-```
-
-``` r
-
-history <- fit$history
-federated_loss <- tail(stats::na.omit(as.numeric(history$loss)), 1)
-federated_failures <- max(as.numeric(history$n_failures), na.rm = TRUE)
-acceptable <- federated_failures == 0 &&
-  federated_loss <= row$centralized_loss * row$acceptance_max_loss_ratio +
-                    row$acceptance_max_loss_margin
-acceptable
-```
-
-``` r
-
-if (nzchar(row$error)) cat(row$error)
-```
+pytorch_densenet121.](validation-vision-pytorch-densenet121_files/figure-html/unnamed-chunk-2-1.png)

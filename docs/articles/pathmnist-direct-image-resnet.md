@@ -14,20 +14,83 @@ federated execution under the profile that requires Secure Aggregation,
 suppresses per-node metrics and still produces a global model
 checkpoint.
 
-## Reproduction Command
+It is laid out in two parts: first the commands you would run to
+reproduce the benchmark, then the recorded results of that run loaded
+from the committed evidence artifact. No live Opal servers are required
+to render this page; the command chunks are shown for reference and are
+not executed.
+
+## Running This Benchmark
+
+Each node holds an image metadata table (`label` plus the relative image
+paths) while the PNG files stay on the matching Rock server; only
+aggregate training history and model parameters return to the
+researcher.
+
+**1. Connect to the DataSHIELD nodes.** Open a single session across the
+three Opal nodes that serve the PathMNIST metadata table.
 
 ``` r
 
-Sys.setenv(
-  DSFLOWER_OPAL_URLS = "https://localhost:8443,https://localhost:8444,https://localhost:8445",
-  OPAL_USER = "administrator",
-  OPAL_PASSWORD = "admin123",
-  DSFLOWER_PATHMNIST_N_PER_SITE = "500",
-  DSFLOWER_PATHMNIST_PRIVACY_PROFILES = "trusted_internal,consortium_internal"
-)
-source(system.file("demos", "benchmark_pathmnist_direct_image.R",
-                   package = "dsFlowerClient"))
+library(DSI)
+library(DSOpal)
+library(dsFlowerClient)
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = "node1", url = "https://opal-node-1.example.org",
+               user = "researcher", password = "********",
+               table = "dsflower_demo.pathmnist_cohort")
+builder$append(server = "node2", url = "https://opal-node-2.example.org",
+               user = "researcher", password = "********",
+               table = "dsflower_demo.pathmnist_cohort")
+builder$append(server = "node3", url = "https://opal-node-3.example.org",
+               user = "researcher", password = "********",
+               table = "dsflower_demo.pathmnist_cohort")
+conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "D")
 ```
+
+**2. Run the federated fit.** Build the ResNet-18 model and recipe,
+stage the nodes, run FedAvg over the server-side image tables, then
+clean up and log out.
+
+``` r
+
+model <- ds.flower.model.pytorch_resnet18(
+  n_classes = 2L, learning_rate = 0.001, batch_size = 64L,
+  local_epochs = 1L, image_size = 32L
+)
+
+recipe <- ds.flower.recipe(
+  model      = model,
+  strategy   = ds.flower.strategy.fedavg(),
+  privacy    = ds.flower.privacy.trusted_internal(),
+  target     = "label",
+  num_rounds = 2
+)
+
+ds.flower.nodes.init(conns, data = "D", symbol = "flower")
+ds.flower.nodes.prepare(
+  conns, symbol = "flower",
+  target_column = "label",
+  run_config = c(recipe$model$params, recipe$strategy$params,
+                 list(data_type = "image")),
+  privacy = recipe$privacy, template_name = recipe$model$template
+)
+ds.flower.nodes.ensure(conns, symbol = "flower", template_name = recipe$model$template)
+fit <- ds.flower.run.start(recipe, conns = conns, verbose = TRUE)
+ds.flower.nodes.cleanup(conns, symbol = "flower")
+
+DSI::datashield.logout(conns)
+```
+
+The `consortium_internal` branch repeats the same run with
+`privacy = ds.flower.privacy.consortium_internal()`, which enforces
+Secure Aggregation and suppresses the per-node metrics.
+
+## Recorded Results
+
+The values below come from the committed evidence artifact for the run
+described above; no live servers are contacted when the article renders.
 
 ## Dataset And Split
 
@@ -40,20 +103,6 @@ class_table <- data.frame(
   row.names = NULL
 )
 site_table <- evidence$site_counts
-
-summary_table <- data.frame(
-  field = c("dataset", "source", "sites", "rows per site",
-            "total rows", "image size", "model", "rounds"),
-  value = c(evidence$dataset$dataset,
-            evidence$dataset$source,
-            evidence$n_sites,
-            evidence$n_per_site,
-            evidence$n_total,
-            paste0(evidence$image_size, " x ", evidence$image_size),
-            evidence$model,
-            evidence$rounds),
-  stringsAsFactors = FALSE
-)
 
 knitr::kable(class_table)
 ```
@@ -74,21 +123,9 @@ knitr::kable(site_table)
 | opal2 |  500 |    250 |    250 |
 | opal3 |  500 |    250 |    250 |
 
-``` r
-
-knitr::kable(summary_table)
-```
-
-| field         | value                   |
-|:--------------|:------------------------|
-| dataset       | PathMNIST               |
-| source        | MedMNIST v2 train split |
-| sites         | 3                       |
-| rows per site | 500                     |
-| total rows    | 1500                    |
-| image size    | 32 x 32                 |
-| model         | pytorch_resnet18        |
-| rounds        | 2                       |
+The benchmark draws 1500 PathMNIST images from MedMNIST v2 train split,
+split into 500 rows on each of 3 nodes, resized to 32x32, and trains
+pytorch_resnet18 for 2 federated rounds.
 
 ## Centralized Baseline
 
@@ -109,20 +146,8 @@ knitr::kable(centralized, digits = 4)
 |:--------------------|--------:|-------:|-------:|---------:|
 | centralized PyTorch |    1500 |      2 | 0.0143 |   0.9947 |
 
-``` r
-
-
-cat("[centralized] epoch losses:",
-    paste(sprintf("%.6f", evidence$centralized$train_loss_by_epoch),
-          collapse = " -> "), "\n")
-#> [centralized] epoch losses: 0.174467 -> 0.045983
-cat("[centralized] eval loss:",
-    sprintf("%.6f", evidence$centralized$eval$loss), "\n")
-#> [centralized] eval loss: 0.014301
-cat("[centralized] eval accuracy:",
-    sprintf("%.4f", evidence$centralized$eval$accuracy), "\n")
-#> [centralized] eval accuracy: 0.9947
-```
+The centralized PyTorch baseline trained on 1500 samples for 2 epoch(s),
+reaching an evaluation loss of 0.0143 and accuracy 0.9947.
 
 ## Federated Trusted Branch
 
@@ -160,21 +185,9 @@ knitr::kable(trusted_table, digits = 4)
 | centralized          | 0.0143 |   0.9947 |       NA |
 | federated checkpoint | 0.0535 |   0.9860 |        0 |
 
-``` r
-
-
-cat("[federated] final history loss:",
-    sprintf("%.6f", comparison$federated_history_loss), "\n")
-#> [federated] final history loss: 0.053542
-cat("[delta] checkpoint loss - centralized loss:",
-    sprintf("%.6f", comparison$delta_loss), "\n")
-#> [delta] checkpoint loss - centralized loss: 0.039241
-cat("[delta] checkpoint accuracy - centralized accuracy:",
-    sprintf("%.4f", comparison$delta_accuracy), "\n")
-#> [delta] checkpoint accuracy - centralized accuracy: -0.0087
-cat("[validation] status:", comparison$validation_status, "\n")
-#> [validation] status: pass
-```
+The federated checkpoint’s final history loss was 0.0535; against the
+centralized baseline the checkpoint loss delta was 0.0392 and the
+accuracy delta -0.0087, leaving this branch **pass**.
 
 ``` r
 
@@ -190,8 +203,6 @@ plot_df <- data.frame(
 if (requireNamespace("ggplot2", quietly = TRUE)) {
   ggplot2::ggplot(plot_df, ggplot2::aes(x = run, y = value, fill = run)) +
     ggplot2::geom_col(width = 0.62, show.legend = FALSE) +
-    ggplot2::geom_text(ggplot2::aes(label = sprintf("%.4f", value)),
-                       vjust = -0.35, size = 3.3) +
     ggplot2::facet_wrap(~ metric, scales = "free_y") +
     ggplot2::scale_fill_manual(values = c("#4C78A8", "#F58518")) +
     ggplot2::labs(x = NULL, y = NULL) +
@@ -217,29 +228,12 @@ accuracy.](pathmnist-direct-image-resnet_files/figure-html/trusted-plot-1.png)
 ``` r
 
 secagg <- evidence$consortium_internal_secagg
-secagg_table <- data.frame(
-  field = c("privacy profile", "secure aggregation required",
-            "metric release", "federated failures",
-            "global checkpoint produced", "validation status"),
-  value = c("consortium_internal",
-            as.character(secagg$secure_aggregation_required),
-            secagg$metric_release,
-            secagg$federated_failures,
-            as.character(secagg$saved_model_exists),
-            secagg$validation_status),
-  stringsAsFactors = FALSE
-)
-knitr::kable(secagg_table)
 ```
 
-| field                       | value                                     |
-|:----------------------------|:------------------------------------------|
-| privacy profile             | consortium_internal                       |
-| secure aggregation required | TRUE                                      |
-| metric release              | suppressed by consortium_internal profile |
-| federated failures          | 0                                         |
-| global checkpoint produced  | TRUE                                      |
-| validation status           | pass                                      |
+The `consortium_internal` branch ran with Secure Aggregation required,
+metric release set to suppressed by consortium_internal profile, 0
+federated client failures, and a persisted global checkpoint (TRUE),
+leaving the branch **pass**.
 
 The SecAgg branch is not interpreted through its loss value because
 `consortium_internal` suppresses released per-node metrics. The
@@ -249,24 +243,13 @@ production of the global model artefact.
 
 ## Evidence Scope
 
-``` r
+**Direct-image learning path.** 1500 PathMNIST PNG images remain
+file-backed on the server side while Opal tables expose only metadata
+and relative paths.
 
-scope <- data.frame(
-  claim = c("Direct-image learning path",
-            "Centralized-versus-federated utility",
-            "SecAgg profile execution"),
-  evidence = c(
-    "1,500 PathMNIST PNG images remain file-backed on the server side while Opal tables expose only metadata and relative paths.",
-    "The federated ResNet-18 checkpoint reaches 0.9860 accuracy versus 0.9947 for the centralized PyTorch baseline on the same image table.",
-    "The consortium profile completes with zero client failures, metric suppression and a persisted global checkpoint."
-  ),
-  stringsAsFactors = FALSE
-)
-knitr::kable(scope)
-```
+**Centralized-versus-federated utility.** The federated ResNet-18
+checkpoint reaches 0.986 accuracy versus 0.9947 for the centralized
+PyTorch baseline on the same image table.
 
-| claim | evidence |
-|:---|:---|
-| Direct-image learning path | 1,500 PathMNIST PNG images remain file-backed on the server side while Opal tables expose only metadata and relative paths. |
-| Centralized-versus-federated utility | The federated ResNet-18 checkpoint reaches 0.9860 accuracy versus 0.9947 for the centralized PyTorch baseline on the same image table. |
-| SecAgg profile execution | The consortium profile completes with zero client failures, metric suppression and a persisted global checkpoint. |
+**SecAgg profile execution.** The consortium profile completes with zero
+client failures, metric suppression and a persisted global checkpoint.

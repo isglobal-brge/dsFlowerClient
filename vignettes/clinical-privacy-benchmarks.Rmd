@@ -115,6 +115,67 @@ dataset_map <- data.frame(
 knitr::kable(dataset_map)
 ```
 
+It is laid out in two parts: first the commands you would run to reproduce the
+benchmark, then the recorded results loaded from the committed evidence
+artifacts. No live Opal servers are required to render this page; the command
+chunks are shown for reference and are not executed.
+
+## Running This Benchmark
+
+Each dataset is partitioned across three Opal nodes that are already set up and
+serving the cohort table; each benchmark row is one `ds.flower.fit()` call over
+the server-side partitions. Only aggregate training history and model parameters
+are returned to the researcher.
+
+**1. Connect to the DataSHIELD nodes.** Open a single session across the three
+Opal nodes that hold the partitioned cohort (the CDC Diabetes Health Indicators
+table is shown).
+
+```{r connect, eval=FALSE}
+library(DSI)
+library(DSOpal)
+library(dsFlowerClient)
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = "node1", url = "https://opal-node-1.example.org",
+               user = "researcher", password = "********",
+               table = "dsflower_demo.cdc_diabetes_cohort")
+builder$append(server = "node2", url = "https://opal-node-2.example.org",
+               user = "researcher", password = "********",
+               table = "dsflower_demo.cdc_diabetes_cohort")
+builder$append(server = "node3", url = "https://opal-node-3.example.org",
+               user = "researcher", password = "********",
+               table = "dsflower_demo.cdc_diabetes_cohort")
+conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "D")
+```
+
+**2. Run a benchmark row.** Train one authorised template through dsFlower with
+FedAvg over the server-side table, choosing the privacy profile for the posture
+under test. The clinical Secure Aggregation profile is shown here.
+
+```{r fit, eval=FALSE}
+fit <- ds.flower.fit(
+  conns,
+  symbol   = "D",
+  target   = "outcome",
+  model    = "sklearn_logreg",
+  strategy = "fedavg",
+  privacy  = "clinical_default",
+  rounds   = 5
+)
+
+DSI::datashield.logout(conns)
+```
+
+Swapping the `privacy` argument moves between postures: `"trusted_internal"` for
+ordinary federated training, `"clinical_default"` for the Secure Aggregation
+profile over the `sklearn_logreg`, `sklearn_ridge`, `sklearn_sgd`,
+`pytorch_logreg`, `pytorch_mlp` and secure `xgboost_histogram` templates,
+`"high_sensitivity_dp"` for Opacus DP-SGD on the compatible PyTorch templates,
+and `"clinical_update_noise"` for the bounded-noise XGBoost histogram route. The
+epsilon curves below repeat the DP and update-noise rows across a sweep of
+requested budgets.
+
 ## Evidence map
 
 The committed evidence is split by privacy posture. The `trusted_internal`
@@ -168,136 +229,6 @@ evidence_map <- data.frame(
   stringsAsFactors = FALSE
 )
 knitr::kable(evidence_map, row.names = FALSE)
-```
-
-## Re-running the evidence
-
-The commands below reproduce the committed benchmark evidence against a local
-three-Opal stack.
-
-```{r rerun-trusted, eval=FALSE}
-Sys.setenv(
-  DSFLOWER_DEMO_PRIVACY_PROFILE = "trusted_internal",
-  DSFLOWER_CDC_DIABETES_LIMIT = "9000",
-  DSFLOWER_CLINICAL_EVIDENCE_FILE =
-    "inst/extdata/dsflower_clinical_algorithm_results.json"
-)
-source(system.file(
-  "demos", "benchmark_clinical_algorithms.R",
-  package = "dsFlowerClient"
-))
-```
-
-```{r rerun-secagg, eval=FALSE}
-Sys.setenv(
-  DSFLOWER_DEMO_PRIVACY_PROFILE = "clinical_default",
-  DSFLOWER_CLINICAL_MODELS =
-    "sklearn_logreg,sklearn_ridge,sklearn_sgd,pytorch_logreg,pytorch_mlp,xgboost_histogram",
-  DSFLOWER_CDC_DIABETES_LIMIT = "9000",
-  DSFLOWER_CLINICAL_XGB_TREES = "5",
-  DSFLOWER_CLINICAL_XGB_DEPTH = "1",
-  DSFLOWER_CLINICAL_XGB_BINS = "16",
-  DSFLOWER_CLINICAL_EVIDENCE_FILE =
-    "inst/extdata/dsflower_clinical_secagg_results.json"
-)
-source(system.file(
-  "demos", "benchmark_clinical_algorithms.R",
-  package = "dsFlowerClient"
-))
-```
-
-```{r rerun-xgb-update-noise, eval=FALSE}
-Sys.setenv(
-  DSFLOWER_DEMO_PRIVACY_PROFILE = "clinical_update_noise",
-  DSFLOWER_CLINICAL_DATASETS = "cdc_diabetes_health_indicators",
-  DSFLOWER_CLINICAL_MODELS = "xgboost_histogram",
-  DSFLOWER_CDC_DIABETES_LIMIT = "9000",
-  DSFLOWER_CLINICAL_XGB_TREES = "5",
-  DSFLOWER_CLINICAL_XGB_DEPTH = "1",
-  DSFLOWER_CLINICAL_XGB_BINS = "16",
-  DSFLOWER_CLINICAL_DP_EPSILON = "12",
-  DSFLOWER_CLINICAL_DP_DELTA = "1e-5",
-  DSFLOWER_CLINICAL_DP_CLIP = "5",
-  DSFLOWER_CLINICAL_EVIDENCE_FILE =
-    "inst/extdata/dsflower_xgboost_histogram_privacy_results.json"
-)
-source(system.file(
-  "demos", "benchmark_clinical_algorithms.R",
-  package = "dsFlowerClient"
-))
-```
-
-```{r rerun-dp, eval=FALSE}
-Sys.setenv(
-  DSFLOWER_DEMO_PRIVACY_PROFILE = "high_sensitivity_dp",
-  DSFLOWER_CLINICAL_DATASETS = "cdc_diabetes_health_indicators",
-  DSFLOWER_CLINICAL_MODELS = "pytorch_mlp,pytorch_logreg",
-  DSFLOWER_CDC_DIABETES_LIMIT = "9000",
-  DSFLOWER_CLINICAL_DP_EPSILON = "8",
-  DSFLOWER_CLINICAL_DP_DELTA = "1e-5",
-  DSFLOWER_CLINICAL_DP_CLIP = "1",
-  DSFLOWER_CLINICAL_EVIDENCE_FILE =
-    "inst/extdata/dsflower_clinical_dp_results.json"
-)
-source(system.file(
-  "demos", "benchmark_clinical_algorithms.R",
-  package = "dsFlowerClient"
-))
-```
-
-```{r rerun-dp-curve, eval=FALSE}
-for (model in c("pytorch_logreg", "pytorch_mlp")) {
-  for (eps in c(2, 4, 8)) {
-    if (model == "pytorch_logreg") {
-      Sys.setenv(DSFLOWER_CLINICAL_TORCH_LOGREG_ROUNDS = "10")
-    } else {
-      Sys.unsetenv("DSFLOWER_CLINICAL_TORCH_LOGREG_ROUNDS")
-    }
-    Sys.setenv(
-      DSFLOWER_DEMO_PRIVACY_PROFILE = "high_sensitivity_dp",
-      DSFLOWER_CLINICAL_DATASETS = "cdc_diabetes_health_indicators",
-      DSFLOWER_CLINICAL_MODELS = model,
-      DSFLOWER_CDC_DIABETES_LIMIT = "9000",
-      DSFLOWER_CLINICAL_DP_EPSILON = as.character(eps),
-      DSFLOWER_CLINICAL_DP_DELTA = "1e-5",
-      DSFLOWER_CLINICAL_DP_CLIP = "1",
-      DSFLOWER_DEMO_PRIVACY_LEDGER_NAMESPACE =
-        paste0("dp_curve_rebuild_", model, "_eps", eps),
-      DSFLOWER_CLINICAL_EVIDENCE_FILE =
-        paste0("dsflower_output/dp_curve_", model, "_eps", eps, ".json")
-    )
-    source(system.file(
-      "demos", "benchmark_clinical_algorithms.R",
-      package = "dsFlowerClient"
-    ))
-  }
-}
-```
-
-```{r rerun-xgboost-update-noise-curve, eval=FALSE}
-for (eps in c(8, 12, 16)) {
-  Sys.setenv(
-    DSFLOWER_DEMO_PRIVACY_PROFILE = "clinical_update_noise",
-    DSFLOWER_PRIVACY_MAX_EPSILON = "32",
-    DSFLOWER_CLINICAL_DATASETS = "cdc_diabetes_health_indicators",
-    DSFLOWER_CLINICAL_MODELS = "xgboost_histogram",
-    DSFLOWER_CDC_DIABETES_LIMIT = "9000",
-    DSFLOWER_CLINICAL_XGB_TREES = "5",
-    DSFLOWER_CLINICAL_XGB_DEPTH = "1",
-    DSFLOWER_CLINICAL_XGB_BINS = "16",
-    DSFLOWER_CLINICAL_DP_EPSILON = as.character(eps),
-    DSFLOWER_CLINICAL_DP_DELTA = "1e-5",
-    DSFLOWER_CLINICAL_DP_CLIP = "5",
-    DSFLOWER_DEMO_PRIVACY_LEDGER_NAMESPACE =
-      paste0("xgb_update_noise_rebuild_eps", eps),
-    DSFLOWER_CLINICAL_EVIDENCE_FILE =
-      paste0("dsflower_output/xgb_update_noise_eps", eps, ".json")
-  )
-  source(system.file(
-    "demos", "benchmark_clinical_algorithms.R",
-    package = "dsFlowerClient"
-  ))
-}
 ```
 
 ## Result tables
