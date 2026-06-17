@@ -192,12 +192,29 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 ds.flower.nodes.ensure <- function(conns, symbol = "flower",
                                     superlink_address = NULL,
                                     template_name = NULL) {
-  # Auto-detect if not provided
+  # Resolve the address SuperNodes will dial, in priority order:
+  #   1. explicit superlink_address (caller knows best)
+  #   2. an already-attached REMOTE coordinator (its public Fleet address)
+  #   3. a coordinator configured on the federation (auto-discover + attach)
+  #   4. local SuperLink address auto-detection (docker/LAN/VPN)
   if (is.null(superlink_address)) {
-    superlink_address <- .auto_resolve_superlink(conns, symbol)
+    sl <- ds.flower.superlink.status()
+    if (isTRUE(sl$running) && isTRUE(sl$remote)) {
+      superlink_address <- sl$fleet_address
+    } else {
+      coord <- .discover_coordinator(conns)
+      if (!is.null(coord)) {
+        ds.flower.superlink.attach(superlink_address = coord$address,
+                                   control_address = coord$control_address,
+                                   ca_cert_pem = coord$ca_cert_pem)
+        superlink_address <- coord$address
+      } else {
+        superlink_address <- .auto_resolve_superlink(conns, symbol)
+      }
+    }
   }
 
-  # Get federation_id and ca_cert_pem from the local SuperLink (if we started it)
+  # Get federation_id and ca_cert_pem from the SuperLink (local or remote)
   sl_status <- ds.flower.superlink.status()
   fed_id <- sl_status$federation_id
 
@@ -206,6 +223,10 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
   if (!is.null(sl_status$ca_cert_pem)) {
     ca_cert_b64 <- .ds_encode(list(pem = sl_status$ca_cert_pem))
   }
+
+  # Egress preflight: fail fast (naming each node + address) if a node cannot
+  # reach the SuperLink, instead of spawning SuperNodes that time out silently.
+  .preflight_node_egress(conns, superlink_address)
 
   if (is.character(superlink_address) && length(superlink_address) == 1L) {
     # Single address for all nodes
@@ -329,6 +350,90 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
   }
 
   invisible(NULL)
+}
+
+#' Discover a configured public coordinator (SuperLink) from the federation
+#'
+#' Queries each node's \code{flowerGetCoordinatorDS()}. If the operator
+#' configured a coordinator (a publicly reachable SuperLink both client and
+#' nodes dial out to), returns its address / control address / CA so the client
+#' can auto-attach with zero manual setup. Returns \code{NULL} when no
+#' coordinator is configured or the servers predate the method, so callers fall
+#' back to a local SuperLink + address auto-resolution.
+#'
+#' @param conns DSI connections object.
+#' @return Named list (address, control_address, ca_cert_pem) or NULL.
+#' @keywords internal
+.discover_coordinator <- function(conns) {
+  res <- tryCatch(
+    DSI::datashield.aggregate(conns, expr = call("flowerGetCoordinatorDS")),
+    error = function(e) NULL
+  )
+  if (is.null(res)) return(NULL)
+
+  configs <- Filter(function(x) {
+    is.list(x) && isTRUE(x$configured) &&
+      !is.null(x$address) && nzchar(x$address %||% "")
+  }, res)
+  if (length(configs) == 0) return(NULL)
+
+  addrs <- unique(vapply(configs, function(x) x$address, character(1)))
+  if (length(addrs) > 1L) {
+    warning("Nodes report different coordinator addresses (",
+            paste(addrs, collapse = ", "), "); using ", addrs[1], ".",
+            call. = FALSE)
+  }
+  cfg <- configs[[1]]
+  message("Discovered coordinator at ", cfg$address,
+          " -- auto-attaching SuperLink.")
+  list(
+    address         = cfg$address,
+    control_address = cfg$control_address %||% NULL,
+    ca_cert_pem     = cfg$ca_cert_pem %||% NULL
+  )
+}
+
+#' Preflight: verify every node can egress to the SuperLink address
+#'
+#' Runs \code{flowerCheckConnectivityDS} on each node and aborts with an
+#' actionable message (naming each unreachable node and the address it could
+#' not reach) before any SuperNode is spawned. Nodes whose servers lack the
+#' method (transport error) are skipped rather than blocked.
+#'
+#' @param conns DSI connections object.
+#' @param superlink_address Single "host:port" string or named per-node list.
+#' @return Invisible TRUE if all reachable; stops otherwise.
+#' @keywords internal
+.preflight_node_egress <- function(conns, superlink_address) {
+  addr_for <- function(srv) {
+    if (is.list(superlink_address)) superlink_address[[srv]] else superlink_address
+  }
+  unreachable <- character(0)
+  for (srv in names(conns)) {
+    address <- addr_for(srv)
+    if (is.null(address) || !nzchar(address)) next
+    chk <- tryCatch(
+      DSI::datashield.aggregate(
+        conns[srv], expr = call("flowerCheckConnectivityDS", address)
+      )[[srv]],
+      error = function(e) NULL
+    )
+    if (is.null(chk)) next  # method missing / transport: don't block
+    if (!isTRUE(chk$reachable)) {
+      unreachable <- c(unreachable,
+                       paste0(srv, " -> ", address, " (",
+                              chk$error %||% "unreachable", ")"))
+    }
+  }
+  if (length(unreachable) > 0) {
+    stop("SuperLink not reachable from ", length(unreachable), " node(s):\n  ",
+         paste(unreachable, collapse = "\n  "),
+         "\nEvery node must be able to open an outbound connection to the ",
+         "SuperLink. Use a public coordinator (ds.flower.coordinator.up() + ",
+         "dsflower.coordinator_address on each node) or an outbound tunnel, ",
+         "then retry.", call. = FALSE)
+  }
+  invisible(TRUE)
 }
 
 #' Clean up training run on all servers

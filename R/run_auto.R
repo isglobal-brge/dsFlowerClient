@@ -235,12 +235,21 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
     results_dir = prebuilt_results_dir
   )
 
-  # Step 2: SuperLink (start if not running)
+  # Step 2: SuperLink. If the federation advertises a public coordinator,
+  # auto-attach to it (NAT-traversal path, nothing spawned locally and never
+  # stopped by us). Otherwise start a local SuperLink.
   started_superlink <- FALSE
   sl_status <- ds.flower.superlink.status()
   if (!isTRUE(sl_status$running)) {
-    ds.flower.superlink.start(detached = detached)
-    started_superlink <- TRUE
+    coord <- .discover_coordinator(conns)
+    if (!is.null(coord)) {
+      ds.flower.superlink.attach(superlink_address = coord$address,
+                                 control_address = coord$control_address,
+                                 ca_cert_pem = coord$ca_cert_pem)
+    } else {
+      ds.flower.superlink.start(detached = detached)
+      started_superlink <- TRUE
+    }
   }
 
   cleanup_nodes <- function() {

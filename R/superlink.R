@@ -326,15 +326,101 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
   invisible(info)
 }
 
-#' Attach to a detached SuperLink
+#' Attach to a SuperLink (remote coordinator or local detached)
 #'
-#' Reconnects to a SuperLink started with \code{detached = TRUE} in a
-#' previous R session. Reads the state file, verifies the process is
-#' alive and the port is listening, and restores the session state.
+#' Two modes:
+#' \itemize{
+#'   \item \strong{Remote coordinator} (when \code{superlink_address} is given):
+#'     point this session at an already-running, publicly reachable SuperLink
+#'     that both this client and the SuperNodes dial OUT to. Nothing is spawned
+#'     locally. This is the NAT-traversal path -- the coordinator is the single
+#'     rendezvous endpoint.
+#'   \item \strong{Local detached} (no arguments): reconnect to a SuperLink
+#'     started with \code{detached = TRUE} in a previous R session.
+#' }
 #'
+#' @param superlink_address Character or NULL; the coordinator Fleet API address
+#'   ("host:port") SuperNodes dial. When supplied, attaches in remote mode.
+#' @param control_address Character or NULL; the coordinator Control API address
+#'   ("host:port") the researcher's \code{flwr run} dials. Defaults to the
+#'   Fleet host with the next port (\code{fleet_port + 1}) when omitted.
+#' @param ca_cert_path Character or NULL; path to the coordinator's CA cert PEM.
+#' @param ca_cert_pem Character or NULL; the coordinator's CA cert PEM inline
+#'   (used when no path is available, e.g. from auto-discovery).
 #' @return Invisible list with SuperLink info.
 #' @export
-ds.flower.superlink.attach <- function() {
+ds.flower.superlink.attach <- function(superlink_address = NULL,
+                                        control_address = NULL,
+                                        ca_cert_path = NULL,
+                                        ca_cert_pem = NULL) {
+  # --- Remote coordinator mode ---
+  if (!is.null(superlink_address)) {
+    if (is.null(ca_cert_pem) && !is.null(ca_cert_path)) {
+      if (!file.exists(ca_cert_path))
+        stop("CA certificate not found at ", ca_cert_path, ".", call. = FALSE)
+      ca_cert_pem <- paste(readLines(ca_cert_path, warn = FALSE),
+                           collapse = "\n")
+    }
+    if (is.null(ca_cert_pem)) {
+      stop("A coordinator CA certificate is required (ca_cert_path or ",
+           "ca_cert_pem). The SuperLink uses TLS.", call. = FALSE)
+    }
+
+    base_dir <- file.path(.client_venv_root(), "coordinator")
+    flwr_home <- file.path(base_dir, "flwr_home")
+    dir.create(flwr_home, recursive = TRUE, showWarnings = FALSE)
+
+    # Persist the CA to a stable path for flwr run + reference.
+    if (is.null(ca_cert_path)) {
+      ca_cert_path <- file.path(base_dir, "ca.pem")
+      writeLines(ca_cert_pem, ca_cert_path)
+    }
+
+    fleet_port <- suppressWarnings(as.integer(sub(".*:", "", superlink_address)))
+    if (is.null(control_address)) {
+      host <- sub(":.*", "", superlink_address)
+      control_port <- if (is.na(fleet_port)) 9093L else fleet_port + 1L
+      control_address <- paste0(host, ":", control_port)
+    } else {
+      control_port <- suppressWarnings(as.integer(sub(".*:", "",
+                                                      control_address)))
+    }
+
+    # config.toml so `flwr run` dials the PUBLIC Control API over TLS.
+    config_toml <- paste0(
+      "[superlink]\n",
+      'default = "dsflower"\n\n',
+      "[superlink.dsflower]\n",
+      'address = "', control_address, '"\n',
+      'root-certificates = "', ca_cert_path, '"\n'
+    )
+    writeLines(config_toml, file.path(flwr_home, "config.toml"))
+
+    federation_id <- paste0("fl-",
+      paste(sample(c(letters, 0:9), 12, replace = TRUE), collapse = ""))
+
+    info <- list(
+      process          = NULL,
+      remote           = TRUE,
+      pid              = NA_integer_,
+      fleet_address    = superlink_address,
+      control_address  = control_address,
+      fleet_port       = fleet_port,
+      control_port     = control_port,
+      flwr_home        = flwr_home,
+      federation_id    = federation_id,
+      ca_cert_pem      = ca_cert_pem,
+      ca_cert_path     = ca_cert_path,
+      detached         = TRUE,
+      started_at       = Sys.time()
+    )
+    .dsflower_client_env$.superlink <- info
+    message("Attached to remote SuperLink (coordinator) at ", superlink_address)
+    message("  Control API (flwr run): ", control_address)
+    return(invisible(info))
+  }
+
+  # --- Local detached mode ---
   state <- .load_superlink_state()
   if (is.null(state)) {
     stop("No detached SuperLink state found at ",
@@ -500,7 +586,11 @@ ds.flower.superlink.status <- function() {
     ))
   }
 
-  running <- if (!is.null(info$process)) {
+  # A remote coordinator SuperLink has no local process/port to probe; we
+  # trust it is up (the per-node egress preflight catches unreachability).
+  running <- if (isTRUE(info$remote)) {
+    TRUE
+  } else if (!is.null(info$process)) {
     info$process$is_alive()
   } else {
     .pid_is_alive_local(info$pid) && .port_is_listening(info$fleet_port)
@@ -508,6 +598,7 @@ ds.flower.superlink.status <- function() {
 
   list(
     running         = running,
+    remote          = isTRUE(info$remote),
     pid             = info$pid,
     fleet_address   = info$fleet_address,
     control_address = info$control_address,
