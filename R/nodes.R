@@ -199,7 +199,12 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
   #   4. local SuperLink address auto-detection (docker/LAN/VPN)
   if (is.null(superlink_address)) {
     sl <- ds.flower.superlink.status()
-    if (isTRUE(sl$running) && isTRUE(sl$remote)) {
+    if (!is.null(.dsflower_client_env$.overlay_ip)) {
+      # Overlay (tailnet) transport: nodes reach the SuperLink at this
+      # machine's tailnet IP (through the per-node SOCKS5 forwarder).
+      fleet_port <- sl$ports$fleet %||% 9092L
+      superlink_address <- paste0(.dsflower_client_env$.overlay_ip, ":", fleet_port)
+    } else if (isTRUE(sl$running) && isTRUE(sl$remote)) {
       superlink_address <- sl$fleet_address
     } else {
       coord <- .discover_coordinator(conns)
@@ -226,7 +231,11 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
 
   # Egress preflight: fail fast (naming each node + address) if a node cannot
   # reach the SuperLink, instead of spawning SuperNodes that time out silently.
-  .preflight_node_egress(conns, superlink_address)
+  # Skipped under overlay transport: the node reaches the SuperLink through its
+  # local SOCKS5 forwarder, which the server-side preflight verifies instead.
+  if (is.null(.dsflower_client_env$.overlay_ip)) {
+    .preflight_node_egress(conns, superlink_address)
+  }
 
   if (is.character(superlink_address) && length(superlink_address) == 1L) {
     # Single address for all nodes
