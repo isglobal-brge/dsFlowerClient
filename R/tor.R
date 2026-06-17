@@ -27,8 +27,13 @@
   torrc <- file.path(d, "torrc")
   writeLines(c(
     "SocksPort 0",
+    # Single onion service: we only need NAT traversal + encryption, NOT
+    # anonymity for the SuperLink, so drop the service side from 3 hops to 1
+    # (end-to-end ~6 -> ~3-4 hops, ~halves RTT). Requires SocksPort 0.
+    "HiddenServiceNonAnonymousMode 1",
+    "HiddenServiceSingleHopMode 1",
     paste0("DataDirectory ", file.path(d, "data")),
-    paste0("HiddenServiceDir ", hs),
+    paste0("HiddenServiceDir ", hs),   # persistent key -> stable, pre-publishable .onion
     "HiddenServiceVersion 3",
     paste0("HiddenServicePort ", target_port, " 127.0.0.1:", target_port),
     paste0("Log notice file ", logf)
