@@ -90,7 +90,13 @@
 
   deadline <- Sys.time() + timeout
   repeat {
-    lg <- tryCatch(readLines(logf, warn = FALSE), error = function(e) character(0))
+    # tor creates tor.log a moment after it starts; reading it before then makes
+    # file() emit a "cannot open file" warning (readLines' warn=FALSE does not
+    # cover the connection-open warning). Only read once it exists.
+    lg <- if (file.exists(logf))
+            suppressWarnings(tryCatch(readLines(logf, warn = FALSE),
+                                      error = function(e) character(0)))
+          else character(0)
     if (any(grepl("Bootstrapped 100%", lg))) break
     if (Sys.time() > deadline || !p$is_alive())
       stop("Tor did not bootstrap in time.", call. = FALSE)
@@ -128,21 +134,33 @@
 #'
 #' @param conns DSI connections object.
 #' @param symbol Character; handle symbol (default "flower").
+#' @param verbose Logical; show the internal transport details (SuperLink
+#'   PID/ports, the ephemeral .onion address, per-step progress). Defaults to
+#'   \code{getOption("dsflower.verbose", FALSE)}. Off by default: setting up the
+#'   onion service is internal plumbing the user does not need to see, and the
+#'   .onion is the transient address of their own SuperLink. The onion is still
+#'   returned invisibly for programmatic use.
 #' @return Invisible the .onion address.
 #' @export
-ds.flower.tor.up <- function(conns, symbol = "flower") {
+ds.flower.tor.up <- function(conns, symbol = "flower",
+                             verbose = getOption("dsflower.verbose", FALSE)) {
+  verbose <- isTRUE(verbose)
+  vmsg <- function(...) if (verbose) message(...)
+
   sl <- ds.flower.superlink.status()
   if (!isTRUE(sl$running)) {
-    ds.flower.superlink.start()
+    if (verbose) ds.flower.superlink.start() else suppressMessages(ds.flower.superlink.start())
     sl <- ds.flower.superlink.status()
   }
   fleet_port <- sl$ports$fleet %||% 9092L
 
-  message("Publishing SuperLink as a Tor hidden service (bootstrapping Tor)...")
+  if (!verbose)
+    message("Connecting your machine to the federation (this can take ~1 min)...")
+  vmsg("Publishing SuperLink as a Tor hidden service (bootstrapping Tor)...")
   onion <- .client_tor_hidden_service(fleet_port)
-  message("  SuperLink onion: ", onion, ":", fleet_port)
+  vmsg("  SuperLink onion: ", onion, ":", fleet_port)
 
-  message("Bringing nodes onto Tor...")
+  vmsg("Bringing nodes onto Tor...")
   for (srv in names(conns)) {
     tryCatch(DSI::datashield.assign.expr(
       conns[srv], symbol = paste0(symbol, "_tor"),
@@ -150,7 +168,11 @@ ds.flower.tor.up <- function(conns, symbol = "flower") {
         warning(srv, ": flowerTorUpDS failed: ", conditionMessage(e), call. = FALSE))
   }
   .dsflower_client_env$.overlay_ip <- onion  # ensure -> onion:fleet_port
-  message("Tor transport ready. Run ds.flower.fit() / nodes.ensure() as usual.")
+  if (verbose)
+    message("Tor transport ready. Run ds.flower.fit() / nodes.ensure() as usual.")
+  else
+    message("Federation ready: ", length(conns), " site",
+            if (length(conns) != 1) "s" else "", " connected.")
   invisible(onion)
 }
 
