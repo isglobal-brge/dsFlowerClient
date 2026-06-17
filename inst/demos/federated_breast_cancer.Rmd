@@ -119,11 +119,14 @@ fit <- ds.flower.fit(
   symbol   = "D",
   target   = "malignant",        # 1 = malignant, 0 = benign
   features = features,
-  model    = "sklearn_logreg",   # federated logistic regression
-  strategy = "fedavg",           # Federated Averaging
-  privacy  = "auto",             # strongest profile the sites allow (SecAgg)
+  model    = ds.flower.model.sklearn_logreg(C = 1.0, max_iter = 100L),
+  strategy = ds.flower.strategy.fedavg(),
+  privacy  = ds.flower.privacy.clinical_default(),  # Secure Aggregation
   rounds   = 5
 )
+# clinical_default uses Secure Aggregation: all 3 hospitals must stay online for
+# the whole round (min 3 clients). If a site flaps, lower `rounds` or pre-warm
+# Tor (call ds.flower.tor.up early) before the demo.
 ```
 
 ### How the model improved each round
