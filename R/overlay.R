@@ -36,6 +36,8 @@
 #' @export
 ds.flower.overlay.up <- function(conns, authkey, symbol = "flower",
                                  hostname_prefix = "dsflower-node") {
+  stop("The Tailscale overlay transport is disabled for now. Use the Tor ",
+       "transport instead: ds.flower.tor.up(conns).", call. = FALSE)
   if (missing(authkey) || is.null(authkey) || !nzchar(authkey)) {
     stop("'authkey' is required (a Tailscale auth key, tskey-...).", call. = FALSE)
   }

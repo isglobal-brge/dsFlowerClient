@@ -135,7 +135,7 @@
 
   # 2. Generate CA certificate (self-signed, 1 day)
   .run_openssl(openssl_path, c(
-    "req", "-new", "-x509",
+    "req", "-new", "-x509", "-sha256",
     "-key", ca_key_path,
     "-out", ca_cert_path,
     "-days", as.character(cert_days),
@@ -158,7 +158,7 @@
 
   # 5. Sign server cert with CA, applying SANs
   .run_openssl(openssl_path, c(
-    "x509", "-req",
+    "x509", "-req", "-sha256",
     "-in", srv_csr_path,
     "-CA", ca_cert_path,
     "-CAkey", ca_key_path,
@@ -252,11 +252,17 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
   # TLS certificates
   tls_info <- .generate_tls_certs(cert_dir, cert_days = cert_days)
 
+  # Fleet API transport: grpc-rere (default) or "rest". REST lets the SuperNode
+  # send each weight object as a separate HTTP request, which (over Tor) can be
+  # fanned across multiple circuits for higher throughput on large models.
+  fleet_type <- getOption("dsflower.fleet_api_type", "grpc-rere")
+
   # Build args
   args <- c(
     "--ssl-certfile", tls_info$srv_cert_path,
     "--ssl-keyfile", tls_info$srv_key_path,
     "--ssl-ca-certfile", tls_info$ca_cert_path,
+    "--fleet-api-type", fleet_type,
     "--fleet-api-address", paste0("0.0.0.0:", fleet_port),
     "--control-api-address", paste0("0.0.0.0:", control_port),
     "--serverappio-api-address", paste0("0.0.0.0:", serverappio_port)
