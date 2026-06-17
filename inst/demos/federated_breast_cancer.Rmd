@@ -1,0 +1,178 @@
+---
+title: "Federated Machine Learning across 3 hospitals"
+subtitle: "Training a model on data that never leaves the building — from your laptop, over Tor"
+author: "dsFlower"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    theme: flatly
+    toc: true
+    toc_float: true
+    highlight: tango
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+## The problem
+
+Three hospitals each hold part of a breast-cancer dataset. Each tumour is
+described by 30 imaging measurements and labelled **malignant** or **benign**.
+Together the data would train an excellent diagnostic model — but **the data
+cannot leave each hospital** for privacy and governance reasons.
+
+**Federated learning** solves this: the *model* travels to the data, trains
+locally at each site, and only model updates (never patient rows) come back.
+`dsFlower` runs the [Flower](https://flower.ai) federated-learning engine inside
+[DataSHIELD](https://datashield.org)/Opal, so the whole thing is driven from a
+single R session on your laptop.
+
+```
+   your laptop (this R session)
+        │  orchestrates rounds, never sees a patient row
+        ▼
+  ┌───────────┬───────────┬───────────┐
+  │ Nairobi   │  Dakar    │  Douala   │   3 Opal hospitals
+  │ 190 pts   │  190 pts  │  189 pts  │   data stays put
+  └───────────┴───────────┴───────────┘
+```
+
+```{r libs}
+library(DSI)
+library(DSOpal)
+library(dsFlowerClient)
+```
+
+## 1. Connect to the three hospitals
+
+```{r login}
+builder <- DSI::newDSLoginBuilder()
+for (h in c("nairobi", "dakar", "douala")) {
+  builder$append(
+    server   = h,
+    url      = paste0("https://", h, ".datashield.live"),
+    user     = "administrator",
+    password = "password",
+    table    = "dsflower_demo.breast_cancer",
+    driver   = "OpalDriver",
+    options  = "list(ssl_verifyhost=0L, ssl_verifypeer=0L)"
+  )
+}
+conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "D")
+```
+
+## 2. The data is distributed — and we never see it
+
+Each site loaded its own slice into the symbol `D`. We can compute on it, but
+individual rows stay on the servers.
+
+```{r explore}
+# How many patients per hospital?
+DSI::datashield.aggregate(conns, quote(dimDS("D")))
+
+# A federated mean of one feature — pooled across all 569 patients,
+# computed without any row leaving a hospital:
+dsBaseClient::ds.mean("D$mean_radius", type = "combine", datasources = conns)
+
+# Class balance per site:
+dsBaseClient::ds.table("D$malignant", datasources = conns)
+```
+
+> Notice: we asked questions of **569 patients across three countries** and got
+> answers, yet not a single patient record was transferred to this laptop.
+
+## 3. Open the federated-learning transport (zero setup)
+
+The Flower training engine needs the hospitals' compute nodes to talk to a
+coordinator on *this* laptop — but the laptop is behind NAT and the hospitals'
+servers are locked down. `dsFlower` bridges them over **Tor**: the SuperLink is
+published as a hidden service and each node reaches it outbound. No public
+server, no account, no VPN key — nothing to configure.
+
+```{r transport, eval=FALSE}
+ds.flower.tor.up(conns)   # publishes the SuperLink as a .onion; nodes join Tor
+```
+
+## 4. Train a federated logistic regression
+
+One call trains across all three hospitals. The model visits each site, trains
+on local tumours, and only **aggregated weights** (protected by secure
+aggregation) come back each round.
+
+```{r train, eval=FALSE}
+features <- c(
+  "mean_radius", "mean_texture", "mean_perimeter", "mean_area",
+  "mean_smoothness", "mean_compactness", "mean_concavity",
+  "mean_concave_points", "mean_symmetry", "mean_fractal_dimension",
+  "radius_error", "texture_error", "perimeter_error", "area_error",
+  "smoothness_error", "compactness_error", "concavity_error",
+  "concave_points_error", "symmetry_error", "fractal_dimension_error",
+  "worst_radius", "worst_texture", "worst_perimeter", "worst_area",
+  "worst_smoothness", "worst_compactness", "worst_concavity",
+  "worst_concave_points", "worst_symmetry", "worst_fractal_dimension"
+)
+
+fit <- ds.flower.fit(
+  conns,
+  symbol   = "D",
+  target   = "malignant",        # 1 = malignant, 0 = benign
+  features = features,
+  model    = "sklearn_logreg",   # federated logistic regression
+  strategy = "fedavg",           # Federated Averaging
+  privacy  = "auto",             # strongest profile the sites allow (SecAgg)
+  rounds   = 5
+)
+```
+
+### How the model improved each round
+
+```{r metrics, eval=FALSE}
+ds.flower.metrics(fit)
+ds.flower.plot(fit)   # accuracy / AUC across federated rounds
+```
+
+## 5. Predict on a new patient
+
+The trained model can now score a new tumour locally — no server needed.
+
+```{r predict, eval=FALSE}
+new_patient <- data.frame(
+  mean_radius = 17.99, mean_texture = 10.38, mean_perimeter = 122.8,
+  mean_area = 1001, mean_smoothness = 0.1184, mean_compactness = 0.2776,
+  mean_concavity = 0.3001, mean_concave_points = 0.1471, mean_symmetry = 0.2419,
+  mean_fractal_dimension = 0.0787,
+  radius_error = 1.095, texture_error = 0.9053, perimeter_error = 8.589,
+  area_error = 153.4, smoothness_error = 0.0064, compactness_error = 0.049,
+  concavity_error = 0.0537, concave_points_error = 0.0159,
+  symmetry_error = 0.03, fractal_dimension_error = 0.0062,
+  worst_radius = 25.38, worst_texture = 17.33, worst_perimeter = 184.6,
+  worst_area = 2019, worst_smoothness = 0.1622, worst_compactness = 0.6656,
+  worst_concavity = 0.7119, worst_concave_points = 0.2654,
+  worst_symmetry = 0.4601, worst_fractal_dimension = 0.1189
+)
+
+ds.flower.predict(fit, new_patient, type = "prob")      # P(malignant)
+ds.flower.predict(fit, new_patient, type = "response")  # class label
+```
+
+## 6. Clean up
+
+```{r cleanup, eval=FALSE}
+ds.flower.tor.down(conns)
+DSI::datashield.logout(conns)
+```
+
+---
+
+### What just happened
+
+- A diagnostic model was trained on **569 patients across three hospitals**.
+- **No patient record ever left a hospital** — only model weights crossed the
+  wire, protected by secure aggregation.
+- The federated nodes were reached over **Tor**, so it worked from a laptop
+  behind NAT with **no servers, accounts or keys to set up**.
+
+*For large models, swap one line — `ds.flower.overlay.up(conns, authkey)` — to
+use a Tailscale overlay (WireGuard speed) instead of Tor.*
