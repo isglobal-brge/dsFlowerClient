@@ -42,8 +42,27 @@
 #' on \code{ds.flower.tor.down()}. Single onion (non-anonymous) keeps it fast;
 #' confidentiality is unchanged (onion encryption + Flower TLS on top).
 #'
+#' Clear any leftover local Tor state from a previous (re)run
+#' @keywords internal
+.client_tor_local_cleanup <- function() {
+  e <- .dsflower_client_env
+  if (!is.null(e$.tor_control)) {
+    tryCatch(close(e$.tor_control), error = function(x) NULL); e$.tor_control <- NULL
+  }
+  if (!is.null(e$.tor_proc) && inherits(e$.tor_proc, "process")) {
+    tryCatch(e$.tor_proc$kill(), error = function(x) NULL); e$.tor_proc <- NULL
+  }
+  if (!is.null(e$.tor_dir) && dir.exists(e$.tor_dir)) {
+    unlink(e$.tor_dir, recursive = TRUE, force = TRUE)
+  }
+  e$.tor_dir <- NULL
+  invisible(NULL)
+}
+
 #' @keywords internal
 .client_tor_hidden_service <- function(target_port, timeout = 180) {
+  # Idempotent: drop any leftover state so re-runs never accumulate or clash.
+  .client_tor_local_cleanup()
   d <- tempfile("dsflower_tor_"); dir.create(d, recursive = TRUE, showWarnings = FALSE)
   .dsflower_client_env$.tor_dir <- d
   logf <- file.path(d, "tor.log"); torrc <- file.path(d, "torrc")
