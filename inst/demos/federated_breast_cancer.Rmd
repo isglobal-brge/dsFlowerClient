@@ -83,16 +83,18 @@ dsBaseClient::ds.table("D$malignant", datasources = conns)
 > Notice: we asked questions of **569 patients across three countries** and got
 > answers, yet not a single patient record was transferred to this laptop.
 
-## 3. Open the federated-learning transport (zero setup)
+## 3. Open the federated-learning link (zero setup)
 
 The Flower training engine needs the hospitals' compute nodes to talk to a
-coordinator on *this* laptop — but the laptop is behind NAT and the hospitals'
-servers are locked down. `dsFlower` bridges them over **Tor**: the SuperLink is
-published as a hidden service and each node reaches it outbound. No public
-server, no account, no VPN key — nothing to configure.
+coordinator (SuperLink) on *this* laptop — but the laptop is behind NAT and the
+hospitals' servers are locked down. `dsFlower` carries that entire conversation
+**through the DataSHIELD channel itself**: a local SuperLink is started and each
+node's SuperNode reaches it over the same authenticated DataSHIELD connection you
+already logged in with. No public server, no account, no VPN key, no open ports —
+nothing to configure.
 
 ```{r transport, eval=FALSE}
-ds.flower.tor.up(conns)   # publishes the SuperLink as a .onion; nodes join Tor
+ds.flower.link.up(conns)   # local SuperLink; nodes connect over the DataSHIELD channel
 ```
 
 ## 4. Train a federated logistic regression
@@ -125,8 +127,7 @@ fit <- ds.flower.fit(
   rounds   = 5
 )
 # clinical_default uses Secure Aggregation: all 3 hospitals must stay online for
-# the whole round (min 3 clients). If a site flaps, lower `rounds` or pre-warm
-# Tor (call ds.flower.tor.up early) before the demo.
+# the whole round (min 3 clients). If a site flaps, lower `rounds`.
 ```
 
 ### How the model improved each round
@@ -163,7 +164,7 @@ ds.flower.predict(fit, new_patient, type = "response")  # class label
 ## 6. Clean up
 
 ```{r cleanup, eval=FALSE}
-ds.flower.tor.down(conns)
+ds.flower.link.down(conns)
 DSI::datashield.logout(conns)
 ```
 
@@ -174,8 +175,6 @@ DSI::datashield.logout(conns)
 - A diagnostic model was trained on **569 patients across three hospitals**.
 - **No patient record ever left a hospital** — only model weights crossed the
   wire, protected by secure aggregation.
-- The federated nodes were reached over **Tor**, so it worked from a laptop
-  behind NAT with **no servers, accounts or keys to set up**.
-
-*For large models, swap one line — `ds.flower.overlay.up(conns, authkey)` — to
-use a Tailscale overlay (WireGuard speed) instead of Tor.*
+- The whole Flower SuperNode↔SuperLink conversation travelled **inside the
+  DataSHIELD channel**, so it worked from a laptop behind NAT with **no servers,
+  accounts, keys or open ports to set up**.
