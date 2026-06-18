@@ -24,13 +24,16 @@
       for (pid_str in out) {
         pid <- suppressWarnings(as.integer(trimws(pid_str)))
         if (is.na(pid)) next
-        # Only kill flower-superlink processes
+        # Only kill Flower SuperLink/SuperExec processes. Match the FULL command
+        # line (-o command=), not -o comm=: these run as ".../python .../
+        # flower-superlink", so comm= returns "python" and never matches. Match
+        # "flower-super" to also catch the flower-superexec child (port 9091).
         cmd_line <- tryCatch(
-          system2("ps", c("-p", pid, "-o", "comm="),
+          system2("ps", c("-p", pid, "-o", "command="),
                   stdout = TRUE, stderr = TRUE),
           error = function(e) ""
         )
-        if (any(grepl("flower-superlink", cmd_line, fixed = TRUE))) {
+        if (any(grepl("flower-super", cmd_line, fixed = TRUE))) {
           message("  Cleaning up orphaned SuperLink (PID: ", pid,
                   ") on port ", port)
           tools::pskill(pid, signal = 15L)  # SIGTERM
@@ -537,13 +540,16 @@ ds.flower.superlink.stop <- function() {
     }
   }
 
-  # Kill via processx object if available, otherwise via PID
+  # Kill via processx object if available, otherwise via PID. Use kill_tree so
+  # the SuperLink's child flower-superexec (and any ServerApp) die too; killing
+  # only the SuperLink would orphan the SuperExec, which keeps holding the
+  # Fleet/Control ports and makes the next start fail.
   if (!is.null(info$process)) {
     proc <- info$process
     if (proc$is_alive()) {
       proc$signal(15L)
       proc$wait(timeout = 5000)
-      if (proc$is_alive()) proc$kill()
+      if (proc$is_alive()) proc$kill_tree()
     }
   } else if (!is.null(info$pid) && .pid_is_alive_local(info$pid)) {
     tools::pskill(info$pid, signal = 15L)
@@ -551,6 +557,13 @@ ds.flower.superlink.stop <- function() {
     if (.pid_is_alive_local(info$pid)) {
       tools::pskill(info$pid, signal = 9L)
     }
+  }
+
+  # Belt-and-suspenders: free the SuperLink ports in case a child (superexec)
+  # outlived the tree kill. Targets only Flower processes holding these exact
+  # ports, so it never touches an unrelated process.
+  for (p in c(info$fleet_port, info$control_port, info$serverappio_port)) {
+    if (!is.null(p)) .kill_orphan_on_port(p)
   }
 
   # Cleanup directories
