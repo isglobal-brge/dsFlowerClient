@@ -85,10 +85,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       recipe$strategy$params$fraction_fit <- 1.0
     }
     recipe$privacy <- .resolve_auto_privacy(recipe$privacy, caps = caps,
+                                            template = recipe$model$template,
                                             verbose = verbose)
     .enforce_server_runtime_capabilities(caps, recipe, recipe$privacy)
   } else {
     recipe$privacy <- .resolve_auto_privacy(recipe$privacy, caps = caps,
+                                            template = recipe$model$template,
                                             verbose = verbose)
   }
 

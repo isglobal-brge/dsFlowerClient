@@ -253,7 +253,16 @@ ds.flower.privacy <- function(name = "clinical_default", ...) {
   inherits(privacy, "dsflower_privacy_auto") || identical(privacy$mode, "auto")
 }
 
-.resolve_auto_privacy <- function(privacy, caps = NULL, verbose = TRUE) {
+# Templates the server validates for patient-level DP-SGD (Opacus per-sample
+# gradients). Mirror of dsFlower .DP_SGD_VALIDATED_TEMPLATES; the server is
+# authoritative and will reject a high_sensitivity_dp run on any other template.
+.DP_SGD_AUTO_TEMPLATES <- c(
+  "pytorch_logreg", "pytorch_linear_regression", "pytorch_multiclass",
+  "pytorch_multilabel", "pytorch_mlp", "pytorch_poisson"
+)
+
+.resolve_auto_privacy <- function(privacy, caps = NULL, template = NULL,
+                                  verbose = TRUE) {
   if (is.null(privacy)) privacy <- ds.flower.privacy.clinical_default()
   if (is.character(privacy)) privacy <- ds.flower.privacy(privacy)
   if (!inherits(privacy, "dsflower_privacy")) {
@@ -262,35 +271,49 @@ ds.flower.privacy <- function(name = "clinical_default", ...) {
   }
   if (!.is_auto_privacy(privacy)) return(privacy)
 
-  prefer <- privacy$params$prefer %||% "clinical_default"
   fallback <- privacy$params$fallback %||% "trusted_internal"
   has_caps <- !is.null(caps) && length(caps) > 0L
+  n_nodes <- if (has_caps) length(caps) else 0L
   supports_secagg <- has_caps && all(vapply(caps, function(c) {
     isTRUE(c$secure_aggregation_supported)
   }, logical(1)))
+  # SecAgg+ needs at least 3 participants to be meaningful (a 2-party sum lets
+  # either side subtract its own contribution to recover the other's).
+  secagg_ok <- supports_secagg && n_nodes >= 3L
+  dp_sgd_ok <- !is.null(template) && template %in% .DP_SGD_AUTO_TEMPLATES
 
-  resolved_name <- if (supports_secagg) prefer else fallback
+  # Strongest practical profile by (SecAgg availability x template DP capability):
+  #   SecAgg + DP-SGD template -> high_sensitivity_dp (SecAgg AND patient DP-SGD)
+  #   SecAgg + other template  -> clinical_default    (SecAgg-only; the server
+  #                                                     never sees per-node updates)
+  #   no SecAgg                -> fallback             (per-node metrics suppressed)
+  resolved_name <- if (secagg_ok && dp_sgd_ok) {
+    "high_sensitivity_dp"
+  } else if (secagg_ok) {
+    "clinical_default"
+  } else {
+    fallback
+  }
   resolved <- ds.flower.privacy(resolved_name)
 
   if (isTRUE(verbose)) {
-    if (supports_secagg) {
-      message("Privacy auto resolved to '", resolved$mode,
-              "' because all servers report Secure Aggregation support.")
+    reason <- if (secagg_ok && dp_sgd_ok) {
+      paste0("SecAgg+ on all ", n_nodes,
+             " servers and the template supports patient-level DP-SGD")
+    } else if (secagg_ok) {
+      paste0("SecAgg+ on all ", n_nodes,
+             " servers (template not DP-SGD-validated, so SecAgg-only)")
+    } else if (!supports_secagg && has_caps) {
+      unsupported <- names(caps)[!vapply(caps, function(c) {
+        isTRUE(c$secure_aggregation_supported)
+      }, logical(1))]
+      paste0("no SecAgg on: ", paste(unsupported, collapse = ", "))
+    } else if (has_caps && n_nodes < 3L) {
+      paste0("only ", n_nodes, " server(s); SecAgg+ needs 3+")
     } else {
-      unsupported <- if (has_caps) {
-        names(caps)[!vapply(caps, function(c) {
-          isTRUE(c$secure_aggregation_supported)
-        }, logical(1))]
-      } else {
-        character(0)
-      }
-      suffix <- if (length(unsupported)) {
-        paste0(" (no SecAgg on: ", paste(unsupported, collapse = ", "), ")")
-      } else {
-        " (server capabilities unavailable)"
-      }
-      message("Privacy auto resolved to '", resolved$mode, "'", suffix, ".")
+      "server capabilities unavailable"
     }
+    message("Privacy auto resolved to '", resolved$mode, "' (", reason, ").")
   }
 
   resolved

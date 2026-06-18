@@ -179,7 +179,9 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
 
   # Resolve privacy (recipe wins, else clinical_default). "auto" depends on
   # runtime capabilities, so it must be resolved after querying servers.
-  privacy <- .resolve_auto_privacy(recipe$privacy, caps = caps, verbose = verbose)
+  privacy <- .resolve_auto_privacy(recipe$privacy, caps = caps,
+                                   template = recipe$model$template,
+                                   verbose = verbose)
   recipe$privacy <- privacy
 
   # Resolve target and label_set from recipe
