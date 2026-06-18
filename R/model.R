@@ -468,7 +468,8 @@ ds.flower.model.xgboost <- function(n_trees = 10L, max_depth = 3L,
                                      eta = 0.3, reg_lambda = 1.0,
                                      n_bins = 64L,
                                      objective = "binary:logistic",
-                                     num_class = 2L) {
+                                     num_class = 2L,
+                                     batch_multiclass = FALSE) {
   obj <- list(
     name      = "xgboost",
     framework = "xgboost",
@@ -480,7 +481,11 @@ ds.flower.model.xgboost <- function(n_trees = 10L, max_depth = 3L,
       reg_lambda = reg_lambda,
       n_bins     = as.integer(n_bins),
       objective  = objective,
-      num_class  = as.integer(num_class)
+      num_class  = as.integer(num_class),
+      # Opt-in: batch all K per-class stumps into one SecAgg round (~Kx fewer
+      # round-trips). Validated in-process; pending federated SecAgg+ testing,
+      # so it defaults off.
+      batch_multiclass = tolower(as.character(isTRUE(batch_multiclass)))
     )
   )
   class(obj) <- "dsflower_model"
