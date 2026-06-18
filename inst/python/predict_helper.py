@@ -34,35 +34,46 @@ def predict_sklearn(model_path, X, pred_type):
     return model.predict(X).tolist()
 
 
-def predict_pytorch(model_path, X, pred_type, template=None):
-    """Predict with a PyTorch checkpoint."""
+# Per-template output semantics for the linear / MLP PyTorch families. The
+# forward pass is a generic linear (or MLP) stack, but the head's meaning differs
+# by modality -- applying sigmoid+threshold to a regression/count/survival head
+# (the old behaviour) returns plausible-but-wrong values. Templates not listed
+# default to classification (binary / multiclass).
+_PT_OUTPUT = {
+    "pytorch_logreg":            "binary",
+    "pytorch_multiclass":        "multiclass",
+    "pytorch_mlp":               "multiclass",
+    "pytorch_multilabel":        "multilabel",
+    "pytorch_linear_regression": "regression",
+    "pytorch_poisson":           "count",
+    "pytorch_coxph":             "risk",
+    "pytorch_cause_specific_cox": "risk",
+    "pytorch_lognormal_aft":     "aft",
+}
+# Architectures the generic linear/MLP forward CANNOT reproduce (conv kernels,
+# BatchNorm, recurrence, temporal convolution, user-supplied nets): predicting
+# with the flat weight stack would be silently wrong, so we refuse rather than
+# mislead. Matched as substrings of the template name to tolerate variants
+# (pytorch_resnet18, pytorch_resnet, ...).
+_PT_UNSUPPORTED_KINDS = (
+    "resnet", "densenet", "unet", "vision", "lstm", "tcn", "native",
+)
+
+
+def _is_unsupported_pt(template):
+    t = (template or "").lower()
+    return any(k in t for k in _PT_UNSUPPORTED_KINDS)
+
+
+def _linear_forward(weights, X_t):
     import torch
-    from collections import OrderedDict
+    W = weights[0].float()
+    b = weights[1].float()
+    return (X_t @ W.T + b).squeeze(-1)
 
-    checkpoint = torch.load(model_path, map_location="cpu", weights_only=False)
-    state_dict = checkpoint.get("state_dict", checkpoint)
-    shapes = checkpoint.get("shapes", [])
 
-    # Reconstruct weights as list of tensors
-    if isinstance(state_dict, OrderedDict):
-        weights = list(state_dict.values())
-    else:
-        keys = sorted(state_dict.keys(), key=lambda k: int(k) if k.isdigit() else k)
-        weights = [state_dict[k] for k in keys]
-
-    X_t = torch.tensor(X, dtype=torch.float32)
-
-    # Simple linear model (2 params: weight + bias)
-    if len(weights) == 2:
-        W = weights[0].float()
-        b = weights[1].float()
-        logits = X_t @ W.T + b
-        logits = logits.squeeze(-1)
-        if pred_type == "prob":
-            return torch.sigmoid(logits).detach().numpy().tolist()
-        return (logits > 0).int().detach().numpy().tolist()
-
-    # MLP (alternating weight/bias pairs)
+def _mlp_forward(weights, X_t):
+    import torch
     h = X_t
     n_layers = len(weights) // 2
     for i in range(n_layers):
@@ -71,14 +82,60 @@ def predict_pytorch(model_path, X, pred_type, template=None):
         h = h @ W.T + b
         if i < n_layers - 1:
             h = torch.relu(h)
+    return h.squeeze(-1)
 
-    logits = h.squeeze(-1)
-    if pred_type == "prob":
-        if logits.dim() > 1 and logits.shape[-1] > 1:
-            return torch.softmax(logits, dim=-1).detach().numpy().tolist()
-        return torch.sigmoid(logits).detach().numpy().tolist()
+
+def predict_pytorch(model_path, X, pred_type, template=None):
+    """Predict with a PyTorch checkpoint, with template-aware output semantics."""
+    import torch
+    from collections import OrderedDict
+
+    if _is_unsupported_pt(template):
+        print(json.dumps({"error": (
+            f"Prediction for template '{template}' needs its native architecture "
+            "(conv / recurrent / temporal layers); the generic linear predictor "
+            "would be wrong. Use federated evaluation, or load the model with its "
+            "ClientApp Net.")}), file=sys.stderr)
+        sys.exit(2)
+
+    checkpoint = torch.load(model_path, map_location="cpu", weights_only=False)
+    state_dict = checkpoint.get("state_dict", checkpoint)
+    if isinstance(state_dict, OrderedDict):
+        weights = list(state_dict.values())
+    else:
+        keys = sorted(state_dict.keys(), key=lambda k: int(k) if k.isdigit() else k)
+        weights = [state_dict[k] for k in keys]
+
+    X_t = torch.tensor(X, dtype=torch.float32)
+    behavior = _PT_OUTPUT.get(template or "", None)
+
+    # AFT: state_dict is [weight, bias, log_scale]; the point prediction is the
+    # linear mean (predicted log-time); return predicted time = exp(mu).
+    if behavior == "aft":
+        mu = _linear_forward(weights[:2], X_t)
+        return torch.exp(mu).detach().numpy().tolist()
+
+    logits = _linear_forward(weights, X_t) if len(weights) == 2 else _mlp_forward(weights, X_t)
+
+    if behavior == "regression":
+        return logits.detach().numpy().tolist()                       # raw predicted value
+    if behavior == "count":
+        return torch.exp(logits).detach().numpy().tolist()            # Poisson rate = exp(log-rate)
+    if behavior == "risk":
+        return logits.detach().numpy().tolist()                       # Cox log-hazard / risk score
+    if behavior == "multilabel":
+        p = torch.sigmoid(logits)                                     # independent per-label probs
+        if pred_type == "prob":
+            return p.detach().numpy().tolist()
+        return (p > 0.5).int().detach().numpy().tolist()
+
+    # classification (binary / multiclass) -- default
     if logits.dim() > 1 and logits.shape[-1] > 1:
+        if pred_type == "prob":
+            return torch.softmax(logits, dim=-1).detach().numpy().tolist()
         return torch.argmax(logits, dim=-1).detach().numpy().tolist()
+    if pred_type == "prob":
+        return torch.sigmoid(logits).detach().numpy().tolist()
     return (logits > 0).int().detach().numpy().tolist()
 
 

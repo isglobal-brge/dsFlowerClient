@@ -21,6 +21,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   info <- .resolve_model_for_predict(model)
   model_file <- info$model_file
   framework <- info$framework
+  template <- info$template %||% ""
 
   # Ensure framework deps are installed
   .ensure_client_framework(framework)
@@ -45,7 +46,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
              "--model", model_file,
              "--data", tmp_data,
              "--type", type,
-             "--framework", framework),
+             "--framework", framework,
+             if (nzchar(template)) c("--template", template)),
     env = .client_venv_env(),
     error_on_status = FALSE
   )
@@ -79,7 +81,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
         joblib = "sklearn", pt = "pytorch",
         xgb = "xgboost", json = "xgboost",
         stop("Unknown model format: ", ext, call. = FALSE))
-      return(list(model_file = model, framework = framework))
+      tmpl <- .read_template_meta(dirname(model))
+      return(list(model_file = model, framework = framework, template = tmpl))
     }
   } else if (is.list(model)) {
     # Loaded model list -- check for source directory
@@ -99,6 +102,10 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     stop("Cannot resolve model directory for prediction.", call. = FALSE)
   }
 
+  # Template (from metadata.json) drives modality-aware output semantics in the
+  # Python predictor (regression vs classification vs survival vs multilabel ...).
+  tmpl <- .read_template_meta(model_dir)
+
   # Find native model file (priority: joblib > pt > xgb.json > xgb)
   candidates <- list(
     list(file = "model.joblib", framework = "sklearn"),
@@ -110,28 +117,32 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   for (c in candidates) {
     path <- file.path(model_dir, c$file)
     if (file.exists(path)) {
-      return(list(model_file = path, framework = c$framework))
+      return(list(model_file = path, framework = c$framework, template = tmpl))
     }
   }
 
   # Fallback: route global_model.json by the template's framework (metadata).
   json_path <- file.path(model_dir, "global_model.json")
   if (file.exists(json_path)) {
-    tmpl <- ""
-    meta_path <- file.path(model_dir, "metadata.json")
-    if (file.exists(meta_path)) {
-      meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
-      tmpl <- meta$template %||% meta$model %||% ""
-    }
     if (grepl("xgboost", tmpl)) {
-      return(list(model_file = json_path, framework = "xgboost"))
+      return(list(model_file = json_path, framework = "xgboost", template = tmpl))
     }
     if (grepl("sklearn", tmpl)) {
-      return(list(model_file = json_path, framework = "sklearn"))
+      return(list(model_file = json_path, framework = "sklearn", template = tmpl))
     }
-    return(list(model_file = json_path, framework = "pytorch"))
+    return(list(model_file = json_path, framework = "pytorch", template = tmpl))
   }
 
   stop("No native model file found in ", model_dir,
        ". Expected model.joblib, model.pt, or model.xgb.json.", call. = FALSE)
+}
+
+#' Read the template name from a model directory's metadata.json
+#' @keywords internal
+.read_template_meta <- function(model_dir) {
+  if (is.null(model_dir) || !nzchar(model_dir)) return("")
+  meta_path <- file.path(model_dir, "metadata.json")
+  if (!file.exists(meta_path)) return("")
+  meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
+  meta$template %||% meta$model %||% ""
 }
