@@ -200,7 +200,9 @@
 ds.flower.superlink.start <- function(fleet_port = 9092L,
                                        control_port = 9093L,
                                        serverappio_port = 9091L,
-                                       detached = FALSE) {
+                                       detached = FALSE,
+                                       insecure = getOption("dsflower.superlink_insecure", FALSE)) {
+  insecure <- isTRUE(insecure)
   .require_flwr_cli()
 
   # Check if already running (in-session process)
@@ -249,23 +251,25 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
   }
   dir.create(flwr_home, recursive = TRUE, showWarnings = FALSE)
 
-  # TLS certificates
-  tls_info <- .generate_tls_certs(cert_dir, cert_days = cert_days)
+  # TLS certificates (skipped for the DSI tunnel, which runs insecure because the
+  # bytes already travel inside the TLS DataSHIELD channel).
+  tls_info <- if (insecure) NULL else .generate_tls_certs(cert_dir, cert_days = cert_days)
 
-  # Fleet API transport: grpc-rere (default) or "rest". REST lets the SuperNode
-  # send each weight object as a separate HTTP request, which (over Tor) can be
-  # fanned across multiple circuits for higher throughput on large models.
   fleet_type <- getOption("dsflower.fleet_api_type", "grpc-rere")
 
-  # Build args
+  # The DSI tunnel relay connects to the Fleet API on loopback, so bind there and
+  # run insecure; otherwise expose TLS on all interfaces for a remote transport.
+  bind <- if (insecure) "127.0.0.1:" else "0.0.0.0:"
+  tls_args <- if (insecure) "--insecure"
+              else c("--ssl-certfile",    tls_info$srv_cert_path,
+                     "--ssl-keyfile",     tls_info$srv_key_path,
+                     "--ssl-ca-certfile", tls_info$ca_cert_path)
   args <- c(
-    "--ssl-certfile", tls_info$srv_cert_path,
-    "--ssl-keyfile", tls_info$srv_key_path,
-    "--ssl-ca-certfile", tls_info$ca_cert_path,
+    tls_args,
     "--fleet-api-type", fleet_type,
-    "--fleet-api-address", paste0("0.0.0.0:", fleet_port),
-    "--control-api-address", paste0("0.0.0.0:", control_port),
-    "--serverappio-api-address", paste0("0.0.0.0:", serverappio_port)
+    "--fleet-api-address", paste0(bind, fleet_port),
+    "--control-api-address", paste0(bind, control_port),
+    "--serverappio-api-address", paste0(bind, serverappio_port)
   )
 
   # Spawn -- detached processes survive R exit
@@ -286,7 +290,8 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
     'default = "dsflower"\n\n',
     "[superlink.dsflower]\n",
     'address = "127.0.0.1:', control_port, '"\n',
-    'root-certificates = "', tls_info$ca_cert_path, '"\n'
+    if (insecure) "insecure = true\n"
+    else paste0('root-certificates = "', tls_info$ca_cert_path, '"\n')
   )
   writeLines(config_toml, file.path(flwr_home, "config.toml"))
 

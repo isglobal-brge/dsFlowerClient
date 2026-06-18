@@ -8,7 +8,8 @@ ds.flower.superlink.start(
   fleet_port = 9092L,
   control_port = 9093L,
   serverappio_port = 9091L,
-  detached = FALSE
+  detached = FALSE,
+  insecure = getOption("dsflower.superlink_insecure", FALSE)
 )
 }
 \arguments{

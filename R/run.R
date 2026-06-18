@@ -350,7 +350,10 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       break
     }
 
-    Sys.sleep(1)
+    # If the DSI tunnel is active, carry a batch of Fleet-API bytes between the
+    # SuperLink and the nodes; the aggregate round-trip paces the loop. Otherwise
+    # just idle one second.
+    if (!.tunnel_pump()) Sys.sleep(1)
   }
 
   out <- proc$read_all_output_lines()

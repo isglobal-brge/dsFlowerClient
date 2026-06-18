@@ -146,33 +146,47 @@ ds.flower.link.up <- function(conns, symbol = "flower",
   verbose <- isTRUE(verbose)
   vmsg <- function(...) if (verbose) message(...)
 
+  # Bring up an INSECURE local SuperLink (the DataSHIELD channel already provides
+  # TLS) and start a node-side tunnel forwarder on each site. Each SuperNode then
+  # dials its own loopback forwarder and its entire Fleet-API conversation with
+  # the SuperLink is carried over DataSHIELD -- no public host, Tor or tailnet.
+  options(dsflower.superlink_insecure = TRUE)
   sl <- ds.flower.superlink.status()
   if (!isTRUE(sl$running)) {
-    if (verbose) ds.flower.superlink.start() else suppressMessages(ds.flower.superlink.start())
+    if (verbose) ds.flower.superlink.start(insecure = TRUE)
+    else suppressMessages(ds.flower.superlink.start(insecure = TRUE))
     sl <- ds.flower.superlink.status()
   }
   fleet_port <- sl$ports$fleet %||% 9092L
 
   if (!verbose)
     message("Connecting your machine to the federation (this can take ~1 min)...")
-  vmsg("Publishing SuperLink as a Tor hidden service (bootstrapping Tor)...")
-  onion <- .client_tor_hidden_service(fleet_port)
-  vmsg("  SuperLink onion: ", onion, ":", fleet_port)
 
-  vmsg("Bringing nodes onto Tor...")
+  cid <- paste0("dsf", paste(sample(c(letters, 0:9), 10, replace = TRUE), collapse = ""))
+  fwd_port <- as.integer(getOption("dsflower.tunnel_port", 18080L))
+  vmsg("Starting DSI tunnel forwarders on ", length(conns), " node(s)...")
+  ok <- DSI::datashield.aggregate(conns, call("flowerTunnelUpDS", cid, fwd_port))
   for (srv in names(conns)) {
-    tryCatch(DSI::datashield.assign.expr(
-      conns[srv], symbol = paste0(symbol, "_tor"),
-      expr = call("flowerTorUpDS")), error = function(e)
-        warning(srv, ": flowerTorUpDS failed: ", conditionMessage(e), call. = FALSE))
+    if (!isTRUE(ok[[srv]]$ok))
+      warning(srv, ": tunnel forwarder did not report ready.", call. = FALSE)
   }
-  .dsflower_client_env$.overlay_ip <- onion  # ensure -> onion:fleet_port
+
+  .dsflower_client_env$.tunnel <- list(
+    active     = TRUE,
+    conns      = conns,
+    hosts      = names(conns),
+    conn_id    = cid,
+    fleet_port = fleet_port,
+    fwd_port   = fwd_port,
+    socks      = vector("list", length(conns))
+  )
+
   if (verbose)
-    message("Tor transport ready. Run ds.flower.fit() / nodes.ensure() as usual.")
+    message("DSI tunnel ready. Run ds.flower.fit() / nodes.ensure() as usual.")
   else
     message("Federation ready: ", length(conns), " site",
             if (length(conns) != 1) "s" else "", " connected.")
-  invisible(onion)
+  invisible(cid)
 }
 
 #' Close the federation link
@@ -186,29 +200,20 @@ ds.flower.link.up <- function(conns, symbol = "flower",
 #' @return Invisible TRUE.
 #' @export
 ds.flower.link.down <- function(conns, symbol = "flower") {
-  # Tell the nodes to stop Tor + wipe their session state.
-  for (srv in names(conns)) {
-    tryCatch(DSI::datashield.assign.expr(
-      conns[srv], symbol = paste0(symbol, "_tor"),
-      expr = call("flowerTorDownDS")), error = function(e) NULL)
+  st <- .dsflower_client_env$.tunnel
+  # Close the relay's local SuperLink sockets.
+  if (!is.null(st) && !is.null(st$socks)) {
+    for (s in st$socks) if (!is.null(s)) tryCatch(close(s), error = function(e) NULL)
   }
-  # Close the control connection -> the ephemeral in-memory onion is destroyed.
-  con <- .dsflower_client_env$.tor_control
-  if (!is.null(con)) {
-    tryCatch({ .tor_ctl_cmd(con, "QUIT"); close(con) }, error = function(e) NULL)
-  }
-  .dsflower_client_env$.tor_control <- NULL
-  # Stop the local Tor process.
-  p <- .dsflower_client_env$.tor_proc
-  if (!is.null(p) && inherits(p, "process")) {
-    tryCatch({ p$signal(15L); p$wait(timeout = 3000); if (p$is_alive()) p$kill() },
+  # Tell each node to stop its forwarder and wipe the spool.
+  cid <- if (!is.null(st)) st$conn_id else NULL
+  if (!is.null(cid)) {
+    tryCatch(DSI::datashield.aggregate(conns, call("flowerTunnelDownDS", cid)),
              error = function(e) NULL)
   }
-  .dsflower_client_env$.tor_proc <- NULL
-  # Wipe the per-session temp dir -> no residue left on disk.
-  d <- .dsflower_client_env$.tor_dir
-  if (!is.null(d) && dir.exists(d)) unlink(d, recursive = TRUE, force = TRUE)
-  .dsflower_client_env$.tor_dir <- NULL
-  .dsflower_client_env$.overlay_ip <- NULL
+  .dsflower_client_env$.tunnel <- NULL
+  options(dsflower.superlink_insecure = NULL)
+  # Stop the local insecure SuperLink we started for the tunnel.
+  tryCatch(ds.flower.superlink.stop(), error = function(e) NULL)
   invisible(TRUE)
 }
