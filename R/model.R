@@ -467,7 +467,8 @@ ds.flower.model.pytorch_lstm <- function(hidden_size = 64L,
 ds.flower.model.xgboost <- function(n_trees = 10L, max_depth = 3L,
                                      eta = 0.3, reg_lambda = 1.0,
                                      n_bins = 64L,
-                                     objective = "binary:logistic") {
+                                     objective = "binary:logistic",
+                                     num_class = 2L) {
   obj <- list(
     name      = "xgboost",
     framework = "xgboost",
@@ -478,7 +479,8 @@ ds.flower.model.xgboost <- function(n_trees = 10L, max_depth = 3L,
       eta        = eta,
       reg_lambda = reg_lambda,
       n_bins     = as.integer(n_bins),
-      objective  = objective
+      objective  = objective,
+      num_class  = as.integer(num_class)
     )
   )
   class(obj) <- "dsflower_model"

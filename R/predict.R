@@ -114,16 +114,20 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     }
   }
 
-  # Fallback: try global_model.json with pytorch
+  # Fallback: route global_model.json by the template's framework (metadata).
   json_path <- file.path(model_dir, "global_model.json")
   if (file.exists(json_path)) {
-    # Detect framework from metadata
+    tmpl <- ""
     meta_path <- file.path(model_dir, "metadata.json")
     if (file.exists(meta_path)) {
-      meta <- jsonlite::fromJSON(meta_path)
-      if (grepl("sklearn", meta$template %||% "")) {
-        return(list(model_file = json_path, framework = "sklearn"))
-      }
+      meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
+      tmpl <- meta$template %||% meta$model %||% ""
+    }
+    if (grepl("xgboost", tmpl)) {
+      return(list(model_file = json_path, framework = "xgboost"))
+    }
+    if (grepl("sklearn", tmpl)) {
+      return(list(model_file = json_path, framework = "sklearn"))
     }
     return(list(model_file = json_path, framework = "pytorch"))
   }

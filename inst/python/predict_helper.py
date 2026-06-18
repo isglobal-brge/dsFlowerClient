@@ -94,6 +94,62 @@ def predict_xgboost(model_path, X, pred_type):
     return (probs > 0.5).astype(int).tolist()
 
 
+def _xgb_leaf(splits, leaves, row):
+    """Traverse one custom tree to its leaf value for a single sample."""
+    node = 0
+    for _ in range(128):  # depth guard
+        key = str(node)
+        if key in splits:
+            s = splits[key]
+            node = int(s["left"]) if row[int(s["feature"])] <= float(s["threshold"]) \
+                else int(s["right"])
+        else:
+            return float(leaves.get(key, 0.0))
+    return 0.0
+
+
+def predict_xgboost_custom(model_path, X, pred_type):
+    """Predict with dsFlower's federated XGBoost JSON (binary + multiclass).
+
+    The model is an additive ensemble of per-class trees: score[c] is the sum of
+    learning_rate * leaf over the trees tagged with class c, then sigmoid (binary)
+    or softmax (multiclass).
+    """
+    with open(model_path) as f:
+        model = json.load(f)
+    lr = float(model.get("learning_rate", 0.3))
+    n_outputs = int(model.get("n_outputs", 1))
+    multiclass = bool(model.get("multiclass", False)) or n_outputs > 1
+    objective = str(model.get("objective", "binary:logistic"))
+    trees = model.get("trees", [])
+
+    n = X.shape[0]
+    scores = np.zeros((n, max(1, n_outputs)), dtype=np.float64)
+    for tree in trees:
+        cls = int(tree.get("class_idx", 0)) % scores.shape[1]
+        splits = tree.get("splits", {})
+        leaves = tree.get("leaves", {})
+        for i in range(n):
+            scores[i, cls] += lr * _xgb_leaf(splits, leaves, X[i])
+
+    if multiclass:
+        z = scores - scores.max(axis=1, keepdims=True)
+        e = np.exp(z)
+        probs = e / e.sum(axis=1, keepdims=True)
+        if pred_type == "prob":
+            return probs.tolist()
+        return np.argmax(probs, axis=1).tolist()
+
+    if objective.startswith("binary") or objective.endswith("logistic"):
+        p = 1.0 / (1.0 + np.exp(-scores[:, 0]))
+        if pred_type == "prob":
+            return p.tolist()
+        return (p > 0.5).astype(int).tolist()
+
+    # regression
+    return scores[:, 0].tolist()
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True)
@@ -127,7 +183,10 @@ def main():
     elif framework == "pytorch":
         preds = predict_pytorch(args.model, X, args.type, args.template)
     elif framework == "xgboost":
-        preds = predict_xgboost(args.model, X, args.type)
+        if args.model.endswith(".json"):
+            preds = predict_xgboost_custom(args.model, X, args.type)
+        else:
+            preds = predict_xgboost(args.model, X, args.type)
     else:
         print(json.dumps({"error": f"Unknown framework: {framework}"}),
               file=sys.stderr)

@@ -39,7 +39,7 @@
 #' Uses the control port + ADD_ONION with Flags=DiscardPK so the service key
 #' NEVER touches disk and the .onion vanishes the moment the control connection
 #' closes (teardown). Everything lives in a per-session temp dir that is wiped
-#' on \code{ds.flower.tor.down()}. Single onion (non-anonymous) keeps it fast;
+#' on \code{ds.flower.link.down()}. Single onion (non-anonymous) keeps it fast;
 #' confidentiality is unchanged (onion encryption + Flower TLS on top).
 #'
 #' Clear any leftover local Tor state from a previous (re)run
@@ -121,29 +121,28 @@
     close(con); stop("ADD_ONION failed: ", paste(resp, collapse = " "), call. = FALSE)
   }
   # Keep the control connection open: the ephemeral onion lives only while it is
-  # open, and disappears when ds.flower.tor.down() closes it.
+  # open, and disappears when ds.flower.link.down() closes it.
   .dsflower_client_env$.tor_control <- con
   paste0(sid, ".onion")
 }
 
-#' Connect the federation over Tor (zero account, zero key)
+#' Open the federation link
 #'
-#' Publishes the local SuperLink as a Tor hidden service and brings each node
-#' onto Tor, so SuperNodes reach the SuperLink with no public host, no overlay
-#' account and no auth key. Slower than Tailscale (~MB/s) but zero setup.
+#' Starts a local Flower SuperLink and connects each node (SuperNode) to it, so
+#' training can run with no public host, account or key required. The transport
+#' is set up automatically; pass \code{verbose = TRUE} to see its details.
 #'
 #' @param conns DSI connections object.
 #' @param symbol Character; handle symbol (default "flower").
 #' @param verbose Logical; show the internal transport details (SuperLink
-#'   PID/ports, the ephemeral .onion address, per-step progress). Defaults to
-#'   \code{getOption("dsflower.verbose", FALSE)}. Off by default: setting up the
-#'   onion service is internal plumbing the user does not need to see, and the
-#'   .onion is the transient address of their own SuperLink. The onion is still
-#'   returned invisibly for programmatic use.
-#' @return Invisible the .onion address.
+#'   PID/ports and the transient address it is published at). Defaults to
+#'   \code{getOption("dsflower.verbose", FALSE)} -- off, because this is internal
+#'   plumbing the user does not need to see. The address is still returned
+#'   invisibly for programmatic use.
+#' @return Invisible the published transport address.
 #' @export
-ds.flower.tor.up <- function(conns, symbol = "flower",
-                             verbose = getOption("dsflower.verbose", FALSE)) {
+ds.flower.link.up <- function(conns, symbol = "flower",
+                              verbose = getOption("dsflower.verbose", FALSE)) {
   verbose <- isTRUE(verbose)
   vmsg <- function(...) if (verbose) message(...)
 
@@ -176,12 +175,17 @@ ds.flower.tor.up <- function(conns, symbol = "flower",
   invisible(onion)
 }
 
-#' Tear down the Tor transport
+#' Close the federation link
+#'
+#' Stops each node's transport, tears down the local SuperLink's published
+#' address and stops the local transport process. Reverses
+#' \code{ds.flower.link.up()}.
+#'
 #' @param conns DSI connections object.
 #' @param symbol Character; handle symbol.
 #' @return Invisible TRUE.
 #' @export
-ds.flower.tor.down <- function(conns, symbol = "flower") {
+ds.flower.link.down <- function(conns, symbol = "flower") {
   # Tell the nodes to stop Tor + wipe their session state.
   for (srv in names(conns)) {
     tryCatch(DSI::datashield.assign.expr(
