@@ -204,11 +204,6 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
       # node-side), so this address is only a placeholder. Skip coordinator
       # discovery / auto-resolution entirely.
       superlink_address <- sl$fleet_address %||% "127.0.0.1:9092"
-    } else if (!is.null(.dsflower_client_env$.overlay_ip)) {
-      # Overlay (tailnet) transport: nodes reach the SuperLink at this
-      # machine's tailnet IP (through the per-node SOCKS5 forwarder).
-      fleet_port <- sl$ports$fleet %||% 9092L
-      superlink_address <- paste0(.dsflower_client_env$.overlay_ip, ":", fleet_port)
     } else if (isTRUE(sl$running) && isTRUE(sl$remote)) {
       superlink_address <- sl$fleet_address
     } else {
@@ -236,10 +231,9 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
 
   # Egress preflight: fail fast (naming each node + address) if a node cannot
   # reach the SuperLink, instead of spawning SuperNodes that time out silently.
-  # Skipped under overlay transport: the node reaches the SuperLink through its
-  # local SOCKS5 forwarder, which the server-side preflight verifies instead.
-  if (is.null(.dsflower_client_env$.overlay_ip) &&
-      is.null(.dsflower_client_env$.tunnel)) {
+  # Skipped under the DSI tunnel: the node reaches the SuperLink through its own
+  # loopback forwarder, so this client-side egress probe does not apply.
+  if (is.null(.dsflower_client_env$.tunnel)) {
     .preflight_node_egress(conns, superlink_address)
   }
 

@@ -7,6 +7,8 @@
 .tunnel_pump()
 }
 \description{
-Carry one batch of tunnel bytes (returns TRUE if the tunnel is active)
+One fan-out \code{flowerTunnelExchangeDS} call per cycle carries every node's
+down-bytes (keyed by node name) AND returns every node's up-bytes, so the DSI
+round-trip is paid once per cycle rather than once per direction per node.
 }
 \keyword{internal}
