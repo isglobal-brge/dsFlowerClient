@@ -49,9 +49,18 @@ def load_data(context=None):
 
     target_col = manifest["target_column"]
     feat_cols = manifest.get("feature_columns")
-    y = df[target_col].values
     X = df[feat_cols].values if feat_cols else df.drop(columns=[target_col]).values
-    return X.astype(np.float32), y.astype(np.float32)
+
+    # Coerce the target to numeric {0,1,...}. Handles factor/string/bool labels
+    # (e.g. a DataSHIELD factor target) by stable label-encoding; numeric targets
+    # pass through unchanged.
+    y_series = df[target_col]
+    if y_series.dtype == object or y_series.dtype == bool or \
+            str(y_series.dtype).startswith("category"):
+        y = y_series.astype("category").cat.codes.values
+    else:
+        y = y_series.values
+    return X.astype(np.float32), np.asarray(y, dtype=np.float32)
 
 
 def load_privacy_config(context=None):

@@ -59,7 +59,16 @@ def _save_results(cfg, model, result) -> None:
         return
     os.makedirs(results_dir, exist_ok=True)
 
-    set_torch_params(model, result.arrays.to_numpy_ndarrays())
+    final_arrays = result.arrays.to_numpy_ndarrays()
+    if not final_arrays:
+        # All client updates failed -> no aggregated model. Surface cleanly
+        # (the R relay reports a failed run from the missing model artifact)
+        # instead of crashing on an empty ArrayRecord.
+        with open(os.path.join(results_dir, "history.json"), "w") as f:
+            json.dump([], f)
+        return
+
+    set_torch_params(model, final_arrays)
     torch.save(model.state_dict(), os.path.join(results_dir, "model.pt"))
 
     # One row per round (1..num_rounds) so the relay's artifact watchdog always
