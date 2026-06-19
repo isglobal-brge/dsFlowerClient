@@ -110,19 +110,13 @@ test_that(".flwr_run_timeout_secs accepts environment override", {
   expect_equal(dsFlowerClient:::.flwr_run_timeout_secs(), 7)
 })
 
-test_that(".recipe_requires_secagg is profile-driven", {
-  recipe <- ds.flower.recipe(
-    target = "outcome",
-    features = c("x1", "x2"),
-    model = ds.flower.model.xgboost(),
-    privacy = ds.flower.privacy()
-  )
-  expect_false(dsFlowerClient:::.recipe_requires_secagg(
-    recipe, ds.flower.privacy()
-  ))
-  expect_true(dsFlowerClient:::.recipe_requires_secagg(
-    recipe, ds.flower.privacy()
-  ))
+test_that("Secure Aggregation is decided by node count, not the recipe", {
+  caps3 <- replicate(3, list(secure_aggregation_supported = TRUE), simplify = FALSE)
+  names(caps3) <- c("a", "b", "c")
+  caps2 <- caps3[1:2]
+  # >=3 supporting nodes -> SecAgg (distributed DP); <3 -> local DP only.
+  expect_true(dsFlowerClient:::.resolve_secagg(caps3, verbose = FALSE))
+  expect_false(dsFlowerClient:::.resolve_secagg(caps2, verbose = FALSE))
 })
 
 test_that(".require_flwr_cli accepts provisioned client environment", {
