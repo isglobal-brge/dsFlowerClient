@@ -76,10 +76,10 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
            "requires at least ", min_clients_required, " clients.",
            call. = FALSE)
     }
-    recipe$use_secagg <- .resolve_secagg(caps, verbose = verbose)
+    recipe$use_secagg <- .resolve_secagg(caps, want = isTRUE(recipe$privacy$secure_aggregation), verbose = verbose)
     .enforce_server_runtime_capabilities(caps, recipe, recipe$privacy)
   } else {
-    recipe$use_secagg <- .resolve_secagg(caps, verbose = verbose)
+    recipe$use_secagg <- .resolve_secagg(caps, want = isTRUE(recipe$privacy$secure_aggregation), verbose = verbose)
   }
   # Always include every node each round (non-disclosive; required for SecAgg).
   recipe$strategy$params$fraction_fit <- 1.0

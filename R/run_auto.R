@@ -150,7 +150,7 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
   # >=3 nodes support it; otherwise local DP.
   privacy <- .resolve_privacy(recipe$privacy)
   recipe$privacy <- privacy
-  recipe$use_secagg <- .resolve_secagg(caps, verbose = verbose)
+  recipe$use_secagg <- .resolve_secagg(caps, want = isTRUE(recipe$privacy$secure_aggregation), verbose = verbose)
 
   # Resolve target and label_set from recipe
   target_column <- recipe$target_column %||% recipe$target

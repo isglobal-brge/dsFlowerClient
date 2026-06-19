@@ -12,6 +12,8 @@ ds.flower.model.xgboost(
   n_bins = 64L,
   objective = "binary:logistic",
   num_class = 2L,
+  min_child_weight = 1,
+  fixed_bin_range = 4,
   batch_multiclass = FALSE
 )
 }

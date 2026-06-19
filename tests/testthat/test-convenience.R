@@ -41,12 +41,14 @@ test_that("Secure Aggregation resolves from node count + capability", {
   caps3_partial <- caps3
   caps3_partial$s3 <- list(secure_aggregation_supported = FALSE)
 
-  # >=3 nodes all supporting -> SecAgg ON (distributed DP)
-  expect_true(dsFlowerClient:::.resolve_secagg(caps3, verbose = FALSE))
-  # <3 nodes -> SecAgg OFF (local DP, same epsilon)
-  expect_false(dsFlowerClient:::.resolve_secagg(caps2, verbose = FALSE))
-  # >=3 but not all support SecAgg -> OFF
-  expect_false(dsFlowerClient:::.resolve_secagg(caps3_partial, verbose = FALSE))
+  # SecAgg is opt-in: OFF by default (fast local DP) even with 3 capable nodes.
+  expect_false(dsFlowerClient:::.resolve_secagg(caps3, want = FALSE, verbose = FALSE))
+  # Opted in + >=3 nodes all supporting -> ON (distributed DP).
+  expect_true(dsFlowerClient:::.resolve_secagg(caps3, want = TRUE, verbose = FALSE))
+  # Opted in but <3 nodes -> OFF (local DP, same epsilon).
+  expect_false(dsFlowerClient:::.resolve_secagg(caps2, want = TRUE, verbose = FALSE))
+  # Opted in but not all support SecAgg -> OFF.
+  expect_false(dsFlowerClient:::.resolve_secagg(caps3_partial, want = TRUE, verbose = FALSE))
 })
 
 test_that("recipe accepts string-friendly specs", {

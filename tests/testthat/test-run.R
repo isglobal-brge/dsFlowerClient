@@ -110,13 +110,15 @@ test_that(".flwr_run_timeout_secs accepts environment override", {
   expect_equal(dsFlowerClient:::.flwr_run_timeout_secs(), 7)
 })
 
-test_that("Secure Aggregation is decided by node count, not the recipe", {
+test_that("Secure Aggregation is opt-in and needs >=3 capable nodes", {
   caps3 <- replicate(3, list(secure_aggregation_supported = TRUE), simplify = FALSE)
   names(caps3) <- c("a", "b", "c")
   caps2 <- caps3[1:2]
-  # >=3 supporting nodes -> SecAgg (distributed DP); <3 -> local DP only.
-  expect_true(dsFlowerClient:::.resolve_secagg(caps3, verbose = FALSE))
-  expect_false(dsFlowerClient:::.resolve_secagg(caps2, verbose = FALSE))
+  # Default (not opted in) -> fast local DP even with 3 nodes.
+  expect_false(dsFlowerClient:::.resolve_secagg(caps3, want = FALSE, verbose = FALSE))
+  # Opted in + >=3 nodes -> SecAgg (distributed DP); <3 -> local DP.
+  expect_true(dsFlowerClient:::.resolve_secagg(caps3, want = TRUE, verbose = FALSE))
+  expect_false(dsFlowerClient:::.resolve_secagg(caps2, want = TRUE, verbose = FALSE))
 })
 
 test_that(".require_flwr_cli accepts provisioned client environment", {
