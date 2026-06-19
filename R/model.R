@@ -469,6 +469,8 @@ ds.flower.model.xgboost <- function(n_trees = 10L, max_depth = 3L,
                                      n_bins = 64L,
                                      objective = "binary:logistic",
                                      num_class = 2L,
+                                     min_child_weight = 1.0,
+                                     fixed_bin_range = 4.0,
                                      batch_multiclass = FALSE) {
   obj <- list(
     name      = "xgboost",
@@ -482,6 +484,8 @@ ds.flower.model.xgboost <- function(n_trees = 10L, max_depth = 3L,
       n_bins     = as.integer(n_bins),
       objective  = objective,
       num_class  = as.integer(num_class),
+      min_child_weight = min_child_weight,
+      "fixed-bin-range" = fixed_bin_range,
       # Opt-in: batch all K per-class stumps into one SecAgg round (~Kx fewer
       # round-trips). Validated in-process; pending federated SecAgg+ testing,
       # so it defaults off.
