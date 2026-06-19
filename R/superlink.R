@@ -190,8 +190,7 @@
 #' Start a Flower SuperLink
 #'
 #' Spawns a \code{flower-superlink} process. In detached mode, the process
-#' survives R session exit and can be reattached from a new session via
-#' \code{ds.flower.superlink.attach()}.
+#' survives R session exit.
 #'
 #' @param fleet_port Integer; port for the Fleet API (default 9092).
 #' @param control_port Integer; port for the Control API (default 9093).
@@ -335,130 +334,8 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
   message("  Control API (flwr run): ", control_address)
   if (detached) {
     message("  Mode: detached -- survives R session exit")
-    message("  Reconnect with: ds.flower.superlink.attach()")
   }
   invisible(info)
-}
-
-#' Attach to a SuperLink (remote coordinator or local detached)
-#'
-#' Two modes:
-#' \itemize{
-#'   \item \strong{Remote coordinator} (when \code{superlink_address} is given):
-#'     point this session at an already-running, publicly reachable SuperLink
-#'     that both this client and the SuperNodes dial OUT to. Nothing is spawned
-#'     locally. This is the NAT-traversal path -- the coordinator is the single
-#'     rendezvous endpoint.
-#'   \item \strong{Local detached} (no arguments): reconnect to a SuperLink
-#'     started with \code{detached = TRUE} in a previous R session.
-#' }
-#'
-#' @param superlink_address Character or NULL; the coordinator Fleet API address
-#'   ("host:port") SuperNodes dial. When supplied, attaches in remote mode.
-#' @param control_address Character or NULL; the coordinator Control API address
-#'   ("host:port") the researcher's \code{flwr run} dials. Defaults to the
-#'   Fleet host with the next port (\code{fleet_port + 1}) when omitted.
-#' @param ca_cert_path Character or NULL; path to the coordinator's CA cert PEM.
-#' @param ca_cert_pem Character or NULL; the coordinator's CA cert PEM inline
-#'   (used when no path is available, e.g. from auto-discovery).
-#' @return Invisible list with SuperLink info.
-#' @export
-ds.flower.superlink.attach <- function(superlink_address = NULL,
-                                        control_address = NULL,
-                                        ca_cert_path = NULL,
-                                        ca_cert_pem = NULL) {
-  # --- Remote coordinator mode ---
-  if (!is.null(superlink_address)) {
-    if (is.null(ca_cert_pem) && !is.null(ca_cert_path)) {
-      if (!file.exists(ca_cert_path))
-        stop("CA certificate not found at ", ca_cert_path, ".", call. = FALSE)
-      ca_cert_pem <- paste(readLines(ca_cert_path, warn = FALSE),
-                           collapse = "\n")
-    }
-    if (is.null(ca_cert_pem)) {
-      stop("A coordinator CA certificate is required (ca_cert_path or ",
-           "ca_cert_pem). The SuperLink uses TLS.", call. = FALSE)
-    }
-
-    base_dir <- file.path(.client_venv_root(), "coordinator")
-    flwr_home <- file.path(base_dir, "flwr_home")
-    dir.create(flwr_home, recursive = TRUE, showWarnings = FALSE)
-
-    # Persist the CA to a stable path for flwr run + reference.
-    if (is.null(ca_cert_path)) {
-      ca_cert_path <- file.path(base_dir, "ca.pem")
-      writeLines(ca_cert_pem, ca_cert_path)
-    }
-
-    fleet_port <- suppressWarnings(as.integer(sub(".*:", "", superlink_address)))
-    if (is.null(control_address)) {
-      host <- sub(":.*", "", superlink_address)
-      control_port <- if (is.na(fleet_port)) 9093L else fleet_port + 1L
-      control_address <- paste0(host, ":", control_port)
-    } else {
-      control_port <- suppressWarnings(as.integer(sub(".*:", "",
-                                                      control_address)))
-    }
-
-    # config.toml so `flwr run` dials the PUBLIC Control API over TLS.
-    config_toml <- paste0(
-      "[superlink]\n",
-      'default = "dsflower"\n\n',
-      "[superlink.dsflower]\n",
-      'address = "', control_address, '"\n',
-      'root-certificates = "', ca_cert_path, '"\n'
-    )
-    writeLines(config_toml, file.path(flwr_home, "config.toml"))
-
-    federation_id <- paste0("fl-",
-      paste(sample(c(letters, 0:9), 12, replace = TRUE), collapse = ""))
-
-    info <- list(
-      process          = NULL,
-      remote           = TRUE,
-      pid              = NA_integer_,
-      fleet_address    = superlink_address,
-      control_address  = control_address,
-      fleet_port       = fleet_port,
-      control_port     = control_port,
-      flwr_home        = flwr_home,
-      federation_id    = federation_id,
-      ca_cert_pem      = ca_cert_pem,
-      ca_cert_path     = ca_cert_path,
-      detached         = TRUE,
-      started_at       = Sys.time()
-    )
-    .dsflower_client_env$.superlink <- info
-    message("Attached to remote SuperLink (coordinator) at ", superlink_address)
-    message("  Control API (flwr run): ", control_address)
-    return(invisible(info))
-  }
-
-  # --- Local detached mode ---
-  state <- .load_superlink_state()
-  if (is.null(state)) {
-    stop("No detached SuperLink state found at ",
-         .superlink_state_path(), ".", call. = FALSE)
-  }
-
-  if (!.pid_is_alive_local(state$pid)) {
-    .clear_superlink_state()
-    stop("Detached SuperLink (PID: ", state$pid,
-         ") is no longer running.", call. = FALSE)
-  }
-
-  if (!.port_is_listening(state$fleet_port)) {
-    .clear_superlink_state()
-    stop("SuperLink PID ", state$pid, " is alive but fleet port ",
-         state$fleet_port, " is not listening.", call. = FALSE)
-  }
-
-  .dsflower_client_env$.superlink <- state
-  message("Attached to detached SuperLink (PID: ", state$pid, ")")
-  message("  Fleet API: ", state$fleet_address)
-  message("  Control API: ", state$control_address)
-  message("  Running since: ", state$started_at)
-  invisible(state)
 }
 
 #' Wait for SuperLink to be ready
@@ -640,100 +517,6 @@ ds.flower.superlink.status <- function() {
 
 # --- Auto-discovery helpers ---
 
-#' Auto-resolve SuperLink address for each Opal node
-#'
-#' For each node, builds a prioritized list of candidate addresses and tests
-#' connectivity until one succeeds. Candidates include host.docker.internal
-#' (for containerized nodes), the OS-routed IP, VPN/tunnel IPs, and LAN IPs.
-#'
-#' @param conns DSI connections object.
-#' @param symbol Character; handle symbol name.
-#' @return A single address string (if all nodes need the same) or a named
-#'   list of per-node addresses.
-#' @keywords internal
-.auto_resolve_superlink <- function(conns, symbol) {
-  status <- ds.flower.superlink.status()
-  if (!status$running) {
-    stop("No SuperLink running. Start one with ds.flower.superlink.start() ",
-         "or provide superlink_address explicitly.", call. = FALSE)
-  }
-  fleet_port <- status$ports$fleet
-
-  # Query each Opal's environment
-  caps <- .ds_safe_aggregate(
-    conns, expr = call("flowerGetCapabilitiesDS", symbol)
-  )
-
-  # Collect all local IPs once (expensive, do it lazily)
-  all_ips <- NULL
-
-  addresses <- list()
-  failed <- character(0)
-
-  for (srv in names(caps)) {
-    # Build candidate list in priority order
-    candidates <- character(0)
-
-    if (isTRUE(caps[[srv]]$is_docker)) {
-      # Docker nodes: try host.docker.internal first, then all local IPs
-      candidates <- c(candidates, paste0("host.docker.internal:", fleet_port))
-    }
-
-    # Add all local IPs as candidates (LAN, VPN, etc.)
-    if (is.null(all_ips)) all_ips <- .detect_all_ips()
-    for (ip in all_ips) {
-      candidates <- c(candidates, paste0(ip, ":", fleet_port))
-    }
-
-    # Also try localhost for nodes on the same machine
-    candidates <- c(candidates, paste0("127.0.0.1:", fleet_port))
-    candidates <- unique(candidates)
-
-    # Test each candidate until one works
-    resolved <- NULL
-    tried <- character(0)
-    for (candidate in candidates) {
-      check <- .check_node_connectivity(conns, srv, candidate)
-      if (isTRUE(check$reachable)) {
-        resolved <- candidate
-        message("  ", srv, ": SuperLink reachable at ", candidate)
-        break
-      }
-      tried <- c(tried, candidate)
-    }
-
-    if (is.null(resolved)) {
-      failed <- c(failed, srv)
-      warning(
-        srv, " cannot reach SuperLink. Tried: ",
-        paste(tried, collapse = ", "), ". ",
-        "Provide superlink_address explicitly for this node.",
-        call. = FALSE
-      )
-    } else {
-      addresses[[srv]] <- resolved
-    }
-  }
-
-  if (length(failed) == length(caps)) {
-    stop(
-      "No Opal node can reach the SuperLink. ",
-      "Tried: ", paste(unique(unlist(
-        lapply(caps, function(x) {
-          if (isTRUE(x$is_docker)) "host.docker.internal" else "local IPs"
-        })
-      )), collapse = ", "), ". ",
-      "Provide superlink_address explicitly (see ?ds.flower.nodes.ensure).",
-      call. = FALSE
-    )
-  }
-
-  # If all same -> return single string; otherwise named list
-  unique_addrs <- unique(unlist(addresses))
-  if (length(unique_addrs) == 1L) return(unique_addrs)
-  addresses
-}
-
 #' Detect all routable IPv4 addresses on the researcher's machine
 #'
 #' Returns a prioritized list of IPs: OS-routed IP first (from UDP socket
@@ -859,25 +642,6 @@ ds.flower.superlink.status <- function() {
 
   # VPN IPs first (more likely to be the right route for remote nodes)
   c(vpn_ips, lan_ips)
-}
-
-#' Check connectivity from a single Opal node to a candidate address
-#'
-#' @param conns DSI connections object.
-#' @param srv Character; server name.
-#' @param address Character; "host:port" to test.
-#' @return Named list with \code{reachable} and \code{error}.
-#' @keywords internal
-.check_node_connectivity <- function(conns, srv, address) {
-  tryCatch({
-    res <- DSI::datashield.aggregate(
-      conns[srv],
-      expr = call("flowerCheckConnectivityDS", address)
-    )
-    res[[srv]]
-  }, error = function(e) {
-    list(reachable = FALSE, error = conditionMessage(e))
-  })
 }
 
 # --- Detached SuperLink state management ---
