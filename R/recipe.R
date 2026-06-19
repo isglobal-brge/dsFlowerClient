@@ -39,7 +39,7 @@
 #' @export
 ds.flower.recipe <- function(model,
                               strategy = ds.flower.strategy.fedavg(),
-                              privacy = ds.flower.privacy.clinical_default(),
+                              privacy = ds.flower.privacy(),
                               task = NULL,
                               num_rounds = 5L,
                               target = NULL,
@@ -53,7 +53,11 @@ ds.flower.recipe <- function(model,
   if (!inherits(strategy, "dsflower_strategy")) {
     strategy <- ds.flower.strategy(strategy)
   }
-  if (!inherits(privacy, "dsflower_privacy")) privacy <- ds.flower.privacy(privacy)
+  if (is.null(privacy)) privacy <- ds.flower.privacy()
+  if (!inherits(privacy, "dsflower_privacy")) {
+    stop("'privacy' must be NULL or a dsflower_privacy object from ds.flower.privacy().",
+         call. = FALSE)
+  }
 
   # Infer task from model if not provided
   if (is.null(task)) {
@@ -76,10 +80,6 @@ ds.flower.recipe <- function(model,
   resolved_target <- target %||% target_column %||% "target"
   resolved_features <- features %||% feature_columns
 
-  if (evaluation_only) {
-    privacy$params$evaluation_only <- TRUE
-  }
-
   obj <- list(
     task            = task,
     model           = model,
@@ -91,7 +91,8 @@ ds.flower.recipe <- function(model,
     feature_columns = resolved_features,
     features        = resolved_features,
     label_set       = label_set,
-    masks           = masks
+    masks           = masks,
+    evaluation_only = isTRUE(evaluation_only)
   )
   class(obj) <- "dsflower_recipe"
   obj
@@ -108,7 +109,8 @@ print.dsflower_recipe <- function(x, ...) {
   cat("  Model:    ", x$model$name, "(", x$model$framework, ")\n")
   cat("  Template: ", x$model$template, "\n")
   cat("  Strategy: ", x$strategy$name, "\n")
-  cat("  Privacy:  ", x$privacy$mode, "\n")
+  cat("  Privacy:   DP epsilon=", x$privacy$epsilon, " delta=", x$privacy$delta,
+      " (always on)\n", sep = "")
   cat("  Rounds:   ", x$num_rounds, "\n")
   if (!is.null(x$target))
     cat("  Target:   ", paste(x$target, collapse = ", "), "\n")

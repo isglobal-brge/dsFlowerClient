@@ -176,147 +176,39 @@ ds.flower.task <- function(name = "classification") {
   .dsflower_call_constructor(.dsflower_choice(name, choices, "task"), list())
 }
 
-#' Create an automatic privacy spec
-#'
-#' The automatic privacy policy is resolved at run time after server
-#' capabilities are inspected. It chooses \code{prefer} when all connected
-#' servers report Secure Aggregation support; otherwise it chooses
-#' \code{fallback}. Explicit privacy specs remain available for production
-#' deployments that require a fixed policy.
-#'
-#' @param prefer Character privacy profile to use when SecAgg is available.
-#' @param fallback Character privacy profile to use otherwise.
-#' @return A \code{dsflower_privacy} object with mode = "auto".
-#' @export
-ds.flower.privacy.auto <- function(prefer = "clinical_default",
-                                   fallback = "trusted_internal") {
-  obj <- list(
-    mode = "auto",
-    params = list(prefer = prefer, fallback = fallback)
-  )
-  class(obj) <- c("dsflower_privacy_auto", "dsflower_privacy")
-  obj
+# DP is ALWAYS on; the privacy spec is just the (epsilon, delta, clipping)
+# budget. Accept a dsflower_privacy object or NULL (use defaults).
+.resolve_privacy <- function(privacy) {
+  if (is.null(privacy)) return(ds.flower.privacy())
+  if (inherits(privacy, "dsflower_privacy")) return(privacy)
+  stop("'privacy' must be a dsflower_privacy object from ds.flower.privacy().",
+       call. = FALSE)
 }
 
-#' Create a privacy spec by name
-#'
-#' Convenience wrapper around the concrete \code{ds.flower.privacy.*}
-#' constructors. Existing \code{dsflower_privacy} objects are returned
-#' unchanged.
-#'
-#' @param name Character privacy profile name or a \code{dsflower_privacy}
-#'   object.
-#' @param ... Arguments passed to the selected concrete privacy constructor.
-#' @return A \code{dsflower_privacy} object.
-#' @export
-ds.flower.privacy <- function(name = "clinical_default", ...) {
-  if (inherits(name, "dsflower_privacy")) {
-    dots <- list(...)
-    if (length(dots)) {
-      stop("'...' cannot be used when 'name' is already a dsflower_privacy object.",
-           call. = FALSE)
-    }
-    return(name)
-  }
-
-  if (!is.character(name)) {
-    stop("'name' must be a dsflower_privacy object or character privacy name.",
-         call. = FALSE)
-  }
-
-  choices <- c(
-    auto = "ds.flower.privacy.auto",
-    sandbox = "ds.flower.privacy.sandbox_open",
-    sandbox_open = "ds.flower.privacy.sandbox_open",
-    open = "ds.flower.privacy.sandbox_open",
-    trusted = "ds.flower.privacy.trusted_internal",
-    trusted_internal = "ds.flower.privacy.trusted_internal",
-    consortium = "ds.flower.privacy.consortium_internal",
-    consortium_internal = "ds.flower.privacy.consortium_internal",
-    clinical = "ds.flower.privacy.clinical_default",
-    clinical_default = "ds.flower.privacy.clinical_default",
-    default = "ds.flower.privacy.clinical_default",
-    hardened = "ds.flower.privacy.clinical_hardened",
-    clinical_hardened = "ds.flower.privacy.clinical_hardened",
-    update_noise = "ds.flower.privacy.clinical_update_noise",
-    clinical_update_noise = "ds.flower.privacy.clinical_update_noise",
-    dp = "ds.flower.privacy.high_sensitivity_dp",
-    high_sensitivity = "ds.flower.privacy.high_sensitivity_dp",
-    high_sensitivity_dp = "ds.flower.privacy.high_sensitivity_dp",
-    evaluation_only = "ds.flower.privacy.evaluation_only"
-  )
-
-  .dsflower_call_constructor(.dsflower_choice(name, choices, "privacy"), list(...))
-}
-
-.is_auto_privacy <- function(privacy) {
-  inherits(privacy, "dsflower_privacy_auto") || identical(privacy$mode, "auto")
-}
-
-# Templates the server validates for patient-level DP-SGD (Opacus per-sample
-# gradients). Mirror of dsFlower .DP_SGD_VALIDATED_TEMPLATES; the server is
-# authoritative and will reject a high_sensitivity_dp run on any other template.
-.DP_SGD_AUTO_TEMPLATES <- c(
-  "pytorch_logreg", "pytorch_linear_regression", "pytorch_multiclass",
-  "pytorch_multilabel", "pytorch_mlp", "pytorch_poisson"
-)
-
-.resolve_auto_privacy <- function(privacy, caps = NULL, template = NULL,
-                                  verbose = TRUE) {
-  if (is.null(privacy)) privacy <- ds.flower.privacy.clinical_default()
-  if (is.character(privacy)) privacy <- ds.flower.privacy(privacy)
-  if (!inherits(privacy, "dsflower_privacy")) {
-    stop("'privacy' must be a dsflower_privacy object or character privacy name.",
-         call. = FALSE)
-  }
-  if (!.is_auto_privacy(privacy)) return(privacy)
-
-  fallback <- privacy$params$fallback %||% "trusted_internal"
+# Secure Aggregation is enabled automatically when >=3 nodes are available and
+# all support it (distributed DP: each node adds only its share of the DP noise,
+# so the SecAgg-summed aggregate carries the correct total noise). With <3 nodes
+# we fall back to local DP (each node adds full noise; no SecAgg) -- the formal
+# (epsilon, delta) guarantee is identical, only the utility differs. SecAgg+ at
+# 2 parties is invertible (subtract your own share), so it is never used there.
+.resolve_secagg <- function(caps, verbose = TRUE) {
   has_caps <- !is.null(caps) && length(caps) > 0L
   n_nodes <- if (has_caps) length(caps) else 0L
-  supports_secagg <- has_caps && all(vapply(caps, function(c) {
+  supports <- has_caps && all(vapply(caps, function(c) {
     isTRUE(c$secure_aggregation_supported)
   }, logical(1)))
-  # SecAgg+ needs at least 3 participants to be meaningful (a 2-party sum lets
-  # either side subtract its own contribution to recover the other's).
-  secagg_ok <- supports_secagg && n_nodes >= 3L
-  dp_sgd_ok <- !is.null(template) && template %in% .DP_SGD_AUTO_TEMPLATES
-
-  # Strongest practical profile by (SecAgg availability x template DP capability):
-  #   SecAgg + DP-SGD template -> high_sensitivity_dp (SecAgg AND patient DP-SGD)
-  #   SecAgg + other template  -> clinical_default    (SecAgg-only; the server
-  #                                                     never sees per-node updates)
-  #   no SecAgg                -> fallback             (per-node metrics suppressed)
-  resolved_name <- if (secagg_ok && dp_sgd_ok) {
-    "high_sensitivity_dp"
-  } else if (secagg_ok) {
-    "clinical_default"
-  } else {
-    fallback
-  }
-  resolved <- ds.flower.privacy(resolved_name)
-
+  use_secagg <- supports && n_nodes >= 3L
   if (isTRUE(verbose)) {
-    reason <- if (secagg_ok && dp_sgd_ok) {
-      paste0("SecAgg+ on all ", n_nodes,
-             " servers and the template supports patient-level DP-SGD")
-    } else if (secagg_ok) {
-      paste0("SecAgg+ on all ", n_nodes,
-             " servers (template not DP-SGD-validated, so SecAgg-only)")
-    } else if (!supports_secagg && has_caps) {
-      unsupported <- names(caps)[!vapply(caps, function(c) {
-        isTRUE(c$secure_aggregation_supported)
-      }, logical(1))]
-      paste0("no SecAgg on: ", paste(unsupported, collapse = ", "))
+    if (use_secagg) {
+      message("Secure Aggregation ON (", n_nodes, " nodes): distributed DP.")
     } else if (has_caps && n_nodes < 3L) {
-      paste0("only ", n_nodes, " server(s); SecAgg+ needs 3+")
-    } else {
-      "server capabilities unavailable"
+      message("Secure Aggregation OFF (", n_nodes,
+              " node(s) < 3): local DP (same epsilon, more noise).")
+    } else if (has_caps && !supports) {
+      message("Secure Aggregation OFF (not all nodes support it): local DP.")
     }
-    message("Privacy auto resolved to '", resolved$mode, "' (", reason, ").")
   }
-
-  resolved
+  use_secagg
 }
 
 #' Fit a federated model in one call
@@ -369,7 +261,7 @@ ds.flower.fit <- function(conns,
                           model_params = list(),
                           strategy = "fedavg",
                           strategy_params = list(),
-                          privacy = "auto",
+                          privacy = NULL,
                           privacy_params = list(),
                           rounds = 5L,
                           task = NULL,
@@ -432,8 +324,11 @@ ds.flower.fit <- function(conns,
   privacy_spec <- if (inherits(privacy, "dsflower_privacy")) {
     if (length(privacy_params)) stop("'privacy_params' cannot be used with a privacy object.", call. = FALSE)
     privacy
+  } else if (is.null(privacy)) {
+    do.call(ds.flower.privacy, privacy_params)
   } else {
-    do.call(ds.flower.privacy, c(list(privacy), privacy_params))
+    stop("'privacy' must be NULL or a dsflower_privacy object from ds.flower.privacy().",
+         call. = FALSE)
   }
 
   task_spec <- if (is.null(task)) NULL else ds.flower.task(task)

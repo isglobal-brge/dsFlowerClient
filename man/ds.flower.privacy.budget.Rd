@@ -2,7 +2,7 @@
 % Please edit documentation in R/privacy.R
 \name{ds.flower.privacy.budget}
 \alias{ds.flower.privacy.budget}
-\title{Query remaining privacy budget on all servers}
+\title{Query remaining differential-privacy budget on all servers}
 \usage{
 ds.flower.privacy.budget(conns, symbol = "flower")
 }
@@ -15,6 +15,6 @@ ds.flower.privacy.budget(conns, symbol = "flower")
 Named list with per-server budget information.
 }
 \description{
-Calls \code{flowerPrivacyBudgetDS} on each server to retrieve the
-remaining (epsilon, delta) budget for the dataset.
+Calls \code{flowerPrivacyBudgetDS} on each server to retrieve the remaining
+(epsilon, delta) budget for the dataset.
 }

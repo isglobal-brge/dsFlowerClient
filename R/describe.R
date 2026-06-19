@@ -48,7 +48,7 @@ print.dsflower_description <- function(x, ...) {
   for (srv in names(x$caps)) {
     c <- x$caps[[srv]]
     cat("\n  [", srv, "]\n")
-    cat("    Profile:    ", c$privacy_profile %||% "unknown", "\n")
+    cat("    Privacy:     differential privacy (always enforced)\n")
     if (!is.null(c$secure_aggregation_supported)) {
       cat("    SecAgg:     ",
           if (isTRUE(c$secure_aggregation_supported)) "available" else "unavailable",

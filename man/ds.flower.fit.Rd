@@ -15,7 +15,7 @@ ds.flower.fit(
   model_params = list(),
   strategy = "fedavg",
   strategy_params = list(),
-  privacy = "auto",
+  privacy = NULL,
   privacy_params = list(),
   rounds = 5L,
   task = NULL,

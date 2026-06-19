@@ -66,33 +66,23 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     .ds_safe_aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
     error = function(e) NULL
   )
+  recipe$privacy <- .resolve_privacy(recipe$privacy)
   if (!is.null(caps)) {
     min_clients_required <- max(vapply(caps, function(c) {
-      c$trust_profile$min_clients_per_round %||% 1L
+      (c$min_clients_per_round %||% c$trust_profile$min_clients_per_round) %||% 1L
     }, integer(1)))
     if (n_clients < min_clients_required) {
-      stop("Insufficient clients: ", n_clients, " connected but the trust ",
-           "profile requires at least ", min_clients_required, " clients.",
+      stop("Insufficient clients: ", n_clients, " connected but the server ",
+           "requires at least ", min_clients_required, " clients.",
            call. = FALSE)
     }
-
-    # Enforce fixed_client_sampling: if any server requires it, force
-    # fraction_fit = 1.0 so all clients participate every round.
-    any_fixed <- any(vapply(caps, function(c) {
-      isTRUE(c$trust_profile$fixed_client_sampling)
-    }, logical(1)))
-    if (any_fixed) {
-      recipe$strategy$params$fraction_fit <- 1.0
-    }
-    recipe$privacy <- .resolve_auto_privacy(recipe$privacy, caps = caps,
-                                            template = recipe$model$template,
-                                            verbose = verbose)
+    recipe$use_secagg <- .resolve_secagg(caps, verbose = verbose)
     .enforce_server_runtime_capabilities(caps, recipe, recipe$privacy)
   } else {
-    recipe$privacy <- .resolve_auto_privacy(recipe$privacy, caps = caps,
-                                            template = recipe$model$template,
-                                            verbose = verbose)
+    recipe$use_secagg <- .resolve_secagg(caps, verbose = verbose)
   }
+  # Always include every node each round (non-disclosive; required for SecAgg).
+  recipe$strategy$params$fraction_fit <- 1.0
 
   # Ensure framework dependencies are installed on-demand
   .ensure_client_framework(recipe$model$framework)
@@ -135,7 +125,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     env = .client_venv_env(extra = c(FLWR_HOME = sl_info$flwr_home)),
     results_dir = results_dir,
     num_rounds = recipe$num_rounds,
-    expect_artifacts = !isTRUE(recipe$privacy$params$evaluation_only)
+    expect_artifacts = !isTRUE(recipe$evaluation_only)
   )
 
   # Clean ANSI escape codes
@@ -162,7 +152,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     stderr = clean_stderr,
     weights = weights,
     history = history,
-    expect_artifacts = !isTRUE(recipe$privacy$params$evaluation_only)
+    expect_artifacts = !isTRUE(recipe$evaluation_only)
   )
 
   # Generate a unique model ID for identification
@@ -189,7 +179,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       template   = recipe$model$template,
       framework  = recipe$model$framework,
       strategy   = recipe$strategy$name,
-      privacy    = recipe$privacy$mode,
+      privacy    = paste0("dp(epsilon=", recipe$privacy$epsilon, ")"),
       num_rounds = recipe$num_rounds,
       run_id     = run_id,
       created_at = Sys.time(),
@@ -210,7 +200,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       model      = recipe$model$name,
       template   = recipe$model$template,
       strategy   = recipe$strategy$name,
-      privacy    = recipe$privacy$mode,
+      privacy    = paste0("dp(epsilon=", recipe$privacy$epsilon, ")"),
       num_rounds = recipe$num_rounds,
       n_clients  = length(conns),
       created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),

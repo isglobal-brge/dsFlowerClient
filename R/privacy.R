@@ -1,167 +1,49 @@
-# Module: Privacy Specs
-# Privacy profile specifications for federated learning.
-# 7 profiles + 1 modifier (evaluation_only).
+# Module: Differential Privacy budget
+#
+# dsFlower ALWAYS enforces formal differential privacy. There are no privacy
+# "profiles": disclosure thresholds come from standard DataSHIELD options on the
+# server (nfilter.*), and Secure Aggregation is applied automatically when >=3
+# nodes are available (distributed DP), falling back to local DP for <3 nodes.
+# This module only carries the (epsilon, delta, clipping) budget.
 
-#' Create a sandbox_open privacy spec
+#' Differential privacy budget for a federated run
 #'
-#' Minimal restrictions. Requires explicit admin opt-in on the server
-#' (\code{dsflower.allow_sandbox = TRUE}).
+#' dsFlower always trains under formal (epsilon, delta)-differential privacy.
+#' This sets the budget; the mechanism (Opacus DP-SGD, DP-GBDT, ...) is chosen
+#' per model on the server, and Secure Aggregation is layered automatically when
+#' enough nodes are available.
 #'
-#' @return A \code{dsflower_privacy} S3 object with mode = "sandbox_open".
+#' @param epsilon Numeric > 0; privacy budget (default 3.0). Larger = less noise
+#'   / weaker privacy. There is no way to disable DP; use a large epsilon if you
+#'   knowingly want minimal noise.
+#' @param delta Numeric in (0, 1); probability of guarantee failure (default 1e-5).
+#' @param clipping_norm Numeric > 0; per-sample gradient/update clipping norm
+#'   (default 1.0).
+#' @return A \code{dsflower_privacy} S3 object.
 #' @export
-ds.flower.privacy.sandbox_open <- function() {
-  obj <- list(
-    mode   = "sandbox_open",
-    params = list()
-  )
-  class(obj) <- "dsflower_privacy"
-  obj
-}
-
-#' Create a trusted_internal privacy spec
-#'
-#' For trusted internal collaborations. Per-node metrics allowed, no SecAgg.
-#'
-#' @return A \code{dsflower_privacy} S3 object with mode = "trusted_internal".
-#' @export
-ds.flower.privacy.trusted_internal <- function() {
-  obj <- list(
-    mode   = "trusted_internal",
-    params = list()
-  )
-  class(obj) <- "dsflower_privacy"
-  obj
-}
-
-#' Create a consortium_internal privacy spec
-#'
-#' For consortium collaborations. Per-node metrics suppressed, fixed sampling.
-#'
-#' @return A \code{dsflower_privacy} S3 object with mode = "consortium_internal".
-#' @export
-ds.flower.privacy.consortium_internal <- function() {
-  obj <- list(
-    mode   = "consortium_internal",
-    params = list()
-  )
-  class(obj) <- "dsflower_privacy"
-  obj
-}
-
-#' Create a clinical_default privacy spec (recommended)
-#'
-#' The recommended default for clinical federated learning. Requires SecAgg,
-#' suppresses per-node metrics, enforces fixed client sampling.
-#'
-#' @return A \code{dsflower_privacy} S3 object with mode = "clinical_default".
-#' @export
-ds.flower.privacy.clinical_default <- function() {
-  obj <- list(
-    mode   = "clinical_default",
-    params = list()
-  )
-  class(obj) <- "dsflower_privacy"
-  obj
-}
-
-#' Create a clinical_hardened privacy spec
-#'
-#' Stricter than clinical_default: higher minimum rows, requires 3+ clients.
-#'
-#' @return A \code{dsflower_privacy} S3 object with mode = "clinical_hardened".
-#' @export
-ds.flower.privacy.clinical_hardened <- function() {
-  obj <- list(
-    mode   = "clinical_hardened",
-    params = list()
-  )
-  class(obj) <- "dsflower_privacy"
-  obj
-}
-
-#' Create a clinical_update_noise privacy spec
-#'
-#' Update-level hardening profile. Where the selected template supports it,
-#' model updates or histogram contributions are clipped and perturbed with
-#' calibrated Gaussian noise before aggregation. SecAgg is enforced by the
-#' server profile.
-#'
-#' This is not patient-level DP-SGD. It is useful when a study wants a stricter
-#' update-sharing posture, but it should not be reported as formal per-example
-#' Differential Privacy. For that setting use
-#' \code{ds.flower.privacy.high_sensitivity_dp()} with a compatible PyTorch
-#' template.
-#'
-#' @param epsilon Numeric; privacy budget (default 1.0).
-#' @param delta Numeric; probability of privacy leakage (default 1e-5).
-#' @param clipping_norm Numeric; update clipping norm (default 1.0).
-#' @return A \code{dsflower_privacy} S3 object with mode = "clinical_update_noise".
-#' @export
-ds.flower.privacy.clinical_update_noise <- function(epsilon = 1.0, delta = 1e-5,
-                                                     clipping_norm = 1.0) {
-  if (epsilon <= 0) stop("epsilon must be positive.", call. = FALSE)
-  if (delta <= 0 || delta >= 1) stop("delta must be in (0, 1).", call. = FALSE)
-  if (clipping_norm <= 0) stop("clipping_norm must be positive.", call. = FALSE)
-  obj <- list(
-    mode   = "clinical_update_noise",
-    params = list(
-      epsilon       = epsilon,
-      delta         = delta,
-      clipping_norm = clipping_norm
-    )
-  )
-  class(obj) <- "dsflower_privacy"
-  obj
-}
-
-#' Create a high_sensitivity_dp privacy spec
-#'
-#' High-sensitivity profile for patient-level DP-SGD. The server allows this
-#' profile only for templates validated for Opacus per-example gradients and
-#' still requires Secure Aggregation and the profile's minimum client policy.
-#'
-#' @param epsilon Numeric; privacy budget (default 1.0).
-#' @param delta Numeric; probability of privacy leakage (default 1e-5).
-#' @param clipping_norm Numeric; gradient clipping norm (default 1.0).
-#' @return A \code{dsflower_privacy} S3 object with mode = "high_sensitivity_dp".
-#' @export
-ds.flower.privacy.high_sensitivity_dp <- function(epsilon = 1.0, delta = 1e-5,
-                                                    clipping_norm = 1.0) {
-  if (epsilon <= 0) stop("epsilon must be positive.", call. = FALSE)
-  if (delta <= 0 || delta >= 1) stop("delta must be in (0, 1).", call. = FALSE)
-  if (clipping_norm <= 0) stop("clipping_norm must be positive.", call. = FALSE)
-  obj <- list(
-    mode   = "high_sensitivity_dp",
-    params = list(
-      epsilon       = epsilon,
-      delta         = delta,
-      clipping_norm = clipping_norm
-    )
-  )
-  class(obj) <- "dsflower_privacy"
-  obj
-}
-
-#' Apply evaluation_only modifier to a privacy spec
-#'
-#' Forces \code{model_release = "blocked"} and
-#' \code{allow_per_node_metrics = FALSE} on the server.
-#'
-#' @param base_privacy A \code{dsflower_privacy} S3 object.
-#' @return A modified \code{dsflower_privacy} S3 object with evaluation_only = TRUE.
-#' @export
-ds.flower.privacy.evaluation_only <- function(base_privacy) {
-  if (!inherits(base_privacy, "dsflower_privacy")) {
-    stop("base_privacy must be a dsflower_privacy object.", call. = FALSE)
+ds.flower.privacy <- function(epsilon = 3.0, delta = 1e-5, clipping_norm = 1.0) {
+  if (!is.numeric(epsilon) || length(epsilon) != 1 || epsilon <= 0) {
+    stop("epsilon must be a single positive number.", call. = FALSE)
   }
-  base_privacy$params$evaluation_only <- TRUE
-  base_privacy
+  if (!is.numeric(delta) || length(delta) != 1 || delta <= 0 || delta >= 1) {
+    stop("delta must be a single number in (0, 1).", call. = FALSE)
+  }
+  if (!is.numeric(clipping_norm) || length(clipping_norm) != 1 || clipping_norm <= 0) {
+    stop("clipping_norm must be a single positive number.", call. = FALSE)
+  }
+  obj <- list(
+    epsilon       = epsilon,
+    delta         = delta,
+    clipping_norm = clipping_norm
+  )
+  class(obj) <- "dsflower_privacy"
+  obj
 }
 
-#' Query remaining privacy budget on all servers
+#' Query remaining differential-privacy budget on all servers
 #'
-#' Calls \code{flowerPrivacyBudgetDS} on each server to retrieve the
-#' remaining (epsilon, delta) budget for the dataset.
+#' Calls \code{flowerPrivacyBudgetDS} on each server to retrieve the remaining
+#' (epsilon, delta) budget for the dataset.
 #'
 #' @param conns DSI connections object.
 #' @param symbol Character; handle symbol name (default "flower").
@@ -179,15 +61,9 @@ ds.flower.privacy.budget <- function(conns, symbol = "flower") {
 #' @return Invisibly returns x.
 #' @export
 print.dsflower_privacy <- function(x, ...) {
-  cat("dsflower_privacy:", x$mode, "\n")
-  if (isTRUE(x$params$evaluation_only)) {
-    cat("  [evaluation_only]\n")
-  }
-  dp_params <- setdiff(names(x$params), "evaluation_only")
-  if (length(dp_params) > 0) {
-    for (nm in dp_params) {
-      cat("  ", nm, "=", .format_r_value(x$params[[nm]]), "\n")
-    }
-  }
+  cat("dsflower_privacy (formal DP, always enforced)\n")
+  cat("  epsilon       =", x$epsilon, "\n")
+  cat("  delta         =", x$delta, "\n")
+  cat("  clipping_norm =", x$clipping_norm, "\n")
   invisible(x)
 }

@@ -11,7 +11,8 @@ ds.flower.model.xgboost(
   reg_lambda = 1,
   n_bins = 64L,
   objective = "binary:logistic",
-  num_class = 2L
+  num_class = 2L,
+  batch_multiclass = FALSE
 )
 }
 \arguments{

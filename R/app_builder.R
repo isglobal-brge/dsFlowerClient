@@ -153,62 +153,34 @@ ds.flower.templates <- function(conns) {
     config_lines <- c(config_lines, .toml_kv(paste0("strategy-", nm), val))
   }
 
-  # Add privacy params
+  # Differential privacy is ALWAYS enforced. Emit the (epsilon, delta, clipping)
+  # budget; the server picks the DP mechanism per model (Opacus DP-SGD, DP-GBDT,
+  # ...). There are no privacy "profiles".
   config_lines <- c(config_lines,
-                    paste0('privacy-mode = "', recipe$privacy$mode, '"'))
-  for (nm in names(recipe$privacy$params)) {
-    val <- recipe$privacy$params[[nm]]
-    config_lines <- c(config_lines, .toml_kv(paste0("privacy-", nm), val))
-  }
+    'dp-enabled = true',
+    .toml_kv("privacy-epsilon", recipe$privacy$epsilon),
+    .toml_kv("privacy-delta", recipe$privacy$delta),
+    .toml_kv("privacy-clipping_norm", recipe$privacy$clipping_norm)
+  )
 
-  # SecAgg and metric suppression flags are consumed by the generated
-  # ServerApp; the DataSHIELD manifest enforces the same policy server-side.
-  secagg_profiles <- c("consortium_internal",
-                       "clinical_default", "clinical_hardened",
-                       "clinical_update_noise", "high_sensitivity_dp",
-                       "secure", "dp")
-  if (recipe$privacy$mode %in% secagg_profiles) {
-    config_lines <- c(config_lines,
-      'require-secure-aggregation = true',
-      'allow-per-node-metrics = false'
-    )
-  } else {
-    config_lines <- c(config_lines,
-      'require-secure-aggregation = false',
-      'allow-per-node-metrics = true'
-    )
-  }
+  # Secure Aggregation (distributed DP) is used when >=3 nodes support it; with
+  # <3 nodes we fall back to local DP (full noise, no SecAgg). num-clients lets
+  # each node split its DP noise as sigma/sqrt(N) under SecAgg so the aggregate
+  # carries the correct total noise.
+  use_secagg <- isTRUE(recipe$use_secagg)
+  n_clients <- recipe$strategy$params$min_available_clients %||%
+    recipe$strategy$params$min_fit_clients %||% 1L
+  config_lines <- c(config_lines,
+    paste0('require-secure-aggregation = ', tolower(as.character(use_secagg))),
+    .toml_kv("num-clients", as.integer(n_clients))
+  )
 
-  # evaluation_only flag
-  if (isTRUE(recipe$privacy$params$evaluation_only)) {
-    config_lines <- c(config_lines, 'evaluation-only = true')
-  } else {
-    config_lines <- c(config_lines, 'evaluation-only = false')
-  }
-
-  # dp-scope
-  dp_scope_profiles <- c("clinical_update_noise", "high_sensitivity_dp")
-  if (recipe$privacy$mode %in% dp_scope_profiles) {
-    dp_scope <- if (recipe$privacy$mode == "high_sensitivity_dp") {
-      "patient_level_dp_sgd"
-    } else {
-      "update_noise_only"
-    }
-    config_lines <- c(config_lines,
-      paste0('dp-scope = "', dp_scope, '"'))
-  } else {
-    config_lines <- c(config_lines, 'dp-scope = "none"')
-  }
-
-  # fixed-client-sampling
-  fixed_sampling_profiles <- c("consortium_internal", "clinical_default",
-                                "clinical_hardened", "clinical_update_noise",
-                                "high_sensitivity_dp")
-  if (recipe$privacy$mode %in% fixed_sampling_profiles) {
-    config_lines <- c(config_lines, 'fixed-client-sampling = true')
-  } else {
-    config_lines <- c(config_lines, 'fixed-client-sampling = false')
-  }
+  # Non-disclosive by default: never return per-node metrics or exact counts,
+  # and include every node each round (fixed sampling).
+  config_lines <- c(config_lines,
+    'allow-per-node-metrics = false',
+    'fixed-client-sampling = true'
+  )
 
   deps <- .template_dependencies(recipe$model$framework)
 

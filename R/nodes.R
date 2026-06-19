@@ -131,12 +131,12 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
                                      run_config = list(), privacy = NULL,
                                      template_name = NULL,
                                      label_set = NULL) {
-  # Inject privacy settings into run_config if a privacy spec is provided
+  # Inject the DP budget into run_config (DP is always enforced server-side).
   if (!is.null(privacy) && inherits(privacy, "dsflower_privacy")) {
-    run_config[["privacy-mode"]] <- privacy$mode
-    for (nm in names(privacy$params)) {
-      run_config[[paste0("privacy-", nm)]] <- privacy$params[[nm]]
-    }
+    run_config[["dp-enabled"]] <- TRUE
+    run_config[["privacy-epsilon"]] <- privacy$epsilon
+    run_config[["privacy-delta"]] <- privacy$delta
+    run_config[["privacy-clipping_norm"]] <- privacy$clipping_norm
   }
 
   if (!is.null(template_name)) {

@@ -40,56 +40,24 @@
   tau               = list(min = 1e-10, max = 10)
 )
 
-.SECAGG_PRIVACY_MODES <- c(
-  "consortium_internal",
-  "clinical_default",
-  "clinical_hardened",
-  "clinical_update_noise",
-  "high_sensitivity_dp",
-  "secure",
-  "dp"
-)
-
-#' Whether a recipe requires Secure Aggregation at runtime
-#' @keywords internal
-.recipe_requires_secagg <- function(recipe, privacy) {
-  mode <- privacy$mode %||% ""
-  mode %in% .SECAGG_PRIVACY_MODES
-}
-
-#' Enforce server-reported Secure Aggregation capability before preparing a run
+#' Enforce server runtime capabilities before preparing a run.
+#'
+#' Differential privacy is always enforced server-side. This only sanity-checks
+#' that Secure Aggregation is actually available when the run intends to use it
+#' (i.e. >=3 nodes were detected and \code{recipe$use_secagg} was set TRUE).
 #' @keywords internal
 .enforce_server_runtime_capabilities <- function(caps, recipe, privacy) {
   if (is.null(caps) || length(caps) == 0) return(invisible(TRUE))
-
-  server_requires <- any(vapply(caps, function(c) {
-    isTRUE(c$trust_profile$require_secure_aggregation)
-  }, logical(1)))
-  recipe_requires <- .recipe_requires_secagg(recipe, privacy)
-  if (!server_requires && !recipe_requires) return(invisible(TRUE))
-
+  if (!isTRUE(recipe$use_secagg)) return(invisible(TRUE))
   unsupported <- names(caps)[!vapply(caps, function(c) {
     isTRUE(c$secure_aggregation_supported)
   }, logical(1))]
-  if (length(unsupported) == 0) return(invisible(TRUE))
-
-  reason <- if (recipe_requires && server_requires) {
-    "the recipe and at least one server trust profile require Secure Aggregation"
-  } else if (recipe_requires) {
-    paste0("recipe privacy mode '", privacy$mode,
-           "' requires Secure Aggregation")
-  } else {
-    "at least one server trust profile requires Secure Aggregation"
+  if (length(unsupported)) {
+    stop("Secure Aggregation was selected (>=3 nodes) but these servers report ",
+         "no SecAgg support: ", paste(unsupported, collapse = ", "), ".",
+         call. = FALSE)
   }
-
-  stop(
-    "Cannot run this dsFlower job: ", reason,
-    ", but these servers report no server-side SecAgg support: ",
-    paste(unsupported, collapse = ", "), ". ",
-    "Use privacy = ds.flower.privacy.trusted_internal() for trusted local demos, ",
-    "or install a compatible Flower runtime/server app implementation.",
-    call. = FALSE
-  )
+  invisible(TRUE)
 }
 
 #' Validate model hyperparameters against bounds
@@ -177,12 +145,12 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
     error = function(e) NULL
   )
 
-  # Resolve privacy (recipe wins, else clinical_default). "auto" depends on
-  # runtime capabilities, so it must be resolved after querying servers.
-  privacy <- .resolve_auto_privacy(recipe$privacy, caps = caps,
-                                   template = recipe$model$template,
-                                   verbose = verbose)
+  # DP is always on; the privacy spec is just the (epsilon, delta, clipping)
+  # budget. Secure Aggregation (distributed DP) is enabled automatically when
+  # >=3 nodes support it; otherwise local DP.
+  privacy <- .resolve_privacy(recipe$privacy)
   recipe$privacy <- privacy
+  recipe$use_secagg <- .resolve_secagg(caps, verbose = verbose)
 
   # Resolve target and label_set from recipe
   target_column <- recipe$target_column %||% recipe$target
@@ -195,19 +163,15 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
   .enforce_server_runtime_capabilities(caps, recipe, privacy)
   recipe$strategy$params$min_fit_clients <- as.integer(n_clients)
   recipe$strategy$params$min_available_clients <- as.integer(n_clients)
-  if (!is.null(caps)) {
-    any_fixed <- any(vapply(caps, function(c) {
-      isTRUE(c$trust_profile$fixed_client_sampling)
-    }, logical(1)))
-    if (any_fixed) {
-      recipe$strategy$params$fraction_fit <- 1.0
-    }
-  }
+  # Always include every node each round (fixed sampling) -- non-disclosive
+  # default and required for distributed DP / Secure Aggregation.
+  recipe$strategy$params$fraction_fit <- 1.0
 
   # Step 1: Prepare (only if config changed since last prepare)
   current_hash <- digest::digest(list(
     target_column, feature_columns, label_set, template_name,
-    recipe$task$type, privacy$mode, recipe$masks), algo = "sha256")
+    recipe$task$type, privacy$epsilon, privacy$delta, recipe$masks),
+    algo = "sha256")
 
   needs_prepare <- is.null(flower$prepare_hash) ||
                    !identical(flower$prepare_hash, current_hash)

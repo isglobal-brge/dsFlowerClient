@@ -7,8 +7,13 @@
 .tunnel_pump()
 }
 \description{
-One fan-out \code{flowerTunnelExchangeDS} call per cycle carries every node's
-down-bytes (keyed by node name) AND returns every node's up-bytes, so the DSI
-round-trip is paid once per cycle rather than once per direction per node.
+One fan-out flowerTunnelExchangeDS per cycle. The relay OWNS the byte offsets
+(up_off = acked node->SuperLink bytes, down_sent = acked SuperLink->node
+bytes), so a transient DSI failure loses nothing: the next cycle re-requests
+the same ranges and the node applies them idempotently. SuperLink replies are
+buffered per node and only dropped once the node acks them, and the up offset
+only advances after the bytes are confirmed written to the SuperLink socket.
+A single fan-out call (not per-node pushes) keeps every node in lock-step so
+none is skewed past a SecAgg stage window.
 }
 \keyword{internal}

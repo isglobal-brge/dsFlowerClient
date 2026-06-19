@@ -37,6 +37,19 @@ ds.flower.link.up <- function(conns, symbol = "flower",
   if (!verbose)
     message("Connecting your machine to the federation (this can take ~1 min)...")
 
+  # Clean slate: reap any orphaned SuperNodes/forwarders left by a previously
+  # killed or crashed run, so this run never hits the concurrent-SuperNode limit
+  # or contends with stale processes. Disable on a shared/multi-tenant federation
+  # via options(dsflower.reap_on_linkup = FALSE).
+  if (isTRUE(getOption("dsflower.reap_on_linkup", TRUE))) {
+    vmsg("Reaping any orphaned tunnel processes on the nodes...")
+    rp <- tryCatch(DSI::datashield.aggregate(conns, call("flowerTunnelReapDS")),
+                   error = function(e) NULL)
+    if (verbose && !is.null(rp)) for (srv in names(conns))
+      vmsg("  ", srv, ": reaped ", rp[[srv]]$supernodes_killed %||% 0,
+           " supernode(s), ", rp[[srv]]$forwarders_killed %||% 0, " forwarder(s)")
+  }
+
   cid <- paste0("dsf", paste(sample(c(letters, 0:9), 10, replace = TRUE), collapse = ""))
   fwd_port <- as.integer(getOption("dsflower.tunnel_port", 18080L))
   vmsg("Starting DSI tunnel forwarders on ", length(conns), " node(s)...")

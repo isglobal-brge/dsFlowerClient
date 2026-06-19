@@ -2,11 +2,13 @@
 % Please edit documentation in R/run_auto.R
 \name{.enforce_server_runtime_capabilities}
 \alias{.enforce_server_runtime_capabilities}
-\title{Enforce server-reported Secure Aggregation capability before preparing a run}
+\title{Enforce server runtime capabilities before preparing a run.}
 \usage{
 .enforce_server_runtime_capabilities(caps, recipe, privacy)
 }
 \description{
-Enforce server-reported Secure Aggregation capability before preparing a run
+Differential privacy is always enforced server-side. This only sanity-checks
+that Secure Aggregation is actually available when the run intends to use it
+(i.e. >=3 nodes were detected and \code{recipe$use_secagg} was set TRUE).
 }
 \keyword{internal}

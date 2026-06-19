@@ -7,7 +7,7 @@
 ds.flower.recipe(
   model,
   strategy = ds.flower.strategy.fedavg(),
-  privacy = ds.flower.privacy.clinical_default(),
+  privacy = ds.flower.privacy(),
   task = NULL,
   num_rounds = 5L,
   target = NULL,
