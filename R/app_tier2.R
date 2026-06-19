@@ -50,14 +50,20 @@
   list(token = token, sha256 = sha, package = pkg_name)
 }
 
-#' Build the Tier-2 runner app dir (bundled dsflower_tier2 + pyproject).
+#' Build the Tier-2 runner app dir (bundled dsflower_tier2 + the user package +
+#' pyproject). The user package is included so the researcher-side ServerApp can
+#' call initial_arrays(); on the node it is still hash-verified by the integrity
+#' hook against the node-computed upload hash (so it cannot be tampered with).
 #' @keywords internal
-.build_tier2_app <- function(user_module, n_features, results_dir, n_nodes,
-                             num_rounds) {
+.build_tier2_app <- function(user_module, user_pkg_dir, n_features, results_dir,
+                             n_nodes, num_rounds) {
   app_dir <- file.path(tempdir(), "dsflower_tier2_app", "dsflower-tier2")
   if (dir.exists(app_dir)) unlink(app_dir, recursive = TRUE)
   dir.create(app_dir, recursive = TRUE, showWarnings = FALSE)
   file.copy(.tier2_skeleton_dir(), app_dir, recursive = TRUE)
+  file.copy(normalizePath(user_pkg_dir), app_dir, recursive = TRUE)
+  unlink(file.path(app_dir, basename(user_pkg_dir), "__pycache__"),
+         recursive = TRUE)
 
   config_lines <- c(
     paste0("num-server-rounds = ", as.integer(num_rounds)),
@@ -73,7 +79,8 @@
     'description = "dsFlower Tier-2 trusted runner"\nlicense = "MIT"\n',
     'dependencies = [', paste0('"', .harness_dependencies(), '"',
                                collapse = ", "), ']\n\n',
-    '[tool.hatch.build.targets.wheel]\npackages = ["dsflower_tier2"]\n\n',
+    '[tool.hatch.build.targets.wheel]\npackages = ["dsflower_tier2", "',
+    user_module, '"]\n\n',
     '[tool.flwr.app]\npublisher = "dsflower"\n\n',
     '[tool.flwr.app.components]\n',
     'serverapp = "dsflower_tier2.server_app:app"\n',
@@ -108,15 +115,21 @@ ds.flower.tier2.run <- function(conns, user_app_dir, target, features,
   n_clients <- length(conns)
   n_features <- length(features)
 
+  # Initialise the server-side Flower handle (flowerInitDS) from the assigned
+  # data symbol; all run ops use this handle symbol.
+  flower <- ds.flower.connect(conns, symbol = symbol)
+  conns <- flower$conns
+  hsym <- flower$symbol
+
   up <- .upload_user_module(conns, user_app_dir)
   if (verbose) message("  Tier-2 module '", up$package, "' uploaded + scanned.")
 
   ds.flower.nodes.prepare(
-    conns, symbol, target_column = target, feature_columns = features,
+    conns, hsym, target_column = target, feature_columns = features,
     run_config = list("task-type" = "classification"), privacy = privacy)
 
   pin <- DSI::datashield.aggregate(
-    conns, call("flowerTier2PinDS", symbol, up$token))
+    conns, call("flowerTier2PinDS", hsym, up$token))
   if (verbose) {
     message("  Pinned: ", paste(unique(unlist(lapply(pin, `[[`, "pinned"))),
                                  collapse = ", "), ".")
@@ -125,8 +138,8 @@ ds.flower.tier2.run <- function(conns, user_app_dir, target, features,
   results_dir <- file.path(tempdir(), "dsflower_results",
                            format(Sys.time(), "%Y%m%d_%H%M%S"))
   dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
-  app_dir <- .build_tier2_app(up$package, n_features, results_dir, n_clients,
-                              num_rounds)
+  app_dir <- .build_tier2_app(up$package, user_app_dir, n_features, results_dir,
+                              n_clients, num_rounds)
   .ensure_client_framework("pytorch")
 
   started_superlink <- FALSE
@@ -143,21 +156,22 @@ ds.flower.tier2.run <- function(conns, user_app_dir, target, features,
 
   run <- tryCatch(
     {
-      ds.flower.nodes.ensure(conns, symbol)
+      ds.flower.nodes.ensure(conns, hsym)
       ds.flower.run.start(recipe, conns, app_dir = app_dir,
-                          results_dir = results_dir, symbol = symbol,
+                          results_dir = results_dir, symbol = hsym,
                           verbose = verbose)
     },
     error = function(e) {
-      tryCatch(ds.flower.nodes.cleanup(conns, symbol), error = function(e) NULL)
+      tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
       if (started_superlink) tryCatch(ds.flower.superlink.stop(), error = function(e) NULL)
       stop(e)
     }
   )
 
-  tryCatch(ds.flower.nodes.cleanup(conns, symbol), error = function(e) NULL)
+  tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
   if (started_superlink) tryCatch(ds.flower.superlink.stop(), error = function(e) NULL)
   tryCatch(DSI::datashield.aggregate(conns, call("flowerAppDeleteDS", up$token)),
            error = function(e) NULL)
+  tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
   run
 }
