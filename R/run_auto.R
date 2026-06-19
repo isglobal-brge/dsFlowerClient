@@ -180,7 +180,11 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
     ds.flower.nodes.prepare(conns, symbol,
       target_column   = target_column,
       feature_columns = if (length(feature_columns) > 0) feature_columns else NULL,
-      run_config      = list("task-type" = recipe$task$type),
+      run_config      = list(
+        "task-type"                  = recipe$task$type,
+        "require-secure-aggregation" = isTRUE(recipe$use_secagg),
+        "num-clients"                = as.integer(n_clients)
+      ),
       privacy         = privacy,
       template_name   = template_name,
       label_set       = label_set)
