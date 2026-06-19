@@ -22,7 +22,9 @@
   skeleton <- .harness_skeleton_dir()
 
   if (is.null(app_dir)) {
-    app_dir <- file.path(tempdir(), "dsflower_app", "dsflower_harness")
+    # The app-dir basename becomes the Flower app name; flwr build requires
+    # hyphens (the Python package inside stays dsflower_harness).
+    app_dir <- file.path(tempdir(), "dsflower_app", "dsflower-harness")
   }
   if (dir.exists(app_dir)) unlink(app_dir, recursive = TRUE)
   dir.create(app_dir, recursive = TRUE, showWarnings = FALSE)
@@ -109,7 +111,7 @@
     'requires = ["hatchling"]\n',
     'build-backend = "hatchling.build"\n\n',
     '[project]\n',
-    'name = "dsflower_harness"\n',
+    'name = "dsflower-harness"\n',   # flwr build requires hyphens in the app name
     'version = "1.0.0"\n',
     'description = "dsFlower Tier-1 trusted harness (always-on DP-SGD)"\n',
     'license = "MIT"\n',
