@@ -26,42 +26,34 @@ test_that("generic task and privacy constructors resolve aliases", {
   expect_equal(ds.flower.task("survival")$type, "survival")
   expect_error(ds.flower.task("not_a_task"), "Unknown task")
 
-  expect_equal(ds.flower.privacy("trusted")$mode, "trusted_internal")
-  auto <- ds.flower.privacy("auto")
-  expect_s3_class(auto, "dsflower_privacy_auto")
-  expect_equal(auto$mode, "auto")
+  p <- ds.flower.privacy(epsilon = 2.0)
+  expect_s3_class(p, "dsflower_privacy")
+  expect_equal(p$epsilon, 2.0)
 })
 
-test_that("auto privacy resolves from server capabilities", {
-  caps_secure <- list(
-    site1 = list(secure_aggregation_supported = TRUE),
-    site2 = list(secure_aggregation_supported = TRUE)
+test_that("Secure Aggregation resolves from node count + capability", {
+  caps3 <- list(
+    s1 = list(secure_aggregation_supported = TRUE),
+    s2 = list(secure_aggregation_supported = TRUE),
+    s3 = list(secure_aggregation_supported = TRUE)
   )
-  caps_plain <- list(
-    site1 = list(secure_aggregation_supported = TRUE),
-    site2 = list(secure_aggregation_supported = FALSE)
-  )
+  caps2 <- caps3[1:2]
+  caps3_partial <- caps3
+  caps3_partial$s3 <- list(secure_aggregation_supported = FALSE)
 
-  expect_message(
-    secure <- dsFlowerClient:::.resolve_auto_privacy(
-      ds.flower.privacy("auto"), caps_secure, verbose = TRUE),
-    "clinical_default"
-  )
-  expect_equal(secure$mode, "clinical_default")
-
-  expect_message(
-    plain <- dsFlowerClient:::.resolve_auto_privacy(
-      ds.flower.privacy("auto"), caps_plain, verbose = TRUE),
-    "trusted_internal"
-  )
-  expect_equal(plain$mode, "trusted_internal")
+  # >=3 nodes all supporting -> SecAgg ON (distributed DP)
+  expect_true(dsFlowerClient:::.resolve_secagg(caps3, verbose = FALSE))
+  # <3 nodes -> SecAgg OFF (local DP, same epsilon)
+  expect_false(dsFlowerClient:::.resolve_secagg(caps2, verbose = FALSE))
+  # >=3 but not all support SecAgg -> OFF
+  expect_false(dsFlowerClient:::.resolve_secagg(caps3_partial, verbose = FALSE))
 })
 
 test_that("recipe accepts string-friendly specs", {
   recipe <- ds.flower.recipe(
     model = "logreg",
     strategy = "fedavg",
-    privacy = "auto",
+    privacy = ds.flower.privacy(),
     target = "outcome",
     features = c("x1", "x2"),
     num_rounds = 3L
@@ -70,7 +62,7 @@ test_that("recipe accepts string-friendly specs", {
   expect_s3_class(recipe, "dsflower_recipe")
   expect_equal(recipe$model$name, "sklearn_logreg")
   expect_equal(recipe$strategy$name, "FedAvg")
-  expect_equal(recipe$privacy$mode, "auto")
+  expect_s3_class(recipe$privacy, "dsflower_privacy")
   expect_equal(recipe$num_rounds, 3L)
 })
 
@@ -106,7 +98,7 @@ test_that("fit builds and runs a recipe through the happy path", {
     model_params = list(max_iter = 12L),
     strategy = "fedprox",
     strategy_params = list(proximal_mu = 0.2),
-    privacy = "trusted",
+    privacy = ds.flower.privacy(),
     rounds = 2L,
     verbose = FALSE
   )
@@ -118,7 +110,7 @@ test_that("fit builds and runs a recipe through the happy path", {
   expect_equal(captured$recipe$model$params$max_iter, 12L)
   expect_equal(captured$recipe$strategy$name, "FedProx")
   expect_equal(captured$recipe$strategy$params$proximal_mu, 0.2)
-  expect_equal(captured$recipe$privacy$mode, "trusted_internal")
+  expect_s3_class(captured$recipe$privacy, "dsflower_privacy")
   expect_equal(captured$recipe$num_rounds, 2L)
 })
 

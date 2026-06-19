@@ -115,13 +115,13 @@ test_that(".recipe_requires_secagg is profile-driven", {
     target = "outcome",
     features = c("x1", "x2"),
     model = ds.flower.model.xgboost(),
-    privacy = ds.flower.privacy.sandbox_open()
+    privacy = ds.flower.privacy()
   )
   expect_false(dsFlowerClient:::.recipe_requires_secagg(
-    recipe, ds.flower.privacy.sandbox_open()
+    recipe, ds.flower.privacy()
   ))
   expect_true(dsFlowerClient:::.recipe_requires_secagg(
-    recipe, ds.flower.privacy.clinical_default()
+    recipe, ds.flower.privacy()
   ))
 })
 

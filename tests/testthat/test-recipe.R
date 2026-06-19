@@ -14,30 +14,30 @@ test_that("recipe creates correct structure", {
   expect_equal(recipe$task$type, "classification")
   expect_equal(recipe$model$name, "sklearn_logreg")
   expect_equal(recipe$strategy$name, "FedAvg")
-  expect_equal(recipe$privacy$mode, "clinical_default")
+  expect_s3_class(recipe$privacy, "dsflower_privacy")
   expect_equal(recipe$num_rounds, 10L)
   expect_equal(recipe$target_column, "target")
   expect_equal(recipe$feature_columns, c("f1", "f2"))
 })
 
-test_that("recipe defaults to clinical_default privacy", {
+test_that("recipe defaults to DP privacy", {
   recipe <- ds.flower.recipe(
     task = ds.flower.task.regression(),
     model = ds.flower.model.sklearn_ridge(),
     strategy = ds.flower.strategy.fedavg()
   )
-  expect_equal(recipe$privacy$mode, "clinical_default")
+  expect_s3_class(recipe$privacy, "dsflower_privacy")
 })
 
-test_that("recipe with clinical_update_noise privacy", {
+test_that("recipe with custom DP budget", {
   recipe <- ds.flower.recipe(
     task = ds.flower.task.classification(),
     model = ds.flower.model.pytorch_mlp(),
     strategy = ds.flower.strategy.fedprox(),
-    privacy = ds.flower.privacy.clinical_update_noise(epsilon = 0.5)
+    privacy = ds.flower.privacy(epsilon = 0.5)
   )
-  expect_equal(recipe$privacy$mode, "clinical_update_noise")
-  expect_equal(recipe$privacy$params$epsilon, 0.5)
+  expect_equal(recipe$privacy$epsilon, 0.5)
+  expect_s3_class(recipe$privacy, "dsflower_privacy")
 })
 
 test_that("recipe validates task type", {

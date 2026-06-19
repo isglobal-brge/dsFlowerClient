@@ -77,15 +77,18 @@ test_that(".write_pyproject_toml generates valid content", {
   expect_true(grepl('strategy = "FedAvg"', content_str))
 })
 
-test_that(".write_pyproject_toml enables SecAgg for consortium_internal", {
+test_that(".write_pyproject_toml emits the DP-always contract (SecAgg case)", {
   recipe <- ds.flower.recipe(
     task = ds.flower.task.classification(),
     model = ds.flower.model.pytorch_resnet18(n_classes = 2L),
     strategy = ds.flower.strategy.fedavg(),
-    privacy = ds.flower.privacy.consortium_internal(),
+    privacy = ds.flower.privacy(epsilon = 2.0),
     num_rounds = 2L,
     target = "label"
   )
+  # Simulate >=3 nodes -> Secure Aggregation (distributed DP).
+  recipe$use_secagg <- TRUE
+  recipe$strategy$params$min_available_clients <- 3L
 
   app_dir <- tempfile("app_test")
   dir.create(app_dir, recursive = TRUE)
@@ -95,8 +98,8 @@ test_that(".write_pyproject_toml enables SecAgg for consortium_internal", {
   content_str <- paste(readLines(file.path(app_dir, "pyproject.toml")),
                        collapse = "\n")
 
-  expect_true(grepl('privacy-mode = "consortium_internal"', content_str,
-                    fixed = TRUE))
+  expect_true(grepl("dp-enabled = true", content_str, fixed = TRUE))
+  expect_true(grepl("privacy-epsilon = 2", content_str, fixed = TRUE))
   expect_true(grepl("require-secure-aggregation = true", content_str,
                     fixed = TRUE))
   expect_true(grepl("allow-per-node-metrics = false", content_str,
