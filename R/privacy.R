@@ -19,19 +19,9 @@
 #' @param delta Numeric in (0, 1); probability of guarantee failure (default 1e-5).
 #' @param clipping_norm Numeric > 0; per-sample gradient/update clipping norm
 #'   (default 1.0).
-#' @param secure_aggregation Logical; opt in to Secure Aggregation (default
-#'   FALSE). DP is always enforced either way. When FALSE, training uses fast
-#'   local DP (each node adds the full noise; one aggregation round-trip). When
-#'   TRUE and >=3 nodes support it, Secure Aggregation is layered on for
-#'   \emph{distributed DP} -- each node adds only its 1/sqrt(N) share of the
-#'   noise, so the same epsilon is met with ~sqrt(N) less noise (better
-#'   accuracy) and the server never sees individual updates -- at the cost of
-#'   several extra masked round-trips per round (much slower over a remote
-#'   federation). Below 3 nodes it is ignored (SecAgg is meaningless).
 #' @return A \code{dsflower_privacy} S3 object.
 #' @export
-ds.flower.privacy <- function(epsilon = 3.0, delta = 1e-5, clipping_norm = 1.0,
-                              secure_aggregation = FALSE) {
+ds.flower.privacy <- function(epsilon = 3.0, delta = 1e-5, clipping_norm = 1.0) {
   if (!is.numeric(epsilon) || length(epsilon) != 1 || epsilon <= 0) {
     stop("epsilon must be a single positive number.", call. = FALSE)
   }
@@ -42,10 +32,9 @@ ds.flower.privacy <- function(epsilon = 3.0, delta = 1e-5, clipping_norm = 1.0,
     stop("clipping_norm must be a single positive number.", call. = FALSE)
   }
   obj <- list(
-    epsilon            = epsilon,
-    delta              = delta,
-    clipping_norm      = clipping_norm,
-    secure_aggregation = isTRUE(secure_aggregation)
+    epsilon       = epsilon,
+    delta         = delta,
+    clipping_norm = clipping_norm
   )
   class(obj) <- "dsflower_privacy"
   obj
@@ -76,8 +65,6 @@ print.dsflower_privacy <- function(x, ...) {
   cat("  epsilon       =", x$epsilon, "\n")
   cat("  delta         =", x$delta, "\n")
   cat("  clipping_norm =", x$clipping_norm, "\n")
-  cat("  secure_aggregation =", isTRUE(x$secure_aggregation),
-      if (isTRUE(x$secure_aggregation)) "(distributed DP; slower)\n"
-      else "(fast local DP)\n")
+  cat("  (local DP; no Secure Aggregation)\n")
   invisible(x)
 }

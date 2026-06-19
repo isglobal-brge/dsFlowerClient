@@ -185,38 +185,6 @@ ds.flower.task <- function(name = "classification") {
        call. = FALSE)
 }
 
-# Secure Aggregation is OPT-IN (privacy$secure_aggregation). DP is always on
-# regardless. When requested AND >=3 nodes all support it, SecAgg gives
-# distributed DP (each node adds only its share of the noise, so the summed
-# aggregate carries the correct total noise -- same epsilon, ~sqrt(N) less noise,
-# server never sees individual updates), at the cost of several extra masked
-# round-trips per round. Otherwise we use fast local DP (full noise per node,
-# one aggregation round-trip). SecAgg at <3 parties is invertible, so never used.
-.resolve_secagg <- function(caps, want = FALSE, verbose = TRUE) {
-  has_caps <- !is.null(caps) && length(caps) > 0L
-  n_nodes <- if (has_caps) length(caps) else 0L
-  supports <- has_caps && all(vapply(caps, function(c) {
-    isTRUE(c$secure_aggregation_supported)
-  }, logical(1)))
-  use_secagg <- isTRUE(want) && supports && n_nodes >= 3L
-  if (isTRUE(verbose)) {
-    if (use_secagg) {
-      message("Secure Aggregation ON (", n_nodes, " nodes): distributed DP ",
-              "(slower; ~sqrt(N) less noise).")
-    } else if (!isTRUE(want)) {
-      message("Secure Aggregation OFF: fast local DP (opt in with ",
-              "ds.flower.privacy(secure_aggregation = TRUE)).")
-    } else if (has_caps && n_nodes < 3L) {
-      message("Secure Aggregation requested but only ", n_nodes,
-              " node(s) < 3: using local DP.")
-    } else if (has_caps && !supports) {
-      message("Secure Aggregation requested but not all nodes support it: ",
-              "using local DP.")
-    }
-  }
-  use_secagg
-}
-
 #' Fit a federated model in one call
 #'
 #' High-level convenience API for the common workflow: connect to assigned

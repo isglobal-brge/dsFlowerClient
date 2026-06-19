@@ -40,26 +40,6 @@
   tau               = list(min = 1e-10, max = 10)
 )
 
-#' Enforce server runtime capabilities before preparing a run.
-#'
-#' Differential privacy is always enforced server-side. This only sanity-checks
-#' that Secure Aggregation is actually available when the run intends to use it
-#' (i.e. >=3 nodes were detected and \code{recipe$use_secagg} was set TRUE).
-#' @keywords internal
-.enforce_server_runtime_capabilities <- function(caps, recipe, privacy) {
-  if (is.null(caps) || length(caps) == 0) return(invisible(TRUE))
-  if (!isTRUE(recipe$use_secagg)) return(invisible(TRUE))
-  unsupported <- names(caps)[!vapply(caps, function(c) {
-    isTRUE(c$secure_aggregation_supported)
-  }, logical(1))]
-  if (length(unsupported)) {
-    stop("Secure Aggregation was selected (>=3 nodes) but these servers report ",
-         "no SecAgg support: ", paste(unsupported, collapse = ", "), ".",
-         call. = FALSE)
-  }
-  invisible(TRUE)
-}
-
 #' Validate model hyperparameters against bounds
 #' @keywords internal
 .validate_model_params <- function(model) {
@@ -140,17 +120,10 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
   .validate_model_params(recipe$model)
   .validate_strategy_params(recipe$strategy)
 
-  caps <- tryCatch(
-    .ds_safe_aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
-    error = function(e) NULL
-  )
-
-  # DP is always on; the privacy spec is just the (epsilon, delta, clipping)
-  # budget. Secure Aggregation (distributed DP) is enabled automatically when
-  # >=3 nodes support it; otherwise local DP.
+  # DP is always on (local DP, no SecAgg); the privacy spec is just the
+  # (epsilon, delta, clipping) budget, read from the node manifest at train time.
   privacy <- .resolve_privacy(recipe$privacy)
   recipe$privacy <- privacy
-  recipe$use_secagg <- .resolve_secagg(caps, want = isTRUE(recipe$privacy$secure_aggregation), verbose = verbose)
 
   # Resolve target and label_set from recipe
   target_column <- recipe$target_column %||% recipe$target
@@ -160,11 +133,9 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
   feature_columns <- recipe$feature_columns %||% recipe$features
   if (is.null(feature_columns)) feature_columns <- character(0)
 
-  .enforce_server_runtime_capabilities(caps, recipe, privacy)
   recipe$strategy$params$min_fit_clients <- as.integer(n_clients)
   recipe$strategy$params$min_available_clients <- as.integer(n_clients)
-  # Always include every node each round (fixed sampling) -- non-disclosive
-  # default and required for distributed DP / Secure Aggregation.
+  # Always include every node each round (fixed sampling) -- non-disclosive default.
   recipe$strategy$params$fraction_fit <- 1.0
 
   # Step 1: Prepare (only if config changed since last prepare)
@@ -180,11 +151,7 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
     ds.flower.nodes.prepare(conns, symbol,
       target_column   = target_column,
       feature_columns = if (length(feature_columns) > 0) feature_columns else NULL,
-      run_config      = list(
-        "task-type"                  = recipe$task$type,
-        "require-secure-aggregation" = isTRUE(recipe$use_secagg),
-        "num-clients"                = as.integer(n_clients)
-      ),
+      run_config      = list("task-type" = recipe$task$type),
       privacy         = privacy,
       template_name   = template_name,
       label_set       = label_set)
@@ -192,10 +159,9 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
     .dsflower_client_env$.connection <- flower
   }
 
-  # Build the Flower app before starting remote SuperNodes. This keeps the
-  # DataSHIELD template-transfer step outside the highest-resource phase of
-  # the run and avoids stressing Opal/Rock while SuperNode processes are live.
-  .ensure_client_framework(recipe$model$framework)
+  # Build the harness app before starting remote SuperNodes, so the build is
+  # outside the highest-resource phase of the run. The harness is a torch app.
+  .ensure_client_framework("pytorch")
   prebuilt_results_dir <- file.path(tempdir(), "dsflower_results",
                                     format(Sys.time(), "%Y%m%d_%H%M%S"))
   dir.create(prebuilt_results_dir, recursive = TRUE, showWarnings = FALSE)
@@ -205,21 +171,14 @@ ds.flower.run <- function(flower, recipe, detached = FALSE,
     results_dir = prebuilt_results_dir
   )
 
-  # Step 2: SuperLink. If the federation advertises a public coordinator,
-  # auto-attach to it (NAT-traversal path, nothing spawned locally and never
-  # stopped by us). Otherwise start a local SuperLink.
+  # Step 2: SuperLink. All transport is the DSI tunnel (researcher-initiated, no
+  # open ports), so we always run a local SuperLink — there is no remote
+  # coordinator / NAT-traversal path.
   started_superlink <- FALSE
   sl_status <- ds.flower.superlink.status()
   if (!isTRUE(sl_status$running)) {
-    coord <- .discover_coordinator(conns)
-    if (!is.null(coord)) {
-      ds.flower.superlink.attach(superlink_address = coord$address,
-                                 control_address = coord$control_address,
-                                 ca_cert_pem = coord$ca_cert_pem)
-    } else {
-      ds.flower.superlink.start(detached = detached)
-      started_superlink <- TRUE
-    }
+    ds.flower.superlink.start(detached = detached)
+    started_superlink <- TRUE
   }
 
   cleanup_nodes <- function() {
