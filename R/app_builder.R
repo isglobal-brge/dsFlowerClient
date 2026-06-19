@@ -111,6 +111,8 @@
     '[project]\n',
     'name = "dsflower_harness"\n',
     'version = "1.0.0"\n',
+    'description = "dsFlower Tier-1 trusted harness (always-on DP-SGD)"\n',
+    'license = "MIT"\n',
     'dependencies = [', paste0('"', .harness_dependencies(), '"',
                                collapse = ", "), ']\n\n',
     '[tool.hatch.build.targets.wheel]\n',
