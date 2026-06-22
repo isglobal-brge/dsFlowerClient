@@ -291,13 +291,17 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @param image_size Integer; square resize dimension before training.
+#' @param volumetric Logical; if TRUE use a true-3D backbone (MONAI) for
+#'   volumetric collections. Default FALSE: the 2D backbone auto-handles both 2D
+#'   images and 3D volumes (via a representative slice), the plug-and-play path.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
                                               learning_rate = 0.001,
                                               batch_size = 32L,
                                               local_epochs = 1L,
-                                              image_size = 224L) {
+                                              image_size = 224L,
+                                              volumetric = FALSE) {
   obj <- list(
     name      = "pytorch_resnet18",
     framework = "pytorch_vision",
@@ -307,7 +311,8 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
       learning_rate = learning_rate,
       batch_size    = as.integer(batch_size),
       local_epochs  = as.integer(local_epochs),
-      image_size    = as.integer(image_size)
+      image_size    = as.integer(image_size),
+      volumetric    = isTRUE(volumetric)
     )
   )
   class(obj) <- "dsflower_model"
@@ -323,13 +328,17 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @param image_size Integer; square resize dimension before training.
+#' @param volumetric Logical; if TRUE use a true-3D backbone (MONAI) for
+#'   volumetric collections. Default FALSE: the 2D backbone auto-handles both 2D
+#'   images and 3D volumes (via a representative slice), the plug-and-play path.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
                                                  learning_rate = 0.001,
                                                  batch_size = 32L,
                                                  local_epochs = 1L,
-                                                 image_size = 224L) {
+                                                 image_size = 224L,
+                                                 volumetric = FALSE) {
   obj <- list(
     name      = "pytorch_densenet121",
     framework = "pytorch_vision",
@@ -339,7 +348,8 @@ ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
       learning_rate = learning_rate,
       batch_size    = as.integer(batch_size),
       local_epochs  = as.integer(local_epochs),
-      image_size    = as.integer(image_size)
+      image_size    = as.integer(image_size),
+      volumetric    = isTRUE(volumetric)
     )
   )
   class(obj) <- "dsflower_model"

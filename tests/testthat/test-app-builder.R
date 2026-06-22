@@ -7,6 +7,48 @@ test_that(".harness_dependencies pins the harness runtime", {
   expect_true(any(grepl("opacus", deps)))
 })
 
+test_that(".harness_dependencies adds the vision stack only for image runs", {
+  base <- dsFlowerClient:::.harness_dependencies(vision = FALSE)
+  expect_false(any(grepl("torchvision", base)))
+  vis <- dsFlowerClient:::.harness_dependencies(vision = TRUE)
+  expect_true(any(grepl("torchvision", vis)))
+  expect_true(any(grepl("monai", vis)))       # 3D path works out of the box
+  expect_true(any(grepl("nibabel|SimpleITK|nrrd", vis)))  # medical readers
+})
+
+test_that(".harness_vision_backbone maps vision models and rejects segmentation", {
+  rn <- ds.flower.recipe(model = ds.flower.model.pytorch_resnet18(), target = "y")
+  expect_equal(dsFlowerClient:::.harness_vision_backbone(rn), "resnet18")
+  dn <- ds.flower.recipe(model = ds.flower.model.pytorch_densenet121(), target = "y")
+  expect_equal(dsFlowerClient:::.harness_vision_backbone(dn), "densenet121")
+  # volumetric opt-in selects the true-3D backbone
+  v3 <- ds.flower.recipe(
+    model = ds.flower.model.pytorch_resnet18(volumetric = TRUE), target = "y")
+  expect_equal(dsFlowerClient:::.harness_vision_backbone(v3), "resnet18_3d")
+  # tabular models are not vision
+  tab <- ds.flower.recipe(model = ds.flower.model.pytorch_logreg(),
+                          target = "y", features = c("a", "b"))
+  expect_null(dsFlowerClient:::.harness_vision_backbone(tab))
+  # segmentation is rejected (linear-probe head is classification only)
+  seg <- ds.flower.recipe(model = ds.flower.model.pytorch_unet2d(), target = "y")
+  expect_error(dsFlowerClient:::.harness_vision_backbone(seg), "segmentation")
+})
+
+test_that(".write_pyproject_toml emits image config for a vision recipe", {
+  recipe <- ds.flower.recipe(
+    model = ds.flower.model.pytorch_resnet18(n_classes = 3L, image_size = 256L),
+    target = "label", num_rounds = 4L)
+  app_dir <- withr::local_tempdir()
+  dsFlowerClient:::.write_pyproject_toml(app_dir, recipe, n_nodes = 2L)
+  toml <- readLines(file.path(app_dir, "pyproject.toml"))
+  expect_true(any(grepl('data-kind = "image"', toml, fixed = TRUE)))
+  expect_true(any(grepl('backbone = "resnet18"', toml, fixed = TRUE)))
+  expect_true(any(grepl("num-classes = 3", toml, fixed = TRUE)))
+  expect_true(any(grepl("image-size = 256", toml, fixed = TRUE)))
+  expect_false(any(grepl("num-features", toml)))   # irrelevant for image runs
+  expect_true(any(grepl("torchvision", toml)))     # vision deps present
+})
+
 test_that(".toml_kv formats scalars correctly", {
   expect_equal(dsFlowerClient:::.toml_kv("key", "value"), 'key = "value"')
   expect_equal(dsFlowerClient:::.toml_kv("key", 42L), "key = 42")

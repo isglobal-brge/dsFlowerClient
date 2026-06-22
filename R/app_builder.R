@@ -61,6 +61,35 @@
        call. = FALSE)
 }
 
+#' Map a vision recipe to a frozen-backbone name, or NULL if not a vision run
+#'
+#' The authoritative image signal at app-build time is the model framework
+#' (\code{pytorch_vision}). The ServerApp runs researcher-side and sees only the
+#' run config, so the config must declare the backbone for it to build the head
+#' that matches the nodes. Classification backbones map to a frozen feature
+#' extractor (DP linear-probing); a \code{volumetric=TRUE} param opts into the
+#' true-3D backbone for precision (the default 2D backbone already auto-handles
+#' 3D volumes via a representative slice). Segmentation (U-Net) is not supported
+#' by the linear-probe head.
+#' @keywords internal
+.harness_vision_backbone <- function(recipe) {
+  model <- recipe$model %||% list()
+  if (!identical(model$framework, "pytorch_vision")) return(NULL)
+  tmpl <- tolower(model$template %||% model$name %||% "")
+  if (grepl("unet|segment", tmpl)) {
+    stop("Image segmentation ('", tmpl, "') is not supported by the Tier-1 ",
+         "vision harness. It performs DP linear-probing on frozen-backbone ",
+         "features for CLASSIFICATION; use pytorch_resnet18 or ",
+         "pytorch_densenet121.", call. = FALSE)
+  }
+  if (isTRUE(model$params$volumetric)) {
+    return(if (grepl("densenet", tmpl)) "densenet121_3d" else "resnet18_3d")
+  }
+  if (grepl("densenet", tmpl)) return("densenet121")
+  if (grepl("resnet50", tmpl)) return("resnet50")
+  "resnet18"
+}
+
 #' Extract harness hyperparameters from the recipe (kebab-cased), with defaults
 #' @keywords internal
 .harness_hyperparams <- function(recipe) {
@@ -87,18 +116,40 @@
 #' @keywords internal
 .write_pyproject_toml <- function(app_dir, recipe, results_dir = NULL,
                                   n_nodes = 2L) {
-  n_features <- length(recipe$features %||% character(0))
-  if (n_features < 1L) {
-    stop("The Tier-1 harness requires explicit feature columns so the global ",
-         "model dimension is known (set `features = c(...)`).", call. = FALSE)
-  }
+  backbone <- .harness_vision_backbone(recipe)
+  is_vision <- !is.null(backbone)
+  min_nodes_kv <- paste0("min-train-nodes = ",
+                         as.integer(min(n_nodes, max(1L, n_nodes))))
 
-  config_lines <- c(
-    paste0("num-server-rounds = ", as.integer(recipe$num_rounds)),
-    paste0("num-features = ", as.integer(n_features)),
-    .toml_kv("model", .harness_model(recipe)),
-    paste0("min-train-nodes = ", as.integer(min(n_nodes, max(1L, n_nodes))))
-  )
+  if (is_vision) {
+    # Image run: the global model is the small head on frozen-backbone features.
+    # The backbone fixes feature_dim, so num-features is irrelevant; the ServerApp
+    # builds the head from backbone + num-classes. data_location + DP come from
+    # the node-side manifest (image collection), never from this config.
+    p <- recipe$model$params %||% list()
+    n_classes <- as.integer(p$n_classes %||% p$num_classes %||% 2L)
+    image_size <- as.integer(p$image_size %||% 224L)
+    config_lines <- c(
+      paste0("num-server-rounds = ", as.integer(recipe$num_rounds)),
+      .toml_kv("data-kind", "image"),
+      .toml_kv("backbone", backbone),
+      paste0("num-classes = ", n_classes),
+      paste0("image-size = ", image_size),
+      min_nodes_kv
+    )
+  } else {
+    n_features <- length(recipe$features %||% character(0))
+    if (n_features < 1L) {
+      stop("The Tier-1 harness requires explicit feature columns so the global ",
+           "model dimension is known (set `features = c(...)`).", call. = FALSE)
+    }
+    config_lines <- c(
+      paste0("num-server-rounds = ", as.integer(recipe$num_rounds)),
+      paste0("num-features = ", as.integer(n_features)),
+      .toml_kv("model", .harness_model(recipe)),
+      min_nodes_kv
+    )
+  }
   for (nm in names(hp <- .harness_hyperparams(recipe))) {
     config_lines <- c(config_lines, .toml_kv(nm, hp[[nm]]))
   }
@@ -115,8 +166,8 @@
     'version = "1.0.0"\n',
     'description = "dsFlower Tier-1 trusted harness (always-on DP-SGD)"\n',
     'license = "MIT"\n',
-    'dependencies = [', paste0('"', .harness_dependencies(), '"',
-                               collapse = ", "), ']\n\n',
+    'dependencies = [', paste0('"', .harness_dependencies(vision = is_vision),
+                               '"', collapse = ", "), ']\n\n',
     '[tool.hatch.build.targets.wheel]\n',
     'packages = ["dsflower_harness"]\n\n',
     '[tool.flwr.app]\n',
@@ -149,9 +200,16 @@
   }
 }
 
-#' Pip dependencies for the harness app (fixed; one trusted app, not per-model)
+#' Pip dependencies for the harness app (one trusted app, not per-model)
+#'
+#' Vision runs add torchvision (2D backbones) plus the medical-image readers so
+#' an image collection of any supported format works out of the box; the 3D path
+#' (MONAI) is included so volumetric collections need no extra install on nodes.
 #' @keywords internal
-.harness_dependencies <- function() {
-  c("flwr[app]>=1.27.0", "numpy>=1.21.0", "pandas>=1.3.0",
-    "torch>=2.0.0", "opacus>=1.4.0")
+.harness_dependencies <- function(vision = FALSE) {
+  base <- c("flwr[app]>=1.27.0", "numpy>=1.21.0", "pandas>=1.3.0",
+            "torch>=2.0.0", "opacus>=1.4.0")
+  if (!isTRUE(vision)) return(base)
+  c(base, "torchvision>=0.15.0", "pillow>=9.0.0",
+    "nibabel>=5.0.0", "pynrrd>=1.0.0", "SimpleITK>=2.2.0", "monai>=1.3.0")
 }

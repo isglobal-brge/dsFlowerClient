@@ -5,3 +5,9 @@
 *.Rproj
 dsflower_output/
 vignettes/dsflower_output/
+
+# Python bytecode from the bundled harness (would never enter the FAB hash, but
+# must not be committed)
+__pycache__/
+*.pyc
+*.pyo
