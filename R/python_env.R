@@ -8,7 +8,7 @@
 #
 # Zero system dependencies. No pre-existing Python installation required.
 
-.DSFLOWER_CLIENT_PYTHON_DEPS <- c("flwr[app]>=1.13.0")
+.DSFLOWER_CLIENT_PYTHON_DEPS <- c("flwr[app]>=1.31.0")
 
 .dsflower_client_runtime <- new.env(parent = emptyenv())
 
@@ -53,7 +53,7 @@
   path_flwr <- Sys.which("flwr")
   if (nzchar(path_flwr)) return(path_flwr)
   stop("flwr CLI not found. Install dsFlowerClient with configure support ",
-       "or run: pip install 'flwr[app]>=1.13.0'", call. = FALSE)
+       "or run: pip install 'flwr[app]>=1.31.0'", call. = FALSE)
 }
 
 #' Resolve the flower-superlink binary
@@ -66,7 +66,7 @@
   path_sl <- Sys.which("flower-superlink")
   if (nzchar(path_sl)) return(path_sl)
   stop("flower-superlink not found. Install dsFlowerClient with configure ",
-       "support or run: pip install 'flwr[app]>=1.13.0'", call. = FALSE)
+       "support or run: pip install 'flwr[app]>=1.31.0'", call. = FALSE)
 }
 
 #' Resolve the Python binary from the client venv

@@ -218,7 +218,7 @@
 #' (MONAI) is included so volumetric collections need no extra install on nodes.
 #' @keywords internal
 .harness_dependencies <- function(vision = FALSE) {
-  base <- c("flwr[app]>=1.27.0", "numpy>=1.21.0", "pandas>=1.3.0",
+  base <- c("flwr[app]>=1.31.0", "numpy>=1.21.0", "pandas>=1.3.0",
             "torch>=2.0.0", "opacus>=1.4.0")
   if (!isTRUE(vision)) return(base)
   c(base, "torchvision>=0.15.0", "pillow>=9.0.0",
