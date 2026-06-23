@@ -99,9 +99,13 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   task_type <- if (identical(sub$track, "trees")) "classification" else
     switch(sub$loss %||% "bce_logits",
            mse = "regression", poisson_nll = "count", "classification")
+  # Propagate data_type so the node stages a table-backed IMAGE collection (samples
+  # table + dsflower.image_data_root) as image, not tabular. dsImaging resources
+  # self-declare image via their descriptor; a plain samples table needs this signal.
   ds.flower.nodes.prepare(
     conns, hsym, target_column = target, feature_columns = features,
-    run_config = list("task-type" = task_type, "dp-track" = sub$track),
+    run_config = list("task-type" = task_type, "dp-track" = sub$track,
+                      "data_type" = data_kind),
     privacy = privacy)
 
   if (!is.null(up)) {
