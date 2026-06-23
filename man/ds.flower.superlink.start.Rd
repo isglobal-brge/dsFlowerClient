@@ -27,6 +27,5 @@ Invisible list with process info.
 }
 \description{
 Spawns a \code{flower-superlink} process. In detached mode, the process
-survives R session exit and can be reattached from a new session via
-\code{ds.flower.superlink.attach()}.
+survives R session exit.
 }

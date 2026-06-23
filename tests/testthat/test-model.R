@@ -1,47 +1,5 @@
 # Tests for R/model.R — Model Specs
 
-test_that("sklearn_logreg creates correct model", {
-  m <- ds.flower.model.sklearn_logreg()
-  expect_s3_class(m, "dsflower_model")
-  expect_equal(m$name, "sklearn_logreg")
-  expect_equal(m$framework, "sklearn")
-  expect_equal(m$template, "sklearn_logreg")
-  expect_equal(m$params$penalty, "l2")
-  expect_equal(m$params$C, 1.0)
-  expect_equal(m$params$max_iter, 100L)
-})
-
-test_that("sklearn_logreg accepts overrides", {
-  m <- ds.flower.model.sklearn_logreg(penalty = "l1", C = 0.5, max_iter = 200L)
-  expect_equal(m$params$penalty, "l1")
-  expect_equal(m$params$C, 0.5)
-  expect_equal(m$params$max_iter, 200L)
-})
-
-test_that("sklearn_ridge creates correct model", {
-  m <- ds.flower.model.sklearn_ridge()
-  expect_s3_class(m, "dsflower_model")
-  expect_equal(m$name, "sklearn_ridge")
-  expect_equal(m$framework, "sklearn")
-  expect_equal(m$params$alpha, 1.0)
-})
-
-test_that("sklearn_ridge accepts overrides", {
-  m <- ds.flower.model.sklearn_ridge(alpha = 0.1)
-  expect_equal(m$params$alpha, 0.1)
-})
-
-test_that("sklearn_sgd creates correct model", {
-  m <- ds.flower.model.sklearn_sgd()
-  expect_s3_class(m, "dsflower_model")
-  expect_equal(m$name, "sklearn_sgd")
-  expect_equal(m$params$loss, "log_loss")
-  expect_equal(m$params$alpha, 0.0001)
-  expect_equal(m$params$lr_schedule, "optimal")
-  expect_equal(m$params$eta0, 0.01)
-  expect_equal(m$params$max_iter, 1000L)
-})
-
 test_that("pytorch_mlp creates correct model", {
   m <- ds.flower.model.pytorch_mlp()
   expect_s3_class(m, "dsflower_model")

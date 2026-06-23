@@ -23,3 +23,10 @@ A \code{dsflower_model} S3 object.
 \description{
 Survival/time-to-event analysis with partial likelihood loss.
 }
+\note{
+NOT runnable on the Tier-1 harness in this release. The Cox partial
+  likelihood couples samples through the risk set, so it has no per-sample
+  gradient and is incompatible with DP-SGD; rigorous DP needs output
+  perturbation or Tier-2 (not yet shipped). For DP survival, log-normal AFT is
+  a per-sample-decomposable alternative.
+}

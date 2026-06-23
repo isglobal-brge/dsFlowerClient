@@ -4,7 +4,7 @@
 \alias{ds.flower.model}
 \title{Create a model spec by name}
 \usage{
-ds.flower.model(name = "sklearn_logreg", ...)
+ds.flower.model(name = "pytorch_logreg", ...)
 }
 \arguments{
 \item{name}{Character model name or a \code{dsflower_model} object.}

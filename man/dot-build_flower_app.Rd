@@ -2,25 +2,25 @@
 % Please edit documentation in R/app_builder.R
 \name{.build_flower_app}
 \alias{.build_flower_app}
-\title{Build a Flower App from a recipe}
+\title{Build the Tier-1 harness Flower app for a run}
 \usage{
-.build_flower_app(recipe, conns, app_dir = NULL, results_dir = NULL)
+.build_flower_app(recipe, conns = NULL, app_dir = NULL, results_dir = NULL)
 }
 \arguments{
 \item{recipe}{A \code{dsflower_recipe} object.}
 
-\item{conns}{DSI connections object (used to fetch templates from server).}
+\item{conns}{DSI connections (used only to size \code{min-train-nodes}).}
 
 \item{app_dir}{Character; directory to create the app in (default: tempdir).}
 
-\item{results_dir}{Character; directory for the strategy to save weights/metrics.}
+\item{results_dir}{Character; directory for the ServerApp to save model/history.}
 }
 \value{
 Character; path to the created app directory.
 }
 \description{
-Fetches the template from the server (via DataSHIELD), writes the Python
-files locally, and generates a \code{pyproject.toml} with run_config
-from the recipe.
+Copies the bundled \code{dsflower_harness} package into an app directory and
+generates a \code{pyproject.toml} from the recipe. The same app is submitted
+via \code{flwr run}; nodes run its ClientApp (always-on DP-SGD).
 }
 \keyword{internal}

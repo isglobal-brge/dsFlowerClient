@@ -6,14 +6,6 @@
 \usage{
 .toml_kv(key, val)
 }
-\arguments{
-\item{key}{Character; the TOML key.}
-
-\item{val}{The value.}
-}
-\value{
-Character; TOML line.
-}
 \description{
 Format a key-value pair for TOML
 }

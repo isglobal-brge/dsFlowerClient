@@ -39,74 +39,38 @@
 #' @param ... Arguments passed to the selected concrete model constructor.
 #' @return A \code{dsflower_model} object.
 #' @export
-ds.flower.model <- function(name = "sklearn_logreg", ...) {
+ds.flower.model <- function(name = "pytorch_logreg", ...) {
   if (inherits(name, "dsflower_model")) {
-    dots <- list(...)
-    if (length(dots)) {
+    if (length(list(...))) {
       stop("'...' cannot be used when 'name' is already a dsflower_model object.",
            call. = FALSE)
     }
     return(name)
   }
-
-  if (!is.character(name)) {
-    stop("'name' must be a dsflower_model object or character model name.",
+  if (!is.character(name) || length(name) != 1L) {
+    stop("'name' must be a dsflower_model object or a single model name.",
          call. = FALSE)
   }
 
-  choices <- c(
-    logreg = "ds.flower.model.sklearn_logreg",
-    logistic = "ds.flower.model.sklearn_logreg",
-    logistic_regression = "ds.flower.model.sklearn_logreg",
-    sklearn_logreg = "ds.flower.model.sklearn_logreg",
-    ridge = "ds.flower.model.sklearn_ridge",
-    sklearn_ridge = "ds.flower.model.sklearn_ridge",
-    sgd = "ds.flower.model.sklearn_sgd",
-    sklearn_sgd = "ds.flower.model.sklearn_sgd",
-    svm = "ds.flower.model.sklearn_svm",
-    linear_svm = "ds.flower.model.sklearn_svm",
-    sklearn_svm = "ds.flower.model.sklearn_svm",
-    elastic_net = "ds.flower.model.sklearn_elastic_net",
-    elasticnet = "ds.flower.model.sklearn_elastic_net",
-    sklearn_elastic_net = "ds.flower.model.sklearn_elastic_net",
-    mlp = "ds.flower.model.pytorch_mlp",
-    pytorch_mlp = "ds.flower.model.pytorch_mlp",
-    torch_mlp = "ds.flower.model.pytorch_mlp",
-    pytorch_logreg = "ds.flower.model.pytorch_logreg",
-    torch_logreg = "ds.flower.model.pytorch_logreg",
-    pytorch_linear_regression = "ds.flower.model.pytorch_linear_regression",
-    linear_regression = "ds.flower.model.pytorch_linear_regression",
-    cox = "ds.flower.model.pytorch_coxph",
-    coxph = "ds.flower.model.pytorch_coxph",
-    pytorch_coxph = "ds.flower.model.pytorch_coxph",
-    multiclass = "ds.flower.model.pytorch_multiclass",
-    pytorch_multiclass = "ds.flower.model.pytorch_multiclass",
-    resnet18 = "ds.flower.model.pytorch_resnet18",
-    pytorch_resnet18 = "ds.flower.model.pytorch_resnet18",
-    densenet121 = "ds.flower.model.pytorch_densenet121",
-    pytorch_densenet121 = "ds.flower.model.pytorch_densenet121",
-    unet = "ds.flower.model.pytorch_unet2d",
-    unet2d = "ds.flower.model.pytorch_unet2d",
-    pytorch_unet2d = "ds.flower.model.pytorch_unet2d",
-    tcn = "ds.flower.model.pytorch_tcn",
-    pytorch_tcn = "ds.flower.model.pytorch_tcn",
-    lstm = "ds.flower.model.pytorch_lstm",
-    pytorch_lstm = "ds.flower.model.pytorch_lstm",
-    xgb = "ds.flower.model.xgboost",
-    xgboost = "ds.flower.model.xgboost",
-    poisson = "ds.flower.model.pytorch_poisson",
-    pytorch_poisson = "ds.flower.model.pytorch_poisson",
-    multilabel = "ds.flower.model.pytorch_multilabel",
-    pytorch_multilabel = "ds.flower.model.pytorch_multilabel",
-    aft = "ds.flower.model.pytorch_lognormal_aft",
-    lognormal_aft = "ds.flower.model.pytorch_lognormal_aft",
-    pytorch_lognormal_aft = "ds.flower.model.pytorch_lognormal_aft",
-    cause_specific = "ds.flower.model.pytorch_cause_specific_cox",
-    cause_specific_cox = "ds.flower.model.pytorch_cause_specific_cox",
-    pytorch_cause_specific_cox = "ds.flower.model.pytorch_cause_specific_cox"
-  )
+  # Friendly aliases -> canonical registered names (torch + xgboost only; the
+  # full model set lives in the client-side registry, extensible by derived
+  # packages -- there is NO server-side catalog).
+  aliases <- c(
+    logreg = "pytorch_logreg", logistic = "pytorch_logreg",
+    logistic_regression = "pytorch_logreg",
+    mlp = "pytorch_mlp", torch_mlp = "pytorch_mlp", torch_logreg = "pytorch_logreg",
+    multiclass = "pytorch_multiclass",
+    linear_regression = "pytorch_linear_regression",
+    poisson = "pytorch_poisson", multilabel = "pytorch_multilabel",
+    resnet18 = "pytorch_resnet18", densenet121 = "pytorch_densenet121",
+    xgb = "xgboost", gbdt = "xgboost")
+  key <- .dsflower_choice_key(name)
+  canonical <- if (key %in% names(aliases)) aliases[[key]] else key
 
-  .dsflower_call_constructor(.dsflower_choice(name, choices, "model"), list(...))
+  m <- .dsflower_get_model(canonical)   # registry lookup; errors listing available
+  params <- utils::modifyList(m$defaults %||% list(), list(...))
+  structure(list(name = m$name, track = m$track, params = params),
+            class = "dsflower_model")
 }
 
 #' Create a strategy spec by name
@@ -276,23 +240,9 @@ ds.flower.fit <- function(conns,
     stop("Provide only one of 'data', 'resource', or 'symbol'.", call. = FALSE)
   }
 
-  model_spec <- if (inherits(model, "dsflower_model")) {
-    if (length(model_params)) stop("'model_params' cannot be used with a model object.", call. = FALSE)
-    model
-  } else {
-    do.call(ds.flower.model, c(list(model), model_params))
-  }
-  if (identical(model_spec$template, "xgboost") &&
-      is.null(model_spec$params$n_features) &&
-      !is.null(features)) {
-    model_spec$params$n_features <- as.integer(length(features))
-  }
-
-  strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
-    if (length(strategy_params)) stop("'strategy_params' cannot be used with a strategy object.", call. = FALSE)
-    strategy
-  } else {
-    do.call(ds.flower.strategy, c(list(strategy), strategy_params))
+  model_spec <- ds.flower.model(model)
+  if (length(model_params)) {
+    model_spec$params <- utils::modifyList(model_spec$params %||% list(), model_params)
   }
 
   privacy_spec <- if (inherits(privacy, "dsflower_privacy")) {
@@ -305,30 +255,16 @@ ds.flower.fit <- function(conns,
          call. = FALSE)
   }
 
-  task_spec <- if (is.null(task)) NULL else ds.flower.task(task)
+  # Vision models train a head on frozen-backbone image features; all else tabular.
+  data_kind <- if (model_spec$name %in% c("pytorch_resnet18", "pytorch_densenet121"))
+    "image" else "tabular"
 
-  recipe <- ds.flower.recipe(
-    model = model_spec,
-    strategy = strategy_spec,
-    privacy = privacy_spec,
-    task = task_spec,
-    num_rounds = rounds,
-    target = target,
-    features = features,
-    label_set = label_set,
-    masks = masks,
-    evaluation_only = evaluation_only
-  )
-
-  flower <- ds.flower.connect(conns, data = data, resource = resource,
-                              symbol = symbol)
-  if (isTRUE(disconnect)) {
-    on.exit(try(ds.flower.disconnect(flower), silent = TRUE), add = TRUE)
-  }
-
-  do.call(
-    ds.flower.run,
-    c(list(flower = flower, recipe = recipe, detached = detached,
-           verbose = verbose), run_args)
-  )
+  # The submission pipeline owns connect/upload/pin/run/cleanup. FedAvg is the only
+  # aggregation (each per-node update is already private). strategy/label_set/masks
+  # are accepted for back-compat but not used by the enforced-DP tracks.
+  ds.flower.submit(
+    conns, model = model_spec, target = target, features = features,
+    data = data, resource = resource, symbol = symbol,
+    privacy = privacy_spec, num_rounds = rounds, model_params = list(),
+    data_kind = data_kind, verbose = verbose)
 }

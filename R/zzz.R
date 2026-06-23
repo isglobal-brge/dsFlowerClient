@@ -10,7 +10,10 @@
 #' @param pkgname Package name.
 #' @keywords internal
 .onLoad <- function(libname, pkgname) {
-  # Nothing to register (client package, no DataSHIELD methods).
+  # Register the first-party model collection into the client-side registry.
+  # There is NO server-side catalog: extension packages add their own model
+  # collections from THEIR .onLoad via ds.flower.register_model().
+  .dsflower_register_builtins()
   # Venv check is done in .onAttach to show user-facing messages.
 }
 

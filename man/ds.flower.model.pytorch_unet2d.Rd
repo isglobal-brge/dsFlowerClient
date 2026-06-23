@@ -32,3 +32,9 @@ A \code{dsflower_model} S3 object.
 \description{
 Medical image segmentation (organs, tumors, lesions).
 }
+\note{
+NOT runnable on the Tier-1 harness in this release. The vision harness
+  does DP linear-probing on frozen-backbone features for CLASSIFICATION;
+  dense per-pixel segmentation is rejected at app-build time. Segmentation DP
+  is future work / Tier-2.
+}

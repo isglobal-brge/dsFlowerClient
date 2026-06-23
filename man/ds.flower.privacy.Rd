@@ -4,12 +4,7 @@
 \alias{ds.flower.privacy}
 \title{Differential privacy budget for a federated run}
 \usage{
-ds.flower.privacy(
-  epsilon = 3,
-  delta = 1e-05,
-  clipping_norm = 1,
-  secure_aggregation = FALSE
-)
+ds.flower.privacy(epsilon = 3, delta = 1e-05, clipping_norm = 1)
 }
 \arguments{
 \item{epsilon}{Numeric > 0; privacy budget (default 3.0). Larger = less noise
@@ -20,16 +15,6 @@ knowingly want minimal noise.}
 
 \item{clipping_norm}{Numeric > 0; per-sample gradient/update clipping norm
 (default 1.0).}
-
-\item{secure_aggregation}{Logical; opt in to Secure Aggregation (default
-FALSE). DP is always enforced either way. When FALSE, training uses fast
-local DP (each node adds the full noise; one aggregation round-trip). When
-TRUE and >=3 nodes support it, Secure Aggregation is layered on for
-\emph{distributed DP} -- each node adds only its 1/sqrt(N) share of the
-noise, so the same epsilon is met with ~sqrt(N) less noise (better
-accuracy) and the server never sees individual updates -- at the cost of
-several extra masked round-trips per round (much slower over a remote
-federation). Below 3 nodes it is ignored (SecAgg is meaningless).}
 }
 \value{
 A \code{dsflower_privacy} S3 object.
