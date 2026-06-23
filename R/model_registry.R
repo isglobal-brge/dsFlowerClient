@@ -133,8 +133,12 @@ ds.flower.list_models <- function() {
     "    return nn.Sequential(*layers)\n")
 }
 
-# Binary/multiclass output width: 1 logit when <=2 classes, else num-classes.
+# bce_logits output width: 1 logit (binary) -- target is a {0,1} float.
 .OUT_CLASSES <- "1 if int(cfg.get(\"num-classes\", 2)) <= 2 else int(cfg[\"num-classes\"])"
+# cross_entropy output width: ONE LOGIT PER CLASS, always num-classes (>=2 even for
+# binary). A single logit makes target==1 out of bounds (the classic CrossEntropy
+# "Target N is out of bounds"); softmax-CE over 2 logits is the correct binary form.
+.OUT_NCLASSES <- "int(cfg.get(\"num-classes\", 2))"
 
 #' Register the first-party model collection (called from .onLoad)
 #' @keywords internal
@@ -151,7 +155,7 @@ ds.flower.list_models <- function() {
       loss = "bce_logits", defaults = list(hidden_layers = c(64L, 32L)),
       description = "Multilayer perceptron classifier.")
   reg("pytorch_multiclass", "neural",
-      generate = function(p) .neural_mlp_source(p$hidden_layers %||% integer(0), .OUT_CLASSES),
+      generate = function(p) .neural_mlp_source(p$hidden_layers %||% integer(0), .OUT_NCLASSES),
       loss = "cross_entropy", defaults = list(hidden_layers = integer(0)),
       description = "Multiclass classifier (softmax cross-entropy).")
   reg("pytorch_linear_regression", "neural",
@@ -172,7 +176,7 @@ ds.flower.list_models <- function() {
   #      only the trainable head, keyed off the injected feature-dim) ----
   for (nm in c("pytorch_resnet18", "pytorch_densenet121")) {
     reg(nm, "neural",
-        generate = function(p) .neural_mlp_source(integer(0), .OUT_CLASSES,
+        generate = function(p) .neural_mlp_source(integer(0), .OUT_NCLASSES,
                                                   input_key = "feature-dim"),
         loss = "cross_entropy", defaults = list(n_classes = 2L),
         description = paste0("Vision classifier head on a frozen ", nm, " backbone."))
