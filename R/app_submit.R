@@ -142,10 +142,11 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   app_dir <- .build_submission_app(sub, cfg, results_dir)
   .ensure_client_framework("pytorch")
 
-  started <- FALSE
-  if (!isTRUE(ds.flower.superlink.status()$running)) {
-    ds.flower.superlink.start(); started <- TRUE
-  }
+  # link.up starts the INSECURE local SuperLink (the bytes already travel inside
+  # the TLS DataSHIELD channel) AND the per-node DSI tunnel forwarders. Do NOT
+  # start the SuperLink separately: a default SSL SuperLink mismatches the
+  # insecure inner gRPC the SuperNodes speak and the run hangs.
+  ds.flower.link.up(conns)
   recipe <- structure(list(
     model = list(framework = "pytorch", track = sub$track),
     strategy = list(name = "FedAvg", params = list()),
@@ -157,14 +158,14 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     ds.flower.run.start(recipe, conns, app_dir = app_dir,
                         results_dir = results_dir, symbol = hsym, verbose = verbose)
   }, error = function(e) {
+    tryCatch(ds.flower.link.down(conns), error = function(e) NULL)
     tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
-    if (started) tryCatch(ds.flower.superlink.stop(), error = function(e) NULL)
     if (!is.null(up)) tryCatch(DSI::datashield.aggregate(conns, call("flowerAppDeleteDS", up$token)), error = function(e) NULL)
     stop(e)
   })
 
+  tryCatch(ds.flower.link.down(conns), error = function(e) NULL)
   tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
-  if (started) tryCatch(ds.flower.superlink.stop(), error = function(e) NULL)
   if (!is.null(up)) tryCatch(DSI::datashield.aggregate(conns, call("flowerAppDeleteDS", up$token)), error = function(e) NULL)
   tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
   run
