@@ -178,3 +178,38 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
   run
 }
+
+
+# --------------------------------------------------------------------------- #
+# Shared FAB helpers (TOML formatting + the trusted app's pip dependencies),
+# used by .build_submission_app here and .build_tier2_app (egress track).
+# --------------------------------------------------------------------------- #
+
+#' Format a key-value pair for TOML
+#' @keywords internal
+.toml_kv <- function(key, val) {
+  if (is.character(val)) {
+    paste0(key, ' = "', val, '"')
+  } else if (is.logical(val)) {
+    paste0(key, " = ", tolower(as.character(val)))
+  } else if (is.integer(val) && length(val) == 1) {
+    paste0(key, " = ", val)
+  } else if (is.numeric(val) && length(val) == 1) {
+    paste0(key, " = ", val)
+  } else if (is.numeric(val) || is.integer(val)) {
+    paste0(key, " = [", paste(val, collapse = ", "), "]")
+  } else {
+    paste0(key, ' = "', as.character(val), '"')
+  }
+}
+
+#' Pip dependencies for the trusted app (one app, not per-model). Vision adds
+#' torchvision + the medical-image readers (2D, plus the MONAI 3D path).
+#' @keywords internal
+.harness_dependencies <- function(vision = FALSE) {
+  base <- c("flwr[app]>=1.31.0", "numpy>=1.21.0", "pandas>=1.3.0",
+            "torch>=2.0.0", "opacus>=1.4.0")
+  if (!isTRUE(vision)) return(base)
+  c(base, "torchvision>=0.15.0", "pillow>=9.0.0",
+    "nibabel>=5.0.0", "pynrrd>=1.0.0", "SimpleITK>=2.2.0", "monai>=1.3.0")
+}

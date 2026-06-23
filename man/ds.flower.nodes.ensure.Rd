@@ -8,7 +8,8 @@ ds.flower.nodes.ensure(
   conns,
   symbol = "flower",
   superlink_address = NULL,
-  template_name = NULL
+  template_name = NULL,
+  torch_backend = NULL
 )
 }
 \arguments{

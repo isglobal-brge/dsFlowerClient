@@ -69,15 +69,13 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   # ServerApp builds the initial model).
   .ensure_client_framework("pytorch")
 
-  # Build app if no pre-built dir provided
+  # The app dir is always pre-built by the submission pipeline (a dsflower_runner
+  # FAB, content-hash-pinned against the node-resident canonical runner). There is
+  # no legacy in-builder fallback.
   if (is.null(app_dir)) {
-    app_dir <- .build_flower_app(recipe, conns = conns,
-                                  results_dir = results_dir)
+    stop("'app_dir' is required: build the submission app first ",
+         "(ds.flower.submit() / ds.flower.fit() do this for you).", call. = FALSE)
   }
-
-  # NOTE: Tier-1 content-hash verification against the node-resident canonical
-  # harness lands in M3 (ARCHITECTURE.md §7). Until then the run submits the
-  # bundled trusted harness directly.
 
   # Build command: flwr run <app_dir> dsflower --stream
   args <- c("run", app_dir, "dsflower", "--stream")

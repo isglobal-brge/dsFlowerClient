@@ -21,25 +21,25 @@ ds.flower.register_model(
 \item{track}{Character; the enforced-DP track: "neural" (nn.Module + DP-SGD)
 or "trees" (XGBoost spec + DP-GBDT).}
 
-\item{generate}{Function of one argument \code{params} (a named list). For the
-neural track it MUST return a single character string: the python source of
-a module defining \code{build_model(cfg) -> torch.nn.Module} and nothing
-else (no training loop, no loss — the node owns those). For the trees track
-it MUST return a named list: the XGBoost spec.}
+\item{generate}{Function of one argument \code{params} (a named list). Both
+tracks MUST return a named list (DATA, never code): for the neural track a
+model SPEC \code{list(kind = "sequential", layers = list(...))} the node
+builds with stock torch layers (end with a linear onto \code{"@out"}); for the
+trees track the XGBoost spec. The node owns the loop, loss, and optimizer.}
 
 \item{loss}{Character or NULL; neural track only. The per-sample loss the node
 should use, from the node allowlist (\code{bce_logits}, \code{cross_entropy},
-\code{mse}, \code{poisson_nll}, \code{multilabel_bce}, \code{lognormal_aft_nll}).
+\code{mse}, \code{poisson_nll}, \code{multilabel_bce}).
 The node pins the actual loss; this is the client's request.}
 
 \item{defaults}{Named list of default params merged under user-supplied params.}
 
 \item{description}{Character or NULL; a one-line human description.}
 
-\item{vetted}{Logical; TRUE for first-party generators whose emitted
-architecture is known to be free of cross-sample coupling and weight-stash
-buffers (so it runs on the default path). Third-party registrations default
-to FALSE and are subject to the node's custom-code admission gate.}
+\item{vetted}{Logical; informational only. Every model is node-built from the
+allowlisted spec vocabulary (no researcher code runs), so first- and
+third-party generators take the same validated path; this flag just marks
+first-party collections in \code{ds.flower.list_models()}.}
 
 \item{overwrite}{Logical; allow replacing an existing registration.}
 }

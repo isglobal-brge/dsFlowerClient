@@ -153,9 +153,8 @@ ds.flower.task <- function(name = "classification") {
 #'
 #' High-level convenience API for the common workflow: connect to assigned
 #' DataSHIELD data, build a recipe, run Flower, clean up server-side handles,
-#' and return the trained run object. Advanced users can keep using
-#' \code{ds.flower.connect()}, \code{ds.flower.recipe()}, and
-#' \code{ds.flower.run()} directly.
+#' and return the trained run object. Advanced users can call
+#' \code{ds.flower.submit()} directly for finer control.
 #'
 #' @param conns DSI connections object.
 #' @param data Optional character data source resolved by \code{ds.flower.connect()}.
@@ -182,11 +181,10 @@ ds.flower.task <- function(name = "classification") {
 #' @param label_set Optional imaging label-set name.
 #' @param masks Optional mask asset alias for segmentation.
 #' @param evaluation_only Logical; if TRUE, blocks model release.
-#' @param detached Logical; passed to \code{ds.flower.run()}.
+#' @param detached Logical; accepted for back-compat (unused by the enforced-DP path).
 #' @param verbose Logical; print training output.
 #' @param disconnect Logical; remove server-side Flower handles on exit.
-#' @param run_args Named list of additional arguments passed to
-#'   \code{ds.flower.run()}.
+#' @param run_args Named list; accepted for back-compat (unused by the enforced-DP path).
 #' @return A \code{dsflower_run} object.
 #' @export
 ds.flower.fit <- function(conns,

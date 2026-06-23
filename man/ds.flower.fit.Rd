@@ -11,8 +11,9 @@ ds.flower.fit(
   symbol = NULL,
   target,
   features = NULL,
-  model = "sklearn_logreg",
+  model = "pytorch_logreg",
   model_params = list(),
+  torch_backend = "auto",
   strategy = "fedavg",
   strategy_params = list(),
   privacy = NULL,
@@ -71,14 +72,13 @@ from the connected servers.}
 
 \item{evaluation_only}{Logical; if TRUE, blocks model release.}
 
-\item{detached}{Logical; passed to \code{ds.flower.run()}.}
+\item{detached}{Logical; accepted for back-compat (unused by the enforced-DP path).}
 
 \item{verbose}{Logical; print training output.}
 
 \item{disconnect}{Logical; remove server-side Flower handles on exit.}
 
-\item{run_args}{Named list of additional arguments passed to
-\code{ds.flower.run()}.}
+\item{run_args}{Named list; accepted for back-compat (unused by the enforced-DP path).}
 }
 \value{
 A \code{dsflower_run} object.
@@ -86,7 +86,6 @@ A \code{dsflower_run} object.
 \description{
 High-level convenience API for the common workflow: connect to assigned
 DataSHIELD data, build a recipe, run Flower, clean up server-side handles,
-and return the trained run object. Advanced users can keep using
-\code{ds.flower.connect()}, \code{ds.flower.recipe()}, and
-\code{ds.flower.run()} directly.
+and return the trained run object. Advanced users can call
+\code{ds.flower.submit()} directly for finer control.
 }

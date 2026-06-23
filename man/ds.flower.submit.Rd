@@ -16,6 +16,7 @@ ds.flower.submit(
   num_rounds = 1L,
   model_params = list(),
   data_kind = "tabular",
+  torch_backend = "auto",
   verbose = TRUE
 )
 }

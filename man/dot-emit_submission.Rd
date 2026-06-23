@@ -11,7 +11,7 @@
 registry). Extra \code{params} are merged over the registered defaults.}
 }
 \value{
-For neural: list(track="neural", pkg_dir, package, module, loss, params).
+For neural: list(track="neural", spec, loss, params).
   For trees: list(track="trees", spec, params).
 }
 \description{
