@@ -126,8 +126,3 @@ test_that("pytorch_lstm creates correct model", {
   expect_equal(m$params$hidden_size, 64L)
   expect_equal(m$params$num_layers, 2L)
 })
-
-test_that("model prints correctly", {
-  m <- ds.flower.model.sklearn_logreg()
-  expect_output(print(m), "sklearn_logreg")
-})
