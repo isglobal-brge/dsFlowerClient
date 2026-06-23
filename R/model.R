@@ -219,6 +219,11 @@ ds.flower.model.pytorch_linear_regression <- function(learning_rate = 0.01,
 #'
 #' Survival/time-to-event analysis with partial likelihood loss.
 #'
+#' @note NOT runnable on the Tier-1 harness in this release. The Cox partial
+#'   likelihood couples samples through the risk set, so it has no per-sample
+#'   gradient and is incompatible with DP-SGD; rigorous DP needs output
+#'   perturbation or Tier-2 (not yet shipped). For DP survival, log-normal AFT is
+#'   a per-sample-decomposable alternative.
 #' @param learning_rate Numeric; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
@@ -360,6 +365,10 @@ ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
 #'
 #' Medical image segmentation (organs, tumors, lesions).
 #'
+#' @note NOT runnable on the Tier-1 harness in this release. The vision harness
+#'   does DP linear-probing on frozen-backbone features for CLASSIFICATION;
+#'   dense per-pixel segmentation is rejected at app-build time. Segmentation DP
+#'   is future work / Tier-2.
 #' @param n_classes Integer; number of segmentation classes.
 #' @param learning_rate Numeric; learning rate.
 #' @param batch_size Integer; batch size.

@@ -56,9 +56,14 @@
   nm <- tolower(recipe$model$name %||% recipe$model$template %||% "")
   if (grepl("mlp", nm)) return("mlp")
   if (grepl("logreg|logistic|linear", nm)) return("logreg")
-  stop("The Tier-1 harness currently supports logreg and mlp models (got '",
-       nm, "'). Arbitrary models will be supported via Tier-2 app upload.",
-       call. = FALSE)
+  # Clear, early (app-build-time) error listing what the Tier-1 harness supports.
+  # Many constructors in model.R (survival/sequence/multilabel/xgboost/...) are
+  # declared but only run under Tier-2 app upload, which is not in this release.
+  stop("The Tier-1 harness supports tabular models 'logreg' and 'mlp', and vision ",
+       "models 'pytorch_resnet18' / 'pytorch_densenet121' (got '", nm, "'). Other ",
+       "model families (survival/Cox, sequence/LSTM/TCN, multiclass, multilabel, ",
+       "Poisson, xgboost) are declared but require Tier-2 app upload, which is not ",
+       "available in this release.", call. = FALSE)
 }
 
 #' Map a vision recipe to a frozen-backbone name, or NULL if not a vision run
@@ -129,6 +134,12 @@
     p <- recipe$model$params %||% list()
     n_classes <- as.integer(p$n_classes %||% p$num_classes %||% 2L)
     image_size <- as.integer(p$image_size %||% 224L)
+    if (is.na(n_classes) || n_classes < 1L)
+      stop("n_classes must be a positive integer (got ", n_classes, ").",
+           call. = FALSE)
+    if (is.na(image_size) || image_size < 1L)
+      stop("image_size must be a positive integer (got ", image_size, ").",
+           call. = FALSE)
     config_lines <- c(
       paste0("num-server-rounds = ", as.integer(recipe$num_rounds)),
       .toml_kv("data-kind", "image"),
