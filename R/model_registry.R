@@ -53,7 +53,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   }
   if (!is.null(loss)) {
     allowed <- c("bce_logits", "cross_entropy", "mse", "poisson_nll",
-                 "multilabel_bce", "lognormal_aft_nll")
+                 "multilabel_bce")
     if (!is.character(loss) || length(loss) != 1L || !loss %in% allowed) {
       stop("'loss' must be one of the node allowlist: ",
            paste(allowed, collapse = ", "), ".", call. = FALSE)
