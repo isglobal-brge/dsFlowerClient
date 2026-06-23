@@ -1,23 +1,17 @@
 # Module: Client-side model codegen
 #
 # Turns a registered dsflower_model into the artifact shipped in the FAB:
-#   * neural -> a tiny model package whose __init__.py defines
-#       build_model(cfg) -> torch.nn.Module        (architecture ONLY)
-#   * trees  -> a validated XGBoost SPEC (a data dict; never code)
-# There is NO server-side catalog: this is the only place a model name becomes a
-# concrete submission, entirely client-side.
-
-#' Random lowercase+digit token (for unique temp package dirs).
-#' @keywords internal
-.dsflower_token <- function(n = 10L) {
-  paste0("m", paste(sample(c(letters, 0:9), n, replace = TRUE), collapse = ""))
-}
+#   * neural -> a model SPEC (base64 JSON) the node builds with stock torch layers
+#   * trees  -> a validated XGBoost SPEC (a data dict)
+# Both are DATA (never code); there is NO server-side catalog and NO researcher
+# code in the FAB. This is the only place a model name becomes a concrete
+# submission, entirely client-side.
 
 #' Resolve + emit a submission artifact from a model spec.
 #'
 #' @param model A \code{dsflower_model} object, or a model name (resolved via the
 #'   registry). Extra \code{params} are merged over the registered defaults.
-#' @return For neural: list(track="neural", pkg_dir, package, module, loss, params).
+#' @return For neural: list(track="neural", spec, loss, params).
 #'   For trees: list(track="trees", spec, params).
 #' @keywords internal
 .emit_submission <- function(model) {
@@ -26,21 +20,16 @@
   params <- utils::modifyList(m$defaults %||% list(), model$params %||% list())
 
   if (identical(m$track, "neural")) {
-    src <- m$generate(params)
-    if (!is.character(src) || length(src) != 1L || !nzchar(src)) {
+    spec <- m$generate(params)
+    if (!is.list(spec) || is.null(spec$layers)) {
       stop("neural model generator for '", model$name,
-           "' must return python source (a single string).", call. = FALSE)
+           "' must return a model spec: list(kind = \"sequential\", layers = ...).",
+           call. = FALSE)
     }
-    base <- file.path(tempdir(), paste0("dsflower_sub_", .dsflower_token()))
-    pkg_dir <- file.path(base, "dsflower_user_model")
-    if (dir.exists(base)) unlink(base, recursive = TRUE)
-    dir.create(pkg_dir, recursive = TRUE, showWarnings = FALSE)
-    # build_model lives in the package __init__, so the import module IS the
-    # package basename -- which the node independently verifies against the single
-    # uploaded package, closing the model-module spoof.
-    writeLines(src, file.path(pkg_dir, "__init__.py"))
-    list(track = "neural", pkg_dir = pkg_dir, package = "dsflower_user_model",
-         module = "dsflower_user_model", loss = m$loss, params = params)
+    # The spec is DATA shipped in the run config (base64 JSON); there is NO user
+    # package and NO researcher code in the FAB (pkg_dir absent), so the node builds
+    # the architecture itself -- the import-time exfil surface simply does not exist.
+    list(track = "neural", spec = spec, loss = m$loss, params = params)
 
   } else if (identical(m$track, "trees")) {
     spec <- m$generate(params)
@@ -63,3 +52,13 @@
 .spec_to_toml_value <- function(spec) {
   jsonlite::toJSON(spec, auto_unbox = TRUE, null = "null")
 }
+
+#' Serialize a model spec to a base64 JSON string for transport as ONE TOML string
+#' value. Base64 is ASCII, so the JSON (which contains quotes) needs no TOML
+#' escaping; the node base64-decodes + json.loads it back into the spec it builds.
+#' @keywords internal
+.spec_to_b64 <- function(spec) {
+  json <- jsonlite::toJSON(spec, auto_unbox = TRUE, null = "null")
+  enc <- jsonlite::base64_enc(charToRaw(enc2utf8(as.character(json))))
+  gsub("[\r\n]", "", enc)            # one line: base64_enc MIME-wraps; a newline
+}                                    # in the value would break the TOML config

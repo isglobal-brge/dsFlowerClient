@@ -3,8 +3,10 @@
 # dsFlower has NO server-side model catalog. The node runs whatever DP-valid
 # submission it is sent; the "catalog" is purely a CLIENT-SIDE convenience that
 # turns a friendly name + params into the artifact shipped in the FAB:
-#   * neural track -> python source for `build_model(cfg) -> nn.Module`
-#   * trees  track -> a validated XGBoost spec (data, never code)
+#   * neural track -> a model SPEC the node builds with stock torch layers
+#   * trees  track -> a validated XGBoost spec
+# Both are DATA, never code: nothing the researcher submits runs in the node's
+# trusted interpreter (which is what makes the DP-release path unforgeable).
 #
 # The registry is extensible the way tidymodels/parsnip is: a derived
 # dsFlowerClient extension package registers its own model collection by calling
@@ -23,21 +25,21 @@
 #' @param name Character; the model name (e.g. "pytorch_logreg", "xgboost").
 #' @param track Character; the enforced-DP track: "neural" (nn.Module + DP-SGD)
 #'   or "trees" (XGBoost spec + DP-GBDT).
-#' @param generate Function of one argument \code{params} (a named list). For the
-#'   neural track it MUST return a single character string: the python source of
-#'   a module defining \code{build_model(cfg) -> torch.nn.Module} and nothing
-#'   else (no training loop, no loss — the node owns those). For the trees track
-#'   it MUST return a named list: the XGBoost spec.
+#' @param generate Function of one argument \code{params} (a named list). Both
+#'   tracks MUST return a named list (DATA, never code): for the neural track a
+#'   model SPEC \code{list(kind = "sequential", layers = list(...))} the node
+#'   builds with stock torch layers (end with a linear onto \code{"@out"}); for the
+#'   trees track the XGBoost spec. The node owns the loop, loss, and optimizer.
 #' @param loss Character or NULL; neural track only. The per-sample loss the node
 #'   should use, from the node allowlist (\code{bce_logits}, \code{cross_entropy},
-#'   \code{mse}, \code{poisson_nll}, \code{multilabel_bce}, \code{lognormal_aft_nll}).
+#'   \code{mse}, \code{poisson_nll}, \code{multilabel_bce}).
 #'   The node pins the actual loss; this is the client's request.
 #' @param defaults Named list of default params merged under user-supplied params.
 #' @param description Character or NULL; a one-line human description.
-#' @param vetted Logical; TRUE for first-party generators whose emitted
-#'   architecture is known to be free of cross-sample coupling and weight-stash
-#'   buffers (so it runs on the default path). Third-party registrations default
-#'   to FALSE and are subject to the node's custom-code admission gate.
+#' @param vetted Logical; informational only. Every model is node-built from the
+#'   allowlisted spec vocabulary (no researcher code runs), so first- and
+#'   third-party generators take the same validated path; this flag just marks
+#'   first-party collections in \code{ds.flower.list_models()}.
 #' @param overwrite Logical; allow replacing an existing registration.
 #' @return Invisibly, the model name.
 #' @export
@@ -109,78 +111,67 @@ ds.flower.list_models <- function() {
 # Built-in generators (first-party, vetted = stash-free architectures).
 # --------------------------------------------------------------------------- #
 
-# A generic feed-forward classifier/regressor head. Emits ONLY nn.Linear / ReLU
-# in an nn.Sequential — no buffers, no BatchNorm, no custom forward, so there is
-# no weight-stash channel and per-sample gradients are well-defined. `out_expr`
-# decides the output width from cfg (single logit for binary; num-classes for
-# multiclass; fixed for regression/poisson/multilabel).
-.neural_mlp_source <- function(hidden = integer(0), out_expr = "1",
-                               input_key = "num-features") {
-  hid <- if (length(hidden)) paste(as.integer(hidden), collapse = ", ") else ""
-  paste0(
-    "import torch.nn as nn\n\n",
-    "def build_model(cfg):\n",
-    "    d = int(cfg[\"", input_key, "\"])\n",
-    "    out = ", out_expr, "\n",
-    "    hidden = [", hid, "]\n",
-    "    if not hidden:\n",
-    "        return nn.Linear(d, out)\n",
-    "    layers = []\n",
-    "    for w in hidden:\n",
-    "        layers += [nn.Linear(d, int(w)), nn.ReLU()]\n",
-    "        d = int(w)\n",
-    "    layers.append(nn.Linear(d, out))\n",
-    "    return nn.Sequential(*layers)\n")
+# A generic feed-forward head as a declarative SPEC (DATA, never code): a list of
+# allowlisted layers the NODE builds with stock torch constructors. `hidden` are
+# the hidden widths (each a linear + relu); every model ends with a linear onto the
+# symbolic "@out", whose width the node fixes from the pinned loss -- so output
+# width is node-authoritative, never client-set. The input dim "@in" is injected
+# node-side (num-features, or the frozen-backbone feature dim for vision).
+.neural_mlp_spec <- function(hidden = integer(0)) {
+  layers <- list()
+  for (w in hidden) {
+    layers <- c(layers, list(list(op = "linear", out = as.integer(w)),
+                             list(op = "relu")))
+  }
+  layers <- c(layers, list(list(op = "linear", out = "@out")))
+  list(kind = "sequential", layers = layers)
 }
 
-# bce_logits output width: 1 logit (binary) -- target is a {0,1} float.
-.OUT_CLASSES <- "1 if int(cfg.get(\"num-classes\", 2)) <= 2 else int(cfg[\"num-classes\"])"
-# cross_entropy output width: ONE LOGIT PER CLASS, always num-classes (>=2 even for
-# binary). A single logit makes target==1 out of bounds (the classic CrossEntropy
-# "Target N is out of bounds"); softmax-CE over 2 logits is the correct binary form.
-.OUT_NCLASSES <- "int(cfg.get(\"num-classes\", 2))"
+# Output width is decided NODE-SIDE from the pinned loss (model_spec.output_width):
+# bce_logits -> 1 (binary) or one-vs-rest; cross_entropy -> num-classes (softmax);
+# mse / poisson_nll -> 1; multilabel_bce -> num-labels. The spec just targets "@out".
 
 #' Register the first-party model collection (called from .onLoad)
 #' @keywords internal
 .dsflower_register_builtins <- function(overwrite = TRUE) {
   reg <- function(...) ds.flower.register_model(..., vetted = TRUE, overwrite = overwrite)
 
-  # ---- neural: tabular ----
+  # ---- neural: tabular (output width comes from the loss, node-side) ----
   reg("pytorch_logreg", "neural",
-      generate = function(p) .neural_mlp_source(integer(0), .OUT_CLASSES),
+      generate = function(p) .neural_mlp_spec(integer(0)),
       loss = "bce_logits",
       description = "Logistic regression (single linear layer).")
   reg("pytorch_mlp", "neural",
-      generate = function(p) .neural_mlp_source(p$hidden_layers %||% c(64L, 32L), .OUT_CLASSES),
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% c(64L, 32L)),
       loss = "bce_logits", defaults = list(hidden_layers = c(64L, 32L)),
       description = "Multilayer perceptron classifier.")
   reg("pytorch_multiclass", "neural",
-      generate = function(p) .neural_mlp_source(p$hidden_layers %||% integer(0), .OUT_NCLASSES),
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
       loss = "cross_entropy", defaults = list(hidden_layers = integer(0)),
       description = "Multiclass classifier (softmax cross-entropy).")
   reg("pytorch_linear_regression", "neural",
-      generate = function(p) .neural_mlp_source(p$hidden_layers %||% integer(0), "1"),
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
       loss = "mse", defaults = list(hidden_layers = integer(0)),
       description = "Linear / MLP regression (MSE).")
   reg("pytorch_poisson", "neural",
-      generate = function(p) .neural_mlp_source(p$hidden_layers %||% integer(0), "1"),
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
       loss = "poisson_nll", defaults = list(hidden_layers = integer(0)),
       description = "Poisson regression (count outcomes).")
   reg("pytorch_multilabel", "neural",
-      generate = function(p) .neural_mlp_source(p$hidden_layers %||% integer(0),
-                                                "int(cfg[\"num-labels\"])"),
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
       loss = "multilabel_bce", defaults = list(num_labels = 2L),
       description = "Multilabel classifier (independent BCE per label).")
 
-  # ---- neural: vision head (frozen backbone is node-resident; client ships
-  #      only the trainable head, keyed off the injected feature-dim) ----
-  for (nm in c("pytorch_resnet18", "pytorch_densenet121")) {
+  # ---- neural: vision head (frozen backbone is node-resident; the spec is the
+  #      trainable head, with @in injected node-side from the backbone feature dim).
+  #      local() forces a fresh nm per iteration (no lazy loop-variable capture). ----
+  for (nm in c("pytorch_resnet18", "pytorch_densenet121")) local({
+    nm <- nm
     reg(nm, "neural",
-        generate = function(p) .neural_mlp_source(integer(0), .OUT_NCLASSES,
-                                                  input_key = "feature-dim"),
+        generate = function(p) .neural_mlp_spec(integer(0)),
         loss = "cross_entropy", defaults = list(n_classes = 2L),
         description = paste0("Vision classifier head on a frozen ", nm, " backbone."))
-  }
+  })
 
   # ---- trees: XGBoost spec (DATA, never code) ----
   reg("xgboost", "trees",

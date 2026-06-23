@@ -118,9 +118,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   if (identical(sub$track, "neural")) {
     p <- sub$params
     cfg <- c(cfg,
-      .toml_kv("model-module", sub$module),
+      .toml_kv("model-spec-b64", .spec_to_b64(sub$spec)),
       .toml_kv("loss-name", sub$loss %||% "bce_logits"),
       paste0("num-classes = ", as.integer(p$n_classes %||% p$num_classes %||% 2L)),
+      paste0("num-labels = ", as.integer(p$num_labels %||% 2L)),
       paste0("local-epochs = ", as.integer(p$local_epochs %||% 1L)),
       paste0("batch-size = ", as.integer(p$batch_size %||% 32L)),
       paste0("learning-rate = ", as.numeric(p$learning_rate %||% 0.01)))
