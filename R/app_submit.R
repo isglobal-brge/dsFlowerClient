@@ -71,7 +71,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              data = NULL, resource = NULL, symbol = NULL,
                              privacy = NULL, num_rounds = 1L,
                              model_params = list(), data_kind = "tabular",
-                             verbose = TRUE) {
+                             torch_backend = "auto", verbose = TRUE) {
   .require_flwr_cli()
   privacy <- .resolve_privacy(privacy)
   if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
@@ -154,7 +154,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     features = features, evaluation_only = FALSE), class = "dsflower_recipe")
 
   run <- tryCatch({
-    ds.flower.nodes.ensure(conns, hsym)
+    ds.flower.nodes.ensure(conns, hsym, torch_backend = torch_backend)
     ds.flower.run.start(recipe, conns, app_dir = app_dir,
                         results_dir = results_dir, symbol = hsym, verbose = verbose)
   }, error = function(e) {

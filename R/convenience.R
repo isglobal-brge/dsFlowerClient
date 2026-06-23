@@ -195,8 +195,9 @@ ds.flower.fit <- function(conns,
                           symbol = NULL,
                           target,
                           features = NULL,
-                          model = "sklearn_logreg",
+                          model = "pytorch_logreg",
                           model_params = list(),
+                          torch_backend = "auto",
                           strategy = "fedavg",
                           strategy_params = list(),
                           privacy = NULL,
@@ -266,5 +267,5 @@ ds.flower.fit <- function(conns,
     conns, model = model_spec, target = target, features = features,
     data = data, resource = resource, symbol = symbol,
     privacy = privacy_spec, num_rounds = rounds, model_params = list(),
-    data_kind = data_kind, verbose = verbose)
+    data_kind = data_kind, torch_backend = torch_backend, verbose = verbose)
 }

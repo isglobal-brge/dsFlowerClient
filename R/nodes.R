@@ -191,7 +191,8 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 #' @export
 ds.flower.nodes.ensure <- function(conns, symbol = "flower",
                                     superlink_address = NULL,
-                                    template_name = NULL) {
+                                    template_name = NULL,
+                                    torch_backend = NULL) {
   # All transport is the DSI tunnel: each SuperNode dials its own node-local
   # loopback forwarder, so the address here is only a placeholder. There is no
   # remote coordinator / LAN auto-resolution path in v2.
@@ -221,7 +222,8 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
       conns,
       symbol = symbol,
       expr = call("flowerEnsureSuperNodeDS", symbol,
-                  superlink_address, fed_id, ca_cert_b64, template_name)
+                  superlink_address, fed_id, ca_cert_b64, template_name,
+                  torch_backend)
     )
   } else if (is.list(superlink_address)) {
     # Per-node addresses
@@ -230,7 +232,8 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
         conns[srv],
         symbol = symbol,
         expr = call("flowerEnsureSuperNodeDS", symbol,
-                    superlink_address[[srv]], fed_id, ca_cert_b64)
+                    superlink_address[[srv]], fed_id, ca_cert_b64, template_name,
+                    torch_backend)
       )
     }
   }
