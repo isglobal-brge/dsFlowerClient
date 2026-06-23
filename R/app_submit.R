@@ -92,9 +92,16 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     if (verbose) message("  Model package '", up$package, "' uploaded + scanned.")
   }
 
+  # The server-side disclosure class-distribution check applies only to
+  # classification; a continuous regression / count target legitimately has ~1 row
+  # per value. Derive the task type from the pinned loss so the check is skipped
+  # correctly (the node also skips its label-range assertion for these losses).
+  task_type <- if (identical(sub$track, "trees")) "classification" else
+    switch(sub$loss %||% "bce_logits",
+           mse = "regression", poisson_nll = "count", "classification")
   ds.flower.nodes.prepare(
     conns, hsym, target_column = target, feature_columns = features,
-    run_config = list("task-type" = "classification", "dp-track" = sub$track),
+    run_config = list("task-type" = task_type, "dp-track" = sub$track),
     privacy = privacy)
 
   if (!is.null(up)) {
