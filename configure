@@ -122,8 +122,8 @@ rm -rf "${VENV_PATH}"
 }
 
 VENV_PYTHON="${VENV_PATH}/bin/python"
-log_info "Installing flwr[app]>=1.13.0..."
-"${UV}" pip install --python "${VENV_PYTHON}" --quiet "flwr[app]>=1.13.0" 2>&1 | tail -5 || {
+log_info "Installing flwr[app]>=1.31.0..."
+"${UV}" pip install --python "${VENV_PYTHON}" --quiet "flwr[app]>=1.31.0" 2>&1 | tail -5 || {
   log_warn "pip install failed."
   rm -rf "${VENV_PATH}"
   exit 0
@@ -137,7 +137,7 @@ if [ ! -x "${VENV_PATH}/bin/flwr" ] || [ ! -x "${VENV_PATH}/bin/flower-superlink
 fi
 
 # Mark ready
-DEP_HASH=$(echo "flwr[app]>=1.13.0" | sha256sum 2>/dev/null | cut -d' ' -f1 || echo "unknown")
+DEP_HASH=$(echo "flwr[app]>=1.31.0" | sha256sum 2>/dev/null | cut -d' ' -f1 || echo "unknown")
 echo "${DEP_HASH}" > "${VENV_PATH}/.dsflower_client_ready"
 
 log_info "Python environment ready."
