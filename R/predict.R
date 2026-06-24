@@ -3,7 +3,7 @@
 
 #' Predict with a federated model
 #'
-#' Uses the saved model in native format (joblib/pt/xgb) to generate
+#' Uses the saved model in native format (pt/xgb) to generate
 #' predictions via Python. The appropriate framework dependencies are
 #' installed on-demand in the client venv if not already present.
 #'
@@ -78,8 +78,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
       # Direct file path
       ext <- tolower(tools::file_ext(model))
       framework <- switch(ext,
-        joblib = "sklearn", pt = "pytorch",
-        xgb = "xgboost", json = "xgboost",
+        pt = "pytorch", xgb = "xgboost", json = "xgboost",
         stop("Unknown model format: ", ext, call. = FALSE))
       tmpl <- .read_template_meta(dirname(model))
       return(list(model_file = model, framework = framework, template = tmpl))
@@ -89,9 +88,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     if (!is.null(model$source_dir)) model_dir <- model$source_dir
     if (is.null(model_dir) && !is.null(model$template)) {
       # Try to find by framework
-      fw <- if (grepl("sklearn", model$template)) "sklearn"
-            else if (grepl("xgboost", model$template)) "xgboost"
-            else "pytorch"
+      fw <- if (grepl("xgboost", model$template)) "xgboost" else "pytorch"
       # Need model_dir to find the file
       stop("Cannot predict from in-memory model list without a model directory. ",
            "Pass the output_dir path instead.", call. = FALSE)
@@ -106,9 +103,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   # Python predictor (regression vs classification vs survival vs multilabel ...).
   tmpl <- .read_template_meta(model_dir)
 
-  # Find native model file (priority: joblib > pt > xgb.json > xgb)
+  # Find native model file (priority: pt > xgb.json > xgb)
   candidates <- list(
-    list(file = "model.joblib", framework = "sklearn"),
     list(file = "model.pt", framework = "pytorch"),
     list(file = "model.xgb.json", framework = "xgboost"),
     list(file = "model.xgb", framework = "xgboost")
@@ -127,14 +123,11 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     if (grepl("xgboost", tmpl)) {
       return(list(model_file = json_path, framework = "xgboost", template = tmpl))
     }
-    if (grepl("sklearn", tmpl)) {
-      return(list(model_file = json_path, framework = "sklearn", template = tmpl))
-    }
     return(list(model_file = json_path, framework = "pytorch", template = tmpl))
   }
 
   stop("No native model file found in ", model_dir,
-       ". Expected model.joblib, model.pt, or model.xgb.json.", call. = FALSE)
+       ". Expected model.pt or model.xgb.json.", call. = FALSE)
 }
 
 #' Read the template name from a model directory's metadata.json

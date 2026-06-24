@@ -231,7 +231,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   any(file.exists(file.path(
     results_dir,
     c("global_model.json", "global_model.skipped.json",
-      "model.pt", "model.joblib", "model.npz")
+      "model.pt", "model.npz")
   )))
 }
 

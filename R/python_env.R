@@ -103,8 +103,6 @@
 # --- On-demand framework dependency install ---
 
 .FRAMEWORK_CLIENT_DEPS <- list(
-  sklearn = c("scikit-learn>=1.0.0", "numpy>=1.21.0", "pandas>=1.3.0",
-              "pyarrow>=10.0.0", "joblib"),
   pytorch = c("torch>=2.0.0", "numpy>=1.21.0", "pandas>=1.3.0",
               "pyarrow>=10.0.0", "opacus>=1.4.0"),
   pytorch_vision = c("torch>=2.0.0", "torchvision>=0.15.0", "Pillow>=9.0.0",
@@ -116,8 +114,7 @@
 )
 
 .FRAMEWORK_CHECK_MODULE <- list(
-  sklearn = "sklearn", pytorch = "torch",
-  pytorch_vision = "torchvision", xgboost = "xgboost"
+  pytorch = "torch", pytorch_vision = "torchvision", xgboost = "xgboost"
 )
 
 #' Ensure ML framework dependencies are installed in the client venv
@@ -126,7 +123,7 @@
 #' Installs them on-demand if missing. Called automatically before
 #' training and prediction.
 #'
-#' @param framework Character; "sklearn", "pytorch", "pytorch_vision", or "xgboost".
+#' @param framework Character; "pytorch", "pytorch_vision", or "xgboost".
 #' @return Invisible TRUE.
 #' @keywords internal
 .ensure_client_framework <- function(framework) {

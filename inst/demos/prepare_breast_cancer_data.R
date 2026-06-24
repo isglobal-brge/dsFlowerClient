@@ -1,5 +1,5 @@
 # Prepare the federated breast-cancer demo data.
-# Splits the Breast Cancer Wisconsin dataset (sklearn) into 3 stratified
+# Splits the Breast Cancer Wisconsin dataset into 3 stratified
 # partitions and uploads one to each Opal node as table
 # dsflower_demo.breast_cancer. Run once by an operator with Opal admin.
 #
@@ -9,7 +9,7 @@
 suppressMessages(library(opalr))
 
 nodes <- c("nairobi", "dakar", "douala")
-csvs  <- c("bc_part1.csv", "bc_part2.csv", "bc_part3.csv")  # produced from sklearn load_breast_cancer, stratified 3-way
+csvs  <- c("bc_part1.csv", "bc_part2.csv", "bc_part3.csv")  # Breast Cancer Wisconsin, stratified 3-way
 
 for (i in seq_along(nodes)) {
   h  <- nodes[i]

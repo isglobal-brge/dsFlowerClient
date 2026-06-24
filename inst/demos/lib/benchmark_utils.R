@@ -243,9 +243,9 @@ extract_weight_item <- function(weights, index) {
   item
 }
 
-predict_sklearn_logreg_weights <- function(weights, x) {
+predict_logreg_weights <- function(weights, x) {
   if (is.null(weights) || length(weights) < 2L) {
-    stop("Federated run did not return sklearn logistic-regression weights.", call. = FALSE)
+    stop("Federated run did not return logistic-regression weights.", call. = FALSE)
   }
 
   coef_raw <- extract_weight_item(weights, 1L)
@@ -410,13 +410,13 @@ run_dsflower_benchmark <- function(data,
     symbol = "D",
     target = target,
     features = features,
-    model = "sklearn_logreg",
-    model_params = list(max_iter = cfg$max_iter),
+    model = "pytorch_logreg",
+    model_params = list(),
     strategy = "fedavg",
     privacy = "trusted_internal",
     rounds = cfg$rounds
   )
-  fed_probs <- predict_sklearn_logreg_weights(run$weights, test[features])
+  fed_probs <- predict_logreg_weights(run$weights, test[features])
   fed_metrics <- binary_metrics(test[[target]], fed_probs)
 
   post_caps <- tryCatch(

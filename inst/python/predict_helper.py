@@ -5,7 +5,7 @@ Outputs JSON predictions to stdout for R to consume via processx.
 
 Usage:
   python predict_helper.py --model <path> --data <csv> --type response|prob
-                           [--framework sklearn|pytorch|xgboost]
+                           [--framework pytorch|xgboost]
                            [--template <template_name>]
 """
 
@@ -15,23 +15,6 @@ import sys
 
 import numpy as np
 import pandas as pd
-
-
-def predict_sklearn(model_path, X, pred_type):
-    """Predict with a sklearn model (joblib)."""
-    import joblib
-    model = joblib.load(model_path)
-    if pred_type == "prob":
-        if hasattr(model, "predict_proba"):
-            probs = model.predict_proba(X)
-            # Binary: return P(class=1)
-            if probs.shape[1] == 2:
-                return probs[:, 1].tolist()
-            return probs.tolist()
-        # Fallback: decision function -> sigmoid
-        dec = model.decision_function(X)
-        return (1 / (1 + np.exp(-dec))).tolist()
-    return model.predict(X).tolist()
 
 
 # Per-template output semantics for the linear / MLP PyTorch families. The
@@ -223,9 +206,7 @@ def main():
     # Auto-detect framework from model file extension
     framework = args.framework
     if framework is None:
-        if args.model.endswith(".joblib"):
-            framework = "sklearn"
-        elif args.model.endswith(".pt"):
+        if args.model.endswith(".pt"):
             framework = "pytorch"
         elif args.model.endswith(".xgb.json") or args.model.endswith(".xgb"):
             framework = "xgboost"
@@ -235,9 +216,7 @@ def main():
             sys.exit(1)
 
     # Predict
-    if framework == "sklearn":
-        preds = predict_sklearn(args.model, X, args.type)
-    elif framework == "pytorch":
+    if framework == "pytorch":
         preds = predict_pytorch(args.model, X, args.type, args.template)
     elif framework == "xgboost":
         if args.model.endswith(".json"):
