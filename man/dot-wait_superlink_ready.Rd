@@ -16,8 +16,7 @@
 \item{timeout}{Numeric; seconds to wait.}
 }
 \description{
-Verifies the process is alive and the fleet port is listening.
-Uses \code{lsof} (macOS/Linux) to check port binding without needing
-a TLS handshake.
+Verifies the process is alive and the fleet port is accepting connections
+(via a native socket probe -- no subprocess, no TLS handshake needed).
 }
 \keyword{internal}

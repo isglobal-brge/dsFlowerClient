@@ -1,7 +1,7 @@
 Package: dsFlowerClient
 Type: Package
 Title: DataSHIELD Client for Flower Federated Learning
-Version: 0.2.0
+Version: 0.2.1
 Authors@R: c(
     person("David", "Sarrat González", role = c("aut", "cre"), email = "david.sarrat@isglobal.org"),
     person("Juan R", "González", role = "aut", email = "juanr.gonzalez@isglobal.org"))
@@ -22,7 +22,8 @@ Imports:
     digest,
     DSI,
     jsonlite,
-    processx
+    processx,
+    ps
 Suggests:
     DSOpal,
     DSLite,

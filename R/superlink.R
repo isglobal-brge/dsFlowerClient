@@ -1,53 +1,161 @@
 # Module: SuperLink Lifecycle
 # Manages the Flower SuperLink process on the researcher's machine.
 
-# --- Orphan cleanup ---
+# --- Orphan reaping (fork-free) ---
+#
+# The local SuperLink (and its flower-superexec child) must be reaped when a
+# previous R session left them behind: a hard crash, a SIGKILL, or a researcher
+# who quit without ds.flower.superlink.stop(). We do this WITHOUT shelling out.
+# Every running SuperLink records its PID in a small file, and reaping signals
+# that PID directly via tools::pskill() (the kill(2) syscall). The previous
+# implementation scanned ports with system2("lsof"/"ps"), which forks; on macOS,
+# forking an R process that already has live curl (DataSHIELD) threads can
+# segfault mid-fork -- exactly during the cleanup meant to PREVENT orphans, so a
+# flaky-network run would crash and leave the orphan it was trying to reap.
+# Native sockets + pskill never fork, so the reaper can no longer crash. This
+# mirrors the server-side SuperNode reaping in dsFlower (PID files + pskill).
 
-#' Kill any process listening on a TCP port
+#' Directory holding SuperLink PID files
+#' @keywords internal
+.superlink_pid_dir <- function() {
+  d <- file.path(.client_venv_root(), "superlink")
+  if (!dir.exists(d)) {
+    tryCatch(dir.create(d, recursive = TRUE, showWarnings = FALSE),
+             error = function(e) NULL)
+  }
+  d
+}
+
+#' Path to the PID file for a SuperLink, keyed by its fleet port
+#' @keywords internal
+.superlink_pid_path <- function(fleet_port) {
+  file.path(.superlink_pid_dir(), paste0("superlink_", fleet_port, ".pid"))
+}
+
+#' Record a running SuperLink so a later session can reap it without lsof
 #'
-#' Finds and kills orphaned flower-superlink processes that hold our ports
-#' from crashed or abandoned R sessions. Only kills \code{flower-superlink}
-#' processes to avoid accidentally killing unrelated services.
+#' Written for BOTH interactive and detached SuperLinks. The old code persisted
+#' state only when detached, so an interactive crash could only be recovered by
+#' an lsof port scan -- the very call that segfaulted.
 #'
-#' @param port Integer; the port number.
+#' @param info List; the SuperLink info (needs pid + the three ports).
 #' @return Invisible NULL.
 #' @keywords internal
-.kill_orphan_on_port <- function(port) {
-  if (!.port_is_listening(port)) return(invisible(NULL))
-
+.write_superlink_pid <- function(info) {
   tryCatch({
-    if (.Platform$OS.type == "unix") {
-      out <- suppressWarnings(
-        system2("lsof", c("-t", "-i", paste0(":", port), "-sTCP:LISTEN"),
-                stdout = TRUE, stderr = TRUE)
-      )
-      for (pid_str in out) {
-        pid <- suppressWarnings(as.integer(trimws(pid_str)))
-        if (is.na(pid)) next
-        # Only kill Flower SuperLink/SuperExec processes. Match the FULL command
-        # line (-o command=), not -o comm=: these run as ".../python .../
-        # flower-superlink", so comm= returns "python" and never matches. Match
-        # "flower-super" to also catch the flower-superexec child (port 9091).
-        cmd_line <- tryCatch(
-          system2("ps", c("-p", pid, "-o", "command="),
-                  stdout = TRUE, stderr = TRUE),
-          error = function(e) ""
-        )
-        if (any(grepl("flower-super", cmd_line, fixed = TRUE))) {
-          message("  Cleaning up orphaned SuperLink (PID: ", pid,
-                  ") on port ", port)
-          tools::pskill(pid, signal = 15L)  # SIGTERM
-          Sys.sleep(1)
-          if (.port_is_listening(port)) {
-            tools::pskill(pid, signal = 9L)  # SIGKILL
-            Sys.sleep(0.5)
-          }
-        }
-      }
-    }
+    pf  <- .superlink_pid_path(info$fleet_port)
+    tmp <- paste0(pf, ".tmp.", Sys.getpid())
+    writeLines(as.character(c(info$pid, info$fleet_port,
+                              info$control_port, info$serverappio_port,
+                              format(Sys.time(), "%Y-%m-%dT%H:%M:%S"))), tmp)
+    file.rename(tmp, pf)
   }, error = function(e) NULL)
-
   invisible(NULL)
+}
+
+#' Remove a SuperLink PID file
+#' @keywords internal
+.remove_superlink_pid <- function(fleet_port) {
+  if (is.null(fleet_port)) return(invisible(NULL))
+  tryCatch({
+    pf <- .superlink_pid_path(fleet_port)
+    if (file.exists(pf)) unlink(pf)
+  }, error = function(e) NULL)
+  invisible(NULL)
+}
+
+#' Hard-stop a PID: SIGTERM, then SIGKILL if it lingers (fork-free)
+#' @keywords internal
+.kill_pid_hard <- function(pid) {
+  if (is.na(pid) || !.pid_is_alive_local(pid)) return(invisible(FALSE))
+  tools::pskill(pid, signal = 15L)               # SIGTERM
+  Sys.sleep(1)
+  if (.pid_is_alive_local(pid)) {
+    tools::pskill(pid, signal = 9L)              # SIGKILL
+    Sys.sleep(0.5)
+  }
+  invisible(TRUE)
+}
+
+#' Discover orphaned Flower SuperLink/SuperExec PIDs squatting given ports
+#'
+#' Fork-free process scan via the \pkg{ps} package (libproc on macOS, /proc on
+#' Linux) -- the client analogue of the server's /proc SuperNode scan. Matches
+#' only \code{flower-super*} processes whose command line references one of OUR
+#' ports, so it reaps a stale SuperLink (or its superexec child) that has no PID
+#' file -- e.g. one started before PID-file tracking, or whose file was lost --
+#' and never touches an unrelated service.
+#'
+#' @param ports Integer vector; the SuperLink ports we are about to bind.
+#' @return Integer vector of matching PIDs.
+#' @keywords internal
+.discover_superlink_orphans <- function(ports) {
+  ports <- Filter(Negate(is.null), ports)
+  if (length(ports) == 0L || !requireNamespace("ps", quietly = TRUE)) {
+    return(integer(0))
+  }
+  port_pat <- paste0(":(", paste(unique(ports), collapse = "|"), ")(\\b|$)")
+  pids <- tryCatch(ps::ps_pids(), error = function(e) integer(0))
+  hits <- integer(0)
+  for (pid in pids) {
+    h <- tryCatch(ps::ps_handle(pid), error = function(e) NULL)
+    if (is.null(h)) next
+    cmd <- tryCatch(paste(ps::ps_cmdline(h), collapse = " "),
+                    error = function(e) "")
+    if (grepl("flower-super", cmd, fixed = TRUE) && grepl(port_pat, cmd)) {
+      hits <- c(hits, pid)
+    }
+  }
+  hits
+}
+
+#' Reap an orphaned SuperLink left by a crashed or abandoned session
+#'
+#' Two fork-free passes, neither of which shells out (so neither can trip the
+#' macOS fork-after-threads segfault the old lsof/ps scan could):
+#' \enumerate{
+#'   \item the PID file written by \code{.write_superlink_pid} -- the fast,
+#'         exact path for any SuperLink this package started; then
+#'   \item a \pkg{ps} scan for any \code{flower-super*} process still holding
+#'         one of our ports -- catches a SuperLink/superexec with no PID file
+#'         and frees the ports before we rebind them.
+#' }
+#'
+#' @param fleet_port Integer; the SuperLink's fleet port (PID-file key).
+#' @param ports Integer vector; all SuperLink ports to free (default:
+#'   just \code{fleet_port}).
+#' @return Invisible TRUE if anything was reaped, FALSE otherwise.
+#' @keywords internal
+.reap_orphan_superlink <- function(fleet_port, ports = fleet_port) {
+  reaped <- FALSE
+  handled <- integer(0)
+
+  # Pass 1: PID file (exact, no scan) -- reaps any SuperLink we started.
+  pf <- .superlink_pid_path(fleet_port)
+  if (file.exists(pf)) {
+    tryCatch({
+      pid <- suppressWarnings(as.integer(readLines(pf, warn = FALSE)[1]))
+      if (!is.na(pid) && .pid_is_alive_local(pid)) {
+        message("  Reaping orphaned SuperLink (PID ", pid,
+                ") left by a previous session")
+        .kill_pid_hard(pid)
+        handled <- c(handled, pid)
+        reaped <- TRUE
+      }
+    }, error = function(e) NULL)
+    unlink(pf)
+  }
+
+  # Pass 2: ps scan for any flower-super* still squatting our ports with no PID
+  # file (pre-tracking orphans, or a superexec child that outlived its parent).
+  for (pid in setdiff(.discover_superlink_orphans(ports), handled)) {
+    message("  Reaping untracked Flower process (PID ", pid,
+            ") holding a SuperLink port")
+    .kill_pid_hard(pid)
+    reaped <- TRUE
+  }
+
+  invisible(reaped)
 }
 
 # --- TLS certificate generation helpers ---
@@ -233,10 +341,10 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
     .clear_superlink_state()
   }
 
-  # Kill orphaned SuperLinks on our ports
-  .kill_orphan_on_port(fleet_port)
-  .kill_orphan_on_port(control_port)
-  .kill_orphan_on_port(serverappio_port)
+  # Reap any SuperLink a previous session left behind, fork-free: by PID file,
+  # then by a ps scan for anything still squatting these exact ports.
+  .reap_orphan_superlink(fleet_port,
+                         ports = c(fleet_port, control_port, serverappio_port))
 
   # Persistent dir for detached, tempdir for interactive
   if (detached) {
@@ -325,6 +433,10 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
   # Wait for ready
   .wait_superlink_ready(proc, fleet_port, log_path, timeout = 15)
 
+  # Record this SuperLink's PID so a later session can reap it without lsof,
+  # even after a hard crash (interactive runs persist nothing else).
+  .write_superlink_pid(info)
+
   # Save state for detached reconnection
   if (detached) .save_superlink_state(info)
 
@@ -340,9 +452,8 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
 
 #' Wait for SuperLink to be ready
 #'
-#' Verifies the process is alive and the fleet port is listening.
-#' Uses \code{lsof} (macOS/Linux) to check port binding without needing
-#' a TLS handshake.
+#' Verifies the process is alive and the fleet port is accepting connections
+#' (via a native socket probe -- no subprocess, no TLS handshake needed).
 #'
 #' @param proc processx process object.
 #' @param port Integer; port to check.
@@ -373,30 +484,26 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
        log_tail, call. = FALSE)
 }
 
-#' Check if a port is being listened on
+#' Check if something is accepting connections on a local TCP port
 #'
-#' Uses \code{lsof} on macOS/Linux or \code{netstat} on Windows to check
-#' if any process is listening on the given port. Does not require a
-#' TLS handshake.
+#' Probes the port with a native R socket (\code{socketConnection}) instead of
+#' shelling out to \code{lsof}/\code{netstat}. Opening a socket never forks, so
+#' this is safe to call from an R process with live curl (DataSHIELD) threads --
+#' unlike \code{system2}, which forks and can segfault mid-fork on macOS. Works
+#' uniformly for insecure and TLS SuperLinks (a plain TCP connect succeeds in
+#' both cases).
 #'
 #' @param port Integer; port number.
-#' @return Logical.
+#' @return Logical; TRUE if a server is accepting connections on the port.
 #' @keywords internal
 .port_is_listening <- function(port) {
-  tryCatch({
-    if (.Platform$OS.type == "unix") {
-      out <- suppressWarnings(
-        system2("lsof", c("-i", paste0(":", port), "-sTCP:LISTEN"),
-                stdout = TRUE, stderr = TRUE)
-      )
-      length(out) > 0
-    } else {
-      out <- suppressWarnings(
-        system2("netstat", c("-an"), stdout = TRUE, stderr = TRUE)
-      )
-      any(grepl(paste0(":", port, "\\s"), out) & grepl("LISTEN", out))
-    }
-  }, error = function(e) FALSE, warning = function(w) FALSE)
+  con <- tryCatch(
+    socketConnection(host = "127.0.0.1", port = port, server = FALSE,
+                     blocking = TRUE, open = "r+", timeout = 1),
+    error = function(e) NULL, warning = function(w) NULL)
+  if (is.null(con)) return(FALSE)
+  close(con)
+  TRUE
 }
 
 #' Stop the Flower SuperLink
@@ -436,12 +543,11 @@ ds.flower.superlink.stop <- function() {
     }
   }
 
-  # Belt-and-suspenders: free the SuperLink ports in case a child (superexec)
-  # outlived the tree kill. Targets only Flower processes holding these exact
-  # ports, so it never touches an unrelated process.
-  for (p in c(info$fleet_port, info$control_port, info$serverappio_port)) {
-    if (!is.null(p)) .kill_orphan_on_port(p)
-  }
+  # The in-session kill_tree() above already reaps the flower-superexec child;
+  # drop this SuperLink's PID-file record so it is no longer seen as an orphan.
+  # (A cross-session stop has no processx tree to walk, but a superexec whose
+  # SuperLink just died loses its endpoint and exits on its own.)
+  .remove_superlink_pid(info$fleet_port)
 
   # Cleanup directories
   if (!is.null(info$flwr_home) && dir.exists(info$flwr_home)) {

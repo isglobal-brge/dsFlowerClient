@@ -19,7 +19,7 @@ ds.flower.predict(model, newdata, type = c("response", "prob"))
 A numeric vector of predictions.
 }
 \description{
-Uses the saved model in native format (joblib/pt/xgb) to generate
+Uses the saved model in native format (pt/xgb) to generate
 predictions via Python. The appropriate framework dependencies are
 installed on-demand in the client venv if not already present.
 }

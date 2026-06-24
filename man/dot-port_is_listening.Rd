@@ -2,7 +2,7 @@
 % Please edit documentation in R/superlink.R
 \name{.port_is_listening}
 \alias{.port_is_listening}
-\title{Check if a port is being listened on}
+\title{Check if something is accepting connections on a local TCP port}
 \usage{
 .port_is_listening(port)
 }
@@ -10,11 +10,14 @@
 \item{port}{Integer; port number.}
 }
 \value{
-Logical.
+Logical; TRUE if a server is accepting connections on the port.
 }
 \description{
-Uses \code{lsof} on macOS/Linux or \code{netstat} on Windows to check
-if any process is listening on the given port. Does not require a
-TLS handshake.
+Probes the port with a native R socket (\code{socketConnection}) instead of
+shelling out to \code{lsof}/\code{netstat}. Opening a socket never forks, so
+this is safe to call from an R process with live curl (DataSHIELD) threads --
+unlike \code{system2}, which forks and can segfault mid-fork on macOS. Works
+uniformly for insecure and TLS SuperLinks (a plain TCP connect succeeds in
+both cases).
 }
 \keyword{internal}
