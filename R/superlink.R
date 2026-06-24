@@ -43,12 +43,15 @@
 #' @keywords internal
 .write_superlink_pid <- function(info) {
   tryCatch({
-    pf  <- .superlink_pid_path(info$fleet_port)
-    tmp <- paste0(pf, ".tmp.", Sys.getpid())
+    pf <- .superlink_pid_path(info$fleet_port)
+    # Direct write (no temp+rename): the file is single-owner and port-keyed, so
+    # it is overwritten every session. Windows MoveFile cannot replace an
+    # existing file, so a temp+rename would fail exactly when a stale PID file is
+    # present. A torn read is harmless -- the reader gets NA and the ps scan in
+    # .reap_orphan_superlink still finds the orphan.
     writeLines(as.character(c(info$pid, info$fleet_port,
                               info$control_port, info$serverappio_port,
-                              format(Sys.time(), "%Y-%m-%dT%H:%M:%S"))), tmp)
-    file.rename(tmp, pf)
+                              format(Sys.time(), "%Y-%m-%dT%H:%M:%S"))), pf)
   }, error = function(e) NULL)
   invisible(NULL)
 }
@@ -109,17 +112,32 @@
   hits
 }
 
+#' Is this PID a live Flower SuperLink/SuperExec process? (cross-platform)
+#'
+#' Verifies identity via the \pkg{ps} command line before we ever signal a PID,
+#' so a recycled PID -- some unrelated process now holding a dead SuperLink's old
+#' PID -- is never killed. Restores the safety the old lsof reaper had, which
+#' matched \code{ps -o command=} before killing.
+#' @keywords internal
+.is_superlink_pid <- function(pid) {
+  if (is.null(pid) || is.na(pid) || !requireNamespace("ps", quietly = TRUE)) {
+    return(FALSE)
+  }
+  tryCatch({
+    h <- ps::ps_handle(as.integer(pid))
+    ps::ps_is_running(h) &&
+      grepl("flower-super", paste(ps::ps_cmdline(h), collapse = " "), fixed = TRUE)
+  }, error = function(e) FALSE)
+}
+
 #' Reap an orphaned SuperLink left by a crashed or abandoned session
 #'
-#' Two fork-free passes, neither of which shells out (so neither can trip the
-#' macOS fork-after-threads segfault the old lsof/ps scan could):
-#' \enumerate{
-#'   \item the PID file written by \code{.write_superlink_pid} -- the fast,
-#'         exact path for any SuperLink this package started; then
-#'   \item a \pkg{ps} scan for any \code{flower-super*} process still holding
-#'         one of our ports -- catches a SuperLink/superexec with no PID file
-#'         and frees the ports before we rebind them.
-#' }
+#' Collects candidate PIDs two fork-free ways -- the PID file (fast, exact) and
+#' a \pkg{ps} scan for any \code{flower-super*} still holding one of our ports
+#' (catches pidfile-less orphans and the superexec child) -- then signals only
+#' those it can re-confirm are Flower processes. Neither path shells out, so
+#' neither can trip the macOS fork-after-threads segfault the old lsof/ps scan
+#' could; the identity re-check means a recycled PID is never killed.
 #'
 #' @param fleet_port Integer; the SuperLink's fleet port (PID-file key).
 #' @param ports Integer vector; all SuperLink ports to free (default:
@@ -127,34 +145,31 @@
 #' @return Invisible TRUE if anything was reaped, FALSE otherwise.
 #' @keywords internal
 .reap_orphan_superlink <- function(fleet_port, ports = fleet_port) {
-  reaped <- FALSE
-  handled <- integer(0)
+  candidates <- integer(0)
 
-  # Pass 1: PID file (exact, no scan) -- reaps any SuperLink we started.
+  # The PID file: the SuperLink this package last started on this fleet port.
   pf <- .superlink_pid_path(fleet_port)
   if (file.exists(pf)) {
-    tryCatch({
-      pid <- suppressWarnings(as.integer(readLines(pf, warn = FALSE)[1]))
-      if (!is.na(pid) && .pid_is_alive_local(pid)) {
-        message("  Reaping orphaned SuperLink (PID ", pid,
-                ") left by a previous session")
-        .kill_pid_hard(pid)
-        handled <- c(handled, pid)
-        reaped <- TRUE
-      }
-    }, error = function(e) NULL)
+    pid <- suppressWarnings(as.integer(readLines(pf, warn = FALSE)[1]))
+    if (length(pid) == 1L && !is.na(pid)) candidates <- pid
     unlink(pf)
   }
 
-  # Pass 2: ps scan for any flower-super* still squatting our ports with no PID
-  # file (pre-tracking orphans, or a superexec child that outlived its parent).
-  for (pid in setdiff(.discover_superlink_orphans(ports), handled)) {
-    message("  Reaping untracked Flower process (PID ", pid,
-            ") holding a SuperLink port")
-    .kill_pid_hard(pid)
-    reaped <- TRUE
-  }
+  # Plus any flower-super* still squatting our ports with no PID file (a
+  # pre-tracking orphan, or a superexec child that outlived its parent).
+  candidates <- unique(c(candidates, .discover_superlink_orphans(ports)))
 
+  reaped <- FALSE
+  for (pid in candidates) {
+    # Re-confirm identity before signalling: never kill a recycled PID that some
+    # unrelated process now owns.
+    if (.is_superlink_pid(pid)) {
+      message("  Reaping orphaned SuperLink (PID ", pid,
+              ") left by a previous session")
+      .kill_pid_hard(pid)
+      reaped <- TRUE
+    }
+  }
   invisible(reaped)
 }
 
@@ -805,11 +820,16 @@ ds.flower.superlink.status <- function() {
   if (file.exists(path)) unlink(path)
 }
 
-#' Check if a local PID is alive
+#' Check if a local PID is alive (cross-platform, never kills the process)
+#'
+#' Uses the \pkg{ps} package (\code{ps_handle} + \code{ps_is_running}), which
+#' also detects PID reuse via the process create-time. We deliberately avoid
+#' \code{tools::pskill(pid, 0L)}: on Windows \code{pskill} always calls
+#' \code{TerminateProcess}, so the Unix "signal 0" liveness trick would KILL the
+#' very process it is meant to probe.
 #' @keywords internal
 .pid_is_alive_local <- function(pid) {
-  tryCatch(
-    isTRUE(tools::pskill(pid, signal = 0L)),
-    error = function(e) FALSE
-  )
+  if (is.null(pid) || is.na(pid)) return(FALSE)
+  tryCatch(ps::ps_is_running(ps::ps_handle(as.integer(pid))),
+           error = function(e) FALSE)
 }

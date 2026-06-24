@@ -30,28 +30,76 @@ test_that(".port_is_listening is FALSE for a free port", {
   expect_false(dsFlowerClient:::.port_is_listening(port))
 })
 
-test_that("SuperLink PID file round-trips and reaps a live orphan", {
-  skip_on_os("windows")  # uses `sleep` to stand in for a SuperLink
-
+test_that("PID file round-trips, and a non-SuperLink PID is never killed", {
+  skip_on_os("windows")
+  skip_if_not_installed("ps")
   tmp <- withr::local_tempdir()
   testthat::local_mocked_bindings(.client_venv_root = function() tmp)
 
-  proc <- processx::process$new("sleep", "300")
+  # A plain sleep stands in for a recycled PID: its number is in the PID file,
+  # but it is NOT a flower-super process, so the reaper must leave it alone.
+  proc <- processx::process$new("sleep", "120")
   on.exit(if (proc$is_alive()) proc$kill(), add = TRUE)
   pid <- proc$get_pid()
 
-  info <- list(pid = pid, fleet_port = 59123L,
-               control_port = 59124L, serverappio_port = 59125L)
-  dsFlowerClient:::.write_superlink_pid(info)
-
+  dsFlowerClient:::.write_superlink_pid(
+    list(pid = pid, fleet_port = 59123L,
+         control_port = 59124L, serverappio_port = 59125L))
   pf <- dsFlowerClient:::.superlink_pid_path(59123L)
   expect_true(file.exists(pf))
+  expect_equal(as.integer(readLines(pf)[1]), pid)        # write/read round-trip
 
-  reaped <- dsFlowerClient:::.reap_orphan_superlink(59123L)
+  reaped <- dsFlowerClient:::.reap_orphan_superlink(
+    59123L, ports = c(59123L, 59124L, 59125L))
+  expect_false(reaped)               # not a flower-super -> not reaped
+  Sys.sleep(0.3)
+  expect_true(proc$is_alive())       # SAFETY: the unrelated process survived
+  expect_false(file.exists(pf))      # but the stale PID file was cleared
+})
+
+test_that(".reap_orphan_superlink kills a confirmed SuperLink PID (kill path)", {
+  skip_on_os("windows")
+  tmp <- withr::local_tempdir()
+  testthat::local_mocked_bindings(.client_venv_root = function() tmp)
+
+  proc <- processx::process$new("sleep", "120")
+  on.exit(if (proc$is_alive()) proc$kill(), add = TRUE)
+  pid <- proc$get_pid()
+  dsFlowerClient:::.write_superlink_pid(
+    list(pid = pid, fleet_port = 59133L,
+         control_port = 59134L, serverappio_port = 59135L))
+
+  # Treat this PID as a confirmed Flower process so the kill machinery runs
+  # (real flower-superlink identity is exercised by the e2e proofs).
+  testthat::local_mocked_bindings(.is_superlink_pid = function(p) identical(as.integer(p), pid))
+  reaped <- dsFlowerClient:::.reap_orphan_superlink(59133L, ports = 59133L)
   expect_true(reaped)
   Sys.sleep(0.5)
-  expect_false(proc$is_alive())   # the orphan SuperLink was killed
-  expect_false(file.exists(pf))   # and its PID file removed
+  expect_false(proc$is_alive())      # kill path executed
+})
+
+test_that(".pid_is_alive_local is correct and never kills the probed process", {
+  skip_on_os("windows")
+  expect_true(dsFlowerClient:::.pid_is_alive_local(Sys.getpid()))
+  expect_false(dsFlowerClient:::.pid_is_alive_local(999999L))
+  expect_false(dsFlowerClient:::.pid_is_alive_local(NA_integer_))
+
+  proc <- processx::process$new("sleep", "60")
+  on.exit(if (proc$is_alive()) proc$kill(), add = TRUE)
+  # Probe twice. The point is the cross-platform contract: on Windows the old
+  # pskill(0) would TerminateProcess here -- the ps-based check must not.
+  expect_true(dsFlowerClient:::.pid_is_alive_local(proc$get_pid()))
+  expect_true(dsFlowerClient:::.pid_is_alive_local(proc$get_pid()))
+  expect_true(proc$is_alive())
+})
+
+test_that(".is_superlink_pid is FALSE for non-Flower processes (no false kills)", {
+  skip_if_not_installed("ps")
+  expect_false(dsFlowerClient:::.is_superlink_pid(Sys.getpid()))   # R itself
+  skip_on_os("windows")
+  proc <- processx::process$new("sleep", "60")
+  on.exit(if (proc$is_alive()) proc$kill(), add = TRUE)
+  expect_false(dsFlowerClient:::.is_superlink_pid(proc$get_pid()))
 })
 
 test_that(".reap_orphan_superlink is a quiet no-op when there is no live orphan", {
@@ -87,7 +135,8 @@ test_that("the reaper never shells out to a forking subprocess", {
   # Fork-free primitives only: native sockets, tools::pskill, and the ps package
   # (libproc / /proc at the C level -- NOT the `ps` shell command).
   fns <- c(".reap_orphan_superlink", ".discover_superlink_orphans",
-           ".kill_pid_hard", ".port_is_listening", ".write_superlink_pid")
+           ".is_superlink_pid", ".kill_pid_hard", ".pid_is_alive_local",
+           ".port_is_listening", ".write_superlink_pid")
   src <- paste(vapply(fns, function(f)
     paste(deparse(body(getFromNamespace(f, "dsFlowerClient"))), collapse = "\n"),
     character(1)), collapse = "\n")

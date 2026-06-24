@@ -16,14 +16,11 @@ just \code{fleet_port}).}
 Invisible TRUE if anything was reaped, FALSE otherwise.
 }
 \description{
-Two fork-free passes, neither of which shells out (so neither can trip the
-macOS fork-after-threads segfault the old lsof/ps scan could):
-\enumerate{
-  \item the PID file written by \code{.write_superlink_pid} -- the fast,
-        exact path for any SuperLink this package started; then
-  \item a \pkg{ps} scan for any \code{flower-super*} process still holding
-        one of our ports -- catches a SuperLink/superexec with no PID file
-        and frees the ports before we rebind them.
-}
+Collects candidate PIDs two fork-free ways -- the PID file (fast, exact) and
+a \pkg{ps} scan for any \code{flower-super*} still holding one of our ports
+(catches pidfile-less orphans and the superexec child) -- then signals only
+those it can re-confirm are Flower processes. Neither path shells out, so
+neither can trip the macOS fork-after-threads segfault the old lsof/ps scan
+could; the identity re-check means a recycled PID is never killed.
 }
 \keyword{internal}

@@ -2,11 +2,15 @@
 % Please edit documentation in R/superlink.R
 \name{.pid_is_alive_local}
 \alias{.pid_is_alive_local}
-\title{Check if a local PID is alive}
+\title{Check if a local PID is alive (cross-platform, never kills the process)}
 \usage{
 .pid_is_alive_local(pid)
 }
 \description{
-Check if a local PID is alive
+Uses the \pkg{ps} package (\code{ps_handle} + \code{ps_is_running}), which
+also detects PID reuse via the process create-time. We deliberately avoid
+\code{tools::pskill(pid, 0L)}: on Windows \code{pskill} always calls
+\code{TerminateProcess}, so the Unix "signal 0" liveness trick would KILL the
+very process it is meant to probe.
 }
 \keyword{internal}
