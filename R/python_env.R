@@ -27,18 +27,36 @@
   file.path(.client_venv_root(), "venv")
 }
 
+# uv/virtualenv put executables in bin/ on Unix and Scripts/ on Windows, and
+# Windows executables carry a .exe suffix. These two helpers keep every binary
+# lookup cross-platform so a Windows client resolves the venv the same way.
+
+#' Platform venv executable directory (bin on Unix, Scripts on Windows)
+#' @param venv_path Character; the venv root path.
+#' @keywords internal
+.venv_bindir <- function(venv_path) {
+  file.path(venv_path, if (.Platform$OS.type == "windows") "Scripts" else "bin")
+}
+
+#' Platform executable name (adds .exe on Windows)
+#' @param name Character; the base executable name.
+#' @keywords internal
+.venv_exe <- function(name) {
+  if (.Platform$OS.type == "windows") paste0(name, ".exe") else name
+}
+
 #' Check if the client venv is healthy
 #' @return Logical.
 #' @keywords internal
 .client_venv_is_healthy <- function() {
   venv_path <- .client_venv_path()
-  python <- file.path(venv_path, "bin", "python")
+  python <- file.path(.venv_bindir(venv_path), .venv_exe("python"))
   if (!file.exists(python)) return(FALSE)
   marker <- file.path(venv_path, ".dsflower_client_ready")
   if (!file.exists(marker)) return(FALSE)
-  flwr <- file.path(venv_path, "bin", "flwr")
+  flwr <- file.path(.venv_bindir(venv_path), .venv_exe("flwr"))
   if (!file.exists(flwr)) return(FALSE)
-  superlink <- file.path(venv_path, "bin", "flower-superlink")
+  superlink <- file.path(.venv_bindir(venv_path), .venv_exe("flower-superlink"))
   if (!file.exists(superlink)) return(FALSE)
   TRUE
 }
@@ -48,7 +66,7 @@
 #' @keywords internal
 .client_flwr_cmd <- function() {
   venv_path <- .client_venv_path()
-  flwr <- file.path(venv_path, "bin", "flwr")
+  flwr <- file.path(.venv_bindir(venv_path), .venv_exe("flwr"))
   if (file.exists(flwr)) return(flwr)
   path_flwr <- Sys.which("flwr")
   if (nzchar(path_flwr)) return(path_flwr)
@@ -61,7 +79,7 @@
 #' @keywords internal
 .client_superlink_cmd <- function() {
   venv_path <- .client_venv_path()
-  superlink <- file.path(venv_path, "bin", "flower-superlink")
+  superlink <- file.path(.venv_bindir(venv_path), .venv_exe("flower-superlink"))
   if (file.exists(superlink)) return(superlink)
   path_sl <- Sys.which("flower-superlink")
   if (nzchar(path_sl)) return(path_sl)
@@ -74,7 +92,7 @@
 #' @keywords internal
 .client_python_cmd <- function() {
   venv_path <- .client_venv_path()
-  python <- file.path(venv_path, "bin", "python")
+  python <- file.path(.venv_bindir(venv_path), .venv_exe("python"))
   if (file.exists(python)) return(python)
   path_py <- Sys.which("python3")
   if (nzchar(path_py)) return(path_py)
@@ -89,12 +107,12 @@
 #' @keywords internal
 .client_venv_env <- function(extra = NULL) {
   venv_path <- .client_venv_path()
-  venv_bin <- file.path(venv_path, "bin")
+  venv_bin <- .venv_bindir(venv_path)
   current_path <- Sys.getenv("PATH", "")
 
   env <- c("current",
     VIRTUAL_ENV = venv_path,
-    PATH = paste0(venv_bin, ":", current_path))
+    PATH = paste0(venv_bin, .Platform$path.sep, current_path))
 
   if (!is.null(extra)) env <- c(env, extra)
   env
@@ -183,7 +201,7 @@
   if (rc != 0L)
     stop("Failed to create venv at ", venv_path, call. = FALSE)
 
-  venv_python <- file.path(venv_path, "bin", "python")
+  venv_python <- file.path(.venv_bindir(venv_path), .venv_exe("python"))
   deps <- .DSFLOWER_CLIENT_PYTHON_DEPS
   message("  Installing: ", paste(deps, collapse = ", "))
 
@@ -199,8 +217,8 @@
     stop("pip install failed:\n", result$stderr, call. = FALSE)
   }
 
-  flwr <- file.path(venv_path, "bin", "flwr")
-  superlink <- file.path(venv_path, "bin", "flower-superlink")
+  flwr <- file.path(.venv_bindir(venv_path), .venv_exe("flwr"))
+  superlink <- file.path(.venv_bindir(venv_path), .venv_exe("flower-superlink"))
   if (!file.exists(flwr) || !file.exists(superlink)) {
     unlink(venv_path, recursive = TRUE)
     stop("flwr/flower-superlink not found after install.", call. = FALSE)
@@ -220,19 +238,19 @@
   cached <- .dsflower_client_runtime$uv_path
   if (!is.null(cached) && file.exists(cached)) return(cached)
 
-  uv <- Sys.which("uv")
+  uv <- Sys.which("uv")  # finds uv / uv.exe on PATH (cross-platform)
   if (nzchar(uv)) { .dsflower_client_runtime$uv_path <- uv; return(uv) }
 
   home <- Sys.getenv("HOME", "~")
-  for (p in c(file.path(home, ".local", "bin", "uv"),
-              file.path(home, ".cargo", "bin", "uv"),
-              "/usr/local/bin/uv")) {
+  for (p in c(file.path(home, ".local", "bin", .venv_exe("uv")),
+              file.path(home, ".cargo", "bin", .venv_exe("uv")),
+              file.path("/usr/local/bin", .venv_exe("uv")))) {
     if (file.exists(p)) { .dsflower_client_runtime$uv_path <- p; return(p) }
   }
 
   tools_dir <- file.path(.client_venv_root(), ".tools")
   dir.create(tools_dir, recursive = TRUE, showWarnings = FALSE)
-  uv_path <- file.path(tools_dir, "uv")
+  uv_path <- file.path(tools_dir, .venv_exe("uv"))
   if (file.exists(uv_path)) {
     .dsflower_client_runtime$uv_path <- uv_path
     return(uv_path)
@@ -240,19 +258,25 @@
 
   message("dsFlowerClient: downloading uv...")
   sysname <- tolower(Sys.info()[["sysname"]])
-  machine <- Sys.info()[["machine"]]
+  machine <- tolower(Sys.info()[["machine"]])
+  is_win <- identical(sysname, "windows")
   os <- switch(sysname,
-    darwin = "apple-darwin", linux = "unknown-linux-gnu",
+    darwin  = "apple-darwin",
+    linux   = "unknown-linux-gnu",
+    windows = "pc-windows-msvc",
     stop("Unsupported OS: ", sysname,
          ". Install uv: https://docs.astral.sh/uv/", call. = FALSE))
   arch <- switch(machine,
-    x86_64 = "x86_64", amd64 = "x86_64",
-    aarch64 = "aarch64", arm64 = "aarch64",
-    stop("Unsupported arch: ", machine, call. = FALSE))
+    "x86_64"  = "x86_64", "amd64" = "x86_64", "x86-64" = "x86_64",
+    "aarch64" = "aarch64", "arm64" = "aarch64",
+    stop("Unsupported arch: ", machine,
+         ". Install uv: https://docs.astral.sh/uv/", call. = FALSE))
 
+  # Windows ships uv as a .zip of uv.exe; Unix as a .tar.gz of uv.
+  ext <- if (is_win) ".zip" else ".tar.gz"
   url <- paste0("https://github.com/astral-sh/uv/releases/latest/download/uv-",
-                arch, "-", os, ".tar.gz")
-  tmp <- tempfile(fileext = ".tar.gz")
+                arch, "-", os, ext)
+  tmp <- tempfile(fileext = ext)
   tmp_dir <- tempfile()
   on.exit({ unlink(tmp); unlink(tmp_dir, recursive = TRUE) }, add = TRUE)
 
@@ -263,13 +287,13 @@
          call. = FALSE)
 
   dir.create(tmp_dir, showWarnings = FALSE)
-  utils::untar(tmp, exdir = tmp_dir)
-  bins <- list.files(tmp_dir, pattern = "^uv$", recursive = TRUE,
-                     full.names = TRUE)
+  if (is_win) utils::unzip(tmp, exdir = tmp_dir) else utils::untar(tmp, exdir = tmp_dir)
+  bins <- list.files(tmp_dir, pattern = if (is_win) "^uv\\.exe$" else "^uv$",
+                     recursive = TRUE, full.names = TRUE)
   if (length(bins) == 0) stop("uv binary not found in archive.", call. = FALSE)
 
   file.copy(bins[1], uv_path, overwrite = TRUE)
-  Sys.chmod(uv_path, "0755")
+  if (.Platform$OS.type != "windows") Sys.chmod(uv_path, "0755")
   message("dsFlowerClient: uv installed at ", uv_path)
   .dsflower_client_runtime$uv_path <- uv_path
   uv_path
