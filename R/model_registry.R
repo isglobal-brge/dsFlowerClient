@@ -55,7 +55,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   }
   if (!is.null(loss)) {
     allowed <- c("bce_logits", "cross_entropy", "mse", "poisson_nll",
-                 "multilabel_bce", "hinge", "negbin_nll")
+                 "multilabel_bce", "hinge", "negbin_nll", "gamma_nll", "ordinal")
     if (!is.character(loss) || length(loss) != 1L || !loss %in% allowed) {
       stop("'loss' must be one of the node allowlist: ",
            paste(allowed, collapse = ", "), ".", call. = FALSE)
@@ -170,6 +170,15 @@ ds.flower.list_models <- function() {
       loss = "negbin_nll",
       defaults = list(hidden_layers = integer(0), nb_dispersion = 1.0),
       description = "Negative-binomial regression (overdispersed counts).")
+  reg("pytorch_gamma", "neural",
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
+      loss = "gamma_nll",
+      defaults = list(hidden_layers = integer(0), gamma_shape = 1.0),
+      description = "Gamma regression (positive continuous: cost, length-of-stay, concentration).")
+  reg("pytorch_ordinal", "neural",
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
+      loss = "ordinal", defaults = list(hidden_layers = integer(0), n_classes = 3L),
+      description = "Ordinal regression (CORN cumulative-threshold tasks).")
 
   # ---- neural: vision head (frozen backbone is node-resident; the spec is the
   #      trainable head, with @in injected node-side from the backbone feature dim).
