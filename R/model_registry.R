@@ -55,7 +55,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   }
   if (!is.null(loss)) {
     allowed <- c("bce_logits", "cross_entropy", "mse", "poisson_nll",
-                 "multilabel_bce", "hinge")
+                 "multilabel_bce", "hinge", "negbin_nll")
     if (!is.character(loss) || length(loss) != 1L || !loss %in% allowed) {
       stop("'loss' must be one of the node allowlist: ",
            paste(allowed, collapse = ", "), ".", call. = FALSE)
@@ -165,6 +165,11 @@ ds.flower.list_models <- function() {
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
       loss = "hinge", defaults = list(hidden_layers = integer(0)),
       description = "Linear SVM (multiclass hinge / MultiMarginLoss).")
+  reg("pytorch_negbin", "neural",
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
+      loss = "negbin_nll",
+      defaults = list(hidden_layers = integer(0), nb_dispersion = 1.0),
+      description = "Negative-binomial regression (overdispersed counts).")
 
   # ---- neural: vision head (frozen backbone is node-resident; the spec is the
   #      trainable head, with @in injected node-side from the backbone feature dim).
