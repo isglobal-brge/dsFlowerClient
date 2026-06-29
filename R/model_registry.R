@@ -127,6 +127,38 @@ ds.flower.list_models <- function() {
   list(kind = "sequential", layers = layers)
 }
 
+# A small 2D-CNN as a SPEC (DATA, node-built): reshape the flat per-sample vector
+# into (C,H,W), then a conv/pool stack -> adaptive pool -> flatten -> linear head.
+# input_shape must multiply to the feature count (the node rejects a mismatch).
+.neural_cnn_spec <- function(input_shape, channels = c(8L, 16L)) {
+  layers <- list(list(op = "reshape", shape = as.list(as.integer(input_shape))))
+  for (ch in channels)
+    layers <- c(layers, list(
+      list(op = "conv2d", out_channels = as.integer(ch), kernel_size = 3L, padding = 1L),
+      list(op = "relu"),
+      list(op = "maxpool2d", kernel_size = 2L)))
+  layers <- c(layers, list(
+    list(op = "adaptiveavgpool2d", output_size = list(1L, 1L)),
+    list(op = "flatten"),
+    list(op = "linear", out = "@out")))
+  list(kind = "sequential", layers = layers)
+}
+
+# A Temporal CNN as a SPEC (DATA, node-built): reshape into (C,L), then a dilated
+# length-preserving conv1d stack (receptive field grows as 2^level) -> flatten -> head.
+.neural_tcn_spec <- function(input_shape, channels = 8L, levels = 3L) {
+  layers <- list(list(op = "reshape", shape = as.list(as.integer(input_shape))))
+  for (i in seq_len(levels)) {
+    d <- as.integer(2L^(i - 1L))
+    layers <- c(layers, list(
+      list(op = "conv1d", out_channels = as.integer(channels),
+           kernel_size = 3L, padding = d, dilation = d),
+      list(op = "relu")))
+  }
+  layers <- c(layers, list(list(op = "flatten"), list(op = "linear", out = "@out")))
+  list(kind = "sequential", layers = layers)
+}
+
 # Output width is decided NODE-SIDE from the pinned loss (model_spec.output_width):
 # bce_logits -> 1 (binary) or one-vs-rest; cross_entropy -> num-classes (softmax);
 # mse / poisson_nll -> 1; multilabel_bce -> num-labels. The spec just targets "@out".
@@ -191,6 +223,20 @@ ds.flower.list_models <- function() {
       generate = function(p) .neural_mlp_spec(integer(0)),
       loss = "mse", defaults = list(weight_decay = 1.0, l1_penalty = 0.01),
       description = "Elastic-net regression (linear + L1 + L2 penalties).")
+
+  # ---- neural: convolutional (reshape flat features -> conv stack, node-built) ----
+  reg("pytorch_cnn", "neural",
+      generate = function(p) .neural_cnn_spec(
+        p$input_shape %||% stop("pytorch_cnn needs model_params$input_shape = c(C,H,W) multiplying to the feature count"),
+        p$channels %||% c(8L, 16L)),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "2D CNN (reshape -> conv/pool stack -> head).")
+  reg("pytorch_tcn", "neural",
+      generate = function(p) .neural_tcn_spec(
+        p$input_shape %||% stop("pytorch_tcn needs model_params$input_shape = c(C,L) multiplying to the feature count"),
+        p$channels %||% 8L, p$levels %||% 3L),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "Temporal CNN (dilated conv1d stack over a sequence).")
 
   # ---- neural: vision head (frozen backbone is node-resident; the spec is the
   #      trainable head, with @in injected node-side from the backbone feature dim).
