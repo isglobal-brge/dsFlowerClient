@@ -138,7 +138,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       paste0("batch-size = ", as.integer(p$batch_size %||% 32L)),
       paste0("learning-rate = ", as.numeric(p$learning_rate %||% 0.01)),
       paste0("nb-dispersion = ", as.numeric(p$nb_dispersion %||% 1.0)),
-      paste0("gamma-shape = ", as.numeric(p$gamma_shape %||% 1.0)))
+      paste0("gamma-shape = ", as.numeric(p$gamma_shape %||% 1.0)),
+      paste0("weight-decay = ", as.numeric(p$weight_decay %||% 0.0)),
+      paste0("l1-penalty = ", as.numeric(p$l1_penalty %||% 0.0)))
     if (identical(data_kind, "image")) {
       cfg <- c(cfg, .toml_kv("backbone", as.character(p$backbone %||% "resnet18")),
                paste0("image-size = ", as.integer(p$image_size %||% 224L)))

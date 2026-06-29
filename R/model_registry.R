@@ -179,6 +179,18 @@ ds.flower.list_models <- function() {
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
       loss = "ordinal", defaults = list(hidden_layers = integer(0), n_classes = 3L),
       description = "Ordinal regression (CORN cumulative-threshold tasks).")
+  reg("pytorch_ridge", "neural",
+      generate = function(p) .neural_mlp_spec(integer(0)),
+      loss = "mse", defaults = list(weight_decay = 1.0),
+      description = "Ridge regression (linear + L2 penalty).")
+  reg("pytorch_lasso", "neural",
+      generate = function(p) .neural_mlp_spec(integer(0)),
+      loss = "mse", defaults = list(l1_penalty = 0.01),
+      description = "Lasso regression (linear + L1 penalty).")
+  reg("pytorch_elasticnet", "neural",
+      generate = function(p) .neural_mlp_spec(integer(0)),
+      loss = "mse", defaults = list(weight_decay = 1.0, l1_penalty = 0.01),
+      description = "Elastic-net regression (linear + L1 + L2 penalties).")
 
   # ---- neural: vision head (frozen backbone is node-resident; the spec is the
   #      trainable head, with @in injected node-side from the backbone feature dim).
