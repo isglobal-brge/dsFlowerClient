@@ -31,9 +31,11 @@
 #'   builds with stock torch layers (end with a linear onto \code{"@out"}); for the
 #'   trees track the XGBoost spec. The node owns the loop, loss, and optimizer.
 #' @param loss Character or NULL; neural track only. The per-sample loss the node
-#'   should use, from the node allowlist (\code{bce_logits}, \code{cross_entropy},
-#'   \code{mse}, \code{poisson_nll}, \code{multilabel_bce}).
-#'   The node pins the actual loss; this is the client's request.
+#'   should use, from the node allowlist: stock losses \code{bce_logits},
+#'   \code{cross_entropy}, \code{mse}, \code{poisson_nll}, \code{multilabel_bce},
+#'   \code{hinge} (linear SVM), \code{ordinal} (CORN); plus vetted custom per-sample
+#'   losses \code{negbin_nll} (overdispersed counts) and \code{gamma_nll} (positive
+#'   continuous). The node pins the actual loss; this is the client's request.
 #' @param defaults Named list of default params merged under user-supplied params.
 #' @param description Character or NULL; a one-line human description.
 #' @param vetted Logical; informational only. Every model is node-built from the
@@ -160,8 +162,9 @@ ds.flower.list_models <- function() {
 }
 
 # Output width is decided NODE-SIDE from the pinned loss (model_spec.output_width):
-# bce_logits -> 1 (binary) or one-vs-rest; cross_entropy -> num-classes (softmax);
-# mse / poisson_nll -> 1; multilabel_bce -> num-labels. The spec just targets "@out".
+# bce_logits -> 1 (binary) or one-vs-rest; cross_entropy / hinge -> num-classes;
+# ordinal -> K-1 cumulative thresholds; multilabel_bce -> num-labels;
+# mse / poisson_nll / negbin_nll / gamma_nll -> 1. The spec just targets "@out".
 
 #' Register the first-party model collection (called from .onLoad)
 #' @keywords internal
