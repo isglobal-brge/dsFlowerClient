@@ -7,7 +7,6 @@
 ds.flower.recipe(
   model,
   strategy = ds.flower.strategy.fedavg(),
-  privacy = ds.flower.privacy(),
   task = NULL,
   num_rounds = 5L,
   target = NULL,
@@ -25,9 +24,6 @@ accepted by \code{ds.flower.model()}.}
 
 \item{strategy}{A \code{dsflower_strategy} object or character strategy
 name accepted by \code{ds.flower.strategy()}.}
-
-\item{privacy}{A \code{dsflower_privacy} object or character privacy name
-accepted by \code{ds.flower.privacy()}.}
 
 \item{task}{A \code{dsflower_task} object, character task name, or NULL to
 infer from model.}

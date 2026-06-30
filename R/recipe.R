@@ -23,8 +23,6 @@
 #'   accepted by \code{ds.flower.model()}.
 #' @param strategy A \code{dsflower_strategy} object or character strategy
 #'   name accepted by \code{ds.flower.strategy()}.
-#' @param privacy A \code{dsflower_privacy} object or character privacy name
-#'   accepted by \code{ds.flower.privacy()}.
 #' @param task A \code{dsflower_task} object, character task name, or NULL to
 #'   infer from model.
 #' @param num_rounds Integer; number of federated training rounds.
@@ -39,7 +37,6 @@
 #' @export
 ds.flower.recipe <- function(model,
                               strategy = ds.flower.strategy.fedavg(),
-                              privacy = ds.flower.privacy(),
                               task = NULL,
                               num_rounds = 5L,
                               target = NULL,
@@ -53,12 +50,6 @@ ds.flower.recipe <- function(model,
   if (!inherits(strategy, "dsflower_strategy")) {
     strategy <- ds.flower.strategy(strategy)
   }
-  if (is.null(privacy)) privacy <- ds.flower.privacy()
-  if (!inherits(privacy, "dsflower_privacy")) {
-    stop("'privacy' must be NULL or a dsflower_privacy object from ds.flower.privacy().",
-         call. = FALSE)
-  }
-
   # Infer task from model if not provided
   if (is.null(task)) {
     default_type <- .MODEL_DEFAULT_TASK[[model$template]]
@@ -84,7 +75,6 @@ ds.flower.recipe <- function(model,
     task            = task,
     model           = model,
     strategy        = strategy,
-    privacy         = privacy,
     num_rounds      = as.integer(num_rounds),
     target_column   = resolved_target,
     target          = resolved_target,
@@ -109,8 +99,8 @@ print.dsflower_recipe <- function(x, ...) {
   cat("  Model:    ", x$model$name, "(", x$model$framework, ")\n")
   cat("  Template: ", x$model$template, "\n")
   cat("  Strategy: ", x$strategy$name, "\n")
-  cat("  Privacy:   DP epsilon=", x$privacy$epsilon, " delta=", x$privacy$delta,
-      " (always on)\n", sep = "")
+  cat("  Privacy:   differential privacy, decided + enforced by the data node",
+      "(query: ds.flower.privacy.budget)\n", sep = " ")
   cat("  Rounds:   ", x$num_rounds, "\n")
   if (!is.null(x$target))
     cat("  Target:   ", paste(x$target, collapse = ", "), "\n")

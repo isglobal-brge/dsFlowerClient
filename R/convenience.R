@@ -140,14 +140,6 @@ ds.flower.task <- function(name = "classification") {
   .dsflower_call_constructor(.dsflower_choice(name, choices, "task"), list())
 }
 
-# DP is ALWAYS on; the privacy spec is just the (epsilon, delta, clipping)
-# budget. Accept a dsflower_privacy object or NULL (use defaults).
-.resolve_privacy <- function(privacy) {
-  if (is.null(privacy)) return(ds.flower.privacy())
-  if (inherits(privacy, "dsflower_privacy")) return(privacy)
-  stop("'privacy' must be a dsflower_privacy object from ds.flower.privacy().",
-       call. = FALSE)
-}
 
 #' Fit a federated model in one call
 #'
@@ -171,11 +163,6 @@ ds.flower.task <- function(name = "classification") {
 #' @param strategy Character strategy name or \code{dsflower_strategy} object.
 #' @param strategy_params Named list passed to \code{ds.flower.strategy()} when
 #'   \code{strategy} is a character value.
-#' @param privacy Character privacy name or \code{dsflower_privacy} object.
-#'   The default \code{"auto"} uses the strongest practical profile detected
-#'   from the connected servers.
-#' @param privacy_params Named list passed to \code{ds.flower.privacy()} when
-#'   \code{privacy} is a character value.
 #' @param rounds Integer number of federated rounds.
 #' @param task Optional character task name or \code{dsflower_task} object.
 #' @param label_set Optional imaging label-set name.
@@ -198,8 +185,6 @@ ds.flower.fit <- function(conns,
                           torch_backend = "auto",
                           strategy = "fedavg",
                           strategy_params = list(),
-                          privacy = NULL,
-                          privacy_params = list(),
                           rounds = 5L,
                           task = NULL,
                           label_set = NULL,
@@ -223,10 +208,6 @@ ds.flower.fit <- function(conns,
       (length(strategy_params) > 0L && is.null(names(strategy_params)))) {
     stop("'strategy_params' must be a named list.", call. = FALSE)
   }
-  if (!is.list(privacy_params) ||
-      (length(privacy_params) > 0L && is.null(names(privacy_params)))) {
-    stop("'privacy_params' must be a named list.", call. = FALSE)
-  }
   if (!is.list(run_args) ||
       (length(run_args) > 0L && is.null(names(run_args)))) {
     stop("'run_args' must be a named list.", call. = FALSE)
@@ -244,16 +225,6 @@ ds.flower.fit <- function(conns,
     model_spec$params <- utils::modifyList(model_spec$params %||% list(), model_params)
   }
 
-  privacy_spec <- if (inherits(privacy, "dsflower_privacy")) {
-    if (length(privacy_params)) stop("'privacy_params' cannot be used with a privacy object.", call. = FALSE)
-    privacy
-  } else if (is.null(privacy)) {
-    do.call(ds.flower.privacy, privacy_params)
-  } else {
-    stop("'privacy' must be NULL or a dsflower_privacy object from ds.flower.privacy().",
-         call. = FALSE)
-  }
-
   # Vision models train a head on frozen-backbone image features; all else tabular.
   data_kind <- if (model_spec$name %in% c("pytorch_resnet18", "pytorch_densenet121"))
     "image" else "tabular"
@@ -264,6 +235,10 @@ ds.flower.fit <- function(conns,
   ds.flower.submit(
     conns, model = model_spec, target = target, features = features,
     data = data, resource = resource, symbol = symbol,
-    privacy = privacy_spec, num_rounds = rounds, model_params = list(),
+    num_rounds = rounds, model_params = list(),
     data_kind = data_kind, torch_backend = torch_backend, verbose = verbose)
 }
+
+#' @rdname ds.flower.fit
+#' @export
+ds.flower.train <- ds.flower.fit

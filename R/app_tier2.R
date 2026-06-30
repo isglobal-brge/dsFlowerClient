@@ -100,18 +100,16 @@
 #' @param features Character vector; feature column names.
 #' @param symbol Character; server-side data handle symbol (default "D").
 #' @param num_rounds Integer; federated rounds (default 1).
-#' @param privacy A \code{dsflower_privacy} (default \code{ds.flower.privacy()}).
 #' @param verbose Logical.
 #' @return A \code{dsflower_run} object.
 #' @export
 ds.flower.tier2.run <- function(conns, user_app_dir, target, features,
-                                symbol = "D", num_rounds = 1L, privacy = NULL,
+                                symbol = "D", num_rounds = 1L,
                                 verbose = TRUE) {
   .require_flwr_cli()
   if (length(features) < 1) {
     stop("Tier-2 requires explicit feature columns.", call. = FALSE)
   }
-  privacy <- .resolve_privacy(privacy)
   n_clients <- length(conns)
   n_features <- length(features)
 
@@ -126,7 +124,7 @@ ds.flower.tier2.run <- function(conns, user_app_dir, target, features,
 
   ds.flower.nodes.prepare(
     conns, hsym, target_column = target, feature_columns = features,
-    run_config = list("task-type" = "classification"), privacy = privacy)
+    run_config = list("task-type" = "classification"))
 
   pin <- DSI::datashield.aggregate(
     conns, call("flowerTier2PinDS", hsym, up$token))
@@ -150,7 +148,7 @@ ds.flower.tier2.run <- function(conns, user_app_dir, target, features,
   recipe <- structure(list(
     model = list(framework = "pytorch"),
     strategy = list(name = "FedAvg", params = list()),
-    privacy = privacy, num_rounds = as.integer(num_rounds),
+    num_rounds = as.integer(num_rounds),
     features = features, evaluation_only = FALSE),
     class = "dsflower_recipe")
 

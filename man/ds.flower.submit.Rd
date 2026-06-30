@@ -12,7 +12,6 @@ ds.flower.submit(
   data = NULL,
   resource = NULL,
   symbol = NULL,
-  privacy = NULL,
   num_rounds = 1L,
   model_params = list(),
   data_kind = "tabular",
@@ -30,8 +29,6 @@ ds.flower.submit(
 \item{features}{Character vector; feature columns.}
 
 \item{symbol}{Character; server-side data handle symbol.}
-
-\item{privacy}{A \code{dsflower_privacy} (default \code{ds.flower.privacy()}).}
 
 \item{num_rounds}{Integer; federated rounds.}
 

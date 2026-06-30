@@ -11,7 +11,6 @@ ds.flower.tier2.run(
   features,
   symbol = "D",
   num_rounds = 1L,
-  privacy = NULL,
   verbose = TRUE
 )
 }
@@ -28,8 +27,6 @@ ds.flower.tier2.run(
 \item{symbol}{Character; server-side data handle symbol (default "D").}
 
 \item{num_rounds}{Integer; federated rounds (default 1).}
-
-\item{privacy}{A \code{dsflower_privacy} (default \code{ds.flower.privacy()}).}
 
 \item{verbose}{Logical.}
 }

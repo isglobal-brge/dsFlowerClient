@@ -2,6 +2,7 @@
 % Please edit documentation in R/convenience.R
 \name{ds.flower.fit}
 \alias{ds.flower.fit}
+\alias{ds.flower.train}
 \title{Fit a federated model in one call}
 \usage{
 ds.flower.fit(
@@ -16,8 +17,29 @@ ds.flower.fit(
   torch_backend = "auto",
   strategy = "fedavg",
   strategy_params = list(),
-  privacy = NULL,
-  privacy_params = list(),
+  rounds = 5L,
+  task = NULL,
+  label_set = NULL,
+  masks = NULL,
+  evaluation_only = FALSE,
+  detached = FALSE,
+  verbose = TRUE,
+  disconnect = TRUE,
+  run_args = list()
+)
+
+ds.flower.train(
+  conns,
+  data = NULL,
+  resource = NULL,
+  symbol = NULL,
+  target,
+  features = NULL,
+  model = "pytorch_logreg",
+  model_params = list(),
+  torch_backend = "auto",
+  strategy = "fedavg",
+  strategy_params = list(),
   rounds = 5L,
   task = NULL,
   label_set = NULL,
@@ -54,13 +76,6 @@ template-specific auto handling.}
 
 \item{strategy_params}{Named list passed to \code{ds.flower.strategy()} when
 \code{strategy} is a character value.}
-
-\item{privacy}{Character privacy name or \code{dsflower_privacy} object.
-The default \code{"auto"} uses the strongest practical profile detected
-from the connected servers.}
-
-\item{privacy_params}{Named list passed to \code{ds.flower.privacy()} when
-\code{privacy} is a character value.}
 
 \item{rounds}{Integer number of federated rounds.}
 

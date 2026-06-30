@@ -28,9 +28,11 @@ builds with stock torch layers (end with a linear onto \code{"@out"}); for the
 trees track the XGBoost spec. The node owns the loop, loss, and optimizer.}
 
 \item{loss}{Character or NULL; neural track only. The per-sample loss the node
-should use, from the node allowlist (\code{bce_logits}, \code{cross_entropy},
-\code{mse}, \code{poisson_nll}, \code{multilabel_bce}).
-The node pins the actual loss; this is the client's request.}
+should use, from the node allowlist: stock losses \code{bce_logits},
+\code{cross_entropy}, \code{mse}, \code{poisson_nll}, \code{multilabel_bce},
+\code{hinge} (linear SVM), \code{ordinal} (CORN); plus vetted custom per-sample
+losses \code{negbin_nll} (overdispersed counts) and \code{gamma_nll} (positive
+continuous). The node pins the actual loss; this is the client's request.}
 
 \item{defaults}{Named list of default params merged under user-supplied params.}
 

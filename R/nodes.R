@@ -119,8 +119,6 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
 #' @param target_column Character; name of the target column.
 #' @param feature_columns Character vector or NULL; feature column names.
 #' @param run_config Named list; additional run configuration.
-#' @param privacy Optional \code{dsflower_privacy} object. When supplied,
-#'   privacy mode and parameters are injected into \code{run_config}.
 #' @param template_name Optional Flower template name used for server-side
 #'   staging.
 #' @param label_set Optional imaging label-set name for imaging-backed runs.
@@ -128,16 +126,11 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
 #' @export
 ds.flower.nodes.prepare <- function(conns, symbol = "flower",
                                      target_column, feature_columns = NULL,
-                                     run_config = list(), privacy = NULL,
+                                     run_config = list(),
                                      template_name = NULL,
                                      label_set = NULL) {
-  # Inject the DP budget into run_config (DP is always enforced server-side).
-  if (!is.null(privacy) && inherits(privacy, "dsflower_privacy")) {
-    run_config[["dp-enabled"]] <- TRUE
-    run_config[["privacy-epsilon"]] <- privacy$epsilon
-    run_config[["privacy-delta"]] <- privacy$delta
-    run_config[["privacy-clipping_norm"]] <- privacy$clipping_norm
-  }
+  # DP (epsilon/delta/clipping + mechanism) is set + enforced ENTIRELY by the node
+  # at prepare (.addDpConfigToRunConfig); the client never injects privacy params.
 
   if (!is.null(template_name)) {
     run_config[["template_name"]] <- template_name

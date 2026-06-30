@@ -61,8 +61,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   recipe$strategy$params$min_fit_clients <- as.integer(n_clients)
   recipe$strategy$params$min_available_clients <- as.integer(n_clients)
 
-  recipe$privacy <- .resolve_privacy(recipe$privacy)
-  # Always include every node each round (non-disclosive local DP; no SecAgg).
+  # DP (epsilon/delta/clipping + mechanism) is decided + enforced by each node; the
+  # client carries no privacy spec. Always include every node each round.
   recipe$strategy$params$fraction_fit <- 1.0
 
   # The Tier-1 harness is a torch app; ensure its runtime client-side (the
@@ -148,7 +148,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       template   = recipe$model$template,
       framework  = recipe$model$framework,
       strategy   = recipe$strategy$name,
-      privacy    = paste0("dp(epsilon=", recipe$privacy$epsilon, ")"),
+      privacy    = "server-enforced-dp",
       num_rounds = recipe$num_rounds,
       run_id     = run_id,
       created_at = Sys.time(),
@@ -169,7 +169,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       model      = recipe$model$name,
       template   = recipe$model$template,
       strategy   = recipe$strategy$name,
-      privacy    = paste0("dp(epsilon=", recipe$privacy$epsilon, ")"),
+      privacy    = "server-enforced-dp",
       num_rounds = recipe$num_rounds,
       n_clients  = length(conns),
       created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
