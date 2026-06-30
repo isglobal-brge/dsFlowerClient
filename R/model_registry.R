@@ -180,6 +180,32 @@ ds.flower.list_models <- function() {
     list(name = "out",  op = "linear",  `in` = list("flat"), out = "@out")))
 }
 
+# A Transformer ENCODER block as a typed GRAPH (DATA, node-built) -- self-attention
+# (Q/K/V linears + matmul + softmax over TOKENS, never the batch) + residual + LayerNorm
+# + FFN, built ENTIRELY from per-sample-safe primitives (no Opacus DPMultiheadAttention,
+# no custom code). n_tokens * d_model must equal the feature count.
+.neural_transformer_spec <- function(n_tokens, d_model, d_ff = 32L) {
+  T <- as.integer(n_tokens); d <- as.integer(d_model); ff <- as.integer(d_ff)
+  list(kind = "graph", output = "out", nodes = list(
+    list(name = "x",   op = "reshape",   `in` = list("@in"), shape = list(T, d)),
+    list(name = "q",   op = "linear",    `in` = list("x"),   out = d),
+    list(name = "k",   op = "linear",    `in` = list("x"),   out = d),
+    list(name = "v",   op = "linear",    `in` = list("x"),   out = d),
+    list(name = "kt",  op = "transpose", `in` = list("k"),   dims = list(0L, 1L)),
+    list(name = "sc",  op = "matmul",    `in` = list("q", "kt")),
+    list(name = "a",   op = "softmax",   `in` = list("sc"),  axis = 1L),
+    list(name = "ctx", op = "matmul",    `in` = list("a", "v")),
+    list(name = "res", op = "add",       `in` = list("x", "ctx")),
+    list(name = "n1",  op = "layernorm", `in` = list("res")),
+    list(name = "f1",  op = "linear",    `in` = list("n1"),  out = ff),
+    list(name = "fa",  op = "relu",      `in` = list("f1")),
+    list(name = "f2",  op = "linear",    `in` = list("fa"),  out = d),
+    list(name = "res2", op = "add",      `in` = list("n1", "f2")),
+    list(name = "n2",  op = "layernorm", `in` = list("res2")),
+    list(name = "flat", op = "flatten",  `in` = list("n2")),
+    list(name = "out", op = "linear",    `in` = list("flat"), out = "@out")))
+}
+
 # Output width is decided NODE-SIDE from the pinned loss (model_spec.output_width):
 # bce_logits -> 1 (binary) or one-vs-rest; cross_entropy / hinge -> num-classes;
 # ordinal -> K-1 cumulative thresholds; multilabel_bce -> num-labels;
@@ -265,6 +291,13 @@ ds.flower.list_models <- function() {
         p$channels %||% 8L),
       loss = "cross_entropy", defaults = list(n_classes = 2L),
       description = "Residual CNN block (typed-graph DAG: conv->conv->skip-add->pool->head).")
+  reg("pytorch_transformer", "neural",
+      generate = function(p) .neural_transformer_spec(
+        p$n_tokens %||% stop("pytorch_transformer needs model_params$n_tokens"),
+        p$d_model  %||% stop("pytorch_transformer needs model_params$d_model (n_tokens*d_model = feature count)"),
+        p$d_ff %||% 32L),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "Transformer encoder block (self-attention + FFN, typed-graph DAG from primitives).")
 
   # ---- neural: vision head (frozen backbone is node-resident; the spec is the
   #      trainable head, with @in injected node-side from the backbone feature dim).
