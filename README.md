@@ -101,6 +101,27 @@ The node routes every submission to the tightest sound DP mechanism **by constru
 See the [`dsFlower` architecture notes](https://github.com/isglobal-brge/dsFlower/blob/main/ARCHITECTURE.md)
 for the full trust model.
 
+## Accuracy under DP (automatic feature standardization)
+
+DP-SGD clips each per-sample gradient to a fixed norm, so on **raw** features the
+large-scale columns dominate the gradient and small informative ones are suppressed —
+the model collapses to the majority baseline *even with no noise*. The fix is feature
+standardization, and `ds.flower.fit()` does it for you, soundly across sites:
+
+- The client asks each node for per-feature `count / sum / sumsq` (a standard
+  disclosure-controlled DataSHIELD aggregate, like `ds.mean`/`ds.var` — it reveals no
+  individual row and is **separate from** the DP-SGD `(epsilon, delta)` budget, which it
+  does not weaken), pools them into a **global** mean/SD, and bakes those into the model.
+- Neural models train on standardized features; the trees model uses the same stats to
+  place its random-split thresholds in the real data range. Prediction re-applies the
+  exact same transform, so `ds.flower.predict()` never desyncs.
+
+This is automatic for the `symbol=` data path (a warning is emitted for `data=`/`resource=`
+runs, which can't compute global stats and fall back to raw features). On
+Breast-Cancer-Wisconsin across 3 sites at `epsilon = 3` this takes logistic regression from
+~0.63 (majority) to ~0.93 and DP-GBDT to ~0.88 — i.e. the DP cost is small once the pipeline
+is correct. Defaults are tuned for standardized data (classification `learning_rate = 0.1`).
+
 ## Lower-level API (power users)
 
 `ds.flower.fit()` is enough for most analyses. For explicit control, build a recipe:

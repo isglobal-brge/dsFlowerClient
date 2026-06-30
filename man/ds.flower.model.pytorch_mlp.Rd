@@ -6,7 +6,7 @@
 \usage{
 ds.flower.model.pytorch_mlp(
   hidden_layers = c(64L, 32L),
-  learning_rate = 0.01,
+  learning_rate = 0.1,
   batch_size = 32L,
   local_epochs = 1L
 )

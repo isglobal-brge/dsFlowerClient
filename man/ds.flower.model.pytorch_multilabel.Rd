@@ -7,7 +7,7 @@
 ds.flower.model.pytorch_multilabel(
   n_labels = 2L,
   hidden_layers = "64,32",
-  learning_rate = 0.01,
+  learning_rate = 0.1,
   batch_size = 32L,
   local_epochs = 1L
 )

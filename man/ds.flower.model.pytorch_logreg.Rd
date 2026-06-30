@@ -5,7 +5,7 @@
 \title{Create a PyTorch Logistic Regression model spec}
 \usage{
 ds.flower.model.pytorch_logreg(
-  learning_rate = 0.01,
+  learning_rate = 0.1,
   batch_size = 32L,
   local_epochs = 1L
 )

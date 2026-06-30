@@ -114,9 +114,11 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # in DP-SGD rescales the WHOLE gradient to norm C, so on raw features the large-scale
   # columns dominate and small informative ones are suppressed -- the model collapses to
   # the majority baseline even with zero DP noise. Standardizing to unit scale fixes this
-  # and the DP cost (eps=3) then drops to ~0. The stats are cohort-level aggregates (like
-  # ds.mean/ds.var), disclosure-gated node-side, and pure post-processing for the model
-  # (a bad value only hurts accuracy, never the DP guarantee the node enforces). The SAME
+  # and the DP cost (eps=3) then drops to ~0. The mu/SD are a SEPARATE, standard
+  # disclosure-controlled DataSHIELD aggregate (exactly what ds.mean/ds.var release),
+  # gated node-side on the min-rows threshold -- NOT part of the DP-SGD (eps,delta) budget
+  # and not weakening it (the training noise is unchanged); a poisoned mu/SD is only a
+  # utility risk, never a DP bypass (clipping still bounds every gradient). The SAME
   # mu/sigma flow to training (run-config) AND prediction (metadata) from this single
   # source, so newdata is always scaled exactly as the training features were. Trees are
   # scale-invariant and images are backbone-normalized, so neither needs this.
@@ -135,6 +137,15 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       message("  Standardization: computed global feature mean/SD over ",
               length(feature_norm$means), " features.")
     }
+  } else if (sub$track %in% c("neural", "trees") && !identical(data_kind, "image") &&
+             is.null(symbol)) {
+    # data=/resource= paths don't expose the data symbol pre-connect, so global stats
+    # can't be computed -> the model trains on RAW features (the old failure mode). Warn
+    # loudly rather than silently underperform; use symbol= to get standardization.
+    warning("Feature standardization is only available for the `symbol=` data path; ",
+            "this `data=`/`resource=` run trains on RAW features and may score poorly. ",
+            "Load the data into a symbol (e.g. symbol = \"D\") for standardized DP-SGD.",
+            call. = FALSE)
   }
 
   flower <- ds.flower.connect(conns, data = data, resource = resource, symbol = symbol)
