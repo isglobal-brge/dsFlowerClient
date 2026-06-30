@@ -16,8 +16,6 @@ ds.flower.fit(
   torch_backend = "auto",
   strategy = "fedavg",
   strategy_params = list(),
-  privacy = NULL,
-  privacy_params = list(),
   rounds = 5L,
   task = NULL,
   label_set = NULL,
@@ -54,13 +52,6 @@ template-specific auto handling.}
 
 \item{strategy_params}{Named list passed to \code{ds.flower.strategy()} when
 \code{strategy} is a character value.}
-
-\item{privacy}{Character privacy name or \code{dsflower_privacy} object.
-The default \code{"auto"} uses the strongest practical profile detected
-from the connected servers.}
-
-\item{privacy_params}{Named list passed to \code{ds.flower.privacy()} when
-\code{privacy} is a character value.}
 
 \item{rounds}{Integer number of federated rounds.}
 

@@ -60,7 +60,6 @@
 #' @param target Character; target column.
 #' @param features Character vector; feature columns.
 #' @param symbol Character; server-side data handle symbol.
-#' @param privacy A \code{dsflower_privacy} (default \code{ds.flower.privacy()}).
 #' @param num_rounds Integer; federated rounds.
 #' @param model_params Named list; params merged over the model's defaults.
 #' @param data_kind "tabular" or "image".
@@ -69,11 +68,10 @@
 #' @export
 ds.flower.submit <- function(conns, model, target, features = NULL,
                              data = NULL, resource = NULL, symbol = NULL,
-                             privacy = NULL, num_rounds = 1L,
+                             num_rounds = 1L,
                              model_params = list(), data_kind = "tabular",
                              torch_backend = "auto", verbose = TRUE) {
   .require_flwr_cli()
-  privacy <- .resolve_privacy(privacy)
   if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
   if (length(model_params)) {
     model$params <- utils::modifyList(model$params %||% list(), model_params)
@@ -106,8 +104,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   ds.flower.nodes.prepare(
     conns, hsym, target_column = target, feature_columns = features,
     run_config = list("task-type" = task_type, "dp-track" = sub$track,
-                      "data_type" = data_kind),
-    privacy = privacy)
+                      "data_type" = data_kind))
 
   if (!is.null(up)) {
     pin <- DSI::datashield.aggregate(conns, call("flowerTier2PinDS", hsym, up$token))
@@ -167,7 +164,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   recipe <- structure(list(
     model = list(framework = "pytorch", track = sub$track),
     strategy = list(name = "FedAvg", params = list()),
-    privacy = privacy, num_rounds = as.integer(num_rounds),
+    num_rounds = as.integer(num_rounds),
     features = features, evaluation_only = FALSE), class = "dsflower_recipe")
 
   run <- tryCatch({

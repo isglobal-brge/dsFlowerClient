@@ -10,7 +10,6 @@ ds.flower.nodes.prepare(
   target_column,
   feature_columns = NULL,
   run_config = list(),
-  privacy = NULL,
   template_name = NULL,
   label_set = NULL
 )
@@ -25,9 +24,6 @@ ds.flower.nodes.prepare(
 \item{feature_columns}{Character vector or NULL; feature column names.}
 
 \item{run_config}{Named list; additional run configuration.}
-
-\item{privacy}{Optional \code{dsflower_privacy} object. When supplied,
-privacy mode and parameters are injected into \code{run_config}.}
 
 \item{template_name}{Optional Flower template name used for server-side
 staging.}

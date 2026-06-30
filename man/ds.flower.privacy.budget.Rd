@@ -12,9 +12,12 @@ ds.flower.privacy.budget(conns, symbol = "flower")
 \item{symbol}{Character; handle symbol name (default "flower").}
 }
 \value{
-Named list with per-server budget information.
+Named list with per-server budget information (the node's real values).
 }
 \description{
-Calls \code{flowerPrivacyBudgetDS} on each server to retrieve the remaining
-(epsilon, delta) budget for the dataset.
+Differential privacy is always on and is decided + enforced entirely by each
+data node (server-authoritative): the node sets epsilon/delta/clipping from its
+own options, picks the mechanism by submission type, and debits an RDP/PRV
+ledger. There is no client-side privacy knob. Use this to read the ACTUAL
+remaining (epsilon, delta) budget the node will apply to the dataset.
 }
