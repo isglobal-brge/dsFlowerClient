@@ -59,7 +59,12 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
              "--data", tmp_data,
              "--type", type,
              "--framework", framework,
-             if (nzchar(template)) c("--template", template)),
+             if (nzchar(template)) c("--template", template),
+             # Scale newdata with the EXACT training mu/sigma (pytorch only; trees
+             # are scale-invariant so never carry stats).
+             if (!is.null(info$norm) && identical(framework, "pytorch"))
+               c("--norm-b64", .spec_to_b64(list(means = info$norm$means,
+                                                  sds = info$norm$sds)))),
     env = .client_venv_env(),
     error_on_status = FALSE
   )
@@ -93,7 +98,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
         pt = "pytorch", xgb = "xgboost", json = "xgboost",
         stop("Unknown model format: ", ext, call. = FALSE))
       tmpl <- .read_template_meta(dirname(model))
-      return(list(model_file = model, framework = framework, template = tmpl))
+      return(list(model_file = model, framework = framework, template = tmpl,
+                  norm = .read_meta_norm(dirname(model))))
     }
   } else if (is.list(model)) {
     # Loaded model list -- check for source directory
@@ -115,6 +121,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   # Python predictor (regression vs classification vs survival vs multilabel ...).
   tmpl <- .read_template_meta(model_dir)
   feats <- .read_meta_features(model_dir)   # training feature order, to align newdata
+  nrm <- .read_meta_norm(model_dir)         # global standardization stats (or NULL)
 
   # Find native model file (priority: pt > xgb.json > booster.json > xgb). The trees runner
   # writes the XGBoost model as booster.json.
@@ -128,7 +135,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   for (c in candidates) {
     path <- file.path(model_dir, c$file)
     if (file.exists(path)) {
-      return(list(model_file = path, framework = c$framework, template = tmpl, features = feats))
+      return(list(model_file = path, framework = c$framework, template = tmpl,
+                  features = feats, norm = nrm))
     }
   }
 
@@ -136,9 +144,11 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   json_path <- file.path(model_dir, "global_model.json")
   if (file.exists(json_path)) {
     if (grepl("xgboost", tmpl)) {
-      return(list(model_file = json_path, framework = "xgboost", template = tmpl, features = feats))
+      return(list(model_file = json_path, framework = "xgboost", template = tmpl,
+                  features = feats, norm = nrm))
     }
-    return(list(model_file = json_path, framework = "pytorch", template = tmpl, features = feats))
+    return(list(model_file = json_path, framework = "pytorch", template = tmpl,
+                features = feats, norm = nrm))
   }
 
   stop("No native model file found in ", model_dir,
@@ -164,4 +174,21 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
   f <- meta$features
   if (is.null(f) || length(f) == 0L) NULL else as.character(f)
+}
+
+#' Read the GLOBAL feature standardization stats from a model dir's metadata.json
+#'
+#' Returns list(means, sds) (numeric, in training feature order) iff the model was
+#' trained with standardization, else NULL (model trained on raw features). Used to
+#' scale newdata at prediction EXACTLY as the training features were scaled.
+#' @keywords internal
+.read_meta_norm <- function(model_dir) {
+  if (is.null(model_dir) || !nzchar(model_dir)) return(NULL)
+  meta_path <- file.path(model_dir, "metadata.json")
+  if (!file.exists(meta_path)) return(NULL)
+  meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
+  mu <- meta$feature_means; sd <- meta$feature_sds
+  if (is.null(mu) || is.null(sd) || length(mu) == 0L || length(mu) != length(sd))
+    return(NULL)
+  list(means = as.numeric(mu), sds = as.numeric(sd))
 }

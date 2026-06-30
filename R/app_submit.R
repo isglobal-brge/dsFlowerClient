@@ -110,6 +110,33 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     }
   }
 
+  # GLOBAL feature standardization (neural tabular only). Per-sample gradient clipping
+  # in DP-SGD rescales the WHOLE gradient to norm C, so on raw features the large-scale
+  # columns dominate and small informative ones are suppressed -- the model collapses to
+  # the majority baseline even with zero DP noise. Standardizing to unit scale fixes this
+  # and the DP cost (eps=3) then drops to ~0. The stats are cohort-level aggregates (like
+  # ds.mean/ds.var), disclosure-gated node-side, and pure post-processing for the model
+  # (a bad value only hurts accuracy, never the DP guarantee the node enforces). The SAME
+  # mu/sigma flow to training (run-config) AND prediction (metadata) from this single
+  # source, so newdata is always scaled exactly as the training features were. Trees are
+  # scale-invariant and images are backbone-normalized, so neither needs this.
+  # Global feature mean/SD also drives the TREES track -- not to scale the data
+  # (trees are scale-invariant in principle) but to set the random-split BINNING
+  # PRIOR to [mu-4sd, mu+4sd]. The DP-GBDT draws thresholds from a data-INDEPENDENT
+  # range; the [0,1] fallback collapses every large-scale feature to a single leaf
+  # (-> majority baseline), so we hand it mu/sd (a sanctioned aggregate) to place the
+  # thresholds in the real data range. Computed for neural + trees; never image.
+  feature_norm <- NULL
+  if (sub$track %in% c("neural", "trees") && !identical(data_kind, "image") &&
+      !is.null(symbol) && length(features)) {
+    feature_norm <- tryCatch(.compute_feature_norm(conns, symbol, features),
+                             error = function(e) NULL)
+    if (!is.null(feature_norm) && verbose) {
+      message("  Standardization: computed global feature mean/SD over ",
+              length(feature_norm$means), " features.")
+    }
+  }
+
   flower <- ds.flower.connect(conns, data = data, resource = resource, symbol = symbol)
   conns <- flower$conns; hsym <- flower$symbol
   n_clients <- length(conns)
@@ -189,6 +216,14 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       paste0("gamma-shape = ", as.numeric(p$gamma_shape %||% 1.0)),
       paste0("weight-decay = ", as.numeric(p$weight_decay %||% 0.0)),
       paste0("l1-penalty = ", as.numeric(p$l1_penalty %||% 0.0)))
+    if (!is.null(feature_norm) &&
+        length(feature_norm$means) == n_features &&
+        length(feature_norm$sds) == n_features) {
+      cfg <- c(cfg, .toml_kv("feature-norm-b64",
+        .spec_to_b64(list(means = feature_norm$means, sds = feature_norm$sds))))
+    } else {
+      feature_norm <- NULL   # length drift -> ship raw on BOTH sides (train + predict stay consistent)
+    }
     if (identical(data_kind, "image")) {
       cfg <- c(cfg, .toml_kv("backbone", as.character(p$backbone %||% "resnet18")),
                paste0("image-size = ", as.integer(p$image_size %||% 224L)))
@@ -202,6 +237,16 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       paste0("learning-rate = ", as.numeric(s$learning_rate)),
       paste0("reg-lambda = ", as.numeric(s$reg_lambda)),
       paste0("n-bins = ", as.integer(s$n_bins)))
+    # mu/sd binning prior for the random-split thresholds (see above). Shipped to the
+    # node, which builds feature_ranges = [mu-4sd, mu+4sd]; absent -> [0,1] fallback.
+    if (!is.null(feature_norm) &&
+        length(feature_norm$means) == n_features &&
+        length(feature_norm$sds) == n_features) {
+      cfg <- c(cfg, .toml_kv("feature-norm-b64",
+        .spec_to_b64(list(means = feature_norm$means, sds = feature_norm$sds))))
+    } else {
+      feature_norm <- NULL
+    }
   }
 
   app_dir <- .build_submission_app(sub, cfg, results_dir,
@@ -218,7 +263,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                  framework = model$framework %||% "pytorch", track = sub$track),
     strategy = list(name = "FedAvg", params = list()),
     num_rounds = as.integer(num_rounds),
-    features = features, evaluation_only = FALSE), class = "dsflower_recipe")
+    features = features,
+    feature_means = if (!is.null(feature_norm)) feature_norm$means else NULL,
+    feature_sds   = if (!is.null(feature_norm)) feature_norm$sds   else NULL,
+    evaluation_only = FALSE), class = "dsflower_recipe")
 
   # Cleanup (tunnel/handle/app/connection) is guaranteed by the on.exit above, on both a
   # run error and normal completion.
@@ -260,4 +308,58 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   if (!isTRUE(vision)) return(base)
   c(base, "torchvision>=0.15.0", "pillow>=9.0.0",
     "nibabel>=5.0.0", "pynrrd>=1.0.0", "SimpleITK>=2.2.0", "monai>=1.3.0")
+}
+
+#' Compute GLOBAL per-feature mean/SD across nodes for DP-SGD standardization
+#'
+#' Calls the disclosure-controlled \code{flowerFeatureStatsDS} aggregate on every
+#' node, sums the per-feature sufficient statistics (count / sum / sum-of-squares)
+#' BY FEATURE NAME (so a node returning a column subset or different order still
+#' aligns), then derives the pooled population mean and SD. Returns means/SDs in
+#' the exact \code{features} order, fully validated (finite; constant/degenerate
+#' features get SD 1 -> a no-op scaling). Returns NULL if no node responds.
+#'
+#' @param conns DSI connections.
+#' @param symbol Character; the assigned data symbol (e.g. "D").
+#' @param features Character; feature column names (defines output order).
+#' @return list(means, sds) aligned to \code{features}, or NULL.
+#' @keywords internal
+.compute_feature_norm <- function(conns, symbol, features) {
+  features <- as.character(features)
+  if (!length(features)) return(NULL)
+  expr <- call("flowerFeatureStatsDS", symbol, .ds_encode(features))
+  res <- tryCatch(DSI::datashield.aggregate(conns, expr), error = function(e) NULL)
+  if (is.null(res) || !length(res)) return(NULL)
+
+  z <- stats::setNames(numeric(length(features)), features)
+  tot_n <- z; tot_sum <- z; tot_sumsq <- z
+  any_data <- FALSE
+  for (st in res) {
+    if (is.null(st) || is.null(st$features)) next
+    fn <- as.character(unlist(st$features))
+    nn <- as.numeric(unlist(st$n));     ss <- as.numeric(unlist(st$sum))
+    sq <- as.numeric(unlist(st$sumsq))
+    for (i in seq_along(fn)) {
+      f <- fn[i]
+      if (!(f %in% features)) next
+      if (length(nn) >= i && is.finite(nn[i])) { tot_n[f]    <- tot_n[f]    + nn[i]; any_data <- TRUE }
+      if (length(ss) >= i && is.finite(ss[i]))   tot_sum[f]  <- tot_sum[f]  + ss[i]
+      if (length(sq) >= i && is.finite(sq[i]))   tot_sumsq[f]<- tot_sumsq[f]+ sq[i]
+    }
+  }
+  if (!any_data) return(NULL)
+
+  means <- numeric(length(features)); sds <- numeric(length(features))
+  for (i in seq_along(features)) {
+    ni <- tot_n[i]
+    if (is.na(ni) || ni < 1) { means[i] <- 0; sds[i] <- 1; next }   # absent feature -> no-op
+    mu <- tot_sum[i] / ni
+    v  <- tot_sumsq[i] / ni - mu * mu
+    if (!is.finite(v) || v < 0) v <- 0
+    sdv <- sqrt(v)
+    if (!is.finite(mu)) mu <- 0
+    if (!is.finite(sdv) || sdv < 1e-8) sdv <- 1   # constant/degenerate feature -> no scaling
+    means[i] <- mu; sds[i] <- sdv
+  }
+  list(means = means, sds = sds)
 }

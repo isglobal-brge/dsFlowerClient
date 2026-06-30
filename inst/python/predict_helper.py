@@ -148,6 +148,45 @@ def _xgb_leaf(splits, leaves, row):
     return 0.0
 
 
+def _is_dpgbdt_booster(model):
+    """True for the DP-GBDT (S-GBDT) booster format: complete random-split trees
+    serialized as {feat, thr, w} arrays + a top-level depth/base_margin. This is a
+    DIFFERENT shape from the splits/leaves dict format predict_xgboost_custom reads."""
+    if "depth" not in model or "base_margin" not in model:
+        return False
+    trees = model.get("trees", [])
+    return bool(trees) and isinstance(trees[0], dict) and "feat" in trees[0] and "w" in trees[0]
+
+
+def predict_dpgbdt(model_path, X, pred_type):
+    """Predict with the DP-GBDT booster (binary:logistic). Mirrors
+    dp_gbdt.predict_margin: F(x) = base_margin + sum_t w_t[leaf_t(x)] over the
+    complete random-split trees; leaf weights ALREADY include the learning rate
+    (Newton step), so we do NOT re-apply it. Routing follows the complete-tree rule
+    (root 0; child of k is 2k+1/2k+2; go right iff x[feat] >= thr)."""
+    with open(model_path) as f:
+        model = json.load(f)
+    depth = int(model["depth"])
+    base = float(model.get("base_margin", 0.0))
+    n = X.shape[0]
+    F = np.full(n, base, dtype=np.float64)
+    rows = np.arange(n)
+    for tree in model.get("trees", []):
+        feat = np.asarray(tree["feat"], dtype=np.int64)
+        thr = np.asarray(tree["thr"], dtype=np.float64)
+        w = np.asarray(tree["w"], dtype=np.float64)
+        node = np.zeros(n, dtype=np.int64)
+        for _ in range(depth):
+            go_right = X[rows, feat[node]] >= thr[node]
+            node = 2 * node + 1 + go_right.astype(np.int64)
+        leaf = node - ((1 << depth) - 1)
+        F = F + w[leaf]
+    p = 1.0 / (1.0 + np.exp(-np.clip(F, -60.0, 60.0)))
+    if pred_type == "prob":
+        return p.tolist()
+    return (p > 0.5).astype(int).tolist()
+
+
 def predict_xgboost_custom(model_path, X, pred_type):
     """Predict with dsFlower's federated XGBoost JSON (binary + multiclass).
 
@@ -197,11 +236,28 @@ def main():
     parser.add_argument("--type", default="response", choices=["response", "prob"])
     parser.add_argument("--framework", default=None)
     parser.add_argument("--template", default=None)
+    parser.add_argument("--norm-b64", dest="norm_b64", default=None)
     args = parser.parse_args()
 
     # Read data
     df = pd.read_csv(args.data)
     X = df.values.astype(np.float32)
+
+    # Standardize EXACTLY as the model was trained (same mu/sigma the node used). Only
+    # present for pytorch models trained with global standardization; trees never carry it.
+    if args.norm_b64:
+        import base64
+        norm = json.loads(base64.b64decode(str(args.norm_b64), validate=True).decode("utf-8"))
+        mean = np.asarray(norm["means"], dtype=np.float32)
+        sd = np.asarray(norm["sds"], dtype=np.float32)
+        if mean.shape[0] != X.shape[1] or sd.shape[0] != X.shape[1]:
+            print(json.dumps({"error": (
+                "standardization stats length (%d/%d) != newdata feature count (%d)"
+                % (mean.shape[0], sd.shape[0], X.shape[1]))}), file=sys.stderr)
+            sys.exit(1)
+        sd = np.where(np.isfinite(sd) & (sd > 1e-8), sd, 1.0).astype(np.float32)
+        mean = np.where(np.isfinite(mean), mean, 0.0).astype(np.float32)
+        X = ((X - mean) / sd).astype(np.float32)
 
     # Auto-detect framework from model file extension
     framework = args.framework
@@ -220,7 +276,12 @@ def main():
         preds = predict_pytorch(args.model, X, args.type, args.template)
     elif framework == "xgboost":
         if args.model.endswith(".json"):
-            preds = predict_xgboost_custom(args.model, X, args.type)
+            with open(args.model) as _f:
+                _m = json.load(_f)
+            if _is_dpgbdt_booster(_m):           # DP-GBDT {feat,thr,w} format
+                preds = predict_dpgbdt(args.model, X, args.type)
+            else:                                 # splits/leaves custom format
+                preds = predict_xgboost_custom(args.model, X, args.type)
         else:
             preds = predict_xgboost(args.model, X, args.type)
     else:

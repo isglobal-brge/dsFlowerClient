@@ -173,6 +173,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       num_rounds = recipe$num_rounds,
       n_clients  = length(conns),
       features   = recipe$features,   # training feature order, so predict can align newdata
+      # GLOBAL standardization stats baked alongside the model: prediction MUST scale
+      # newdata with the EXACT mu/sigma the features were trained on (same single source
+      # as the run-config the node trained with). Absent => the model was trained on raw
+      # features and prediction stays raw too -- the two never desync.
+      feature_means = recipe$feature_means,
+      feature_sds   = recipe$feature_sds,
       created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
       status     = if (runtime_status == 0L) "success" else "failed"
     )
