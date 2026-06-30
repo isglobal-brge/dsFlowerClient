@@ -161,6 +161,25 @@ ds.flower.list_models <- function() {
   list(kind = "sequential", layers = layers)
 }
 
+# A residual CNN block as a typed GRAPH (DAG) spec (DATA, node-built): reshape the flat
+# vector into (C,H,W), conv -> relu -> conv, ADD the skip, global-pool -> flatten -> head.
+# Demonstrates the graph language (named tensors, multi-input 'add'); the node builds a
+# GraphModule from allowlisted per-sample-safe ops only. input_shape multiplies to the
+# feature count (the node rejects a mismatch).
+.neural_resnet_spec <- function(input_shape, channels = 8L) {
+  ish <- as.list(as.integer(input_shape))
+  ch <- as.integer(channels)
+  list(kind = "graph", output = "out", nodes = list(
+    list(name = "img",  op = "reshape", `in` = list("@in"), shape = ish),
+    list(name = "c1",   op = "conv2d",  `in` = list("img"), out_channels = ch, kernel_size = 3L, padding = 1L),
+    list(name = "r1",   op = "relu",    `in` = list("c1")),
+    list(name = "c2",   op = "conv2d",  `in` = list("r1"),  out_channels = ch, kernel_size = 3L, padding = 1L),
+    list(name = "res",  op = "add",     `in` = list("c1", "c2")),
+    list(name = "pool", op = "adaptiveavgpool2d", `in` = list("res"), output_size = list(1L, 1L)),
+    list(name = "flat", op = "flatten", `in` = list("pool")),
+    list(name = "out",  op = "linear",  `in` = list("flat"), out = "@out")))
+}
+
 # Output width is decided NODE-SIDE from the pinned loss (model_spec.output_width):
 # bce_logits -> 1 (binary) or one-vs-rest; cross_entropy / hinge -> num-classes;
 # ordinal -> K-1 cumulative thresholds; multilabel_bce -> num-labels;
@@ -240,6 +259,12 @@ ds.flower.list_models <- function() {
         p$channels %||% 8L, p$levels %||% 3L),
       loss = "cross_entropy", defaults = list(n_classes = 2L),
       description = "Temporal CNN (dilated conv1d stack over a sequence).")
+  reg("pytorch_resnet", "neural",
+      generate = function(p) .neural_resnet_spec(
+        p$input_shape %||% stop("pytorch_resnet needs model_params$input_shape = c(C,H,W) multiplying to the feature count"),
+        p$channels %||% 8L),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "Residual CNN block (typed-graph DAG: conv->conv->skip-add->pool->head).")
 
   # ---- neural: vision head (frozen backbone is node-resident; the spec is the
   #      trainable head, with @in injected node-side from the backbone feature dim).
