@@ -36,19 +36,18 @@
 #' @keywords internal
 .resolve_flower_app <- function(app, verbose = TRUE) {
   if (startsWith(app, "@")) {                      # Flower Hub reference @account/app
-    dest <- tempfile("dsflower_hubapp_"); dir.create(dest)
-    if (verbose) message("  Fetching '", app, "' from Flower Hub via flwr ",
-                         "(requires `flwr login`)...")
-    out <- tryCatch(
-      system2("flwr", c("install", app, "--dir", dest), stdout = TRUE, stderr = TRUE),
-      error = function(e) structure(conditionMessage(e), status = 1L))
-    status <- attr(out, "status")
-    if (!is.null(status) && status != 0) {
-      stop("Could not fetch '", app, "' from Flower Hub (",
-           paste(utils::tail(as.character(out), 2L), collapse = " "),
-           "). Run `flwr login` and verify the app id.", call. = FALSE)
-    }
-    return(.find_user_pkg(dest))
+    # NOT WIRED / NOT VALIDATED. Direct Hub pull needs (a) a Flower Hub account
+    # (`flwr login`) and (b) a non-interactive FAB download -- which the current flwr
+    # CLI does not cleanly provide: `flwr install` takes ONLY a local .fab file, and
+    # `flwr app review @account/app` is an interactive reviewer flow (download + sign +
+    # submit a review). Until a programmatic pull is confirmed with the Flower team,
+    # download the app's .fab manually and pass the file path, or pass a local app
+    # directory -- dsFlower runs either one under the server-enforced floor.
+    stop("Loading directly from the Flower Hub ('", app, "') is not wired yet ",
+         "(needs a Flower Hub account + a non-interactive FAB pull; `flwr install` is ",
+         "local-.fab only and `flwr app review` is interactive). Pass a local .fab ",
+         "file or an app directory instead; dsFlower runs it under the DP floor.",
+         call. = FALSE)
   }
   if (grepl("\\.fab$", app, ignore.case = TRUE) && file.exists(app)) {  # local .fab bundle
     dest <- tempfile("dsflower_fab_"); dir.create(dest)
