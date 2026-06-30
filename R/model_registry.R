@@ -206,6 +206,18 @@ ds.flower.list_models <- function() {
     list(name = "out", op = "linear",    `in` = list("flat"), out = "@out")))
 }
 
+# An LSTM/GRU sequence model as a typed GRAPH (DATA, node-built): reshape the flat vector
+# into (n_tokens, n_features), run a sanitized Opacus DP-RNN over time, take the last
+# hidden state -> head. Recurrence is within a sample (over time), never across the batch.
+# n_tokens * n_features must equal the feature count.
+.neural_seq_spec <- function(n_tokens, n_features, hidden = 32L, kind = "lstm") {
+  list(kind = "graph", output = "out", nodes = list(
+    list(name = "x",   op = "reshape", `in` = list("@in"),
+         shape = list(as.integer(n_tokens), as.integer(n_features))),
+    list(name = "h",   op = kind, `in` = list("x"), hidden = as.integer(hidden)),
+    list(name = "out", op = "linear", `in` = list("h"), out = "@out")))
+}
+
 # Output width is decided NODE-SIDE from the pinned loss (model_spec.output_width):
 # bce_logits -> 1 (binary) or one-vs-rest; cross_entropy / hinge -> num-classes;
 # ordinal -> K-1 cumulative thresholds; multilabel_bce -> num-labels;
@@ -298,6 +310,20 @@ ds.flower.list_models <- function() {
         p$d_ff %||% 32L),
       loss = "cross_entropy", defaults = list(n_classes = 2L),
       description = "Transformer encoder block (self-attention + FFN, typed-graph DAG from primitives).")
+  reg("pytorch_lstm", "neural",
+      generate = function(p) .neural_seq_spec(
+        p$n_tokens   %||% stop("pytorch_lstm needs model_params$n_tokens"),
+        p$n_features %||% stop("pytorch_lstm needs model_params$n_features (n_tokens*n_features = feature count)"),
+        p$hidden %||% 32L, "lstm"),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "LSTM sequence model (sanitized Opacus DPLSTM, typed-graph DAG).")
+  reg("pytorch_gru", "neural",
+      generate = function(p) .neural_seq_spec(
+        p$n_tokens   %||% stop("pytorch_gru needs model_params$n_tokens"),
+        p$n_features %||% stop("pytorch_gru needs model_params$n_features"),
+        p$hidden %||% 32L, "gru"),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "GRU sequence model (sanitized Opacus DPGRU, typed-graph DAG).")
 
   # ---- neural: vision head (frozen backbone is node-resident; the spec is the
   #      trainable head, with @in injected node-side from the backbone feature dim).
