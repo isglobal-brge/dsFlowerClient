@@ -3,15 +3,14 @@
 # the legacy sklearn track; recipe building is exercised end-to-end by every live
 # ds.flower.fit/submit run.)
 
-test_that("recipe with custom DP budget", {
+test_that("recipe builds (DP is server-enforced; no client privacy knob)", {
   recipe <- ds.flower.recipe(
     task = ds.flower.task.classification(),
     model = ds.flower.model.pytorch_mlp(),
-    strategy = ds.flower.strategy.fedprox(),
-    privacy = ds.flower.privacy(epsilon = 0.5)
+    strategy = ds.flower.strategy.fedprox()
   )
-  expect_equal(recipe$privacy$epsilon, 0.5)
-  expect_s3_class(recipe$privacy, "dsflower_privacy")
+  expect_s3_class(recipe, "dsflower_recipe")
+  expect_null(recipe$privacy)
 })
 
 test_that("recipe validates model type", {

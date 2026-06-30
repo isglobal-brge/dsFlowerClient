@@ -96,6 +96,19 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
            "'. Pass `features` explicitly.", call. = FALSE)
     }
   }
+  # NEVER let the target leak in as a feature (auto-detect excludes it; an explicit list might
+  # include it by mistake -> the model would train on the answer). Drop it defensively.
+  if (!is.null(features)) {
+    features <- as.character(features)
+    dropped <- intersect(features, as.character(target))
+    if (length(dropped)) {
+      features <- setdiff(features, as.character(target))
+      message("  Dropped target column(s) from features: ", paste(dropped, collapse = ", "))
+    }
+    if (anyDuplicated(features)) {                       # de-dupe: avoid silent duplicate inputs
+      features <- unique(features)
+    }
+  }
 
   flower <- ds.flower.connect(conns, data = data, resource = resource, symbol = symbol)
   conns <- flower$conns; hsym <- flower$symbol

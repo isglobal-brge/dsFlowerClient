@@ -204,6 +204,10 @@ ds.flower.fit <- function(conns,
   if (missing(target) || is.null(target)) {
     stop("'target' is required.", call. = FALSE)
   }
+  rounds <- suppressWarnings(as.integer(rounds))
+  if (length(rounds) != 1L || is.na(rounds) || rounds < 1L) {
+    stop("'rounds' must be a single positive integer.", call. = FALSE)
+  }
   if (!is.list(model_params) ||
       (length(model_params) > 0L && is.null(names(model_params)))) {
     stop("'model_params' must be a named list.", call. = FALSE)
