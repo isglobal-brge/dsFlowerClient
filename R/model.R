@@ -370,7 +370,7 @@ ds.flower.model.xgboost <- function(n_trees = 10L, max_depth = 3L,
     params    = list(
       n_trees    = as.integer(n_trees),
       max_depth  = as.integer(max_depth),
-      eta        = eta,
+      learning_rate = eta,   # the spec reads `learning_rate`; map the eta arg onto it
       reg_lambda = reg_lambda,
       n_bins     = as.integer(n_bins),
       objective  = objective,

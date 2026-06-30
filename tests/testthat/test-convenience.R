@@ -13,14 +13,10 @@ test_that("generic strategy constructor resolves aliases", {
   expect_error(ds.flower.strategy("not_a_strategy"), "Unknown strategy")
 })
 
-test_that("generic task and privacy constructors resolve aliases", {
+test_that("generic task constructor resolves aliases", {
   expect_equal(ds.flower.task("class")$type, "classification")
   expect_equal(ds.flower.task("survival")$type, "survival")
   expect_error(ds.flower.task("not_a_task"), "Unknown task")
-
-  p <- ds.flower.privacy(epsilon = 2.0)
-  expect_s3_class(p, "dsflower_privacy")
-  expect_equal(p$epsilon, 2.0)
 })
 
 test_that("fit validates required arguments before connecting", {

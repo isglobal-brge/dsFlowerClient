@@ -26,6 +26,20 @@
 #'   debits the budget.
 #' @export
 ds.flower.privacy.budget <- function(conns, symbol = "D", target = NULL) {
+  # Validate the target against the schema: a typo would silently read the wrong (or empty)
+  # per-target budget key. Column NAMES are non-disclosive (standard colnames aggregate).
+  if (!is.null(target)) {
+    cols <- tryCatch(DSI::datashield.aggregate(conns, call("colnamesDS", symbol)),
+                     error = function(e) NULL)
+    if (!is.null(cols) && length(cols) && length(cols[[1L]])) {
+      miss <- setdiff(as.character(target), as.character(cols[[1L]]))
+      if (length(miss)) {
+        stop("target column(s) not found in '", symbol, "': ",
+             paste(miss, collapse = ", "),
+             ". The budget is keyed by the training target.", call. = FALSE)
+      }
+    }
+  }
   # Open a TRANSIENT handle (carries the data fingerprint) purely to read the ledger; never
   # prepares or debits. Pass the target so the correct per-target key is read.
   flower <- ds.flower.connect(conns, symbol = symbol)

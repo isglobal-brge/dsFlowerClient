@@ -140,6 +140,8 @@ ds.flower.tier2.run <- function(conns, user_app_dir, target, features,
                               n_clients, num_rounds)
   .ensure_client_framework("pytorch")
 
+  ds.flower.link.up(conns)   # establish the DSI tunnel: self-contained (the neural path does
+                             # this inside submit; nodes.ensure needs the tunnel present)
   started_superlink <- FALSE
   if (!isTRUE(ds.flower.superlink.status()$running)) {
     ds.flower.superlink.start()

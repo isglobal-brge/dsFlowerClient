@@ -630,6 +630,10 @@ ds.flower.models <- function(base_dir = file.path(".", "dsflower_output")) {
 
   subdirs <- list.dirs(base_dir, recursive = FALSE, full.names = TRUE)
   rows <- list()
+  # Coerce any metadata field to a single scalar: %||% only replaces NULL, so an empty
+  # (length-0) field from a partial/old metadata.json would make data.frame() error with
+  # "differing number of rows". This keeps the row (NA for the missing field) instead.
+  s1 <- function(x, default) { x <- x %||% default; if (length(x) == 0L) default else x[[1]] }
 
   for (d in subdirs) {
     meta_path <- file.path(d, "metadata.json")
@@ -640,15 +644,15 @@ ds.flower.models <- function(base_dir = file.path(".", "dsflower_output")) {
     )
     if (is.null(meta)) next
     rows[[length(rows) + 1L]] <- data.frame(
-      model_id   = meta$model_id %||% basename(d),
-      model      = meta$model %||% NA_character_,
-      template   = meta$template %||% NA_character_,
-      strategy   = meta$strategy %||% NA_character_,
-      privacy    = meta$privacy %||% NA_character_,
-      num_rounds = as.integer(meta$num_rounds %||% NA_integer_),
-      n_clients  = as.integer(meta$n_clients %||% NA_integer_),
-      created_at = meta$created_at %||% NA_character_,
-      status     = meta$status %||% NA_character_,
+      model_id   = s1(meta$model_id, basename(d)),
+      model      = s1(meta$model, NA_character_),
+      template   = s1(meta$template, NA_character_),
+      strategy   = s1(meta$strategy, NA_character_),
+      privacy    = s1(meta$privacy, NA_character_),
+      num_rounds = as.integer(s1(meta$num_rounds, NA_integer_)),
+      n_clients  = as.integer(s1(meta$n_clients, NA_integer_)),
+      created_at = s1(meta$created_at, NA_character_),
+      status     = s1(meta$status, NA_character_),
       path       = d,
       stringsAsFactors = FALSE
     )
