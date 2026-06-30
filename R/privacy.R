@@ -18,11 +18,20 @@
 #' remaining (epsilon, delta) budget the node will apply to the dataset.
 #'
 #' @param conns DSI connections object.
-#' @param symbol Character; handle symbol name (default "flower").
-#' @return Named list with per-server budget information (the node's real values).
+#' @param symbol Character; the DATA symbol assigned on the servers (default "D").
+#' @param target Character; the outcome column the budget is keyed by (the ledger is
+#'   per-dataset-and-target). Recommended -- without it the per-target budget cannot be
+#'   located. For survival pass \code{c("time", "event")}.
+#' @return Per-server budget information (the node's real values). Read-only: querying never
+#'   debits the budget.
 #' @export
-ds.flower.privacy.budget <- function(conns, symbol = "flower") {
+ds.flower.privacy.budget <- function(conns, symbol = "D", target = NULL) {
+  # Open a TRANSIENT handle (carries the data fingerprint) purely to read the ledger; never
+  # prepares or debits. Pass the target so the correct per-target key is read.
+  flower <- ds.flower.connect(conns, symbol = symbol)
+  on.exit(try(ds.flower.disconnect(flower), silent = TRUE), add = TRUE)
+  tc <- paste(as.character(target %||% ""), collapse = "+")
   DSI::datashield.aggregate(
-    conns, expr = call("flowerPrivacyBudgetDS", symbol)
+    flower$conns, expr = call("flowerPrivacyBudgetDS", flower$symbol, tc)
   )
 }

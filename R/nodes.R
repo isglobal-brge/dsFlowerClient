@@ -142,11 +142,13 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 
   feat_enc <- .ds_encode(feature_columns)
   config_enc <- .ds_encode(run_config)
+  target_enc <- .ds_encode(target_column)   # encode too: a multi-col target (survival
+                                            # c("time","event")) is mangled if passed raw
 
   DSI::datashield.assign.expr(
     conns,
     symbol = symbol,
-    expr = call("flowerPrepareRunDS", symbol, target_column,
+    expr = call("flowerPrepareRunDS", symbol, target_enc,
                 feat_enc, config_enc)
   )
 

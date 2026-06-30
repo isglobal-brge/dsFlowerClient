@@ -103,10 +103,12 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   # Python predictor (regression vs classification vs survival vs multilabel ...).
   tmpl <- .read_template_meta(model_dir)
 
-  # Find native model file (priority: pt > xgb.json > xgb)
+  # Find native model file (priority: pt > xgb.json > booster.json > xgb). The trees runner
+  # writes the XGBoost model as booster.json.
   candidates <- list(
     list(file = "model.pt", framework = "pytorch"),
     list(file = "model.xgb.json", framework = "xgboost"),
+    list(file = "booster.json", framework = "xgboost"),
     list(file = "model.xgb", framework = "xgboost")
   )
 

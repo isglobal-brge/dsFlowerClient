@@ -50,9 +50,9 @@ ds.flower.recipe <- function(model,
   if (!inherits(strategy, "dsflower_strategy")) {
     strategy <- ds.flower.strategy(strategy)
   }
-  # Infer task from model if not provided
+  # Infer task from model if not provided (keyed by model NAME; template == name)
   if (is.null(task)) {
-    default_type <- .MODEL_DEFAULT_TASK[[model$template]]
+    default_type <- .MODEL_DEFAULT_TASK[[model$template %||% model$name]]
     if (!is.null(default_type)) {
       task <- switch(default_type,
         classification = ds.flower.task.classification(),

@@ -4,15 +4,20 @@
 \alias{ds.flower.privacy.budget}
 \title{Query remaining differential-privacy budget on all servers}
 \usage{
-ds.flower.privacy.budget(conns, symbol = "flower")
+ds.flower.privacy.budget(conns, symbol = "D", target = NULL)
 }
 \arguments{
 \item{conns}{DSI connections object.}
 
-\item{symbol}{Character; handle symbol name (default "flower").}
+\item{symbol}{Character; the DATA symbol assigned on the servers (default "D").}
+
+\item{target}{Character; the outcome column the budget is keyed by (the ledger is
+per-dataset-and-target). Recommended -- without it the per-target budget cannot be
+located. For survival pass \code{c("time", "event")}.}
 }
 \value{
-Named list with per-server budget information (the node's real values).
+Per-server budget information (the node's real values). Read-only: querying never
+  debits the budget.
 }
 \description{
 Differential privacy is always on and is decided + enforced entirely by each

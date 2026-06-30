@@ -146,7 +146,8 @@ ds.flower.tier2.run <- function(conns, user_app_dir, target, features,
     started_superlink <- TRUE
   }
   recipe <- structure(list(
-    model = list(framework = "pytorch"),
+    model = list(name = "tier2", template = "tier2", framework = "pytorch",
+                 track = "egress"),
     strategy = list(name = "FedAvg", params = list()),
     num_rounds = as.integer(num_rounds),
     features = features, evaluation_only = FALSE),
