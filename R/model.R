@@ -100,7 +100,8 @@ ds.flower.model.pytorch_linear_regression <- function(learning_rate = 0.01,
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
-#' @export
+# NOTE: not exported -- survival models are defined but not yet registered/runnable in this
+# build (see model_registry.R). Kept internal until the survival track is wired + tested.
 ds.flower.model.pytorch_coxph <- function(learning_rate = 0.01,
                                            batch_size = 32L,
                                            local_epochs = 1L) {
@@ -172,7 +173,7 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
 #'   volumetric collections. Default FALSE: the 2D backbone auto-handles both 2D
 #'   images and 3D volumes (via a representative slice), the plug-and-play path.
 #' @return A \code{dsflower_model} S3 object.
-#' @export
+# NOTE: not exported -- image/vision track not yet registered/runnable in this build.
 ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
                                               learning_rate = 0.001,
                                               batch_size = 32L,
@@ -209,7 +210,7 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
 #'   volumetric collections. Default FALSE: the 2D backbone auto-handles both 2D
 #'   images and 3D volumes (via a representative slice), the plug-and-play path.
 #' @return A \code{dsflower_model} S3 object.
-#' @export
+# NOTE: not exported -- image/vision track not yet registered/runnable in this build.
 ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
                                                  learning_rate = 0.001,
                                                  batch_size = 32L,
@@ -248,7 +249,7 @@ ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
 #' @param image_size Integer; square resize dimension before training.
 #' @param base_channels Integer; number of channels in the first U-Net block.
 #' @return A \code{dsflower_model} S3 object.
-#' @export
+# NOTE: not exported -- image/vision track not yet registered/runnable in this build.
 ds.flower.model.pytorch_unet2d <- function(n_classes = 1L,
                                             learning_rate = 0.001,
                                             batch_size = 8L,
@@ -459,7 +460,7 @@ ds.flower.model.pytorch_multilabel <- function(n_labels = 2L,
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs.
 #' @return A \code{dsflower_model} S3 object.
-#' @export
+# NOTE: not exported -- survival track not yet registered/runnable in this build.
 ds.flower.model.pytorch_lognormal_aft <- function(learning_rate = 0.01,
                                          batch_size = 32L,
                                          local_epochs = 1L) {
@@ -488,7 +489,7 @@ ds.flower.model.pytorch_lognormal_aft <- function(learning_rate = 0.01,
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs.
 #' @return A \code{dsflower_model} S3 object.
-#' @export
+# NOTE: not exported -- survival track not yet registered/runnable in this build.
 ds.flower.model.pytorch_cause_specific_cox <- function(n_causes = 2L,
                                                       learning_rate = 0.01,
                                                       batch_size = 32L,

@@ -113,6 +113,19 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   flower <- ds.flower.connect(conns, data = data, resource = resource, symbol = symbol)
   conns <- flower$conns; hsym <- flower$symbol
   n_clients <- length(conns)
+  # GUARANTEED cleanup of server-side state on ANY exit (success OR a pre-run error in
+  # upload/prepare/pin): drop the tunnel, the node handle/staging, the uploaded app, and the
+  # connection. Prevents leaked handles/tokens when prepare fails. up is set by the upload.
+  up <- NULL
+  on.exit({
+    tryCatch(ds.flower.link.down(conns), error = function(e) NULL)
+    tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
+    if (!is.null(up)) {
+      tryCatch(DSI::datashield.aggregate(conns, call("flowerAppDeleteDS", up$token)),
+               error = function(e) NULL)
+    }
+    tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
+  }, add = TRUE)
   # Tabular runs need a non-empty feature set. The symbol path auto-detects above; data=/
   # resource= inputs must pass `features` explicitly -- fail with a clear message rather than
   # the downstream "num-features must be set" from the node.
@@ -207,22 +220,11 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     num_rounds = as.integer(num_rounds),
     features = features, evaluation_only = FALSE), class = "dsflower_recipe")
 
-  run <- tryCatch({
-    ds.flower.nodes.ensure(conns, hsym, torch_backend = torch_backend)
-    ds.flower.run.start(recipe, conns, app_dir = app_dir,
-                        results_dir = results_dir, symbol = hsym, verbose = verbose)
-  }, error = function(e) {
-    tryCatch(ds.flower.link.down(conns), error = function(e) NULL)
-    tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
-    if (!is.null(up)) tryCatch(DSI::datashield.aggregate(conns, call("flowerAppDeleteDS", up$token)), error = function(e) NULL)
-    stop(e)
-  })
-
-  tryCatch(ds.flower.link.down(conns), error = function(e) NULL)
-  tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
-  if (!is.null(up)) tryCatch(DSI::datashield.aggregate(conns, call("flowerAppDeleteDS", up$token)), error = function(e) NULL)
-  tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
-  run
+  # Cleanup (tunnel/handle/app/connection) is guaranteed by the on.exit above, on both a
+  # run error and normal completion.
+  ds.flower.nodes.ensure(conns, hsym, torch_backend = torch_backend)
+  ds.flower.run.start(recipe, conns, app_dir = app_dir,
+                      results_dir = results_dir, symbol = hsym, verbose = verbose)
 }
 
 
