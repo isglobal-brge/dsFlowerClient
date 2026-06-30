@@ -26,10 +26,22 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   # Ensure framework deps are installed
   .ensure_client_framework(framework)
 
+  # Align newdata to the TRAINING feature order/names: the model consumes columns
+  # positionally, so a reordered or partial newdata would otherwise predict silently wrong.
+  newdata <- as.data.frame(newdata)
+  if (!is.null(info$features)) {
+    miss <- setdiff(info$features, names(newdata))
+    if (length(miss)) {
+      stop("newdata is missing training feature column(s): ",
+           paste(miss, collapse = ", "), call. = FALSE)
+    }
+    newdata <- newdata[, info$features, drop = FALSE]
+  }
+
   # Write data to temp CSV
   tmp_data <- tempfile(fileext = ".csv")
   on.exit(unlink(tmp_data), add = TRUE)
-  utils::write.csv(as.data.frame(newdata), tmp_data, row.names = FALSE)
+  utils::write.csv(newdata, tmp_data, row.names = FALSE)
 
   # Find predict helper script
   helper <- system.file("python", "predict_helper.py",
@@ -102,6 +114,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   # Template (from metadata.json) drives modality-aware output semantics in the
   # Python predictor (regression vs classification vs survival vs multilabel ...).
   tmpl <- .read_template_meta(model_dir)
+  feats <- .read_meta_features(model_dir)   # training feature order, to align newdata
 
   # Find native model file (priority: pt > xgb.json > booster.json > xgb). The trees runner
   # writes the XGBoost model as booster.json.
@@ -115,7 +128,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   for (c in candidates) {
     path <- file.path(model_dir, c$file)
     if (file.exists(path)) {
-      return(list(model_file = path, framework = c$framework, template = tmpl))
+      return(list(model_file = path, framework = c$framework, template = tmpl, features = feats))
     }
   }
 
@@ -123,9 +136,9 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   json_path <- file.path(model_dir, "global_model.json")
   if (file.exists(json_path)) {
     if (grepl("xgboost", tmpl)) {
-      return(list(model_file = json_path, framework = "xgboost", template = tmpl))
+      return(list(model_file = json_path, framework = "xgboost", template = tmpl, features = feats))
     }
-    return(list(model_file = json_path, framework = "pytorch", template = tmpl))
+    return(list(model_file = json_path, framework = "pytorch", template = tmpl, features = feats))
   }
 
   stop("No native model file found in ", model_dir,
@@ -140,4 +153,15 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   if (!file.exists(meta_path)) return("")
   meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
   meta$template %||% meta$model %||% ""
+}
+
+#' Read the training feature names (in order) from a model dir's metadata.json
+#' @keywords internal
+.read_meta_features <- function(model_dir) {
+  if (is.null(model_dir) || !nzchar(model_dir)) return(NULL)
+  meta_path <- file.path(model_dir, "metadata.json")
+  if (!file.exists(meta_path)) return(NULL)
+  meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
+  f <- meta$features
+  if (is.null(f) || length(f) == 0L) NULL else as.character(f)
 }

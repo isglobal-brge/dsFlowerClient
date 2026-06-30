@@ -172,6 +172,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       privacy    = "server-enforced-dp",
       num_rounds = recipe$num_rounds,
       n_clients  = length(conns),
+      features   = recipe$features,   # training feature order, so predict can align newdata
       created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
       status     = if (runtime_status == 0L) "success" else "failed"
     )

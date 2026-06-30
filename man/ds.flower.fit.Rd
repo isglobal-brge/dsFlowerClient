@@ -85,13 +85,15 @@ template-specific auto handling.}
 
 \item{masks}{Optional mask asset alias for segmentation.}
 
-\item{evaluation_only}{Logical; if TRUE, blocks model release.}
+\item{evaluation_only}{Logical; accepted for compatibility but NOT yet enforced by the
+enforced-DP path (the model is always released, DP-protected).}
 
 \item{detached}{Logical; accepted for back-compat (unused by the enforced-DP path).}
 
 \item{verbose}{Logical; print training output.}
 
-\item{disconnect}{Logical; remove server-side Flower handles on exit.}
+\item{disconnect}{Logical; accepted for compatibility. The submission pipeline always
+cleans up its server-side handles on exit regardless.}
 
 \item{run_args}{Named list; accepted for back-compat (unused by the enforced-DP path).}
 }

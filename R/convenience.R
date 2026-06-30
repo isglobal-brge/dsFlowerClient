@@ -171,10 +171,12 @@ ds.flower.task <- function(name = "classification") {
 #' @param task Optional character task name or \code{dsflower_task} object.
 #' @param label_set Optional imaging label-set name.
 #' @param masks Optional mask asset alias for segmentation.
-#' @param evaluation_only Logical; if TRUE, blocks model release.
+#' @param evaluation_only Logical; accepted for compatibility but NOT yet enforced by the
+#'   enforced-DP path (the model is always released, DP-protected).
 #' @param detached Logical; accepted for back-compat (unused by the enforced-DP path).
 #' @param verbose Logical; print training output.
-#' @param disconnect Logical; remove server-side Flower handles on exit.
+#' @param disconnect Logical; accepted for compatibility. The submission pipeline always
+#'   cleans up its server-side handles on exit regardless.
 #' @param run_args Named list; accepted for back-compat (unused by the enforced-DP path).
 #' @return A \code{dsflower_run} object.
 #' @export
@@ -230,6 +232,14 @@ ds.flower.fit <- function(conns,
 
   model_spec <- ds.flower.model(model)
   if (length(model_params)) {
+    known <- names(model_spec$params %||% list())
+    unknown <- setdiff(names(model_params), known)
+    if (length(unknown)) {
+      warning("Ignoring unknown model_params for '", model_spec$name, "': ",
+              paste(unknown, collapse = ", "),
+              if (length(known)) paste0(" (known: ", paste(known, collapse = ", "), ")") else "",
+              call. = FALSE)
+    }
     model_spec$params <- utils::modifyList(model_spec$params %||% list(), model_params)
   }
 
