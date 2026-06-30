@@ -95,6 +95,17 @@ fit_tab("rich-vocab extension (bce)", "BC_rv", tab_table, "rich_vocab", "maligna
 message(">>> TABULAR multiclass (", multi_table, ", 10-class)")
 fit_tab("multiclass (ce, 10)",     "DG", multi_table, "pytorch_multiclass", "digit", list(n_classes = 10L))
 
+message(">>> NEW suite: GLM (svm/negbin/gamma/ordinal), penalized, conv (cnn/tcn)")
+fit_tab("svm (hinge)",            "BC_svm", tab_table,   "pytorch_svm",        "malignant")
+fit_tab("negbin (count)",         "DG_nb",  multi_table, "pytorch_negbin",     "digit",       list(nb_dispersion = 1.5))
+fit_tab("gamma (positive)",       "BC_gam", tab_table,   "pytorch_gamma",      "mean_radius", list(gamma_shape = 2.0))
+fit_tab("ordinal (CORN, 10)",     "DG_ord", multi_table, "pytorch_ordinal",    "digit",       list(n_classes = 10L))
+fit_tab("ridge (L2)",             "BC_rdg", tab_table,   "pytorch_ridge",      "mean_area",   list(weight_decay = 1.0))
+fit_tab("lasso (L1)",             "BC_lso", tab_table,   "pytorch_lasso",      "mean_area",   list(l1_penalty = 0.05))
+fit_tab("elasticnet (L1+L2)",     "BC_ent", tab_table,   "pytorch_elasticnet", "mean_area",   list(weight_decay = 1.0, l1_penalty = 0.05))
+fit_tab("cnn 2D (8x8)",           "DG_cnn", multi_table, "pytorch_cnn",        "digit",       list(input_shape = c(1L, 8L, 8L), n_classes = 10L))
+fit_tab("tcn (dilated conv1d)",   "DG_tcn", multi_table, "pytorch_tcn",        "digit",       list(input_shape = c(1L, 64L), n_classes = 10L))
+
 message(">>> IMAGE resource (", img_resource, ")")
 record("vision resnet18 RESOURCE",    ds.flower.fit(conns, resource = img_resource, target = "label",
   model = "pytorch_resnet18",    model_params = list(n_classes = 9L, image_size = 224L), rounds = cfg$rounds, verbose = FALSE))

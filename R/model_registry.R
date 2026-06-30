@@ -31,9 +31,11 @@
 #'   builds with stock torch layers (end with a linear onto \code{"@out"}); for the
 #'   trees track the XGBoost spec. The node owns the loop, loss, and optimizer.
 #' @param loss Character or NULL; neural track only. The per-sample loss the node
-#'   should use, from the node allowlist (\code{bce_logits}, \code{cross_entropy},
-#'   \code{mse}, \code{poisson_nll}, \code{multilabel_bce}).
-#'   The node pins the actual loss; this is the client's request.
+#'   should use, from the node allowlist: stock losses \code{bce_logits},
+#'   \code{cross_entropy}, \code{mse}, \code{poisson_nll}, \code{multilabel_bce},
+#'   \code{hinge} (linear SVM), \code{ordinal} (CORN); plus vetted custom per-sample
+#'   losses \code{negbin_nll} (overdispersed counts) and \code{gamma_nll} (positive
+#'   continuous). The node pins the actual loss; this is the client's request.
 #' @param defaults Named list of default params merged under user-supplied params.
 #' @param description Character or NULL; a one-line human description.
 #' @param vetted Logical; informational only. Every model is node-built from the
@@ -55,7 +57,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   }
   if (!is.null(loss)) {
     allowed <- c("bce_logits", "cross_entropy", "mse", "poisson_nll",
-                 "multilabel_bce")
+                 "multilabel_bce", "hinge", "negbin_nll", "gamma_nll", "ordinal")
     if (!is.character(loss) || length(loss) != 1L || !loss %in% allowed) {
       stop("'loss' must be one of the node allowlist: ",
            paste(allowed, collapse = ", "), ".", call. = FALSE)
@@ -127,9 +129,99 @@ ds.flower.list_models <- function() {
   list(kind = "sequential", layers = layers)
 }
 
+# A small 2D-CNN as a SPEC (DATA, node-built): reshape the flat per-sample vector
+# into (C,H,W), then a conv/pool stack -> adaptive pool -> flatten -> linear head.
+# input_shape must multiply to the feature count (the node rejects a mismatch).
+.neural_cnn_spec <- function(input_shape, channels = c(8L, 16L)) {
+  layers <- list(list(op = "reshape", shape = as.list(as.integer(input_shape))))
+  for (ch in channels)
+    layers <- c(layers, list(
+      list(op = "conv2d", out_channels = as.integer(ch), kernel_size = 3L, padding = 1L),
+      list(op = "relu"),
+      list(op = "maxpool2d", kernel_size = 2L)))
+  layers <- c(layers, list(
+    list(op = "adaptiveavgpool2d", output_size = list(1L, 1L)),
+    list(op = "flatten"),
+    list(op = "linear", out = "@out")))
+  list(kind = "sequential", layers = layers)
+}
+
+# A Temporal CNN as a SPEC (DATA, node-built): reshape into (C,L), then a dilated
+# length-preserving conv1d stack (receptive field grows as 2^level) -> flatten -> head.
+.neural_tcn_spec <- function(input_shape, channels = 8L, levels = 3L) {
+  layers <- list(list(op = "reshape", shape = as.list(as.integer(input_shape))))
+  for (i in seq_len(levels)) {
+    d <- as.integer(2L^(i - 1L))
+    layers <- c(layers, list(
+      list(op = "conv1d", out_channels = as.integer(channels),
+           kernel_size = 3L, padding = d, dilation = d),
+      list(op = "relu")))
+  }
+  layers <- c(layers, list(list(op = "flatten"), list(op = "linear", out = "@out")))
+  list(kind = "sequential", layers = layers)
+}
+
+# A residual CNN block as a typed GRAPH (DAG) spec (DATA, node-built): reshape the flat
+# vector into (C,H,W), conv -> relu -> conv, ADD the skip, global-pool -> flatten -> head.
+# Demonstrates the graph language (named tensors, multi-input 'add'); the node builds a
+# GraphModule from allowlisted per-sample-safe ops only. input_shape multiplies to the
+# feature count (the node rejects a mismatch).
+.neural_resnet_spec <- function(input_shape, channels = 8L) {
+  ish <- as.list(as.integer(input_shape))
+  ch <- as.integer(channels)
+  list(kind = "graph", output = "out", nodes = list(
+    list(name = "img",  op = "reshape", `in` = list("@in"), shape = ish),
+    list(name = "c1",   op = "conv2d",  `in` = list("img"), out_channels = ch, kernel_size = 3L, padding = 1L),
+    list(name = "r1",   op = "relu",    `in` = list("c1")),
+    list(name = "c2",   op = "conv2d",  `in` = list("r1"),  out_channels = ch, kernel_size = 3L, padding = 1L),
+    list(name = "res",  op = "add",     `in` = list("c1", "c2")),
+    list(name = "pool", op = "adaptiveavgpool2d", `in` = list("res"), output_size = list(1L, 1L)),
+    list(name = "flat", op = "flatten", `in` = list("pool")),
+    list(name = "out",  op = "linear",  `in` = list("flat"), out = "@out")))
+}
+
+# A Transformer ENCODER block as a typed GRAPH (DATA, node-built) -- self-attention
+# (Q/K/V linears + matmul + softmax over TOKENS, never the batch) + residual + LayerNorm
+# + FFN, built ENTIRELY from per-sample-safe primitives (no Opacus DPMultiheadAttention,
+# no custom code). n_tokens * d_model must equal the feature count.
+.neural_transformer_spec <- function(n_tokens, d_model, d_ff = 32L) {
+  T <- as.integer(n_tokens); d <- as.integer(d_model); ff <- as.integer(d_ff)
+  list(kind = "graph", output = "out", nodes = list(
+    list(name = "x",   op = "reshape",   `in` = list("@in"), shape = list(T, d)),
+    list(name = "q",   op = "linear",    `in` = list("x"),   out = d),
+    list(name = "k",   op = "linear",    `in` = list("x"),   out = d),
+    list(name = "v",   op = "linear",    `in` = list("x"),   out = d),
+    list(name = "kt",  op = "transpose", `in` = list("k"),   dims = list(0L, 1L)),
+    list(name = "sc",  op = "matmul",    `in` = list("q", "kt")),
+    list(name = "a",   op = "softmax",   `in` = list("sc"),  axis = 1L),
+    list(name = "ctx", op = "matmul",    `in` = list("a", "v")),
+    list(name = "res", op = "add",       `in` = list("x", "ctx")),
+    list(name = "n1",  op = "layernorm", `in` = list("res")),
+    list(name = "f1",  op = "linear",    `in` = list("n1"),  out = ff),
+    list(name = "fa",  op = "relu",      `in` = list("f1")),
+    list(name = "f2",  op = "linear",    `in` = list("fa"),  out = d),
+    list(name = "res2", op = "add",      `in` = list("n1", "f2")),
+    list(name = "n2",  op = "layernorm", `in` = list("res2")),
+    list(name = "flat", op = "flatten",  `in` = list("n2")),
+    list(name = "out", op = "linear",    `in` = list("flat"), out = "@out")))
+}
+
+# An LSTM/GRU sequence model as a typed GRAPH (DATA, node-built): reshape the flat vector
+# into (n_tokens, n_features), run a sanitized Opacus DP-RNN over time, take the last
+# hidden state -> head. Recurrence is within a sample (over time), never across the batch.
+# n_tokens * n_features must equal the feature count.
+.neural_seq_spec <- function(n_tokens, n_features, hidden = 32L, kind = "lstm") {
+  list(kind = "graph", output = "out", nodes = list(
+    list(name = "x",   op = "reshape", `in` = list("@in"),
+         shape = list(as.integer(n_tokens), as.integer(n_features))),
+    list(name = "h",   op = kind, `in` = list("x"), hidden = as.integer(hidden)),
+    list(name = "out", op = "linear", `in` = list("h"), out = "@out")))
+}
+
 # Output width is decided NODE-SIDE from the pinned loss (model_spec.output_width):
-# bce_logits -> 1 (binary) or one-vs-rest; cross_entropy -> num-classes (softmax);
-# mse / poisson_nll -> 1; multilabel_bce -> num-labels. The spec just targets "@out".
+# bce_logits -> 1 (binary) or one-vs-rest; cross_entropy / hinge -> num-classes;
+# ordinal -> K-1 cumulative thresholds; multilabel_bce -> num-labels;
+# mse / poisson_nll / negbin_nll / gamma_nll -> 1. The spec just targets "@out".
 
 #' Register the first-party model collection (called from .onLoad)
 #' @keywords internal
@@ -161,6 +253,77 @@ ds.flower.list_models <- function() {
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
       loss = "multilabel_bce", defaults = list(num_labels = 2L),
       description = "Multilabel classifier (independent BCE per label).")
+  reg("pytorch_svm", "neural",
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
+      loss = "hinge", defaults = list(hidden_layers = integer(0)),
+      description = "Linear SVM (multiclass hinge / MultiMarginLoss).")
+  reg("pytorch_negbin", "neural",
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
+      loss = "negbin_nll",
+      defaults = list(hidden_layers = integer(0), nb_dispersion = 1.0),
+      description = "Negative-binomial regression (overdispersed counts).")
+  reg("pytorch_gamma", "neural",
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
+      loss = "gamma_nll",
+      defaults = list(hidden_layers = integer(0), gamma_shape = 1.0),
+      description = "Gamma regression (positive continuous: cost, length-of-stay, concentration).")
+  reg("pytorch_ordinal", "neural",
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
+      loss = "ordinal", defaults = list(hidden_layers = integer(0), n_classes = 3L),
+      description = "Ordinal regression (CORN cumulative-threshold tasks).")
+  reg("pytorch_ridge", "neural",
+      generate = function(p) .neural_mlp_spec(integer(0)),
+      loss = "mse", defaults = list(weight_decay = 1.0),
+      description = "Ridge regression (linear + L2 penalty).")
+  reg("pytorch_lasso", "neural",
+      generate = function(p) .neural_mlp_spec(integer(0)),
+      loss = "mse", defaults = list(l1_penalty = 0.01),
+      description = "Lasso regression (linear + L1 penalty).")
+  reg("pytorch_elasticnet", "neural",
+      generate = function(p) .neural_mlp_spec(integer(0)),
+      loss = "mse", defaults = list(weight_decay = 1.0, l1_penalty = 0.01),
+      description = "Elastic-net regression (linear + L1 + L2 penalties).")
+
+  # ---- neural: convolutional (reshape flat features -> conv stack, node-built) ----
+  reg("pytorch_cnn", "neural",
+      generate = function(p) .neural_cnn_spec(
+        p$input_shape %||% stop("pytorch_cnn needs model_params$input_shape = c(C,H,W) multiplying to the feature count"),
+        p$channels %||% c(8L, 16L)),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "2D CNN (reshape -> conv/pool stack -> head).")
+  reg("pytorch_tcn", "neural",
+      generate = function(p) .neural_tcn_spec(
+        p$input_shape %||% stop("pytorch_tcn needs model_params$input_shape = c(C,L) multiplying to the feature count"),
+        p$channels %||% 8L, p$levels %||% 3L),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "Temporal CNN (dilated conv1d stack over a sequence).")
+  reg("pytorch_resnet", "neural",
+      generate = function(p) .neural_resnet_spec(
+        p$input_shape %||% stop("pytorch_resnet needs model_params$input_shape = c(C,H,W) multiplying to the feature count"),
+        p$channels %||% 8L),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "Residual CNN block (typed-graph DAG: conv->conv->skip-add->pool->head).")
+  reg("pytorch_transformer", "neural",
+      generate = function(p) .neural_transformer_spec(
+        p$n_tokens %||% stop("pytorch_transformer needs model_params$n_tokens"),
+        p$d_model  %||% stop("pytorch_transformer needs model_params$d_model (n_tokens*d_model = feature count)"),
+        p$d_ff %||% 32L),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "Transformer encoder block (self-attention + FFN, typed-graph DAG from primitives).")
+  reg("pytorch_lstm", "neural",
+      generate = function(p) .neural_seq_spec(
+        p$n_tokens   %||% stop("pytorch_lstm needs model_params$n_tokens"),
+        p$n_features %||% stop("pytorch_lstm needs model_params$n_features (n_tokens*n_features = feature count)"),
+        p$hidden %||% 32L, "lstm"),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "LSTM sequence model (sanitized Opacus DPLSTM, typed-graph DAG).")
+  reg("pytorch_gru", "neural",
+      generate = function(p) .neural_seq_spec(
+        p$n_tokens   %||% stop("pytorch_gru needs model_params$n_tokens"),
+        p$n_features %||% stop("pytorch_gru needs model_params$n_features"),
+        p$hidden %||% 32L, "gru"),
+      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      description = "GRU sequence model (sanitized Opacus DPGRU, typed-graph DAG).")
 
   # ---- neural: vision head (frozen backbone is node-resident; the spec is the
   #      trainable head, with @in injected node-side from the backbone feature dim).

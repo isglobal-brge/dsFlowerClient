@@ -21,10 +21,13 @@
 
   if (identical(m$track, "neural")) {
     spec <- m$generate(params)
-    if (!is.list(spec) || is.null(spec$layers)) {
+    is_seq   <- !is.null(spec$layers)
+    is_graph <- identical(spec$kind, "graph") && !is.null(spec$nodes)
+    if (!is.list(spec) || !(is_seq || is_graph)) {
       stop("neural model generator for '", model$name,
-           "' must return a model spec: list(kind = \"sequential\", layers = ...).",
-           call. = FALSE)
+           "' must return a model spec: a sequential list(kind = \"sequential\", ",
+           "layers = ...) OR a typed-graph list(kind = \"graph\", nodes = ..., ",
+           "output = ...).", call. = FALSE)
     }
     # The spec is DATA shipped in the run config (base64 JSON); there is NO user
     # package and NO researcher code in the FAB (pkg_dir absent), so the node builds

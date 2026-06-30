@@ -98,7 +98,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # correctly (the node also skips its label-range assertion for these losses).
   task_type <- if (identical(sub$track, "trees")) "classification" else
     switch(sub$loss %||% "bce_logits",
-           mse = "regression", poisson_nll = "count", "classification")
+           mse = "regression", poisson_nll = "count", negbin_nll = "count",
+           gamma_nll = "regression", "classification")
   # Propagate data_type so the node stages a table-backed IMAGE collection (samples
   # table + dsflower.image_data_root) as image, not tabular. dsImaging resources
   # self-declare image via their descriptor; a plain samples table needs this signal.
@@ -135,7 +136,11 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       paste0("num-labels = ", as.integer(p$num_labels %||% 2L)),
       paste0("local-epochs = ", as.integer(p$local_epochs %||% 1L)),
       paste0("batch-size = ", as.integer(p$batch_size %||% 32L)),
-      paste0("learning-rate = ", as.numeric(p$learning_rate %||% 0.01)))
+      paste0("learning-rate = ", as.numeric(p$learning_rate %||% 0.01)),
+      paste0("nb-dispersion = ", as.numeric(p$nb_dispersion %||% 1.0)),
+      paste0("gamma-shape = ", as.numeric(p$gamma_shape %||% 1.0)),
+      paste0("weight-decay = ", as.numeric(p$weight_decay %||% 0.0)),
+      paste0("l1-penalty = ", as.numeric(p$l1_penalty %||% 0.0)))
     if (identical(data_kind, "image")) {
       cfg <- c(cfg, .toml_kv("backbone", as.character(p$backbone %||% "resnet18")),
                paste0("image-size = ", as.integer(p$image_size %||% 224L)))
