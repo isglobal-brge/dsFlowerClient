@@ -69,7 +69,11 @@ ds.flower.model <- function(name = "pytorch_logreg", ...) {
 
   m <- .dsflower_get_model(canonical)   # registry lookup; errors listing available
   params <- utils::modifyList(m$defaults %||% list(), list(...))
-  structure(list(name = m$name, track = m$track, params = params),
+  # Carry template/framework/loss too: the recipe task-inference, recipe print, run-record
+  # metadata and prediction routing all read these. In this spec-based design template == name.
+  structure(list(name = m$name, track = m$track, template = m$name,
+                 framework = if (identical(m$track, "trees")) "xgboost" else "pytorch",
+                 loss = m$loss, params = params),
             class = "dsflower_model")
 }
 

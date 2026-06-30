@@ -19,7 +19,7 @@
 #' Build the submission FAB: the trusted runner skeleton + (neural/egress) the
 #' user package + a pyproject carrying the dp-track and run config.
 #' @keywords internal
-.build_submission_app <- function(sub, config_lines, results_dir) {
+.build_submission_app <- function(sub, config_lines, results_dir, vision = FALSE) {
   app_dir <- file.path(tempdir(), "dsflower_submission", "dsflower-app")
   if (dir.exists(app_dir)) unlink(app_dir, recursive = TRUE)
   dir.create(app_dir, recursive = TRUE, showWarnings = FALSE)
@@ -38,7 +38,7 @@
     'build-backend = "hatchling.build"\n\n',
     '[project]\nname = "dsflower-app"\nversion = "1.0.0"\n',
     'description = "dsFlower submission"\nlicense = "MIT"\n',
-    'dependencies = [', paste0('"', .harness_dependencies(), '"', collapse = ", "), ']\n\n',
+    'dependencies = [', paste0('"', .harness_dependencies(vision), '"', collapse = ", "), ']\n\n',
     '[tool.hatch.build.targets.wheel]\npackages = ', pkg_toml, '\n\n',
     '[tool.flwr.app]\npublisher = "dsflower"\n\n',
     '[tool.flwr.app.components]\n',
@@ -79,9 +79,34 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   sub <- .emit_submission(model)
 
   if (is.null(data) && is.null(resource) && is.null(symbol)) symbol <- "D"
+
+  # Auto-detect tabular features = every column except the target(s), from the DATA symbol's
+  # schema (the assigned data.frame -- NOT the flower handle). Column NAMES are schema, not
+  # values, so the standard DataSHIELD `colnames` aggregate is non-disclosive. Image runs
+  # derive their feature dim node-side; symbol-less (data/resource) advanced calls must pass
+  # features explicitly.
+  if (is.null(features) && !is.null(symbol) && !identical(data_kind, "image")) {
+    cols <- tryCatch(DSI::datashield.aggregate(conns, call("colnamesDS", symbol)),
+                     error = function(e) NULL)
+    if (!is.null(cols) && length(cols) && length(cols[[1L]])) {
+      features <- setdiff(as.character(cols[[1L]]), as.character(target))
+    }
+    if (is.null(features) || length(features) == 0L) {
+      stop("Could not auto-detect feature columns for symbol '", symbol,
+           "'. Pass `features` explicitly.", call. = FALSE)
+    }
+  }
+
   flower <- ds.flower.connect(conns, data = data, resource = resource, symbol = symbol)
   conns <- flower$conns; hsym <- flower$symbol
   n_clients <- length(conns)
+  # Tabular runs need a non-empty feature set. The symbol path auto-detects above; data=/
+  # resource= inputs must pass `features` explicitly -- fail with a clear message rather than
+  # the downstream "num-features must be set" from the node.
+  if ((is.null(features) || length(features) == 0L) && !identical(data_kind, "image")) {
+    stop("No feature columns: pass `features` explicitly (auto-detect is only available for ",
+         "the `symbol=` data path).", call. = FALSE)
+  }
   n_features <- if (!is.null(features)) length(features) else 0L
 
   up <- NULL
@@ -153,7 +178,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       paste0("n-bins = ", as.integer(s$n_bins)))
   }
 
-  app_dir <- .build_submission_app(sub, cfg, results_dir)
+  app_dir <- .build_submission_app(sub, cfg, results_dir,
+                                   vision = identical(data_kind, "image"))
   .ensure_client_framework("pytorch")
 
   # link.up starts the INSECURE local SuperLink (the bytes already travel inside
@@ -162,7 +188,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # insecure inner gRPC the SuperNodes speak and the run hangs.
   ds.flower.link.up(conns)
   recipe <- structure(list(
-    model = list(framework = "pytorch", track = sub$track),
+    model = list(name = model$name, template = model$template %||% model$name,
+                 framework = model$framework %||% "pytorch", track = sub$track),
     strategy = list(name = "FedAvg", params = list()),
     num_rounds = as.integer(num_rounds),
     features = features, evaluation_only = FALSE), class = "dsflower_recipe")
@@ -214,7 +241,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
 #' @keywords internal
 .harness_dependencies <- function(vision = FALSE) {
   base <- c("flwr[app]>=1.31.0", "numpy>=1.21.0", "pandas>=1.3.0",
-            "torch>=2.0.0", "opacus>=1.4.0")
+            "pyarrow>=10.0.0", "torch>=2.0.0", "opacus>=1.4.0")
   if (!isTRUE(vision)) return(base)
   c(base, "torchvision>=0.15.0", "pillow>=9.0.0",
     "nibabel>=5.0.0", "pynrrd>=1.0.0", "SimpleITK>=2.2.0", "monai>=1.3.0")

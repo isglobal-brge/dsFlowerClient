@@ -5,7 +5,7 @@
 \title{Build the submission FAB: the trusted runner skeleton + (neural/egress) the
 user package + a pyproject carrying the dp-track and run config.}
 \usage{
-.build_submission_app(sub, config_lines, results_dir)
+.build_submission_app(sub, config_lines, results_dir, vision = FALSE)
 }
 \description{
 Build the submission FAB: the trusted runner skeleton + (neural/egress) the
