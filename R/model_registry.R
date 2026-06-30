@@ -229,17 +229,22 @@ ds.flower.list_models <- function() {
   reg <- function(...) ds.flower.register_model(..., vetted = TRUE, overwrite = overwrite)
 
   # ---- neural: tabular (output width comes from the loss, node-side) ----
+  # Classification family (bounded losses): default learning_rate = 0.1. On
+  # STANDARDIZED features (which the submit pipeline now provides) the old 0.01 is
+  # far too timid -- it barely moves off init in a handful of rounds (validated:
+  # lr=0.01 -> ~0.52, lr=0.1 -> ~0.90 on breast_cancer with DP eps=3). Regression /
+  # count losses keep the 0.01 fallback (their step size tracks the raw target scale).
   reg("pytorch_logreg", "neural",
       generate = function(p) .neural_mlp_spec(integer(0)),
-      loss = "bce_logits",
+      loss = "bce_logits", defaults = list(learning_rate = 0.1),
       description = "Logistic regression (single linear layer).")
   reg("pytorch_mlp", "neural",
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% c(64L, 32L)),
-      loss = "bce_logits", defaults = list(hidden_layers = c(64L, 32L)),
+      loss = "bce_logits", defaults = list(hidden_layers = c(64L, 32L), learning_rate = 0.1),
       description = "Multilayer perceptron classifier.")
   reg("pytorch_multiclass", "neural",
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
-      loss = "cross_entropy", defaults = list(hidden_layers = integer(0)),
+      loss = "cross_entropy", defaults = list(hidden_layers = integer(0), learning_rate = 0.1),
       description = "Multiclass classifier (softmax cross-entropy).")
   reg("pytorch_linear_regression", "neural",
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
@@ -251,11 +256,11 @@ ds.flower.list_models <- function() {
       description = "Poisson regression (count outcomes).")
   reg("pytorch_multilabel", "neural",
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
-      loss = "multilabel_bce", defaults = list(num_labels = 2L),
+      loss = "multilabel_bce", defaults = list(num_labels = 2L, learning_rate = 0.1),
       description = "Multilabel classifier (independent BCE per label).")
   reg("pytorch_svm", "neural",
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
-      loss = "hinge", defaults = list(hidden_layers = integer(0)),
+      loss = "hinge", defaults = list(hidden_layers = integer(0), learning_rate = 0.1),
       description = "Linear SVM (multiclass hinge / MultiMarginLoss).")
   reg("pytorch_negbin", "neural",
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
@@ -269,7 +274,7 @@ ds.flower.list_models <- function() {
       description = "Gamma regression (positive continuous: cost, length-of-stay, concentration).")
   reg("pytorch_ordinal", "neural",
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
-      loss = "ordinal", defaults = list(hidden_layers = integer(0), n_classes = 3L),
+      loss = "ordinal", defaults = list(hidden_layers = integer(0), n_classes = 3L, learning_rate = 0.1),
       description = "Ordinal regression (CORN cumulative-threshold tasks).")
   reg("pytorch_ridge", "neural",
       generate = function(p) .neural_mlp_spec(integer(0)),
@@ -342,14 +347,17 @@ ds.flower.list_models <- function() {
         list(
           objective     = p$objective %||% "binary:logistic",
           max_depth     = as.integer(p$max_depth %||% 3L),
-          n_trees       = as.integer(p$n_trees %||% 20L),
+          n_trees       = as.integer(p$n_trees %||% 50L),
           learning_rate = as.numeric(p$learning_rate %||% 0.3),
           reg_lambda    = as.numeric(p$reg_lambda %||% 1.0),
           n_bins        = as.integer(p$n_bins %||% 32L),
           feature_ranges = p$feature_ranges %||% NULL  # node clamps/pins if absent
         )
       },
-      defaults = list(objective = "binary:logistic", max_depth = 3L, n_trees = 20L,
+      # n_trees=50 (was 20): with the mu/sd binning prior each tree is a useful weak
+      # learner, and ~50 random-split trees recover the signal; far more raises the
+      # DP noise multiplier (sigma grows with the release count) without net gain.
+      defaults = list(objective = "binary:logistic", max_depth = 3L, n_trees = 50L,
                       learning_rate = 0.3, reg_lambda = 1.0, n_bins = 32L),
       description = "Gradient-boosted trees (enforced DP-GBDT, S-GBDT mechanism).")
 

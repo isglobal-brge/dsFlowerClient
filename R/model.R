@@ -10,7 +10,7 @@
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.pytorch_mlp <- function(hidden_layers = c(64L, 32L),
-                                         learning_rate = 0.01,
+                                         learning_rate = 0.1,
                                          batch_size = 32L,
                                          local_epochs = 1L) {
   # Store as comma-separated string for TOML compatibility
@@ -44,7 +44,7 @@ ds.flower.model.pytorch_mlp <- function(hidden_layers = c(64L, 32L),
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
-ds.flower.model.pytorch_logreg <- function(learning_rate = 0.01,
+ds.flower.model.pytorch_logreg <- function(learning_rate = 0.1,
                                             batch_size = 32L,
                                             local_epochs = 1L) {
   obj <- list(
@@ -132,7 +132,7 @@ ds.flower.model.pytorch_coxph <- function(learning_rate = 0.01,
 #' @export
 ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
                                                 n_classes = 3L,
-                                                learning_rate = 0.01,
+                                                learning_rate = 0.1,
                                                 batch_size = 32L,
                                                 local_epochs = 1L) {
   # Store as comma-separated string for TOML compatibility
@@ -356,7 +356,7 @@ ds.flower.model.pytorch_lstm <- function(hidden_size = 64L,
 #' @param objective Character; XGBoost objective function.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
-ds.flower.model.xgboost <- function(n_trees = 10L, max_depth = 3L,
+ds.flower.model.xgboost <- function(n_trees = 50L, max_depth = 3L,
                                      eta = 0.3, reg_lambda = 1.0,
                                      n_bins = 64L,
                                      objective = "binary:logistic",
@@ -430,7 +430,7 @@ ds.flower.model.pytorch_poisson <- function(hidden_layers = "",
 #' @export
 ds.flower.model.pytorch_multilabel <- function(n_labels = 2L,
                                                 hidden_layers = "64,32",
-                                                learning_rate = 0.01,
+                                                learning_rate = 0.1,
                                                 batch_size = 32L,
                                                 local_epochs = 1L) {
   obj <- list(

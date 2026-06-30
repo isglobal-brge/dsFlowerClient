@@ -5,7 +5,7 @@
 \title{Create an XGBoost model spec}
 \usage{
 ds.flower.model.xgboost(
-  n_trees = 10L,
+  n_trees = 50L,
   max_depth = 3L,
   eta = 0.3,
   reg_lambda = 1,
