@@ -186,11 +186,10 @@ copy_site_images_to_container <- function(local_root, site, container, server_ro
   invisible(TRUE)
 }
 
-set_image_options <- function(cfg, profile, server_root) {
+set_image_options <- function(cfg, server_root) {
   for (i in seq_along(cfg$urls)) {
     opal <- opal_login(cfg, i)
     on.exit(try(opalr::opal.logout(opal), silent = TRUE), add = TRUE)
-    set_privacy_profile(opal, profile)
     opalr::dsadmin.set_option(opal, "dsflower.image_data_root",
                               server_root, profile = "default")
     opalr::opal.logout(opal)
@@ -239,10 +238,10 @@ run_central_resnet <- function(samples_csv, image_root, model_params,
 }
 
 evaluate_checkpoint <- function(samples_csv, image_root, checkpoint,
-                                model_params, seed, out_dir, profile) {
+                                model_params, seed, out_dir) {
   python <- find_python()
   helper <- helper_script()
-  out_json <- file.path(out_dir, paste0("federated_checkpoint_", profile, ".json"))
+  out_json <- file.path(out_dir, "federated_checkpoint.json")
   args <- c(
     helper,
     "--samples", samples_csv,
@@ -263,17 +262,16 @@ evaluate_checkpoint <- function(samples_csv, image_root, checkpoint,
   jsonlite::fromJSON(out_json, simplifyVector = FALSE)
 }
 
-run_profile <- function(profile, cfg, table_paths, model_spec, rounds,
-                        samples_csv, image_root, seed, out_dir) {
-  message("\n=== PathMNIST direct image run: ", profile, " ===")
-  set_image_options(cfg, profile, server_root)
+run_federated <- function(cfg, table_paths, model_spec, rounds,
+                          samples_csv, image_root, seed, out_dir) {
+  message("\n=== PathMNIST direct image run ===")
+  set_image_options(cfg, server_root)
   conns <- connect_tables(cfg, table_paths)
   on.exit(try(DSI::datashield.logout(conns), silent = TRUE), add = TRUE)
 
   recipe <- ds.flower.recipe(
     model = model_spec,
     strategy = ds.flower.strategy.fedavg(),
-    privacy = ds.flower.privacy(profile),
     target = "label",
     num_rounds = rounds
   )
@@ -288,7 +286,7 @@ run_profile <- function(profile, cfg, table_paths, model_spec, rounds,
     )
   )
 
-  symbol <- paste0("flower_pathmnist_", gsub("[^A-Za-z0-9_]", "_", profile))
+  symbol <- "flower_pathmnist"
   with_ds_errors(ds.flower.nodes.init(conns, data = "D", symbol = symbol))
   on.exit(try(ds.flower.nodes.cleanup(conns, symbol = symbol), silent = TRUE),
           add = TRUE)
@@ -300,7 +298,6 @@ run_profile <- function(profile, cfg, table_paths, model_spec, rounds,
       target_column = "label",
       feature_columns = NULL,
       run_config = run_config,
-      privacy = recipe$privacy,
       template_name = recipe$model$template
     )
   )
@@ -319,19 +316,17 @@ run_profile <- function(profile, cfg, table_paths, model_spec, rounds,
   hist <- safe_history(run)
   checkpoint <- file.path(run$output_dir %||% "", "model.pt")
   checkpoint_eval <- NULL
-  if (file.exists(checkpoint) && identical(profile, "trusted_internal")) {
+  if (file.exists(checkpoint)) {
     checkpoint_eval <- evaluate_checkpoint(
       samples_csv, image_root, checkpoint, recipe$model$params,
-      seed = seed, out_dir = out_dir, profile = profile
+      seed = seed, out_dir = out_dir
     )
   }
 
   list(
-    profile = profile,
     status = if (identical(as.integer(run$status), 0L)) "ok" else "failed",
     model = recipe$model$name,
     template = recipe$model$template,
-    privacy = recipe$privacy$mode,
     rounds = recipe$num_rounds,
     history = hist,
     final_history_loss = history_metric(hist, "loss"),
@@ -356,11 +351,6 @@ local_root <- demo_env(
   "DSFLOWER_PATHMNIST_LOCAL_ROOT",
   file.path(tempdir(), "dsflower_pathmnist_direct_image")
 )
-profiles <- trimws(strsplit(
-  demo_env("DSFLOWER_PATHMNIST_PRIVACY_PROFILES",
-           "trusted_internal,consortium_internal"),
-  ",", fixed = TRUE
-)[[1]])
 containers <- trimws(strsplit(
   demo_env("DSFLOWER_PATHMNIST_DOCKER_CONTAINERS",
            paste0("opal", seq_len(n_sites), "-rock", collapse = ",")),
@@ -372,8 +362,8 @@ if (!skip_docker_copy && length(containers) != n_sites) {
   stop("DSFLOWER_PATHMNIST_DOCKER_CONTAINERS must have one container per Opal URL.",
        call. = FALSE)
 }
-if (n_per_site < 500L && any(profiles %in% c("trusted_internal", "consortium_internal"))) {
-  stop("PathMNIST direct-image validation needs >=500 rows per site for vision profiles.",
+if (n_per_site < 500L) {
+  stop("PathMNIST direct-image validation needs >=500 rows per site.",
        call. = FALSE)
 }
 
@@ -407,7 +397,6 @@ for (i in seq_len(n_sites)) {
   opal <- opal_login(cfg, i)
   on.exit(try(opalr::opal.logout(opal), silent = TRUE), add = TRUE)
   ensure_project(opal, cfg$project)
-  set_privacy_profile(opal, profiles[[1L]])
   opalr::dsadmin.set_option(opal, "dsflower.image_data_root",
                             server_root, profile = "default")
   table_name <- paste0(cfg$table_prefix, "_site", i)
@@ -445,31 +434,25 @@ on.exit({
   if (started_superlink) try(ds.flower.superlink.stop(), silent = TRUE)
 }, add = TRUE)
 
-profile_results <- vector("list", length(profiles))
-names(profile_results) <- profiles
-for (profile in profiles) {
-  profile_results[[profile]] <- run_profile(
-    profile = profile,
-    cfg = cfg,
-    table_paths = table_paths,
-    model_spec = model_spec,
-    rounds = cfg$rounds,
-    samples_csv = samples_csv,
-    image_root = local_root,
-    seed = cfg$seed,
-    out_dir = out_dir
-  )
-}
+fed <- run_federated(
+  cfg = cfg,
+  table_paths = table_paths,
+  model_spec = model_spec,
+  rounds = cfg$rounds,
+  samples_csv = samples_csv,
+  image_root = local_root,
+  seed = cfg$seed,
+  out_dir = out_dir
+)
 
-trusted <- profile_results[["trusted_internal"]]
-fed_eval <- trusted$checkpoint_eval
+fed_eval <- fed$checkpoint_eval
 central_loss <- as.numeric(central$eval$loss %||% NA_real_)
 fed_loss <- as.numeric(fed_eval$eval$loss %||% NA_real_)
 delta_loss <- fed_loss - central_loss
 accepted <- is.finite(central_loss) &&
   is.finite(fed_loss) &&
   fed_loss <= central_loss * 2.5 + 0.25 &&
-  as.numeric(trusted$final_history_failures %||% 0) <= 0
+  as.numeric(fed$final_history_failures %||% 0) <= 0
 
 site_counts <- do.call(rbind, lapply(seq_len(n_sites), function(i) {
   site_data <- samples[samples$site == i, , drop = FALSE]
@@ -500,37 +483,20 @@ payload <- list(
   template = model_spec$template,
   strategy = "FedAvg",
   centralized = central,
-  profile_results = profile_results,
-  trusted_internal_comparison = list(
+  federated = fed,
+  federated_comparison = list(
     centralized_loss = central_loss,
     centralized_accuracy = as.numeric(central$eval$accuracy %||% NA_real_),
     federated_checkpoint_loss = fed_loss,
     federated_checkpoint_accuracy = as.numeric(fed_eval$eval$accuracy %||% NA_real_),
-    federated_history_loss = as.numeric(trusted$final_history_loss %||% NA_real_),
-    federated_failures = as.numeric(trusted$final_history_failures %||% NA_real_),
+    federated_history_loss = as.numeric(fed$final_history_loss %||% NA_real_),
+    federated_failures = as.numeric(fed$final_history_failures %||% NA_real_),
     delta_loss = delta_loss,
     delta_accuracy = as.numeric(fed_eval$eval$accuracy %||% NA_real_) -
       as.numeric(central$eval$accuracy %||% NA_real_),
     acceptance_max_loss_ratio = 2.5,
     acceptance_max_loss_margin = 0.25,
     validation_status = if (isTRUE(accepted)) "pass" else "failed"
-  ),
-  consortium_internal_secagg = list(
-    status = profile_results[["consortium_internal"]]$status %||% NA_character_,
-    federated_failures = as.numeric(
-      profile_results[["consortium_internal"]]$final_history_failures %||% NA_real_),
-    metric_release = "suppressed by consortium_internal profile",
-    secure_aggregation_required = TRUE,
-    aggregation_workflow = "Flower SecAggPlusWorkflow requested by consortium_internal",
-    saved_model_exists = isTRUE(
-      profile_results[["consortium_internal"]]$saved_model_exists),
-    validation_status = if (identical(profile_results[["consortium_internal"]]$status, "ok") &&
-                            as.numeric(profile_results[["consortium_internal"]]$final_history_failures %||% 0) <= 0 &&
-                            isTRUE(profile_results[["consortium_internal"]]$saved_model_exists)) {
-      "pass"
-    } else {
-      "failed"
-    }
   )
 )
 
@@ -545,11 +511,9 @@ if (dir.exists(extdata_dir)) {
             overwrite = TRUE)
 }
 
-print(payload$trusted_internal_comparison)
-print(payload$consortium_internal_secagg)
+print(payload$federated_comparison)
 cat("Output: ", normalizePath(out_dir), "\n", sep = "")
-if (!identical(payload$trusted_internal_comparison$validation_status, "pass") ||
-    !identical(payload$consortium_internal_secagg$validation_status, "pass")) {
+if (!identical(payload$federated_comparison$validation_status, "pass")) {
   stop("PathMNIST direct-image validation failed.", call. = FALSE)
 }
 cat("PASS\n")

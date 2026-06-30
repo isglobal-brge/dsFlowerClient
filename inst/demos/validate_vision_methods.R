@@ -250,11 +250,10 @@ run_central_baseline <- function(spec, samples_csv, image_root, out_dir,
   parsed
 }
 
-run_federated_vision <- function(spec, conns, privacy, rounds) {
+run_federated_vision <- function(spec, conns, rounds) {
   recipe <- ds.flower.recipe(
     model = spec$model,
     strategy = ds.flower.strategy.fedavg(),
-    privacy = privacy,
     target = spec$target,
     num_rounds = rounds
   )
@@ -283,7 +282,6 @@ run_federated_vision <- function(spec, conns, privacy, rounds) {
       target_column = spec$target,
       feature_columns = NULL,
       run_config = run_config,
-      privacy = recipe$privacy,
       template_name = recipe$model$template
     )
   )
@@ -309,7 +307,6 @@ run_federated_vision <- function(spec, conns, privacy, rounds) {
 }
 
 cfg <- demo_config("vision_method_validation", default_rounds = 1L)
-cfg$profile <- demo_env("DSFLOWER_VISION_VALIDATION_PRIVACY", "sandbox_open")
 
 if (!nzchar(Sys.getenv("DSFLOWER_ARTIFACT_WATCHDOG_GRACE_SECS"))) {
   Sys.setenv(DSFLOWER_ARTIFACT_WATCHDOG_GRACE_SECS = "1")
@@ -378,7 +375,6 @@ for (i in seq_len(n_sites)) {
   opal <- opal_login(cfg, i)
   on.exit(try(opalr::opal.logout(opal), silent = TRUE), add = TRUE)
   ensure_project(opal, cfg$project)
-  set_privacy_profile(opal, cfg$profile)
   opalr::dsadmin.set_option(opal, "dsflower.image_data_root",
                             server_root, profile = "default")
   table_name <- paste0(cfg$table_prefix, "_site", i)
@@ -414,7 +410,6 @@ on.exit({
 
 python <- find_validation_python()
 baseline_script <- vision_baseline_script()
-privacy <- ds.flower.privacy(cfg$profile)
 specs <- selected_specs(vision_specs())
 
 results <- vector("list", length(specs))
@@ -426,7 +421,7 @@ for (i in seq_along(specs)) {
     rounds = cfg$rounds, seed = cfg$seed
   )
   fed <- tryCatch(
-    run_federated_vision(spec, conns, privacy, rounds = cfg$rounds),
+    run_federated_vision(spec, conns, rounds = cfg$rounds),
     error = function(e) list(status = "failed", error = conditionMessage(e),
                              loss = NA_real_, n_failures = NA_real_)
   )
@@ -471,7 +466,6 @@ results_df <- do.call(rbind, results)
 payload <- list(
   generated_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%OS3Z", tz = "UTC"),
   demo_id = "vision_method_validation",
-  privacy_profile = cfg$profile,
   n_sites = n_sites,
   n_per_site = n_per_site,
   n_total = n_sites * n_per_site,

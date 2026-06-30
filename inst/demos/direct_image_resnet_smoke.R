@@ -117,7 +117,6 @@ stage_site <- function(mode, local_root, site, container, server_root, ssh_host,
 
 # --------------------------------------------------------------------------- #
 cfg <- demo_config("direct_image_resnet_smoke", default_rounds = 1L)
-cfg$profile <- demo_env("DSFLOWER_IMAGE_DEMO_PRIVACY", "sandbox_open")
 n_sites <- length(cfg$urls)
 n_per_site <- as.integer(demo_env("DSFLOWER_IMAGE_DEMO_N_PER_SITE", 8L))
 server_root <- demo_env("DSFLOWER_IMAGE_DEMO_SERVER_ROOT", "/srv/imaging/direct_image_smoke")
@@ -154,7 +153,6 @@ table_paths <- character(n_sites)
 for (i in seq_len(n_sites)) {
   opal <- opal_login(cfg, i)
   ensure_project(opal, cfg$project)
-  set_privacy_profile(opal, cfg$profile)
   opalr::dsadmin.set_option(opal, "dsflower.image_data_root", server_root, profile = "default")
   table_paths[[i]] <- upload_site_table(opal, cfg$project,
                                         paste0(cfg$table_prefix, "_site", i), site_tables[[i]])

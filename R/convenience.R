@@ -238,3 +238,7 @@ ds.flower.fit <- function(conns,
     num_rounds = rounds, model_params = list(),
     data_kind = data_kind, torch_backend = torch_backend, verbose = verbose)
 }
+
+#' @rdname ds.flower.fit
+#' @export
+ds.flower.train <- ds.flower.fit
