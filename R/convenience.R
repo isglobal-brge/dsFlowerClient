@@ -247,13 +247,14 @@ ds.flower.fit <- function(conns,
   data_kind <- if (model_spec$name %in% c("pytorch_resnet18", "pytorch_densenet121"))
     "image" else "tabular"
 
-  # The submission pipeline owns connect/upload/pin/run/cleanup. FedAvg is the only
-  # aggregation (each per-node update is already private). strategy/label_set/masks
-  # are accepted for back-compat but not used by the enforced-DP tracks.
+  # The submission pipeline owns connect/upload/pin/run/cleanup. The aggregation
+  # strategy runs server-side (researcher SuperLink) over already-DP updates, so
+  # any of the supported strategies is DP-safe post-processing (label_set/masks
+  # remain back-compat no-ops for the enforced-DP tracks).
   ds.flower.submit(
     conns, model = model_spec, target = target, features = features,
     data = data, resource = resource, symbol = symbol,
-    num_rounds = rounds, model_params = list(),
+    num_rounds = rounds, model_params = list(), strategy = strategy,
     data_kind = data_kind, torch_backend = torch_backend, verbose = verbose)
 }
 
