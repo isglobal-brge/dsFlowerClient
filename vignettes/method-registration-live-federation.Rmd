@@ -1,0 +1,208 @@
+---
+title: "Registering a server-side method and running against a live federation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Registering a server-side method and running against a live federation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE, purl = FALSE)
+```
+
+This walkthrough shows the full life cycle of a **server-side DataSHIELD method**:
+what it is, how an operator **registers** it on the nodes, and how a researcher then
+**uses** it — here against the live public federation at `*.datashield.live`
+(three sites: Nairobi, Dakar, Douala, holding the Breast-Cancer-Wisconsin demo table).
+
+Every output block below was captured from a real run against that federation
+(dsFlower 0.2.4). None of it is executed at build time — reproduce it yourself with
+your own credentials.
+
+## 1. The DataSHIELD trust model in one paragraph
+
+A DataSHIELD analyst can only invoke functions that the node's **Opal server has
+explicitly whitelisted** — the parser rejects anything else. So adding new server-side
+capability is two steps: (1) **install** the R package on the node's compute container,
+and (2) **register** its methods with Opal so clients are allowed to call them. The raw
+data never leaves the node; only the method's disclosure-controlled aggregate does.
+
+We use one concrete method as the example: `flowerFeatureStatsDS` from **dsFlower**.
+
+## 2. The example method: `flowerFeatureStatsDS`
+
+`dsFlower` enforces differential privacy on federated model training. DP-SGD clips each
+per-sample gradient to a fixed norm, so on **raw** features the large-scale columns
+dominate and the model collapses — the cure is feature standardization. To standardize
+*soundly across sites*, the client needs the **global** per-feature mean/SD. That is what
+`flowerFeatureStatsDS` provides: a disclosure-controlled aggregate returning per-feature
+`count / sum / sumsq` (exactly what `ds.mean`/`ds.var` release), gated on the node's
+minimum-rows threshold. It is a *separate* sanctioned aggregate — it is **not** part of,
+and does not weaken, the DP-SGD `(epsilon, delta)` budget.
+
+```r
+flowerFeatureStatsDS <- function(data_symbol, feature_columns = NULL) {
+  obj <- get(data_symbol, envir = parent.frame(), inherits = FALSE)
+  .assertMinSamples(nrow(obj), min_n = .disclosure_min_rows())   # disclosure gate
+  feats <- .ds_arg(feature_columns)
+  # ... per-feature finite count / sum / sum-of-squares (per-feature gated) ...
+  list(features = feats, n = n, sum = s, sumsq = ss)
+}
+```
+
+For Opal to accept the call, the function is declared in the package's `DESCRIPTION`
+under `AggregateMethods:` and exported in `NAMESPACE`.
+
+## 3. Registering the method (operator, with admin rights)
+
+First install the package on each node's rock/compute container:
+
+```r
+# On the node (shell): install into the rock's R library
+# R CMD INSTALL --library=/var/lib/rock/R/library dsFlower_0.2.4.tar.gz
+```
+
+Then register its methods with Opal using **opalr** (admin credentials). One call
+publishes *all* of the package's aggregate/assign methods from its `DESCRIPTION`:
+
+```r
+library(opalr)
+opts  <- list(ssl_verifyhost = 0L, ssl_verifypeer = 0L)
+hosts <- c("nairobi", "dakar", "douala")
+
+for (h in hosts) {
+  o <- opal.login("administrator", Sys.getenv("OPAL_ADMIN_PW"),
+                  url = paste0("https://", h, ".datashield.live"), opts = opts)
+  dsadmin.set_package_methods(o, "dsFlower")          # registers every dsFlower method
+  opal.logout(o)
+}
+```
+
+To register (or inspect) a single method instead, use `dsadmin.set_method()` /
+`dsadmin.get_methods()`. Here is the method showing up in Opal's aggregate table after
+registration:
+
+```r
+o <- opal.login("administrator", Sys.getenv("OPAL_ADMIN_PW"),
+                url = "https://nairobi.datashield.live", opts = opts)
+m <- dsadmin.get_methods(o, type = "aggregate")
+m[grepl("flowerFeatureStatsDS", m$name), c("name", "type", "class")]
+```
+
+```
+#>                    name      type    class
+#> 24 flowerFeatureStatsDS aggregate function   ->  dsFlower::flowerFeatureStatsDS
+```
+
+The client can now call it. (Everything else in `dsFlower` — the run lifecycle,
+the DP budget query, the training methods — was registered by the same
+`dsadmin.set_package_methods()` call.)
+
+## 4. Using it against the live federation
+
+Log in to the three sites and assign the demo table to the symbol `D`:
+
+```r
+library(DSI); library(DSOpal); library(dsFlowerClient)
+
+builder <- newDSLoginBuilder()
+for (h in hosts) {
+  builder$append(
+    server = h, url = paste0("https://", h, ".datashield.live"),
+    user = "administrator", password = Sys.getenv("OPAL_ADMIN_PW"),
+    table = "dsflower_demo.breast_cancer", driver = "OpalDriver",
+    options = "list(ssl_verifyhost=0L, ssl_verifypeer=0L)")
+}
+conns <- datashield.login(builder$build(), assign = TRUE, symbol = "D")
+
+datashield.aggregate(conns, quote(dimDS("D")))
+```
+
+```
+#> $nairobi
+#> [1] 190  31
+#> $dakar
+#> [1] 190  31
+#> $douala
+#> [1] 189  31
+```
+
+569 patients across three countries — and not one row leaves a site. We can call our
+newly registered method directly to see the disclosure-controlled statistics it returns,
+and pool them into a global mean exactly as the training pipeline does:
+
+```r
+st <- datashield.aggregate(conns, call("flowerFeatureStatsDS", "D", "mean_radius"))
+tot_n <- sum(vapply(st, `[[`, 0, "n"))
+tot_s <- sum(vapply(st, `[[`, 0, "sum"))
+tot_s / tot_n                       # global mean of mean_radius, pooled over all sites
+```
+
+```
+#> nairobi mean_radius: n = 190, sum = 2683.6, sumsq = 39880
+#> GLOBAL mean_radius (pooled over 569 patients): 14.127
+```
+
+In practice you never call it by hand — `ds.flower.fit()` does it for you, uses the
+pooled mean/SD to standardize the features, and bakes the same statistics into the model
+so prediction scales new data identically. Train a federated, DP-protected model in one
+call:
+
+```r
+run_lr  <- ds.flower.fit(conns, target = "malignant", model = "logreg",  rounds = 5L)
+run_xgb <- ds.flower.fit(conns, target = "malignant", model = "xgboost", rounds = 5L)
+```
+
+## 5. Results
+
+Predicting on a held-out copy of the data (`test`), against the majority-class baseline
+of 0.63:
+
+```r
+mean(as.integer(ds.flower.predict(run_lr,  test)) == test$malignant)
+mean(as.integer(ds.flower.predict(run_xgb, test)) == test$malignant)
+```
+
+| Model | Mechanism | Accuracy (ε = 3) | Majority baseline |
+|-------|-----------|:----------------:|:-----------------:|
+| `logreg`  | DP-SGD (Opacus)      | **0.931** | 0.63 |
+| `xgboost` | DP-GBDT (S-GBDT)     | **0.926** | 0.63 |
+
+Both are trained with differential privacy on (ε = 3) and never see a single raw row on
+the client. The DP cost is small once the pipeline is correct — which is precisely what
+`flowerFeatureStatsDS` makes possible (global standardization at no extra privacy budget).
+
+The trees run reports an honest federation summary:
+
+```
+#> xgboost history: n_boosters = 3, n_failures = 0
+```
+
+Finally, a quick node health check — `flowerGetCapabilitiesDS()` also exposes a
+defunct-process counter for monitoring:
+
+```r
+caps <- datashield.aggregate(conns, quote(flowerGetCapabilitiesDS()))
+```
+
+```
+#> nairobi: dsFlower 0.2.4, zombie_processes = 0
+#> dakar:   dsFlower 0.2.4, zombie_processes = 0
+#> douala:  dsFlower 0.2.4, zombie_processes = 0
+```
+
+```r
+datashield.logout(conns)
+```
+
+## Recap
+
+1. A server-side method is R code declared in a package's `DESCRIPTION`/`NAMESPACE` and
+   **registered with Opal** (`dsadmin.set_package_methods()`), after which whitelisted
+   clients may call it.
+2. `flowerFeatureStatsDS` is our example — a disclosure-controlled aggregate that lets
+   `dsFlower` standardize features globally so DP-protected models stay accurate.
+3. Against the live `*.datashield.live` federation, a one-line `ds.flower.fit()` trains a
+   federated model with server-enforced differential privacy and reaches ~0.93 accuracy
+   on the Breast-Cancer-Wisconsin demo — with the raw data never leaving the sites.

@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,6 +35,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="articles/api-quickstart.html">API Quickstart</a></li>
+    <li><a class="dropdown-item" href="articles/method-registration-live-federation.html">Method Registration + Live Federation</a></li>
     <li><a class="dropdown-item" href="articles/demo-overview.html">Validation Evidence Overview</a></li>
     <li><a class="dropdown-item" href="articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
     <li><a class="dropdown-item" href="articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
@@ -61,254 +62,130 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="dsflowerclient">dsFlowerClient<a class="anchor" aria-label="anchor" href="#dsflowerclient"></a>
 </h1></div>
-<p><code>dsFlowerClient</code> is the researcher-side R package for running controlled <a href="https://flower.ai/" class="external-link">Flower</a> federated learning workflows through <a href="https://www.datashield.org/" class="external-link">DataSHIELD</a>. It works with the server-side <a href="https://github.com/isglobal-brge/dsFlower" class="external-link"><code>dsFlower</code></a> package installed on each Opal/Rock node.</p>
-<p>The package starts a local Flower SuperLink, asks each DataSHIELD server to stage data and start a Flower SuperNode, launches an authorised template and returns only the outputs permitted by the active server-side privacy profile. Raw rows, images, masks and local staging files remain inside the data-owning servers.</p>
-<div class="section level2">
-<h2 id="current-validation-evidence">Current validation evidence<a class="anchor" aria-label="anchor" href="#current-validation-evidence"></a>
-</h2>
-<p>The documentation separates current biomedical evidence from catalogue coverage. The recent validation evidence is the one used for presentation and thesis claims; the synthetic catalogue suite complements it by exercising the full template surface.</p>
-<table class="table">
-<colgroup>
-<col width="25%">
-<col width="25%">
-<col width="25%">
-<col width="25%">
-</colgroup>
-<thead><tr>
-<th>Evidence layer</th>
-<th>Dataset or source</th>
-<th>Profile/mechanism</th>
-<th>Current result</th>
-</tr></thead>
-<tbody>
-<tr>
-<td>Clinical benchmark matrix</td>
-<td>Breast Cancer Wisconsin, UCI Heart Disease, Pima Indians Diabetes, CDC Diabetes Health Indicators</td>
-<td>
-<code>trusted_internal</code>, <code>clinical_default</code>, <code>clinical_update_noise</code>, <code>high_sensitivity_dp</code>
-</td>
-<td>Centralised-vs-federated held-out metrics with zero client failures across the committed runs.</td>
-</tr>
-<tr>
-<td>Clinical Secure Aggregation</td>
-<td>Breast Cancer Wisconsin, Pima, CDC Diabetes</td>
-<td><code>clinical_default</code></td>
-<td>SecAgg+ enforced, per-node metrics suppressed, all selected runs pass.</td>
-</tr>
-<tr>
-<td>Clinical DP-SGD</td>
-<td>CDC Diabetes Health Indicators</td>
-<td>
-<code>high_sensitivity_dp</code> with Opacus DP-SGD</td>
-<td>PyTorch logistic regression and MLP validated at epsilon 8, with additional epsilon curves at 2, 4 and 8.</td>
-</tr>
-<tr>
-<td>XGBoost histogram update noise</td>
-<td>CDC Diabetes Health Indicators</td>
-<td><code>clinical_update_noise</code></td>
-<td>Secure histogram route validated with update-noise curve at epsilon 8, 12 and 16.</td>
-</tr>
-<tr>
-<td>SUPPORT2 method families</td>
-<td>SUPPORT2 critical-care study</td>
-<td>
-<code>clinical_default</code> and <code>high_sensitivity_dp</code>
-</td>
-<td>Regression, count, multiclass, multilabel and Cox survival validated under SecAgg; four DP-SGD-compatible families repeated under DP-SGD.</td>
-</tr>
-<tr>
-<td>Imaging handoff</td>
-<td>LUNG1 radiomics and direct NIfTI assets from <code>dsImaging</code>
-</td>
-<td>
-<code>trusted_internal</code> path evidence</td>
-<td>Radiomics-derived logistic regression and direct-image ResNet path validate the <code>dsImaging</code> to <code>dsFlower</code> handoff.</td>
-</tr>
-<tr>
-<td>Direct biomedical images</td>
-<td>MedMNIST v2 PathMNIST</td>
-<td>
-<code>trusted_internal</code> and <code>consortium_internal</code>
-</td>
-<td>1,500 server-side images; centralised accuracy 0.9947 and federated checkpoint accuracy 0.9860; SecAgg branch completes with global checkpoint.</td>
-</tr>
-<tr>
-<td>Catalogue coverage</td>
-<td>Deterministic synthetic tabular, sequence, survival, image and mask fixtures</td>
-<td><code>sandbox_open</code></td>
-<td>17 non-vision and 3 vision templates execute end to end, complementing the biomedical benchmarks with full template-surface coverage.</td>
-</tr>
-</tbody>
-</table>
-<p>Rendered reports are available in the pkgdown site: <a href="https://isglobal-brge.github.io/dsFlowerClient/" class="uri">https://isglobal-brge.github.io/dsFlowerClient/</a>.</p>
-</div>
+<p><code>dsFlowerClient</code> is the researcher-side R package for running <a href="https://flower.ai/" class="external-link">Flower</a> federated learning through <a href="https://www.datashield.org/" class="external-link">DataSHIELD</a>, with <strong>always-on, server-enforced differential privacy</strong>. It pairs with the node-side <a href="https://github.com/isglobal-brge/dsFlower" class="external-link"><code>dsFlower</code></a> package installed on each Opal/Rock server.</p>
+<p>The client starts a local Flower SuperLink, asks each DataSHIELD server to stage data and start a Flower SuperNode, runs the model, and returns only the privatised outputs. <strong>Raw rows, images and staging files never leave the data-owning servers, and the analyst never sets the privacy level — each data node decides and enforces it.</strong></p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"isglobal-brge/dsFlowerClient"</span><span class="op">)</span></span></code></pre></div>
-<p>The client runtime needs the Flower command-line tools. A simple local setup is:</p>
+<p>The client needs the Flower CLI:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip install <span class="st">"flwr&gt;=1.13.0"</span></span></code></pre></div>
-<p>Each Opal/Rock server must have <code>dsFlower</code> installed and configured.</p>
+<p>Each Opal/Rock server must have <code>dsFlower</code> installed.</p>
 </div>
 <div class="section level2">
-<h2 id="basic-use">Basic use<a class="anchor" aria-label="anchor" href="#basic-use"></a>
+<h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<p>For most analyses, use <code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code>. It performs the full lifecycle: capability checks, server-side preparation, SuperLink start, SuperNode start, Flower run, result collection and cleanup.</p>
+<p>One call does the whole lifecycle (capability checks → server-side staging → run → cleanup):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span>; <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">builder</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/newDSLoginBuilder.html" class="external-link">newDSLoginBuilder</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span></span>
-<span>  server <span class="op">=</span> <span class="st">"site1"</span>,</span>
-<span>  url <span class="op">=</span> <span class="st">"https://opal1.example.org"</span>,</span>
-<span>  user <span class="op">=</span> <span class="st">"researcher"</span>,</span>
-<span>  password <span class="op">=</span> <span class="st">"..."</span>,</span>
-<span>  table <span class="op">=</span> <span class="st">"PROJECT.training_data"</span>,</span>
-<span>  driver <span class="op">=</span> <span class="st">"OpalDriver"</span></span>
-<span><span class="op">)</span></span>
-<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span></span>
-<span>  server <span class="op">=</span> <span class="st">"site2"</span>,</span>
-<span>  url <span class="op">=</span> <span class="st">"https://opal2.example.org"</span>,</span>
-<span>  user <span class="op">=</span> <span class="st">"researcher"</span>,</span>
-<span>  password <span class="op">=</span> <span class="st">"..."</span>,</span>
-<span>  table <span class="op">=</span> <span class="st">"PROJECT.training_data"</span>,</span>
-<span>  driver <span class="op">=</span> <span class="st">"OpalDriver"</span></span>
-<span><span class="op">)</span></span>
-<span></span>
+<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="st">"site1"</span>, url <span class="op">=</span> <span class="st">"https://opal1.example.org"</span>,</span>
+<span>               user <span class="op">=</span> <span class="st">"researcher"</span>, password <span class="op">=</span> <span class="st">"..."</span>,</span>
+<span>               table <span class="op">=</span> <span class="st">"PROJECT.training_data"</span>, driver <span class="op">=</span> <span class="st">"OpalDriver"</span><span class="op">)</span></span>
+<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="st">"site2"</span>, url <span class="op">=</span> <span class="st">"https://opal2.example.org"</span>,</span>
+<span>               user <span class="op">=</span> <span class="st">"researcher"</span>, password <span class="op">=</span> <span class="st">"..."</span>,</span>
+<span>               table <span class="op">=</span> <span class="st">"PROJECT.training_data"</span>, driver <span class="op">=</span> <span class="st">"OpalDriver"</span><span class="op">)</span></span>
 <span><span class="va">conns</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.login.html" class="external-link">datashield.login</a></span><span class="op">(</span><span class="va">builder</span><span class="op">$</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span>, assign <span class="op">=</span> <span class="cn">TRUE</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
-<span>  <span class="va">conns</span>,</span>
-<span>  symbol <span class="op">=</span> <span class="st">"D"</span>,</span>
-<span>  target <span class="op">=</span> <span class="st">"outcome"</span>,</span>
-<span>  features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"cholesterol"</span>, <span class="st">"biomarker"</span><span class="op">)</span>,</span>
-<span>  model <span class="op">=</span> <span class="st">"sklearn_logreg"</span>,</span>
-<span>  strategy <span class="op">=</span> <span class="st">"fedavg"</span>,</span>
-<span>  privacy <span class="op">=</span> <span class="st">"clinical_default"</span>,</span>
-<span>  rounds <span class="op">=</span> <span class="fl">5L</span></span>
-<span><span class="op">)</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span>, target <span class="op">=</span> <span class="st">"outcome"</span>, model <span class="op">=</span> <span class="st">"pytorch_logreg"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="reference/ds.flower.metrics.html">ds.flower.metrics</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
 <span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
-<p>The lower-level API remains available when a study needs to inspect or modify the recipe explicitly:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">flower</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.connect.html">ds.flower.connect</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.recipe.html">ds.flower.recipe</a></span><span class="op">(</span></span>
-<span>  model <span class="op">=</span> <span class="fu"><a href="reference/ds.flower.model.html">ds.flower.model</a></span><span class="op">(</span><span class="st">"pytorch_mlp"</span>, hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  strategy <span class="op">=</span> <span class="fu"><a href="reference/ds.flower.strategy.html">ds.flower.strategy</a></span><span class="op">(</span><span class="st">"fedprox"</span>, proximal_mu <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span>
-<span>  privacy <span class="op">=</span> <span class="fu"><a href="reference/ds.flower.privacy.html">ds.flower.privacy</a></span><span class="op">(</span><span class="st">"clinical_default"</span><span class="op">)</span>,</span>
-<span>  target <span class="op">=</span> <span class="st">"outcome"</span>,</span>
-<span>  features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"cholesterol"</span>, <span class="st">"biomarker"</span><span class="op">)</span>,</span>
-<span>  num_rounds <span class="op">=</span> <span class="fl">10L</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.run.html">ds.flower.run</a></span><span class="op">(</span><span class="va">flower</span>, <span class="va">recipe</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/ds.flower.disconnect.html">ds.flower.disconnect</a></span><span class="op">(</span><span class="va">flower</span><span class="op">)</span></span></code></pre></div>
+<p>That is the whole minimal call: <code>conns</code>, the data <code>symbol</code>, the <code>target</code>, and a <code>model</code>. Everything else has sensible defaults — <code>features</code> defaults to every column except the target, <code>strategy = "fedavg"</code>, <code>rounds = 5</code>, and <strong>differential privacy is always applied by the node</strong>. <code><a href="reference/ds.flower.fit.html">ds.flower.train()</a></code> is an alias of <code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code>.</p>
 </div>
 <div class="section level2">
-<h2 id="privacy-profiles">Privacy profiles<a class="anchor" aria-label="anchor" href="#privacy-profiles"></a>
+<h2 id="privacy-is-server-authoritative-you-dont-set-it">Privacy is server-authoritative (you don’t set it)<a class="anchor" aria-label="anchor" href="#privacy-is-server-authoritative-you-dont-set-it"></a>
 </h2>
-<p>Server-side privacy profiles define the effective policy. The client request is validated against what each server allows.</p>
+<p>Differential privacy is always on and is decided <strong>entirely by each data node</strong>: the node sets the (epsilon, delta, clipping) from its own DataSHIELD options (with hard ceilings), chooses the DP mechanism from what you submit, and debits a Rényi-DP budget ledger. The client has no privacy knob — it cannot weaken DP, nor even request a different value. You can only <strong>read</strong> the node’s real remaining budget:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ds.flower.privacy.budget.html">ds.flower.privacy.budget</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="models">Models<a class="anchor" aria-label="anchor" href="#models"></a>
+</h2>
+<p>20 model families, all PyTorch or XGBoost (sent to the node as declarative <strong>specs</strong>, never code):</p>
 <table class="table">
 <colgroup>
 <col width="50%">
 <col width="50%">
 </colgroup>
 <thead><tr>
-<th>Profile</th>
-<th>Use</th>
+<th>Family</th>
+<th>Models</th>
 </tr></thead>
 <tbody>
 <tr>
-<td><code>sandbox_open</code></td>
-<td>Local development and catalogue coverage; requires explicit server opt-in.</td>
+<td>Linear / GLM</td>
+<td>
+<code>pytorch_logreg</code>, <code>pytorch_linear_regression</code>, <code>pytorch_multiclass</code>, <code>pytorch_multilabel</code>, <code>pytorch_poisson</code>, <code>pytorch_negbin</code>, <code>pytorch_gamma</code>, <code>pytorch_ordinal</code>
+</td>
 </tr>
 <tr>
-<td><code>trusted_internal</code></td>
-<td>Controlled internal experiments without required Secure Aggregation.</td>
+<td>Penalised linear / SVM</td>
+<td>
+<code>pytorch_ridge</code>, <code>pytorch_lasso</code>, <code>pytorch_elasticnet</code>, <code>pytorch_svm</code>
+</td>
 </tr>
 <tr>
-<td><code>consortium_internal</code></td>
-<td>Multi-site runs with SecAgg+, fixed participation and suppressed per-node metrics.</td>
+<td>Deep nets</td>
+<td>
+<code>pytorch_mlp</code>, <code>pytorch_cnn</code>, <code>pytorch_tcn</code>, <code>pytorch_resnet</code>, <code>pytorch_transformer</code>, <code>pytorch_lstm</code>, <code>pytorch_gru</code>
+</td>
 </tr>
 <tr>
-<td><code>clinical_default</code></td>
-<td>Default clinical profile with SecAgg+, stricter row guards and controlled metric release.</td>
-</tr>
-<tr>
-<td><code>clinical_hardened</code></td>
-<td>Higher-threshold clinical profile.</td>
-</tr>
-<tr>
-<td><code>clinical_update_noise</code></td>
-<td>SecAgg+ plus bounded update or histogram noise where the template supports it.</td>
-</tr>
-<tr>
-<td><code>high_sensitivity_dp</code></td>
-<td>SecAgg+ plus patient-level DP-SGD for templates validated with Opacus per-example gradients.</td>
+<td>Gradient boosting</td>
+<td>
+<code>xgboost</code> (DP-GBDT)</td>
 </tr>
 </tbody>
 </table>
-<p><code>clinical_update_noise</code> is not presented as formal patient-level DP-SGD. It is an update or histogram hardening profile. Use <code>high_sensitivity_dp</code> when the study requires patient-level DP-SGD and the selected template supports it.</p>
+<p>Set hyperparameters via <code>model_params</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span>, target <span class="op">=</span> <span class="st">"y"</span>,</span>
+<span>                     model <span class="op">=</span> <span class="st">"pytorch_mlp"</span>, model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                     rounds <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="re-running-the-current-evidence">Re-running the current evidence<a class="anchor" aria-label="anchor" href="#re-running-the-current-evidence"></a>
+<h2 id="how-the-privacy-guarantee-is-enforced-node-side">How the privacy guarantee is enforced (node side)<a class="anchor" aria-label="anchor" href="#how-the-privacy-guarantee-is-enforced-node-side"></a>
 </h2>
-<p>The commands below assume a local three-Opal/Rock stack with the server package installed and published.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_OPAL_URLS</span><span class="op">=</span><span class="st">"https://localhost:8443,https://localhost:8444,https://localhost:8445"</span></span>
-<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_USER</span><span class="op">=</span><span class="st">"administrator"</span></span>
-<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="bu">export</span> <span class="va">OPAL_PASSWORD</span><span class="op">=</span><span class="st">"admin123"</span></span></code></pre></div>
-<p>Clinical algorithm and privacy-profile matrix:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="va">DSFLOWER_DEMO_PRIVACY_PROFILE</span><span class="op">=</span>clinical_default <span class="dt">\</span></span>
-<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="va">DSFLOWER_CLINICAL_MODELS</span><span class="op">=</span>sklearn_logreg,sklearn_ridge,sklearn_sgd,pytorch_logreg,pytorch_mlp,xgboost_histogram <span class="dt">\</span></span>
-<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_clinical_algorithms.R</span></code></pre></div>
-<p>SUPPORT2 method-family benchmarks:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="va">DSFLOWER_SUPPORT2_LIMIT</span><span class="op">=</span>3000 <span class="dt">\</span></span>
-<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="va">DSFLOWER_FAMILY_PRIVACY_PROFILE</span><span class="op">=</span>clinical_default <span class="dt">\</span></span>
-<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_method_families.R</span>
-<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="va">DSFLOWER_SUPPORT2_LIMIT</span><span class="op">=</span>3000 <span class="dt">\</span></span>
-<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="va">DSFLOWER_FAMILY_PRIVACY_PROFILE</span><span class="op">=</span>high_sensitivity_dp <span class="dt">\</span></span>
-<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="va">DSFLOWER_FAMILY_MODELS</span><span class="op">=</span>pytorch_linear_regression,pytorch_poisson,pytorch_multiclass,pytorch_multilabel <span class="dt">\</span></span>
-<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="va">DSFLOWER_FAMILY_MULTICLASS_ROUNDS</span><span class="op">=</span>6 <span class="dt">\</span></span>
-<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_method_families.R</span></code></pre></div>
-<p>PathMNIST direct-image benchmark:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a><span class="va">DSFLOWER_PATHMNIST_N_PER_SITE</span><span class="op">=</span>500 <span class="dt">\</span></span>
-<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a><span class="va">DSFLOWER_PATHMNIST_PRIVACY_PROFILES</span><span class="op">=</span>trusted_internal,consortium_internal <span class="dt">\</span></span>
-<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_pathmnist_direct_image.R</span></code></pre></div>
-<p>LUNG1 radiomics handoff from <code>dsImaging</code>:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">LUNG1_WORKDIR</span><span class="op">=</span><span class="st">"/tmp/dsimaging_lung1_full"</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">LUNG1_OPAL_PROJECT</span><span class="op">=</span><span class="st">"dsdemo"</span></span>
-<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="bu">export</span> <span class="va">LUNG1_OPAL_RESOURCE</span><span class="op">=</span><span class="st">"lung1_full_study"</span></span>
-<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/lung1_radiomics_to_flower.R</span></code></pre></div>
-<p>LUNG1 direct-image handoff from <code>dsImaging</code>:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_RESOURCE</span><span class="op">=</span><span class="st">"dsdemo.imaging_demo"</span></span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_TARGET</span><span class="op">=</span><span class="st">"os_2yr_alive"</span></span>
-<span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a><span class="bu">export</span> <span class="va">DSFLOWER_IMAGING_LOCAL_WORKDIR</span><span class="op">=</span><span class="st">"/tmp/dsimaging_lung1_study"</span></span>
-<span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/dsimaging_direct_image_resnet.R</span></code></pre></div>
+<p>The node routes every submission to the tightest sound DP mechanism <strong>by construction</strong>:</p>
+<ul>
+<li>
+<strong>Declarative neural specs</strong> → Opacus <strong>DP-SGD</strong> (per-sample clip + noise). The declarative graph language covers MLP/CNN/TCN/ResNet/DenseNet/Inception/Transformer/U-Net/LSTM/GRU with no researcher code on the node.</li>
+<li>
+<strong>XGBoost spec</strong> → <strong>DP-GBDT</strong>.</li>
+<li>
+<strong>Arbitrary uploaded code</strong> (<code>ds.flower.tier2.run</code>) → an <strong>output-perturbation floor</strong> run <strong>out-of-process</strong>: the untrusted code executes in an isolated interpreter, and the trusted node applies all DP itself, so the upload can never disable the noise. Budget is reserved before any result is released.</li>
+</ul>
+<p>See the <a href="https://github.com/isglobal-brge/dsFlower/blob/main/ARCHITECTURE.md" class="external-link"><code>dsFlower</code> architecture notes</a> for the full trust model.</p>
 </div>
 <div class="section level2">
-<h2 id="catalogue-coverage-and-development-demos">Catalogue coverage and development demos<a class="anchor" aria-label="anchor" href="#catalogue-coverage-and-development-demos"></a>
+<h2 id="accuracy-under-dp-automatic-feature-standardization">Accuracy under DP (automatic feature standardization)<a class="anchor" aria-label="anchor" href="#accuracy-under-dp-automatic-feature-standardization"></a>
 </h2>
-<p>The catalogue validation scripts are still useful, but they should be read as product-surface checks. They use deterministic synthetic fixtures to confirm that every authorised template can be staged, executed, aggregated, persisted and cleaned up.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/validate_methods.R</span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/validate_vision_methods.R</span></code></pre></div>
-<p>The repository also keeps smaller development demos:</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/opal_federated_logreg.R</span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_breast_cancer.R</span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_heart_disease.R</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/benchmark_medmnist.R</span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="ex">Rscript</span> inst/demos/direct_image_resnet_smoke.R</span></code></pre></div>
-<p>These are useful when checking installation, connectivity or template mechanics; the current validation reports above provide the biomedical evidence used for presentation and thesis claims.</p>
+<p>DP-SGD clips each per-sample gradient to a fixed norm, so on <strong>raw</strong> features the large-scale columns dominate the gradient and small informative ones are suppressed — the model collapses to the majority baseline <em>even with no noise</em>. The fix is feature standardization, and <code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code> does it for you, soundly across sites:</p>
+<ul>
+<li>The client asks each node for per-feature <code>count / sum / sumsq</code> (a standard disclosure-controlled DataSHIELD aggregate, like <code>ds.mean</code>/<code>ds.var</code> — it reveals no individual row and is <strong>separate from</strong> the DP-SGD <code>(epsilon, delta)</code> budget, which it does not weaken), pools them into a <strong>global</strong> mean/SD, and bakes those into the model.</li>
+<li>Neural models train on standardized features; the trees model uses the same stats to place its random-split thresholds in the real data range. Prediction re-applies the exact same transform, so <code><a href="reference/ds.flower.predict.html">ds.flower.predict()</a></code> never desyncs.</li>
+</ul>
+<p>This is automatic for the <code>symbol=</code> data path (a warning is emitted for <code>data=</code>/<code>resource=</code> runs, which can’t compute global stats and fall back to raw features). On Breast-Cancer-Wisconsin across 3 sites at <code>epsilon = 3</code> this takes logistic regression from ~0.63 (majority) to ~0.93 and DP-GBDT to ~0.88 — i.e. the DP cost is small once the pipeline is correct. Defaults are tuned for standardized data (classification <code>learning_rate = 0.1</code>).</p>
 </div>
 <div class="section level2">
-<h2 id="models">Models<a class="anchor" aria-label="anchor" href="#models"></a>
+<h2 id="lower-level-api-power-users">Lower-level API (power users)<a class="anchor" aria-label="anchor" href="#lower-level-api-power-users"></a>
 </h2>
-<p>The client exposes 20 model constructors across scikit-learn, PyTorch and XGBoost. See the <code>dsFlower</code> README and the pkgdown reference index for the current template catalogue and privacy-profile compatibility.</p>
+<p><code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code> is enough for most analyses. For explicit control, build a recipe:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">flower</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.connect.html">ds.flower.connect</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span>
+<span><span class="va">recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.recipe.html">ds.flower.recipe</a></span><span class="op">(</span></span>
+<span>  model    <span class="op">=</span> <span class="fu"><a href="reference/ds.flower.model.html">ds.flower.model</a></span><span class="op">(</span><span class="st">"pytorch_mlp"</span>, hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  strategy <span class="op">=</span> <span class="fu"><a href="reference/ds.flower.strategy.html">ds.flower.strategy</a></span><span class="op">(</span><span class="st">"fedprox"</span>, proximal_mu <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span>
+<span>  target   <span class="op">=</span> <span class="st">"outcome"</span>,</span>
+<span>  num_rounds <span class="op">=</span> <span class="fl">10L</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ds.flower.run</span><span class="op">(</span><span class="va">flower</span>, <span class="va">recipe</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/ds.flower.disconnect.html">ds.flower.disconnect</a></span><span class="op">(</span><span class="va">flower</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="authors">Authors<a class="anchor" aria-label="anchor" href="#authors"></a>

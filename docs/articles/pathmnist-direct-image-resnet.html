@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
+    <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Method Registration + Live Federation</a></li>
     <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
     <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
@@ -126,7 +127,7 @@ tables, then clean up and log out.</p>
 <span><span class="va">recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.recipe.html">ds.flower.recipe</a></span><span class="op">(</span></span>
 <span>  model      <span class="op">=</span> <span class="va">model</span>,</span>
 <span>  strategy   <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.strategy.fedavg.html">ds.flower.strategy.fedavg</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  privacy    <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.privacy.trusted_internal.html">ds.flower.privacy.trusted_internal</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  privacy    <span class="op">=</span> <span class="fu">ds.flower.privacy.trusted_internal</span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  target     <span class="op">=</span> <span class="st">"label"</span>,</span>
 <span>  num_rounds <span class="op">=</span> <span class="fl">2</span></span>
 <span><span class="op">)</span></span>

@@ -20,6 +20,8 @@ navbar:
       menu:
         - text: "API Quickstart"
           href: articles/api-quickstart.html
+        - text: "Method Registration + Live Federation"
+          href: articles/method-registration-live-federation.html
         - text: "Validation Evidence Overview"
           href: articles/demo-overview.html
         - text: "Clinical Privacy Benchmarks"
@@ -42,6 +44,7 @@ articles:
     navbar: ~
     contents:
       - api-quickstart
+      - method-registration-live-federation
       - demo-overview
       - pathmnist-direct-image-resnet
       - lung1-direct-image-dsimaging-resnet
