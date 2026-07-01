@@ -128,6 +128,14 @@ and exported in <code>NAMESPACE</code>.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># On the node (shell): install into the rock's R library</span></span>
 <span><span class="co"># R CMD INSTALL --library=/var/lib/rock/R/library dsFlower_0.2.4.tar.gz</span></span></code></pre></div>
+<p>Or skip the manual install entirely and run the prebuilt demo image
+<a href="https://hub.docker.com/r/davidsarrat/dsflower-rock" class="external-link"><code>davidsarrat/dsflower-rock</code></a>
+as a rock profile — it ships dsFlower and the Flower runtime baked in.
+When a rock cluster from that image joins Opal, its
+<code>dsflower</code> DataSHIELD profile is created and its methods
+registered automatically (dsBase + dsFlower); the manual
+<code><a href="https://www.obiba.org/opalr/reference/dsadmin.set_package_methods.html" class="external-link">dsadmin.set_package_methods()</a></code> below is the equivalent step
+for a hand-installed package.</p>
 <p>Then register its methods with Opal using <strong>opalr</strong>
 (admin credentials). One call publishes <em>all</em> of the package’s
 aggregate/assign methods from its <code>DESCRIPTION</code>:</p>
@@ -162,7 +170,10 @@ call.)</p>
 <h2 id="using-it-against-the-live-federation">4. Using it against the live federation<a class="anchor" aria-label="anchor" href="#using-it-against-the-live-federation"></a>
 </h2>
 <p>Log in to the three sites and assign the demo table to the symbol
-<code>D</code>:</p>
+<code>D</code>. Each site runs the published demo image <a href="https://hub.docker.com/r/davidsarrat/dsflower-rock" class="external-link"><code>davidsarrat/dsflower-rock</code></a>
+as an Opal <strong><code>dsflower</code> profile</strong> (added
+alongside the site’s other rock profiles), so we select that profile at
+login — reproduce the whole node by running that image:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span>; <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span>; <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
 <span></span>
@@ -172,6 +183,7 @@ call.)</p>
 <span>    server <span class="op">=</span> <span class="va">h</span>, url <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"https://"</span>, <span class="va">h</span>, <span class="st">".datashield.live"</span><span class="op">)</span>,</span>
 <span>    user <span class="op">=</span> <span class="st">"administrator"</span>, password <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.getenv.html" class="external-link">Sys.getenv</a></span><span class="op">(</span><span class="st">"OPAL_ADMIN_PW"</span><span class="op">)</span>,</span>
 <span>    table <span class="op">=</span> <span class="st">"dsflower_demo.breast_cancer"</span>, driver <span class="op">=</span> <span class="st">"OpalDriver"</span>,</span>
+<span>    profile <span class="op">=</span> <span class="st">"dsflower"</span>,                         <span class="co"># the dsFlower-enabled rock profile</span></span>
 <span>    options <span class="op">=</span> <span class="st">"list(ssl_verifyhost=0L, ssl_verifypeer=0L)"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="va">conns</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.login.html" class="external-link">datashield.login</a></span><span class="op">(</span><span class="va">builder</span><span class="op">$</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span>, assign <span class="op">=</span> <span class="cn">TRUE</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span>
@@ -221,13 +233,13 @@ against the majority-class baseline of 0.63:</p>
 <tr class="odd">
 <td><code>logreg</code></td>
 <td>DP-SGD (Opacus)</td>
-<td align="center"><strong>0.931</strong></td>
+<td align="center"><strong>0.940</strong></td>
 <td align="center">0.63</td>
 </tr>
 <tr class="even">
 <td><code>xgboost</code></td>
 <td>DP-GBDT (S-GBDT)</td>
-<td align="center"><strong>0.926</strong></td>
+<td align="center"><strong>0.863</strong></td>
 <td align="center">0.63</td>
 </tr>
 </tbody>

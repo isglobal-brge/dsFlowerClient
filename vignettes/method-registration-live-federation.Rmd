@@ -63,6 +63,13 @@ First install the package on each node's rock/compute container:
 # R CMD INSTALL --library=/var/lib/rock/R/library dsFlower_0.2.4.tar.gz
 ```
 
+Or skip the manual install entirely and run the prebuilt demo image
+[`davidsarrat/dsflower-rock`](https://hub.docker.com/r/davidsarrat/dsflower-rock) as a rock
+profile — it ships dsFlower and the Flower runtime baked in. When a rock cluster from that
+image joins Opal, its `dsflower` DataSHIELD profile is created and its methods registered
+automatically (dsBase + dsFlower); the manual `dsadmin.set_package_methods()` below is the
+equivalent step for a hand-installed package.
+
 Then register its methods with Opal using **opalr** (admin credentials). One call
 publishes *all* of the package's aggregate/assign methods from its `DESCRIPTION`:
 
@@ -101,7 +108,10 @@ the DP budget query, the training methods — was registered by the same
 
 ## 4. Using it against the live federation
 
-Log in to the three sites and assign the demo table to the symbol `D`:
+Log in to the three sites and assign the demo table to the symbol `D`. Each site runs the
+published demo image [`davidsarrat/dsflower-rock`](https://hub.docker.com/r/davidsarrat/dsflower-rock)
+as an Opal **`dsflower` profile** (added alongside the site's other rock profiles), so we
+select that profile at login — reproduce the whole node by running that image:
 
 ```r
 library(DSI); library(DSOpal); library(dsFlowerClient)
@@ -112,6 +122,7 @@ for (h in hosts) {
     server = h, url = paste0("https://", h, ".datashield.live"),
     user = "administrator", password = Sys.getenv("OPAL_ADMIN_PW"),
     table = "dsflower_demo.breast_cancer", driver = "OpalDriver",
+    profile = "dsflower",                         # the dsFlower-enabled rock profile
     options = "list(ssl_verifyhost=0L, ssl_verifypeer=0L)")
 }
 conns <- datashield.login(builder$build(), assign = TRUE, symbol = "D")
@@ -166,8 +177,8 @@ mean(as.integer(ds.flower.predict(run_xgb, test)) == test$malignant)
 
 | Model | Mechanism | Accuracy (ε = 3) | Majority baseline |
 |-------|-----------|:----------------:|:-----------------:|
-| `logreg`  | DP-SGD (Opacus)      | **0.931** | 0.63 |
-| `xgboost` | DP-GBDT (S-GBDT)     | **0.926** | 0.63 |
+| `logreg`  | DP-SGD (Opacus)      | **0.940** | 0.63 |
+| `xgboost` | DP-GBDT (S-GBDT)     | **0.863** | 0.63 |
 
 Both are trained with differential privacy on (ε = 3) and never see a single raw row on
 the client. The DP cost is small once the pipeline is correct — which is precisely what
