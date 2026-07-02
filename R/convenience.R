@@ -174,7 +174,16 @@ ds.flower.task <- function(name = "classification") {
 #' @param evaluation_only Logical; accepted for compatibility but NOT yet enforced by the
 #'   enforced-DP path (the model is always released, DP-protected).
 #' @param detached Logical; accepted for back-compat (unused by the enforced-DP path).
-#' @param verbose Logical; print training output.
+#' @param output_dir Optional character; parent directory the trained model is
+#'   saved under (created if missing). Defaults to \code{./dsflower_output}.
+#' @param output_name Optional character; folder/file name for this model inside
+#'   \code{output_dir} (extension is added automatically). Defaults to an
+#'   auto-generated model id.
+#' @param silent Logical; when \code{TRUE}, suppress the training progress
+#'   feedback (connection, per-round and completion messages).
+#' @param verbose Logical; when \code{TRUE}, also print the raw flwr run log
+#'   (debugging). The tidy per-round progress is shown regardless unless
+#'   \code{silent = TRUE}.
 #' @param disconnect Logical; accepted for compatibility. The submission pipeline always
 #'   cleans up its server-side handles on exit regardless.
 #' @param run_args Named list; accepted for back-compat (unused by the enforced-DP path).
@@ -195,11 +204,20 @@ ds.flower.fit <- function(conns,
                           task = NULL,
                           label_set = NULL,
                           masks = NULL,
+                          output_dir = NULL,
+                          output_name = NULL,
+                          silent = FALSE,
                           evaluation_only = FALSE,
                           detached = FALSE,
-                          verbose = TRUE,
+                          verbose = FALSE,
                           disconnect = TRUE,
                           run_args = list()) {
+  # Set the progress-verbosity option at the outermost entry point so it stays
+  # active through every nested step, including the connection teardown that runs
+  # in the submission pipeline's on.exit cleanup.
+  old_opt <- options(dsflower.silent = isTRUE(silent))
+  on.exit(options(old_opt), add = TRUE)
+
   if (missing(conns) || is.null(conns)) {
     stop("'conns' is required.", call. = FALSE)
   }
@@ -255,7 +273,9 @@ ds.flower.fit <- function(conns,
     conns, model = model_spec, target = target, features = features,
     data = data, resource = resource, symbol = symbol,
     num_rounds = rounds, model_params = list(), strategy = strategy,
-    data_kind = data_kind, torch_backend = torch_backend, verbose = verbose)
+    data_kind = data_kind, torch_backend = torch_backend,
+    output_dir = output_dir, output_name = output_name,
+    verbose = verbose, silent = silent)
 }
 
 #' @rdname ds.flower.fit

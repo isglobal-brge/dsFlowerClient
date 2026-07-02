@@ -71,8 +71,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              num_rounds = 1L,
                              model_params = list(), data_kind = "tabular",
                              strategy = "fedavg",
-                             torch_backend = "auto", verbose = TRUE) {
+                             output_dir = NULL, output_name = NULL,
+                             torch_backend = "auto", verbose = FALSE,
+                             silent = FALSE) {
   .require_flwr_cli()
+  old_opt <- options(dsflower.silent = isTRUE(silent))
+  on.exit(options(old_opt), add = TRUE)
   if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
   if (length(model_params)) {
     model$params <- utils::modifyList(model$params %||% list(), model_params)
@@ -301,7 +305,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # run error and normal completion.
   ds.flower.nodes.ensure(conns, hsym, torch_backend = torch_backend)
   ds.flower.run.start(recipe, conns, app_dir = app_dir,
-                      results_dir = results_dir, symbol = hsym, verbose = verbose)
+                      results_dir = results_dir, symbol = hsym,
+                      output_dir = output_dir, output_name = output_name,
+                      verbose = verbose, silent = silent)
 }
 
 

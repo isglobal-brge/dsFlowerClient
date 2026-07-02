@@ -276,7 +276,7 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
     for (srv in pending) {
       if (isTRUE(statuses[[srv]]$supernode_running)) {
         ready[[srv]] <- TRUE
-        message("  ", srv, ": SuperNode connected")
+        .dsf_msg("  ", srv, ": SuperNode connected")
       }
     }
 

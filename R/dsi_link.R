@@ -34,8 +34,7 @@ ds.flower.link.up <- function(conns, symbol = "flower",
   }
   fleet_port <- sl$ports$fleet %||% 9092L
 
-  if (!verbose)
-    message("Connecting your machine to the federation (this can take ~1 min)...")
+  .dsf_msg("Connecting to the federation...")
 
   # Clean slate: reap any orphaned SuperNodes/forwarders left by a previously
   # killed or crashed run, so this run never hits the concurrent-SuperNode limit
@@ -73,11 +72,8 @@ ds.flower.link.up <- function(conns, symbol = "flower",
     socks      = vector("list", length(conns))
   )
 
-  if (verbose)
-    message("DSI tunnel ready. Run ds.flower.fit() / nodes.ensure() as usual.")
-  else
-    message("Federation ready: ", length(conns), " site",
-            if (length(conns) != 1) "s" else "", " connected.")
+  .dsf_msg("Federation ready: ", length(conns), " site",
+           if (length(conns) != 1) "s" else "", " connected.")
   invisible(cid)
 }
 

@@ -25,10 +25,14 @@
 #' @export
 ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                  run_config = list(), output_dir = NULL,
+                                 output_name = NULL,
                                  results_dir = NULL,
                                  symbol = "flower",
-                                 verbose = TRUE) {
+                                 verbose = FALSE, silent = FALSE) {
   .require_flwr_cli()
+
+  old_opt <- options(dsflower.silent = isTRUE(silent))
+  on.exit(options(old_opt), add = TRUE)
 
   if (!inherits(recipe, "dsflower_recipe")) {
     stop("'recipe' must be a dsflower_recipe object.", call. = FALSE)
@@ -87,6 +91,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   }
 
   # Run via venv flwr with FLWR_HOME pointing to our private config
+  .dsf_msg("Training ", recipe$model$template, " across ", n_clients,
+           " site(s) for ", recipe$num_rounds, " round(s)...")
   flwr_cmd <- .client_flwr_cmd()
   result <- .run_flwr_with_artifact_watchdog(
     command = flwr_cmd,
@@ -124,6 +130,13 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     expect_artifacts = !isTRUE(recipe$evaluation_only)
   )
 
+  if (!is.null(weights) || !is.null(history)) {
+    n_done <- if (is.data.frame(history) && nrow(history)) nrow(history) else recipe$num_rounds
+    .dsf_msg("Training complete: ", n_done, " round(s) aggregated across ",
+             n_clients, " site(s) with strategy '", recipe$strategy$name,
+             "'. Differential privacy was enforced by the nodes.")
+  }
+
   # Generate a unique model ID for identification
   model_id <- paste0(
     recipe$model$template, "_",
@@ -132,13 +145,17 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     format(Sys.time(), "%Y%m%d_%H%M%S")
   )
 
-  # Auto-save to persistent output_dir
+  # Auto-save to persistent output_dir. The caller may set the parent path
+  # (output_dir) and/or the model's folder name (output_name); both default
+  # sensibly. Missing directories are created, and the final path is made
+  # absolute so prediction resolves the model regardless of the working dir.
   saved_path <- NULL
   if (!is.null(weights) || !is.null(history)) {
-    if (is.null(output_dir)) {
-      output_dir <- file.path(".", "dsflower_output", model_id)
-    }
+    parent    <- if (is.null(output_dir)) file.path(".", "dsflower_output") else output_dir
+    save_name <- if (is.null(output_name)) model_id else output_name
+    output_dir <- file.path(parent, save_name)
     dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+    output_dir <- normalizePath(output_dir, winslash = "/", mustWork = FALSE)
 
     model_data <- list(
       model_id   = model_id,
@@ -154,7 +171,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       created_at = Sys.time(),
       n_clients  = length(conns)
     )
-    saved_path <- file.path(output_dir, "model.rds")
+    saved_path <- file.path(output_dir, paste0(save_name, ".rds"))
     saveRDS(model_data, saved_path)
 
     # Copy all output files (JSON, native format, history)
@@ -185,7 +202,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     jsonlite::write_json(meta, file.path(output_dir, "metadata.json"),
                          auto_unbox = TRUE, pretty = TRUE)
 
-    message("Model saved to ", output_dir)
+    .dsf_msg("Model saved to ", output_dir)
   }
 
   structure(
@@ -256,6 +273,30 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   .model_artifact_exists(results_dir)
 }
 
+# Emit a status/progress line to the user unless silence was requested. Progress
+# is opt-out (ds.flower.fit(..., silent = TRUE)); the option is set by the entry
+# points and read here so deep helpers need no extra argument threading.
+.dsf_msg <- function(...) {
+  if (!isTRUE(getOption("dsflower.silent", FALSE))) message(...)
+}
+
+# Parse freshly streamed flwr lines and announce each round as it starts. The
+# ServerApp logs "[ROUND k/N]" per federated round (neural/egress tracks); the
+# one-round trees track has no such marker and relies on the start/complete
+# lines instead. `seen` tracks already-announced rounds across poll iterations.
+.emit_round_progress <- function(lines, num_rounds, seen) {
+  if (!length(lines) || isTRUE(getOption("dsflower.silent", FALSE))) return(invisible())
+  for (ln in lines) {
+    m <- regmatches(ln, regexpr("\\[ROUND[[:space:]]+[0-9]+", ln))
+    if (!length(m)) next
+    k <- suppressWarnings(as.integer(regmatches(m, regexpr("[0-9]+", m))))
+    if (is.na(k) || k %in% seen$rounds) next
+    seen$rounds <- c(seen$rounds, k)
+    message("  Round ", k, "/", num_rounds, ": aggregating updates from the sites...")
+  }
+  invisible()
+}
+
 .stop_flwr_run <- function(flwr_cmd, run_id, env) {
   if (is.null(run_id) || !nzchar(run_id)) return(invisible(FALSE))
   tryCatch({
@@ -287,11 +328,14 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     cleanup_tree = TRUE
   )
 
+  seen <- new.env(parent = emptyenv()); seen$rounds <- integer(0)
+
   repeat {
     out <- proc$read_output_lines()
     err <- proc$read_error_lines()
     if (length(out)) stdout <- c(stdout, out)
     if (length(err)) stderr <- c(stderr, err)
+    .emit_round_progress(c(out, err), num_rounds, seen)
 
     if (is.null(run_id)) {
       run_id <- .parse_run_id(paste(c(stdout, stderr), collapse = "\n"))
@@ -690,8 +734,14 @@ ds.flower.models <- function(base_dir = file.path(".", "dsflower_output")) {
 ds.flower.load_model <- function(path) {
   if (dir.exists(path)) {
     rds_path <- file.path(path, "model.rds")
-    if (!file.exists(rds_path))
-      stop("No model.rds found in ", path, call. = FALSE)
+    if (!file.exists(rds_path)) {
+      # The bundle is named after the model (output_name.rds); fall back to the
+      # single .rds in the directory when the legacy model.rds is absent.
+      cand <- list.files(path, pattern = "\\.rds$", full.names = TRUE)
+      if (length(cand) != 1L)
+        stop("No model .rds found in ", path, call. = FALSE)
+      rds_path <- cand
+    }
     return(readRDS(rds_path))
   }
 
