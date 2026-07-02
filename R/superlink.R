@@ -578,7 +578,7 @@ ds.flower.superlink.stop <- function() {
   .clear_superlink_state()
 
   .dsflower_client_env$.superlink <- NULL
-  message("SuperLink stopped.")
+  .dsf_msg("SuperLink stopped.")
   invisible(TRUE)
 }
 

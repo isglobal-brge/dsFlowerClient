@@ -70,13 +70,34 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              data = NULL, resource = NULL, symbol = NULL,
                              num_rounds = 1L,
                              model_params = list(), data_kind = "tabular",
-                             torch_backend = "auto", verbose = TRUE) {
+                             strategy = "fedavg",
+                             output_dir = NULL, output_name = NULL,
+                             torch_backend = "auto", verbose = FALSE,
+                             silent = FALSE) {
   .require_flwr_cli()
+  old_opt <- options(dsflower.silent = isTRUE(silent))
+  on.exit(options(old_opt), add = TRUE)
   if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
   if (length(model_params)) {
     model$params <- utils::modifyList(model$params %||% list(), model_params)
   }
   sub <- .emit_submission(model)
+
+  # Aggregation strategy. All of these run ONLY on the researcher-side SuperLink,
+  # over the already-DP client updates -> pure post-processing, so the (epsilon,
+  # delta) guarantee is unchanged whichever is chosen (it is never a privacy knob).
+  strategy <- tolower(as.character(strategy)[1])
+  .dsf_strategies <- c("fedavg", "fedadam", "fedadagrad", "fedyogi", "fedavgm")
+  if (!strategy %in% .dsf_strategies) {
+    stop("Unknown strategy '", strategy, "'. Supported: ",
+         paste(.dsf_strategies, collapse = ", "), ".", call. = FALSE)
+  }
+  if (identical(sub$track, "trees") && !identical(strategy, "fedavg")) {
+    warning("strategy = '", strategy, "' is ignored on the trees track; ",
+            "boosted trees aggregate boosters, not averaged weights.",
+            call. = FALSE)
+    strategy <- "fedavg"
+  }
 
   if (is.null(data) && is.null(resource) && is.null(symbol)) symbol <- "D"
 
@@ -208,6 +229,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   cfg <- c(
     .toml_kv("dp-track", sub$track),
     .toml_kv("data-kind", data_kind),
+    .toml_kv("strategy", strategy),
     paste0("num-features = ", as.integer(n_features)),
     paste0("num-server-rounds = ", as.integer(num_rounds)),
     paste0("min-train-nodes = ", as.integer(n_clients)),
@@ -272,7 +294,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   recipe <- structure(list(
     model = list(name = model$name, template = model$template %||% model$name,
                  framework = model$framework %||% "pytorch", track = sub$track),
-    strategy = list(name = "FedAvg", params = list()),
+    strategy = list(name = strategy, params = list()),
     num_rounds = as.integer(num_rounds),
     features = features,
     feature_means = if (!is.null(feature_norm)) feature_norm$means else NULL,
@@ -283,7 +305,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # run error and normal completion.
   ds.flower.nodes.ensure(conns, hsym, torch_backend = torch_backend)
   ds.flower.run.start(recipe, conns, app_dir = app_dir,
-                      results_dir = results_dir, symbol = hsym, verbose = verbose)
+                      results_dir = results_dir, symbol = hsym,
+                      output_dir = output_dir, output_name = output_name,
+                      verbose = verbose, silent = silent)
 }
 
 
