@@ -90,14 +90,26 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     args <- c(args, "-c", paste0(nm, "=", val))
   }
 
-  # Run via venv flwr with FLWR_HOME pointing to our private config
+  # Run via venv flwr with FLWR_HOME pointing to our private config.
+  # Trees are a single federated round (each site trains its full DP-GBDT locally,
+  # then the boosters are bagged), so num_rounds does not apply to that track.
+  is_trees <- identical(recipe$model$track, "trees")
+  eff_rounds <- if (is_trees) 1L else recipe$num_rounds
   .dsf_msg("Training ", recipe$model$template, " across ", n_clients,
-           " site(s) for ", recipe$num_rounds, " round(s)...")
+           " site(s) for ", eff_rounds, " round(s)...")
   flwr_cmd <- .client_flwr_cmd()
+  # The trees track has no flwr [ROUND] stream to parse, so announce its one
+  # round here; the neural/egress tracks stream [ROUND k/N] during training.
+  if (is_trees)
+    .dsf_msg("  Round 1/1: each site trains its DP-GBDT locally, then the boosters are bagged...")
+  # PYTHONUNBUFFERED so the flwr child flushes its [ROUND k/N] log lines as they
+  # happen (block-buffered pipes otherwise hold them until exit, which hides the
+  # per-round progress under a non-interactive front-end such as knitr).
   result <- .run_flwr_with_artifact_watchdog(
     command = flwr_cmd,
     args = args,
-    env = .client_venv_env(extra = c(FLWR_HOME = sl_info$flwr_home)),
+    env = .client_venv_env(extra = c(FLWR_HOME = sl_info$flwr_home,
+                                      PYTHONUNBUFFERED = "1")),
     results_dir = results_dir,
     num_rounds = recipe$num_rounds,
     expect_artifacts = !isTRUE(recipe$evaluation_only)
@@ -372,6 +384,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   err <- proc$read_all_error_lines()
   if (length(out)) stdout <- c(stdout, out)
   if (length(err)) stderr <- c(stderr, err)
+  .emit_round_progress(c(out, err), num_rounds, seen)  # catch any buffered tail
 
   status <- proc$get_exit_status()
   if (is.null(status)) status <- if (Sys.time() >= deadline) 124L else 0L
@@ -571,7 +584,8 @@ ds.flower.run.stop <- function(run_id) {
 
 #' Read training history from results directory
 #' @param results_dir Character; path to the results directory.
-#' @return A data.frame with columns round, loss, n_clients, n_failures, or NULL.
+#' @return A data.frame with columns round, n_failures and (when available)
+#'   n_examples, or NULL. Loss is not released by the nodes (disclosure backstop).
 #' @keywords internal
 .read_training_history <- function(results_dir) {
   path <- file.path(results_dir, "history.json")
@@ -593,11 +607,16 @@ print.dsflower_run <- function(x, ...) {
   cat("  Rounds:   ", x$num_rounds, "\n")
   cat("  Status:   ", if (x$status == 0) "success" else "failed", "\n")
 
-  if (!is.null(x$history)) {
-    cat("\n  Loss per round:\n")
+  # Per-round summary. Loss is intentionally not released by the nodes (a
+  # disclosure backstop: only a bucketed example count leaves), so we report
+  # what the history actually carries. Measure utility with ds.flower.predict.
+  if (!is.null(x$history) && is.data.frame(x$history) && nrow(x$history)) {
+    cat("\n  Rounds:\n")
+    has_ex <- "n_examples" %in% names(x$history)
     for (i in seq_len(nrow(x$history))) {
-      cat(sprintf("    round %d: %.6f (%d clients)\n",
-        x$history$round[i], x$history$loss[i], x$history$n_clients[i]))
+      ex <- if (has_ex) x$history$n_examples[i] else NA
+      cat(sprintf("    round %d aggregated%s\n", x$history$round[i],
+        if (!is.na(ex)) sprintf(" (~%s examples)", ex) else ""))
     }
   }
 
