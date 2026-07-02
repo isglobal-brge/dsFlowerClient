@@ -99,8 +99,7 @@ print.dsflower_recipe <- function(x, ...) {
   cat("  Model:    ", x$model$name, "(", x$model$framework, ")\n")
   cat("  Template: ", x$model$template, "\n")
   cat("  Strategy: ", x$strategy$name, "\n")
-  cat("  Privacy:   differential privacy, decided + enforced by the data node",
-      "(query: ds.flower.privacy.budget)\n", sep = " ")
+  cat("  Privacy:   differential privacy, decided + enforced by the data node\n")
   cat("  Rounds:   ", x$num_rounds, "\n")
   if (!is.null(x$target))
     cat("  Target:   ", paste(x$target, collapse = ", "), "\n")
