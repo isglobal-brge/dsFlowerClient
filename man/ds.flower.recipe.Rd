@@ -30,7 +30,8 @@ infer from model.}
 
 \item{num_rounds}{Integer; number of federated training rounds.}
 
-\item{target}{Character; target column name(s). For survival: c("time", "event").}
+\item{target}{Character; target column name(s). Multiple targets are supported
+only by the multilabel enforced-DP model.}
 
 \item{target_column}{Alias for \code{target} (backward compat).}
 
@@ -40,7 +41,8 @@ infer from model.}
 
 \item{feature_columns}{Alias for \code{features} (backward compat).}
 
-\item{masks}{Character; mask asset alias for segmentation, or NULL.}
+\item{masks}{Reserved compatibility argument. Non-NULL values fail early
+because segmentation is not implemented by the enforced-DP runtime.}
 
 \item{evaluation_only}{Logical; if TRUE, blocks model release.}
 }

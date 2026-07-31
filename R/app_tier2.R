@@ -5,7 +5,8 @@
 #   local_update(global_arrays, X, y, cfg) -> list[np.ndarray]
 # Arbitrary code cannot receive generic per-sample DP-SGD guarantees. The node
 # executes the module only when the custodian enabled HookApps and attested the
-# required filesystem/network sandbox and timing envelope. Otherwise the module
+# required filesystem/network sandbox and minimum-duration timing envelope.
+# Otherwise the module
 # is not executed and the incoming public model is returned unchanged. Archive
 # validation, scanning and hash pinning are additional integrity controls.
 
@@ -56,7 +57,6 @@
   if (length(n) != 1L || is.na(n) || n <= 0) {
     stop("The hook package archive is empty.", call. = FALSE)
   }
-  raw <- readBin(zipfile, "raw", n)
   sha <- digest::digest(file = zipfile, algo = "sha256")
   token <- .new_capability_token("usr")
   installed <- FALSE
@@ -66,22 +66,31 @@
         conns, call("flowerAppDeleteDS", token)), error = function(e) NULL)
     }
   }, add = TRUE)
-  off <- 0
-  while (off < n) {
-    hi <- min(off + chunk_bytes, n)
-    DSI::datashield.aggregate(
-      conns, call("flowerAppPushDS", token, .app_enc_b64(raw[(off + 1):hi]), off))
-    off <- hi
-  }
-  inst <- DSI::datashield.aggregate(
-    conns, call("flowerAppInstallDS", token, sha))
-  failed <- names(inst)[!vapply(inst, function(x) isTRUE(x$ok), logical(1))]
-  if (length(failed) > 0) {
-    stop("Hook module install/scan failed on: ",
-         paste(failed, collapse = ", "), ".", call. = FALSE)
-  }
+  .push_app_archive(conns, zipfile, token, chunk_bytes)
+  .install_app_archive(
+    conns, token, sha, n, "Hook module install/scan")
   installed <- TRUE
   list(token = token, sha256 = sha, package = pkg_name)
+}
+
+#' Pin one verified HookApp package with an explicit per-node ACK
+#' @keywords internal
+.pin_user_module <- function(conns, handle_symbol, upload) {
+  expr <- call("flowerTier2PinDS", handle_symbol, upload$token)
+  .dsi_retry_exact_aggregate(
+    conns, expr,
+    validate = function(value, node) {
+      if (!is.list(value) ||
+          !identical(names(value), c("ok", "pinned", "user_module"))) {
+        return(FALSE)
+      }
+      pinned <- as.character(unlist(value$pinned, use.names = FALSE))
+      isTRUE(value$ok) &&
+        identical(as.character(value$user_module), upload$package) &&
+        length(pinned) == 2L &&
+        setequal(pinned, c("dsflower_runner", upload$package))
+    },
+    operation = "Hook module pin")
 }
 
 #' Build the Hook runner app dir (bundled dsflower_runner + the user package +
@@ -134,7 +143,8 @@
 #' Gaussian output mechanism (optionally over disjoint blocks). If any gate is
 #' absent, the uploaded code is not executed and the operation returns the
 #' incoming public model unchanged. Hash verification and static scanning do not
-#' provide \code{nn.Module}/per-sample DP-SGD granularity for arbitrary code.
+#' provide \code{nn.Module}/per-sample DP-SGD granularity for arbitrary code. The
+#' timing envelope is defense in depth, not a formal constant-time guarantee.
 #'
 #' @param conns DSI connections object.
 #' @param user_app_dir Character; path to the researcher's training package dir
@@ -145,10 +155,13 @@
 #' @param num_rounds Integer; federated rounds (default 1).
 #' @param task Character; supervised task type used by node disclosure checks.
 #' @param verbose Logical.
-#' @param target_levels Optional ordered, exhaustive public label vocabulary for
-#'   classification HookApps.
+#' @param target_levels Optional ordered public label vocabulary for
+#'   classification HookApps. Missing or unknown values map to public code zero.
 #' @param target_bounds Required public \code{list(lower=..., upper=...)} for
 #'   regression/count HookApps.
+#' @param allow_insecure_http Character vector of exact connection names allowed
+#'   to use plaintext HTTP. Empty by default. This exception does not provide
+#'   transport security; use it only behind an independently trusted network.
 #' @return A \code{dsflower_run} object. A successful Flower run may represent a
 #'   deliberate unchanged-model no-op when the node disallows HookApp execution.
 #' @export
@@ -156,7 +169,9 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
                                symbol = "D", num_rounds = 1L,
                                task = c("classification", "regression", "count"),
                                verbose = TRUE, target_levels = NULL,
-                               target_bounds = NULL) {
+                               target_bounds = NULL,
+                               allow_insecure_http = getOption(
+                                 "dsflower.dsi_allow_insecure_http", character())) {
   task <- match.arg(task)
   n_target_classes <- if (is.null(target_levels)) 2L else length(target_levels)
   public_target <- .validate_public_target_spec(
@@ -177,6 +192,10 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
     stop("Hook runs require explicit, non-empty feature columns.", call. = FALSE)
   }
   .require_flwr_cli()
+  # Reject an accidental downgrade before handle creation, staging or upload;
+  # link.up revalidates and emits the explicit-HTTP warning at tunnel startup.
+  suppressWarnings(.validate_dsi_transport_security(
+    conns, allow_insecure_http = allow_insecure_http))
   n_clients <- length(conns)
   n_features <- length(features)
 
@@ -215,8 +234,7 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
     conns, hsym, target_column = target, feature_columns = features,
     run_config = prepare_config)
 
-  pin <- DSI::datashield.aggregate(
-    conns, call("flowerTier2PinDS", hsym, up$token))
+  pin <- .pin_user_module(conns, hsym, up)
   if (verbose) {
     message("  Pinned: ", paste(unique(unlist(lapply(pin, `[[`, "pinned"))),
                                  collapse = ", "), ".")
@@ -230,7 +248,7 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
   .ensure_client_framework("pytorch")
 
   # link.up owns the local SuperLink + DSI tunnel lifecycle; on.exit reverses it.
-  ds.flower.link.up(conns)
+  ds.flower.link.up(conns, allow_insecure_http = allow_insecure_http)
   recipe <- structure(list(
     model = list(name = "tier2", template = "tier2", framework = "pytorch",
                  track = "egress"),
@@ -250,10 +268,13 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
 #' @export
 ds.flower.tier2.run <- function(conns, user_app_dir, target, features,
                                 symbol = "D", num_rounds = 1L,
-                                verbose = TRUE) {
+                                verbose = TRUE,
+                                allow_insecure_http = getOption(
+                                  "dsflower.dsi_allow_insecure_http", character())) {
   .Deprecated("ds.flower.hook.run")
   ds.flower.hook.run(
     conns = conns, user_app_dir = user_app_dir, target = target,
     features = features, symbol = symbol, num_rounds = num_rounds,
-    task = "classification", verbose = verbose)
+    task = "classification", verbose = verbose,
+    allow_insecure_http = allow_insecure_http)
 }

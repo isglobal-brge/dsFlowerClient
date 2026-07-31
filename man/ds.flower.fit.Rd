@@ -31,7 +31,8 @@ ds.flower.fit(
   run_args = list(),
   feature_bounds = NULL,
   target_levels = NULL,
-  target_bounds = NULL
+  target_bounds = NULL,
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
 )
 
 ds.flower.train(
@@ -60,7 +61,8 @@ ds.flower.train(
   run_args = list(),
   feature_bounds = NULL,
   target_levels = NULL,
-  target_bounds = NULL
+  target_bounds = NULL,
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
 )
 }
 \arguments{
@@ -73,7 +75,8 @@ ds.flower.train(
 \item{symbol}{Optional assigned DataSHIELD symbol. Defaults to \code{"D"}
 when \code{data}, \code{resource}, and \code{symbol} are all NULL.}
 
-\item{target}{One character target column name.}
+\item{target}{One target-column name, or exactly \code{num_labels} distinct
+target-column names for \code{pytorch_multilabel}.}
 
 \item{features}{Character vector of feature column names, or NULL for
 template-specific auto handling.}
@@ -97,7 +100,8 @@ template-specific auto handling.}
 
 \item{label_set}{Optional imaging label-set name.}
 
-\item{masks}{Optional mask asset alias for segmentation.}
+\item{masks}{Reserved compatibility argument. Non-NULL values fail early
+because segmentation is not implemented by the enforced-DP runtime.}
 
 \item{output_dir}{Optional character; parent directory the trained model is
 saved under (created if missing). Defaults to \code{./dsflower_output}.}
@@ -127,11 +131,17 @@ cleans up its server-side handles on exit regardless.}
 \code{list(lower=..., upper=...)} in feature order. Appended to the signature
 for positional backward compatibility.}
 
-\item{target_levels}{Optional ordered, exhaustive public classification label
-vocabulary. Non-numeric labels require it.}
+\item{target_levels}{Optional ordered public classification label vocabulary.
+Non-numeric labels require it; missing or unknown values map to public code
+zero. Multilabel applies the same public two-level vocabulary independently
+to every target column.}
 
 \item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
 regression/count models.}
+
+\item{allow_insecure_http}{Character vector of exact connection names allowed
+to use plaintext HTTP. Empty by default. This exception does not provide
+transport security; use it only behind an independently trusted network.}
 }
 \value{
 A \code{dsflower_run} object.

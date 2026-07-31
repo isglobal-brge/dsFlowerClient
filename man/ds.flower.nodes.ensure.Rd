@@ -24,8 +24,8 @@ ds.flower.nodes.ensure(
   \item Named list: per-node addresses (names must match connection names).
 }}
 
-\item{template_name}{Optional Flower template name passed to server-side
-SuperNode bootstrap.}
+\item{template_name}{Deprecated compatibility argument. Named executable
+templates have been retired; non-NULL values fail before contacting a node.}
 
 \item{torch_backend}{Character or NULL; requested node-side torch backend.}
 }

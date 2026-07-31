@@ -3,8 +3,9 @@
 
 #' Describe the connected dataset
 #'
-#' Returns a compact summary: modality, sample count (bucketed per profile),
-#' available labels, masks, and feature assets.
+#' Returns a compact summary of public protocol capabilities and node-owned
+#' structural imaging declarations. It does not report cohort-derived counts or
+#' schema discovered from private data.
 #'
 #' @param flower A \code{dsflower_connection} from \code{ds.flower.connect()}.
 #' @return A list with dataset summary fields, printed nicely.
@@ -13,7 +14,7 @@ ds.flower.describe <- function(flower) {
   if (missing(flower) || !inherits(flower, "dsflower_connection"))
     stop("'flower' must be a dsflower_connection.", call. = FALSE)
 
-  # Get capabilities (includes sample count, profile, templates)
+  # Get data-independent public protocol/runtime capabilities.
   caps <- tryCatch(
     DSI::datashield.aggregate(flower$conns,
       expr = call("flowerGetCapabilitiesDS", flower$symbol)),
@@ -49,10 +50,6 @@ print.dsflower_description <- function(x, ...) {
     c <- x$caps[[srv]]
     cat("\n  [", srv, "]\n")
     cat("    Privacy:     node-side central DP (always enforced before egress)\n")
-    if (!is.null(c$data_n_rows))
-      cat("    Samples:    ", c$data_n_rows, "\n")
-    if (!is.null(c$data_source))
-      cat("    Source:     ", c$data_source, "\n")
   }
 
   # Labels

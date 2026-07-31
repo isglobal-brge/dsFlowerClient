@@ -76,8 +76,9 @@ test_that("nodes.ensure passes ca_cert_pem when TLS is enabled", {
 
   # Mock DSI::datashield.assign.expr to capture the call
   local_mocked_bindings(
-    datashield.assign.expr = function(conns, symbol, expr) {
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
       captured_expr <<- expr
+      for (node in names(conns)) success(node)
     },
     .package = "DSI"
   )
@@ -101,4 +102,94 @@ test_that(".verify_federation is silent when expected ID is NULL", {
   # When researcher didn't start SuperLink via our API, federation_id is NULL
   # -> skip verification entirely
   expect_silent(dsFlowerClient:::.verify_federation(results, NULL))
+})
+
+test_that("nodes.prepare preserves multilabel target vectors in its DSI argument", {
+  captured <- NULL
+  local_mocked_bindings(
+    .ds_safe_aggregate = function(...) list(),
+    .package = "dsFlowerClient"
+  )
+  local_mocked_bindings(
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      captured <<- expr
+      for (node in names(conns)) success(node)
+    },
+    .package = "DSI"
+  )
+
+  ds.flower.nodes.prepare(
+    conns = list(site = NULL), symbol = "flower",
+    target_column = c("label_a", "label_b"), feature_columns = "x",
+    run_config = list(`loss-name` = "multilabel_bce", `num-labels` = 2L)
+  )
+
+  encoded <- captured[[3L]]
+  payload <- chartr("-_", "+/", substring(encoded, 5L, nchar(encoded)))
+  payload <- paste0(payload, strrep("=", (4L - nchar(payload) %% 4L) %% 4L))
+  decoded <- jsonlite::fromJSON(rawToChar(jsonlite::base64_dec(payload)))
+  expect_identical(decoded, c("label_a", "label_b"))
+})
+
+test_that("a normalized per-node ASSIGN error is never treated as success", {
+  conns <- list(site1 = TRUE, site2 = TRUE)
+  local_mocked_bindings(
+    datashield.assign.expr = function(conns, symbol, expr, success, error, ...) {
+      success("site1")
+      error("site2", "hidden node error")
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  expect_error(
+    dsFlowerClient:::.dsi_assign_expr_exact(
+      conns, "flower", call("flowerPrepareRunDS"), "Run preparation"),
+    "no ACK on: site2"
+  )
+})
+
+test_that("safe aggregate records a named NULL as a node error", {
+  conns <- list(site1 = TRUE, site2 = TRUE)
+  local_mocked_bindings(
+    datashield.aggregate = function(conns, expr) {
+      node <- names(conns)
+      stats::setNames(list(if (node == "site1") list(ok = TRUE) else NULL), node)
+    },
+    .package = "DSI"
+  )
+
+  result <- dsFlowerClient:::.ds_safe_aggregate(conns, call("flowerStatusDS"))
+  expect_named(result, "site1")
+  expect_named(attr(result, "ds_errors"), "site2")
+})
+
+test_that("DSI results must be associated with the exact requested nodes", {
+  conns <- list(site1 = TRUE, site2 = TRUE)
+  expect_null(dsFlowerClient:::.dsi_exact_node_results(
+    list(site1 = list(ok = TRUE), wrong = list(ok = TRUE)), conns))
+  mapped <- dsFlowerClient:::.dsi_exact_node_results(
+    list(site2 = NULL, site1 = list(ok = TRUE)), conns)
+  expect_named(mapped, c("site1", "site2"))
+  expect_null(mapped$site2)
+})
+
+test_that("legacy named templates fail before any DSI side effect", {
+  touched <- FALSE
+  local_mocked_bindings(
+    datashield.assign.expr = function(...) touched <<- TRUE,
+    .package = "DSI"
+  )
+
+  expect_error(
+    ds.flower.nodes.prepare(
+      list(), target_column = "y", template_name = "pytorch_logreg"),
+    "retired"
+  )
+  expect_false(touched)
+  expect_error(
+    ds.flower.nodes.ensure(list(), template_name = "pytorch_logreg"),
+    "retired"
+  )
+  expect_false(touched)
 })

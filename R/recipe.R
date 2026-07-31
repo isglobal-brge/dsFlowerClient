@@ -5,10 +5,6 @@
 .MODEL_DEFAULT_TASK <- list(
   pytorch_resnet18 = "classification",
   pytorch_densenet121 = "classification",
-  pytorch_unet2d = "segmentation",
-  pytorch_coxph = "survival",
-  pytorch_lognormal_aft = "survival",
-  pytorch_cause_specific_cox = "survival",
   pytorch_poisson = "regression",
   pytorch_linear_regression = "regression"
 )
@@ -27,12 +23,14 @@
 #' @param task A \code{dsflower_task} object, character task name, or NULL to
 #'   infer from model.
 #' @param num_rounds Integer; number of federated training rounds.
-#' @param target Character; target column name(s). For survival: c("time", "event").
+#' @param target Character; target column name(s). Multiple targets are supported
+#'   only by the multilabel enforced-DP model.
 #' @param target_column Alias for \code{target} (backward compat).
 #' @param label_set Character; name of the label set to use (imaging datasets).
 #' @param features Character vector; feature column names, or NULL for auto.
 #' @param feature_columns Alias for \code{features} (backward compat).
-#' @param masks Character; mask asset alias for segmentation, or NULL.
+#' @param masks Reserved compatibility argument. Non-NULL values fail early
+#'   because segmentation is not implemented by the enforced-DP runtime.
 #' @param evaluation_only Logical; if TRUE, blocks model release.
 #' @return A \code{dsflower_recipe} S3 object.
 #' @export
@@ -47,6 +45,10 @@ ds.flower.recipe <- function(model,
                               feature_columns = NULL,
                               masks = NULL,
                               evaluation_only = FALSE) {
+  if (!is.null(masks)) {
+    stop("'masks' requires segmentation, which is not supported by the ",
+         "enforced-DP runtime in this release.", call. = FALSE)
+  }
   if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
   if (!inherits(strategy, "dsflower_strategy")) {
     strategy <- ds.flower.strategy(strategy)
@@ -58,8 +60,6 @@ ds.flower.recipe <- function(model,
       task <- switch(default_type,
         classification = ds.flower.task.classification(),
         regression     = ds.flower.task.regression(),
-        survival       = ds.flower.task.survival(),
-        segmentation   = ds.flower.task.segmentation(),
         ds.flower.task.classification()
       )
     } else {
@@ -67,6 +67,7 @@ ds.flower.recipe <- function(model,
     }
   }
   if (!inherits(task, "dsflower_task")) task <- ds.flower.task(task)
+  .assert_supported_task(task)
 
   # Resolve target (new param wins over backward-compat)
   resolved_target <- target %||% target_column %||% "target"

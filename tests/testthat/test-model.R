@@ -55,14 +55,6 @@ test_that("pytorch_linear_regression creates correct model", {
   expect_equal(m$params$learning_rate, 0.01)
 })
 
-test_that("pytorch_coxph creates correct model", {
-  m <- ds.flower.model.pytorch_coxph()
-  expect_s3_class(m, "dsflower_model")
-  expect_equal(m$name, "pytorch_coxph")
-  expect_equal(m$framework, "pytorch")
-  expect_equal(m$params$learning_rate, 0.01)
-})
-
 test_that("pytorch_multiclass creates correct model", {
   m <- ds.flower.model.pytorch_multiclass()
   expect_s3_class(m, "dsflower_model")
@@ -110,34 +102,58 @@ test_that("pytorch_densenet121 creates correct model", {
   expect_equal(m$framework, "pytorch_vision")
   expect_equal(m$params$n_classes, 2L)
   expect_equal(m$params$image_size, 224L)
+
+  sub <- dsFlowerClient:::.emit_submission(ds.flower.model("densenet121"))
+  expect_identical(sub$params$backbone, "densenet121")
+  expect_true("ds.flower.model.pytorch_densenet121" %in%
+                getNamespaceExports("dsFlowerClient"))
 })
 
-test_that("pytorch_unet2d creates correct model", {
-  m <- ds.flower.model.pytorch_unet2d()
-  expect_s3_class(m, "dsflower_model")
-  expect_equal(m$name, "pytorch_unet2d")
-  expect_equal(m$framework, "pytorch_vision")
-  expect_equal(m$params$n_classes, 1L)
-  expect_equal(m$params$batch_size, 8L)
-  expect_equal(m$params$image_size, 224L)
-  expect_equal(m$params$base_channels, 64L)
+test_that("unsupported survival and segmentation models are not registered", {
+  registered <- ds.flower.list_models()$name
+  expect_false(any(c("pytorch_coxph", "pytorch_lognormal_aft",
+                     "pytorch_cause_specific_cox", "pytorch_unet2d") %in%
+                   registered))
+  expect_error(ds.flower.model("pytorch_coxph"), "Unknown model")
+  expect_error(ds.flower.model("pytorch_unet2d"), "Unknown model")
 })
 
 test_that("pytorch_tcn creates correct model", {
-  m <- ds.flower.model.pytorch_tcn()
+  m <- ds.flower.model.pytorch_tcn(input_shape = c(2L, 12L),
+                                    channels = 16L, levels = 4L)
   expect_s3_class(m, "dsflower_model")
   expect_equal(m$name, "pytorch_tcn")
   expect_equal(m$framework, "pytorch")
-  expect_equal(m$params$n_channels, 1L)
-  expect_equal(m$params$kernel_size, 3L)
-  expect_equal(m$params$n_layers, 4L)
+  expect_identical(m$params$input_shape, c(2L, 12L))
+  expect_identical(m$params$channels, 16L)
+  expect_identical(m$params$levels, 4L)
+
+  sub <- dsFlowerClient:::.emit_submission(m)
+  expect_identical(unlist(sub$spec$layers[[1L]]$shape), c(2L, 12L))
+  expect_equal(sum(vapply(sub$spec$layers, function(x) x$op == "conv1d",
+                          logical(1))), 4L)
 })
 
 test_that("pytorch_lstm creates correct model", {
-  m <- ds.flower.model.pytorch_lstm()
+  m <- ds.flower.model.pytorch_lstm(
+    n_tokens = 8L, n_features = 3L, hidden = 48L)
   expect_s3_class(m, "dsflower_model")
   expect_equal(m$name, "pytorch_lstm")
   expect_equal(m$framework, "pytorch")
-  expect_equal(m$params$hidden_size, 64L)
-  expect_equal(m$params$num_layers, 2L)
+  expect_identical(m$params$n_tokens, 8L)
+  expect_identical(m$params$n_features, 3L)
+  expect_identical(m$params$hidden, 48L)
+
+  sub <- dsFlowerClient:::.emit_submission(m)
+  expect_identical(sub$spec$nodes[[2L]]$op, "lstm")
+  expect_identical(sub$spec$nodes[[2L]]$hidden, 48L)
+})
+
+test_that("multilabel constructor emits the registry target-width contract", {
+  m <- ds.flower.model.pytorch_multilabel(n_labels = 3L)
+  sub <- dsFlowerClient:::.emit_submission(m)
+
+  expect_identical(m$params$num_labels, 3L)
+  expect_identical(sub$params$num_labels, 3L)
+  expect_identical(sub$loss, "multilabel_bce")
 })

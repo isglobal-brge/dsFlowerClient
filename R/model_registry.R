@@ -268,7 +268,9 @@ ds.flower.list_models <- function() {
       description = "Poisson regression (count outcomes).")
   reg("pytorch_multilabel", "neural",
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
-      loss = "multilabel_bce", defaults = list(num_labels = 2L, learning_rate = 0.1),
+      loss = "multilabel_bce",
+      defaults = list(num_labels = 2L, hidden_layers = c(64L, 32L),
+                      learning_rate = 0.1, batch_size = 32L, local_epochs = 1L),
       description = "Multilabel classifier (independent BCE per label).")
   reg("pytorch_svm", "neural",
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
@@ -312,7 +314,10 @@ ds.flower.list_models <- function() {
       generate = function(p) .neural_tcn_spec(
         p$input_shape %||% stop("pytorch_tcn needs model_params$input_shape = c(C,L) multiplying to the feature count"),
         p$channels %||% 8L, p$levels %||% 3L),
-      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      loss = "cross_entropy",
+      defaults = list(n_classes = 2L, channels = 8L, levels = 3L,
+                      learning_rate = 0.001, batch_size = 32L,
+                      local_epochs = 1L),
       description = "Temporal CNN (dilated conv1d stack over a sequence).")
   reg("pytorch_resnet", "neural",
       generate = function(p) .neural_resnet_spec(
@@ -332,7 +337,10 @@ ds.flower.list_models <- function() {
         p$n_tokens   %||% stop("pytorch_lstm needs model_params$n_tokens"),
         p$n_features %||% stop("pytorch_lstm needs model_params$n_features (n_tokens*n_features = feature count)"),
         p$hidden %||% 32L, "lstm"),
-      loss = "cross_entropy", defaults = list(n_classes = 2L),
+      loss = "cross_entropy",
+      defaults = list(n_classes = 2L, hidden = 32L,
+                      learning_rate = 0.001, batch_size = 32L,
+                      local_epochs = 1L),
       description = "LSTM sequence model (sanitized Opacus DPLSTM, typed-graph DAG).")
   reg("pytorch_gru", "neural",
       generate = function(p) .neural_seq_spec(
@@ -347,9 +355,13 @@ ds.flower.list_models <- function() {
   #      local() forces a fresh nm per iteration (no lazy loop-variable capture). ----
   for (nm in c("pytorch_resnet18", "pytorch_densenet121")) local({
     nm <- nm
+    backbone <- sub("^pytorch_", "", nm)
     reg(nm, "neural",
         generate = function(p) .neural_mlp_spec(integer(0)),
-        loss = "cross_entropy", defaults = list(n_classes = 2L),
+        loss = "cross_entropy",
+        defaults = list(n_classes = 2L, backbone = backbone,
+                        volumetric = FALSE, learning_rate = 0.001,
+                        batch_size = 32L, local_epochs = 1L, image_size = 224L),
         description = paste0("Vision classifier head on a frozen ", nm, " backbone."))
   })
 

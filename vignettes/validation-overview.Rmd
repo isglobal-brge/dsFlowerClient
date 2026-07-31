@@ -144,8 +144,9 @@ This macro-vignette summarizes the committed dsFlower validation evidence. The
 current presentation layer is the public biomedical evidence: clinical
 benchmarks, SUPPORT2 method-family tasks, LUNG1 imaging handoffs and the
 PathMNIST direct-image benchmark. The synthetic method and vision suites provide
-catalogue coverage: they confirm that every authorised template can be staged,
-executed, aggregated, persisted and cleaned up across three Opal/Rock servers.
+historical catalogue coverage: they record which templates in that retired
+architecture could be staged, executed, aggregated, persisted and cleaned up
+across three Opal/Rock servers. They are not a current server allowlist.
 They complement the biomedical reports by checking the full template surface
 under deterministic conditions.
 
@@ -277,7 +278,7 @@ if (nrow(plot_df) > 0 && requireNamespace('ggplot2', quietly = TRUE)) {
 }
 ```
 
-Per-method vignettes:
+Per-method historical vignettes (evidence only; not a current API index):
 
 - [clinical method-family benchmarks](clinical-method-family-benchmarks.html)
 
@@ -292,18 +293,25 @@ Per-method vignettes:
 - [pytorch_multiclass](validation-pytorch-multiclass.html)
 - [pytorch_multilabel](validation-pytorch-multilabel.html)
 - [pytorch_poisson](validation-pytorch-poisson.html)
-- [pytorch_coxph](validation-pytorch-coxph.html)
-- [pytorch_lognormal_aft](validation-pytorch-lognormal-aft.html)
-- [pytorch_cause_specific_cox](validation-pytorch-cause-specific-cox.html)
 - [pytorch_lstm](validation-pytorch-lstm.html)
 - [pytorch_tcn](validation-pytorch-tcn.html)
 - [xgboost](validation-xgboost.html)
 
-Vision method vignettes:
+Historical, unsupported in the current enforced-DP runtime:
+
+- [pytorch_coxph](validation-pytorch-coxph.html)
+- [pytorch_lognormal_aft](validation-pytorch-lognormal-aft.html)
+- [pytorch_cause_specific_cox](validation-pytorch-cause-specific-cox.html)
+- [pytorch_unet2d](validation-vision-pytorch-unet2d.html)
+
+These four records do not correspond to registered models or runnable public
+constructors. Cox risk-set losses lack the per-example decomposition required by
+the current DP-SGD track; survival and dense segmentation are rejected early.
+
+Vision method historical vignettes:
 
 - [pytorch_resnet18](validation-vision-pytorch-resnet18.html)
 - [pytorch_densenet121](validation-vision-pytorch-densenet121.html)
-- [pytorch_unet2d](validation-vision-pytorch-unet2d.html)
 
 The vision-specific overview remains available at
 [Vision Method Validation Overview](validation-vision-overview.html).

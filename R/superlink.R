@@ -377,8 +377,8 @@ ds.flower.superlink.start <- function(fleet_port = 9092L,
   }
   dir.create(flwr_home, recursive = TRUE, showWarnings = FALSE)
 
-  # TLS certificates (skipped for the DSI tunnel, which runs insecure because the
-  # bytes already travel inside the TLS DataSHIELD channel).
+  # TLS certificates are unnecessary for the DSI tunnel's loopback-only inner
+  # gRPC hop; the outer connector/network policy owns transport security.
   tls_info <- if (insecure) NULL else .generate_tls_certs(cert_dir, cert_days = cert_days)
 
   fleet_type <- getOption("dsflower.fleet_api_type", "grpc-rere")

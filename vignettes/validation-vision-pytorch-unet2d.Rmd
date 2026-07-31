@@ -13,6 +13,9 @@ vignette: >
 > contract and must not be used as deployment or security instructions. See
 > `README.md` and the server `ARCHITECTURE.md` for the enforced contract.
 
+> `pytorch_unet2d` and segmentation are not registered or exported in the
+> current runtime. The non-executed commands below are historical evidence only.
+
 ```{r, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
 method_id <- "pytorch_unet2d"

@@ -78,27 +78,32 @@ reference:
       - ds.flower.model
       - ds.flower.model.pytorch_linear_regression
       - ds.flower.model.pytorch_logreg
+      - ds.flower.model.pytorch_densenet121
       - ds.flower.model.pytorch_lstm
       - ds.flower.model.pytorch_mlp
       - ds.flower.model.pytorch_multiclass
       - ds.flower.model.pytorch_multilabel
       - ds.flower.model.pytorch_poisson
+      - ds.flower.model.pytorch_resnet18
       - ds.flower.model.pytorch_tcn
       - ds.flower.model.xgboost
 
   - title: "Specification: Strategies"
     desc: "Federated aggregation strategy specifications."
     contents:
+      - ds.flower.strategy
       - ds.flower.strategy.fedavg
-      - ds.flower.strategy.fedprox
+      - ds.flower.strategy.fedadam
+      - ds.flower.strategy.fedadagrad
+      - ds.flower.strategy.fedyogi
+      - ds.flower.strategy.fedavgm
 
   - title: "Specification: Tasks"
     desc: "Task types. Differential privacy policy is node-owned, not a client specification."
     contents:
+      - ds.flower.task
       - ds.flower.task.classification
       - ds.flower.task.regression
-      - ds.flower.task.segmentation
-      - ds.flower.task.survival
 
   - title: "Specification: Recipe"
     desc: "Combine task, model, and strategy into a recipe; privacy remains node-owned."

@@ -1,131 +1,146 @@
 # Module: Strategy Specs
 # Federated aggregation strategy specifications.
 
-#' Create a FedAvg strategy spec
-#'
-#' Federated Averaging: each node trains, sends updated weights, and the
-#' server computes a weighted average. The number of participating clients
-#' is determined automatically from the number of connected servers.
-#'
-#' @param fraction_fit Numeric; fraction of clients used for training (0-1).
-#' @param fraction_evaluate Numeric; fraction of clients used for evaluation (0-1).
-#' @return A \code{dsflower_strategy} S3 object.
-#' @export
-ds.flower.strategy.fedavg <- function(fraction_fit = 1.0,
-                                       fraction_evaluate = 1.0) {
-  obj <- list(
-    name   = "FedAvg",
-    params = list(
-      fraction_fit      = fraction_fit,
-      fraction_evaluate = fraction_evaluate
-    )
-  )
-  class(obj) <- "dsflower_strategy"
-  obj
+.strategy_scalar <- function(value, name, lower = 0, upper = Inf,
+                             lower_open = FALSE, upper_open = FALSE) {
+  value <- suppressWarnings(as.numeric(value))
+  bad_lower <- if (lower_open) value <= lower else value < lower
+  bad_upper <- if (upper_open) value >= upper else value > upper
+  if (length(value) != 1L || is.na(value) || !is.finite(value) ||
+      bad_lower || bad_upper) {
+    brackets <- paste0(if (lower_open) "(" else "[", lower, ", ", upper,
+                       if (upper_open) ")" else "]")
+    stop("'", name, "' must be one finite value in ", brackets, ".",
+         call. = FALSE)
+  }
+  value
 }
 
-#' Create a FedProx strategy spec
+.new_strategy <- function(name, params = list()) {
+  structure(list(name = name, params = params), class = "dsflower_strategy")
+}
+
+#' Create a FedAvg strategy spec
 #'
-#' FedProx adds a proximal term to keep local models closer to the global
-#' model. Helps with heterogeneous (non-IID) data.
+#' Every node participates in every training round and private evaluation is
+#' disabled. Node updates carry a constant aggregation weight, so no exact
+#' cohort size is disclosed to the researcher-side SuperLink.
 #'
-#' @param proximal_mu Numeric; proximal term weight.
-#' @param fraction_fit Numeric; fraction of clients used for training (0-1).
 #' @return A \code{dsflower_strategy} S3 object.
 #' @export
-ds.flower.strategy.fedprox <- function(proximal_mu = 0.1,
-                                        fraction_fit = 1.0) {
-  obj <- list(
-    name   = "FedProx",
-    params = list(
-      proximal_mu  = proximal_mu,
-      fraction_fit = fraction_fit
-    )
-  )
-  class(obj) <- "dsflower_strategy"
-  obj
+ds.flower.strategy.fedavg <- function() {
+  .new_strategy("FedAvg")
 }
 
 #' Create a FedAdam strategy spec
 #'
-#' FedAdam uses adaptive learning rates on the server side via Adam
-#' optimizer for more stable convergence in heterogeneous settings.
+#' These hyperparameters affect only researcher-side post-processing of updates
+#' that have already been privatized by each node.
 #'
-#' @param server_learning_rate Numeric; server-side learning rate (eta).
-#' @param tau Numeric; controls adaptivity (higher = more stable).
-#' @param fraction_fit Numeric; fraction of clients used for training (0-1).
-#' @param fraction_evaluate Numeric; fraction of clients used for evaluation (0-1).
+#' @param server_learning_rate Positive server learning rate (Flower \code{eta}).
+#' @param beta_1 First-moment coefficient in \code{[0,1)}.
+#' @param beta_2 Second-moment coefficient in \code{[0,1)}.
+#' @param tau Positive adaptivity regularizer.
 #' @return A \code{dsflower_strategy} S3 object.
 #' @export
-ds.flower.strategy.fedadam <- function(server_learning_rate = 0.01,
-                                        tau = 1e-3,
-                                        fraction_fit = 1.0,
-                                        fraction_evaluate = 1.0) {
-  obj <- list(
-    name   = "FedAdam",
-    params = list(
-      eta               = server_learning_rate,
-      tau               = tau,
-      fraction_fit      = fraction_fit,
-      fraction_evaluate = fraction_evaluate
-    )
-  )
-  class(obj) <- "dsflower_strategy"
-  obj
+ds.flower.strategy.fedadam <- function(server_learning_rate = 0.1,
+                                        beta_1 = 0.9,
+                                        beta_2 = 0.99,
+                                        tau = 1e-3) {
+  .new_strategy("FedAdam", list(
+    eta = .strategy_scalar(server_learning_rate, "server_learning_rate",
+                           lower = 0, lower_open = TRUE),
+    beta_1 = .strategy_scalar(beta_1, "beta_1", upper = 1,
+                              upper_open = TRUE),
+    beta_2 = .strategy_scalar(beta_2, "beta_2", upper = 1,
+                              upper_open = TRUE),
+    tau = .strategy_scalar(tau, "tau", lower = 0, lower_open = TRUE)
+  ))
 }
 
 #' Create a FedAdagrad strategy spec
 #'
-#' FedAdagrad uses adaptive learning rates on the server side via Adagrad
-#' optimizer. Suited for sparse gradients and non-IID distributions.
-#'
-#' @param server_learning_rate Numeric; server-side learning rate (eta).
-#' @param tau Numeric; controls adaptivity (higher = more stable).
-#' @param fraction_fit Numeric; fraction of clients used for training (0-1).
-#' @param fraction_evaluate Numeric; fraction of clients used for evaluation (0-1).
+#' @param server_learning_rate Positive server learning rate (Flower \code{eta}).
+#' @param tau Positive adaptivity regularizer.
 #' @return A \code{dsflower_strategy} S3 object.
 #' @export
-ds.flower.strategy.fedadagrad <- function(server_learning_rate = 0.01,
-                                           tau = 1e-3,
-                                           fraction_fit = 1.0,
-                                           fraction_evaluate = 1.0) {
-  obj <- list(
-    name   = "FedAdagrad",
-    params = list(
-      eta               = server_learning_rate,
-      tau               = tau,
-      fraction_fit      = fraction_fit,
-      fraction_evaluate = fraction_evaluate
-    )
-  )
-  class(obj) <- "dsflower_strategy"
-  obj
+ds.flower.strategy.fedadagrad <- function(server_learning_rate = 0.1,
+                                           tau = 1e-3) {
+  .new_strategy("FedAdagrad", list(
+    eta = .strategy_scalar(server_learning_rate, "server_learning_rate",
+                           lower = 0, lower_open = TRUE),
+    tau = .strategy_scalar(tau, "tau", lower = 0, lower_open = TRUE)
+  ))
 }
 
-#' Create a FedBN strategy spec
+#' Create a FedYogi strategy spec
 #'
-#' Federated Batch Normalization: keeps BatchNorm layers local (not
-#' aggregated) to handle feature shift between sites. Essential for
-#' medical imaging across different scanners/protocols.
-#'
-#' Built on FedAvg but the server excludes BatchNorm parameters from
-#' aggregation. Each client retains its own BN statistics.
-#'
-#' @param fraction_fit Numeric; fraction of clients used for training (0-1).
-#' @param fraction_evaluate Numeric; fraction of clients used for evaluation (0-1).
+#' @inheritParams ds.flower.strategy.fedadam
 #' @return A \code{dsflower_strategy} S3 object.
 #' @export
-ds.flower.strategy.fedbn <- function(fraction_fit = 1.0,
-                                      fraction_evaluate = 1.0) {
-  obj <- list(
-    name   = "FedBN",
-    params = list(
-      fraction_fit      = fraction_fit,
-      fraction_evaluate = fraction_evaluate
-    )
+ds.flower.strategy.fedyogi <- function(server_learning_rate = 0.01,
+                                        beta_1 = 0.9,
+                                        beta_2 = 0.99,
+                                        tau = 1e-3) {
+  .new_strategy("FedYogi", list(
+    eta = .strategy_scalar(server_learning_rate, "server_learning_rate",
+                           lower = 0, lower_open = TRUE),
+    beta_1 = .strategy_scalar(beta_1, "beta_1", upper = 1,
+                              upper_open = TRUE),
+    beta_2 = .strategy_scalar(beta_2, "beta_2", upper = 1,
+                              upper_open = TRUE),
+    tau = .strategy_scalar(tau, "tau", lower = 0, lower_open = TRUE)
+  ))
+}
+
+#' Create a FedAvgM strategy spec
+#'
+#' @param server_learning_rate Positive server learning rate.
+#' @param server_momentum Server momentum in \code{[0,1)}.
+#' @return A \code{dsflower_strategy} S3 object.
+#' @export
+ds.flower.strategy.fedavgm <- function(server_learning_rate = 1.0,
+                                       server_momentum = 0.0) {
+  .new_strategy("FedAvgM", list(
+    server_learning_rate = .strategy_scalar(
+      server_learning_rate, "server_learning_rate", lower = 0,
+      lower_open = TRUE),
+    server_momentum = .strategy_scalar(
+      server_momentum, "server_momentum", upper = 1, upper_open = TRUE)
+  ))
+}
+
+.strategy_config_lines <- function(strategy, client_learning_rate = NULL) {
+  if (!inherits(strategy, "dsflower_strategy")) {
+    strategy <- ds.flower.strategy(strategy)
+  }
+  key <- .dsflower_choice_key(strategy$name)
+  allowed <- c("fedavg", "fedadam", "fedadagrad", "fedyogi", "fedavgm")
+  if (!key %in% allowed) {
+    stop("Strategy '", strategy$name, "' is not supported by the enforced-DP runtime.",
+         call. = FALSE)
+  }
+  keys <- c(
+    eta = "strategy-eta",
+    beta_1 = "strategy-beta-1", beta_2 = "strategy-beta-2",
+    tau = "strategy-tau", server_learning_rate = "strategy-server-learning-rate",
+    server_momentum = "strategy-server-momentum"
   )
-  class(obj) <- "dsflower_strategy"
-  obj
+  unknown <- setdiff(names(strategy$params), names(keys))
+  if (length(unknown)) {
+    stop("Unknown parameters for strategy '", strategy$name, "': ",
+         paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  lines <- c(.toml_kv("strategy", key),
+    vapply(names(strategy$params), function(name) {
+      .toml_kv(keys[[name]], strategy$params[[name]])
+    }, character(1)))
+  if (key %in% c("fedadam", "fedadagrad", "fedyogi")) {
+    eta_l <- .strategy_scalar(client_learning_rate, "model learning_rate",
+                              lower = 0, lower_open = TRUE)
+    lines <- c(lines, .toml_kv("strategy-eta-l", eta_l))
+  }
+  lines
 }
 
 #' Print a dsflower_strategy

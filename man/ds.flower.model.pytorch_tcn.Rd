@@ -5,20 +5,24 @@
 \title{Create a PyTorch TCN model spec}
 \usage{
 ds.flower.model.pytorch_tcn(
-  n_channels = 1L,
-  kernel_size = 3L,
-  n_layers = 4L,
+  input_shape,
+  channels = 8L,
+  levels = 3L,
+  n_classes = 2L,
   learning_rate = 0.001,
   batch_size = 32L,
   local_epochs = 1L
 )
 }
 \arguments{
-\item{n_channels}{Integer; number of input channels.}
+\item{input_shape}{Integer vector \code{c(channels, sequence_length)} whose
+product must equal the staged feature count.}
 
-\item{kernel_size}{Integer; convolution kernel size.}
+\item{channels}{Integer; number of hidden convolution channels.}
 
-\item{n_layers}{Integer; number of TCN blocks.}
+\item{levels}{Integer; number of dilated TCN blocks.}
+
+\item{n_classes}{Integer; number of output classes.}
 
 \item{learning_rate}{Numeric in \code{(0, 10]}; learning rate.}
 

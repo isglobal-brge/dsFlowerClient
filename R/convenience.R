@@ -102,17 +102,25 @@ ds.flower.strategy <- function(name = "fedavg", ...) {
          call. = FALSE)
   }
 
+  key <- .dsflower_choice_key(name)
+  if (key %in% c("fedprox", "prox", "fedbn")) {
+    stop("Strategy '", name, "' is not supported by the enforced-DP runtime. ",
+         "Supported strategies: fedavg, fedadam, fedadagrad, fedyogi, fedavgm.",
+         call. = FALSE)
+  }
+
   choices <- c(
     avg = "ds.flower.strategy.fedavg",
     fedavg = "ds.flower.strategy.fedavg",
     fed_average = "ds.flower.strategy.fedavg",
-    fedprox = "ds.flower.strategy.fedprox",
-    prox = "ds.flower.strategy.fedprox",
     fedadam = "ds.flower.strategy.fedadam",
     adam = "ds.flower.strategy.fedadam",
     fedadagrad = "ds.flower.strategy.fedadagrad",
     adagrad = "ds.flower.strategy.fedadagrad",
-    fedbn = "ds.flower.strategy.fedbn"
+    fedyogi = "ds.flower.strategy.fedyogi",
+    yogi = "ds.flower.strategy.fedyogi",
+    fedavgm = "ds.flower.strategy.fedavgm",
+    avgm = "ds.flower.strategy.fedavgm"
   )
 
   .dsflower_call_constructor(.dsflower_choice(name, choices, "strategy"), list(...))
@@ -133,12 +141,16 @@ ds.flower.task <- function(name = "classification") {
          call. = FALSE)
   }
 
+  key <- .dsflower_choice_key(name)
+  if (key %in% c("survival", "segmentation")) {
+    stop("Task '", name, "' is not supported by the enforced-DP runtime. ",
+         "Supported tasks: classification, regression.", call. = FALSE)
+  }
+
   choices <- c(
     classification = "ds.flower.task.classification",
     class = "ds.flower.task.classification",
-    regression = "ds.flower.task.regression",
-    survival = "ds.flower.task.survival",
-    segmentation = "ds.flower.task.segmentation"
+    regression = "ds.flower.task.regression"
   )
 
   .dsflower_call_constructor(.dsflower_choice(name, choices, "task"), list())
@@ -157,7 +169,8 @@ ds.flower.task <- function(name = "classification") {
 #' @param resource Optional Opal resource name.
 #' @param symbol Optional assigned DataSHIELD symbol. Defaults to \code{"D"}
 #'   when \code{data}, \code{resource}, and \code{symbol} are all NULL.
-#' @param target One character target column name.
+#' @param target One target-column name, or exactly \code{num_labels} distinct
+#'   target-column names for \code{pytorch_multilabel}.
 #' @param features Character vector of feature column names, or NULL for
 #'   template-specific auto handling.
 #' @param model Character model name or \code{dsflower_model} object.
@@ -171,7 +184,8 @@ ds.flower.task <- function(name = "classification") {
 #' @param rounds Integer number of federated rounds.
 #' @param task Optional character task name or \code{dsflower_task} object.
 #' @param label_set Optional imaging label-set name.
-#' @param masks Optional mask asset alias for segmentation.
+#' @param masks Reserved compatibility argument. Non-NULL values fail early
+#'   because segmentation is not implemented by the enforced-DP runtime.
 #' @param evaluation_only Logical; accepted for compatibility but NOT yet enforced by the
 #'   enforced-DP path (the model is always released, DP-protected).
 #' @param detached Logical; accepted for back-compat (unused by the enforced-DP path).
@@ -191,10 +205,15 @@ ds.flower.task <- function(name = "classification") {
 #' @param feature_bounds Optional public feature bounds as
 #'   \code{list(lower=..., upper=...)} in feature order. Appended to the signature
 #'   for positional backward compatibility.
-#' @param target_levels Optional ordered, exhaustive public classification label
-#'   vocabulary. Non-numeric labels require it.
+#' @param target_levels Optional ordered public classification label vocabulary.
+#'   Non-numeric labels require it; missing or unknown values map to public code
+#'   zero. Multilabel applies the same public two-level vocabulary independently
+#'   to every target column.
 #' @param target_bounds Required public \code{list(lower=..., upper=...)} for
 #'   regression/count models.
+#' @param allow_insecure_http Character vector of exact connection names allowed
+#'   to use plaintext HTTP. Empty by default. This exception does not provide
+#'   transport security; use it only behind an independently trusted network.
 #' @return A \code{dsflower_run} object.
 #' @export
 ds.flower.fit <- function(conns,
@@ -222,7 +241,9 @@ ds.flower.fit <- function(conns,
                           run_args = list(),
                           feature_bounds = NULL,
                           target_levels = NULL,
-                          target_bounds = NULL) {
+                          target_bounds = NULL,
+                          allow_insecure_http = getOption(
+                            "dsflower.dsi_allow_insecure_http", character())) {
   # Set the progress-verbosity option at the outermost entry point so it stays
   # active through every nested step, including the connection teardown that runs
   # in the submission pipeline's on.exit cleanup.
@@ -251,6 +272,10 @@ ds.flower.fit <- function(conns,
       (length(run_args) > 0L && is.null(names(run_args)))) {
     stop("'run_args' must be a named list.", call. = FALSE)
   }
+  if (!is.null(masks)) {
+    stop("'masks' requires segmentation, which is not supported by the ",
+         "enforced-DP runtime in this release.", call. = FALSE)
+  }
 
   supplied_sources <- sum(!is.null(data), !is.null(resource), !is.null(symbol))
   if (supplied_sources == 0L) {
@@ -259,17 +284,39 @@ ds.flower.fit <- function(conns,
     stop("Provide only one of 'data', 'resource', or 'symbol'.", call. = FALSE)
   }
 
-  model_spec <- ds.flower.model(model)
-  if (length(model_params)) {
-    known <- names(model_spec$params %||% list())
-    unknown <- setdiff(names(model_params), known)
-    if (length(unknown)) {
-      warning("Ignoring unknown model_params for '", model_spec$name, "': ",
-              paste(unknown, collapse = ", "),
-              if (length(known)) paste0(" (known: ", paste(known, collapse = ", "), ")") else "",
-              call. = FALSE)
-    }
+  model_spec <- if (inherits(model, "dsflower_model")) {
+    ds.flower.model(model)
+  } else {
+    do.call(ds.flower.model, c(list(name = model), model_params))
+  }
+  if (inherits(model, "dsflower_model") && length(model_params)) {
     model_spec$params <- utils::modifyList(model_spec$params %||% list(), model_params)
+  }
+
+  strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
+    if (length(strategy_params)) {
+      stop("'strategy_params' cannot be used when 'strategy' is already a ",
+           "dsflower_strategy object.", call. = FALSE)
+    }
+    strategy
+  } else {
+    do.call(ds.flower.strategy, c(list(name = strategy), strategy_params))
+  }
+
+  if (!is.null(task)) {
+    task_spec <- ds.flower.task(task)
+    .assert_supported_task(task_spec)
+    model_loss <- model_spec$loss %||% .dsflower_get_model(model_spec$name)$loss
+    expected_task <- if (model_loss %in%
+                         c("mse", "poisson_nll", "negbin_nll", "gamma_nll")) {
+      "regression"
+    } else {
+      "classification"
+    }
+    if (!identical(task_spec$type, expected_task)) {
+      stop("Task '", task_spec$type, "' is incompatible with model '",
+           model_spec$name, "' (expected ", expected_task, ").", call. = FALSE)
+    }
   }
 
   # Vision models train a head on frozen-backbone image features; all else tabular.
@@ -283,10 +330,11 @@ ds.flower.fit <- function(conns,
   ds.flower.submit(
     conns, model = model_spec, target = target, features = features,
     data = data, resource = resource, symbol = symbol,
-    num_rounds = rounds, model_params = list(), strategy = strategy,
+    num_rounds = rounds, model_params = list(), strategy = strategy_spec,
     data_kind = data_kind, torch_backend = torch_backend,
     feature_bounds = feature_bounds,
     target_levels = target_levels, target_bounds = target_bounds,
+    allow_insecure_http = allow_insecure_http,
     output_dir = output_dir, output_name = output_name,
     verbose = verbose, silent = silent)
 }

@@ -66,14 +66,12 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
     res_symbol <- paste0(symbol, "_res")
 
     # Assign the resource on each server
-    DSI::datashield.assign.resource(conns, symbol = res_symbol,
-                                     resource = resource)
+    .dsi_assign_resource_exact(
+      conns, res_symbol, resource, "Resource assignment")
     # Resolve to ResourceClient
-    DSI::datashield.assign.expr(
-      conns,
-      symbol = res_symbol,
-      expr = call("as.resource.client", as.name(res_symbol))
-    )
+    .dsi_assign_expr_exact(
+      conns, res_symbol, call("as.resource.client", as.name(res_symbol)),
+      "Resource resolution")
     data <- res_symbol
   }
 
@@ -91,10 +89,9 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
     if (is.null(sym)) {
       stop("No data symbol for server '", srv, "'.", call. = FALSE)
     }
-    DSI::datashield.assign.expr(
-      conns[srv], symbol = symbol,
-      expr = call("flowerInitDS", sym)
-    )
+    .dsi_assign_expr_exact(
+      conns[srv], symbol, call("flowerInitDS", sym),
+      "Flower handle initialization")
   }
 
   # Store connections for later use (run.start, templates)
@@ -118,8 +115,8 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
 #' @param target_column Character; name of the target column.
 #' @param feature_columns Character vector or NULL; feature column names.
 #' @param run_config Named list; additional run configuration.
-#' @param template_name Optional Flower template name used for server-side
-#'   staging.
+#' @param template_name Deprecated compatibility argument. Named executable
+#'   templates have been retired; non-NULL values fail before contacting a node.
 #' @param label_set Optional imaging label-set name for imaging-backed runs.
 #' @return A \code{dsflower_result} with per-site status.
 #' @export
@@ -134,7 +131,8 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
   # privacy parameters.
 
   if (!is.null(template_name)) {
-    run_config[["template_name"]] <- template_name
+    stop("'template_name' is retired. Submit a declarative model specification ",
+         "through ds.flower.submit() instead.", call. = FALSE)
   }
 
   if (!is.null(label_set)) {
@@ -143,15 +141,13 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 
   feat_enc <- .ds_encode(feature_columns)
   config_enc <- .ds_encode(run_config)
-  target_enc <- .ds_encode(target_column)   # encode too: a multi-col target (survival
-                                            # c("time","event")) is mangled if passed raw
+  target_enc <- .ds_encode(target_column)   # multilabel target vectors must remain one
+                                            # typed argument across DSI expression parsing
 
-  DSI::datashield.assign.expr(
-    conns,
-    symbol = symbol,
-    expr = call("flowerPrepareRunDS", symbol, target_enc,
-                feat_enc, config_enc)
-  )
+  .dsi_assign_expr_exact(
+    conns, symbol,
+    call("flowerPrepareRunDS", symbol, target_enc, feat_enc, config_enc),
+    "Run preparation")
 
   code <- .build_code("ds.flower.nodes.prepare",
     symbol = symbol,
@@ -181,8 +177,8 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 #'     \item Single string: broadcast to all nodes.
 #'     \item Named list: per-node addresses (names must match connection names).
 #'   }
-#' @param template_name Optional Flower template name passed to server-side
-#'   SuperNode bootstrap.
+#' @param template_name Deprecated compatibility argument. Named executable
+#'   templates have been retired; non-NULL values fail before contacting a node.
 #' @param torch_backend Character or NULL; requested node-side torch backend.
 #' @return A \code{dsflower_result} with per-site status.
 #' @export
@@ -190,6 +186,10 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
                                     superlink_address = NULL,
                                     template_name = NULL,
                                     torch_backend = NULL) {
+  if (!is.null(template_name)) {
+    stop("'template_name' is retired. The hash-pinned declarative runner selects ",
+         "its runtime from the prepared DP track.", call. = FALSE)
+  }
   # All transport is the DSI tunnel: each SuperNode dials its own node-local
   # loopback forwarder, so the address here is only a placeholder. There is no
   # remote coordinator / LAN auto-resolution path in v2.
@@ -215,23 +215,19 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
 
   if (is.character(superlink_address) && length(superlink_address) == 1L) {
     # Single address for all nodes
-    DSI::datashield.assign.expr(
-      conns,
-      symbol = symbol,
-      expr = call("flowerEnsureSuperNodeDS", symbol,
-                  superlink_address, fed_id, ca_cert_b64, template_name,
-                  torch_backend)
-    )
+    .dsi_assign_expr_exact(
+      conns, symbol,
+      call("flowerEnsureSuperNodeDS", symbol, superlink_address, fed_id,
+           ca_cert_b64, template_name, torch_backend),
+      "SuperNode startup")
   } else if (is.list(superlink_address)) {
     # Per-node addresses
     for (srv in names(superlink_address)) {
-      DSI::datashield.assign.expr(
-        conns[srv],
-        symbol = symbol,
-        expr = call("flowerEnsureSuperNodeDS", symbol,
-                    superlink_address[[srv]], fed_id, ca_cert_b64, template_name,
-                    torch_backend)
-      )
+      .dsi_assign_expr_exact(
+        conns[srv], symbol,
+        call("flowerEnsureSuperNodeDS", symbol, superlink_address[[srv]],
+             fed_id, ca_cert_b64, template_name, torch_backend),
+        "SuperNode startup")
     }
   }
 
@@ -357,11 +353,9 @@ ds.flower.nodes.cleanup <- function(conns, symbol = "flower") {
 
     for (attempt in seq_len(3L)) {
       ok <- tryCatch({
-        DSI::datashield.assign.expr(
-          conns[srv],
-          symbol = symbol,
-          expr = call("flowerCleanupRunDS", symbol)
-        )
+        .dsi_assign_expr_exact(
+          conns[srv], symbol, call("flowerCleanupRunDS", symbol),
+          "Run cleanup")
         TRUE
       }, error = function(e) {
         error <<- conditionMessage(e)

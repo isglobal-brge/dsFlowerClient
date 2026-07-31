@@ -105,6 +105,55 @@ test_that(".read_model_weights returns native XGBoost model JSON", {
   expect_equal(weights$n_trees, 1L)
 })
 
+test_that(".read_model_weights returns the canonical DP-GBDT booster", {
+  results_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    list(
+      objective = "binary:logistic", n_trees = 1L,
+      trees = list(list(feat = 0L, thr = 0.5, w = c(-0.1, 0.1)))
+    ),
+    file.path(results_dir, "booster.json"),
+    auto_unbox = TRUE
+  )
+  weights <- dsFlowerClient:::.read_model_weights(results_dir)
+  expect_equal(weights$objective, "binary:logistic")
+  expect_length(weights$trees, 1L)
+  expect_true(dsFlowerClient:::.model_artifact_exists(results_dir))
+})
+
+test_that(".read_model_weights reconstructs portable neural arrays", {
+  results_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    list(
+      "0" = list(c(1.25, -2.5)),
+      "1" = list(0.75),
+      "__shapes__" = list(c(1L, 2L), 1L),
+      "__round__" = 2L
+    ),
+    file.path(results_dir, "global_model.json"),
+    auto_unbox = TRUE
+  )
+  weights <- dsFlowerClient:::.read_model_weights(results_dir)
+  expect_named(weights, c("coef", "intercept"))
+  expect_equal(weights$coef, matrix(c(1.25, -2.5), nrow = 1L))
+  expect_equal(as.numeric(weights$intercept), 0.75)
+  expect_equal(attr(weights, "round"), 2L)
+})
+
+test_that(".read_model_weights gives arbitrary modules stable parameter names", {
+  results_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    list(
+      "0" = list(1), "1" = list(2), "2" = list(3),
+      "__shapes__" = list(1L, 1L, 1L), "__round__" = 1L
+    ),
+    file.path(results_dir, "global_model.json"),
+    auto_unbox = TRUE
+  )
+  weights <- dsFlowerClient:::.read_model_weights(results_dir)
+  expect_named(weights, paste0("parameter_", 0:2))
+})
+
 test_that(".flwr_run_timeout_secs accepts environment override", {
   withr::local_envvar(DSFLOWER_RUN_TIMEOUT_SECS = "7")
   expect_equal(dsFlowerClient:::.flwr_run_timeout_secs(), 7)

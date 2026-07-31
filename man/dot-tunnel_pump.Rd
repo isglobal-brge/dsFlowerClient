@@ -15,7 +15,8 @@ buffered per node and only dropped once the node acks them, and the up offset
 only advances after the bytes are confirmed written to the SuperLink socket.
 Negotiated chunks and bounded per-node buffers apply TCP backpressure instead
 of accumulating unbounded payloads in the R process.
-A single fan-out call (not per-node pushes) keeps every node in lock-step so
-none is skewed past a SecAgg stage window.
+A single asynchronous fan-out call (not sequential per-node pushes) lets DSI
+service the sites concurrently. Its named expression list carries only the
+node-local payload to each DataSHIELD connection.
 }
 \keyword{internal}

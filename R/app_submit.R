@@ -2,8 +2,8 @@
 #
 # The single researcher-facing path that turns a model spec into a running
 # federated DP job. There is NO server-side catalog: the client codegens the
-# submission (an nn.Module package, or an XGBoost spec), ships it in ONE FAB
-# (ServerApp + ClientApp + the model), the nodes spool it for the run, enforce DP
+# submission (a declarative neural graph or tree spec), ships it in ONE FAB
+# (ServerApp + ClientApp + data-only model spec), the nodes spool it for the run, enforce DP
 # node-side (DP-SGD / DP-GBDT / egress gate per the manifest dp-track), and delete
 # it afterward.
 
@@ -40,7 +40,7 @@
 #' @keywords internal
 .assert_runner_compatibility <- function(conns, symbol) {
   expected_hash <- .compute_local_runner_hash()
-  caps <- tryCatch(
+  raw_caps <- tryCatch(
     DSI::datashield.aggregate(
       conns, expr = call("flowerGetCapabilitiesDS", symbol)),
     error = function(e) {
@@ -48,27 +48,30 @@
            conditionMessage(e), call. = FALSE)
     }
   )
-  if (!is.list(caps) || !length(caps)) {
-    stop("Could not verify the dsFlower runner compatibility: no node capabilities returned.",
+  caps <- .dsi_exact_node_results(raw_caps, conns)
+  missing <- if (is.null(caps)) names(conns) else
+    names(conns)[vapply(caps, is.null, logical(1))]
+  if (is.null(caps) || length(missing)) {
+    detail <- if (length(missing)) paste0(" on: ", paste(missing, collapse = ", ")) else ""
+    stop("Could not verify the dsFlower runner compatibility: no node capabilities returned",
+         detail, ".",
          call. = FALSE)
   }
 
   node_names <- names(caps)
-  if (is.null(node_names)) node_names <- rep("", length(caps))
-  missing_names <- !nzchar(node_names)
-  node_names[missing_names] <- paste0("node", which(missing_names))
   failures <- character()
   for (i in seq_along(caps)) {
     cap <- caps[[i]]
     abi <- if (is.list(cap)) {
-      tryCatch(suppressWarnings(as.integer(cap[["runner_abi"]])),
-               error = function(e) integer())
-    } else integer()
+      tryCatch(suppressWarnings(as.numeric(cap[["runner_abi"]])),
+               error = function(e) numeric())
+    } else numeric()
     remote_hash <- if (is.list(cap)) {
       tryCatch(tolower(as.character(cap[["runner_sha256"]])),
                error = function(e) character())
     } else character()
-    abi_ok <- length(abi) == 1L && !is.na(abi) && identical(abi, 2L)
+    abi_ok <- length(abi) == 1L && !is.na(abi) && is.finite(abi) &&
+      abi == floor(abi) && abi == 2
     hash_ok <- length(remote_hash) == 1L && !is.na(remote_hash) &&
       identical(remote_hash, expected_hash)
     if (!abi_ok || !hash_ok) {
@@ -131,7 +134,8 @@
 #'
 #' @param conns DSI connections.
 #' @param model A model name or \code{dsflower_model} (registry-resolved).
-#' @param target Character; target column.
+#' @param target Character; one target column, or exactly \code{num_labels}
+#'   distinct columns for a multilabel model.
 #' @param features Character vector; feature columns.
 #' @param data Optional character data source resolved during connection.
 #' @param resource Optional Opal resource name.
@@ -140,15 +144,20 @@
 #' @param feature_bounds Optional public feature bounds as
 #'   \code{list(lower=..., upper=...)} in feature order. These constants are
 #'   supplied without querying node data and define a clipped affine transform.
-#' @param target_levels Optional ordered, exhaustive public label vocabulary for
+#' @param target_levels Optional ordered public label vocabulary for
 #'   classification. Non-numeric targets require it; node values are never used
-#'   to infer label codes.
+#'   to infer label codes, and missing or unknown values map to public code zero.
+#'   Multilabel applies one public two-level vocabulary to each target
+#'   independently.
 #' @param target_bounds Required public \code{list(lower=..., upper=...)} for
 #'   regression/count targets. The node clips each target to these constants.
+#' @param allow_insecure_http Character vector of exact connection names allowed
+#'   to use plaintext HTTP. Empty by default. This exception does not provide
+#'   transport security; use it only behind an independently trusted network.
 #' @param model_params Named list; params merged over the model's defaults.
 #'   Neural and DP-GBDT learning rates must be finite and in \code{(0, 10]}.
 #' @param data_kind "tabular" or "image".
-#' @param strategy Character; researcher-side aggregation strategy.
+#' @param strategy Character strategy name or a \code{dsflower_strategy} object.
 #' @param output_dir Optional model output directory.
 #' @param output_name Optional model output name.
 #' @param torch_backend Character; node torch backend selection.
@@ -164,7 +173,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              output_dir = NULL, output_name = NULL,
                              torch_backend = "auto", verbose = FALSE,
                              silent = FALSE, feature_bounds = NULL,
-                             target_levels = NULL, target_bounds = NULL) {
+                             target_levels = NULL, target_bounds = NULL,
+                             allow_insecure_http = getOption(
+                               "dsflower.dsi_allow_insecure_http", character())) {
   rounds_value <- suppressWarnings(as.numeric(num_rounds))
   if (length(rounds_value) != 1L || is.na(rounds_value) || !is.finite(rounds_value) ||
       rounds_value < 1 || rounds_value %% 1 != 0 ||
@@ -172,14 +183,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     stop("num_rounds must be a single positive integer.", call. = FALSE)
   }
   num_rounds <- as.integer(rounds_value)
-  .require_flwr_cli()
-  old_opt <- options(dsflower.silent = isTRUE(silent))
-  on.exit(options(old_opt), add = TRUE)
   if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
   if (length(model_params)) {
     model$params <- utils::modifyList(model$params %||% list(), model_params)
   }
   sub <- .emit_submission(model)
+  target <- .validate_submission_target(sub, target)
   if (identical(sub$track, "neural")) {
     lr <- suppressWarnings(as.numeric((sub$params %||% list())$learning_rate %||% 0.01))
   } else if (identical(sub$track, "trees")) {
@@ -194,20 +203,41 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # Aggregation strategy. All of these run ONLY on the researcher-side SuperLink,
   # over the already-DP client updates -> pure post-processing, so the (epsilon,
   # delta) guarantee is unchanged whichever is chosen (it is never a privacy knob).
-  strategy <- tolower(as.character(strategy)[1])
-  .dsf_strategies <- c("fedavg", "fedadam", "fedadagrad", "fedyogi", "fedavgm")
-  if (!strategy %in% .dsf_strategies) {
-    stop("Unknown strategy '", strategy, "'. Supported: ",
-         paste(.dsf_strategies, collapse = ", "), ".", call. = FALSE)
+  strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
+    strategy
+  } else {
+    ds.flower.strategy(strategy)
   }
-  if (identical(sub$track, "trees") && !identical(strategy, "fedavg")) {
-    warning("strategy = '", strategy, "' is ignored on the trees track; ",
+  strategy_name <- .dsflower_choice_key(strategy_spec$name)
+  if (identical(sub$track, "trees") && !identical(strategy_name, "fedavg")) {
+    warning("strategy = '", strategy_name, "' is ignored on the trees track; ",
             "boosted trees aggregate boosters, not averaged weights.",
             call. = FALSE)
-    strategy <- "fedavg"
+    strategy_spec <- ds.flower.strategy.fedavg()
+    strategy_name <- "fedavg"
   }
+  local_learning_rate <- if (identical(sub$track, "neural")) {
+    as.numeric((sub$params %||% list())$learning_rate %||% 0.01)
+  } else {
+    NULL
+  }
+  strategy_lines <- .strategy_config_lines(
+    strategy_spec, client_learning_rate = local_learning_rate)
+
+  # All validation above is data-independent and must run before any CLI, DSI,
+  # upload, or node-side staging side effect.
+  .require_flwr_cli()
+  old_opt <- options(dsflower.silent = isTRUE(silent))
+  on.exit(options(old_opt), add = TRUE)
 
   if (is.null(data) && is.null(resource) && is.null(symbol)) symbol <- "D"
+
+  # Reject an accidental transport downgrade before the first DSI request
+  # (including schema auto-detection, handle creation, staging or app upload).
+  # link.up validates again immediately before starting the tunnel and emits the
+  # single warning for an explicitly allowed HTTP site.
+  suppressWarnings(.validate_dsi_transport_security(
+    conns, allow_insecure_http = allow_insecure_http))
 
   # Auto-detect tabular features = every column except the target(s), from the DATA symbol's
   # schema (the assigned data.frame -- NOT the flower handle). Column NAMES are schema, not
@@ -334,7 +364,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     run_config = prepare_config)
 
   if (!is.null(up)) {
-    pin <- DSI::datashield.aggregate(conns, call("flowerTier2PinDS", hsym, up$token))
+    pin <- .pin_user_module(conns, hsym, up)
     if (verbose) message("  Pinned: ",
                          paste(unique(unlist(lapply(pin, `[[`, "pinned"))), collapse = ", "), ".")
   }
@@ -346,7 +376,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   cfg <- c(
     .toml_kv("dp-track", sub$track),
     .toml_kv("data-kind", data_kind),
-    .toml_kv("strategy", strategy),
+    strategy_lines,
     paste0("num-features = ", as.integer(n_features)),
     paste0("num-server-rounds = ", as.integer(num_rounds)),
     paste0("min-train-nodes = ", as.integer(n_clients)),
@@ -389,15 +419,15 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                                    vision = identical(data_kind, "image"))
   .ensure_client_framework("pytorch")
 
-  # link.up starts the INSECURE local SuperLink (the bytes already travel inside
-  # the TLS DataSHIELD channel) AND the per-node DSI tunnel forwarders. Do NOT
-  # start the SuperLink separately: a default SSL SuperLink mismatches the
-  # insecure inner gRPC the SuperNodes speak and the run hangs.
-  ds.flower.link.up(conns)
+  # link.up starts the loopback-only insecure SuperLink after validating the
+  # outer DSI transport, then starts the per-node tunnel forwarders. Do not start
+  # the SuperLink separately: a default SSL SuperLink mismatches the insecure
+  # inner gRPC the SuperNodes speak and the run hangs.
+  ds.flower.link.up(conns, allow_insecure_http = allow_insecure_http)
   recipe <- structure(list(
     model = list(name = model$name, template = model$template %||% model$name,
                  framework = model$framework %||% "pytorch", track = sub$track),
-    strategy = list(name = strategy, params = list()),
+    strategy = list(name = strategy_spec$name, params = strategy_spec$params),
     num_rounds = as.integer(num_rounds),
     features = features,
     feature_means = if (!is.null(feature_norm)) feature_norm$means else NULL,
@@ -415,6 +445,35 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                       results_dir = results_dir, symbol = hsym,
                       output_dir = output_dir, output_name = output_name,
                       verbose = verbose, silent = silent)
+}
+
+#' Validate target-column shape against the node-owned loss
+#' @keywords internal
+.validate_submission_target <- function(sub, target) {
+  if (!is.character(target)) {
+    stop("'target' must contain target column names.", call. = FALSE)
+  }
+  target <- enc2utf8(target)
+  if (!length(target) || anyNA(target) || any(!nzchar(target)) ||
+      anyDuplicated(target)) {
+    stop("'target' must contain unique, non-empty target column names.",
+         call. = FALSE)
+  }
+  if (identical(sub$loss, "multilabel_bce")) {
+    num_labels <- suppressWarnings(as.integer((sub$params %||% list())$num_labels))
+    if (length(num_labels) != 1L || is.na(num_labels) ||
+        num_labels < 2L || num_labels > 1024L) {
+      stop("Multilabel models require public num_labels in [2, 1024].",
+           call. = FALSE)
+    }
+    if (length(target) != num_labels) {
+      stop("Multilabel model num_labels=", num_labels, " requires exactly ",
+           num_labels, " target columns.", call. = FALSE)
+    }
+  } else if (length(target) != 1L) {
+    stop("The selected model requires exactly one target column.", call. = FALSE)
+  }
+  target
 }
 
 #' Validate data-independent preprocessing bounds

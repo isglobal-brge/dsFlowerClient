@@ -11,3 +11,7 @@ vignettes/dsflower_output/
 __pycache__/
 *.pyc
 *.pyo
+
+# Native objects generated while testing the package locally
+src/*.o
+src/*.so

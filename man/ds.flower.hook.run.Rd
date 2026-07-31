@@ -15,7 +15,8 @@ ds.flower.hook.run(
   task = c("classification", "regression", "count"),
   verbose = TRUE,
   target_levels = NULL,
-  target_bounds = NULL
+  target_bounds = NULL,
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
 )
 
 ds.flower.tier2.run(
@@ -25,7 +26,8 @@ ds.flower.tier2.run(
   features,
   symbol = "D",
   num_rounds = 1L,
-  verbose = TRUE
+  verbose = TRUE,
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
 )
 }
 \arguments{
@@ -46,11 +48,15 @@ ds.flower.tier2.run(
 
 \item{verbose}{Logical.}
 
-\item{target_levels}{Optional ordered, exhaustive public label vocabulary for
-classification HookApps.}
+\item{target_levels}{Optional ordered public label vocabulary for
+classification HookApps. Missing or unknown values map to public code zero.}
 
 \item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
 regression/count HookApps.}
+
+\item{allow_insecure_http}{Character vector of exact connection names allowed
+to use plaintext HTTP. Empty by default. This exception does not provide
+transport security; use it only behind an independently trusted network.}
 }
 \value{
 A \code{dsflower_run} object. A successful Flower run may represent a
@@ -63,5 +69,6 @@ are available, the node clips the complete update and applies its configured
 Gaussian output mechanism (optionally over disjoint blocks). If any gate is
 absent, the uploaded code is not executed and the operation returns the
 incoming public model unchanged. Hash verification and static scanning do not
-provide \code{nn.Module}/per-sample DP-SGD granularity for arbitrary code.
+provide \code{nn.Module}/per-sample DP-SGD granularity for arbitrary code. The
+timing envelope is defense in depth, not a formal constant-time guarantee.
 }

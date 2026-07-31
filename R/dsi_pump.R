@@ -4,6 +4,9 @@
 # A separate process is unnecessary because the SuperNodes connect to their
 # forwarders only after nodes.ensure returns and retry until the pump starts.
 
+#' @useDynLib dsFlowerClient, .registration = TRUE, .fixes = "C_"
+NULL
+
 #' @keywords internal
 .tunnel_enc_client <- function(raw) {
   if (length(raw) == 0) return("")
@@ -18,7 +21,7 @@
       !nzchar(s) || !startsWith(s, "B64:")) {
     return(raw(0))
   }
-  b <- substring(s, 5)
+  b <- substring(s, first = 5L, last = nchar(s, type = "chars"))
   if (nchar(b, type = "bytes") > 4 * ceiling(max_bytes / 3) + 4) {
     stop("Tunnel response exceeds the negotiated chunk size.", call. = FALSE)
   }
@@ -27,6 +30,40 @@
   value <- tryCatch(jsonlite::base64_dec(b), error = function(e) NULL)
   if (is.null(value) || length(value) > max_bytes) {
     stop("Invalid or oversized tunnel response.", call. = FALSE)
+  }
+  value
+}
+
+#' Write once to a non-blocking socket and return the bytes accepted by R
+#'
+#' Base R's writeBin() intentionally does not report whether a non-blocking
+#' output write succeeded. The small native shim exposes R_WriteConnection's
+#' byte count so the relay never acknowledges bytes that remain unwritten. It
+#' is compile-time pinned to R's connection ABI version 1 and fails installation
+#' explicitly if a future R release changes that private ABI.
+#' @keywords internal
+.tunnel_socket_write_some <- function(socket, payload) {
+  if (!is.raw(payload)) {
+    stop("Tunnel socket payload must be raw bytes.", call. = FALSE)
+  }
+  if (length(payload) == 0L) return(0)
+  written <- .Call(C_dsf_socket_write, socket, payload)
+  written <- suppressWarnings(as.numeric(written))
+  if (length(written) != 1L || is.na(written) || !is.finite(written) ||
+      written < 0 || written > length(payload) || written != floor(written)) {
+    stop("Invalid tunnel socket write count.", call. = FALSE)
+  }
+  written
+}
+
+#' Read currently available bytes without hiding a closed/broken socket
+#' @keywords internal
+.tunnel_socket_read_available <- function(socket, max_bytes) {
+  ready <- socketSelect(list(socket), write = FALSE, timeout = 0)
+  if (length(ready) != 1L || !isTRUE(ready[[1]])) return(raw(0))
+  value <- readBin(socket, "raw", max_bytes)
+  if (length(value) == 0L && !isTRUE(isIncomplete(socket))) {
+    stop("Local SuperLink tunnel socket closed.", call. = FALSE)
   }
   value
 }
@@ -41,8 +78,9 @@
 #' only advances after the bytes are confirmed written to the SuperLink socket.
 #' Negotiated chunks and bounded per-node buffers apply TCP backpressure instead
 #' of accumulating unbounded payloads in the R process.
-#' A single fan-out call (not per-node pushes) keeps every node in lock-step so
-#' none is skewed past a SecAgg stage window.
+#' A single asynchronous fan-out call (not sequential per-node pushes) lets DSI
+#' service the sites concurrently. Its named expression list carries only the
+#' node-local payload to each DataSHIELD connection.
 #' @keywords internal
 .tunnel_pump <- function() {
   st <- .dsflower_client_env$.tunnel
@@ -58,7 +96,17 @@
   if (is.null(st$up_off))    st$up_off    <- rep(0, n)            # acked node->SL
   if (is.null(st$down_sent)) st$down_sent <- rep(0, n)           # acked SL->node
   if (is.null(st$down_buf))  st$down_buf  <- vector("list", n)   # SL bytes pending node ack
+  if (is.null(st$down_inflight_len)) {
+    st$down_inflight_len <- rep(0, n)                             # frozen message prefix
+  }
   if (is.null(st$gen))       st$gen       <- rep(0, n)           # forwarder connection gen
+  if (length(st$down_inflight_len) != n) {
+    stop("Invalid tunnel in-flight message state.", call. = FALSE)
+  }
+  # Socket reads/writes are irreversible. Preserve every buffer and offset
+  # change even if a later node in this fan-out returns a malformed ACK or a
+  # local socket operation fails.
+  on.exit(.dsflower_client_env$.tunnel <- st, add = TRUE)
 
   # 1) drain available SuperLink->node bytes from each open socket into its buffer
   for (i in seq_len(n)) {
@@ -66,31 +114,45 @@
     buffered <- length(st$down_buf[[i]] %||% raw(0))
     capacity <- buffer_caps[i] - buffered
     if (capacity <= 0) next
-    d <- tryCatch(
-      readBin(s, "raw", min(chunks[i], capacity)),
-      error = function(e) raw(0)
-    )
+    d <- .tunnel_socket_read_available(s, min(chunks[i], capacity))
     if (length(d) > 0) st$down_buf[[i]] <- c(st$down_buf[[i]] %||% raw(0), d)
   }
 
   # 2) one fan-out exchange: push pending down bytes (idempotent at down_sent) and
   #    poll up bytes from up_off, for every node at once
-  req <- list()
+  exprs <- stats::setNames(vector("list", n), hosts)
   sent_lengths <- integer(n)
   for (i in seq_len(n)) {
     buf <- st$down_buf[[i]] %||% raw(0)
-    send <- if (length(buf) > chunks[i]) buf[seq_len(chunks[i])] else buf
-    sent_lengths[i] <- length(send)
-    req[[hosts[i]]] <- list(pa = st$down_sent[i],
-                            pd = if (length(send)) .tunnel_enc_client(send) else "",
-                            pf = st$up_off[i])
+    inflight <- suppressWarnings(as.numeric(st$down_inflight_len[i]))
+    if (length(inflight) != 1L || is.na(inflight) || !is.finite(inflight) ||
+        inflight < 0 || inflight > chunks[i] || inflight != floor(inflight) ||
+        inflight > length(buf)) {
+      stop("Invalid tunnel in-flight message state.", call. = FALSE)
+    }
+    if (inflight == 0 && length(buf) > 0L) {
+      inflight <- min(length(buf), chunks[i])
+      st$down_inflight_len[i] <- inflight
+    }
+    send <- if (inflight > 0) buf[seq_len(inflight)] else raw(0)
+    sent_lengths[i] <- as.integer(inflight)
+    exprs[[hosts[i]]] <- call(
+      "flowerTunnelExchangeDS",
+      conn_id = cid,
+      pa = st$down_sent[i],
+      pd = if (length(send)) .tunnel_enc_client(send) else "",
+      pf = st$up_off[i],
+      g = st$gen[i]
+    )
   }
-  res <- tryCatch(DSI::datashield.aggregate(conns, call("flowerTunnelExchangeDS", cid, .ds_encode(req))),
-                  error = function(e) NULL)
+  raw_res <- tryCatch(
+    DSI::datashield.aggregate(conns, exprs),
+    error = function(e) NULL
+  )
+  res <- .dsi_exact_node_results(raw_res, conns)
   if (is.null(res)) {
     # Preserve bytes already drained from the SuperLink socket; the next cycle
     # retries the same unacknowledged prefix.
-    .dsflower_client_env$.tunnel <- st
     return(TRUE)
   }
   if (isTRUE(getOption("dsflower.pump_debug", FALSE)))
@@ -104,6 +166,12 @@
   # 3) apply per-node results
   for (i in seq_len(n)) {
     r <- res[[hosts[i]]]; if (is.null(r)) next
+    if (!is.list(r) ||
+        !identical(names(r), c("ok", "node", "sz", "ud", "ue", "g")) ||
+        !isTRUE(r$ok) || !identical(as.character(r$node), hosts[i])) {
+      stop("Node returned an invalid or misassociated tunnel ACK.",
+           call. = FALSE)
+    }
     # reconnect: the forwarder bumped the generation (the SuperNode dropped and
     # redialed). Reset this node's SuperLink socket + offsets so the new stream
     # maps to a fresh SuperLink connection; the truncated spool means stale data
@@ -117,6 +185,7 @@
       if (!is.null(st$socks[[i]])) tryCatch(close(st$socks[[i]]), error = function(e) NULL)
       st$socks[i] <- list(NULL)   # [i]<-list(NULL) keeps the slot; [[i]]<-NULL would drop it
       st$up_off[i] <- 0; st$down_sent[i] <- 0; st$down_buf[[i]] <- raw(0)
+      st$down_inflight_len[i] <- 0
       st$gen[i] <- g
       next
     }
@@ -126,14 +195,15 @@
       stop("Node returned an invalid tunnel acknowledgment.", call. = FALSE)
     }
     acked <- sz - st$down_sent[i]
-    if (!is.finite(acked) || acked < 0 || acked > sent_lengths[i] ||
-        acked != floor(acked)) {
+    if (!is.finite(acked) || acked < 0 || acked != floor(acked) ||
+        !acked %in% c(0, sent_lengths[i])) {
       stop("Node returned an invalid tunnel acknowledgment.", call. = FALSE)
     }
     if (acked > 0) {
       buf <- st$down_buf[[i]] %||% raw(0)
       st$down_buf[[i]] <- if (acked >= length(buf)) raw(0) else buf[(acked + 1):length(buf)]
       st$down_sent[i] <- sz
+      st$down_inflight_len[i] <- 0
     }
     # up: write node->SuperLink bytes to the (lazily opened) SuperLink socket
     ud <- r$ud
@@ -141,6 +211,13 @@
       stop("Node returned an invalid tunnel payload.", call. = FALSE)
     }
     if (nzchar(ud)) {
+      payload <- .tunnel_dec_client(ud, max_bytes = chunks[i])
+      ue <- suppressWarnings(as.numeric(r$ue))
+      expected_ue <- st$up_off[i] + length(payload)
+      if (length(ue) != 1L || is.na(ue) || !is.finite(ue) ||
+          ue != expected_ue) {
+        stop("Node returned an invalid tunnel offset.", call. = FALSE)
+      }
       if (is.null(st$socks[[i]])) {
         newsock <- tryCatch(
           socketConnection("127.0.0.1", fp, open = "r+b", blocking = FALSE, timeout = 10),
@@ -149,19 +226,18 @@
       }
       s <- st$socks[[i]]
       if (!is.null(s)) {
-        payload <- .tunnel_dec_client(ud, max_bytes = chunks[i])
-        ue <- suppressWarnings(as.numeric(r$ue))
-        expected_ue <- st$up_off[i] + length(payload)
-        if (length(ue) != 1L || is.na(ue) || !is.finite(ue) ||
-            ue != expected_ue) {
-          stop("Node returned an invalid tunnel offset.", call. = FALSE)
-        }
-        ok <- tryCatch({ writeBin(payload, s); flush(s); TRUE },
-                       error = function(e) FALSE)
-        if (ok) st$up_off[i] <- ue
+        written <- .tunnel_socket_write_some(s, payload)
+        # A short non-blocking write is normal under backpressure. Ask the node
+        # for the unwritten suffix on the next exchange; never infer a full ACK.
+        if (written > 0) st$up_off[i] <- st$up_off[i] + written
+      }
+    } else {
+      ue <- suppressWarnings(as.numeric(r$ue))
+      if (length(ue) != 1L || is.na(ue) || !is.finite(ue) ||
+          ue != st$up_off[i]) {
+        stop("Node returned an invalid tunnel offset.", call. = FALSE)
       }
     }
   }
-  .dsflower_client_env$.tunnel <- st
   TRUE
 }

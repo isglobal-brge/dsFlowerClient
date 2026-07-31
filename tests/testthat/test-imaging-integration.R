@@ -14,9 +14,13 @@ test_that("resource connect uses registered dsFlower imaging discovery", {
   )
 
   local_mocked_bindings(
-    datashield.assign.resource = function(conns, symbol, resource) invisible(NULL),
-    datashield.assign.expr = function(conns, symbol, expr) {
+    datashield.assign.resource = function(conns, symbol, resource, success, ...) {
+      for (node in names(conns)) success(node)
+      invisible(NULL)
+    },
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
       assigned[[length(assigned) + 1L]] <<- list(symbol = symbol, expr = expr)
+      for (node in names(conns)) success(node)
       invisible(NULL)
     },
     datashield.aggregate = function(conns, expr) {

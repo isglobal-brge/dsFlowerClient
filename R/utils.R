@@ -77,6 +77,126 @@
   }
 }
 
+#' Validate and order one DSI result per requested node
+#'
+#' DSI 1.8 represents a per-node aggregate error as a named NULL element. This
+#' helper preserves that distinction: malformed/misassociated outer results
+#' return NULL, while a valid named result remains a list even when one of its
+#' node values is NULL.
+#' @keywords internal
+.dsi_exact_node_results <- function(result, conns) {
+  hosts <- names(conns)
+  if (!length(hosts) || anyNA(hosts) || any(!nzchar(hosts)) ||
+      anyDuplicated(hosts) || !is.list(result) ||
+      length(result) != length(hosts)) {
+    return(NULL)
+  }
+  result_names <- names(result)
+  if (is.null(result_names) || anyNA(result_names) ||
+      any(!nzchar(result_names)) || anyDuplicated(result_names) ||
+      !setequal(result_names, hosts)) {
+    return(NULL)
+  }
+  result[hosts]
+}
+
+#' Retry one idempotent aggregate until every node returns an explicit ACK
+#'
+#' The exact same call object is reused on every attempt. A named NULL (DSI's
+#' per-node error representation) or a malformed outer mapping is retryable; an
+#' explicit non-NULL but invalid ACK fails immediately.
+#' @keywords internal
+.dsi_retry_exact_aggregate <- function(conns, expr, validate, operation,
+                                       attempts = 3L) {
+  hosts <- names(conns)
+  if (!length(hosts) || anyNA(hosts) || any(!nzchar(hosts)) ||
+      anyDuplicated(hosts)) {
+    stop("DSI operations require non-empty, unique node names.", call. = FALSE)
+  }
+  last_missing <- hosts
+  for (attempt in seq_len(attempts)) {
+    raw_result <- tryCatch(
+      DSI::datashield.aggregate(conns, expr),
+      error = function(e) NULL)
+    result <- .dsi_exact_node_results(raw_result, conns)
+    if (is.null(result)) {
+      last_missing <- hosts
+      next
+    }
+    missing <- hosts[vapply(result, is.null, logical(1))]
+    invalid <- hosts[vapply(hosts, function(host) {
+      value <- result[[host]]
+      !is.null(value) && !isTRUE(validate(value, host))
+    }, logical(1))]
+    if (length(invalid)) {
+      stop(operation, " returned an invalid ACK on: ",
+           paste(invalid, collapse = ", "), ".", call. = FALSE)
+    }
+    if (!length(missing)) return(result)
+    last_missing <- missing
+  }
+  stop(operation, " returned no ACK on: ",
+       paste(last_missing, collapse = ", "), ".", call. = FALSE)
+}
+
+#' Require an explicit successful DSI ASSIGN callback from every node
+#' @keywords internal
+.dsi_assign_exact <- function(conns, operation, invoke) {
+  hosts <- names(conns)
+  if (!length(hosts) || anyNA(hosts) || any(!nzchar(hosts)) ||
+      anyDuplicated(hosts)) {
+    stop("DSI assignments require non-empty, unique node names.", call. = FALSE)
+  }
+  succeeded <- stats::setNames(rep(FALSE, length(hosts)), hosts)
+  failed <- stats::setNames(rep(FALSE, length(hosts)), hosts)
+  callback_invalid <- FALSE
+  success <- function(node, ...) {
+    if (length(node) != 1L || is.na(node) || !node %in% hosts) {
+      callback_invalid <<- TRUE
+    } else {
+      succeeded[[node]] <<- TRUE
+    }
+  }
+  error <- function(node, message = NULL, ...) {
+    if (length(node) != 1L || is.na(node) || !node %in% hosts) {
+      callback_invalid <<- TRUE
+    } else {
+      failed[[node]] <<- TRUE
+    }
+  }
+  thrown <- tryCatch({
+    invoke(success, error)
+    NULL
+  }, error = identity)
+  bad <- hosts[!succeeded | failed]
+  if (!is.null(thrown) || callback_invalid || length(bad)) {
+    if (!length(bad)) bad <- hosts
+    stop(operation, " failed or returned no ACK on: ",
+         paste(bad, collapse = ", "), ".", call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
+#' Require exact completion of one DSI expression assignment
+#' @keywords internal
+.dsi_assign_expr_exact <- function(conns, symbol, expr, operation) {
+  .dsi_assign_exact(conns, operation, function(success, error) {
+    DSI::datashield.assign.expr(
+      conns, symbol = symbol, expr = expr,
+      success = success, error = error, errors.print = FALSE)
+  })
+}
+
+#' Require exact completion of one DSI resource assignment
+#' @keywords internal
+.dsi_assign_resource_exact <- function(conns, symbol, resource, operation) {
+  .dsi_assign_exact(conns, operation, function(success, error) {
+    DSI::datashield.assign.resource(
+      conns, symbol = symbol, resource = resource,
+      success = success, error = error, errors.print = FALSE)
+  })
+}
+
 #' Resilient datashield.aggregate that tolerates per-server failures
 #'
 #' @param conns DSI connections object.
@@ -90,7 +210,12 @@
   for (srv in server_names) {
     tryCatch({
       res <- DSI::datashield.aggregate(conns[srv], expr = expr)
-      results[[srv]] <- res[[srv]]
+      mapped <- .dsi_exact_node_results(res, conns[srv])
+      if (is.null(mapped) || is.null(mapped[[srv]])) {
+        errors[[srv]] <- "node returned no aggregate result"
+      } else {
+        results[srv] <- list(mapped[[srv]])
+      }
     }, error = function(e) {
       errors[[srv]] <<- e$message
     })

@@ -13,6 +13,9 @@ vignette: >
 > contract and must not be used as deployment or security instructions. See
 > `README.md` and the server `ARCHITECTURE.md` for the enforced contract.
 
+> The Cox/survival route shown here is not registered or runnable in the current
+> enforced-DP runtime. Its calls are non-executed historical evidence only.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 library(dsFlowerClient)

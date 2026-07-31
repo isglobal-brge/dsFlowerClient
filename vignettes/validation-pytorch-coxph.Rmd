@@ -13,6 +13,9 @@ vignette: >
 > contract and must not be used as deployment or security instructions. See
 > `README.md` and the server `ARCHITECTURE.md` for the enforced contract.
 
+> `pytorch_coxph` is not registered or exported in the current runtime. The
+> non-executed commands below are preserved solely as historical evidence.
+
 ```{r, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
 method_id <- "pytorch_coxph"
@@ -32,8 +35,8 @@ fmt <- function(x) {
 }
 ```
 
-This vignette records the catalogue coverage check for this authorised
-template. The federated run used three Opal/Rock nodes and the same pooled
+This vignette records the catalogue coverage check for this formerly authorised
+template. The historical run used three Opal/Rock nodes and the same pooled
 synthetic validation cohort was used for the local baseline. The purpose is
 method-path validation: data staging, template verification, Flower
 execution, result persistence, and cleanup. It complements the biomedical

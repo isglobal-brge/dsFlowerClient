@@ -83,7 +83,7 @@ xgb_curve_results$epsilon <- vapply(xgb_curve$results, `[[`, numeric(1), "curve_
 
 This vignette reports public clinical benchmark runs executed through the same
 DataSHIELD/Flower path used by dsFlower applications. Each run partitions the
-training data over three Opal/Rock servers, launches the selected authorised
+training data over three Opal/Rock servers, launches the selected then-authorised
 template through `ds.flower.fit()`, trains a centralised baseline on the same
 training split, evaluates both models on the same held-out test set, and records
 the approved output metrics.
@@ -155,7 +155,7 @@ builder$append(server = "node3", url = "https://opal-node-3.example.org",
 conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "D")
 ```
 
-**2. Run a benchmark row.** Train one authorised template through dsFlower with
+**2. Run a benchmark row.** Historically, train one then-authorised template through dsFlower with
 FedAvg over the server-side table, choosing the privacy profile for the posture
 under test. The clinical Secure Aggregation profile is shown here.
 

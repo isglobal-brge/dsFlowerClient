@@ -4,18 +4,13 @@
 \alias{ds.flower.strategy.fedavg}
 \title{Create a FedAvg strategy spec}
 \usage{
-ds.flower.strategy.fedavg(fraction_fit = 1, fraction_evaluate = 1)
-}
-\arguments{
-\item{fraction_fit}{Numeric; fraction of clients used for training (0-1).}
-
-\item{fraction_evaluate}{Numeric; fraction of clients used for evaluation (0-1).}
+ds.flower.strategy.fedavg()
 }
 \value{
 A \code{dsflower_strategy} S3 object.
 }
 \description{
-Federated Averaging: each node trains, sends updated weights, and the
-server computes a weighted average. The number of participating clients
-is determined automatically from the number of connected servers.
+Every node participates in every training round and private evaluation is
+disabled. Node updates carry a constant aggregation weight, so no exact
+cohort size is disclosed to the researcher-side SuperLink.
 }

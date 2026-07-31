@@ -25,8 +25,8 @@ ds.flower.nodes.prepare(
 
 \item{run_config}{Named list; additional run configuration.}
 
-\item{template_name}{Optional Flower template name used for server-side
-staging.}
+\item{template_name}{Deprecated compatibility argument. Named executable
+templates have been retired; non-NULL values fail before contacting a node.}
 
 \item{label_set}{Optional imaging label-set name for imaging-backed runs.}
 }

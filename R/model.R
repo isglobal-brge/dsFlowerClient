@@ -95,11 +95,13 @@ ds.flower.model.pytorch_linear_regression <- function(learning_rate = 0.01,
 #'   likelihood couples samples through the risk set, so it has no per-sample
 #'   gradient and is incompatible with DP-SGD. A HookApp does not automatically
 #'   restore per-sample granularity for an arbitrary coupled loss. For DP
-#'   survival, log-normal AFT is a per-sample-decomposable declarative alternative.
+#'   survival, a future per-sample-decomposable AFT loss could be a declarative
+#'   alternative, but no survival model is registered in this release.
 #' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
+#' @noRd
 # NOTE: not exported -- survival models are defined but not yet registered/runnable in this
 # build (see model_registry.R). Kept internal until the survival track is wired + tested.
 ds.flower.model.pytorch_coxph <- function(learning_rate = 0.01,
@@ -173,7 +175,7 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
 #'   volumetric collections. Default FALSE: the 2D backbone auto-handles both 2D
 #'   images and 3D volumes (via a representative slice), the plug-and-play path.
 #' @return A \code{dsflower_model} S3 object.
-# NOTE: not exported -- image/vision track not yet registered/runnable in this build.
+#' @export
 ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
                                               learning_rate = 0.001,
                                               batch_size = 32L,
@@ -210,7 +212,7 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
 #'   volumetric collections. Default FALSE: the 2D backbone auto-handles both 2D
 #'   images and 3D volumes (via a representative slice), the plug-and-play path.
 #' @return A \code{dsflower_model} S3 object.
-# NOTE: not exported -- image/vision track not yet registered/runnable in this build.
+#' @export
 ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
                                                  learning_rate = 0.001,
                                                  batch_size = 32L,
@@ -250,6 +252,7 @@ ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
 #' @param image_size Integer; square resize dimension before training.
 #' @param base_channels Integer; number of channels in the first U-Net block.
 #' @return A \code{dsflower_model} S3 object.
+#' @noRd
 # NOTE: not exported -- image/vision track not yet registered/runnable in this build.
 ds.flower.model.pytorch_unet2d <- function(n_classes = 1L,
                                             learning_rate = 0.001,
@@ -278,28 +281,37 @@ ds.flower.model.pytorch_unet2d <- function(n_classes = 1L,
 #'
 #' Temporal Convolutional Network for time series classification.
 #'
-#' @param n_channels Integer; number of input channels.
-#' @param kernel_size Integer; convolution kernel size.
-#' @param n_layers Integer; number of TCN blocks.
+#' @param input_shape Integer vector \code{c(channels, sequence_length)} whose
+#'   product must equal the staged feature count.
+#' @param channels Integer; number of hidden convolution channels.
+#' @param levels Integer; number of dilated TCN blocks.
+#' @param n_classes Integer; number of output classes.
 #' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
-ds.flower.model.pytorch_tcn <- function(n_channels = 1L,
-                                         kernel_size = 3L,
-                                         n_layers = 4L,
+ds.flower.model.pytorch_tcn <- function(input_shape,
+                                         channels = 8L,
+                                         levels = 3L,
+                                         n_classes = 2L,
                                          learning_rate = 0.001,
                                          batch_size = 32L,
                                          local_epochs = 1L) {
+  input_shape <- suppressWarnings(as.integer(input_shape))
+  if (length(input_shape) != 2L || anyNA(input_shape) || any(input_shape < 1L)) {
+    stop("'input_shape' must be c(channels, sequence_length) with positive integers.",
+         call. = FALSE)
+  }
   obj <- list(
     name      = "pytorch_tcn",
     framework = "pytorch",
     template  = "pytorch_tcn",
     params    = list(
-      n_channels    = as.integer(n_channels),
-      kernel_size   = as.integer(kernel_size),
-      n_layers      = as.integer(n_layers),
+      input_shape   = input_shape,
+      channels      = as.integer(channels),
+      levels        = as.integer(levels),
+      n_classes     = as.integer(n_classes),
       learning_rate = learning_rate,
       batch_size    = as.integer(batch_size),
       local_epochs  = as.integer(local_epochs)
@@ -313,25 +325,38 @@ ds.flower.model.pytorch_tcn <- function(n_channels = 1L,
 #'
 #' LSTM for longitudinal EHR and sequential clinical data.
 #'
-#' @param hidden_size Integer; LSTM hidden state size.
-#' @param num_layers Integer; number of LSTM layers.
+#' @param n_tokens Integer; number of time points per sample.
+#' @param n_features Integer; number of features per time point. The product
+#'   \code{n_tokens * n_features} must equal the staged feature count.
+#' @param hidden Integer; LSTM hidden state size.
+#' @param n_classes Integer; number of output classes.
 #' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
-ds.flower.model.pytorch_lstm <- function(hidden_size = 64L,
-                                          num_layers = 2L,
+ds.flower.model.pytorch_lstm <- function(n_tokens,
+                                          n_features,
+                                          hidden = 32L,
+                                          n_classes = 2L,
                                           learning_rate = 0.001,
                                           batch_size = 32L,
                                           local_epochs = 1L) {
+  n_tokens <- suppressWarnings(as.integer(n_tokens))
+  n_features <- suppressWarnings(as.integer(n_features))
+  if (length(n_tokens) != 1L || is.na(n_tokens) || n_tokens < 1L ||
+      length(n_features) != 1L || is.na(n_features) || n_features < 1L) {
+    stop("'n_tokens' and 'n_features' must be positive integers.", call. = FALSE)
+  }
   obj <- list(
     name      = "pytorch_lstm",
     framework = "pytorch",
     template  = "pytorch_lstm",
     params    = list(
-      hidden_size   = as.integer(hidden_size),
-      num_layers    = as.integer(num_layers),
+      n_tokens      = n_tokens,
+      n_features    = n_features,
+      hidden        = as.integer(hidden),
+      n_classes     = as.integer(n_classes),
       learning_rate = learning_rate,
       batch_size    = as.integer(batch_size),
       local_epochs  = as.integer(local_epochs)
@@ -423,7 +448,8 @@ ds.flower.model.pytorch_poisson <- function(hidden_layers = "",
 #' Create a Multi-Label Classification model spec
 #'
 #' Multiple binary outcomes per sample (phenotyping, multi-endpoint).
-#' Uses BCEWithLogitsLoss per label.
+#' Uses BCEWithLogitsLoss per label. Training requires exactly \code{n_labels}
+#' distinct target columns; one public two-level vocabulary is applied to each.
 #'
 #' @param n_labels Integer; number of label columns.
 #' @param hidden_layers Character; comma-separated hidden layer sizes.
@@ -441,7 +467,7 @@ ds.flower.model.pytorch_multilabel <- function(n_labels = 2L,
     name      = "pytorch_multilabel",
     framework = "pytorch",
     template  = "pytorch_multilabel",
-    params    = list(n_labels = as.integer(n_labels),
+    params    = list(num_labels = as.integer(n_labels),
                      hidden_layers = hidden_layers,
                      learning_rate = learning_rate,
                      batch_size = as.integer(batch_size),
@@ -464,6 +490,7 @@ ds.flower.model.pytorch_multilabel <- function(n_labels = 2L,
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs.
 #' @return A \code{dsflower_model} S3 object.
+#' @noRd
 # NOTE: not exported -- survival track not yet registered/runnable in this build.
 ds.flower.model.pytorch_lognormal_aft <- function(learning_rate = 0.01,
                                          batch_size = 32L,
@@ -493,6 +520,7 @@ ds.flower.model.pytorch_lognormal_aft <- function(learning_rate = 0.01,
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs.
 #' @return A \code{dsflower_model} S3 object.
+#' @noRd
 # NOTE: not exported -- survival track not yet registered/runnable in this build.
 ds.flower.model.pytorch_cause_specific_cox <- function(n_causes = 2L,
                                                       learning_rate = 0.01,

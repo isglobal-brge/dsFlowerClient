@@ -13,6 +13,72 @@
   paste0("B64:", b)
 }
 
+#' Stream one archive to every node with exact offset acknowledgements
+#' @keywords internal
+.push_app_archive <- function(conns, path, token, chunk_bytes, progress = NULL) {
+  size <- file.size(path)
+  if (length(size) != 1L || is.na(size) || size <= 0) {
+    stop("The app archive is empty.", call. = FALSE)
+  }
+  input <- file(path, open = "rb")
+  on.exit(close(input), add = TRUE)
+
+  offset <- 0
+  while (offset < size) {
+    wanted <- as.integer(min(as.numeric(chunk_bytes), size - offset))
+    chunk <- readBin(input, "raw", n = wanted)
+    if (length(chunk) != wanted) {
+      stop("Could not read the complete app archive chunk.", call. = FALSE)
+    }
+    expected <- offset + length(chunk)
+    chunk_hash <- digest::digest(chunk, algo = "sha256", serialize = FALSE)
+    expr <- call("flowerAppPushDS", token, .app_enc_b64(chunk), offset)
+    .dsi_retry_exact_aggregate(
+      conns, expr,
+      validate = function(value, node) {
+        if (!is.list(value) ||
+            !identical(names(value),
+                       c("ok", "offset", "size", "bytes", "sha256"))) {
+          return(FALSE)
+        }
+        ack_offset <- suppressWarnings(as.numeric(value$offset))
+        ack_size <- suppressWarnings(as.numeric(value$size))
+        ack_bytes <- suppressWarnings(as.numeric(value$bytes))
+        isTRUE(value$ok) &&
+          length(ack_offset) == 1L && is.finite(ack_offset) &&
+          ack_offset == offset &&
+          length(ack_size) == 1L && is.finite(ack_size) &&
+          ack_size == expected &&
+          length(ack_bytes) == 1L && is.finite(ack_bytes) &&
+          ack_bytes == length(chunk) &&
+          identical(as.character(value$sha256), chunk_hash)
+      },
+      operation = "App upload")
+    offset <- expected
+    if (is.function(progress)) progress(offset, size)
+  }
+  invisible(size)
+}
+
+#' Verify and install an uploaded app on every node
+#' @keywords internal
+.install_app_archive <- function(conns, token, sha256, size, operation) {
+  expr <- call("flowerAppInstallDS", token, sha256)
+  .dsi_retry_exact_aggregate(
+    conns, expr,
+    validate = function(value, node) {
+      if (!is.list(value) ||
+          !identical(names(value), c("ok", "sha256", "size", "packages"))) {
+        return(FALSE)
+      }
+      ack_size <- suppressWarnings(as.numeric(value$size))
+      isTRUE(value$ok) &&
+        identical(as.character(value$sha256), sha256) &&
+        length(ack_size) == 1L && is.finite(ack_size) && ack_size == size
+    },
+    operation = operation)
+}
+
 #' Build a Flower app directory into a FAB (returns the .fab path)
 #' @keywords internal
 .flwr_build_fab <- function(app_dir) {
@@ -55,7 +121,6 @@ ds.flower.app.upload <- function(conns, app_dir, chunk_bytes = 262144L,
   fab <- .flwr_build_fab(app_dir)
   n <- file.size(fab)
   if (n == 0) stop("Built FAB is empty.", call. = FALSE)
-  raw <- readBin(fab, "raw", n)
   sha <- digest::digest(file = fab, algo = "sha256")
   token <- .new_capability_token("app")
   installed <- FALSE
@@ -66,24 +131,15 @@ ds.flower.app.upload <- function(conns, app_dir, chunk_bytes = 262144L,
     }
   }, add = TRUE)
 
-  off <- 0
-  while (off < n) {
-    hi <- min(off + chunk_bytes, n)
-    chunk <- .app_enc_b64(raw[(off + 1):hi])
-    DSI::datashield.aggregate(
-      conns, call("flowerAppPushDS", token, chunk, off))
-    off <- hi
-    if (verbose) cat(sprintf("\r  uploading app: %d / %d bytes", off, n))
-  }
+  .push_app_archive(
+    conns, fab, token, chunk_bytes,
+    progress = if (verbose) function(done, total) {
+      cat(sprintf("\r  uploading app: %d / %d bytes", done, total))
+    } else NULL)
   if (verbose) cat("\n")
 
-  inst <- DSI::datashield.aggregate(
-    conns, call("flowerAppInstallDS", token, sha))
-  failed <- names(inst)[!vapply(inst, function(x) isTRUE(x$ok), logical(1))]
-  if (length(failed) > 0) {
-    stop("App install/verification failed on: ", paste(failed, collapse = ", "),
-         ".", call. = FALSE)
-  }
+  inst <- .install_app_archive(
+    conns, token, sha, n, "App install/verification")
   installed <- TRUE
   if (verbose) {
     message("  App verified by sha256 (", substr(sha, 1, 12), ") on ",

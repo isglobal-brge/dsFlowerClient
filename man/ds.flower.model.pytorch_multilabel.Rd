@@ -28,5 +28,6 @@ A \code{dsflower_model} S3 object.
 }
 \description{
 Multiple binary outcomes per sample (phenotyping, multi-endpoint).
-Uses BCEWithLogitsLoss per label.
+Uses BCEWithLogitsLoss per label. Training requires exactly \code{n_labels}
+distinct target columns; one public two-level vocabulary is applied to each.
 }

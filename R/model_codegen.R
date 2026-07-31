@@ -18,6 +18,10 @@
   if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
   m <- .dsflower_get_model(model$name)
   params <- utils::modifyList(m$defaults %||% list(), model$params %||% list())
+  if (model$name %in% c("pytorch_resnet18", "pytorch_densenet121") &&
+      isTRUE(params$volumetric)) {
+    params$backbone <- paste0(sub("^pytorch_", "", model$name), "_3d")
+  }
 
   if (identical(m$track, "neural")) {
     spec <- m$generate(params)

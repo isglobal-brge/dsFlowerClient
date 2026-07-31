@@ -4,26 +4,16 @@
 \alias{ds.flower.strategy.fedadagrad}
 \title{Create a FedAdagrad strategy spec}
 \usage{
-ds.flower.strategy.fedadagrad(
-  server_learning_rate = 0.01,
-  tau = 0.001,
-  fraction_fit = 1,
-  fraction_evaluate = 1
-)
+ds.flower.strategy.fedadagrad(server_learning_rate = 0.1, tau = 0.001)
 }
 \arguments{
-\item{server_learning_rate}{Numeric; server-side learning rate (eta).}
+\item{server_learning_rate}{Positive server learning rate (Flower \code{eta}).}
 
-\item{tau}{Numeric; controls adaptivity (higher = more stable).}
-
-\item{fraction_fit}{Numeric; fraction of clients used for training (0-1).}
-
-\item{fraction_evaluate}{Numeric; fraction of clients used for evaluation (0-1).}
+\item{tau}{Positive adaptivity regularizer.}
 }
 \value{
 A \code{dsflower_strategy} S3 object.
 }
 \description{
-FedAdagrad uses adaptive learning rates on the server side via Adagrad
-optimizer. Suited for sparse gradients and non-IID distributions.
+Create a FedAdagrad strategy spec
 }

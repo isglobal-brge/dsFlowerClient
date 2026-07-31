@@ -90,14 +90,21 @@ caps <- datashield.aggregate(
 
 lapply(caps, function(x) x[c(
   "dsflower_version", "runner_abi", "runner_sha256",
+  "dp_tracks", "declarative_model_ops", "declarative_losses",
+  "tree_objectives", "aggregation_strategies",
   "privacy_accountant", "privacy_nonblocking",
-  "hook_enabled", "hook_sandbox_attested"
+  "hook_enabled", "hook_sandbox_attested",
+  "hook_resource_isolation_attested"
 )])
 ```
 
 `dsFlowerClient` performs the ABI and recursive runner-hash check automatically
 before a submission. A mismatch fails early rather than running a different
 implementation from the one the client expected.
+
+The old named-template catalogue is intentionally empty and deprecated. Models
+are now data-only specifications assembled from the advertised declarative
+operations; no researcher-supplied Python executes in the neural track.
 
 The privacy-policy endpoint is read-only:
 
@@ -139,10 +146,13 @@ the protected node.
 ## What registration does not authorize
 
 Registering upload methods permits archive transport and validation; it does not
-make uploaded code trusted. A HookApp runs only if the custodian enabled it and
-attested the required Bubblewrap filesystem/network sandbox and constant-time
-envelope. If any gate is absent, the code is not executed and the node returns an
-unchanged, data-independent model.
+make uploaded code trusted. A HookApp runs only if the custodian enabled it,
+attested the required Bubblewrap filesystem/network sandbox, independently
+attested inherited cgroup v2 and writable-volume quotas, and enabled the
+release-global minimum-duration timing envelope. This is defense in depth, not
+a formal constant-time guarantee.
+If any gate is absent, the code is not executed and the node returns an unchanged,
+data-independent model.
 
 Node logs, node metrics, exact cohort weights and exact preprocessing statistics
 are disabled. The intended egress is the differentially private model update

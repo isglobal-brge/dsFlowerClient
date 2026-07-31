@@ -13,6 +13,10 @@ vignette: >
 > contract and must not be used as deployment or security instructions. See
 > `README.md` and the server `ARCHITECTURE.md` for the enforced contract.
 
+> U-Net/dense segmentation in this record is not registered or runnable in the
+> current enforced-DP runtime. Current direct-image support is classification
+> through the node-owned declarative neural track.
+
 ```{r, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
 paths <- c(

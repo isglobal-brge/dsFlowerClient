@@ -274,7 +274,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   any(file.exists(file.path(
     results_dir,
     c("global_model.json", "global_model.skipped.json",
-      "model.pt", "model.npz")
+      "model.pt", "model.npz", "booster.json")
   )))
 }
 
@@ -547,17 +547,23 @@ ds.flower.run.stop <- function(run_id) {
 #' @keywords internal
 .read_model_weights <- function(results_dir) {
   path <- file.path(results_dir, "global_model.json")
-  if (!file.exists(path)) return(NULL)
+  native_booster <- FALSE
+  if (!file.exists(path)) {
+    path <- file.path(results_dir, "booster.json")
+    if (!file.exists(path)) return(NULL)
+    native_booster <- TRUE
+  }
   size <- file.info(path)$size
   max_bytes <- .flwr_weight_read_max_bytes()
   if (is.finite(size) && !is.na(size) && size > max_bytes) {
-    message("Skipping in-memory weight load for large global_model.json (",
+    message("Skipping in-memory weight load for large ", basename(path), " (",
             round(size / 1024^2, 1), " MiB). Native artifacts remain in ",
             results_dir, ".")
     return(NULL)
   }
 
   raw <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  if (native_booster) return(raw)
   if (identical(raw[["model_type"]], "xgboost")) {
     return(raw)
   }
@@ -584,7 +590,11 @@ ds.flower.run.stop <- function(run_id) {
     }
   })
 
-  names(params) <- c("coef", "intercept")[seq_along(params)]
+  names(params) <- if (length(params) == 2L) {
+    c("coef", "intercept")
+  } else {
+    paste0("parameter_", seq_along(params) - 1L)
+  }
   attr(params, "round") <- round
   params
 }

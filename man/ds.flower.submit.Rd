@@ -23,7 +23,8 @@ ds.flower.submit(
   silent = FALSE,
   feature_bounds = NULL,
   target_levels = NULL,
-  target_bounds = NULL
+  target_bounds = NULL,
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
 )
 }
 \arguments{
@@ -31,7 +32,8 @@ ds.flower.submit(
 
 \item{model}{A model name or \code{dsflower_model} (registry-resolved).}
 
-\item{target}{Character; target column.}
+\item{target}{Character; one target column, or exactly \code{num_labels}
+distinct columns for a multilabel model.}
 
 \item{features}{Character vector; feature columns.}
 
@@ -48,7 +50,7 @@ Neural and DP-GBDT learning rates must be finite and in \code{(0, 10]}.}
 
 \item{data_kind}{"tabular" or "image".}
 
-\item{strategy}{Character; researcher-side aggregation strategy.}
+\item{strategy}{Character strategy name or a \code{dsflower_strategy} object.}
 
 \item{output_dir}{Optional model output directory.}
 
@@ -64,12 +66,18 @@ Neural and DP-GBDT learning rates must be finite and in \code{(0, 10]}.}
 \code{list(lower=..., upper=...)} in feature order. These constants are
 supplied without querying node data and define a clipped affine transform.}
 
-\item{target_levels}{Optional ordered, exhaustive public label vocabulary for
+\item{target_levels}{Optional ordered public label vocabulary for
 classification. Non-numeric targets require it; node values are never used
-to infer label codes.}
+to infer label codes, and missing or unknown values map to public code zero.
+Multilabel applies one public two-level vocabulary to each target
+independently.}
 
 \item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
 regression/count targets. The node clips each target to these constants.}
+
+\item{allow_insecure_http}{Character vector of exact connection names allowed
+to use plaintext HTTP. Empty by default. This exception does not provide
+transport security; use it only behind an independently trusted network.}
 }
 \value{
 A \code{dsflower_run}.

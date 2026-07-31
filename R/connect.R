@@ -44,15 +44,18 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
     img_sym <- paste0(fl_sym, "_img")
     resource_map <- stats::setNames(rep(resource, length(conns)), names(conns))
 
-    DSI::datashield.assign.resource(conns, symbol = res_sym,
-      resource = as.list(resource_map))
-    DSI::datashield.assign.expr(conns, img_sym,
-      expr = call("imagingInitDS", res_sym))
-    DSI::datashield.assign.expr(conns, fl_sym,
-      expr = call("flowerInitDS", img_sym))
+    .dsi_assign_resource_exact(
+      conns, res_sym, as.list(resource_map), "Resource assignment")
+    .dsi_assign_expr_exact(
+      conns, img_sym, call("imagingInitDS", res_sym),
+      "Imaging handle initialization")
+    .dsi_assign_expr_exact(
+      conns, fl_sym, call("flowerInitDS", img_sym),
+      "Flower handle initialization")
   } else {
-    DSI::datashield.assign.expr(conns, fl_sym,
-      expr = call("flowerInitDS", symbol))
+    .dsi_assign_expr_exact(
+      conns, fl_sym, call("flowerInitDS", symbol),
+      "Flower handle initialization")
   }
 
   # Gather metadata

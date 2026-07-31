@@ -32,8 +32,8 @@ fmt <- function(x) {
 }
 ```
 
-This vignette records the catalogue coverage check for this authorised
-template. The federated run used three Opal/Rock nodes and the same pooled
+This vignette records the catalogue coverage check for this formerly authorised
+template. The historical run used three Opal/Rock nodes and the same pooled
 synthetic validation cohort was used for the local baseline. The purpose is
 method-path validation: data staging, template verification, Flower
 execution, result persistence, and cleanup. It complements the biomedical
