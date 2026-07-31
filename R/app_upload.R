@@ -1,9 +1,9 @@
-# Module: App upload (researcher side, Tier-2) -- build a Flower app into a FAB
+# Module: App upload (researcher side) -- build a Flower app into a FAB
 # and upload it to the nodes over the DataSHIELD channel (chunked, idempotent),
-# then verify + install it by sha256. The node runs only the hash-verified app;
-# the researcher provisions code but the node never trusts it (it is sandboxed +
-# egress-gated at run time). Transport is datashield.aggregate with base64
-# direct-string chunks -- never assign.expr.
+# then verify + install it by sha256. Upload is a transport/integrity operation;
+# it does not authorize execution or establish a DP guarantee. HookApp execution
+# is separately governed by the node's sandbox and egress policy. Transport is
+# datashield.aggregate with base64 direct-string chunks -- never assign.expr.
 
 #' @keywords internal
 .app_enc_b64 <- function(raw) {
@@ -28,12 +28,14 @@
   fabs[which.max(file.mtime(fabs))]
 }
 
-#' Upload a Flower app to the nodes and verify it by sha256 (Tier-2)
+#' Upload and hash-verify a Flower app archive
 #'
 #' Builds \code{app_dir} into a FAB, pushes it to every node in \code{conns} in
 #' idempotent base64 chunks over DataSHIELD, then installs it (the node verifies
-#' the sha256 and rejects any mismatch). Returns a handle carrying the upload
-#' token + validated hash; the run then executes only this hash-pinned app.
+#' the SHA-256 and rejects any mismatch). This function only transports and
+#' installs a candidate archive: it does not authorize its execution and does
+#' not turn arbitrary code into a per-sample DP computation. HookApps are
+#' separately hash-pinned and run only when every node-side execution gate holds.
 #'
 #' @param conns DSI connections object.
 #' @param app_dir Character; path to the Flower app directory to bundle.
@@ -43,6 +45,10 @@
 #' @export
 ds.flower.app.upload <- function(conns, app_dir, chunk_bytes = 262144L,
                                  verbose = TRUE) {
+  if (!is.numeric(chunk_bytes) || length(chunk_bytes) != 1L || is.na(chunk_bytes) ||
+      !is.finite(chunk_bytes) || chunk_bytes <= 0 || chunk_bytes %% 1 != 0) {
+    stop("chunk_bytes must be a single positive integer.", call. = FALSE)
+  }
   if (!dir.exists(app_dir)) {
     stop("app_dir does not exist: ", app_dir, call. = FALSE)
   }
@@ -51,8 +57,14 @@ ds.flower.app.upload <- function(conns, app_dir, chunk_bytes = 262144L,
   if (n == 0) stop("Built FAB is empty.", call. = FALSE)
   raw <- readBin(fab, "raw", n)
   sha <- digest::digest(file = fab, algo = "sha256")
-  token <- paste0("app", paste(sample(c(letters, 0:9), 12, replace = TRUE),
-                                collapse = ""))
+  token <- .new_capability_token("app")
+  installed <- FALSE
+  on.exit({
+    if (!installed) {
+      tryCatch(DSI::datashield.aggregate(
+        conns, call("flowerAppDeleteDS", token)), error = function(e) NULL)
+    }
+  }, add = TRUE)
 
   off <- 0
   while (off < n) {
@@ -72,6 +84,7 @@ ds.flower.app.upload <- function(conns, app_dir, chunk_bytes = 262144L,
     stop("App install/verification failed on: ", paste(failed, collapse = ", "),
          ".", call. = FALSE)
   }
+  installed <- TRUE
   if (verbose) {
     message("  App verified by sha256 (", substr(sha, 1, 12), ") on ",
             length(inst), " node(s).")
@@ -86,7 +99,7 @@ ds.flower.app.upload <- function(conns, app_dir, chunk_bytes = 262144L,
 #' @return Invisibly x.
 #' @export
 print.dsflower_app <- function(x, ...) {
-  cat("dsflower_app (Tier-2 uploaded, hash-verified)\n")
+  cat("dsflower_app (uploaded and hash-verified; execution not authorized)\n")
   cat("  token:  ", x$token, "\n")
   cat("  sha256: ", x$sha256, "\n")
   cat("  size:   ", x$size, "bytes\n")

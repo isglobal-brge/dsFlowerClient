@@ -15,12 +15,12 @@
 #   DSFLOWER_OPAL_USERS=administrator DSFLOWER_OPAL_PASSWORDS=password \
 #   Rscript validate_federated.R
 #
-# DP NOTE: DP is enforced server-side; every run spends epsilon against a
-# persistent per-(dataset,target) RDP ledger (default limit epsilon=10, ~3 runs
-# per target). To keep this sweep independent, each tabular model trains under
-# its OWN symbol, so each gets a fresh budget key. Re-running the full sweep many
-# times still accrues spend; an operator resets the node ledger between sweeps
-# (delete .../dsFlower/privacy/privacy_ledger.json on each Rock server).
+# DP NOTE: DP is enforced server-side through a persistent node/domain lifetime
+# ledger with geometric basic composition. Different symbols and targets share
+# the default node domain and do NOT reset privacy accounting. Repeated sweeps
+# therefore receive progressively smaller allocations and eventually safe no-op
+# releases. Run benchmarks on isolated test nodes with their own persistent
+# ledger; never delete or reset a production ledger.
 
 script_dir <- function() {
   file_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)

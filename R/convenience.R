@@ -157,13 +157,14 @@ ds.flower.task <- function(name = "classification") {
 #' @param resource Optional Opal resource name.
 #' @param symbol Optional assigned DataSHIELD symbol. Defaults to \code{"D"}
 #'   when \code{data}, \code{resource}, and \code{symbol} are all NULL.
-#' @param target Character target column name, or length-two vector for
-#'   survival tasks.
+#' @param target One character target column name.
 #' @param features Character vector of feature column names, or NULL for
 #'   template-specific auto handling.
 #' @param model Character model name or \code{dsflower_model} object.
 #' @param model_params Named list passed to \code{ds.flower.model()} when
 #'   \code{model} is a character value.
+#' @param torch_backend Character; requested node-side torch backend
+#'   (\code{"auto"}, \code{"cpu"}, or a GPU selector).
 #' @param strategy Character strategy name or \code{dsflower_strategy} object.
 #' @param strategy_params Named list passed to \code{ds.flower.strategy()} when
 #'   \code{strategy} is a character value.
@@ -187,6 +188,13 @@ ds.flower.task <- function(name = "classification") {
 #' @param disconnect Logical; accepted for compatibility. The submission pipeline always
 #'   cleans up its server-side handles on exit regardless.
 #' @param run_args Named list; accepted for back-compat (unused by the enforced-DP path).
+#' @param feature_bounds Optional public feature bounds as
+#'   \code{list(lower=..., upper=...)} in feature order. Appended to the signature
+#'   for positional backward compatibility.
+#' @param target_levels Optional ordered, exhaustive public classification label
+#'   vocabulary. Non-numeric labels require it.
+#' @param target_bounds Required public \code{list(lower=..., upper=...)} for
+#'   regression/count models.
 #' @return A \code{dsflower_run} object.
 #' @export
 ds.flower.fit <- function(conns,
@@ -211,7 +219,10 @@ ds.flower.fit <- function(conns,
                           detached = FALSE,
                           verbose = FALSE,
                           disconnect = TRUE,
-                          run_args = list()) {
+                          run_args = list(),
+                          feature_bounds = NULL,
+                          target_levels = NULL,
+                          target_bounds = NULL) {
   # Set the progress-verbosity option at the outermost entry point so it stays
   # active through every nested step, including the connection teardown that runs
   # in the submission pipeline's on.exit cleanup.
@@ -274,6 +285,8 @@ ds.flower.fit <- function(conns,
     data = data, resource = resource, symbol = symbol,
     num_rounds = rounds, model_params = list(), strategy = strategy,
     data_kind = data_kind, torch_backend = torch_backend,
+    feature_bounds = feature_bounds,
+    target_levels = target_levels, target_bounds = target_bounds,
     output_dir = output_dir, output_name = output_name,
     verbose = verbose, silent = silent)
 }

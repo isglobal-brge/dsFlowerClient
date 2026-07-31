@@ -12,6 +12,16 @@ test_that(".generate_symbol uses custom prefix", {
   expect_true(startsWith(sym, "myPfx."))
 })
 
+test_that("transient capabilities use 128 bits from an OS CSPRNG", {
+  tokens <- vapply(c("dsf", "app", "usr"),
+                   dsFlowerClient:::.new_capability_token, character(1))
+  expect_match(tokens[["dsf"]], "^dsf_[0-9a-f]{32}$")
+  expect_match(tokens[["app"]], "^app_[0-9a-f]{32}$")
+  expect_match(tokens[["usr"]], "^usr_[0-9a-f]{32}$")
+  expect_length(unique(tokens), 3L)
+  expect_error(dsFlowerClient:::.new_capability_token("other"), "Unknown")
+})
+
 test_that(".ds_encode encodes lists as B64 JSON", {
   encoded <- dsFlowerClient:::.ds_encode(list(a = 1, b = "x"))
   expect_type(encoded, "character")

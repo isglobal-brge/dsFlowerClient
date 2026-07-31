@@ -320,6 +320,7 @@
 #' @param serverappio_port Integer; port for the ServerAppIO API (default 9091).
 #' @param detached Logical; if TRUE, SuperLink runs as daemon (survives
 #'   R session exit). Default FALSE for interactive use.
+#' @param insecure Logical; explicitly allow plaintext local SuperLink transport.
 #' @return Invisible list with process info.
 #' @export
 ds.flower.superlink.start <- function(fleet_port = 9092L,

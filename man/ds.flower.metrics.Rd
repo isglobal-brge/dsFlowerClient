@@ -2,7 +2,7 @@
 % Please edit documentation in R/metrics.R
 \name{ds.flower.metrics}
 \alias{ds.flower.metrics}
-\title{Get training metrics from all servers}
+\title{Query the disabled node-metrics compatibility endpoint}
 \usage{
 ds.flower.metrics(symbol = "flower", since_round = 0L, pool = TRUE, conns)
 }
@@ -16,8 +16,11 @@ ds.flower.metrics(symbol = "flower", since_round = 0L, pool = TRUE, conns)
 \item{conns}{DSI connections (required).}
 }
 \value{
-A \code{dsflower_result} object with training metrics.
+A \code{dsflower_result} containing empty per-site metric tables on
+  hardened nodes.
 }
 \description{
-Get training metrics from all servers
+Hardened dsFlower nodes return empty metric tables because node losses,
+counts, failures and timing are outside the model mechanism's DP proof. This
+helper remains for wire compatibility with the server endpoint.
 }

@@ -14,7 +14,7 @@ ds.flower.model.pytorch_poisson(
 \arguments{
 \item{hidden_layers}{Character; comma-separated hidden layer sizes (empty = linear).}
 
-\item{learning_rate}{Numeric; learning rate.}
+\item{learning_rate}{Numeric in \code{(0, 10]}; learning rate.}
 
 \item{batch_size}{Integer; batch size.}
 

@@ -1,7 +1,7 @@
 Package: dsFlowerClient
 Type: Package
 Title: DataSHIELD Client for Flower Federated Learning
-Version: 0.2.4
+Version: 0.3.0
 Authors@R: c(
     person("David", "Sarrat González", role = c("aut", "cre"), email = "david.sarrat@isglobal.org"),
     person("Juan R", "González", role = "aut", email = "juanr.gonzalez@isglobal.org"))
@@ -9,10 +9,11 @@ Author: David Sarrat González [aut, cre],
   Juan R González [aut]
 Maintainer: David Sarrat González <david.sarrat@isglobal.org>
 Description: Client-side DataSHIELD package for orchestrating Flower federated
-    learning experiments. Provides composable specification objects (task, model,
-    strategy, privacy) that combine into recipes, manages SuperLink lifecycle via
-    processx, generates Flower App bundles from templates, and controls runs via
-    the flwr CLI. Includes result objects with metrics, plotting, and comparison.
+    learning under privacy policy enforced by each data node. Builds declarative
+    model specifications, verifies the node-installed runner, manages the
+    SuperLink and run lifecycle, and supports data-independent public feature
+    bounds. Privacy budgets are not analyst-configurable; arbitrary hook code is
+    executed only behind the node's fail-closed sandbox and egress policy.
 License: MIT + file LICENSE
 URL: https://isglobal-brge.github.io/dsFlowerClient/
 Encoding: UTF-8

@@ -21,6 +21,8 @@ ds.flower.superlink.start(
 
 \item{detached}{Logical; if TRUE, SuperLink runs as daemon (survives
 R session exit). Default FALSE for interactive use.}
+
+\item{insecure}{Logical; explicitly allow plaintext local SuperLink transport.}
 }
 \value{
 Invisible list with process info.

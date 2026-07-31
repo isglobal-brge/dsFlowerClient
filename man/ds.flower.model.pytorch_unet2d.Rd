@@ -16,7 +16,7 @@ ds.flower.model.pytorch_unet2d(
 \arguments{
 \item{n_classes}{Integer; number of segmentation classes.}
 
-\item{learning_rate}{Numeric; learning rate.}
+\item{learning_rate}{Numeric in \code{(0, 10]}; learning rate.}
 
 \item{batch_size}{Integer; batch size.}
 
@@ -35,6 +35,7 @@ Medical image segmentation (organs, tumors, lesions).
 \note{
 NOT runnable on the Tier-1 harness in this release. The vision harness
   does DP linear-probing on frozen-backbone features for CLASSIFICATION;
-  dense per-pixel segmentation is rejected at app-build time. Segmentation DP
-  is future work / Tier-2.
+  dense per-pixel segmentation is rejected at app-build time. A custom HookApp
+  provides only complete-update output perturbation when its execution gates
+  hold, not declarative per-pixel/per-sample DP-SGD granularity.
 }

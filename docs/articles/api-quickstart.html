@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,14 +33,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
-    <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Server Method Registration</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -71,10 +64,10 @@
 
     
     
-<p><code>dsFlowerClient</code> exposes two API levels. Use
-<code><a href="../reference/ds.flower.fit.html">ds.flower.fit()</a></code> for the common case, and drop down to
-<code>connect -&gt; recipe -&gt; run</code> when a workflow needs more
-control.</p>
+<p><code>dsFlowerClient</code> submits declarative model specifications
+to data nodes running <code>dsFlower</code>. The analyst chooses the
+valid computation; each node independently owns epsilon, delta,
+clipping, lifetime accounting and executable policy.</p>
 <div class="section level2">
 <h2 id="connect-to-datashield">Connect to DataSHIELD<a class="anchor" aria-label="anchor" href="#connect-to-datashield"></a>
 </h2>
@@ -92,14 +85,6 @@ control.</p>
 <span>  table <span class="op">=</span> <span class="st">"PROJECT.training_data"</span>,</span>
 <span>  driver <span class="op">=</span> <span class="st">"OpalDriver"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span></span>
-<span>  server <span class="op">=</span> <span class="st">"site2"</span>,</span>
-<span>  url <span class="op">=</span> <span class="st">"https://opal2.example.org"</span>,</span>
-<span>  user <span class="op">=</span> <span class="st">"researcher"</span>,</span>
-<span>  password <span class="op">=</span> <span class="st">"..."</span>,</span>
-<span>  table <span class="op">=</span> <span class="st">"PROJECT.training_data"</span>,</span>
-<span>  driver <span class="op">=</span> <span class="st">"OpalDriver"</span></span>
-<span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">conns</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.login.html" class="external-link">datashield.login</a></span><span class="op">(</span></span>
 <span>  logins <span class="op">=</span> <span class="va">builder</span><span class="op">$</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span>,</span>
@@ -108,46 +93,78 @@ control.</p>
 <span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="happy-path">Happy path<a class="anchor" aria-label="anchor" href="#happy-path"></a>
+<h2 id="fit-a-declarative-model">Fit a declarative model<a class="anchor" aria-label="anchor" href="#fit-a-declarative-model"></a>
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">conns</span>,</span>
 <span>  symbol <span class="op">=</span> <span class="st">"D"</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"outcome"</span>,</span>
-<span>  features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span>, <span class="st">"chol"</span>, <span class="st">"thalach"</span><span class="op">)</span>,</span>
-<span>  model <span class="op">=</span> <span class="st">"sklearn_logreg"</span>,</span>
-<span>  model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>max_iter <span class="op">=</span> <span class="fl">100L</span><span class="op">)</span>,</span>
-<span>  strategy <span class="op">=</span> <span class="st">"fedavg"</span>,</span>
-<span>  privacy <span class="op">=</span> <span class="st">"auto"</span>,</span>
-<span>  rounds <span class="op">=</span> <span class="fl">5L</span></span>
+<span>  features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"cholesterol"</span>, <span class="st">"heart_rate"</span><span class="op">)</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"pytorch_logreg"</span>,</span>
+<span>  rounds <span class="op">=</span> <span class="fl">5L</span>,</span>
+<span>  feature_bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">18</span>, <span class="fl">50</span>, <span class="fl">30</span><span class="op">)</span>,</span>
+<span>    upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">400</span>, <span class="fl">220</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<p><code>privacy = "auto"</code> inspects server capabilities. It uses
-<code>clinical_default</code> when Secure Aggregation is available on
-every server, and <code>trusted_internal</code> otherwise. Use an
-explicit privacy value when a deployment requires a fixed policy.</p>
+<p><code>feature_bounds</code> are optional data-independent constants
+from public domain knowledge or the study protocol. They must follow
+feature order. The node never returns exact counts, sums, variances or
+quantiles for preprocessing. Training and prediction use the same
+clipped affine transform.</p>
+<p>Before submission, the client verifies that all nodes expose runner
+ABI 2 and the exact recursive SHA-256 of its bundled canonical runner.
+The client does not send privacy parameters.</p>
 </div>
 <div class="section level2">
-<h2 id="advanced-path">Advanced path<a class="anchor" aria-label="anchor" href="#advanced-path"></a>
+<h2 id="direct-submission-api">Direct submission API<a class="anchor" aria-label="anchor" href="#direct-submission-api"></a>
 </h2>
+<p>Use <code><a href="../reference/ds.flower.submit.html">ds.flower.submit()</a></code> when the explicit submission
+arguments are useful:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">flower</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.connect.html">ds.flower.connect</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.recipe.html">ds.flower.recipe</a></span><span class="op">(</span></span>
-<span>  model <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.model.html">ds.flower.model</a></span><span class="op">(</span><span class="st">"mlp"</span>, hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  strategy <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.strategy.html">ds.flower.strategy</a></span><span class="op">(</span><span class="st">"fedprox"</span>, proximal_mu <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span>
-<span>  privacy <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.privacy.html">ds.flower.privacy</a></span><span class="op">(</span><span class="st">"clinical_default"</span><span class="op">)</span>,</span>
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.submit.html">ds.flower.submit</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>,</span>
+<span>  model <span class="op">=</span> <span class="fu"><a href="../reference/ds.flower.model.html">ds.flower.model</a></span><span class="op">(</span><span class="st">"pytorch_mlp"</span>, hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  symbol <span class="op">=</span> <span class="st">"D"</span>,</span>
 <span>  target <span class="op">=</span> <span class="st">"outcome"</span>,</span>
-<span>  features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span>, <span class="st">"chol"</span>, <span class="st">"thalach"</span><span class="op">)</span>,</span>
-<span>  num_rounds <span class="op">=</span> <span class="fl">10L</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.run.html">ds.flower.run</a></span><span class="op">(</span><span class="va">flower</span>, <span class="va">recipe</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/ds.flower.disconnect.html">ds.flower.disconnect</a></span><span class="op">(</span><span class="va">flower</span><span class="op">)</span></span></code></pre></div>
+<span>  features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"cholesterol"</span>, <span class="st">"heart_rate"</span><span class="op">)</span>,</span>
+<span>  num_rounds <span class="op">=</span> <span class="fl">10L</span>,</span>
+<span>  strategy <span class="op">=</span> <span class="st">"fedadam"</span>,</span>
+<span>  feature_bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>    lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">18</span>, <span class="fl">50</span>, <span class="fl">30</span><span class="op">)</span>,</span>
+<span>    upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">400</span>, <span class="fl">220</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Aggregation strategy is post-processing of already-private node
+updates and is not an analyst privacy knob.</p>
+</div>
+<div class="section level2">
+<h2 id="outputs-and-diagnostics">Outputs and diagnostics<a class="anchor" aria-label="anchor" href="#outputs-and-diagnostics"></a>
+</h2>
+<p>The intended output is the DP global-model artifact returned by the
+Flower run. Hardened nodes return empty responses from
+<code><a href="../reference/ds.flower.metrics.html">ds.flower.metrics()</a></code> and <code><a href="../reference/ds.flower.log.html">ds.flower.log()</a></code>
+because node losses, counts, failures, timing and raw logs are not
+covered by the model mechanism’s proof. Local SuperLink logs are a
+separate coordinator-side diagnostic.</p>
+</div>
+<div class="section level2">
+<h2 id="hookapps">HookApps<a class="anchor" aria-label="anchor" href="#hookapps"></a>
+</h2>
+<p><code><a href="../reference/ds.flower.hook.run.html">ds.flower.hook.run()</a></code> is available for the restricted
+<code>initial_arrays()</code> / <code>local_update()</code> ABI.
+Arbitrary code does not receive declarative DP-SGD granularity. If the
+custodian has not enabled and attested the required sandbox and timing
+envelope, the node does not execute the package and returns an unchanged
+data-independent model.</p>
 </div>
 <div class="section level2">
 <h2 id="cleanup">Cleanup<a class="anchor" aria-label="anchor" href="#cleanup"></a>
 </h2>
+<p>The high-level submission path cleans up its temporary server handles
+and app uploads on both success and error. End the DataSHIELD session
+when finished:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
 </div>

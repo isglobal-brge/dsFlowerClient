@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,14 +18,7 @@
       <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides"><li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
-    <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Server Method Registration</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -55,7 +48,6 @@
 <span>  <span class="va">target_column</span>,</span>
 <span>  feature_columns <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  run_config <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  privacy <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  template_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  label_set <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -83,11 +75,6 @@
 
 <dt id="arg-run-config">run_config<a class="anchor" aria-label="anchor" href="#arg-run-config"></a></dt>
 <dd><p>Named list; additional run configuration.</p></dd>
-
-
-<dt id="arg-privacy">privacy<a class="anchor" aria-label="anchor" href="#arg-privacy"></a></dt>
-<dd><p>Optional <code>dsflower_privacy</code> object. When supplied,
-privacy mode and parameters are injected into <code>run_config</code>.</p></dd>
 
 
 <dt id="arg-template-name">template_name<a class="anchor" aria-label="anchor" href="#arg-template-name"></a></dt>

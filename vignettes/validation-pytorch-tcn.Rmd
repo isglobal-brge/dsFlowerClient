@@ -7,6 +7,12 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+> **Historical validation artifact (pre-0.3).** The recorded results and API
+> snippets below describe the retired client privacy-profile/Secure
+> Aggregation architecture. They do not validate the current v0.3 lifetime-DP
+> contract and must not be used as deployment or security instructions. See
+> `README.md` and the server `ARCHITECTURE.md` for the enforced contract.
+
 ```{r, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = '#>')
 method_id <- "pytorch_tcn"

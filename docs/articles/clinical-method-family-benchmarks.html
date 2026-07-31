@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,19 +29,11 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="active nav-item dropdown">
+<li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Method Registration + Live Federation</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
-    <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Server Method Registration</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -72,6 +64,14 @@
 
     
     
+<blockquote>
+<p><strong>Historical validation artifact (pre-0.3).</strong> The
+recorded results and API snippets below describe the retired client
+privacy-profile/Secure Aggregation architecture. They do not validate
+the current v0.3 lifetime-DP contract and must not be used as deployment
+or security instructions. See <code>README.md</code> and the server
+<code>ARCHITECTURE.md</code> for the enforced contract.</p>
+</blockquote>
 <p>This vignette records the non-binary clinical method-family
 validation used for the dsFlower thesis evidence. The benchmark uses
 SUPPORT2, the Study to Understand Prognoses and Preferences for Outcomes

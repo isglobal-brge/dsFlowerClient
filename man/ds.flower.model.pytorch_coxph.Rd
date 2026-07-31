@@ -11,7 +11,7 @@ ds.flower.model.pytorch_coxph(
 )
 }
 \arguments{
-\item{learning_rate}{Numeric; learning rate.}
+\item{learning_rate}{Numeric in \code{(0, 10]}; learning rate.}
 
 \item{batch_size}{Integer; batch size.}
 
@@ -26,7 +26,7 @@ Survival/time-to-event analysis with partial likelihood loss.
 \note{
 NOT runnable on the Tier-1 harness in this release. The Cox partial
   likelihood couples samples through the risk set, so it has no per-sample
-  gradient and is incompatible with DP-SGD; rigorous DP needs output
-  perturbation or Tier-2 (not yet shipped). For DP survival, log-normal AFT is
-  a per-sample-decomposable alternative.
+  gradient and is incompatible with DP-SGD. A HookApp does not automatically
+  restore per-sample granularity for an arbitrary coupled loss. For DP
+  survival, log-normal AFT is a per-sample-decomposable declarative alternative.
 }

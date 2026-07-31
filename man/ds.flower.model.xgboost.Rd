@@ -22,21 +22,29 @@ ds.flower.model.xgboost(
 
 \item{max_depth}{Integer; maximum tree depth.}
 
-\item{eta}{Numeric; learning rate (shrinkage).}
+\item{eta}{Numeric in \code{(0, 10]}; learning rate (shrinkage).}
 
 \item{reg_lambda}{Numeric; L2 regularization term.}
 
 \item{n_bins}{Integer; number of histogram bins.}
 
 \item{objective}{Character; XGBoost objective function.}
+
+\item{num_class}{Integer compatibility field; the live DP-GBDT track is binary.}
+
+\item{min_child_weight}{Numeric compatibility field retained for older callers.}
+
+\item{fixed_bin_range}{Numeric compatibility field retained for older callers.}
+
+\item{batch_multiclass}{Logical compatibility field; ignored by the live binary track.}
 }
 \value{
 A \code{dsflower_model} S3 object.
 }
 \description{
-Federated XGBoost using a histogram aggregation protocol.
-In trusted demo profiles the histogram protocol can run without Secure
-Aggregation so that the method path is testable end-to-end. In consortium
-and clinical profiles, Secure Aggregation is still enforced by the selected
-server trust profile.
+Enforced node-side central-DP GBDT. The trusted runner uses data-independent
+random splits, bounded gradient/Hessian contributions and a full Gaussian
+mechanism at every node before a booster leaves that node. The current live
+track supports the binary-logistic objective and does not use Secure
+Aggregation.
 }

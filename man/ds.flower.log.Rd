@@ -2,7 +2,7 @@
 % Please edit documentation in R/metrics.R
 \name{ds.flower.log}
 \alias{ds.flower.log}
-\title{Get log output from all servers}
+\title{Query the disabled node-log compatibility endpoint}
 \usage{
 ds.flower.log(symbol = "flower", last_n = 50L, conns)
 }
@@ -14,8 +14,10 @@ ds.flower.log(symbol = "flower", last_n = 50L, conns)
 \item{conns}{DSI connections (required).}
 }
 \value{
-A \code{dsflower_result} object with log lines per server.
+A \code{dsflower_result} containing empty per-site log vectors on
+  hardened nodes.
 }
 \description{
-Get log output from all servers
+Hardened dsFlower nodes return empty character vectors because node logs can
+encode data-dependent failures and timing. Local SuperLink logs are separate.
 }

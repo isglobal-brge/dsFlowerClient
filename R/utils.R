@@ -7,6 +7,45 @@
 #' @keywords internal
 .dsflower_client_env <- new.env(parent = emptyenv())
 
+#' Generate a 128-bit capability token with a protocol-specific prefix
+#'
+#' Uses Python's operating-system-backed \code{secrets} generator. These tokens
+#' authorize access to transient node-side resources, so R's statistical PRNG is
+#' not an appropriate source even when collision probability would be low.
+#'
+#' @param prefix One of the protocol-owned prefixes \code{dsf}, \code{app}, or
+#'   \code{usr}.
+#' @return Character scalar of the form \code{prefix_[0-9a-f]\{32\}}.
+#' @keywords internal
+.new_capability_token <- function(prefix) {
+  if (!is.character(prefix) || length(prefix) != 1L || is.na(prefix) ||
+      !prefix %in% c("dsf", "app", "usr")) {
+    stop("Unknown capability-token prefix.", call. = FALSE)
+  }
+  res <- tryCatch(
+    processx::run(
+      .client_python_cmd(),
+      c("-c", paste(
+        "import secrets, sys;",
+        "print(sys.argv[1] + '_' + secrets.token_hex(16))"), prefix),
+      error_on_status = FALSE,
+      timeout = 5000
+    ),
+    error = function(e) NULL
+  )
+  token <- if (!is.null(res) && identical(res$status, 0L)) {
+    trimws(res$stdout)
+  } else {
+    ""
+  }
+  expected <- paste0("^", prefix, "_[0-9a-f]{32}$")
+  if (length(token) != 1L || !grepl(expected, token)) {
+    stop("Could not generate a cryptographically secure capability token.",
+         call. = FALSE)
+  }
+  token
+}
+
 #' Generate a unique temporary symbol name
 #'
 #' @param prefix Character; prefix for the generated symbol.

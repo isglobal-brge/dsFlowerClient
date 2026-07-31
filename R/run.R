@@ -16,11 +16,13 @@
 #' @param run_config Named list; additional run config overrides.
 #' @param output_dir Character; persistent directory for model output.
 #'   Defaults to \code{"dsflower_output/<timestamp>"} in the working directory.
+#' @param output_name Optional name for the persisted model artifact.
 #' @param results_dir Character; temporary directory where the Flower ServerApp
 #'   writes model artefacts. Usually generated automatically.
 #' @param symbol Character; server-side Flower handle symbol. Low-level callers
 #'   that initialise the default handle can leave this as \code{"flower"}.
 #' @param verbose Logical; print flwr output (default TRUE).
+#' @param silent Logical; suppress progress feedback.
 #' @return A \code{dsflower_run} object with weights, history, and predictions.
 #' @export
 ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
@@ -179,6 +181,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       strategy   = recipe$strategy$name,
       privacy    = "server-enforced-dp",
       num_rounds = recipe$num_rounds,
+      target_levels = recipe$target_levels %||% NULL,
+      target_bounds = recipe$target_bounds %||% NULL,
       run_id     = run_id,
       created_at = Sys.time(),
       n_clients  = length(conns)
@@ -202,12 +206,15 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       num_rounds = recipe$num_rounds,
       n_clients  = length(conns),
       features   = recipe$features,   # training feature order, so predict can align newdata
-      # GLOBAL standardization stats baked alongside the model: prediction MUST scale
-      # newdata with the EXACT mu/sigma the features were trained on (same single source
-      # as the run-config the node trained with). Absent => the model was trained on raw
-      # features and prediction stays raw too -- the two never desync.
+      # Public preprocessing constants used by the node. New runs record lower/upper
+      # so prediction can repeat the same clip-to-bounds + affine transform. Keep the
+      # legacy mean/SD fields readable for models trained before public bounds existed.
       feature_means = recipe$feature_means,
       feature_sds   = recipe$feature_sds,
+      feature_lower = recipe$feature_lower,
+      feature_upper = recipe$feature_upper,
+      target_levels = recipe$target_levels %||% NULL,
+      target_bounds = recipe$target_bounds %||% NULL,
       created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
       status     = if (runtime_status == 0L) "success" else "failed"
     )

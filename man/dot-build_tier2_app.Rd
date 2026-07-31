@@ -2,7 +2,7 @@
 % Please edit documentation in R/app_tier2.R
 \name{.build_tier2_app}
 \alias{.build_tier2_app}
-\title{Build the Tier-2 runner app dir (bundled dsflower_tier2 + the user package +
+\title{Build the Hook runner app dir (bundled dsflower_runner + the user package +
 pyproject). The user package is included so the researcher-side ServerApp can
 call initial_arrays(); on the node it is still hash-verified by the integrity
 hook against the node-computed upload hash (so it cannot be tampered with).}
@@ -17,7 +17,7 @@ hook against the node-computed upload hash (so it cannot be tampered with).}
 )
 }
 \description{
-Build the Tier-2 runner app dir (bundled dsflower_tier2 + the user package +
+Build the Hook runner app dir (bundled dsflower_runner + the user package +
 pyproject). The user package is included so the researcher-side ServerApp can
 call initial_arrays(); on the node it is still hash-verified by the integrity
 hook against the node-computed upload hash (so it cannot be tampered with).

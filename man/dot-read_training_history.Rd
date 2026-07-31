@@ -10,7 +10,8 @@
 \item{results_dir}{Character; path to the results directory.}
 }
 \value{
-A data.frame with columns round, loss, n_clients, n_failures, or NULL.
+A data.frame with columns round, n_failures and (when available)
+  n_examples, or NULL. Loss is not released by the nodes (disclosure backstop).
 }
 \description{
 Read training history from results directory

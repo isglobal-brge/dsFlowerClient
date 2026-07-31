@@ -59,7 +59,7 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
   labels <- tryCatch({
     if (data_kind == "resource") {
       res <- DSI::datashield.aggregate(conns,
-        expr = call("imagingLabelsDS", paste0(fl_sym, "_img")))
+        expr = call("flowerImageLabelsDS", fl_sym))
       res[[1]]
     } else {
       data.frame(name = character(0), type = character(0),

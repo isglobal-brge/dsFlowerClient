@@ -25,5 +25,7 @@ Invisibly, the tunnel connection id.
 \description{
 Starts a local Flower SuperLink and connects each node (SuperNode) to it over
 the DataSHIELD channel, so training can run with no public host, account or
-key required. Pass \code{verbose = TRUE} to see the internal transport details.
+key required. Startup is all-or-nothing: if any node does not publish a live,
+ready forwarder, every attempted node is torn down and the call fails. Pass
+\code{verbose = TRUE} to see the internal transport details.
 }

@@ -48,7 +48,7 @@ print.dsflower_description <- function(x, ...) {
   for (srv in names(x$caps)) {
     c <- x$caps[[srv]]
     cat("\n  [", srv, "]\n")
-    cat("    Privacy:     differential privacy (always enforced, local DP)\n")
+    cat("    Privacy:     node-side central DP (always enforced before egress)\n")
     if (!is.null(c$data_n_rows))
       cat("    Samples:    ", c$data_n_rows, "\n")
     if (!is.null(c$data_source))
@@ -81,8 +81,9 @@ print.dsflower_description <- function(x, ...) {
 
 #' List available feature assets
 #'
-#' Queries the server for radiomics or other derived feature assets
-#' available for the connected dataset.
+#' Queries the server for feature-table assets declared in the node-owned
+#' imaging manifest. Storage locations and data-derived catalog state are not
+#' returned.
 #'
 #' @param flower A \code{dsflower_connection} from \code{ds.flower.connect()}.
 #' @return A data.frame with feature asset info, or empty.
@@ -91,12 +92,12 @@ ds.flower.features <- function(flower) {
   if (missing(flower) || !inherits(flower, "dsflower_connection"))
     stop("'flower' must be a dsflower_connection.", call. = FALSE)
 
-  # Query imaging assets filtered to feature_table kind
+  # Query public manifest assets and filter locally to feature tables.
   tryCatch({
-    img_sym <- paste0(flower$symbol, "_img")
     res <- DSI::datashield.aggregate(flower$conns,
-      expr = call("imagingAssetsDS", img_sym, "feature_table"))
-    res[[1]]
+      expr = call("flowerImageAssetsDS", flower$symbol))
+    assets <- res[[1]]
+    assets[tolower(assets$kind) == "feature_table", , drop = FALSE]
   }, error = function(e) {
     data.frame(alias = character(0), kind = character(0),
                provider = character(0), stringsAsFactors = FALSE)

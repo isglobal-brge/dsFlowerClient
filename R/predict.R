@@ -60,9 +60,11 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
              "--type", type,
              "--framework", framework,
              if (nzchar(template)) c("--template", template),
-             # Scale newdata with the EXACT training mu/sigma (pytorch only; trees
-             # are scale-invariant so never carry stats).
-             if (!is.null(info$norm) && identical(framework, "pytorch"))
+             # Repeat the node's public clip + affine transform for new models.
+             # Legacy models carry only mean/SD and retain their old prediction path.
+             if (identical(framework, "pytorch") && !is.null(info$bounds))
+               c("--bounds-b64", .spec_to_b64(info$bounds))
+             else if (identical(framework, "pytorch") && !is.null(info$norm))
                c("--norm-b64", .spec_to_b64(list(means = info$norm$means,
                                                   sds = info$norm$sds)))),
     env = .client_venv_env(),
@@ -99,6 +101,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
         stop("Unknown model format: ", ext, call. = FALSE))
       tmpl <- .read_template_meta(dirname(model))
       return(list(model_file = model, framework = framework, template = tmpl,
+                  bounds = .read_meta_bounds(dirname(model)),
                   norm = .read_meta_norm(dirname(model))))
     }
   } else if (is.list(model)) {
@@ -121,7 +124,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   # Python predictor (regression vs classification vs survival vs multilabel ...).
   tmpl <- .read_template_meta(model_dir)
   feats <- .read_meta_features(model_dir)   # training feature order, to align newdata
-  nrm <- .read_meta_norm(model_dir)         # global standardization stats (or NULL)
+  bnd <- .read_meta_bounds(model_dir)        # public clipped-affine bounds (or NULL)
+  nrm <- .read_meta_norm(model_dir)          # legacy standardization stats (or NULL)
 
   # Find native model file (priority: pt > xgb.json > booster.json > xgb). The trees runner
   # writes the XGBoost model as booster.json.
@@ -136,7 +140,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     path <- file.path(model_dir, c$file)
     if (file.exists(path)) {
       return(list(model_file = path, framework = c$framework, template = tmpl,
-                  features = feats, norm = nrm))
+                  features = feats, bounds = bnd, norm = nrm))
     }
   }
 
@@ -145,10 +149,10 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   if (file.exists(json_path)) {
     if (grepl("xgboost", tmpl)) {
       return(list(model_file = json_path, framework = "xgboost", template = tmpl,
-                  features = feats, norm = nrm))
+                  features = feats, bounds = bnd, norm = nrm))
     }
     return(list(model_file = json_path, framework = "pytorch", template = tmpl,
-                features = feats, norm = nrm))
+                features = feats, bounds = bnd, norm = nrm))
   }
 
   stop("No native model file found in ", model_dir,
@@ -174,6 +178,25 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
   f <- meta$features
   if (is.null(f) || length(f) == 0L) NULL else as.character(f)
+}
+
+#' Read public feature bounds from a model directory's metadata.json
+#'
+#' Returns list(lower, upper) only when both vectors are finite, aligned, and
+#' strictly ordered. Missing fields identify a legacy/raw model and return NULL.
+#' @keywords internal
+.read_meta_bounds <- function(model_dir) {
+  if (is.null(model_dir) || !nzchar(model_dir)) return(NULL)
+  meta_path <- file.path(model_dir, "metadata.json")
+  if (!file.exists(meta_path)) return(NULL)
+  meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
+  lower <- meta$feature_lower; upper <- meta$feature_upper
+  if (is.null(lower) || is.null(upper) || length(lower) == 0L ||
+      length(lower) != length(upper)) return(NULL)
+  lower <- as.numeric(lower); upper <- as.numeric(upper)
+  if (any(!is.finite(lower)) || any(!is.finite(upper)) || any(lower >= upper))
+    return(NULL)
+  list(lower = lower, upper = upper)
 }
 
 #' Read the GLOBAL feature standardization stats from a model dir's metadata.json

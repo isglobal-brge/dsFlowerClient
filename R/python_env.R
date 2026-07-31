@@ -8,7 +8,89 @@
 #
 # Zero system dependencies. No pre-existing Python installation required.
 
-.DSFLOWER_CLIENT_PYTHON_DEPS <- c("flwr[app]>=1.31.0")
+.DSFLOWER_CLIENT_PYTHON_DEPS <- c("flwr[app]>=1.31.0,<1.32.0")
+
+.client_python_lock_required <- function() {
+  value <- Sys.getenv("DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK", "")
+  if (!nzchar(value)) value <- Sys.getenv("DSFLOWER_REQUIRE_PYTHON_LOCK", "")
+  if (nzchar(value)) {
+    value <- tolower(value)
+    if (value %in% c("1", "true", "yes")) return(TRUE)
+    if (value %in% c("0", "false", "no")) return(FALSE)
+    stop("DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK must be true or false.", call. = FALSE)
+  }
+  isTRUE(as.logical(getOption("dsflower.client_require_python_lock", FALSE)))
+}
+
+.client_python_lock_path <- function(must_exist = FALSE) {
+  path <- Sys.getenv("DSFLOWER_CLIENT_PYTHON_LOCK", "")
+  if (!nzchar(path)) path <- Sys.getenv("DSFLOWER_PYTHON_LOCK", "")
+  if (!nzchar(path)) {
+    path <- as.character(getOption("dsflower.client_python_lock", ""))[1]
+  }
+  if (!nzchar(path)) {
+    if (must_exist && .client_python_lock_required()) {
+      stop("A hash-locked Python environment is required, but no client ",
+           "Python lock is configured.", call. = FALSE)
+    }
+    return("")
+  }
+  if (must_exist && (!file.exists(path) || dir.exists(path) || file.access(path, 4L) != 0L)) {
+    stop("Configured dsFlowerClient Python lock is not a readable regular file: ",
+         path, call. = FALSE)
+  }
+  normalizePath(path, winslash = "/", mustWork = FALSE)
+}
+
+.client_python_version_spec <- function() {
+  version <- Sys.getenv("DSFLOWER_PYTHON_VERSION", "")
+  if (!nzchar(version)) {
+    version <- as.character(getOption("dsflower.client_python_version", "3.11"))[1]
+  }
+  if (!grepl("^[0-9]+\\.[0-9]+(\\.[0-9]+)?$", version)) {
+    stop("DSFLOWER_PYTHON_VERSION must be major.minor or major.minor.patch.",
+         call. = FALSE)
+  }
+  version
+}
+
+.client_venv_marker <- function() {
+  python_spec <- paste0("python=", .client_python_version_spec())
+  lock <- .client_python_lock_path()
+  if (!nzchar(lock) && .client_python_lock_required()) return(NA_character_)
+  if (nzchar(lock)) {
+    if (!file.exists(lock) || dir.exists(lock) || file.access(lock, 4L) != 0L) {
+      return(NA_character_)
+    }
+    return(paste0(python_spec, ";lock-sha256:",
+                  digest::digest(file = lock, algo = "sha256")))
+  }
+  paste(c(python_spec, sort(.DSFLOWER_CLIENT_PYTHON_DEPS)), collapse = ";")
+}
+
+.client_uv_bootstrap_config <- function() {
+  version <- Sys.getenv("DSFLOWER_UV_VERSION", "")
+  if (!nzchar(version)) {
+    version <- as.character(getOption("dsflower.client_uv_version", ""))[1]
+  }
+  sha256 <- Sys.getenv("DSFLOWER_UV_SHA256", "")
+  if (!nzchar(sha256)) {
+    sha256 <- as.character(getOption("dsflower.client_uv_sha256", ""))[1]
+  }
+  if (!nzchar(version) || !nzchar(sha256)) {
+    stop("uv is not installed and mutable 'latest' bootstrap is disabled. ",
+         "Install uv through the operating system, or configure both ",
+         "DSFLOWER_UV_VERSION and DSFLOWER_UV_SHA256 for an audited release.",
+         call. = FALSE)
+  }
+  if (!grepl("^[0-9]+\\.[0-9]+\\.[0-9]+([.-][0-9A-Za-z.-]+)?$", version)) {
+    stop("DSFLOWER_UV_VERSION is not a valid release tag.", call. = FALSE)
+  }
+  if (!grepl("^[0-9A-Fa-f]{64}$", sha256)) {
+    stop("DSFLOWER_UV_SHA256 must be 64 hexadecimal characters.", call. = FALSE)
+  }
+  list(version = version, sha256 = tolower(sha256))
+}
 
 .dsflower_client_runtime <- new.env(parent = emptyenv())
 
@@ -54,6 +136,10 @@
   if (!file.exists(python)) return(FALSE)
   marker <- file.path(venv_path, ".dsflower_client_ready")
   if (!file.exists(marker)) return(FALSE)
+  recorded <- tryCatch(readLines(marker, warn = FALSE), error = function(e) "")
+  if (!identical(paste(recorded, collapse = "\n"), .client_venv_marker())) {
+    return(FALSE)
+  }
   flwr <- file.path(.venv_bindir(venv_path), .venv_exe("flwr"))
   if (!file.exists(flwr)) return(FALSE)
   superlink <- file.path(.venv_bindir(venv_path), .venv_exe("flower-superlink"))
@@ -71,7 +157,7 @@
   path_flwr <- Sys.which("flwr")
   if (nzchar(path_flwr)) return(path_flwr)
   stop("flwr CLI not found. Install dsFlowerClient with configure support ",
-       "or run: pip install 'flwr[app]>=1.31.0'", call. = FALSE)
+       "or run: pip install 'flwr[app]>=1.31.0,<1.32.0'", call. = FALSE)
 }
 
 #' Resolve the flower-superlink binary
@@ -84,7 +170,7 @@
   path_sl <- Sys.which("flower-superlink")
   if (nzchar(path_sl)) return(path_sl)
   stop("flower-superlink not found. Install dsFlowerClient with configure ",
-       "support or run: pip install 'flwr[app]>=1.31.0'", call. = FALSE)
+       "support or run: pip install 'flwr[app]>=1.31.0,<1.32.0'", call. = FALSE)
 }
 
 #' Resolve the Python binary from the client venv
@@ -121,11 +207,11 @@
 # --- On-demand framework dependency install ---
 
 .FRAMEWORK_CLIENT_DEPS <- list(
-  pytorch = c("torch>=2.0.0", "numpy>=1.21.0", "pandas>=1.3.0",
-              "pyarrow>=10.0.0", "opacus>=1.4.0"),
-  pytorch_vision = c("torch>=2.0.0", "torchvision>=0.15.0", "Pillow>=9.0.0",
+  pytorch = c("torch>=2.0.0,<3.0.0", "numpy>=1.21.0", "pandas>=1.3.0",
+              "pyarrow>=10.0.0", "opacus>=1.4.0,<2.0.0"),
+  pytorch_vision = c("torch>=2.0.0,<3.0.0", "torchvision>=0.15.0,<1.0.0", "Pillow>=9.0.0",
                      "numpy>=1.21.0", "pandas>=1.3.0", "pyarrow>=10.0.0",
-                     "opacus>=1.4.0", "nibabel>=5.0.0", "pydicom>=2.4.0",
+                     "opacus>=1.4.0,<2.0.0", "nibabel>=5.0.0", "pydicom>=2.4.0",
                      "pynrrd>=1.0.0"),
   xgboost = c("xgboost>=1.7.0", "numpy>=1.21.0", "pandas>=1.3.0",
               "pyarrow>=10.0.0")
@@ -160,15 +246,25 @@
 
   message("dsFlowerClient: installing ", framework, " dependencies...")
   uv <- .ensure_client_uv()
+  lock <- .client_python_lock_path(must_exist = TRUE)
+  install_spec <- if (nzchar(lock)) c("--require-hashes", "-r", lock) else deps
   result <- processx::run(
     command = uv,
-    args = c("pip", "install", "--python", python, "--quiet", deps),
+    args = c("pip", "install", "--python", python, "--quiet", install_spec),
     error_on_status = FALSE,
     timeout = 600
   )
   if (result$status != 0L) {
     stop("Failed to install ", framework, " dependencies:\n",
          result$stderr, call. = FALSE)
+  }
+  rc <- suppressWarnings(
+    system2(python, c("-c", shQuote(paste0("import ", check_mod))),
+            stdout = FALSE, stderr = FALSE)
+  )
+  if (rc != 0L) {
+    stop("Python requirements did not provide the required module '",
+         check_mod, "'.", call. = FALSE)
   }
   message("  ", framework, " ready.")
   invisible(TRUE)
@@ -196,18 +292,25 @@
 
   if (dir.exists(venv_path)) unlink(venv_path, recursive = TRUE)
 
-  rc <- system2(uv, c("venv", "--python", "3.11", "--quiet", venv_path),
+  rc <- system2(uv, c("venv", "--python", .client_python_version_spec(),
+                      "--quiet", venv_path),
                 stdout = "", stderr = "")
   if (rc != 0L)
     stop("Failed to create venv at ", venv_path, call. = FALSE)
 
   venv_python <- file.path(.venv_bindir(venv_path), .venv_exe("python"))
   deps <- .DSFLOWER_CLIENT_PYTHON_DEPS
-  message("  Installing: ", paste(deps, collapse = ", "))
+  lock <- .client_python_lock_path(must_exist = TRUE)
+  install_spec <- if (nzchar(lock)) c("--require-hashes", "-r", lock) else deps
+  if (nzchar(lock)) {
+    message("  Installing administrator hash-locked Python requirements")
+  } else {
+    message("  Installing: ", paste(deps, collapse = ", "))
+  }
 
   result <- processx::run(
     command = uv,
-    args = c("pip", "install", "--python", venv_python, "--quiet", deps),
+    args = c("pip", "install", "--python", venv_python, "--quiet", install_spec),
     error_on_status = FALSE,
     timeout = timeout_secs
   )
@@ -224,9 +327,8 @@
     stop("flwr/flower-superlink not found after install.", call. = FALSE)
   }
 
-  dep_hash <- digest::digest(paste(sort(deps), collapse = "\n"),
-                             algo = "sha256", serialize = FALSE)
-  writeLines(dep_hash, file.path(venv_path, ".dsflower_client_ready"))
+  writeLines(.client_venv_marker(),
+             file.path(venv_path, ".dsflower_client_ready"), useBytes = TRUE)
   message("  Python environment ready at ", venv_path)
   invisible(TRUE)
 }
@@ -256,7 +358,8 @@
     return(uv_path)
   }
 
-  message("dsFlowerClient: downloading uv...")
+  bootstrap <- .client_uv_bootstrap_config()
+  message("dsFlowerClient: downloading pinned uv ", bootstrap$version, "...")
   sysname <- tolower(Sys.info()[["sysname"]])
   machine <- tolower(Sys.info()[["machine"]])
   is_win <- identical(sysname, "windows")
@@ -274,8 +377,9 @@
 
   # Windows ships uv as a .zip of uv.exe; Unix as a .tar.gz of uv.
   ext <- if (is_win) ".zip" else ".tar.gz"
-  url <- paste0("https://github.com/astral-sh/uv/releases/latest/download/uv-",
-                arch, "-", os, ext)
+  triple <- paste(arch, os, sep = "-")
+  url <- paste0("https://github.com/astral-sh/uv/releases/download/",
+                bootstrap$version, "/uv-", triple, ext)
   tmp <- tempfile(fileext = ext)
   tmp_dir <- tempfile()
   on.exit({ unlink(tmp); unlink(tmp_dir, recursive = TRUE) }, add = TRUE)
@@ -283,17 +387,34 @@
   rc <- tryCatch(utils::download.file(url, tmp, mode = "wb", quiet = TRUE),
                   error = function(e) 1L)
   if (!identical(rc, 0L))
-    stop("Failed to download uv. Install manually: https://docs.astral.sh/uv/",
+    stop("Failed to download pinned uv. Install manually: https://docs.astral.sh/uv/",
          call. = FALSE)
 
-  dir.create(tmp_dir, showWarnings = FALSE)
-  if (is_win) utils::unzip(tmp, exdir = tmp_dir) else utils::untar(tmp, exdir = tmp_dir)
-  bins <- list.files(tmp_dir, pattern = if (is_win) "^uv\\.exe$" else "^uv$",
-                     recursive = TRUE, full.names = TRUE)
-  if (length(bins) == 0) stop("uv binary not found in archive.", call. = FALSE)
+  actual <- digest::digest(file = tmp, algo = "sha256")
+  if (!identical(tolower(actual), bootstrap$sha256)) {
+    stop("Downloaded uv archive SHA-256 mismatch; refusing to extract it.",
+         call. = FALSE)
+  }
 
-  file.copy(bins[1], uv_path, overwrite = TRUE)
-  if (.Platform$OS.type != "windows") Sys.chmod(uv_path, "0755")
+  dir.create(tmp_dir, showWarnings = FALSE)
+  member <- paste0("uv-", triple, "/", if (is_win) "uv.exe" else "uv")
+  entries <- if (is_win) utils::unzip(tmp, list = TRUE)$Name else utils::untar(tmp, list = TRUE)
+  if (!member %in% entries) stop("uv binary not found in verified archive.", call. = FALSE)
+  if (is_win) {
+    utils::unzip(tmp, files = member, exdir = tmp_dir)
+  } else {
+    utils::untar(tmp, files = member, exdir = tmp_dir)
+  }
+  source <- file.path(tmp_dir, member)
+  install_tmp <- tempfile(pattern = ".uv-", tmpdir = tools_dir)
+  if (!file.copy(source, install_tmp, overwrite = TRUE)) {
+    stop("Could not stage verified uv binary.", call. = FALSE)
+  }
+  if (.Platform$OS.type != "windows") Sys.chmod(install_tmp, "0755")
+  if (!file.rename(install_tmp, uv_path)) {
+    unlink(install_tmp)
+    stop("Could not atomically install verified uv binary.", call. = FALSE)
+  }
   message("dsFlowerClient: uv installed at ", uv_path)
   .dsflower_client_runtime$uv_path <- uv_path
   uv_path

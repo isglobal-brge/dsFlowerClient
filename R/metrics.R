@@ -1,13 +1,18 @@
-# Module: Metrics Collection
-# Retrieve, pool, and compare training metrics across servers.
+# Module: Legacy node-metrics compatibility helpers.
+# Hardened dsFlower nodes intentionally return empty node logs and metrics.
 
-#' Get training metrics from all servers
+#' Query the disabled node-metrics compatibility endpoint
+#'
+#' Hardened dsFlower nodes return empty metric tables because node losses,
+#' counts, failures and timing are outside the model mechanism's DP proof. This
+#' helper remains for wire compatibility with the server endpoint.
 #'
 #' @param symbol Character; Flower session symbol (default "flower").
 #' @param since_round Integer; return only metrics from this round onward.
 #' @param pool Logical; if TRUE, compute pooled metrics across servers.
 #' @param conns DSI connections (required).
-#' @return A \code{dsflower_result} object with training metrics.
+#' @return A \code{dsflower_result} containing empty per-site metric tables on
+#'   hardened nodes.
 #' @export
 ds.flower.metrics <- function(symbol = "flower",
                               since_round = 0L,
@@ -40,12 +45,16 @@ ds.flower.metrics <- function(symbol = "flower",
   )
 }
 
-#' Get log output from all servers
+#' Query the disabled node-log compatibility endpoint
+#'
+#' Hardened dsFlower nodes return empty character vectors because node logs can
+#' encode data-dependent failures and timing. Local SuperLink logs are separate.
 #'
 #' @param symbol Character; Flower session symbol (default "flower").
 #' @param last_n Integer; number of log lines to return per server.
 #' @param conns DSI connections (required).
-#' @return A \code{dsflower_result} object with log lines per server.
+#' @return A \code{dsflower_result} containing empty per-site log vectors on
+#'   hardened nodes.
 #' @export
 ds.flower.log <- function(symbol = "flower",
                           last_n = 50L,

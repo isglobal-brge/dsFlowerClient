@@ -13,6 +13,7 @@ ds.flower.features(flower)
 A data.frame with feature asset info, or empty.
 }
 \description{
-Queries the server for radiomics or other derived feature assets
-available for the connected dataset.
+Queries the server for feature-table assets declared in the node-owned
+imaging manifest. Storage locations and data-derived catalog state are not
+returned.
 }

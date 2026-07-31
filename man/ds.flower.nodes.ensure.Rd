@@ -26,6 +26,8 @@ ds.flower.nodes.ensure(
 
 \item{template_name}{Optional Flower template name passed to server-side
 SuperNode bootstrap.}
+
+\item{torch_backend}{Character or NULL; requested node-side torch backend.}
 }
 \value{
 A \code{dsflower_result} with per-site status.

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,14 +18,7 @@
       <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides"><li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
-    <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Server Method Registration</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -42,6 +35,43 @@
     </div>
 
     <div class="section level2">
+      <h2 id="high-level-submission">High-level submission<a class="anchor" aria-label="anchor" href="#high-level-submission"></a></h2>
+
+      <div class="section-desc"><p>Declarative DP training and the separately gated HookApp contract.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="ds.flower.fit.html">ds.flower.fit()</a></code> <code><a href="ds.flower.fit.html">ds.flower.train()</a></code>
+
+        </dt>
+        <dd>Fit a federated model in one call</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.submit.html">ds.flower.submit()</a></code>
+
+        </dt>
+        <dd>Submit + run a federated DP job from a model spec (the "pack" API)</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.hook.run.html">ds.flower.hook.run()</a></code> <code><a href="ds.flower.hook.run.html">ds.flower.tier2.run()</a></code>
+
+        </dt>
+        <dd>Request a HookApp run through the node-side egress policy</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.app.upload.html">ds.flower.app.upload()</a></code>
+
+        </dt>
+        <dd>Upload and hash-verify a Flower app archive</dd>
+      </dl></div><div class="section level2">
       <h2 id="lifecycle-node-management">Lifecycle: Node Management<a class="anchor" aria-label="anchor" href="#lifecycle-node-management"></a></h2>
 
       <div class="section-desc"><p>Connect, prepare, and manage federated nodes on Opal servers.</p></div>
@@ -157,24 +187,31 @@
 
       <dl><dt>
 
-          <code><a href="ds.flower.model.sklearn_logreg.html">ds.flower.model.sklearn_logreg()</a></code>
+          <code><a href="ds.flower.model.html">ds.flower.model()</a></code>
 
         </dt>
-        <dd>Create a scikit-learn Logistic Regression model spec</dd>
+        <dd>Create a model spec by name</dd>
 
         <dt>
 
-          <code><a href="ds.flower.model.sklearn_ridge.html">ds.flower.model.sklearn_ridge()</a></code>
+          <code><a href="ds.flower.model.pytorch_linear_regression.html">ds.flower.model.pytorch_linear_regression()</a></code>
 
         </dt>
-        <dd>Create a scikit-learn Ridge Classifier model spec</dd>
+        <dd>Create a PyTorch Linear Regression model spec</dd>
 
         <dt>
 
-          <code><a href="ds.flower.model.sklearn_sgd.html">ds.flower.model.sklearn_sgd()</a></code>
+          <code><a href="ds.flower.model.pytorch_logreg.html">ds.flower.model.pytorch_logreg()</a></code>
 
         </dt>
-        <dd>Create a scikit-learn SGD Classifier model spec</dd>
+        <dd>Create a PyTorch Logistic Regression model spec</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.model.pytorch_lstm.html">ds.flower.model.pytorch_lstm()</a></code>
+
+        </dt>
+        <dd>Create a PyTorch LSTM model spec</dd>
 
         <dt>
 
@@ -185,24 +222,38 @@
 
         <dt>
 
-          <code><a href="ds.flower.model.pytorch_resnet18.html">ds.flower.model.pytorch_resnet18()</a></code>
+          <code><a href="ds.flower.model.pytorch_multiclass.html">ds.flower.model.pytorch_multiclass()</a></code>
 
         </dt>
-        <dd>Create a PyTorch ResNet-18 model spec</dd>
+        <dd>Create a PyTorch Multi-Class Classifier model spec</dd>
 
         <dt>
 
-          <code><a href="ds.flower.model.pytorch_densenet121.html">ds.flower.model.pytorch_densenet121()</a></code>
+          <code><a href="ds.flower.model.pytorch_multilabel.html">ds.flower.model.pytorch_multilabel()</a></code>
 
         </dt>
-        <dd>Create a PyTorch DenseNet-121 model spec</dd>
+        <dd>Create a Multi-Label Classification model spec</dd>
 
         <dt>
 
-          <code><a href="ds.flower.model.pytorch_unet2d.html">ds.flower.model.pytorch_unet2d()</a></code>
+          <code><a href="ds.flower.model.pytorch_poisson.html">ds.flower.model.pytorch_poisson()</a></code>
 
         </dt>
-        <dd>Create a PyTorch U-Net 2D model spec</dd>
+        <dd>Create a Poisson Regression model spec</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.model.pytorch_tcn.html">ds.flower.model.pytorch_tcn()</a></code>
+
+        </dt>
+        <dd>Create a PyTorch TCN model spec</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.model.xgboost.html">ds.flower.model.xgboost()</a></code>
+
+        </dt>
+        <dd>Create an XGBoost model spec</dd>
       </dl></div><div class="section level2">
       <h2 id="specification-strategies">Specification: Strategies<a class="anchor" aria-label="anchor" href="#specification-strategies"></a></h2>
 
@@ -227,9 +278,9 @@
         </dt>
         <dd>Create a FedProx strategy spec</dd>
       </dl></div><div class="section level2">
-      <h2 id="specification-tasks-privacy">Specification: Tasks &amp; Privacy<a class="anchor" aria-label="anchor" href="#specification-tasks-privacy"></a></h2>
+      <h2 id="specification-tasks">Specification: Tasks<a class="anchor" aria-label="anchor" href="#specification-tasks"></a></h2>
 
-      <div class="section-desc"><p>Task types and privacy enhancement specifications.</p></div>
+      <div class="section-desc"><p>Task types. Differential privacy policy is node-owned, not a client specification.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -263,73 +314,10 @@
 
         </dt>
         <dd>Create a survival task specification</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.sandbox_open.html">ds.flower.privacy.sandbox_open()</a></code>
-
-        </dt>
-        <dd>Create a sandbox_open privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.trusted_internal.html">ds.flower.privacy.trusted_internal()</a></code>
-
-        </dt>
-        <dd>Create a trusted_internal privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.consortium_internal.html">ds.flower.privacy.consortium_internal()</a></code>
-
-        </dt>
-        <dd>Create a consortium_internal privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.clinical_default.html">ds.flower.privacy.clinical_default()</a></code>
-
-        </dt>
-        <dd>Create a clinical_default privacy spec (recommended)</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.clinical_hardened.html">ds.flower.privacy.clinical_hardened()</a></code>
-
-        </dt>
-        <dd>Create a clinical_hardened privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.clinical_update_noise.html">ds.flower.privacy.clinical_update_noise()</a></code>
-
-        </dt>
-        <dd>Create a clinical_update_noise privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.high_sensitivity_dp.html">ds.flower.privacy.high_sensitivity_dp()</a></code>
-
-        </dt>
-        <dd>Create a high_sensitivity_dp privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.evaluation_only.html">ds.flower.privacy.evaluation_only()</a></code>
-
-        </dt>
-        <dd>Apply evaluation_only modifier to a privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.budget.html">ds.flower.privacy.budget()</a></code>
-
-        </dt>
-        <dd>Query remaining privacy budget on all servers</dd>
       </dl></div><div class="section level2">
       <h2 id="specification-recipe">Specification: Recipe<a class="anchor" aria-label="anchor" href="#specification-recipe"></a></h2>
 
-      <div class="section-desc"><p>Combine task, model, strategy, and privacy into a recipe.</p></div>
+      <div class="section-desc"><p>Combine task, model, and strategy into a recipe; privacy remains node-owned.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -343,9 +331,9 @@
         </dt>
         <dd>Create a Flower federated learning recipe</dd>
       </dl></div><div class="section level2">
-      <h2 id="results-metrics">Results &amp; Metrics<a class="anchor" aria-label="anchor" href="#results-metrics"></a></h2>
+      <h2 id="results-compatibility-diagnostics">Results &amp; Compatibility Diagnostics<a class="anchor" aria-label="anchor" href="#results-compatibility-diagnostics"></a></h2>
 
-      <div class="section-desc"><p>Collect, compare, and visualize training results.</p></div>
+      <div class="section-desc"><p>Work with model results. Hardened nodes return empty node metrics and logs.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -357,7 +345,7 @@
           <code><a href="ds.flower.metrics.html">ds.flower.metrics()</a></code>
 
         </dt>
-        <dd>Get training metrics from all servers</dd>
+        <dd>Query the disabled node-metrics compatibility endpoint</dd>
 
         <dt>
 
@@ -378,7 +366,7 @@
           <code><a href="ds.flower.log.html">ds.flower.log()</a></code>
 
         </dt>
-        <dd>Get log output from all servers</dd>
+        <dd>Query the disabled node-log compatibility endpoint</dd>
 
         <dt>
 
@@ -433,13 +421,6 @@
 
         <dt>
 
-          <code><a href="print.dsflower_privacy.html">print(<i>&lt;dsflower_privacy&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a dsflower_privacy</dd>
-
-        <dt>
-
           <code><a href="print.dsflower_recipe.html">print(<i>&lt;dsflower_recipe&gt;</i>)</a></code>
 
         </dt>
@@ -476,6 +457,13 @@
 
 
       <dl><dt>
+
+          <code><a href="ds.flower.app.upload.html">ds.flower.app.upload()</a></code>
+
+        </dt>
+        <dd>Upload and hash-verify a Flower app archive</dd>
+
+        <dt>
 
           <code><a href="ds.flower.code.html">ds.flower.code()</a></code>
 
@@ -533,10 +521,17 @@
 
         <dt>
 
-          <code><a href="ds.flower.fit.html">ds.flower.fit()</a></code>
+          <code><a href="ds.flower.fit.html">ds.flower.fit()</a></code> <code><a href="ds.flower.fit.html">ds.flower.train()</a></code>
 
         </dt>
         <dd>Fit a federated model in one call</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.hook.run.html">ds.flower.hook.run()</a></code> <code><a href="ds.flower.hook.run.html">ds.flower.tier2.run()</a></code>
+
+        </dt>
+        <dd>Request a HookApp run through the node-side egress policy</dd>
 
         <dt>
 
@@ -544,6 +539,27 @@
 
         </dt>
         <dd>List available label sets for an imaging dataset</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.link.down.html">ds.flower.link.down()</a></code>
+
+        </dt>
+        <dd>Close the federation link</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.link.up.html">ds.flower.link.up()</a></code>
+
+        </dt>
+        <dd>Open the federation link</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.list_models.html">ds.flower.list_models()</a></code>
+
+        </dt>
+        <dd>List registered dsFlower models</dd>
 
         <dt>
 
@@ -557,7 +573,7 @@
           <code><a href="ds.flower.log.html">ds.flower.log()</a></code>
 
         </dt>
-        <dd>Get log output from all servers</dd>
+        <dd>Query the disabled node-log compatibility endpoint</dd>
 
         <dt>
 
@@ -571,7 +587,7 @@
           <code><a href="ds.flower.metrics.html">ds.flower.metrics()</a></code>
 
         </dt>
-        <dd>Get training metrics from all servers</dd>
+        <dd>Query the disabled node-metrics compatibility endpoint</dd>
 
         <dt>
 
@@ -680,41 +696,6 @@
 
         <dt>
 
-          <code><a href="ds.flower.model.sklearn_elastic_net.html">ds.flower.model.sklearn_elastic_net()</a></code>
-
-        </dt>
-        <dd>Create an Elastic Net model spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.model.sklearn_logreg.html">ds.flower.model.sklearn_logreg()</a></code>
-
-        </dt>
-        <dd>Create a scikit-learn Logistic Regression model spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.model.sklearn_ridge.html">ds.flower.model.sklearn_ridge()</a></code>
-
-        </dt>
-        <dd>Create a scikit-learn Ridge Classifier model spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.model.sklearn_sgd.html">ds.flower.model.sklearn_sgd()</a></code>
-
-        </dt>
-        <dd>Create a scikit-learn SGD Classifier model spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.model.sklearn_svm.html">ds.flower.model.sklearn_svm()</a></code>
-
-        </dt>
-        <dd>Create a Linear SVM model spec</dd>
-
-        <dt>
-
           <code><a href="ds.flower.model.xgboost.html">ds.flower.model.xgboost()</a></code>
 
         </dt>
@@ -771,83 +752,6 @@
 
         <dt>
 
-          <code><a href="ds.flower.privacy.html">ds.flower.privacy()</a></code>
-
-        </dt>
-        <dd>Create a privacy spec by name</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.auto.html">ds.flower.privacy.auto()</a></code>
-
-        </dt>
-        <dd>Create an automatic privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.budget.html">ds.flower.privacy.budget()</a></code>
-
-        </dt>
-        <dd>Query remaining privacy budget on all servers</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.clinical_default.html">ds.flower.privacy.clinical_default()</a></code>
-
-        </dt>
-        <dd>Create a clinical_default privacy spec (recommended)</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.clinical_hardened.html">ds.flower.privacy.clinical_hardened()</a></code>
-
-        </dt>
-        <dd>Create a clinical_hardened privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.clinical_update_noise.html">ds.flower.privacy.clinical_update_noise()</a></code>
-
-        </dt>
-        <dd>Create a clinical_update_noise privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.consortium_internal.html">ds.flower.privacy.consortium_internal()</a></code>
-
-        </dt>
-        <dd>Create a consortium_internal privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.evaluation_only.html">ds.flower.privacy.evaluation_only()</a></code>
-
-        </dt>
-        <dd>Apply evaluation_only modifier to a privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.high_sensitivity_dp.html">ds.flower.privacy.high_sensitivity_dp()</a></code>
-
-        </dt>
-        <dd>Create a high_sensitivity_dp privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.sandbox_open.html">ds.flower.privacy.sandbox_open()</a></code>
-
-        </dt>
-        <dd>Create a sandbox_open privacy spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.privacy.trusted_internal.html">ds.flower.privacy.trusted_internal()</a></code>
-
-        </dt>
-        <dd>Create a trusted_internal privacy spec</dd>
-
-        <dt>
-
           <code><a href="ds.flower.recipe.html">ds.flower.recipe()</a></code>
 
         </dt>
@@ -855,10 +759,10 @@
 
         <dt>
 
-          <code><a href="ds.flower.run.html">ds.flower.run()</a></code>
+          <code><a href="ds.flower.register_model.html">ds.flower.register_model()</a></code>
 
         </dt>
-        <dd>Run federated learning (auto-managed)</dd>
+        <dd>Register a dsFlower model generator</dd>
 
         <dt>
 
@@ -939,10 +843,10 @@
 
         <dt>
 
-          <code><a href="ds.flower.superlink.attach.html">ds.flower.superlink.attach()</a></code>
+          <code><a href="ds.flower.submit.html">ds.flower.submit()</a></code>
 
         </dt>
-        <dd>Attach to a detached SuperLink</dd>
+        <dd>Submit + run a federated DP job from a model spec (the "pack" API)</dd>
 
         <dt>
 
@@ -1002,17 +906,10 @@
 
         <dt>
 
-          <code><a href="ds.flower.templates.html">ds.flower.templates()</a></code>
+          <code><a href="print.dsflower_app.html">print(<i>&lt;dsflower_app&gt;</i>)</a></code>
 
         </dt>
-        <dd>List templates available on the servers</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.train.html">ds.flower.train()</a></code>
-
-        </dt>
-        <dd>One-shot federated learning (simplest path)</dd>
+        <dd>Print a dsflower_app</dd>
 
         <dt>
 
@@ -1020,13 +917,6 @@
 
         </dt>
         <dd>Print a dsflower_model</dd>
-
-        <dt>
-
-          <code><a href="print.dsflower_privacy.html">print(<i>&lt;dsflower_privacy&gt;</i>)</a></code>
-
-        </dt>
-        <dd>Print a dsflower_privacy</dd>
 
         <dt>
 

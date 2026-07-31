@@ -48,7 +48,8 @@ infer from model.}
 A \code{dsflower_recipe} S3 object.
 }
 \description{
-A recipe combines all specification objects needed for a federated
-learning experiment. Template is always inferred from the model.
-Task can be inferred from the model if not specified.
+A recipe combines the analyst-controlled specification objects needed for a
+federated learning experiment. Privacy policy is not part of the recipe; it
+is selected and enforced by each data node. Template is always inferred from
+the model, and task can be inferred when not specified.
 }

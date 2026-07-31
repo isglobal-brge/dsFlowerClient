@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -18,14 +18,7 @@
       <ul class="navbar-nav me-auto"><li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides"><li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="../articles/demo-overview.html">Validation Evidence Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
-    <li><a class="dropdown-item" href="../articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
-    <li><a class="dropdown-item" href="../articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
-    <li><a class="dropdown-item" href="../articles/validation-overview.html">Method Validation Overview</a></li>
-    <li><a class="dropdown-item" href="../articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Server Method Registration</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
@@ -54,7 +47,8 @@
 <span>  learning_rate <span class="op">=</span> <span class="fl">0.001</span>,</span>
 <span>  batch_size <span class="op">=</span> <span class="fl">32L</span>,</span>
 <span>  local_epochs <span class="op">=</span> <span class="fl">1L</span>,</span>
-<span>  image_size <span class="op">=</span> <span class="fl">224L</span></span>
+<span>  image_size <span class="op">=</span> <span class="fl">224L</span>,</span>
+<span>  volumetric <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -67,7 +61,7 @@
 
 
 <dt id="arg-learning-rate">learning_rate<a class="anchor" aria-label="anchor" href="#arg-learning-rate"></a></dt>
-<dd><p>Numeric; learning rate.</p></dd>
+<dd><p>Numeric in <code>(0, 10]</code>; learning rate.</p></dd>
 
 
 <dt id="arg-batch-size">batch_size<a class="anchor" aria-label="anchor" href="#arg-batch-size"></a></dt>
@@ -80,6 +74,12 @@
 
 <dt id="arg-image-size">image_size<a class="anchor" aria-label="anchor" href="#arg-image-size"></a></dt>
 <dd><p>Integer; square resize dimension before training.</p></dd>
+
+
+<dt id="arg-volumetric">volumetric<a class="anchor" aria-label="anchor" href="#arg-volumetric"></a></dt>
+<dd><p>Logical; if TRUE use a true-3D backbone (MONAI) for
+volumetric collections. Default FALSE: the 2D backbone auto-handles both 2D
+images and 3D volumes (via a representative slice), the plug-and-play path.</p></dd>
 
 </dl></div>
     <div class="section level2">

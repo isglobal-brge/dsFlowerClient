@@ -1,15 +1,16 @@
 # dsFlowerClient
 
-`dsFlowerClient` is the researcher-side R package for running [Flower](https://flower.ai/)
-federated learning through [DataSHIELD](https://www.datashield.org/), with **always-on,
-server-enforced differential privacy**. It pairs with the node-side
-[`dsFlower`](https://github.com/isglobal-brge/dsFlower) package installed on each Opal/Rock
-server.
+`dsFlowerClient` is the researcher-side R package for coordinating
+[Flower](https://flower.ai/) federated learning through
+[DataSHIELD](https://www.datashield.org/). It pairs with the node-side
+[`dsFlower`](https://github.com/isglobal-brge/dsFlower) package installed by each
+data custodian.
 
-The client starts a local Flower SuperLink, asks each DataSHIELD server to stage data and
-start a Flower SuperNode, runs the model, and returns only the privatised outputs. **Raw
-rows, images and staging files never leave the data-owning servers, and the analyst never
-sets the privacy level — each data node decides and enforces it.**
+The client starts a Flower SuperLink, submits a declarative request, checks that
+every node has the byte-identical canonical runner, and coordinates staging,
+training and cleanup. It cannot choose epsilon, delta, clipping, the accountant
+domain or whether arbitrary code is allowed. Those decisions belong to each
+data node.
 
 ## Installation
 
@@ -17,21 +18,34 @@ sets the privacy level — each data node decides and enforces it.**
 remotes::install_github("isglobal-brge/dsFlowerClient")
 ```
 
-The client needs the Flower CLI:
+The workstation also needs the Flower CLI:
 
 ```sh
-python -m pip install "flwr>=1.13.0"
+python -m pip install "flwr[app]>=1.31.0,<1.32.0"
 ```
 
-Each Opal/Rock server must have `dsFlower` installed.
+If `uv` is absent, package provisioning refuses mutable `latest`/`curl|sh`
+bootstrap. Either install `uv` through the operating system, or set an audited
+release tag and platform-archive digest in `DSFLOWER_UV_VERSION` and
+`DSFLOWER_UV_SHA256`. For reproducible Python environments, set
+`DSFLOWER_CLIENT_PYTHON_LOCK` to a complete requirements file containing hashes
+for all transitive artifacts; installs then use `uv pip install
+--require-hashes`. Set `DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK=true` to reject a
+missing lock instead of falling back to ranges. Also set
+`DSFLOWER_PYTHON_VERSION` to an exact
+`major.minor.patch`; the default `3.11` permits compatible patch updates. Without
+an exact interpreter and lock, the compatibility ranges remain intentionally
+flexible and the resolved environment is not reproducible.
+
+Each Opal/Rock server must have a compatible `dsFlower` installation. Runner ABI
+and recursive SHA-256 mismatches fail before a run is submitted.
 
 ## Quick start
 
-One call does the whole lifecycle (capability checks → server-side staging → run → cleanup):
-
 ```r
 library(dsFlowerClient)
-library(DSI); library(DSOpal)
+library(DSI)
+library(DSOpal)
 
 builder <- DSI::newDSLoginBuilder()
 builder$append(server = "site1", url = "https://opal1.example.org",
@@ -42,101 +56,193 @@ builder$append(server = "site2", url = "https://opal2.example.org",
                table = "PROJECT.training_data", driver = "OpalDriver")
 conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "D")
 
-fit <- ds.flower.fit(conns, symbol = "D", target = "outcome", model = "pytorch_logreg")
+# Bounds must be public/domain-knowledge constants in the same order as features.
+fit <- ds.flower.fit(
+  conns,
+  symbol = "D",
+  target = "outcome",
+  features = c("age", "biomarker"),
+  model = "pytorch_logreg",
+  feature_bounds = list(lower = c(18, 0), upper = c(100, 250)),
+  target_levels = c("control", "case")
+)
 
-ds.flower.metrics(fit)
 DSI::datashield.logout(conns)
 ```
 
-That is the whole minimal call: `conns`, the data `symbol`, the `target`, and a `model`.
-Everything else has sensible defaults — `features` defaults to every column except the
-target, `strategy = "fedavg"`, `rounds = 5`, and **differential privacy is always applied by
-the node**. `ds.flower.train()` is an alias of `ds.flower.fit()`.
+`ds.flower.train()` is an alias of `ds.flower.fit()`. `features` can be omitted
+for an assigned tabular `symbol`, in which case only column names are queried and
+the target is excluded. Feature values, exact feature statistics, node logs and
+node metrics are never requested by this workflow.
 
-## Privacy is server-authoritative (you don't set it)
+## Privacy is server-authoritative
 
-Differential privacy is always on and is decided **entirely by each data node**: the node
-sets the (epsilon, delta, clipping) from its own DataSHIELD options (with hard ceilings),
-chooses the DP mechanism from what you submit, and debits a Rényi-DP budget ledger. The
-client has no privacy knob — it cannot weaken DP, nor even request a different value. You can
-only **read** the node's real remaining budget:
+Each node uses a persistent lifetime accountant. For new run `n`, it allocates a
+geometrically decreasing fraction of its administrator-set total budget:
 
-```r
-ds.flower.privacy.budget(conns, symbol = "D")
+```text
+w_n       = s (1 - rho) rho^(n - 1),  s = 1 - 10^-12
+epsilon_n = epsilon_total w_n
+delta_n   = delta_total w_n
 ```
 
-## Models
+This bounds every finite prefix and the infinite transcript by the node's
+`(epsilon_total, delta_total)`. Exact Flower-message retries never trigger a
+second private release: the cached response is reused when available; otherwise
+the incoming public model is returned unchanged. Distinct releases receive
+distinct, secret-keyed random streams.
 
-20 model families, all PyTorch or XGBoost (sent to the node as declarative **specs**, never
-code):
+There is no lifetime query-count rejection. Finite total privacy with infinitely
+many equally informative answers is mathematically impossible, however, so the
+allocations tend to zero. When a per-message allocation becomes numerically too
+small, the node safely returns the incoming public model unchanged. The client
+cannot introduce a positive epsilon floor or reset the accountant by renaming or
+subsetting a dataset.
 
-| Family | Models |
-|---|---|
-| Linear / GLM | `pytorch_logreg`, `pytorch_linear_regression`, `pytorch_multiclass`, `pytorch_multilabel`, `pytorch_poisson`, `pytorch_negbin`, `pytorch_gamma`, `pytorch_ordinal` |
-| Penalised linear / SVM | `pytorch_ridge`, `pytorch_lasso`, `pytorch_elasticnet`, `pytorch_svm` |
-| Deep nets | `pytorch_mlp`, `pytorch_cnn`, `pytorch_tcn`, `pytorch_resnet`, `pytorch_transformer`, `pytorch_lstm`, `pytorch_gru` |
-| Gradient boosting | `xgboost` (DP-GBDT) |
+Budgets are per node. If the same person appears at multiple observed nodes,
+their epsilons and deltas compose across those nodes; only disjoint node
+populations receive the parallel-composition bound. Cross-site overlap needs a
+shared federation-level person accountant when one global guarantee is required.
 
-Set hyperparameters via `model_params`:
+The formal adjacency is bounded/replace-one with a fixed number of privacy
+units: neighbouring datasets replace one row, or all records belonging to one
+configured patient.
+This is not an unbounded add/remove membership guarantee for a changing unit
+count.
+
+Noise is deterministic only within one release identity. The node derives
+domain-separated ChaCha20 streams from a dedicated 256-bit secret using
+HMAC-SHA256. This prevents averaging exact retries while avoiding the unsafe
+reuse of one fixed noise vector across related queries. The secret is not a
+client seed, R RNG state or `datashield.seed`.
+
+The server's `flowerPrivacyBudgetDS()` method reports the public accountant
+policy. Allocation count/status is returned only if the custodian enables
+`dsflower.expose_privacy_status`; there is intentionally no analyst privacy
+configuration API.
+
+The Flower Fleet API is carried inside the TLS DataSHIELD channel by a
+capability-bound DSI tunnel. Link startup is all-or-nothing: if one node does not
+publish a live, ready loopback forwarder, the client tears down every attempted
+site and aborts. Nodes negotiate bounded exchange chunks; the relay keeps a
+bounded buffer per site so TCP backpressure replaces unbounded R-memory growth.
+
+## Supported computation contracts
+
+### Declarative models (recommended)
+
+The client emits data-only specifications; the node-installed runner constructs
+and trains the model:
+
+- neural and vision specifications use Opacus DP-SGD with per-example or
+  server-selected per-patient clipping and noise;
+- tree specifications use DP-GBDT with data-independent structure, bounded
+  gradients/Hessians and noisy leaf histograms.
+
+This is the path that reaches `nn.Module`-level granularity because the trusted
+runner owns the training loop and sees per-sample gradients. The client never
+sends an analyst-controlled training loop for declarative models.
+
+Available registered model names can be inspected with `ds.flower.models()`.
+Hyperparameters are supplied through `model_params`:
 
 ```r
-fit <- ds.flower.fit(conns, symbol = "D", target = "y",
-                     model = "pytorch_mlp", model_params = list(hidden_layers = c(64, 32)),
-                     rounds = 10L)
-```
-
-## How the privacy guarantee is enforced (node side)
-
-The node routes every submission to the tightest sound DP mechanism **by construction**:
-
-- **Declarative neural specs** → Opacus **DP-SGD** (per-sample clip + noise). The declarative
-  graph language covers MLP/CNN/TCN/ResNet/DenseNet/Inception/Transformer/U-Net/LSTM/GRU with
-  no researcher code on the node.
-- **XGBoost spec** → **DP-GBDT**.
-- **Arbitrary uploaded code** (`ds.flower.tier2.run`) → an **output-perturbation floor** run
-  **out-of-process**: the untrusted code executes in an isolated interpreter, and the trusted
-  node applies all DP itself, so the upload can never disable the noise. Budget is reserved
-  before any result is released.
-
-See the [`dsFlower` architecture notes](https://github.com/isglobal-brge/dsFlower/blob/main/ARCHITECTURE.md)
-for the full trust model.
-
-## Accuracy under DP (automatic feature standardization)
-
-DP-SGD clips each per-sample gradient to a fixed norm, so on **raw** features the
-large-scale columns dominate the gradient and small informative ones are suppressed —
-the model collapses to the majority baseline *even with no noise*. The fix is feature
-standardization, and `ds.flower.fit()` does it for you, soundly across sites:
-
-- The client asks each node for per-feature `count / sum / sumsq` (a standard
-  disclosure-controlled DataSHIELD aggregate, like `ds.mean`/`ds.var` — it reveals no
-  individual row and is **separate from** the DP-SGD `(epsilon, delta)` budget, which it
-  does not weaken), pools them into a **global** mean/SD, and bakes those into the model.
-- Neural models train on standardized features; the trees model uses the same stats to
-  place its random-split thresholds in the real data range. Prediction re-applies the
-  exact same transform, so `ds.flower.predict()` never desyncs.
-
-This is automatic for the `symbol=` data path (a warning is emitted for `data=`/`resource=`
-runs, which can't compute global stats and fall back to raw features). On
-Breast-Cancer-Wisconsin across 3 sites at `epsilon = 3` this takes logistic regression from
-~0.63 (majority) to ~0.93 and DP-GBDT to ~0.88 — i.e. the DP cost is small once the pipeline
-is correct. Defaults are tuned for standardized data (classification `learning_rate = 0.1`).
-
-## Lower-level API (power users)
-
-`ds.flower.fit()` is enough for most analyses. For explicit control, build a recipe:
-
-```r
-flower <- ds.flower.connect(conns, symbol = "D")
-recipe <- ds.flower.recipe(
-  model    = ds.flower.model("pytorch_mlp", hidden_layers = c(64, 32)),
-  strategy = ds.flower.strategy("fedprox", proximal_mu = 0.1),
-  target   = "outcome",
-  num_rounds = 10L
+fit <- ds.flower.fit(
+  conns, symbol = "D", target = "y", features = c("x1", "x2"),
+  model = "pytorch_mlp",
+  model_params = list(hidden_layers = c(64, 32)), rounds = 10L,
+  feature_bounds = list(lower = c(0, 0), upper = c(1, 100))
 )
-result <- ds.flower.run(flower, recipe)
-ds.flower.disconnect(flower)
 ```
+
+Classification strings/factors require an ordered, exhaustive public
+`target_levels`; numeric labels already coded in `[0, K-1]` remain compatible.
+Regression and count models require public
+`target_bounds = list(lower=..., upper=...)`, with `lower >= 0` for counts and
+`lower > 0` for Gamma loss. Nodes never infer label vocabularies or ranges from
+their cohorts; an unknown label is outside the declared valid-input domain and
+fails closed.
+
+Public feature/target bounds and unscaled numeric inputs are limited to magnitude
+`1e6`; without bounds, inputs remain unscaled but are coerced and saturated to
+that domain. Declarative intermediates and parameters use the same finite cap;
+heads are saturated at `30` for logits/log-links and `1e6` for direct MSE
+regression. Per-sample gradients are totalised before Opacus performs the
+server-owned L2 clip. Neural and DP-GBDT learning rates must be in `(0, 10]`.
+
+### HookApps (legacy name: Tier2)
+
+`ds.flower.hook.run()` accepts a Python package exposing only:
+
+```text
+initial_arrays(config, input_dim) -> numeric arrays
+local_update(global_arrays, X, y, config) -> numeric arrays
+```
+
+A HookApp is not a general trusted Flower App and cannot generically receive
+DP-SGD-level protection. The node runs it only when the custodian has enabled
+HookApps and attested the required Bubblewrap filesystem/network sandbox and
+constant-time envelope. The result is numerically validated, clipped as one
+complete update and passed through a conservatively RDP-calibrated Gaussian
+mechanism; an optional sample-and-aggregate mode uses a fixed, administrator-
+pinned number of disjoint data-independent blocks.
+
+If any execution gate is absent, the untrusted package is not run and the node
+returns the incoming public model unchanged. Archive scanning and hash pinning
+are integrity defenses, not proofs that arbitrary code is private.
+`ds.flower.tier2.run()` is a deprecated compatibility alias.
+HookApps use the same `target_levels`/`target_bounds` contract and must declare
+`task = "classification"`, `"regression"` or `"count"`.
+
+## Public feature bounds
+
+Exact node-side `count`, `sum`, `sumsq`, means, variances and quantiles are not
+released for preprocessing. If scale information is useful, pass public bounds:
+
+```r
+feature_bounds = list(
+  lower = c(age = 18, biomarker = 0),
+  upper = c(age = 100, biomarker = 250)
+)
+```
+
+Bounds must be finite, have magnitude at most `1e6`, satisfy `lower < upper` and
+follow the exact feature order.
+Training clips each value to its interval and maps it affinely to `[-1, 1]`;
+prediction reuses the stored bounds. These constants must come from public domain
+knowledge or protocol design, not from a query to the protected node. Without
+bounds, neural inputs remain unscaled after coercion/saturation to `[-1e6, 1e6]`
+and DP-GBDT uses a public `[0, 1]` threshold prior, which can reduce utility when
+the real scale differs.
+
+## Lower-level API
+
+`ds.flower.fit()` is the preferred end-to-end API. Power users can call the
+submission pipeline directly:
+
+```r
+result <- ds.flower.submit(
+  conns,
+  model = ds.flower.model("pytorch_mlp", hidden_layers = c(64, 32)),
+  symbol = "D",
+  target = "outcome",
+  features = c("age", "biomarker"),
+  num_rounds = 10L,
+  strategy = "fedadam",
+  feature_bounds = list(lower = c(18, 0), upper = c(100, 250)),
+  target_levels = c("control", "case")
+)
+```
+
+The lower-level API does not weaken the node policy. Node-returned
+`ds.flower.metrics()` and `ds.flower.log()` calls remain for protocol
+compatibility but return empty results on hardened nodes. Local SuperLink output
+and the intended DP global-model artifact are separate from node log/metric
+egress.
+
+See the
+[`dsFlower` architecture specification](https://github.com/isglobal-brge/dsFlower/blob/main/ARCHITECTURE.md)
+for the complete trust boundary, deployment requirements and residual limits.
 
 ## Authors
 

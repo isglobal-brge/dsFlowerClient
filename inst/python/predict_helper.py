@@ -7,6 +7,7 @@ Usage:
   python predict_helper.py --model <path> --data <csv> --type response|prob
                            [--framework pytorch|xgboost]
                            [--template <template_name>]
+                           [--bounds-b64 <public_bounds>]
 """
 
 import argparse
@@ -15,6 +16,19 @@ import sys
 
 import numpy as np
 import pandas as pd
+
+
+_MAX_INPUT_ABS = 1.0e6
+_MAX_ACTIVATION_ABS = 1.0e6
+_MAX_OUTPUT_ABS = 30.0
+
+
+def _finite_torch(value, limit):
+    import torch
+    return torch.clamp(
+        torch.nan_to_num(value, nan=0.0, posinf=float(limit),
+                         neginf=-float(limit)),
+        min=-float(limit), max=float(limit))
 
 
 # Per-template output semantics for the linear / MLP PyTorch families. The
@@ -28,6 +42,9 @@ _PT_OUTPUT = {
     "pytorch_mlp":               "multiclass",
     "pytorch_multilabel":        "multilabel",
     "pytorch_linear_regression": "regression",
+    "pytorch_ridge":             "regression",
+    "pytorch_lasso":             "regression",
+    "pytorch_elasticnet":        "regression",
     "pytorch_poisson":           "count",
     "pytorch_coxph":             "risk",
     "pytorch_cause_specific_cox": "risk",
@@ -48,23 +65,23 @@ def _is_unsupported_pt(template):
     return any(k in t for k in _PT_UNSUPPORTED_KINDS)
 
 
-def _linear_forward(weights, X_t):
-    import torch
+def _linear_forward(weights, X_t, output_limit=_MAX_OUTPUT_ABS):
     W = weights[0].float()
     b = weights[1].float()
-    return (X_t @ W.T + b).squeeze(-1)
+    return _finite_torch(X_t @ W.T + b, output_limit).squeeze(-1)
 
 
-def _mlp_forward(weights, X_t):
+def _mlp_forward(weights, X_t, output_limit=_MAX_OUTPUT_ABS):
     import torch
     h = X_t
     n_layers = len(weights) // 2
     for i in range(n_layers):
         W = weights[i * 2].float()
         b = weights[i * 2 + 1].float()
-        h = h @ W.T + b
+        limit = output_limit if i == n_layers - 1 else _MAX_ACTIVATION_ABS
+        h = _finite_torch(h @ W.T + b, limit)
         if i < n_layers - 1:
-            h = torch.relu(h)
+            h = _finite_torch(torch.relu(h), _MAX_ACTIVATION_ABS)
     return h.squeeze(-1)
 
 
@@ -98,7 +115,9 @@ def predict_pytorch(model_path, X, pred_type, template=None):
         mu = _linear_forward(weights[:2], X_t)
         return torch.exp(mu).detach().numpy().tolist()
 
-    logits = _linear_forward(weights, X_t) if len(weights) == 2 else _mlp_forward(weights, X_t)
+    output_limit = _MAX_ACTIVATION_ABS if behavior == "regression" else _MAX_OUTPUT_ABS
+    logits = (_linear_forward(weights, X_t, output_limit)
+              if len(weights) == 2 else _mlp_forward(weights, X_t, output_limit))
 
     if behavior == "regression":
         return logits.detach().numpy().tolist()                       # raw predicted value
@@ -229,6 +248,63 @@ def predict_xgboost_custom(model_path, X, pred_type):
     return scores[:, 0].tolist()
 
 
+def _decode_b64_json(raw):
+    import base64
+    return json.loads(base64.b64decode(str(raw), validate=True).decode("utf-8"))
+
+
+def _apply_feature_preprocessing(X, bounds_b64=None, norm_b64=None):
+    """Repeat training preprocessing: public clip+affine first, legacy mean/SD otherwise."""
+    if bounds_b64:
+        bounds = _decode_b64_json(bounds_b64)
+        lower = np.asarray(bounds.get("lower", []), dtype=np.float64)
+        upper = np.asarray(bounds.get("upper", []), dtype=np.float64)
+        if lower.shape != (X.shape[1],) or upper.shape != (X.shape[1],):
+            raise ValueError(
+                "public bounds length (%d/%d) != newdata feature count (%d)"
+                % (lower.size, upper.size, X.shape[1]))
+        if (not np.all(np.isfinite(lower)) or not np.all(np.isfinite(upper))
+                or not np.all(lower < upper)
+                or np.any(np.abs(lower) > _MAX_INPUT_ABS)
+                or np.any(np.abs(upper) > _MAX_INPUT_ABS)):
+            raise ValueError(
+                "public bounds must be finite, within [-1e6, 1e6], with lower < upper")
+        center = (lower + upper) / 2.0
+        scale = (upper - lower) / 2.0
+        safe = np.where(np.isfinite(X), X, center)
+        with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+            transformed = (np.clip(safe, lower, upper) - center) / scale
+        transformed = np.nan_to_num(
+            transformed, nan=0.0, posinf=_MAX_ACTIVATION_ABS,
+            neginf=-_MAX_ACTIVATION_ABS)
+        return np.clip(
+            transformed, -_MAX_ACTIVATION_ABS,
+            _MAX_ACTIVATION_ABS).astype(np.float32)
+
+    if not norm_b64:
+        safe = np.where(np.isfinite(X), X, 0.0)
+        return np.clip(safe, -_MAX_INPUT_ABS, _MAX_INPUT_ABS).astype(np.float32)
+    norm = _decode_b64_json(norm_b64)
+    mean = np.asarray(norm["means"], dtype=np.float64)
+    sd = np.asarray(norm["sds"], dtype=np.float64)
+    if mean.shape != (X.shape[1],) or sd.shape != (X.shape[1],):
+        raise ValueError(
+            "standardization stats length (%d/%d) != newdata feature count (%d)"
+            % (mean.size, sd.size, X.shape[1]))
+    sd = np.where(np.isfinite(sd) & (sd > 1e-8), sd, 1.0)
+    mean = np.where(np.isfinite(mean), mean, 0.0)
+    safe = np.clip(np.where(np.isfinite(X), X, 0.0),
+                   -_MAX_INPUT_ABS, _MAX_INPUT_ABS).astype(np.float64)
+    with np.errstate(over="ignore", invalid="ignore", divide="ignore"):
+        transformed = (safe - mean) / sd
+    transformed = np.nan_to_num(
+        transformed, nan=0.0, posinf=_MAX_ACTIVATION_ABS,
+        neginf=-_MAX_ACTIVATION_ABS)
+    return np.clip(
+        transformed, -_MAX_ACTIVATION_ABS,
+        _MAX_ACTIVATION_ABS).astype(np.float32)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True)
@@ -236,6 +312,7 @@ def main():
     parser.add_argument("--type", default="response", choices=["response", "prob"])
     parser.add_argument("--framework", default=None)
     parser.add_argument("--template", default=None)
+    parser.add_argument("--bounds-b64", dest="bounds_b64", default=None)
     parser.add_argument("--norm-b64", dest="norm_b64", default=None)
     args = parser.parse_args()
 
@@ -243,21 +320,12 @@ def main():
     df = pd.read_csv(args.data)
     X = df.values.astype(np.float32)
 
-    # Standardize EXACTLY as the model was trained (same mu/sigma the node used). Only
-    # present for pytorch models trained with global standardization; trees never carry it.
-    if args.norm_b64:
-        import base64
-        norm = json.loads(base64.b64decode(str(args.norm_b64), validate=True).decode("utf-8"))
-        mean = np.asarray(norm["means"], dtype=np.float32)
-        sd = np.asarray(norm["sds"], dtype=np.float32)
-        if mean.shape[0] != X.shape[1] or sd.shape[0] != X.shape[1]:
-            print(json.dumps({"error": (
-                "standardization stats length (%d/%d) != newdata feature count (%d)"
-                % (mean.shape[0], sd.shape[0], X.shape[1]))}), file=sys.stderr)
-            sys.exit(1)
-        sd = np.where(np.isfinite(sd) & (sd > 1e-8), sd, 1.0).astype(np.float32)
-        mean = np.where(np.isfinite(mean), mean, 0.0).astype(np.float32)
-        X = ((X - mean) / sd).astype(np.float32)
+    # Public bounds take precedence for new models; mean/SD remains a legacy path.
+    try:
+        X = _apply_feature_preprocessing(X, args.bounds_b64, args.norm_b64)
+    except (KeyError, TypeError, ValueError) as exc:
+        print(json.dumps({"error": str(exc)}), file=sys.stderr)
+        sys.exit(1)
 
     # Auto-detect framework from model file extension
     framework = args.framework

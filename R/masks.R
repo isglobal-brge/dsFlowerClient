@@ -3,11 +3,13 @@
 
 #' List available segmentation masks
 #'
-#' Queries the server for validated mask assets from dsImaging.
-#' Only shows ACTIVE, valid, non-partial masks by default.
+#' Queries the server for mask assets declared in the node-owned imaging
+#' manifest. This structural view intentionally excludes completion counts,
+#' storage locations, and data-derived catalog state.
 #'
 #' @param flower A \code{dsflower_connection}, or NULL for last connection.
-#' @return A data.frame with mask assets, or empty if none.
+#' @return A data.frame with public mask aliases, providers, and the constant
+#'   status \code{"declared"}, or empty if none.
 #' @export
 ds.flower.masks <- function(flower) {
   if (missing(flower) || is.null(flower))
@@ -17,15 +19,14 @@ ds.flower.masks <- function(flower) {
     stop("'flower' must be a dsflower_connection from ds.flower.connect().",
          call. = FALSE)
 
-  # Query server for mask assets via dsImaging
+  # Query only public structural mask declarations through dsFlower.
   tryCatch({
-    img_sym <- paste0(flower$symbol, "_img")
     res <- DSI::datashield.aggregate(flower$conns,
-      expr = call("imagingMasksDS", img_sym))
+      expr = call("flowerImageMasksDS", flower$symbol))
     res[[1]]
   }, error = function(e) {
     data.frame(alias = character(0), provider = character(0),
-               status = character(0), n_valid = integer(0),
+               status = character(0),
                stringsAsFactors = FALSE)
   })
 }

@@ -13,6 +13,8 @@ bytes), so a transient DSI failure loses nothing: the next cycle re-requests
 the same ranges and the node applies them idempotently. SuperLink replies are
 buffered per node and only dropped once the node acks them, and the up offset
 only advances after the bytes are confirmed written to the SuperLink socket.
+Negotiated chunks and bounded per-node buffers apply TCP backpressure instead
+of accumulating unbounded payloads in the R process.
 A single fan-out call (not per-node pushes) keeps every node in lock-step so
 none is skewed past a SecAgg stage window.
 }

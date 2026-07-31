@@ -15,8 +15,15 @@ ds.flower.submit(
   num_rounds = 1L,
   model_params = list(),
   data_kind = "tabular",
+  strategy = "fedavg",
+  output_dir = NULL,
+  output_name = NULL,
   torch_backend = "auto",
-  verbose = TRUE
+  verbose = FALSE,
+  silent = FALSE,
+  feature_bounds = NULL,
+  target_levels = NULL,
+  target_bounds = NULL
 )
 }
 \arguments{
@@ -28,15 +35,41 @@ ds.flower.submit(
 
 \item{features}{Character vector; feature columns.}
 
+\item{data}{Optional character data source resolved during connection.}
+
+\item{resource}{Optional Opal resource name.}
+
 \item{symbol}{Character; server-side data handle symbol.}
 
 \item{num_rounds}{Integer; federated rounds.}
 
-\item{model_params}{Named list; params merged over the model's defaults.}
+\item{model_params}{Named list; params merged over the model's defaults.
+Neural and DP-GBDT learning rates must be finite and in \code{(0, 10]}.}
 
 \item{data_kind}{"tabular" or "image".}
 
+\item{strategy}{Character; researcher-side aggregation strategy.}
+
+\item{output_dir}{Optional model output directory.}
+
+\item{output_name}{Optional model output name.}
+
+\item{torch_backend}{Character; node torch backend selection.}
+
 \item{verbose}{Logical.}
+
+\item{silent}{Logical; suppress progress feedback.}
+
+\item{feature_bounds}{Optional public feature bounds as
+\code{list(lower=..., upper=...)} in feature order. These constants are
+supplied without querying node data and define a clipped affine transform.}
+
+\item{target_levels}{Optional ordered, exhaustive public label vocabulary for
+classification. Non-numeric targets require it; node values are never used
+to infer label codes.}
+
+\item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
+regression/count targets. The node clips each target to these constants.}
 }
 \value{
 A \code{dsflower_run}.

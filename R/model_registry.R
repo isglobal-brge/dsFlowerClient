@@ -120,6 +120,18 @@ ds.flower.list_models <- function() {
 # width is node-authoritative, never client-set. The input dim "@in" is injected
 # node-side (num-features, or the frozen-backbone feature dim for vision).
 .neural_mlp_spec <- function(hidden = integer(0)) {
+  # Legacy constructors stored widths as one TOML-era string ("64,32").
+  # Normalize that representation before emitting the declarative graph.
+  if (is.character(hidden) && length(hidden) == 1L) {
+    hidden <- trimws(hidden)
+    hidden <- if (!nzchar(hidden)) integer(0) else
+      suppressWarnings(as.integer(strsplit(hidden, ",", fixed = TRUE)[[1L]]))
+  }
+  if (length(hidden) &&
+      (anyNA(hidden) || any(!is.finite(hidden)) || any(hidden < 1L) ||
+       any(hidden != floor(hidden)))) {
+    stop("hidden_layers must contain positive integer widths.", call. = FALSE)
+  }
   layers <- list()
   for (w in hidden) {
     layers <- c(layers, list(list(op = "linear", out = as.integer(w)),

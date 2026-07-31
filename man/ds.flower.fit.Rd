@@ -21,11 +21,17 @@ ds.flower.fit(
   task = NULL,
   label_set = NULL,
   masks = NULL,
+  output_dir = NULL,
+  output_name = NULL,
+  silent = FALSE,
   evaluation_only = FALSE,
   detached = FALSE,
-  verbose = TRUE,
+  verbose = FALSE,
   disconnect = TRUE,
-  run_args = list()
+  run_args = list(),
+  feature_bounds = NULL,
+  target_levels = NULL,
+  target_bounds = NULL
 )
 
 ds.flower.train(
@@ -44,11 +50,17 @@ ds.flower.train(
   task = NULL,
   label_set = NULL,
   masks = NULL,
+  output_dir = NULL,
+  output_name = NULL,
+  silent = FALSE,
   evaluation_only = FALSE,
   detached = FALSE,
-  verbose = TRUE,
+  verbose = FALSE,
   disconnect = TRUE,
-  run_args = list()
+  run_args = list(),
+  feature_bounds = NULL,
+  target_levels = NULL,
+  target_bounds = NULL
 )
 }
 \arguments{
@@ -61,8 +73,7 @@ ds.flower.train(
 \item{symbol}{Optional assigned DataSHIELD symbol. Defaults to \code{"D"}
 when \code{data}, \code{resource}, and \code{symbol} are all NULL.}
 
-\item{target}{Character target column name, or length-two vector for
-survival tasks.}
+\item{target}{One character target column name.}
 
 \item{features}{Character vector of feature column names, or NULL for
 template-specific auto handling.}
@@ -71,6 +82,9 @@ template-specific auto handling.}
 
 \item{model_params}{Named list passed to \code{ds.flower.model()} when
 \code{model} is a character value.}
+
+\item{torch_backend}{Character; requested node-side torch backend
+(\code{"auto"}, \code{"cpu"}, or a GPU selector).}
 
 \item{strategy}{Character strategy name or \code{dsflower_strategy} object.}
 
@@ -85,17 +99,39 @@ template-specific auto handling.}
 
 \item{masks}{Optional mask asset alias for segmentation.}
 
+\item{output_dir}{Optional character; parent directory the trained model is
+saved under (created if missing). Defaults to \code{./dsflower_output}.}
+
+\item{output_name}{Optional character; folder/file name for this model inside
+\code{output_dir} (extension is added automatically). Defaults to an
+auto-generated model id.}
+
+\item{silent}{Logical; when \code{TRUE}, suppress the training progress
+feedback (connection, per-round and completion messages).}
+
 \item{evaluation_only}{Logical; accepted for compatibility but NOT yet enforced by the
 enforced-DP path (the model is always released, DP-protected).}
 
 \item{detached}{Logical; accepted for back-compat (unused by the enforced-DP path).}
 
-\item{verbose}{Logical; print training output.}
+\item{verbose}{Logical; when \code{TRUE}, also print the raw flwr run log
+(debugging). The tidy per-round progress is shown regardless unless
+\code{silent = TRUE}.}
 
 \item{disconnect}{Logical; accepted for compatibility. The submission pipeline always
 cleans up its server-side handles on exit regardless.}
 
 \item{run_args}{Named list; accepted for back-compat (unused by the enforced-DP path).}
+
+\item{feature_bounds}{Optional public feature bounds as
+\code{list(lower=..., upper=...)} in feature order. Appended to the signature
+for positional backward compatibility.}
+
+\item{target_levels}{Optional ordered, exhaustive public classification label
+vocabulary. Non-numeric labels require it.}
+
+\item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
+regression/count models.}
 }
 \value{
 A \code{dsflower_run} object.

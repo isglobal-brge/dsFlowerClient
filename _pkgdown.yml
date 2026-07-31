@@ -20,67 +20,35 @@ navbar:
       menu:
         - text: "API Quickstart"
           href: articles/api-quickstart.html
-        - text: "Method Registration + Live Federation"
+        - text: "Server Method Registration"
           href: articles/method-registration-live-federation.html
-        - text: "Validation Evidence Overview"
-          href: articles/demo-overview.html
-        - text: "Clinical Privacy Benchmarks"
-          href: articles/clinical-privacy-benchmarks.html
-        - text: "Clinical Method-Family Benchmarks"
-          href: articles/clinical-method-family-benchmarks.html
-        - text: "PathMNIST Direct Image ResNet Benchmark"
-          href: articles/pathmnist-direct-image-resnet.html
-        - text: "LUNG1 Direct dsImaging ResNet Evidence"
-          href: articles/lung1-direct-image-dsimaging-resnet.html
-        - text: "LUNG1 dsImaging Radiomics Evidence"
-          href: articles/lung1-radiomics-to-flower.html
-        - text: "Method Validation Overview"
-          href: articles/validation-overview.html
-        - text: "Vision Validation Overview"
-          href: articles/validation-vision-overview.html
 
 articles:
-  - title: Current validation evidence
+  - title: Current guides
     navbar: ~
     contents:
       - api-quickstart
       - method-registration-live-federation
+  - title: Historical pre-0.3 validation records
+    navbar: ~
+    contents:
+      - clinical-method-family-benchmarks
+      - clinical-privacy-benchmarks
       - demo-overview
-      - pathmnist-direct-image-resnet
       - lung1-direct-image-dsimaging-resnet
       - lung1-radiomics-to-flower
-      - clinical-privacy-benchmarks
-      - clinical-method-family-benchmarks
-  - title: Method validation
-    desc: "Synthetic catalogue coverage against centralized baselines."
-    contents:
-      - validation-sklearn-logreg
-      - validation-sklearn-ridge
-      - validation-sklearn-sgd
-      - validation-sklearn-svm
-      - validation-sklearn-elastic-net
-      - validation-pytorch-logreg
-      - validation-pytorch-mlp
-      - validation-pytorch-linear-regression
-      - validation-pytorch-multiclass
-      - validation-pytorch-multilabel
-      - validation-pytorch-poisson
-      - validation-pytorch-coxph
-      - validation-pytorch-lognormal-aft
-      - validation-pytorch-cause-specific-cox
-      - validation-pytorch-lstm
-      - validation-pytorch-tcn
-      - validation-xgboost
-      - validation-overview
-  - title: Vision method validation
-    desc: "Image and segmentation templates validated against centralized PyTorch baselines."
-    contents:
-      - validation-vision-pytorch-resnet18
-      - validation-vision-pytorch-densenet121
-      - validation-vision-pytorch-unet2d
-      - validation-vision-overview
+      - pathmnist-direct-image-resnet
+      - starts_with("validation-")
 
 reference:
+  - title: "High-level submission"
+    desc: "Declarative DP training and the separately gated HookApp contract."
+    contents:
+      - ds.flower.fit
+      - ds.flower.submit
+      - ds.flower.hook.run
+      - ds.flower.app.upload
+
   - title: "Lifecycle: Node Management"
     desc: "Connect, prepare, and manage federated nodes on Opal servers."
     contents:
@@ -107,13 +75,16 @@ reference:
   - title: "Specification: Models"
     desc: "Model specification objects for federated learning."
     contents:
-      - ds.flower.model.sklearn_logreg
-      - ds.flower.model.sklearn_ridge
-      - ds.flower.model.sklearn_sgd
+      - ds.flower.model
+      - ds.flower.model.pytorch_linear_regression
+      - ds.flower.model.pytorch_logreg
+      - ds.flower.model.pytorch_lstm
       - ds.flower.model.pytorch_mlp
-      - ds.flower.model.pytorch_resnet18
-      - ds.flower.model.pytorch_densenet121
-      - ds.flower.model.pytorch_unet2d
+      - ds.flower.model.pytorch_multiclass
+      - ds.flower.model.pytorch_multilabel
+      - ds.flower.model.pytorch_poisson
+      - ds.flower.model.pytorch_tcn
+      - ds.flower.model.xgboost
 
   - title: "Specification: Strategies"
     desc: "Federated aggregation strategy specifications."
@@ -121,30 +92,21 @@ reference:
       - ds.flower.strategy.fedavg
       - ds.flower.strategy.fedprox
 
-  - title: "Specification: Tasks & Privacy"
-    desc: "Task types and privacy enhancement specifications."
+  - title: "Specification: Tasks"
+    desc: "Task types. Differential privacy policy is node-owned, not a client specification."
     contents:
       - ds.flower.task.classification
       - ds.flower.task.regression
       - ds.flower.task.segmentation
       - ds.flower.task.survival
-      - ds.flower.privacy.sandbox_open
-      - ds.flower.privacy.trusted_internal
-      - ds.flower.privacy.consortium_internal
-      - ds.flower.privacy.clinical_default
-      - ds.flower.privacy.clinical_hardened
-      - ds.flower.privacy.clinical_update_noise
-      - ds.flower.privacy.high_sensitivity_dp
-      - ds.flower.privacy.evaluation_only
-      - ds.flower.privacy.budget
 
   - title: "Specification: Recipe"
-    desc: "Combine task, model, strategy, and privacy into a recipe."
+    desc: "Combine task, model, and strategy into a recipe; privacy remains node-owned."
     contents:
       - ds.flower.recipe
 
-  - title: "Results & Metrics"
-    desc: "Collect, compare, and visualize training results."
+  - title: "Results & Compatibility Diagnostics"
+    desc: "Work with model results. Hardened nodes return empty node metrics and logs."
     contents:
       - ds.flower.metrics
       - ds.flower.compare
@@ -159,7 +121,6 @@ reference:
       - print.dsflower_model
       - print.dsflower_strategy
       - print.dsflower_task
-      - print.dsflower_privacy
       - print.dsflower_recipe
       - print.dsflower_result
       - as.data.frame.dsflower_result

@@ -17,7 +17,7 @@ ds.flower.model.pytorch_multiclass(
 
 \item{n_classes}{Integer; number of output classes.}
 
-\item{learning_rate}{Numeric; learning rate.}
+\item{learning_rate}{Numeric in \code{(0, 10]}; learning rate.}
 
 \item{batch_size}{Integer; batch size.}
 

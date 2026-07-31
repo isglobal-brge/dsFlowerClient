@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="DataSHIELD Client for Flower Federated Learning">
-<meta name="description" content="Client-side DataSHIELD package for orchestrating Flower federated learning experiments. Provides composable specification objects (task, model, strategy, privacy) that combine into recipes, manages SuperLink lifecycle via processx, generates Flower App bundles from templates, and controls runs via the flwr CLI. Includes result objects with metrics, plotting, and comparison.">
-<meta property="og:description" content="Client-side DataSHIELD package for orchestrating Flower federated learning experiments. Provides composable specification objects (task, model, strategy, privacy) that combine into recipes, manages SuperLink lifecycle via processx, generates Flower App bundles from templates, and controls runs via the flwr CLI. Includes result objects with metrics, plotting, and comparison.">
+<meta name="description" content="Client-side DataSHIELD package for orchestrating Flower federated learning under privacy policy enforced by each data node. Builds declarative model specifications, verifies the node-installed runner, manages the SuperLink and run lifecycle, and supports data-independent public feature bounds. Privacy budgets are not analyst-configurable; arbitrary hook code is executed only behind the node's fail-closed sandbox and egress policy.">
+<meta property="og:description" content="Client-side DataSHIELD package for orchestrating Flower federated learning under privacy policy enforced by each data node. Builds declarative model specifications, verifies the node-installed runner, manages the SuperLink and run lifecycle, and supports data-independent public feature bounds. Privacy budgets are not analyst-configurable; arbitrary hook code is executed only behind the node's fail-closed sandbox and egress policy.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,15 +35,7 @@
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="articles/api-quickstart.html">API Quickstart</a></li>
-    <li><a class="dropdown-item" href="articles/method-registration-live-federation.html">Method Registration + Live Federation</a></li>
-    <li><a class="dropdown-item" href="articles/demo-overview.html">Validation Evidence Overview</a></li>
-    <li><a class="dropdown-item" href="articles/clinical-privacy-benchmarks.html">Clinical Privacy Benchmarks</a></li>
-    <li><a class="dropdown-item" href="articles/clinical-method-family-benchmarks.html">Clinical Method-Family Benchmarks</a></li>
-    <li><a class="dropdown-item" href="articles/pathmnist-direct-image-resnet.html">PathMNIST Direct Image ResNet Benchmark</a></li>
-    <li><a class="dropdown-item" href="articles/lung1-direct-image-dsimaging-resnet.html">LUNG1 Direct dsImaging ResNet Evidence</a></li>
-    <li><a class="dropdown-item" href="articles/lung1-radiomics-to-flower.html">LUNG1 dsImaging Radiomics Evidence</a></li>
-    <li><a class="dropdown-item" href="articles/validation-overview.html">Method Validation Overview</a></li>
-    <li><a class="dropdown-item" href="articles/validation-vision-overview.html">Vision Validation Overview</a></li>
+    <li><a class="dropdown-item" href="articles/method-registration-live-federation.html">Server Method Registration</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
@@ -62,24 +54,25 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="dsflowerclient">dsFlowerClient<a class="anchor" aria-label="anchor" href="#dsflowerclient"></a>
 </h1></div>
-<p><code>dsFlowerClient</code> is the researcher-side R package for running <a href="https://flower.ai/" class="external-link">Flower</a> federated learning through <a href="https://www.datashield.org/" class="external-link">DataSHIELD</a>, with <strong>always-on, server-enforced differential privacy</strong>. It pairs with the node-side <a href="https://github.com/isglobal-brge/dsFlower" class="external-link"><code>dsFlower</code></a> package installed on each Opal/Rock server.</p>
-<p>The client starts a local Flower SuperLink, asks each DataSHIELD server to stage data and start a Flower SuperNode, runs the model, and returns only the privatised outputs. <strong>Raw rows, images and staging files never leave the data-owning servers, and the analyst never sets the privacy level — each data node decides and enforces it.</strong></p>
+<p><code>dsFlowerClient</code> is the researcher-side R package for coordinating <a href="https://flower.ai/" class="external-link">Flower</a> federated learning through <a href="https://www.datashield.org/" class="external-link">DataSHIELD</a>. It pairs with the node-side <a href="https://github.com/isglobal-brge/dsFlower" class="external-link"><code>dsFlower</code></a> package installed by each data custodian.</p>
+<p>The client starts a Flower SuperLink, submits a declarative request, checks that every node has the byte-identical canonical runner, and coordinates staging, training and cleanup. It cannot choose epsilon, delta, clipping, the accountant domain or whether arbitrary code is allowed. Those decisions belong to each data node.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"isglobal-brge/dsFlowerClient"</span><span class="op">)</span></span></code></pre></div>
-<p>The client needs the Flower CLI:</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip install <span class="st">"flwr&gt;=1.13.0"</span></span></code></pre></div>
-<p>Each Opal/Rock server must have <code>dsFlower</code> installed.</p>
+<p>The workstation also needs the Flower CLI:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode sh"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="ex">python</span> <span class="at">-m</span> pip install <span class="st">"flwr[app]&gt;=1.31.0,&lt;1.32.0"</span></span></code></pre></div>
+<p>If <code>uv</code> is absent, package provisioning refuses mutable <code>latest</code>/<code>curl|sh</code> bootstrap. Either install <code>uv</code> through the operating system, or set an audited release tag and platform-archive digest in <code>DSFLOWER_UV_VERSION</code> and <code>DSFLOWER_UV_SHA256</code>. For reproducible Python environments, set <code>DSFLOWER_CLIENT_PYTHON_LOCK</code> to a complete requirements file containing hashes for all transitive artifacts; installs then use <code>uv pip install --require-hashes</code>. Set <code>DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK=true</code> to reject a missing lock instead of falling back to ranges. Also set <code>DSFLOWER_PYTHON_VERSION</code> to an exact <code>major.minor.patch</code>; the default <code>3.11</code> permits compatible patch updates. Without an exact interpreter and lock, the compatibility ranges remain intentionally flexible and the resolved environment is not reproducible.</p>
+<p>Each Opal/Rock server must have a compatible <code>dsFlower</code> installation. Runner ABI and recursive SHA-256 mismatches fail before a run is submitted.</p>
 </div>
 <div class="section level2">
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
-<p>One call does the whole lifecycle (capability checks → server-side staging → run → cleanup):</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span>; <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSI/" class="external-link">DSI</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/datashield/DSOpal/" class="external-link">DSOpal</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">builder</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/newDSLoginBuilder.html" class="external-link">newDSLoginBuilder</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="va">builder</span><span class="op">$</span><span class="fu">append</span><span class="op">(</span>server <span class="op">=</span> <span class="st">"site1"</span>, url <span class="op">=</span> <span class="st">"https://opal1.example.org"</span>,</span>
@@ -90,102 +83,97 @@
 <span>               table <span class="op">=</span> <span class="st">"PROJECT.training_data"</span>, driver <span class="op">=</span> <span class="st">"OpalDriver"</span><span class="op">)</span></span>
 <span><span class="va">conns</span> <span class="op">&lt;-</span> <span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.login.html" class="external-link">datashield.login</a></span><span class="op">(</span><span class="va">builder</span><span class="op">$</span><span class="fu">build</span><span class="op">(</span><span class="op">)</span>, assign <span class="op">=</span> <span class="cn">TRUE</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span>, target <span class="op">=</span> <span class="st">"outcome"</span>, model <span class="op">=</span> <span class="st">"pytorch_logreg"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="reference/ds.flower.metrics.html">ds.flower.metrics</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span>
-<span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
-<p>That is the whole minimal call: <code>conns</code>, the data <code>symbol</code>, the <code>target</code>, and a <code>model</code>. Everything else has sensible defaults — <code>features</code> defaults to every column except the target, <code>strategy = "fedavg"</code>, <code>rounds = 5</code>, and <strong>differential privacy is always applied by the node</strong>. <code><a href="reference/ds.flower.fit.html">ds.flower.train()</a></code> is an alias of <code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code>.</p>
-</div>
-<div class="section level2">
-<h2 id="privacy-is-server-authoritative-you-dont-set-it">Privacy is server-authoritative (you don’t set it)<a class="anchor" aria-label="anchor" href="#privacy-is-server-authoritative-you-dont-set-it"></a>
-</h2>
-<p>Differential privacy is always on and is decided <strong>entirely by each data node</strong>: the node sets the (epsilon, delta, clipping) from its own DataSHIELD options (with hard ceilings), chooses the DP mechanism from what you submit, and debits a Rényi-DP budget ledger. The client has no privacy knob — it cannot weaken DP, nor even request a different value. You can only <strong>read</strong> the node’s real remaining budget:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/ds.flower.privacy.budget.html">ds.flower.privacy.budget</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="models">Models<a class="anchor" aria-label="anchor" href="#models"></a>
-</h2>
-<p>20 model families, all PyTorch or XGBoost (sent to the node as declarative <strong>specs</strong>, never code):</p>
-<table class="table">
-<colgroup>
-<col width="50%">
-<col width="50%">
-</colgroup>
-<thead><tr>
-<th>Family</th>
-<th>Models</th>
-</tr></thead>
-<tbody>
-<tr>
-<td>Linear / GLM</td>
-<td>
-<code>pytorch_logreg</code>, <code>pytorch_linear_regression</code>, <code>pytorch_multiclass</code>, <code>pytorch_multilabel</code>, <code>pytorch_poisson</code>, <code>pytorch_negbin</code>, <code>pytorch_gamma</code>, <code>pytorch_ordinal</code>
-</td>
-</tr>
-<tr>
-<td>Penalised linear / SVM</td>
-<td>
-<code>pytorch_ridge</code>, <code>pytorch_lasso</code>, <code>pytorch_elasticnet</code>, <code>pytorch_svm</code>
-</td>
-</tr>
-<tr>
-<td>Deep nets</td>
-<td>
-<code>pytorch_mlp</code>, <code>pytorch_cnn</code>, <code>pytorch_tcn</code>, <code>pytorch_resnet</code>, <code>pytorch_transformer</code>, <code>pytorch_lstm</code>, <code>pytorch_gru</code>
-</td>
-</tr>
-<tr>
-<td>Gradient boosting</td>
-<td>
-<code>xgboost</code> (DP-GBDT)</td>
-</tr>
-</tbody>
-</table>
-<p>Set hyperparameters via <code>model_params</code>:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span>, target <span class="op">=</span> <span class="st">"y"</span>,</span>
-<span>                     model <span class="op">=</span> <span class="st">"pytorch_mlp"</span>, model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>                     rounds <span class="op">=</span> <span class="fl">10L</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level2">
-<h2 id="how-the-privacy-guarantee-is-enforced-node-side">How the privacy guarantee is enforced (node side)<a class="anchor" aria-label="anchor" href="#how-the-privacy-guarantee-is-enforced-node-side"></a>
-</h2>
-<p>The node routes every submission to the tightest sound DP mechanism <strong>by construction</strong>:</p>
-<ul>
-<li>
-<strong>Declarative neural specs</strong> → Opacus <strong>DP-SGD</strong> (per-sample clip + noise). The declarative graph language covers MLP/CNN/TCN/ResNet/DenseNet/Inception/Transformer/U-Net/LSTM/GRU with no researcher code on the node.</li>
-<li>
-<strong>XGBoost spec</strong> → <strong>DP-GBDT</strong>.</li>
-<li>
-<strong>Arbitrary uploaded code</strong> (<code>ds.flower.tier2.run</code>) → an <strong>output-perturbation floor</strong> run <strong>out-of-process</strong>: the untrusted code executes in an isolated interpreter, and the trusted node applies all DP itself, so the upload can never disable the noise. Budget is reserved before any result is released.</li>
-</ul>
-<p>See the <a href="https://github.com/isglobal-brge/dsFlower/blob/main/ARCHITECTURE.md" class="external-link"><code>dsFlower</code> architecture notes</a> for the full trust model.</p>
-</div>
-<div class="section level2">
-<h2 id="accuracy-under-dp-automatic-feature-standardization">Accuracy under DP (automatic feature standardization)<a class="anchor" aria-label="anchor" href="#accuracy-under-dp-automatic-feature-standardization"></a>
-</h2>
-<p>DP-SGD clips each per-sample gradient to a fixed norm, so on <strong>raw</strong> features the large-scale columns dominate the gradient and small informative ones are suppressed — the model collapses to the majority baseline <em>even with no noise</em>. The fix is feature standardization, and <code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code> does it for you, soundly across sites:</p>
-<ul>
-<li>The client asks each node for per-feature <code>count / sum / sumsq</code> (a standard disclosure-controlled DataSHIELD aggregate, like <code>ds.mean</code>/<code>ds.var</code> — it reveals no individual row and is <strong>separate from</strong> the DP-SGD <code>(epsilon, delta)</code> budget, which it does not weaken), pools them into a <strong>global</strong> mean/SD, and bakes those into the model.</li>
-<li>Neural models train on standardized features; the trees model uses the same stats to place its random-split thresholds in the real data range. Prediction re-applies the exact same transform, so <code><a href="reference/ds.flower.predict.html">ds.flower.predict()</a></code> never desyncs.</li>
-</ul>
-<p>This is automatic for the <code>symbol=</code> data path (a warning is emitted for <code>data=</code>/<code>resource=</code> runs, which can’t compute global stats and fall back to raw features). On Breast-Cancer-Wisconsin across 3 sites at <code>epsilon = 3</code> this takes logistic regression from ~0.63 (majority) to ~0.93 and DP-GBDT to ~0.88 — i.e. the DP cost is small once the pipeline is correct. Defaults are tuned for standardized data (classification <code>learning_rate = 0.1</code>).</p>
-</div>
-<div class="section level2">
-<h2 id="lower-level-api-power-users">Lower-level API (power users)<a class="anchor" aria-label="anchor" href="#lower-level-api-power-users"></a>
-</h2>
-<p><code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code> is enough for most analyses. For explicit control, build a recipe:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">flower</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.connect.html">ds.flower.connect</a></span><span class="op">(</span><span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span><span class="op">)</span></span>
-<span><span class="va">recipe</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.recipe.html">ds.flower.recipe</a></span><span class="op">(</span></span>
-<span>  model    <span class="op">=</span> <span class="fu"><a href="reference/ds.flower.model.html">ds.flower.model</a></span><span class="op">(</span><span class="st">"pytorch_mlp"</span>, hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  strategy <span class="op">=</span> <span class="fu"><a href="reference/ds.flower.strategy.html">ds.flower.strategy</a></span><span class="op">(</span><span class="st">"fedprox"</span>, proximal_mu <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>,</span>
-<span>  target   <span class="op">=</span> <span class="st">"outcome"</span>,</span>
-<span>  num_rounds <span class="op">=</span> <span class="fl">10L</span></span>
+<span><span class="co"># Bounds must be public/domain-knowledge constants in the same order as features.</span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>,</span>
+<span>  symbol <span class="op">=</span> <span class="st">"D"</span>,</span>
+<span>  target <span class="op">=</span> <span class="st">"outcome"</span>,</span>
+<span>  features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"biomarker"</span><span class="op">)</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"pytorch_logreg"</span>,</span>
+<span>  feature_bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">18</span>, <span class="fl">0</span><span class="op">)</span>, upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">250</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  target_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"control"</span>, <span class="st">"case"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu">ds.flower.run</span><span class="op">(</span><span class="va">flower</span>, <span class="va">recipe</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/ds.flower.disconnect.html">ds.flower.disconnect</a></span><span class="op">(</span><span class="va">flower</span><span class="op">)</span></span></code></pre></div>
+<span></span>
+<span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
+<p><code><a href="reference/ds.flower.fit.html">ds.flower.train()</a></code> is an alias of <code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code>. <code>features</code> can be omitted for an assigned tabular <code>symbol</code>, in which case only column names are queried and the target is excluded. Feature values, exact feature statistics, node logs and node metrics are never requested by this workflow.</p>
+</div>
+<div class="section level2">
+<h2 id="privacy-is-server-authoritative">Privacy is server-authoritative<a class="anchor" aria-label="anchor" href="#privacy-is-server-authoritative"></a>
+</h2>
+<p>Each node uses a persistent lifetime accountant. For new run <code>n</code>, it allocates a geometrically decreasing fraction of its administrator-set total budget:</p>
+<pre class="text"><code>w_n       = s (1 - rho) rho^(n - 1),  s = 1 - 10^-12
+epsilon_n = epsilon_total w_n
+delta_n   = delta_total w_n</code></pre>
+<p>This bounds every finite prefix and the infinite transcript by the node’s <code>(epsilon_total, delta_total)</code>. Exact Flower-message retries never trigger a second private release: the cached response is reused when available; otherwise the incoming public model is returned unchanged. Distinct releases receive distinct, secret-keyed random streams.</p>
+<p>There is no lifetime query-count rejection. Finite total privacy with infinitely many equally informative answers is mathematically impossible, however, so the allocations tend to zero. When a per-message allocation becomes numerically too small, the node safely returns the incoming public model unchanged. The client cannot introduce a positive epsilon floor or reset the accountant by renaming or subsetting a dataset.</p>
+<p>Budgets are per node. If the same person appears at multiple observed nodes, their epsilons and deltas compose across those nodes; only disjoint node populations receive the parallel-composition bound. Cross-site overlap needs a shared federation-level person accountant when one global guarantee is required.</p>
+<p>The formal adjacency is bounded/replace-one with a fixed number of privacy units: neighbouring datasets replace one row, or all records belonging to one configured patient. This is not an unbounded add/remove membership guarantee for a changing unit count.</p>
+<p>Noise is deterministic only within one release identity. The node derives domain-separated ChaCha20 streams from a dedicated 256-bit secret using HMAC-SHA256. This prevents averaging exact retries while avoiding the unsafe reuse of one fixed noise vector across related queries. The secret is not a client seed, R RNG state or <code>datashield.seed</code>.</p>
+<p>The server’s <code>flowerPrivacyBudgetDS()</code> method reports the public accountant policy. Allocation count/status is returned only if the custodian enables <code>dsflower.expose_privacy_status</code>; there is intentionally no analyst privacy configuration API.</p>
+<p>The Flower Fleet API is carried inside the TLS DataSHIELD channel by a capability-bound DSI tunnel. Link startup is all-or-nothing: if one node does not publish a live, ready loopback forwarder, the client tears down every attempted site and aborts. Nodes negotiate bounded exchange chunks; the relay keeps a bounded buffer per site so TCP backpressure replaces unbounded R-memory growth.</p>
+</div>
+<div class="section level2">
+<h2 id="supported-computation-contracts">Supported computation contracts<a class="anchor" aria-label="anchor" href="#supported-computation-contracts"></a>
+</h2>
+<div class="section level3">
+<h3 id="declarative-models-recommended">Declarative models (recommended)<a class="anchor" aria-label="anchor" href="#declarative-models-recommended"></a>
+</h3>
+<p>The client emits data-only specifications; the node-installed runner constructs and trains the model:</p>
+<ul>
+<li>neural and vision specifications use Opacus DP-SGD with per-example or server-selected per-patient clipping and noise;</li>
+<li>tree specifications use DP-GBDT with data-independent structure, bounded gradients/Hessians and noisy leaf histograms.</li>
+</ul>
+<p>This is the path that reaches <code>nn.Module</code>-level granularity because the trusted runner owns the training loop and sees per-sample gradients. The client never sends an analyst-controlled training loop for declarative models.</p>
+<p>Available registered model names can be inspected with <code><a href="reference/ds.flower.models.html">ds.flower.models()</a></code>. Hyperparameters are supplied through <code>model_params</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span>, target <span class="op">=</span> <span class="st">"y"</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>, <span class="st">"x2"</span><span class="op">)</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"pytorch_mlp"</span>,</span>
+<span>  model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span><span class="op">)</span>, rounds <span class="op">=</span> <span class="fl">10L</span>,</span>
+<span>  feature_bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">100</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Classification strings/factors require an ordered, exhaustive public <code>target_levels</code>; numeric labels already coded in <code>[0, K-1]</code> remain compatible. Regression and count models require public <code>target_bounds = list(lower=..., upper=...)</code>, with <code>lower &gt;= 0</code> for counts and <code>lower &gt; 0</code> for Gamma loss. Nodes never infer label vocabularies or ranges from their cohorts; an unknown label is outside the declared valid-input domain and fails closed.</p>
+<p>Public feature/target bounds and unscaled numeric inputs are limited to magnitude <code>1e6</code>; without bounds, inputs remain unscaled but are coerced and saturated to that domain. Declarative intermediates and parameters use the same finite cap; heads are saturated at <code>30</code> for logits/log-links and <code>1e6</code> for direct MSE regression. Per-sample gradients are totalised before Opacus performs the server-owned L2 clip. Neural and DP-GBDT learning rates must be in <code>(0, 10]</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="hookapps-legacy-name-tier2">HookApps (legacy name: Tier2)<a class="anchor" aria-label="anchor" href="#hookapps-legacy-name-tier2"></a>
+</h3>
+<p><code><a href="reference/ds.flower.hook.run.html">ds.flower.hook.run()</a></code> accepts a Python package exposing only:</p>
+<pre class="text"><code>initial_arrays(config, input_dim) -&gt; numeric arrays
+local_update(global_arrays, X, y, config) -&gt; numeric arrays</code></pre>
+<p>A HookApp is not a general trusted Flower App and cannot generically receive DP-SGD-level protection. The node runs it only when the custodian has enabled HookApps and attested the required Bubblewrap filesystem/network sandbox and constant-time envelope. The result is numerically validated, clipped as one complete update and passed through a conservatively RDP-calibrated Gaussian mechanism; an optional sample-and-aggregate mode uses a fixed, administrator- pinned number of disjoint data-independent blocks.</p>
+<p>If any execution gate is absent, the untrusted package is not run and the node returns the incoming public model unchanged. Archive scanning and hash pinning are integrity defenses, not proofs that arbitrary code is private. <code><a href="reference/ds.flower.hook.run.html">ds.flower.tier2.run()</a></code> is a deprecated compatibility alias. HookApps use the same <code>target_levels</code>/<code>target_bounds</code> contract and must declare <code>task = "classification"</code>, <code>"regression"</code> or <code>"count"</code>.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="public-feature-bounds">Public feature bounds<a class="anchor" aria-label="anchor" href="#public-feature-bounds"></a>
+</h2>
+<p>Exact node-side <code>count</code>, <code>sum</code>, <code>sumsq</code>, means, variances and quantiles are not released for preprocessing. If scale information is useful, pass public bounds:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">feature_bounds</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
+<span>  lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fl">18</span>, biomarker <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fl">100</span>, biomarker <span class="op">=</span> <span class="fl">250</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Bounds must be finite, have magnitude at most <code>1e6</code>, satisfy <code>lower &lt; upper</code> and follow the exact feature order. Training clips each value to its interval and maps it affinely to <code>[-1, 1]</code>; prediction reuses the stored bounds. These constants must come from public domain knowledge or protocol design, not from a query to the protected node. Without bounds, neural inputs remain unscaled after coercion/saturation to <code>[-1e6, 1e6]</code> and DP-GBDT uses a public <code>[0, 1]</code> threshold prior, which can reduce utility when the real scale differs.</p>
+</div>
+<div class="section level2">
+<h2 id="lower-level-api">Lower-level API<a class="anchor" aria-label="anchor" href="#lower-level-api"></a>
+</h2>
+<p><code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code> is the preferred end-to-end API. Power users can call the submission pipeline directly:</p>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.submit.html">ds.flower.submit</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>,</span>
+<span>  model <span class="op">=</span> <span class="fu"><a href="reference/ds.flower.model.html">ds.flower.model</a></span><span class="op">(</span><span class="st">"pytorch_mlp"</span>, hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  symbol <span class="op">=</span> <span class="st">"D"</span>,</span>
+<span>  target <span class="op">=</span> <span class="st">"outcome"</span>,</span>
+<span>  features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"biomarker"</span><span class="op">)</span>,</span>
+<span>  num_rounds <span class="op">=</span> <span class="fl">10L</span>,</span>
+<span>  strategy <span class="op">=</span> <span class="st">"fedadam"</span>,</span>
+<span>  feature_bounds <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">18</span>, <span class="fl">0</span><span class="op">)</span>, upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">250</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  target_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"control"</span>, <span class="st">"case"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>The lower-level API does not weaken the node policy. Node-returned <code><a href="reference/ds.flower.metrics.html">ds.flower.metrics()</a></code> and <code><a href="reference/ds.flower.log.html">ds.flower.log()</a></code> calls remain for protocol compatibility but return empty results on hardened nodes. Local SuperLink output and the intended DP global-model artifact are separate from node log/metric egress.</p>
+<p>See the <a href="https://github.com/isglobal-brge/dsFlower/blob/main/ARCHITECTURE.md" class="external-link"><code>dsFlower</code> architecture specification</a> for the complete trust boundary, deployment requirements and residual limits.</p>
 </div>
 <div class="section level2">
 <h2 id="authors">Authors<a class="anchor" aria-label="anchor" href="#authors"></a>

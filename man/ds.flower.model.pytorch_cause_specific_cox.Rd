@@ -14,7 +14,7 @@ ds.flower.model.pytorch_cause_specific_cox(
 \arguments{
 \item{n_causes}{Integer; number of competing event types.}
 
-\item{learning_rate}{Numeric; learning rate.}
+\item{learning_rate}{Numeric in \code{(0, 10]}; learning rate.}
 
 \item{batch_size}{Integer; batch size.}
 

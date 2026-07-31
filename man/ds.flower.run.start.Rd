@@ -10,9 +10,11 @@ ds.flower.run.start(
   app_dir = NULL,
   run_config = list(),
   output_dir = NULL,
+  output_name = NULL,
   results_dir = NULL,
   symbol = "flower",
-  verbose = TRUE
+  verbose = FALSE,
+  silent = FALSE
 )
 }
 \arguments{
@@ -29,6 +31,8 @@ from the server. If NULL, uses the connections stored during
 \item{output_dir}{Character; persistent directory for model output.
 Defaults to \code{"dsflower_output/<timestamp>"} in the working directory.}
 
+\item{output_name}{Optional name for the persisted model artifact.}
+
 \item{results_dir}{Character; temporary directory where the Flower ServerApp
 writes model artefacts. Usually generated automatically.}
 
@@ -36,6 +40,8 @@ writes model artefacts. Usually generated automatically.}
 that initialise the default handle can leave this as \code{"flower"}.}
 
 \item{verbose}{Logical; print flwr output (default TRUE).}
+
+\item{silent}{Logical; suppress progress feedback.}
 }
 \value{
 A \code{dsflower_run} object with weights, history, and predictions.

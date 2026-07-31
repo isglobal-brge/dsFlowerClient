@@ -11,7 +11,7 @@ ds.flower.model.pytorch_lognormal_aft(
 )
 }
 \arguments{
-\item{learning_rate}{Numeric; learning rate.}
+\item{learning_rate}{Numeric in \code{(0, 10]}; learning rate.}
 
 \item{batch_size}{Integer; batch size.}
 

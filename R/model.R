@@ -4,7 +4,7 @@
 #' Create a PyTorch MLP model spec
 #'
 #' @param hidden_layers Integer vector; hidden layer sizes.
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
@@ -39,7 +39,7 @@ ds.flower.model.pytorch_mlp <- function(hidden_layers = c(64L, 32L),
 #'
 #' DP-SGD capable linear classifier for binary classification.
 #'
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
@@ -65,7 +65,7 @@ ds.flower.model.pytorch_logreg <- function(learning_rate = 0.1,
 #'
 #' Continuous outcome prediction (MSE loss).
 #'
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
@@ -93,10 +93,10 @@ ds.flower.model.pytorch_linear_regression <- function(learning_rate = 0.01,
 #'
 #' @note NOT runnable on the Tier-1 harness in this release. The Cox partial
 #'   likelihood couples samples through the risk set, so it has no per-sample
-#'   gradient and is incompatible with DP-SGD; rigorous DP needs output
-#'   perturbation or Tier-2 (not yet shipped). For DP survival, log-normal AFT is
-#'   a per-sample-decomposable alternative.
-#' @param learning_rate Numeric; learning rate.
+#'   gradient and is incompatible with DP-SGD. A HookApp does not automatically
+#'   restore per-sample granularity for an arbitrary coupled loss. For DP
+#'   survival, log-normal AFT is a per-sample-decomposable declarative alternative.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
@@ -125,7 +125,7 @@ ds.flower.model.pytorch_coxph <- function(learning_rate = 0.01,
 #'
 #' @param hidden_layers Integer vector; hidden layer sizes (empty for linear).
 #' @param n_classes Integer; number of output classes.
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
@@ -165,7 +165,7 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
 #' Standard image classification backbone.
 #'
 #' @param n_classes Integer; number of output classes.
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @param image_size Integer; square resize dimension before training.
@@ -202,7 +202,7 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
 #' Image classification backbone with densely connected convolutional blocks.
 #'
 #' @param n_classes Integer; number of output classes.
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @param image_size Integer; square resize dimension before training.
@@ -240,10 +240,11 @@ ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
 #'
 #' @note NOT runnable on the Tier-1 harness in this release. The vision harness
 #'   does DP linear-probing on frozen-backbone features for CLASSIFICATION;
-#'   dense per-pixel segmentation is rejected at app-build time. Segmentation DP
-#'   is future work / Tier-2.
+#'   dense per-pixel segmentation is rejected at app-build time. A custom HookApp
+#'   provides only complete-update output perturbation when its execution gates
+#'   hold, not declarative per-pixel/per-sample DP-SGD granularity.
 #' @param n_classes Integer; number of segmentation classes.
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @param image_size Integer; square resize dimension before training.
@@ -280,7 +281,7 @@ ds.flower.model.pytorch_unet2d <- function(n_classes = 1L,
 #' @param n_channels Integer; number of input channels.
 #' @param kernel_size Integer; convolution kernel size.
 #' @param n_layers Integer; number of TCN blocks.
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
@@ -314,7 +315,7 @@ ds.flower.model.pytorch_tcn <- function(n_channels = 1L,
 #'
 #' @param hidden_size Integer; LSTM hidden state size.
 #' @param num_layers Integer; number of LSTM layers.
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs per round.
 #' @return A \code{dsflower_model} S3 object.
@@ -342,18 +343,22 @@ ds.flower.model.pytorch_lstm <- function(hidden_size = 64L,
 
 #' Create an XGBoost model spec
 #'
-#' Federated XGBoost using a histogram aggregation protocol.
-#' In trusted demo profiles the histogram protocol can run without Secure
-#' Aggregation so that the method path is testable end-to-end. In consortium
-#' and clinical profiles, Secure Aggregation is still enforced by the selected
-#' server trust profile.
+#' Enforced node-side central-DP GBDT. The trusted runner uses data-independent
+#' random splits, bounded gradient/Hessian contributions and a full Gaussian
+#' mechanism at every node before a booster leaves that node. The current live
+#' track supports the binary-logistic objective and does not use Secure
+#' Aggregation.
 #'
 #' @param n_trees Integer; number of boosting rounds.
 #' @param max_depth Integer; maximum tree depth.
-#' @param eta Numeric; learning rate (shrinkage).
+#' @param eta Numeric in \code{(0, 10]}; learning rate (shrinkage).
 #' @param reg_lambda Numeric; L2 regularization term.
 #' @param n_bins Integer; number of histogram bins.
 #' @param objective Character; XGBoost objective function.
+#' @param num_class Integer compatibility field; the live DP-GBDT track is binary.
+#' @param min_child_weight Numeric compatibility field retained for older callers.
+#' @param fixed_bin_range Numeric compatibility field retained for older callers.
+#' @param batch_multiclass Logical compatibility field; ignored by the live binary track.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.xgboost <- function(n_trees = 50L, max_depth = 3L,
@@ -378,9 +383,8 @@ ds.flower.model.xgboost <- function(n_trees = 50L, max_depth = 3L,
       num_class  = as.integer(num_class),
       min_child_weight = min_child_weight,
       "fixed-bin-range" = fixed_bin_range,
-      # Opt-in: batch all K per-class stumps into one SecAgg round (~Kx fewer
-      # round-trips). Validated in-process; pending federated SecAgg+ testing,
-      # so it defaults off.
+      # Retained for source compatibility with the retired multiclass/SecAgg
+      # prototype. The current binary DP-GBDT generator ignores this field.
       batch_multiclass = tolower(as.character(isTRUE(batch_multiclass)))
     )
   )
@@ -394,7 +398,7 @@ ds.flower.model.xgboost <- function(n_trees = 50L, max_depth = 3L,
 #' Uses Poisson NLL loss with log link.
 #'
 #' @param hidden_layers Character; comma-separated hidden layer sizes (empty = linear).
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs.
 #' @return A \code{dsflower_model} S3 object.
@@ -423,7 +427,7 @@ ds.flower.model.pytorch_poisson <- function(hidden_layers = "",
 #'
 #' @param n_labels Integer; number of label columns.
 #' @param hidden_layers Character; comma-separated hidden layer sizes.
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs.
 #' @return A \code{dsflower_model} S3 object.
@@ -456,7 +460,7 @@ ds.flower.model.pytorch_multilabel <- function(n_labels = 2L,
 #' NOTE: This is specifically log-normal AFT, not the full AFT family
 #' (Weibull, log-logistic, etc.).
 #'
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs.
 #' @return A \code{dsflower_model} S3 object.
@@ -485,7 +489,7 @@ ds.flower.model.pytorch_lognormal_aft <- function(learning_rate = 0.01,
 #' sub-distribution hazards. Each cause has its own Cox PH model.
 #'
 #' @param n_causes Integer; number of competing event types.
-#' @param learning_rate Numeric; learning rate.
+#' @param learning_rate Numeric in \code{(0, 10]}; learning rate.
 #' @param batch_size Integer; batch size.
 #' @param local_epochs Integer; local training epochs.
 #' @return A \code{dsflower_model} S3 object.

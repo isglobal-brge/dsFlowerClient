@@ -6,7 +6,7 @@ test_that("pytorch_mlp creates correct model", {
   expect_equal(m$name, "pytorch_mlp")
   expect_equal(m$framework, "pytorch")
   expect_equal(m$params$hidden_layers, "64,32")
-  expect_equal(m$params$learning_rate, 0.01)
+  expect_equal(m$params$learning_rate, 0.1)
   expect_equal(m$params$batch_size, 32L)
   expect_equal(m$params$local_epochs, 1L)
 })
@@ -22,12 +22,27 @@ test_that("pytorch_mlp accepts overrides", {
   expect_equal(m$params$batch_size, 64L)
 })
 
+test_that("legacy comma-separated MLP widths emit valid declarative layers", {
+  sub <- dsFlowerClient:::.emit_submission(
+    ds.flower.model.pytorch_mlp(hidden_layers = c(128L, 64L)))
+  widths <- vapply(
+    Filter(function(layer) identical(layer$op, "linear"), sub$spec$layers),
+    function(layer) as.character(layer$out), character(1))
+
+  expect_identical(widths, c("128", "64", "@out"))
+  expect_error(
+    dsFlowerClient:::.emit_submission(
+      ds.flower.model.pytorch_mlp(hidden_layers = "64,broken")),
+    "positive integer"
+  )
+})
+
 test_that("pytorch_logreg creates correct model", {
   m <- ds.flower.model.pytorch_logreg()
   expect_s3_class(m, "dsflower_model")
   expect_equal(m$name, "pytorch_logreg")
   expect_equal(m$framework, "pytorch")
-  expect_equal(m$params$learning_rate, 0.01)
+  expect_equal(m$params$learning_rate, 0.1)
   expect_equal(m$params$batch_size, 32L)
   expect_equal(m$params$local_epochs, 1L)
 })
@@ -70,9 +85,9 @@ test_that("xgboost creates correct model", {
   expect_s3_class(m, "dsflower_model")
   expect_equal(m$name, "xgboost")
   expect_equal(m$framework, "xgboost")
-  expect_equal(m$params$n_trees, 10L)
+  expect_equal(m$params$n_trees, 50L)
   expect_equal(m$params$max_depth, 3L)
-  expect_equal(m$params$eta, 0.3)
+  expect_equal(m$params$learning_rate, 0.3)
   expect_equal(m$params$reg_lambda, 1.0)
   expect_equal(m$params$n_bins, 64L)
   expect_equal(m$params$objective, "binary:logistic")

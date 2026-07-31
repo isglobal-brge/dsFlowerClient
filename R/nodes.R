@@ -16,9 +16,8 @@ ds.flower.labels <- function(flower) {
   if (!inherits(flower, "dsflower_connection"))
     stop("'flower' must be a dsflower_connection from ds.flower.connect().",
          call. = FALSE)
-  img_sym <- paste0(flower$symbol, "_img")
   DSI::datashield.aggregate(flower$conns,
-    expr = call("imagingLabelsDS", img_sym))
+    expr = call("flowerImageLabelsDS", flower$symbol))
 }
 
 #' Initialize Flower handles on all servers
@@ -129,8 +128,10 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
                                      run_config = list(),
                                      template_name = NULL,
                                      label_set = NULL) {
-  # DP (epsilon/delta/clipping + mechanism) is set + enforced ENTIRELY by the node
-  # at prepare (.addDpConfigToRunConfig); the client never injects privacy params.
+  # DP policy/mechanism pins and the next lifetime epsilon/delta allocation are
+  # set entirely by the node at prepare, before private staging. Ensure later
+  # confirms that same reservation idempotently. The client never injects
+  # privacy parameters.
 
   if (!is.null(template_name)) {
     run_config[["template_name"]] <- template_name
@@ -182,6 +183,7 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 #'   }
 #' @param template_name Optional Flower template name passed to server-side
 #'   SuperNode bootstrap.
+#' @param torch_backend Character or NULL; requested node-side torch backend.
 #' @return A \code{dsflower_result} with per-site status.
 #' @export
 ds.flower.nodes.ensure <- function(conns, symbol = "flower",
