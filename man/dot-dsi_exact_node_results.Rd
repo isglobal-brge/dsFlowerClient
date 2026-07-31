@@ -7,9 +7,8 @@
 .dsi_exact_node_results(result, conns)
 }
 \description{
-DSI 1.8 represents a per-node aggregate error as a named NULL element. This
-helper preserves that distinction: malformed/misassociated outer results
-return NULL, while a valid named result remains a list even when one of its
-node values is NULL.
+DSI 1.8 may represent a per-node aggregate error as a named NULL element or
+drop that element from the returned list. Both forms, and every malformed or
+misassociated outer result, fail closed here.
 }
 \keyword{internal}

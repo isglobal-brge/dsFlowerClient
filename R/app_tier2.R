@@ -34,11 +34,7 @@
 #' verify + exfiltration scan + install). Returns the upload token + package name.
 #' @keywords internal
 .upload_user_module <- function(conns, user_pkg_dir, chunk_bytes = 262144L) {
-  if (!is.numeric(chunk_bytes) || length(chunk_bytes) != 1L || is.na(chunk_bytes) ||
-      !is.finite(chunk_bytes) ||
-      chunk_bytes <= 0 || chunk_bytes %% 1 != 0) {
-    stop("chunk_bytes must be a single positive integer.", call. = FALSE)
-  }
+  chunk_bytes <- .dsi_raw_chunk_bytes(chunk_bytes)
   user_pkg_dir <- normalizePath(user_pkg_dir, mustWork = TRUE)
   pkg_name <- .validate_user_module_name(basename(user_pkg_dir))
   if (!file.exists(file.path(user_pkg_dir, "__init__.py"))) {

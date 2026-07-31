@@ -330,6 +330,11 @@ test_that("hook upload rejects unsafe chunk sizes and module names", {
       conns = list(), user_pkg_dir = ".", chunk_bytes = 0),
     "positive integer"
   )
+  expect_error(
+    dsFlowerClient:::.upload_user_module(
+      conns = list(), user_pkg_dir = ".", chunk_bytes = 512L * 1024L + 1L),
+    "512 KiB"
+  )
 
   parent <- withr::local_tempdir()
   bad <- file.path(parent, "bad-name")
@@ -351,6 +356,11 @@ test_that("public app upload rejects unsafe chunk sizes before building", {
   expect_error(
     ds.flower.app.upload(list(), ".", chunk_bytes = 0),
     "positive integer"
+  )
+  expect_error(
+    ds.flower.app.upload(
+      list(), ".", chunk_bytes = 512L * 1024L + 1L),
+    "512 KiB"
   )
 })
 
@@ -418,7 +428,7 @@ test_that("app archive streaming rejects a node offset mismatch", {
   )
 })
 
-test_that("a NULL node result retries the exact same app chunk", {
+test_that("a DSI-dropped node result retries the exact same app chunk", {
   archive <- withr::local_tempfile(fileext = ".fab")
   payload <- as.raw(1:16)
   writeBin(payload, archive)
@@ -438,7 +448,7 @@ test_that("a NULL node result retries the exact same app chunk", {
         bytes = length(chunk),
         sha256 = digest::digest(chunk, algo = "sha256", serialize = FALSE))
       if (length(calls) == 1L) {
-        return(list(site1 = NULL, site2 = ack))
+        return(list(site2 = ack))
       }
       list(site1 = ack, site2 = ack)
     },

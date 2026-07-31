@@ -38,6 +38,23 @@ test_that(".flower_runtime_status detects ServerApp failures masked by CLI statu
   )
 })
 
+test_that(".flower_runtime_status rejects partial federation despite artifacts", {
+  stdout <- paste(
+    "An exception was raised when attempting to load ClientApp",
+    "aggregate_train: Received 1 results and 1 failures",
+    sep = "\n"
+  )
+  expect_equal(
+    dsFlowerClient:::.flower_runtime_status(
+      cli_status = 0L,
+      stdout = stdout,
+      weights = list(coef = 1),
+      history = data.frame(round = 1L, n_failures = 0L)
+    ),
+    1L
+  )
+})
+
 test_that(".flower_runtime_status requires training artifacts for successful runs", {
   expect_equal(
     dsFlowerClient:::.flower_runtime_status(
@@ -56,6 +73,81 @@ test_that(".flower_runtime_status requires training artifacts for successful run
       history = NULL
     ),
     0L
+  )
+})
+
+test_that("run.start never persists a model from a failed federation", {
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(
+    process = list(is_alive = function() TRUE),
+    flwr_home = withr::local_tempdir()
+  )
+  recipe <- ds.flower.recipe(
+    model = ds.flower.model.pytorch_logreg(),
+    num_rounds = 1L,
+    features = "x"
+  )
+  output_root <- withr::local_tempdir()
+
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .ensure_client_framework = function(...) TRUE,
+    .client_flwr_cmd = function() "flwr",
+    .client_venv_env = function(...) character(),
+    .run_flwr_with_artifact_watchdog = function(...) list(
+      status = 0L,
+      stdout = paste(
+        "An exception was raised when attempting to load ClientApp",
+        "aggregate_train: Received 1 results and 1 failures",
+        sep = "\n"
+      ),
+      stderr = ""
+    ),
+    .read_model_weights = function(...) list(coef = 1),
+    .read_training_history = function(...) data.frame(
+      round = 1L, n_failures = 0L
+    ),
+    .package = "dsFlowerClient"
+  )
+
+  expect_error(
+    ds.flower.run.start(
+      recipe,
+      conns = list(site1 = TRUE, site2 = TRUE),
+      app_dir = withr::local_tempdir(),
+      output_dir = output_root,
+      output_name = "partial-model",
+      silent = TRUE
+    ),
+    "Federated training failed"
+  )
+  expect_false(dir.exists(file.path(output_root, "partial-model")))
+})
+
+test_that("run.start rejects stale caller-supplied result artifacts", {
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(
+    process = list(is_alive = function() TRUE),
+    flwr_home = withr::local_tempdir()
+  )
+  results_dir <- withr::local_tempdir()
+  writeLines("stale", file.path(results_dir, "history.json"))
+  recipe <- ds.flower.recipe(model = ds.flower.model.pytorch_logreg())
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .package = "dsFlowerClient"
+  )
+
+  expect_error(
+    ds.flower.run.start(
+      recipe, conns = list(site = TRUE), app_dir = ".",
+      results_dir = results_dir, silent = TRUE
+    ),
+    "must be empty"
   )
 })
 

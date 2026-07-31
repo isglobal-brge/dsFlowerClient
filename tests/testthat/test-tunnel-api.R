@@ -123,12 +123,12 @@ test_that("link-up aborts and rolls back every attempted node on partial startup
       server <- names(conns)
       events <<- c(events, paste(method, server, sep = ":"))
       if (identical(method, "flowerTunnelUpDS")) {
-        expect_identical(call$protocol_abi, 2L)
+        expect_identical(call$protocol_abi, 3L)
         up_ports[[server]] <<- as.integer(call[[3]])
         ok <- identical(server, "site1")
         return(setNames(list(list(
           ok = ok, listen = paste0("127.0.0.1:", call[[3]]),
-          chunk_bytes = 1024^2, protocol_abi = 2L)), server))
+          chunk_bytes = 512L * 1024L, protocol_abi = 3L)), server))
       }
       setNames(list(TRUE), server)
     },
@@ -221,7 +221,7 @@ test_that("a transient DSI exchange preserves initialized relay state", {
   expect_identical(client_env$.tunnel$gen, 0)
 })
 
-test_that("a named NULL retries the identical tunnel chunk and offset", {
+test_that("a DSI-dropped node retries the identical tunnel chunk and offset", {
   client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
   old_tunnel <- client_env$.tunnel
   withr::defer(client_env$.tunnel <- old_tunnel)
@@ -253,7 +253,7 @@ test_that("a named NULL retries the identical tunnel chunk and offset", {
   local_mocked_bindings(
     datashield.aggregate = function(conns, expr) {
       calls[[length(calls) + 1L]] <<- expr
-      if (length(calls) == 1L) return(list(site1 = NULL))
+      if (length(calls) == 1L) return(list())
       list(site1 = list(
         ok = TRUE, node = "site1",
         sz = if (length(calls) == 2L) length(payload) else

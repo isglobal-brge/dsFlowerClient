@@ -166,6 +166,7 @@ test_that("safe aggregate records a named NULL as a node error", {
 
 test_that("DSI results must be associated with the exact requested nodes", {
   conns <- list(site1 = TRUE, site2 = TRUE)
+  expect_null(dsFlowerClient:::.dsi_exact_node_results(list(), conns))
   expect_null(dsFlowerClient:::.dsi_exact_node_results(
     list(site1 = list(ok = TRUE), wrong = list(ok = TRUE)), conns))
   mapped <- dsFlowerClient:::.dsi_exact_node_results(

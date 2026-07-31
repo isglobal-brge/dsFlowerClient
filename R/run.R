@@ -49,8 +49,15 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
 
   # Results directory for model weights and metrics.
   if (is.null(results_dir)) {
-    results_dir <- file.path(tempdir(), "dsflower_results",
-                             format(Sys.time(), "%Y%m%d_%H%M%S"))
+    results_root <- file.path(tempdir(), "dsflower_results")
+    dir.create(results_root, recursive = TRUE, showWarnings = FALSE)
+    results_dir <- tempfile(
+      pattern = paste0(format(Sys.time(), "%Y%m%d_%H%M%S"), "_"),
+      tmpdir = results_root)
+  } else if (dir.exists(results_dir) &&
+             length(list.files(results_dir, all.files = TRUE, no.. = TRUE))) {
+    stop("'results_dir' must be empty; stale Flower artifacts are unsafe.",
+         call. = FALSE)
   }
   dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
@@ -143,6 +150,11 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     history = history,
     expect_artifacts = !isTRUE(recipe$evaluation_only)
   )
+
+  if (runtime_status != 0L) {
+    stop("Federated training failed (status ", runtime_status,
+         "); no model was accepted or saved.", call. = FALSE)
+  }
 
   if (!is.null(weights) || !is.null(history)) {
     n_done <- if (is.data.frame(history) && nrow(history)) nrow(history) else recipe$num_rounds
@@ -520,6 +532,9 @@ ds.flower.run.stop <- function(run_id) {
     paste(c(
       "ServerApp raised an exception",
       "ClientApp raised an exception",
+      "An exception was raised when attempting to load .*ClientApp",
+      paste0("Received[[:space:]]+[0-9]+[[:space:]]+results and[[:space:]]+",
+             "[1-9][0-9]*[[:space:]]+failures"),
       "An unhandled exception occurred",
       "Traceback \\(most recent call last\\)"
     ), collapse = "|"),

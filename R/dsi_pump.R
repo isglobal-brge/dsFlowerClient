@@ -87,7 +87,9 @@ NULL
   if (is.null(st) || !isTRUE(st$active)) return(FALSE)
   conns <- st$conns; hosts <- st$hosts; cid <- st$conn_id; fp <- st$fleet_port
   n <- length(hosts)
-  if (is.null(st$chunk_bytes)) st$chunk_bytes <- rep(1024^2L, n)
+  if (is.null(st$chunk_bytes)) {
+    st$chunk_bytes <- rep(.dsi_max_raw_chunk_bytes, n)
+  }
   if (length(st$chunk_bytes) != n) {
     stop("Invalid tunnel chunk negotiation state.", call. = FALSE)
   }

@@ -57,7 +57,8 @@
 .client_tunnel_chunk_bytes <- function(value) {
   value <- suppressWarnings(as.numeric(value))
   if (length(value) != 1L || is.na(value) || !is.finite(value) ||
-      value != floor(value) || value < 16 * 1024 || value > 8 * 1024^2) {
+      value != floor(value) || value < 16 * 1024 ||
+      value > .dsi_max_raw_chunk_bytes) {
     stop("Node advertised an invalid tunnel chunk size.", call. = FALSE)
   }
   as.integer(value)
@@ -174,7 +175,7 @@ ds.flower.link.up <- function(conns, symbol = "flower",
     expected_listen <- paste0("127.0.0.1:", fwd_ports[[srv]])
     expr <- call(
       "flowerTunnelUpDS", cid, fwd_ports[[srv]], srv,
-      protocol_abi = 2L
+      protocol_abi = 3L
     )
     r <- tryCatch(
       .dsi_retry_exact_aggregate(
@@ -189,7 +190,7 @@ ds.flower.link.up <- function(conns, symbol = "flower",
           isTRUE(value$ok) &&
             identical(as.character(value$listen), expected_listen) &&
             length(ack_abi) == 1L && is.finite(ack_abi) &&
-            ack_abi == floor(ack_abi) && ack_abi == 2 &&
+            ack_abi == floor(ack_abi) && ack_abi == 3 &&
             !inherits(
               try(.client_tunnel_chunk_bytes(value$chunk_bytes), silent = TRUE),
               "try-error")
