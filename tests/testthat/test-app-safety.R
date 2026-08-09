@@ -144,6 +144,16 @@ test_that("public feature bounds are validated in feature order", {
       list(lower = -1e7, upper = 1e7), "a"),
     "1e6"
   )
+  expect_error(
+    dsFlowerClient:::.validate_public_feature_bounds(
+      list(lower = "0", upper = "1"), "a"),
+    "numeric vectors"
+  )
+  expect_error(
+    dsFlowerClient:::.validate_public_feature_bounds(
+      list(lower = FALSE, upper = TRUE), "a"),
+    "numeric vectors"
+  )
 })
 
 test_that("saved public bounds are read back for prediction", {
@@ -165,6 +175,62 @@ test_that("saved public bounds are read back for prediction", {
     auto_unbox = TRUE
   )
   expect_null(dsFlowerClient:::.read_meta_bounds(model_dir))
+})
+
+test_that("saved declarative model contract is read without guessing architecture", {
+  model_dir <- withr::local_tempdir()
+  spec <- list(kind = "sequential", layers = list(
+    list(op = "linear", out = 8L), list(op = "tanh"),
+    list(op = "linear", out = "@out")))
+  jsonlite::write_json(
+    list(model_spec = spec, loss_name = "cross_entropy",
+         model_params = list(n_classes = 4L, num_labels = 3L)),
+    file.path(model_dir, "metadata.json"),
+    auto_unbox = TRUE
+  )
+
+  contract <- dsFlowerClient:::.read_meta_model_contract(model_dir)
+  expect_identical(contract$model_spec$kind, "sequential")
+  expect_identical(contract$model_spec$layers[[2L]]$op, "tanh")
+  expect_identical(contract$loss_name, "cross_entropy")
+  expect_identical(contract$num_classes, 4L)
+  expect_identical(contract$num_labels, 3L)
+})
+
+test_that("malformed metadata cannot expand prediction dimensions", {
+  model_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    list(model_spec = "not-an-object", loss_name = "",
+         model_params = list(n_classes = 1e9, num_labels = -1)),
+    file.path(model_dir, "metadata.json"), auto_unbox = TRUE)
+
+  contract <- dsFlowerClient:::.read_meta_model_contract(model_dir)
+  expect_null(contract$model_spec)
+  expect_null(contract$loss_name)
+  expect_identical(contract$num_classes, 2L)
+  expect_identical(contract$num_labels, 2L)
+})
+
+test_that("saved data kind prevents tabular prediction of vision artifacts", {
+  model_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    list(template = "extension_dual", framework = "pytorch",
+         data_kind = "image", model_spec = list(kind = "linear")),
+    file.path(model_dir, "metadata.json"), auto_unbox = TRUE)
+  writeBin(as.raw(0), file.path(model_dir, "model.pt"))
+
+  contract <- dsFlowerClient:::.read_meta_model_contract(model_dir)
+  expect_identical(contract$data_kind, "image")
+  expect_error(
+    ds.flower.predict(model_dir, data.frame(x = 1)),
+    "accepts tabular artifacts only")
+
+  jsonlite::write_json(
+    list(template = "pytorch_resnet18", framework = "pytorch_vision"),
+    file.path(model_dir, "metadata.json"), auto_unbox = TRUE)
+  expect_identical(
+    dsFlowerClient:::.read_meta_model_contract(model_dir)$data_kind,
+    "image")
 })
 
 test_that("fit forwards public feature bounds without shifting legacy arguments", {
@@ -239,6 +305,140 @@ test_that("submission target shape matches the node-owned loss", {
   )
 })
 
+test_that("low-level submit validates model parameters before any side effect", {
+  reached_cli <- FALSE
+  local_mocked_bindings(
+    .require_flwr_cli = function() {
+      reached_cli <<- TRUE
+      stop("CLI must not be reached")
+    },
+    .package = "dsFlowerClient"
+  )
+
+  expect_error(
+    ds.flower.submit(
+      conns = list(site = TRUE), model = "pytorch_logreg",
+      target = "y", features = "x",
+      model_params = list(epsilon = 999)),
+    "Unknown parameter.*epsilon"
+  )
+  expect_false(reached_cli)
+})
+
+test_that("low-level submit enforces model input kind before any side effect", {
+  expect_error(
+    ds.flower.submit(
+      conns = list(), model = "pytorch_resnet18", target = "y",
+      data_kind = "tabular"),
+    "does not support data_kind"
+  )
+  expect_error(
+    ds.flower.submit(
+      conns = list(), model = "pytorch_logreg", target = "y",
+      data_kind = "image"),
+    "does not support data_kind"
+  )
+  expect_error(
+    ds.flower.submit(
+      conns = list(), model = "pytorch_logreg", target = "y",
+      data_kind = "IMAGE"),
+    "exactly 'tabular' or 'image'"
+  )
+})
+
+test_that("architecture geometry fails before any Flower side effect", {
+  reached_cli <- FALSE
+  local_mocked_bindings(
+    .require_flwr_cli = function() {
+      reached_cli <<- TRUE
+      stop("CLI must not be reached")
+    },
+    .package = "dsFlowerClient"
+  )
+
+  expect_error(
+    ds.flower.submit(
+      conns = list(site = TRUE),
+      model = ds.flower.model(
+        "pytorch_cnn", input_shape = c(1L, 8L, 8L)),
+      target = "y", features = paste0("x", seq_len(63L))),
+    "expects 64 public features"
+  )
+  expect_error(
+    ds.flower.submit(
+      conns = list(site = TRUE),
+      model = ds.flower.model(
+        "xgboost", feature_ranges = list(c(0, 1), c(-1, 1))),
+      target = "y", features = "x"),
+    "one public feature_ranges interval per feature"
+  )
+  expect_false(reached_cli)
+})
+
+test_that("declarative resource caps fail before DSI or staging", {
+  reached_dsi <- FALSE
+  local_mocked_bindings(
+    datashield.aggregate = function(...) {
+      reached_dsi <<- TRUE
+      stop("DSI must not be reached")
+    },
+    .package = "DSI"
+  )
+  expect_error(
+    ds.flower.submit(
+      conns = list(site = TRUE),
+      model = ds.flower.model(
+        "pytorch_mlp", hidden_layers = 8192L),
+      target = "y", features = paste0("x", seq_len(1024L))),
+    "Declarative model preflight failed"
+  )
+  expect_false(reached_dsi)
+})
+
+test_that("learning-rate schedules must affect the pinned training horizon", {
+  common <- list(conns = list(site = TRUE), target = "y", features = "x")
+  expect_error(do.call(ds.flower.submit, c(common, list(
+    model = ds.flower.model(
+      "pytorch_logreg", scheduler = "exponential"),
+    num_rounds = 1L))), "at least two")
+  expect_error(do.call(ds.flower.submit, c(common, list(
+    model = ds.flower.model(
+      "pytorch_logreg", scheduler = "step", scheduler_step_size = 2L),
+    num_rounds = 2L))), "smaller than")
+  expect_error(do.call(ds.flower.submit, c(common, list(
+    model = ds.flower.model(
+      "pytorch_logreg", scheduler = "exponential", scheduler_gamma = 10),
+    num_rounds = 4L))), "above 10")
+})
+
+test_that("bce_logits cannot silently request a multiclass head", {
+  expect_error(
+    dsFlowerClient:::.validate_submission_target(
+      list(loss = "bce_logits", params = list(n_classes = 3L)), "y"),
+    "binary only"
+  )
+})
+
+test_that("trees reject an inapplicable strategy before any side effect", {
+  reached_cli <- FALSE
+  local_mocked_bindings(
+    .require_flwr_cli = function() {
+      reached_cli <<- TRUE
+      stop("CLI must not be reached")
+    },
+    .package = "dsFlowerClient"
+  )
+
+  expect_error(
+    ds.flower.submit(
+      conns = list(site = TRUE), model = "xgboost",
+      target = "y", features = "x",
+      strategy = ds.flower.strategy.fedadam()),
+    "trees track supports only strategy = 'fedavg'"
+  )
+  expect_false(reached_cli)
+})
+
 test_that("adaptive strategy is fully serialized before any side effect", {
   reached_cli <- FALSE
   local_mocked_bindings(
@@ -263,6 +463,27 @@ test_that("adaptive strategy is fully serialized before any side effect", {
   expect_true(reached_cli)
 })
 
+test_that("classified strategy objects are revalidated exactly", {
+  forged <- structure(
+    list(name = "FedAvg", params = list(eta = 0.1)),
+    class = "dsflower_strategy")
+  expect_error(
+    ds.flower.submit(
+      conns = list(), model = "pytorch_logreg", target = "y",
+      features = "x", strategy = forged),
+    "inapplicable parameters"
+  )
+  forged <- structure(
+    list(name = "FedAdam", params = list(beta_1 = 2)),
+    class = "dsflower_strategy")
+  expect_error(
+    ds.flower.submit(
+      conns = list(), model = "pytorch_logreg", target = "y",
+      features = "x", strategy = forged),
+    "beta_1"
+  )
+})
+
 test_that("round horizons fail before any Flower side effect", {
   expect_error(
     ds.flower.submit(
@@ -271,11 +492,69 @@ test_that("round horizons fail before any Flower side effect", {
     "positive integer"
   )
   expect_error(
+    ds.flower.submit(
+      conns = list(), model = "pytorch_logreg", target = "y",
+      num_rounds = "2"),
+    "positive integer"
+  )
+  expect_error(
+    ds.flower.submit(
+      conns = list(), model = "pytorch_logreg", target = "y",
+      num_rounds = TRUE),
+    "positive integer"
+  )
+  expect_error(
     ds.flower.hook.run(
       conns = list(), user_app_dir = ".", target = "y", features = "x",
       num_rounds = 1.5),
     "positive integer"
   )
+  expect_error(
+    ds.flower.hook.run(
+      conns = list(), user_app_dir = ".", target = "y", features = "x",
+      num_rounds = "2"),
+    "positive integer"
+  )
+  expect_error(
+    ds.flower.hook.run(
+      conns = list(), user_app_dir = ".", target = "y", features = "x",
+      num_rounds = TRUE),
+    "positive integer"
+  )
+})
+
+test_that("torch backend choices fail before any Flower side effect", {
+  expect_identical(dsFlowerClient:::.validate_torch_backend("CPU"), "cpu")
+  expect_identical(dsFlowerClient:::.validate_torch_backend("cu126"), "cu126")
+  for (value in list("rocm", "custom", "", TRUE, c("cpu", "gpu"))) {
+    expect_error(dsFlowerClient:::.validate_torch_backend(value),
+                 "torch_backend")
+  }
+  expect_error(
+    ds.flower.submit(
+      conns = list(), model = "pytorch_logreg", target = "y",
+      torch_backend = "rocm"),
+    "torch_backend"
+  )
+})
+
+test_that("Hook feature geometry fails before any Flower side effect", {
+  for (features in list(1:2, c("x", "x"), c("x", NA_character_), "")) {
+    expect_error(
+      ds.flower.hook.run(
+        conns = list(), user_app_dir = ".", target = "y",
+        features = features),
+      "feature columns"
+    )
+  }
+})
+
+test_that("framework parameters never use R partial matching", {
+  config <- dsFlowerClient:::.neural_training_config(
+    list(learning_rate_decay = 0.8), "bce_logits")
+  expect_identical(config[["learning-rate"]], 0.01)
+  expect_silent(dsFlowerClient:::.dsflower_validate_parameter_limits(
+    list(momentum_decay = 2)))
 })
 
 test_that("submit checks runner compatibility immediately after connect", {
@@ -285,10 +564,11 @@ test_that("submit checks runner compatibility immediately after connect", {
     list(conns = list(site = local_conn), symbol = "flower"),
     class = "dsflower_connection"
   )
-  model <- structure(list(name = "model"), class = "dsflower_model")
+  model <- ds.flower.model("pytorch_logreg")
   local_mocked_bindings(
     .require_flwr_cli = function() TRUE,
     .emit_submission = function(...) list(track = "neural"),
+    .validate_declarative_model_preflight = function(...) TRUE,
     ds.flower.connect = function(...) {
       events <<- c(events, "connect")
       flower
@@ -521,7 +801,11 @@ test_that("hook run cleans client state when upload fails", {
     ds.flower.connect = function(...) flower,
     .assert_runner_compatibility = function(...) {
       events <<- c(events, "compat")
-      TRUE
+      list(site = list(
+        hook_execution_configured = TRUE, hook_enabled = TRUE,
+        hook_sandbox_attested = TRUE,
+        hook_resource_isolation_attested = TRUE,
+        hook_time_envelope_configured = TRUE))
     },
     .upload_user_module = function(...) {
       events <<- c(events, "upload")
@@ -552,6 +836,18 @@ test_that("hook run cleans client state when upload fails", {
   expect_setequal(events[-(1:2)], c("link", "nodes", "disconnect"))
 })
 
+test_that("hook readiness fails before upload instead of silently no-oping", {
+  conns <- list(site = TRUE)
+  caps <- list(site = list(
+    hook_execution_configured = FALSE, hook_enabled = TRUE,
+    hook_sandbox_attested = FALSE,
+    hook_resource_isolation_attested = TRUE,
+    hook_time_envelope_configured = FALSE))
+  expect_error(
+    dsFlowerClient:::.assert_hook_execution_configured(caps, conns),
+    "site.*sandbox,timing")
+})
+
 test_that("legacy tier2 entry point delegates to classification hook", {
   seen <- NULL
   local_mocked_bindings(
@@ -571,4 +867,97 @@ test_that("legacy tier2 entry point delegates to classification hook", {
   expect_identical(out, "ok")
   expect_identical(seen$task, "classification")
   expect_identical(seen$num_rounds, 2L)
+})
+
+test_that("HookApp parameters are recursively canonical and hash pinned", {
+  params <- list(
+    zeta = list(3L, NULL, TRUE, list(beta = "", alpha = 0.25)),
+    alpha = "adam",
+    enabled = FALSE,
+    integer_value = 1L,
+    double_value = 1
+  )
+  pinned <- dsFlowerClient:::.canonical_hook_app_params(params)
+
+  expect_identical(
+    names(pinned$value),
+    c("alpha", "double_value", "enabled", "integer_value", "zeta"))
+  expect_identical(names(pinned$value$zeta[[4L]]), c("alpha", "beta"))
+  expect_identical(
+    jsonlite::base64_dec(pinned$b64), charToRaw(enc2utf8(pinned$json)))
+  expect_identical(
+    pinned$sha256,
+    digest::digest(charToRaw(enc2utf8(pinned$json)),
+                   algo = "sha256", serialize = FALSE))
+  expect_identical(
+    pinned$json,
+    paste0(
+      '{"alpha":"adam","double_value":1.0,"enabled":false,',
+      '"integer_value":1,"zeta":[3,null,true,{"alpha":0.25,"beta":""}]}'
+    )
+  )
+
+  reordered <- dsFlowerClient:::.canonical_hook_app_params(
+    params[c("enabled", "alpha", "zeta", "double_value", "integer_value")])
+  expect_identical(reordered$b64, pinned$b64)
+  expect_identical(reordered$sha256, pinned$sha256)
+})
+
+test_that("HookApp parameter validation is bounded and fail closed", {
+  bad <- list(
+    1,
+    list(epsilon = 1),
+    list(training_epsilon = 1),
+    list(noiseMultiplier = 1),
+    list(apiToken = "public-value"),
+    list(model_path = "weights"),
+    list(requirements = "numpy"),
+    list(round_index = 3L),
+    list(label = "folder/model.bin"),
+    list(value = Inf),
+    list(value = NaN),
+    list(value = NA_real_),
+    list(value = 1 + 2i),
+    list(value = factor("a")),
+    list(value = structure(1, class = "custom_scalar")),
+    structure(list(1L, 2L), names = c("named", ""))
+  )
+  for (value in bad) {
+    expect_error(dsFlowerClient:::.canonical_hook_app_params(value))
+  }
+
+  nested <- list(leaf = 1L)
+  for (i in seq_len(9L)) nested <- list(nested = nested)
+  expect_error(
+    dsFlowerClient:::.canonical_hook_app_params(nested), "nesting depth")
+  expect_error(
+    dsFlowerClient:::.canonical_hook_app_params(
+      list(values = as.list(rep.int(0L, 2048L)))),
+    "item count"
+  )
+  expect_error(
+    dsFlowerClient:::.canonical_hook_app_params(
+      stats::setNames(as.list(rep.int(strrep("x", 4000L), 20L)),
+                      sprintf("field%02d", seq_len(20L)))),
+    "65536 bytes"
+  )
+})
+
+test_that("invalid HookApp parameters fail before any connection side effect", {
+  touched <- FALSE
+  local_mocked_bindings(
+    .require_flwr_cli = function() {
+      touched <<- TRUE
+      stop("connection side effect")
+    },
+    .package = "dsFlowerClient"
+  )
+
+  expect_error(
+    ds.flower.hook.run(
+      conns = list(), user_app_dir = ".", target = "y", features = "x",
+      app_params = list(dp_epsilon = 1000)),
+    "reserved"
+  )
+  expect_false(touched)
 })

@@ -32,7 +32,8 @@ ds.flower.fit(
   feature_bounds = NULL,
   target_levels = NULL,
   target_bounds = NULL,
-  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
+  data_kind = NULL
 )
 
 ds.flower.train(
@@ -62,7 +63,8 @@ ds.flower.train(
   feature_bounds = NULL,
   target_levels = NULL,
   target_bounds = NULL,
-  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
+  data_kind = NULL
 )
 }
 \arguments{
@@ -98,7 +100,8 @@ template-specific auto handling.}
 
 \item{task}{Optional character task name or \code{dsflower_task} object.}
 
-\item{label_set}{Optional imaging label-set name.}
+\item{label_set}{Reserved compatibility argument. Non-NULL values fail early;
+the enforced-DP training path does not implement label-set selection.}
 
 \item{masks}{Reserved compatibility argument. Non-NULL values fail early
 because segmentation is not implemented by the enforced-DP runtime.}
@@ -113,19 +116,21 @@ auto-generated model id.}
 \item{silent}{Logical; when \code{TRUE}, suppress the training progress
 feedback (connection, per-round and completion messages).}
 
-\item{evaluation_only}{Logical; accepted for compatibility but NOT yet enforced by the
-enforced-DP path (the model is always released, DP-protected).}
+\item{evaluation_only}{Logical; must remain \code{FALSE}. \code{TRUE} fails
+early because evaluation-only release semantics are not implemented.}
 
-\item{detached}{Logical; accepted for back-compat (unused by the enforced-DP path).}
+\item{detached}{Logical; must remain \code{FALSE}; detached execution is not
+implemented by the enforced-DP training path.}
 
 \item{verbose}{Logical; when \code{TRUE}, also print the raw flwr run log
 (debugging). The tidy per-round progress is shown regardless unless
 \code{silent = TRUE}.}
 
-\item{disconnect}{Logical; accepted for compatibility. The submission pipeline always
-cleans up its server-side handles on exit regardless.}
+\item{disconnect}{Logical; must remain \code{TRUE}. The submission pipeline
+always cleans up its temporary server-side handles on exit.}
 
-\item{run_args}{Named list; accepted for back-compat (unused by the enforced-DP path).}
+\item{run_args}{Named list; must remain empty. Arbitrary runner arguments are
+not accepted by the enforced-DP training path.}
 
 \item{feature_bounds}{Optional public feature bounds as
 \code{list(lower=..., upper=...)} in feature order. Appended to the signature
@@ -142,6 +147,10 @@ regression/count models.}
 \item{allow_insecure_http}{Character vector of exact connection names allowed
 to use plaintext HTTP. Empty by default. This exception does not provide
 transport security; use it only behind an independently trusted network.}
+
+\item{data_kind}{Optional input kind, \code{"tabular"} or \code{"image"}.
+It is inferred when the registered model supports exactly one kind; models
+registered for both require an explicit choice.}
 }
 \value{
 A \code{dsflower_run} object.

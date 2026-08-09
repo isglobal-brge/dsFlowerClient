@@ -77,8 +77,15 @@ def build_model(n_classes: int) -> nn.Module:
 
 
 def load_checkpoint(model: nn.Module, checkpoint_path: str) -> None:
-    checkpoint = torch.load(checkpoint_path, map_location="cpu")
+    checkpoint = torch.load(
+        checkpoint_path, map_location="cpu", weights_only=True)
+    if not isinstance(checkpoint, dict):
+        raise ValueError("checkpoint must contain a state_dict mapping")
     state_dict = checkpoint.get("state_dict", checkpoint)
+    if not isinstance(state_dict, dict) or not state_dict or any(
+            not isinstance(key, str) or not torch.is_tensor(value)
+            for key, value in state_dict.items()):
+        raise ValueError("state_dict must be a non-empty named tensor mapping")
     model_keys = list(model.state_dict().keys())
     ckpt_keys = list(state_dict.keys())
 

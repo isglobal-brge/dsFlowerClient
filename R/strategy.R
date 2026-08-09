@@ -110,10 +110,61 @@ ds.flower.strategy.fedavgm <- function(server_learning_rate = 1.0,
   ))
 }
 
+.canonicalize_strategy <- function(strategy) {
+  if (!inherits(strategy, "dsflower_strategy") || !is.list(strategy) ||
+      !is.character(strategy$name) || length(strategy$name) != 1L ||
+      !is.list(strategy$params %||% NULL)) {
+    stop("Strategy objects must contain one name and a named parameter list.",
+         call. = FALSE)
+  }
+  params <- strategy$params
+  if (length(params) &&
+      (is.null(names(params)) || anyNA(names(params)) ||
+       any(!nzchar(names(params))) || anyDuplicated(names(params)))) {
+    stop("Strategy parameters must have unique, non-empty names.", call. = FALSE)
+  }
+  key <- .dsflower_choice_key(strategy$name)
+  allowed <- switch(key,
+    fedavg = character(),
+    fedadam = c("eta", "beta_1", "beta_2", "tau"),
+    fedadagrad = c("eta", "tau"),
+    fedyogi = c("eta", "beta_1", "beta_2", "tau"),
+    fedavgm = c("server_learning_rate", "server_momentum"),
+    NULL)
+  if (is.null(allowed)) {
+    stop("Strategy '", strategy$name,
+         "' is not supported by the enforced-DP runtime.", call. = FALSE)
+  }
+  unknown <- setdiff(names(params), allowed)
+  if (length(unknown)) {
+    stop("Unknown or inapplicable parameters for strategy '", strategy$name,
+         "': ", paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  switch(key,
+    fedavg = ds.flower.strategy.fedavg(),
+    fedadam = ds.flower.strategy.fedadam(
+      server_learning_rate = params$eta %||% 0.1,
+      beta_1 = params$beta_1 %||% 0.9,
+      beta_2 = params$beta_2 %||% 0.99,
+      tau = params$tau %||% 1e-3),
+    fedadagrad = ds.flower.strategy.fedadagrad(
+      server_learning_rate = params$eta %||% 0.1,
+      tau = params$tau %||% 1e-3),
+    fedyogi = ds.flower.strategy.fedyogi(
+      server_learning_rate = params$eta %||% 0.01,
+      beta_1 = params$beta_1 %||% 0.9,
+      beta_2 = params$beta_2 %||% 0.99,
+      tau = params$tau %||% 1e-3),
+    fedavgm = ds.flower.strategy.fedavgm(
+      server_learning_rate = params$server_learning_rate %||% 1,
+      server_momentum = params$server_momentum %||% 0))
+}
+
 .strategy_config_lines <- function(strategy, client_learning_rate = NULL) {
   if (!inherits(strategy, "dsflower_strategy")) {
     strategy <- ds.flower.strategy(strategy)
   }
+  strategy <- .canonicalize_strategy(strategy)
   key <- .dsflower_choice_key(strategy$name)
   allowed <- c("fedavg", "fedadam", "fedadagrad", "fedyogi", "fedavgm")
   if (!key %in% allowed) {
@@ -126,11 +177,6 @@ ds.flower.strategy.fedavgm <- function(server_learning_rate = 1.0,
     tau = "strategy-tau", server_learning_rate = "strategy-server-learning-rate",
     server_momentum = "strategy-server-momentum"
   )
-  unknown <- setdiff(names(strategy$params), names(keys))
-  if (length(unknown)) {
-    stop("Unknown parameters for strategy '", strategy$name, "': ",
-         paste(unknown, collapse = ", "), ".", call. = FALSE)
-  }
   lines <- c(.toml_kv("strategy", key),
     vapply(names(strategy$params), function(name) {
       .toml_kv(keys[[name]], strategy$params[[name]])

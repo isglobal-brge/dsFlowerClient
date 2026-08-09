@@ -1,6 +1,38 @@
 # Module: Model Specs
 # Model specification objects for federated learning.
 
+.model_exact_integer <- function(value, name) {
+  if (!is.numeric(value) || is.logical(value)) {
+    stop("'", name, "' must be one exact finite integer.", call. = FALSE)
+  }
+  numeric <- suppressWarnings(as.numeric(value))
+  if (length(numeric) != 1L || is.na(numeric) || !is.finite(numeric) ||
+      numeric != floor(numeric) || abs(numeric) > .Machine$integer.max) {
+    stop("'", name, "' must be one exact finite integer.", call. = FALSE)
+  }
+  as.integer(numeric)
+}
+
+.model_exact_integer_vector <- function(value, name) {
+  if (!is.numeric(value) || is.logical(value)) {
+    stop("'", name, "' must contain exact finite integers.", call. = FALSE)
+  }
+  numeric <- suppressWarnings(as.numeric(value))
+  if (!length(numeric) || anyNA(numeric) || any(!is.finite(numeric)) ||
+      any(numeric != floor(numeric)) ||
+      any(abs(numeric) > .Machine$integer.max)) {
+    stop("'", name, "' must contain exact finite integers.", call. = FALSE)
+  }
+  as.integer(numeric)
+}
+
+.model_exact_logical <- function(value, name) {
+  if (!is.logical(value) || length(value) != 1L || is.na(value)) {
+    stop("'", name, "' must be TRUE or FALSE.", call. = FALSE)
+  }
+  value
+}
+
 #' Create a PyTorch MLP model spec
 #'
 #' @param hidden_layers Integer vector; hidden layer sizes.
@@ -17,8 +49,11 @@ ds.flower.model.pytorch_mlp <- function(hidden_layers = c(64L, 32L),
   # Accept both integer vector c(64, 32) and string "64,32"
   if (is.character(hidden_layers) && length(hidden_layers) == 1) {
     hl_str <- hidden_layers
+  } else if (!length(hidden_layers)) {
+    hl_str <- ""
   } else {
-    hl_str <- paste(as.integer(hidden_layers), collapse = ",")
+    hl_str <- paste(.model_exact_integer_vector(
+      hidden_layers, "hidden_layers"), collapse = ",")
   }
   obj <- list(
     name      = "pytorch_mlp",
@@ -27,12 +62,12 @@ ds.flower.model.pytorch_mlp <- function(hidden_layers = c(64L, 32L),
     params    = list(
       hidden_layers = hl_str,
       learning_rate = learning_rate,
-      batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs)
+      batch_size    = .model_exact_integer(batch_size, "batch_size"),
+      local_epochs  = .model_exact_integer(local_epochs, "local_epochs")
     )
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 #' Create a PyTorch Logistic Regression model spec
@@ -53,12 +88,12 @@ ds.flower.model.pytorch_logreg <- function(learning_rate = 0.1,
     template  = "pytorch_logreg",
     params    = list(
       learning_rate = learning_rate,
-      batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs)
+      batch_size    = .model_exact_integer(batch_size, "batch_size"),
+      local_epochs  = .model_exact_integer(local_epochs, "local_epochs")
     )
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 #' Create a PyTorch Linear Regression model spec
@@ -79,12 +114,12 @@ ds.flower.model.pytorch_linear_regression <- function(learning_rate = 0.01,
     template  = "pytorch_linear_regression",
     params    = list(
       learning_rate = learning_rate,
-      batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs)
+      batch_size    = .model_exact_integer(batch_size, "batch_size"),
+      local_epochs  = .model_exact_integer(local_epochs, "local_epochs")
     )
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 #' Create a PyTorch Cox Proportional Hazards model spec
@@ -141,7 +176,8 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
   if (is.character(hidden_layers) && length(hidden_layers) == 1) {
     hl_str <- hidden_layers
   } else if (length(hidden_layers) > 0) {
-    hl_str <- paste(as.integer(hidden_layers), collapse = ",")
+    hl_str <- paste(.model_exact_integer_vector(
+      hidden_layers, "hidden_layers"), collapse = ",")
   } else {
     hl_str <- ""
   }
@@ -151,14 +187,14 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
     template  = "pytorch_multiclass",
     params    = list(
       hidden_layers = hl_str,
-      n_classes     = as.integer(n_classes),
+      n_classes     = .model_exact_integer(n_classes, "n_classes"),
       learning_rate = learning_rate,
-      batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs)
+      batch_size    = .model_exact_integer(batch_size, "batch_size"),
+      local_epochs  = .model_exact_integer(local_epochs, "local_epochs")
     )
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 
@@ -187,16 +223,16 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
     framework = "pytorch_vision",
     template  = "pytorch_resnet18",
     params    = list(
-      n_classes     = as.integer(n_classes),
+      n_classes     = .model_exact_integer(n_classes, "n_classes"),
       learning_rate = learning_rate,
-      batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs),
-      image_size    = as.integer(image_size),
-      volumetric    = isTRUE(volumetric)
+      batch_size    = .model_exact_integer(batch_size, "batch_size"),
+      local_epochs  = .model_exact_integer(local_epochs, "local_epochs"),
+      image_size    = .model_exact_integer(image_size, "image_size"),
+      volumetric    = .model_exact_logical(volumetric, "volumetric")
     )
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 #' Create a PyTorch DenseNet-121 model spec
@@ -224,16 +260,16 @@ ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
     framework = "pytorch_vision",
     template  = "pytorch_densenet121",
     params    = list(
-      n_classes     = as.integer(n_classes),
+      n_classes     = .model_exact_integer(n_classes, "n_classes"),
       learning_rate = learning_rate,
-      batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs),
-      image_size    = as.integer(image_size),
-      volumetric    = isTRUE(volumetric)
+      batch_size    = .model_exact_integer(batch_size, "batch_size"),
+      local_epochs  = .model_exact_integer(local_epochs, "local_epochs"),
+      image_size    = .model_exact_integer(image_size, "image_size"),
+      volumetric    = .model_exact_logical(volumetric, "volumetric")
     )
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 #' Create a PyTorch U-Net 2D model spec
@@ -298,7 +334,7 @@ ds.flower.model.pytorch_tcn <- function(input_shape,
                                          learning_rate = 0.001,
                                          batch_size = 32L,
                                          local_epochs = 1L) {
-  input_shape <- suppressWarnings(as.integer(input_shape))
+  input_shape <- .model_exact_integer_vector(input_shape, "input_shape")
   if (length(input_shape) != 2L || anyNA(input_shape) || any(input_shape < 1L)) {
     stop("'input_shape' must be c(channels, sequence_length) with positive integers.",
          call. = FALSE)
@@ -309,16 +345,16 @@ ds.flower.model.pytorch_tcn <- function(input_shape,
     template  = "pytorch_tcn",
     params    = list(
       input_shape   = input_shape,
-      channels      = as.integer(channels),
-      levels        = as.integer(levels),
-      n_classes     = as.integer(n_classes),
+      channels      = .model_exact_integer(channels, "channels"),
+      levels        = .model_exact_integer(levels, "levels"),
+      n_classes     = .model_exact_integer(n_classes, "n_classes"),
       learning_rate = learning_rate,
-      batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs)
+      batch_size    = .model_exact_integer(batch_size, "batch_size"),
+      local_epochs  = .model_exact_integer(local_epochs, "local_epochs")
     )
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 #' Create a PyTorch LSTM model spec
@@ -342,8 +378,8 @@ ds.flower.model.pytorch_lstm <- function(n_tokens,
                                           learning_rate = 0.001,
                                           batch_size = 32L,
                                           local_epochs = 1L) {
-  n_tokens <- suppressWarnings(as.integer(n_tokens))
-  n_features <- suppressWarnings(as.integer(n_features))
+  n_tokens <- .model_exact_integer(n_tokens, "n_tokens")
+  n_features <- .model_exact_integer(n_features, "n_features")
   if (length(n_tokens) != 1L || is.na(n_tokens) || n_tokens < 1L ||
       length(n_features) != 1L || is.na(n_features) || n_features < 1L) {
     stop("'n_tokens' and 'n_features' must be positive integers.", call. = FALSE)
@@ -355,15 +391,15 @@ ds.flower.model.pytorch_lstm <- function(n_tokens,
     params    = list(
       n_tokens      = n_tokens,
       n_features    = n_features,
-      hidden        = as.integer(hidden),
-      n_classes     = as.integer(n_classes),
+      hidden        = .model_exact_integer(hidden, "hidden"),
+      n_classes     = .model_exact_integer(n_classes, "n_classes"),
       learning_rate = learning_rate,
-      batch_size    = as.integer(batch_size),
-      local_epochs  = as.integer(local_epochs)
+      batch_size    = .model_exact_integer(batch_size, "batch_size"),
+      local_epochs  = .model_exact_integer(local_epochs, "local_epochs")
     )
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 #' Create an XGBoost model spec
@@ -371,50 +407,69 @@ ds.flower.model.pytorch_lstm <- function(n_tokens,
 #' Enforced node-side central-DP GBDT. The trusted runner uses data-independent
 #' random splits, bounded gradient/Hessian contributions and a full Gaussian
 #' mechanism at every node before a booster leaves that node. The current live
-#' track supports the binary-logistic objective and does not use Secure
-#' Aggregation.
+#' track supports binary logistic classification and bounded squared-error
+#' regression. Regression requires public \code{target_bounds} at submission;
+#' those bounds are never inferred from node data.
 #'
 #' @param n_trees Integer; number of boosting rounds.
 #' @param max_depth Integer; maximum tree depth.
 #' @param eta Numeric in \code{(0, 10]}; learning rate (shrinkage).
 #' @param reg_lambda Numeric; L2 regularization term.
 #' @param n_bins Integer; number of histogram bins.
-#' @param objective Character; XGBoost objective function.
-#' @param num_class Integer compatibility field; the live DP-GBDT track is binary.
-#' @param min_child_weight Numeric compatibility field retained for older callers.
-#' @param fixed_bin_range Numeric compatibility field retained for older callers.
-#' @param batch_multiclass Logical compatibility field; ignored by the live binary track.
+#' @param objective Character; one of \code{"binary:logistic"} or
+#'   \code{"reg:squarederror"}.
+#' @param margin_bounds Optional public length-two numeric prediction interval
+#'   for bounded regression. Defaults to the submission's target bounds.
+#' @param gradient_clip Optional positive public bound on each squared-error
+#'   gradient. Omitting it uses the tight bound implied by target/margin bounds.
+#' @param num_class Retired compatibility argument. Supplying it fails early;
+#'   the live DP-GBDT track is binary.
+#' @param min_child_weight Retired compatibility argument; supplying it fails
+#'   rather than being silently ignored.
+#' @param fixed_bin_range Retired compatibility argument; supplying it fails
+#'   rather than being silently ignored.
+#' @param batch_multiclass Retired compatibility argument; supplying it fails;
+#'   the live DP-GBDT track is binary.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.xgboost <- function(n_trees = 50L, max_depth = 3L,
                                      eta = 0.3, reg_lambda = 1.0,
-                                     n_bins = 64L,
+                                     n_bins = 32L,
                                      objective = "binary:logistic",
+                                     margin_bounds = NULL,
+                                     gradient_clip = NULL,
                                      num_class = 2L,
                                      min_child_weight = 1.0,
                                      fixed_bin_range = 4.0,
                                      batch_multiclass = FALSE) {
+  retired <- c(
+    if (!missing(num_class)) "num_class",
+    if (!missing(min_child_weight)) "min_child_weight",
+    if (!missing(fixed_bin_range)) "fixed_bin_range",
+    if (!missing(batch_multiclass)) "batch_multiclass"
+  )
+  if (length(retired)) {
+    stop("Unsupported compatibility parameter(s) for the DP-GBDT track: ",
+         paste(retired, collapse = ", "), ".", call. = FALSE)
+  }
+  params <- list(
+    n_trees    = .model_exact_integer(n_trees, "n_trees"),
+    max_depth  = .model_exact_integer(max_depth, "max_depth"),
+    learning_rate = eta,   # the spec reads `learning_rate`; map the eta arg onto it
+    reg_lambda = reg_lambda,
+    n_bins     = .model_exact_integer(n_bins, "n_bins"),
+    objective  = objective
+  )
+  if (!is.null(margin_bounds)) params[["margin_bounds"]] <- margin_bounds
+  if (!is.null(gradient_clip)) params[["gradient_clip"]] <- gradient_clip
   obj <- list(
     name      = "xgboost",
     framework = "xgboost",
     template  = "xgboost",
-    params    = list(
-      n_trees    = as.integer(n_trees),
-      max_depth  = as.integer(max_depth),
-      learning_rate = eta,   # the spec reads `learning_rate`; map the eta arg onto it
-      reg_lambda = reg_lambda,
-      n_bins     = as.integer(n_bins),
-      objective  = objective,
-      num_class  = as.integer(num_class),
-      min_child_weight = min_child_weight,
-      "fixed-bin-range" = fixed_bin_range,
-      # Retained for source compatibility with the retired multiclass/SecAgg
-      # prototype. The current binary DP-GBDT generator ignores this field.
-      batch_multiclass = tolower(as.character(isTRUE(batch_multiclass)))
-    )
+    params    = params
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 #' Create a Poisson Regression model spec
@@ -438,11 +493,11 @@ ds.flower.model.pytorch_poisson <- function(hidden_layers = "",
     template  = "pytorch_poisson",
     params    = list(hidden_layers = hidden_layers,
                      learning_rate = learning_rate,
-                     batch_size = as.integer(batch_size),
-                     local_epochs = as.integer(local_epochs))
+                     batch_size = .model_exact_integer(batch_size, "batch_size"),
+                     local_epochs = .model_exact_integer(local_epochs, "local_epochs"))
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 #' Create a Multi-Label Classification model spec
@@ -467,14 +522,14 @@ ds.flower.model.pytorch_multilabel <- function(n_labels = 2L,
     name      = "pytorch_multilabel",
     framework = "pytorch",
     template  = "pytorch_multilabel",
-    params    = list(num_labels = as.integer(n_labels),
+    params    = list(num_labels = .model_exact_integer(n_labels, "n_labels"),
                      hidden_layers = hidden_layers,
                      learning_rate = learning_rate,
-                     batch_size = as.integer(batch_size),
-                     local_epochs = as.integer(local_epochs))
+                     batch_size = .model_exact_integer(batch_size, "batch_size"),
+                     local_epochs = .model_exact_integer(local_epochs, "local_epochs"))
   )
   class(obj) <- "dsflower_model"
-  obj
+  ds.flower.model(obj)
 }
 
 #' Create a Log-Normal AFT survival model spec

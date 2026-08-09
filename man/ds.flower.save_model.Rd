@@ -9,12 +9,14 @@ ds.flower.save_model(run, path)
 \arguments{
 \item{run}{A \code{dsflower_run} object.}
 
-\item{path}{Character; file path to save to.}
+\item{path}{Character; unused \code{.rds} or \code{.json} file path.}
 }
 \value{
 Invisible path.
 }
 \description{
-Saves the federated model weights to a file. Supported formats:
-\code{.rds} (R native), \code{.json} (portable).
+Saves the federated model metadata to a file, together with a
+sibling \code{<filename>.assets} directory containing the native model and
+its public reconstruction metadata. Move both entries together. Supported
+formats are \code{.rds} (R native) and \code{.json}.
 }

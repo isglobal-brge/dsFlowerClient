@@ -12,14 +12,17 @@ ds.flower.predict(model, newdata, type = c("response", "prob"))
 
 \item{newdata}{A data.frame or matrix with feature columns.}
 
-\item{type}{Character; \code{"response"} for predicted class (default),
-\code{"prob"} for probabilities.}
+\item{type}{Character; \code{"response"} returns a predicted class for
+classification models and a continuous response for regression/count
+models. \code{"prob"} returns probabilities for classification models.}
 }
 \value{
-A numeric vector of predictions.
+A numeric vector, integer class vector, or probability matrix for
+  multiclass, ordinal, and multilabel models.
 }
 \description{
-Uses the saved model in native format (pt/xgb) to generate
-predictions via Python. The appropriate framework dependencies are
-installed on-demand in the client venv if not already present.
+Uses the saved declarative PyTorch state dictionary or dsFlower DP-GBDT JSON
+artifact to generate tabular predictions via Python. Vision artifacts are not
+accepted by this tabular predictor. The appropriate framework dependencies
+are installed on-demand in the client venv if not already present.
 }

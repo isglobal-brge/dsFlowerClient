@@ -16,7 +16,8 @@ ds.flower.hook.run(
   verbose = TRUE,
   target_levels = NULL,
   target_bounds = NULL,
-  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
+  app_params = list()
 )
 
 ds.flower.tier2.run(
@@ -57,18 +58,26 @@ regression/count HookApps.}
 \item{allow_insecure_http}{Character vector of exact connection names allowed
 to use plaintext HTTP. Empty by default. This exception does not provide
 transport security; use it only behind an independently trusted network.}
+
+\item{app_params}{Named JSON-like list of public HookApp hyperparameters.
+Values may contain bounded nested objects/arrays and finite scalars. Privacy,
+runtime, dependency, credential and filesystem-path fields are reserved. The
+canonical value is hash-pinned and supplied to both app hooks.}
 }
 \value{
-A \code{dsflower_run} object. A successful Flower run may represent a
-  deliberate unchanged-model no-op when the node disallows HookApp execution.
+A \code{dsflower_run} object. A public readiness failure is rejected
+  before upload. If no private release is available, the completed object has
+  \code{available = FALSE} and contains no fallback model artifact.
 }
 \description{
 The package exposes \code{initial_arrays()} and \code{local_update()} but is
 never trusted by the node. When the custodian-enabled sandbox and timing gates
 are available, the node clips the complete update and applies its configured
-Gaussian output mechanism (optionally over disjoint blocks). If any gate is
-absent, the uploaded code is not executed and the operation returns the
-incoming public model unchanged. Hash verification and static scanning do not
-provide \code{nn.Module}/per-sample DP-SGD granularity for arbitrary code. The
-timing envelope is defense in depth, not a formal constant-time guarantee.
+Gaussian output mechanism (optionally over disjoint blocks). Publicly absent
+gates cause a client preflight error before upload. If a gate disappears after
+that preflight, the node refuses to open private data and marks the unchanged
+update unavailable; the coordinator does not report it as a trained model.
+Hash verification and static scanning do not provide
+\code{nn.Module}/per-sample DP-SGD granularity for arbitrary code. The timing
+envelope is defense in depth, not a formal constant-time guarantee.
 }

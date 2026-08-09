@@ -68,19 +68,24 @@ record <- function(label, expr) {
   results[[label]] <<- st
   cat(sprintf("[%s] %-32s status=%s (%ss)\n", format(Sys.time(), "%H:%M:%S"), label, st, dt))
 }
-# Each tabular model trains under its own symbol -> independent epsilon budget.
-fit_tab <- function(label, sym, table, model, target, params = list()) {
+# Symbols do not reset the node-wide lifetime privacy domain.
+fit_tab <- function(label, sym, table, model, target, params = list(),
+                    target_bounds = NULL) {
   DSI::datashield.assign.table(conns, sym, table)
   feats <- setdiff(dsBaseClient::ds.colnames(sym)[[1]], target)
   record(label, ds.flower.fit(conns, symbol = sym, target = target, features = feats,
-                              model = model, model_params = params, rounds = cfg$rounds, verbose = FALSE))
+                              model = model, model_params = params,
+                              target_bounds = target_bounds,
+                              rounds = cfg$rounds, verbose = FALSE))
 }
 
 message(">>> TABULAR neural + trees (", tab_table, ")")
 fit_tab("logreg (bce)",            "BC_lr",  tab_table, "pytorch_logreg",            "malignant")
 fit_tab("mlp[64,32] (bce)",        "BC_mlp", tab_table, "pytorch_mlp",               "malignant", list(hidden_layers = c(64L, 32L)))
-fit_tab("regression (mse)",        "BC_reg", tab_table, "pytorch_linear_regression", "mean_area")
-fit_tab("poisson (poisson_nll)",   "BC_poi", tab_table, "pytorch_poisson",           "mean_smoothness")
+fit_tab("regression (mse)",        "BC_reg", tab_table, "pytorch_linear_regression", "mean_area",
+        target_bounds = list(lower = 0, upper = 5000))
+fit_tab("poisson (poisson_nll)",   "BC_poi", tab_table, "pytorch_poisson",           "mean_smoothness",
+        target_bounds = list(lower = 0, upper = 1))
 fit_tab("trees (xgboost)",         "BC_xgb", tab_table, "xgboost",                   "malignant", list(n_trees = 15L))
 
 message(">>> registered rich-vocabulary extension (layernorm/gelu/dropout/silu/leaky_relu)")
@@ -89,7 +94,8 @@ ds.flower.register_model("rich_vocab", "neural",
     list(op = "linear", out = 32L), list(op = "layernorm"), list(op = "gelu"),
     list(op = "dropout", p = 0.2), list(op = "linear", out = 16L), list(op = "silu"),
     list(op = "leaky_relu", negative_slope = 0.05), list(op = "linear", out = "@out"))),
-  loss = "bce_logits", description = "rich-vocabulary spec validation", overwrite = TRUE)
+  loss = "bce_logits", parameter_types = character(),
+  description = "rich-vocabulary spec validation", overwrite = TRUE)
 fit_tab("rich-vocab extension (bce)", "BC_rv", tab_table, "rich_vocab", "malignant")
 
 message(">>> TABULAR multiclass (", multi_table, ", 10-class)")
@@ -97,12 +103,17 @@ fit_tab("multiclass (ce, 10)",     "DG", multi_table, "pytorch_multiclass", "dig
 
 message(">>> NEW suite: GLM (svm/negbin/gamma/ordinal), penalized, conv (cnn/tcn)")
 fit_tab("svm (hinge)",            "BC_svm", tab_table,   "pytorch_svm",        "malignant")
-fit_tab("negbin (count)",         "DG_nb",  multi_table, "pytorch_negbin",     "digit",       list(nb_dispersion = 1.5))
-fit_tab("gamma (positive)",       "BC_gam", tab_table,   "pytorch_gamma",      "mean_radius", list(gamma_shape = 2.0))
+fit_tab("negbin (count)",         "DG_nb",  multi_table, "pytorch_negbin",     "digit",       list(nb_dispersion = 1.5),
+        target_bounds = list(lower = 0, upper = 9))
+fit_tab("gamma (positive)",       "BC_gam", tab_table,   "pytorch_gamma",      "mean_radius", list(gamma_shape = 2.0),
+        target_bounds = list(lower = 1e-6, upper = 100))
 fit_tab("ordinal (CORN, 10)",     "DG_ord", multi_table, "pytorch_ordinal",    "digit",       list(n_classes = 10L))
-fit_tab("ridge (L2)",             "BC_rdg", tab_table,   "pytorch_ridge",      "mean_area",   list(weight_decay = 1.0))
-fit_tab("lasso (L1)",             "BC_lso", tab_table,   "pytorch_lasso",      "mean_area",   list(l1_penalty = 0.05))
-fit_tab("elasticnet (L1+L2)",     "BC_ent", tab_table,   "pytorch_elasticnet", "mean_area",   list(weight_decay = 1.0, l1_penalty = 0.05))
+fit_tab("ridge (L2)",             "BC_rdg", tab_table,   "pytorch_ridge",      "mean_area",   list(weight_decay = 1.0),
+        target_bounds = list(lower = 0, upper = 5000))
+fit_tab("lasso (L1)",             "BC_lso", tab_table,   "pytorch_lasso",      "mean_area",   list(l1_penalty = 0.05),
+        target_bounds = list(lower = 0, upper = 5000))
+fit_tab("elasticnet (L1+L2)",     "BC_ent", tab_table,   "pytorch_elasticnet", "mean_area",   list(weight_decay = 1.0, l1_penalty = 0.05),
+        target_bounds = list(lower = 0, upper = 5000))
 fit_tab("cnn 2D (8x8)",           "DG_cnn", multi_table, "pytorch_cnn",        "digit",       list(input_shape = c(1L, 8L, 8L), n_classes = 10L))
 fit_tab("tcn (dilated conv1d)",   "DG_tcn", multi_table, "pytorch_tcn",        "digit",       list(input_shape = c(1L, 64L), n_classes = 10L))
 

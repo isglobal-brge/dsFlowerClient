@@ -21,7 +21,7 @@ A \code{dsflower_connection} object.
 }
 \description{
 Single entry point that handles the full init chain: detects data type,
-assigns resources, initializes dsImaging and dsFlower handles, and
+resolves generic ResourceClient objects, initializes dsFlower handles, and
 returns a connection handle with metadata.
 }
 \details{

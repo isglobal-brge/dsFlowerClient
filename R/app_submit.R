@@ -127,6 +127,148 @@
   app_dir
 }
 
+.neural_training_config <- function(params, loss_name) {
+  p <- params %||% list()
+  optimizer <- as.character(p[["optimizer"]] %||% "sgd")
+  scheduler <- as.character(p[["scheduler"]] %||% "none")
+  out <- list(
+    "learning-rate" = as.numeric(p[["learning_rate"]] %||% 0.01),
+    "weight-decay" = as.numeric(p[["weight_decay"]] %||% 0),
+    "l1-penalty" = as.numeric(p[["l1_penalty"]] %||% 0),
+    "optimizer-name" = optimizer,
+    "scheduler-name" = scheduler)
+  if (identical(loss_name, "negbin_nll")) {
+    out[["nb-dispersion"]] <- as.numeric(p[["nb_dispersion"]] %||% 1)
+  } else if (identical(loss_name, "gamma_nll")) {
+    out[["gamma-shape"]] <- as.numeric(p[["gamma_shape"]] %||% 1)
+  } else if (identical(loss_name, "huber")) {
+    out[["huber-delta"]] <- as.numeric(p[["huber_delta"]] %||% 1)
+  }
+  if (identical(optimizer, "sgd")) {
+    out <- c(out, list(
+      "optimizer-momentum" = as.numeric(p[["momentum"]] %||% 0),
+      "optimizer-nesterov" = isTRUE(p[["nesterov"]])))
+  } else if (optimizer %in% c("adam", "adamw")) {
+    out <- c(out, list(
+      "optimizer-beta1" = as.numeric(p[["beta1"]] %||% 0.9),
+      "optimizer-beta2" = as.numeric(p[["beta2"]] %||% 0.999),
+      "optimizer-eps" = as.numeric(p[["optimizer_eps"]] %||% 1e-8),
+      "optimizer-amsgrad" = isTRUE(p[["amsgrad"]])))
+  } else if (identical(optimizer, "rmsprop")) {
+    out <- c(out, list(
+      "optimizer-momentum" = as.numeric(p[["momentum"]] %||% 0),
+      "optimizer-eps" = as.numeric(p[["optimizer_eps"]] %||% 1e-8),
+      "optimizer-rmsprop-alpha" = as.numeric(p[["rmsprop_alpha"]] %||% 0.99)))
+  }
+  if (identical(scheduler, "step")) {
+    out <- c(out, list(
+      "scheduler-step-size" = as.integer(p[["scheduler_step_size"]] %||% 1L),
+      "scheduler-gamma" = as.numeric(p[["scheduler_gamma"]] %||% 0.1)))
+  } else if (identical(scheduler, "exponential")) {
+    out[["scheduler-gamma"]] <- as.numeric(p[["scheduler_gamma"]] %||% 0.1)
+  } else if (identical(scheduler, "cosine")) {
+    out[["scheduler-min-lr"]] <- as.numeric(p[["scheduler_min_lr"]] %||% 0)
+  }
+  out
+}
+
+.validate_scheduler_horizon <- function(sub, num_rounds) {
+  if (!identical(sub$track, "neural")) return(invisible(TRUE))
+  p <- sub$params %||% list()
+  scheduler <- as.character(p[["scheduler"]] %||% "none")
+  if (identical(scheduler, "none")) return(invisible(TRUE))
+  total_epochs <- as.numeric(num_rounds) *
+    as.numeric(p[["local_epochs"]] %||% 1L)
+  if (!is.finite(total_epochs) || total_epochs < 2) {
+    stop("A learning-rate scheduler requires at least two total local epochs ",
+         "across all federated rounds.", call. = FALSE)
+  }
+  learning_rate <- as.numeric(p[["learning_rate"]] %||% 0.01)
+  if (scheduler %in% c("step", "exponential")) {
+    gamma <- as.numeric(p[["scheduler_gamma"]] %||% 0.1)
+    if (identical(gamma, 1)) {
+      stop("scheduler_gamma = 1 would leave the learning rate unchanged.",
+           call. = FALSE)
+    }
+    exponent <- total_epochs - 1
+    if (identical(scheduler, "step")) {
+      step_size <- as.numeric(p[["scheduler_step_size"]] %||% 1L)
+      if (step_size >= total_epochs) {
+        stop("scheduler_step_size must be smaller than the total local-epoch ",
+             "horizon.", call. = FALSE)
+      }
+      exponent <- floor((total_epochs - 1) / step_size)
+    }
+    if (gamma > 1 &&
+        log(learning_rate) + exponent * log(gamma) > log(10) + 1e-12) {
+      stop("The requested scheduler would raise learning_rate above 10 within ",
+           "the training horizon.", call. = FALSE)
+    }
+  } else if (identical(scheduler, "cosine") &&
+             identical(as.numeric(p[["scheduler_min_lr"]] %||% 0), learning_rate)) {
+    stop("scheduler_min_lr equal to learning_rate would make the cosine ",
+         "scheduler ineffective.", call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
+.model_spec_preflight_cache <- new.env(parent = emptyenv())
+
+.validate_declarative_model_preflight <- function(sub, features, data_kind) {
+  if (!identical(sub$track, "neural")) {
+    return(invisible(TRUE))
+  }
+  if (!identical(data_kind, "image") &&
+      (is.null(features) || !length(features))) {
+    stop("Declarative tabular models require a public feature geometry.",
+         call. = FALSE)
+  }
+  params <- sub$params %||% list()
+  input_dim <- if (identical(data_kind, "image")) {
+    switch(as.character(params[["backbone"]] %||% "resnet18"),
+      resnet18 = 512L, resnet18_3d = 512L,
+      densenet121 = 1024L, densenet121_3d = 1024L,
+      stop("Unsupported trusted image backbone.", call. = FALSE))
+  } else {
+    as.integer(length(features))
+  }
+  payload <- list(
+    spec = sub$spec,
+    loss_name = sub$loss,
+    input_dim = input_dim,
+    num_classes = as.integer(params[["n_classes"]] %||% 2L),
+    num_labels = as.integer(params[["num_labels"]] %||% 2L))
+  cache_key <- digest::digest(payload, algo = "sha256")
+  if (exists(cache_key, envir = .model_spec_preflight_cache,
+             inherits = FALSE)) {
+    return(invisible(TRUE))
+  }
+
+  .ensure_client_framework("pytorch")
+  script <- system.file(
+    "python", "validate_model_spec.py", package = "dsFlowerClient")
+  if (!nzchar(script)) {
+    script <- file.path("inst", "python", "validate_model_spec.py")
+  }
+  if (!file.exists(script)) {
+    stop("Bundled declarative model validator not found.", call. = FALSE)
+  }
+  contract <- tempfile(fileext = ".json")
+  on.exit(unlink(contract), add = TRUE)
+  jsonlite::write_json(
+    payload, contract, auto_unbox = TRUE, null = "null", digits = NA)
+  result <- processx::run(
+    command = .client_python_cmd(), args = c(script, contract),
+    env = .client_venv_env(), error_on_status = FALSE, timeout = 60)
+  if (result$status != 0L) {
+    detail <- trimws(result$stderr %||% "")
+    if (!nzchar(detail)) detail <- "the trusted model geometry rejected it"
+    stop("Declarative model preflight failed: ", detail, call. = FALSE)
+  }
+  assign(cache_key, TRUE, envir = .model_spec_preflight_cache)
+  invisible(TRUE)
+}
+
 #' Submit + run a federated DP job from a model spec (the "pack" API)
 #'
 #' Codegens the submission, ships it in one FAB to the DataSHIELD SuperNodes,
@@ -176,23 +318,64 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              target_levels = NULL, target_bounds = NULL,
                              allow_insecure_http = getOption(
                                "dsflower.dsi_allow_insecure_http", character())) {
-  rounds_value <- suppressWarnings(as.numeric(num_rounds))
+  torch_backend <- .validate_torch_backend(torch_backend)
+  if (!is.numeric(num_rounds) || is.logical(num_rounds)) {
+    stop("num_rounds must be a single positive integer no greater than 500.",
+         call. = FALSE)
+  }
+  rounds_value <- as.numeric(num_rounds)
   if (length(rounds_value) != 1L || is.na(rounds_value) || !is.finite(rounds_value) ||
       rounds_value < 1 || rounds_value %% 1 != 0 ||
-      rounds_value > .Machine$integer.max) {
-    stop("num_rounds must be a single positive integer.", call. = FALSE)
+      rounds_value > 500) {
+    stop("num_rounds must be a single positive integer no greater than 500.",
+         call. = FALSE)
   }
   num_rounds <- as.integer(rounds_value)
-  if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
-  if (length(model_params)) {
-    model$params <- utils::modifyList(model$params %||% list(), model_params)
+  if (!is.character(data_kind) || length(data_kind) != 1L || is.na(data_kind) ||
+      !data_kind %in% c("tabular", "image")) {
+    stop("data_kind must be exactly 'tabular' or 'image'.", call. = FALSE)
   }
+  if (!is.null(features)) {
+    if (!is.character(features) || !length(features) || anyNA(features) ||
+        any(!nzchar(features)) || anyDuplicated(features)) {
+      stop("'features' must contain unique, non-empty character column names.",
+           call. = FALSE)
+    }
+    features <- enc2utf8(features)
+  }
+  if (identical(data_kind, "image") && !is.null(features)) {
+    stop("Image training derives frozen-backbone features node-side; ",
+         "do not pass tabular 'features'.", call. = FALSE)
+  }
+  if (identical(data_kind, "image") && !is.null(feature_bounds)) {
+    stop("feature_bounds applies only to tabular features and cannot be used ",
+         "with data_kind = 'image'.", call. = FALSE)
+  }
+  if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
+  registered_model <- .dsflower_get_model(model$name)
+  if (!data_kind %in% (registered_model$data_kinds %||% "tabular")) {
+    stop("Model '", model$name, "' does not support data_kind = '", data_kind,
+         "'. Supported kind(s): ",
+         paste(registered_model$data_kinds %||% "tabular", collapse = ", "),
+         ".", call. = FALSE)
+  }
+  # Validate a directly supplied model object as well as call-level overrides.
+  # This closes the low-level submit() path that previously bypassed the model
+  # schema with a raw modifyList() merge.
+  base_params <- .dsflower_resolve_model_params(
+    registered_model, model$params %||% list())
+  registered_model$defaults <- base_params
+  model$params <- .dsflower_resolve_model_params(
+    registered_model, model_params)
   sub <- .emit_submission(model)
   target <- .validate_submission_target(sub, target)
+  .validate_scheduler_horizon(sub, num_rounds)
   if (identical(sub$track, "neural")) {
-    lr <- suppressWarnings(as.numeric((sub$params %||% list())$learning_rate %||% 0.01))
+    lr <- suppressWarnings(as.numeric(
+      (sub$params %||% list())[["learning_rate"]] %||% 0.01))
   } else if (identical(sub$track, "trees")) {
-    lr <- suppressWarnings(as.numeric((sub$spec %||% list())$learning_rate %||% 0.3))
+    lr <- suppressWarnings(as.numeric(
+      (sub$spec %||% list())[["learning_rate"]] %||% 0.3))
   } else {
     lr <- 0.01
   }
@@ -204,29 +387,40 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # over the already-DP client updates -> pure post-processing, so the (epsilon,
   # delta) guarantee is unchanged whichever is chosen (it is never a privacy knob).
   strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
-    strategy
+    .canonicalize_strategy(strategy)
   } else {
     ds.flower.strategy(strategy)
   }
   strategy_name <- .dsflower_choice_key(strategy_spec$name)
   if (identical(sub$track, "trees") && !identical(strategy_name, "fedavg")) {
-    warning("strategy = '", strategy_name, "' is ignored on the trees track; ",
-            "boosted trees aggregate boosters, not averaged weights.",
-            call. = FALSE)
-    strategy_spec <- ds.flower.strategy.fedavg()
-    strategy_name <- "fedavg"
+    stop("The trees track supports only strategy = 'fedavg'; strategy = '",
+         strategy_name, "' cannot be applied to complete local boosters.",
+         call. = FALSE)
   }
   local_learning_rate <- if (identical(sub$track, "neural")) {
-    as.numeric((sub$params %||% list())$learning_rate %||% 0.01)
+    as.numeric((sub$params %||% list())[["learning_rate"]] %||% 0.01)
   } else {
     NULL
   }
   strategy_lines <- .strategy_config_lines(
     strategy_spec, client_learning_rate = local_learning_rate)
 
+  if (!is.null(features)) {
+    early_features <- unique(setdiff(
+      as.character(features), as.character(target)))
+    .validate_submission_feature_geometry(
+      model$name, sub, early_features)
+  }
+
   # All validation above is data-independent and must run before any CLI, DSI,
   # upload, or node-side staging side effect.
   .require_flwr_cli()
+  if (!is.null(features)) {
+    .validate_declarative_model_preflight(
+      sub,
+      unique(setdiff(as.character(features), as.character(target))),
+      data_kind)
+  }
   old_opt <- options(dsflower.silent = isTRUE(silent))
   on.exit(options(old_opt), add = TRUE)
 
@@ -268,6 +462,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       features <- unique(features)
     }
   }
+  .validate_submission_feature_geometry(
+    model$name, sub, features)
+  .validate_declarative_model_preflight(sub, features, data_kind)
 
   # No exact statistics leave a data node.  Optional scaling/ranges are public
   # constants supplied by the analyst before the run; DP-SGD still clips every
@@ -281,17 +478,47 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
             " feature(s); no node statistics were queried.")
   }
 
-  task_type <- if (identical(sub$track, "trees")) "classification" else
-    switch(sub$loss %||% "bce_logits",
-           mse = "regression", poisson_nll = "count", negbin_nll = "count",
-           gamma_nll = "regression", "classification")
+  task_type <- if (identical(sub$track, "trees")) {
+    switch(as.character((sub[["spec"]] %||% list())[["objective"]] %||% ""),
+           "binary:logistic" = "classification",
+           "reg:squarederror" = "regression",
+           stop("Unsupported DP-GBDT objective.", call. = FALSE))
+  } else switch(sub$loss %||% "bce_logits",
+                mse = "regression", huber = "regression",
+                poisson_nll = "count",
+                negbin_nll = "count", gamma_nll = "regression",
+                "classification")
   n_target_classes <- if (identical(sub$track, "trees")) 2L else {
-    p <- sub$params %||% list()
-    as.integer(p$n_classes %||% p$num_classes %||% 2L)
+    p <- sub[["params"]] %||% list()
+    as.integer(p[["n_classes"]] %||% p[["num_classes"]] %||% 2L)
   }
   public_target <- .validate_public_target_spec(
     target_levels, target_bounds, task_type = task_type,
     loss_name = sub$loss %||% "", n_classes = n_target_classes)
+  if (identical(sub$track, "trees")) {
+    objective <- as.character(sub[["spec"]][["objective"]])
+    if (identical(objective, "reg:squarederror")) {
+      requested_target_bounds <- unname(c(
+        public_target$bounds$lower, public_target$bounds$upper))
+      generated_target_bounds <- sub[["spec"]][["target_bounds"]]
+      if (!is.null(generated_target_bounds) &&
+          !identical(as.numeric(generated_target_bounds),
+                     as.numeric(requested_target_bounds))) {
+        stop("The model's generated target_bounds disagree with the explicit ",
+             "submission target_bounds; no parameter may be silently ",
+             "overridden.", call. = FALSE)
+      }
+      sub[["spec"]][["target_bounds"]] <- requested_target_bounds
+      if (is.null(sub[["spec"]][["margin_bounds"]])) {
+        sub[["spec"]][["margin_bounds"]] <-
+          sub[["spec"]][["target_bounds"]]
+      }
+    } else if (!is.null(sub[["spec"]][["margin_bounds"]]) ||
+               !is.null(sub[["spec"]][["gradient_clip"]])) {
+      stop("margin_bounds and gradient_clip are only valid for bounded ",
+           "reg:squarederror DP-GBDT models.", call. = FALSE)
+    }
+  }
 
   flower <- ds.flower.connect(conns, data = data, resource = resource, symbol = symbol)
   conns <- flower$conns; hsym <- flower$symbol
@@ -339,16 +566,19 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     "num-server-rounds" = as.integer(num_rounds),
     "num-features" = as.integer(n_features))
   if (identical(sub$track, "neural")) {
-    p <- sub$params
+    p <- sub[["params"]]
+    training_config <- .neural_training_config(p, sub$loss)
     prepare_config <- c(prepare_config, list(
       "model-spec-b64" = .spec_to_b64(sub$spec),
       "loss-name" = sub$loss %||% "bce_logits",
-      "num-classes" = as.integer(p$n_classes %||% p$num_classes %||% 2L),
-      "num-labels" = as.integer(p$num_labels %||% 2L),
-      "local-epochs" = as.integer(p$local_epochs %||% 1L),
-      "batch-size" = as.integer(p$batch_size %||% 32L)))
+      "num-classes" = as.integer(
+        p[["n_classes"]] %||% p[["num_classes"]] %||% 2L),
+      "num-labels" = as.integer(p[["num_labels"]] %||% 2L),
+      "local-epochs" = as.integer(p[["local_epochs"]] %||% 1L),
+      "batch-size" = as.integer(p[["batch_size"]] %||% 32L)),
+      training_config)
   } else if (identical(sub$track, "trees")) {
-    prepare_config[["gbdt-spec"]] <- sub$spec
+    prepare_config[["gbdt-spec"]] <- sub[["spec"]]
   }
   if (!is.null(public_bounds)) {
     prepare_config[["feature-bounds"]] <- public_bounds
@@ -383,34 +613,35 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     .toml_kv("results-dir", results_dir)
   )
   if (identical(sub$track, "neural")) {
-    p <- sub$params
+    p <- sub[["params"]]
+    training_config <- .neural_training_config(p, sub$loss)
     cfg <- c(cfg,
       .toml_kv("model-spec-b64", .spec_to_b64(sub$spec)),
       .toml_kv("loss-name", sub$loss %||% "bce_logits"),
-      paste0("num-classes = ", as.integer(p$n_classes %||% p$num_classes %||% 2L)),
-      paste0("num-labels = ", as.integer(p$num_labels %||% 2L)),
-      paste0("local-epochs = ", as.integer(p$local_epochs %||% 1L)),
-      paste0("batch-size = ", as.integer(p$batch_size %||% 32L)),
-      paste0("learning-rate = ", as.numeric(p$learning_rate %||% 0.01)),
-      paste0("nb-dispersion = ", as.numeric(p$nb_dispersion %||% 1.0)),
-      paste0("gamma-shape = ", as.numeric(p$gamma_shape %||% 1.0)),
-      paste0("weight-decay = ", as.numeric(p$weight_decay %||% 0.0)),
-      paste0("l1-penalty = ", as.numeric(p$l1_penalty %||% 0.0)))
+      paste0("num-classes = ", as.integer(
+        p[["n_classes"]] %||% p[["num_classes"]] %||% 2L)),
+      paste0("num-labels = ", as.integer(p[["num_labels"]] %||% 2L)),
+      paste0("local-epochs = ", as.integer(p[["local_epochs"]] %||% 1L)),
+      paste0("batch-size = ", as.integer(p[["batch_size"]] %||% 32L)),
+      unname(vapply(names(training_config), function(key) {
+        .toml_kv(key, training_config[[key]])
+      }, character(1))))
     if (!is.null(public_bounds))
       cfg <- c(cfg, .toml_kv("feature-bounds-b64", .spec_to_b64(public_bounds)))
     if (identical(data_kind, "image")) {
-      cfg <- c(cfg, .toml_kv("backbone", as.character(p$backbone %||% "resnet18")),
-               paste0("image-size = ", as.integer(p$image_size %||% 224L)))
+      cfg <- c(cfg, .toml_kv(
+        "backbone", as.character(p[["backbone"]] %||% "resnet18")),
+        paste0("image-size = ", as.integer(p[["image_size"]] %||% 224L)))
     }
   } else if (identical(sub$track, "trees")) {
-    s <- sub$spec
+    s <- sub[["spec"]]
     cfg <- c(cfg,
-      .toml_kv("objective", as.character(s$objective)),
-      paste0("max-depth = ", as.integer(s$max_depth)),
-      paste0("n-trees = ", as.integer(s$n_trees)),
-      paste0("learning-rate = ", as.numeric(s$learning_rate)),
-      paste0("reg-lambda = ", as.numeric(s$reg_lambda)),
-      paste0("n-bins = ", as.integer(s$n_bins)))
+      .toml_kv("objective", as.character(s[["objective"]])),
+      paste0("max-depth = ", as.integer(s[["max_depth"]])),
+      paste0("n-trees = ", as.integer(s[["n_trees"]])),
+      paste0("learning-rate = ", as.numeric(s[["learning_rate"]])),
+      paste0("reg-lambda = ", as.numeric(s[["reg_lambda"]])),
+      paste0("n-bins = ", as.integer(s[["n_bins"]])))
     if (!is.null(public_bounds))
       cfg <- c(cfg, .toml_kv("feature-bounds-b64", .spec_to_b64(public_bounds)))
   }
@@ -427,6 +658,14 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   recipe <- structure(list(
     model = list(name = model$name, template = model$template %||% model$name,
                  framework = model$framework %||% "pytorch", track = sub$track),
+    # Persist the exact public contract used to build the trusted model.  The
+    # native checkpoint contains only tensors; without this data-only spec the
+    # client cannot reconstruct CNN/DAG/recurrent models faithfully for
+    # prediction or private validation.
+    model_spec = sub$spec,
+    model_params = sub$params %||% list(),
+    loss_name = sub$loss %||% NULL,
+    data_kind = data_kind,
     strategy = list(name = strategy_spec$name, params = strategy_spec$params),
     num_rounds = as.integer(num_rounds),
     features = features,
@@ -460,7 +699,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
          call. = FALSE)
   }
   if (identical(sub$loss, "multilabel_bce")) {
-    num_labels <- suppressWarnings(as.integer((sub$params %||% list())$num_labels))
+    num_labels <- suppressWarnings(as.integer(
+      (sub[["params"]] %||% list())[["num_labels"]]))
     if (length(num_labels) != 1L || is.na(num_labels) ||
         num_labels < 2L || num_labels > 1024L) {
       stop("Multilabel models require public num_labels in [2, 1024].",
@@ -473,7 +713,50 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   } else if (length(target) != 1L) {
     stop("The selected model requires exactly one target column.", call. = FALSE)
   }
+  if (identical(sub$loss, "bce_logits")) {
+    n_classes <- as.integer(
+      (sub[["params"]] %||% list())[["n_classes"]] %||% 2L)
+    if (length(n_classes) != 1L || is.na(n_classes) || n_classes != 2L) {
+      stop("bce_logits is binary only; use cross_entropy for multiclass models.",
+           call. = FALSE)
+    }
+  }
   target
+}
+
+#' Validate architecture geometry against the public feature schema
+#' @keywords internal
+.validate_submission_feature_geometry <- function(model_name, sub, features) {
+  if (is.null(features) || !length(features)) return(invisible(TRUE))
+  params <- sub[["params"]] %||% list()
+  tree_ranges <- if (identical(sub[["track"]], "trees")) {
+    (sub[["spec"]] %||% list())[["feature_ranges"]]
+  } else NULL
+  if (!is.null(tree_ranges) && length(tree_ranges) != length(features)) {
+    stop("Model '", model_name,
+         "' requires one public feature_ranges interval per ",
+         "feature (", length(tree_ranges), " supplied for ",
+         length(features), " features).", call. = FALSE)
+  }
+  expected <- switch(model_name,
+    pytorch_cnn = prod(as.numeric(params[["input_shape"]])),
+    pytorch_tcn = prod(as.numeric(params[["input_shape"]])),
+    pytorch_resnet = prod(as.numeric(params[["input_shape"]])),
+    pytorch_transformer = as.numeric(params[["n_tokens"]]) *
+      as.numeric(params[["d_model"]]),
+    pytorch_lstm = as.numeric(params[["n_tokens"]]) *
+      as.numeric(params[["n_features"]]),
+    pytorch_gru = as.numeric(params[["n_tokens"]]) *
+      as.numeric(params[["n_features"]]),
+    NULL)
+  if (!is.null(expected) &&
+      (length(expected) != 1L || !is.finite(expected) ||
+       expected != length(features))) {
+    stop("Model '", model_name, "' expects ", expected,
+         " public features from its architecture parameters, but received ",
+         length(features), ".", call. = FALSE)
+  }
+  invisible(TRUE)
 }
 
 #' Validate data-independent preprocessing bounds
@@ -486,6 +769,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   }
   if (!is.list(bounds) || is.null(bounds$lower) || is.null(bounds$upper)) {
     stop("feature_bounds must be list(lower=..., upper=...).", call. = FALSE)
+  }
+  if (!is.numeric(bounds$lower) || is.logical(bounds$lower) ||
+      !is.numeric(bounds$upper) || is.logical(bounds$upper)) {
+    stop("feature_bounds lower/upper must be numeric vectors.", call. = FALSE)
   }
   lower <- as.numeric(bounds$lower)
   upper <- as.numeric(bounds$upper)
@@ -515,8 +802,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       stop("target_bounds=list(lower=..., upper=...) is required for ",
            "regression/count targets.", call. = FALSE)
     }
-    lower <- suppressWarnings(as.numeric(bounds$lower))
-    upper <- suppressWarnings(as.numeric(bounds$upper))
+    if (!is.numeric(bounds$lower) || is.logical(bounds$lower) ||
+        !is.numeric(bounds$upper) || is.logical(bounds$upper)) {
+      stop("target_bounds lower/upper must be numeric scalars.", call. = FALSE)
+    }
+    lower <- as.numeric(bounds$lower)
+    upper <- as.numeric(bounds$upper)
     if (length(lower) != 1L || length(upper) != 1L ||
         !is.finite(lower) || !is.finite(upper) || lower >= upper ||
         abs(lower) > 1e6 || abs(upper) > 1e6) {

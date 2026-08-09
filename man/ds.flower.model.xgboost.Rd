@@ -9,8 +9,10 @@ ds.flower.model.xgboost(
   max_depth = 3L,
   eta = 0.3,
   reg_lambda = 1,
-  n_bins = 64L,
+  n_bins = 32L,
   objective = "binary:logistic",
+  margin_bounds = NULL,
+  gradient_clip = NULL,
   num_class = 2L,
   min_child_weight = 1,
   fixed_bin_range = 4,
@@ -28,15 +30,26 @@ ds.flower.model.xgboost(
 
 \item{n_bins}{Integer; number of histogram bins.}
 
-\item{objective}{Character; XGBoost objective function.}
+\item{objective}{Character; one of \code{"binary:logistic"} or
+\code{"reg:squarederror"}.}
 
-\item{num_class}{Integer compatibility field; the live DP-GBDT track is binary.}
+\item{margin_bounds}{Optional public length-two numeric prediction interval
+for bounded regression. Defaults to the submission's target bounds.}
 
-\item{min_child_weight}{Numeric compatibility field retained for older callers.}
+\item{gradient_clip}{Optional positive public bound on each squared-error
+gradient. Omitting it uses the tight bound implied by target/margin bounds.}
 
-\item{fixed_bin_range}{Numeric compatibility field retained for older callers.}
+\item{num_class}{Retired compatibility argument. Supplying it fails early;
+the live DP-GBDT track is binary.}
 
-\item{batch_multiclass}{Logical compatibility field; ignored by the live binary track.}
+\item{min_child_weight}{Retired compatibility argument; supplying it fails
+rather than being silently ignored.}
+
+\item{fixed_bin_range}{Retired compatibility argument; supplying it fails
+rather than being silently ignored.}
+
+\item{batch_multiclass}{Retired compatibility argument; supplying it fails;
+the live DP-GBDT track is binary.}
 }
 \value{
 A \code{dsflower_model} S3 object.
@@ -45,6 +58,7 @@ A \code{dsflower_model} S3 object.
 Enforced node-side central-DP GBDT. The trusted runner uses data-independent
 random splits, bounded gradient/Hessian contributions and a full Gaussian
 mechanism at every node before a booster leaves that node. The current live
-track supports the binary-logistic objective and does not use Secure
-Aggregation.
+track supports binary logistic classification and bounded squared-error
+regression. Regression requires public \code{target_bounds} at submission;
+those bounds are never inferred from node data.
 }

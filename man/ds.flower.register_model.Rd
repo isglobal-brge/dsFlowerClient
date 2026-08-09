@@ -12,27 +12,34 @@ ds.flower.register_model(
   defaults = list(),
   description = NULL,
   vetted = FALSE,
-  overwrite = FALSE
+  overwrite = FALSE,
+  parameter_types = NULL,
+  parameter_aliases = character(),
+  required_parameters = character(),
+  parameter_choices = list(),
+  data_kinds = "tabular"
 )
 }
 \arguments{
 \item{name}{Character; the model name (e.g. "pytorch_logreg", "xgboost").}
 
 \item{track}{Character; the enforced-DP track: "neural" (nn.Module + DP-SGD)
-or "trees" (XGBoost spec + DP-GBDT).}
+or "trees" (random-split DP-GBDT spec).}
 
 \item{generate}{Function of one argument \code{params} (a named list). Both
 tracks MUST return a named list (DATA, never code): for the neural track a
 model SPEC \code{list(kind = "sequential", layers = list(...))} the node
 builds with stock torch layers (end with a linear onto \code{"@out"}); for the
-trees track the XGBoost spec. The node owns the loop, loss, and optimizer.}
+trees track the DP-GBDT spec. The node owns the loop, loss, and optimizer.}
 
-\item{loss}{Character or NULL; neural track only. The per-sample loss the node
-should use, from the node allowlist: stock losses \code{bce_logits},
+\item{loss}{Character; required for the neural track and required to be NULL
+for the trees track. The per-sample neural loss must come from the node
+allowlist: stock losses \code{bce_logits},
 \code{cross_entropy}, \code{mse}, \code{poisson_nll}, \code{multilabel_bce},
 \code{hinge} (linear SVM), \code{ordinal} (CORN); plus vetted custom per-sample
-losses \code{negbin_nll} (overdispersed counts) and \code{gamma_nll} (positive
-continuous). The node pins the actual loss; this is the client's request.}
+losses \code{negbin_nll} (overdispersed counts), \code{gamma_nll}
+(positive continuous), and \code{huber} (bounded robust regression).
+The node pins the actual loss; this is the client's request.}
 
 \item{defaults}{Named list of default params merged under user-supplied params.}
 
@@ -44,6 +51,24 @@ third-party generators take the same validated path; this flag just marks
 first-party collections in \code{ds.flower.list_models()}.}
 
 \item{overwrite}{Logical; allow replacing an existing registration.}
+
+\item{parameter_types}{Required named character vector defining every accepted
+parameter and its basic type. Use \code{character()} for a model with no
+parameters. This makes misspelled or unsupported parameters fail early.}
+
+\item{parameter_aliases}{Optional named character vector mapping accepted aliases
+to canonical parameter names (for example
+\code{c(eta = "learning_rate")}).}
+
+\item{required_parameters}{Character vector of canonical parameters which must be
+present after defaults and user values are merged.}
+
+\item{parameter_choices}{Optional named list of finite allowlists for declared
+parameters. Values outside the corresponding allowlist fail before any DSI
+operation.}
+
+\item{data_kinds}{Character vector of supported inputs:
+\code{"tabular"}, \code{"image"}, or both. Trees are tabular only.}
 }
 \value{
 Invisibly, the model name.

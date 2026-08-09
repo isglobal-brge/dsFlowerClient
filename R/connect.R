@@ -4,7 +4,7 @@
 #' Connect to a data source for federated learning
 #'
 #' Single entry point that handles the full init chain: detects data type,
-#' assigns resources, initializes dsImaging and dsFlower handles, and
+#' resolves generic ResourceClient objects, initializes dsFlower handles, and
 #' returns a connection handle with metadata.
 #'
 #' Uses unique hidden symbols per connection to avoid collisions when
@@ -21,8 +21,8 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
                                symbol = NULL) {
   # Exactly one of data/resource/symbol must be provided
   n_args <- sum(!is.null(data), !is.null(resource), !is.null(symbol))
-  if (n_args == 0)
-    stop("Provide one of: data, resource, or symbol.", call. = FALSE)
+  if (n_args != 1L)
+    stop("Provide exactly one of: data, resource, or symbol.", call. = FALSE)
 
   # If data is provided, resolve deterministically
   if (!is.null(data)) {
@@ -41,16 +41,15 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
 
   if (data_kind == "resource") {
     res_sym <- paste0(fl_sym, "_res")
-    img_sym <- paste0(fl_sym, "_img")
     resource_map <- stats::setNames(rep(resource, length(conns)), names(conns))
 
     .dsi_assign_resource_exact(
       conns, res_sym, as.list(resource_map), "Resource assignment")
     .dsi_assign_expr_exact(
-      conns, img_sym, call("imagingInitDS", res_sym),
-      "Imaging handle initialization")
+      conns, res_sym, call("as.resource.client", as.name(res_sym)),
+      "Resource resolution")
     .dsi_assign_expr_exact(
-      conns, fl_sym, call("flowerInitDS", img_sym),
+      conns, fl_sym, call("flowerInitDS", res_sym),
       "Flower handle initialization")
   } else {
     .dsi_assign_expr_exact(

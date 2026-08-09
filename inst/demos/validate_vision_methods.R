@@ -204,13 +204,7 @@ vision_specs <- function() {
     list(method = "pytorch_densenet121",
          model = do.call(ds.flower.model.pytorch_densenet121, common),
          task = "classification", target = "label",
-         notes = "Synthetic PNG image classification with DenseNet-121."),
-    list(method = "pytorch_unet2d",
-         model = ds.flower.model.pytorch_unet2d(
-           n_classes = 1L, learning_rate = 0.001, batch_size = 1L,
-           local_epochs = 1L, image_size = 64L, base_channels = 8L),
-         task = "segmentation", target = "mask_path",
-         notes = "Synthetic PNG image/mask segmentation with U-Net 2D.")
+         notes = "Synthetic PNG image classification with DenseNet-121.")
   )
 }
 
@@ -251,46 +245,10 @@ run_central_baseline <- function(spec, samples_csv, image_root, out_dir,
 }
 
 run_federated_vision <- function(spec, conns, rounds) {
-  recipe <- ds.flower.recipe(
-    model = spec$model,
-    strategy = ds.flower.strategy.fedavg(),
-    target = spec$target,
-    num_rounds = rounds
-  )
-
-  run_config <- c(
-    recipe$model$params,
-    recipe$strategy$params,
-    list(
-      data_type = "image",
-      num_rounds = recipe$num_rounds,
-      target_column = spec$target
-    )
-  )
-
-  symbol <- paste0("flower_", gsub("[^A-Za-z0-9_]", "_", spec$method))
-  with_ds_errors(
-    ds.flower.nodes.init(conns, data = "D", symbol = symbol)
-  )
-  on.exit(try(ds.flower.nodes.cleanup(conns, symbol = symbol), silent = TRUE),
-          add = TRUE)
-
-  with_ds_errors(
-    ds.flower.nodes.prepare(
-      conns,
-      symbol = symbol,
-      target_column = spec$target,
-      feature_columns = NULL,
-      run_config = run_config,
-      template_name = recipe$model$template
-    )
-  )
-  with_ds_errors(
-    ds.flower.nodes.ensure(conns, symbol = symbol,
-                           template_name = recipe$model$template)
-  )
   run <- with_ds_errors(
-    ds.flower.run.start(recipe, conns = conns, verbose = TRUE)
+    ds.flower.fit(
+      conns, symbol = "D", target = spec$target, model = spec$model,
+      rounds = rounds, data_kind = "image", verbose = TRUE)
   )
   post_caps <- tryCatch(
     DSI::datashield.aggregate(conns, expr = call("flowerGetCapabilitiesDS")),

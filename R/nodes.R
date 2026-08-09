@@ -190,6 +190,7 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
     stop("'template_name' is retired. The hash-pinned declarative runner selects ",
          "its runtime from the prepared DP track.", call. = FALSE)
   }
+  torch_backend <- .validate_torch_backend(torch_backend)
   # All transport is the DSI tunnel: each SuperNode dials its own node-local
   # loopback forwarder, so the address here is only a placeholder. There is no
   # remote coordinator / LAN auto-resolution path in v2.
@@ -246,6 +247,22 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
     per_site = results,
     meta = list(call_code = code, scope = "per_site")
   )
+}
+
+.validate_torch_backend <- function(value) {
+  if (is.null(value)) return(NULL)
+  if (!is.character(value) || length(value) != 1L || is.na(value) ||
+      !nzchar(value)) {
+    stop("'torch_backend' must be one of auto, cpu, gpu, cuda, or cu<digits>.",
+         call. = FALSE)
+  }
+  value <- tolower(value)
+  if (!value %in% c("auto", "cpu", "gpu", "cuda") &&
+      !grepl("^cu[0-9]+$", value)) {
+    stop("'torch_backend' must be one of auto, cpu, gpu, cuda, or cu<digits>.",
+         call. = FALSE)
+  }
+  value
 }
 
 #' Wait for all SuperNodes to be running

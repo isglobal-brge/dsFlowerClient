@@ -20,6 +20,29 @@ test_that(".parse_run_id returns NULL for no match", {
   expect_null(dsFlowerClient:::.parse_run_id("No run id here"))
 })
 
+test_that("run.start rejects forged unsupported recipes before side effects", {
+  touched <- FALSE
+  base <- ds.flower.recipe(model = "pytorch_logreg")
+  local_mocked_bindings(
+    .require_flwr_cli = function() touched <<- TRUE,
+    .package = "dsFlowerClient"
+  )
+
+  evaluation <- base
+  evaluation$evaluation_only <- TRUE
+  expect_error(ds.flower.run.start(evaluation), "ds.flower.validate")
+
+  labels <- base
+  labels$label_set <- "labels"
+  expect_error(ds.flower.run.start(labels), "label-set")
+
+  segmentation <- base
+  segmentation$masks <- "mask"
+  expect_error(ds.flower.run.start(segmentation), "segmentation")
+
+  expect_false(touched)
+})
+
 test_that(".flower_runtime_status detects ServerApp failures masked by CLI status", {
   stdout <- paste(
     "INFO : Requesting initial parameters",
@@ -126,6 +149,150 @@ test_that("run.start never persists a model from a failed federation", {
   expect_false(dir.exists(file.path(output_root, "partial-model")))
 })
 
+test_that("run.start persists the exact public model reconstruction contract", {
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(
+    process = list(is_alive = function() TRUE),
+    flwr_home = withr::local_tempdir())
+  recipe <- ds.flower.recipe(
+    model = ds.flower.model.pytorch_logreg(), num_rounds = 2L,
+    features = c("a", "b"))
+  recipe$model$track <- "neural"
+  recipe$model_spec <- list(kind = "sequential", layers = list(
+    list(op = "linear", out = "@out")))
+  recipe$model_params <- list(n_classes = 2L, learning_rate = 0.1)
+  recipe$loss_name <- "bce_logits"
+  recipe$data_kind <- "tabular"
+  output_root <- withr::local_tempdir()
+
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .ensure_client_framework = function(...) TRUE,
+    .client_flwr_cmd = function() "flwr",
+    .client_venv_env = function(...) character(),
+    .run_flwr_with_artifact_watchdog = function(...) list(
+      status = 0L, stdout = "run_id=contract", stderr = ""),
+    .read_model_weights = function(...) list(coef = c(0, 0), intercept = 0),
+    .read_training_history = function(...) data.frame(
+      round = 1:2, n_failures = c(0L, 0L)),
+    .package = "dsFlowerClient")
+
+  run <- ds.flower.run.start(
+    recipe, conns = list(site = TRUE), app_dir = withr::local_tempdir(),
+    output_dir = output_root, output_name = "contract-model", silent = TRUE)
+  meta <- jsonlite::fromJSON(
+    file.path(run$output_dir, "metadata.json"), simplifyVector = FALSE)
+  expect_identical(meta$model_spec$kind, "sequential")
+  expect_identical(meta$model_spec$layers[[1L]]$out, "@out")
+  expect_identical(meta$loss_name, "bce_logits")
+  expect_identical(meta$data_kind, "tabular")
+  expect_equal(meta$model_params$learning_rate, 0.1)
+  expect_equal(meta$num_rounds, 2L)
+})
+
+test_that("load_model retains the relocated bundle directory for prediction", {
+  model_dir <- withr::local_tempdir()
+  saveRDS(list(model_id = "m", template = "pytorch_logreg"),
+          file.path(model_dir, "m.rds"))
+
+  loaded <- ds.flower.load_model(model_dir)
+  expect_identical(
+    loaded$source_dir,
+    normalizePath(model_dir, winslash = "/", mustWork = TRUE))
+  expect_identical(
+    ds.flower.load_model(file.path(model_dir, "m.rds"))$source_dir,
+    loaded$source_dir)
+})
+
+test_that("save_model creates portable RDS and JSON native-artifact bundles", {
+  source_dir <- file.path(withr::local_tempdir(), "original")
+  dir.create(source_dir)
+  file.create(file.path(source_dir, "model.pt"))
+  jsonlite::write_json(
+    list(model = "pytorch_logreg", template = "pytorch_logreg",
+         data_kind = "tabular", features = c("x1", "x2")),
+    file.path(source_dir, "metadata.json"), auto_unbox = TRUE)
+  jsonlite::write_json(
+    data.frame(round = 1L, available = TRUE),
+    file.path(source_dir, "history.json"), auto_unbox = TRUE)
+  run <- structure(list(
+    model_id = "portable", weights = NULL, available = TRUE,
+    history = data.frame(round = 1L), model = "pytorch_logreg",
+    strategy = "FedAvg", num_rounds = 1L, run_id = "run-1",
+    output_dir = source_dir
+  ), class = "dsflower_run")
+  destination_dir <- file.path(withr::local_tempdir(), "nested")
+  destinations <- file.path(destination_dir, c("saved.rds", "saved.json"))
+  for (destination in destinations) {
+    expect_identical(
+      ds.flower.save_model(run, destination),
+      normalizePath(destination, winslash = "/", mustWork = TRUE))
+    assets <- paste0(destination, ".assets")
+    expect_true(file.exists(file.path(assets, "model.pt")))
+    expect_true(file.exists(file.path(assets, "metadata.json")))
+  }
+
+  unlink(source_dir, recursive = TRUE)
+  for (destination in destinations) {
+    assets <- paste0(destination, ".assets")
+    loaded <- ds.flower.load_model(destination)
+    expect_identical(
+      loaded$source_dir,
+      normalizePath(assets, winslash = "/", mustWork = TRUE))
+    resolved <- dsFlowerClient:::.resolve_model_for_predict(loaded)
+    expect_identical(
+      resolved$model_file,
+      normalizePath(file.path(assets, "model.pt"),
+                    winslash = "/", mustWork = TRUE))
+  }
+})
+
+test_that("load_model rejects missing or unsafe companion bundle paths", {
+  model_dir <- withr::local_tempdir()
+  missing <- file.path(model_dir, "missing.rds")
+  saveRDS(list(artifact_bundle = "missing.rds.assets"), missing)
+  expect_error(ds.flower.load_model(missing), "bundle is missing")
+
+  unsafe <- file.path(model_dir, "unsafe.rds")
+  saveRDS(list(artifact_bundle = "../outside"), unsafe)
+  expect_error(ds.flower.load_model(unsafe), "invalid artifact bundle")
+})
+
+test_that("tree artifacts report their one effective Flower round", {
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(
+    process = list(is_alive = function() TRUE),
+    flwr_home = withr::local_tempdir())
+  recipe <- ds.flower.recipe(
+    model = ds.flower.model.xgboost(), num_rounds = 9L, features = "x")
+  recipe$model$track <- "trees"
+  observed_rounds <- NULL
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .ensure_client_framework = function(...) TRUE,
+    .client_flwr_cmd = function() "flwr",
+    .client_venv_env = function(...) character(),
+    .run_flwr_with_artifact_watchdog = function(..., num_rounds) {
+      observed_rounds <<- num_rounds
+      list(status = 0L, stdout = "run_id=tree", stderr = "")
+    },
+    .read_model_weights = function(...) list(objective = "binary:logistic"),
+    .read_training_history = function(...) data.frame(
+      round = 1L, n_failures = 0L),
+    .package = "dsFlowerClient")
+
+  run <- ds.flower.run.start(
+    recipe, conns = list(site = TRUE), app_dir = withr::local_tempdir(),
+    output_dir = withr::local_tempdir(), output_name = "tree", silent = TRUE)
+  expect_identical(observed_rounds, 1L)
+  expect_identical(run$num_rounds, 1L)
+  expect_identical(run$requested_num_rounds, 9L)
+})
+
 test_that("run.start rejects stale caller-supplied result artifacts", {
   client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
   old_superlink <- client_env$.superlink
@@ -166,6 +333,57 @@ test_that(".training_artifacts_complete waits for final round", {
   expect_true(dsFlowerClient:::.training_artifacts_complete(
     results_dir, num_rounds = 1L
   ))
+})
+
+test_that("privacy-tail history completes without inventing a model artifact", {
+  results_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    data.frame(round = 1L, n_failures = 0L, available = FALSE),
+    file.path(results_dir, "history.json"), auto_unbox = TRUE)
+
+  expect_true(dsFlowerClient:::.training_artifacts_complete(
+    results_dir, num_rounds = 1L, expect_artifacts = TRUE))
+  expect_false(dsFlowerClient:::.model_artifact_exists(results_dir))
+})
+
+test_that("run.start reports a privacy tail as unavailable, not trained", {
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(
+    process = list(is_alive = function() TRUE),
+    flwr_home = withr::local_tempdir())
+  recipe <- ds.flower.recipe(
+    model = ds.flower.model.pytorch_logreg(), num_rounds = 1L,
+    features = "x")
+  recipe$model$track <- "neural"
+  output_root <- withr::local_tempdir()
+
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .ensure_client_framework = function(...) TRUE,
+    .client_flwr_cmd = function() "flwr",
+    .client_venv_env = function(...) character(),
+    .run_flwr_with_artifact_watchdog = function(...) list(
+      status = 0L, stdout = "run_id=privacy-tail", stderr = ""),
+    .read_model_weights = function(...) NULL,
+    .read_training_history = function(...) data.frame(
+      round = 1L, n_failures = 0L, available = FALSE),
+    .package = "dsFlowerClient")
+
+  run <- ds.flower.run.start(
+    recipe, conns = list(site = TRUE), app_dir = withr::local_tempdir(),
+    output_dir = output_root, output_name = "privacy-tail", silent = TRUE)
+  expect_identical(run$status, 0L)
+  expect_false(run$available)
+  expect_length(run$available_rounds, 0L)
+  expect_null(run$weights)
+  meta <- jsonlite::fromJSON(file.path(run$output_dir, "metadata.json"))
+  expect_identical(meta$status, "unavailable")
+  expect_false(meta$available)
+  expect_false(any(file.exists(file.path(
+    run$output_dir, c("model.pt", "model.npz", "booster.json",
+                      "global_model.json")))))
 })
 
 test_that(".training_artifacts_complete accepts skipped JSON marker", {

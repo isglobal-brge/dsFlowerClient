@@ -59,8 +59,7 @@ opal_login <- function(cfg, index) {
   opalr::opal.login(
     username = cfg$users[[index]],
     password = cfg$passwords[[index]],
-    url = cfg$urls[[index]],
-    opts = list(ssl_verifyhost = 0L, ssl_verifypeer = 0L)
+    url = cfg$urls[[index]]
   )
 }
 

@@ -90,15 +90,17 @@ delta_n   = delta_total w_n
 This bounds every finite prefix and the infinite transcript by the node's
 `(epsilon_total, delta_total)`. Exact Flower-message retries never trigger a
 second private release: the cached response is reused when available; otherwise
-the incoming public model is returned unchanged. Distinct releases receive
-distinct, secret-keyed random streams.
+the replay is reported as unavailable and the incoming public model is not
+accepted as a newly trained release. Distinct releases receive distinct,
+secret-keyed random streams.
 
 There is no lifetime query-count rejection. Finite total privacy with infinitely
 many equally informative answers is mathematically impossible, however, so the
 allocations tend to zero. When a per-message allocation becomes numerically too
-small, the node safely returns the incoming public model unchanged. The client
-cannot introduce a positive epsilon floor or reset the accountant by renaming or
-subsetting a dataset.
+small, the result has `available = FALSE` and no fallback is saved as a trained
+model. The request itself is not rejected. The client cannot introduce a
+positive epsilon floor or reset the accountant by renaming or subsetting a
+dataset.
 
 Budgets are per node. If the same person appears at multiple observed nodes,
 their epsilons and deltas compose across those nodes; only disjoint node
@@ -116,6 +118,12 @@ domain-separated ChaCha20 streams from a dedicated 256-bit secret using
 HMAC-SHA256. This prevents averaging exact retries while avoiding the unsafe
 reuse of one fixed noise vector across related queries. The secret is not a
 client seed, R RNG state or `datashield.seed`.
+
+The clipping, sensitivity and accounting contracts implement the standard
+`(epsilon, delta)` mechanisms under their mathematical model. The shipped
+finite-precision sampler is ChaCha20-backed and computationally hardened, but is
+not a formally verified discrete-Gaussian implementation; the production claim
+is therefore computational/practical DP for the documented valid-input domain.
 
 The server's `flowerPrivacyBudgetDS()` method reports the public accountant
 policy. Allocation count/status is returned only if the custodian enables
@@ -182,17 +190,52 @@ This is the path that reaches `nn.Module`-level granularity because the trusted
 runner owns the training loop and sees per-sample gradients. The client never
 sends an analyst-controlled training loop for declarative models.
 
-Available registered model names can be inspected with `ds.flower.models()`.
-Hyperparameters are supplied through `model_params`:
+Available registered training contracts can be inspected with
+`ds.flower.list_models()`. `ds.flower.model_parameters("pytorch_mlp")` returns
+the accepted names, types, aliases, effective defaults and finite choices for one
+contract. Hyperparameters are supplied through `model_params`:
 
 ```r
 fit <- ds.flower.fit(
   conns, symbol = "D", target = "y", features = c("x1", "x2"),
   model = "pytorch_mlp",
-  model_params = list(hidden_layers = c(64, 32)), rounds = 10L,
+  model_params = list(
+    hidden_layers = c(64, 32), optimizer = "adamw",
+    beta1 = 0.9, beta2 = 0.999,
+    scheduler = "cosine", scheduler_min_lr = 1e-4
+  ),
+  rounds = 10L,
   feature_bounds = list(lower = c(0, 0), upper = c(1, 100))
 )
 ```
+
+The first-party suite covers binary, multiclass, multilabel and ordinal
+classification; linear SVM; MLP, CNN, residual, recurrent, temporal and
+Transformer specifications; linear, ridge, lasso, elastic-net and robust Huber
+regression; Poisson, negative-binomial and Gamma outcomes; frozen-backbone
+medical-image classification; and bounded DP-GBDT. Neural contracts expose
+SGD, Adam, AdamW and RMSprop plus none/step/exponential/cosine learning-rate
+schedules. Parameters that are unknown, incompatible with the selected
+optimizer/loss, outside a resource cap, or not implemented fail before staging;
+accepted first-party parameters are pinned in the manifest and actually consumed
+by the trusted runner.
+
+The image contracts currently cover private federated training of their frozen-
+backbone heads. The packaged local predictor and private validation API are
+tabular; they do not yet reconstruct image loaders/backbones for inference or
+validation. This boundary is explicit rather than silently treating images as a
+numeric table.
+
+The registered name `xgboost` (also available as `dp_gbdt`) is a compatibility
+interface to dsFlower's own NumPy DP-GBDT: complete data-independent random-split
+trees, bounded contributions and Gaussian-noised leaf histograms. It currently
+supports `binary:logistic` and bounded `reg:squarederror`, with `n_trees`,
+`max_depth`, `learning_rate`/`eta`, `reg_lambda`, `n_bins`, public feature/margin
+ranges and an optional public regression-gradient bound. It does **not** import
+or claim the full native XGBoost API. Native XGBoost, LightGBM and CatBoost learn
+data-dependent bins, splits, topology, categories and stopping decisions, so
+adding noise only to their final model bytes would not make them formally DP.
+Those libraries are therefore not presented as safe drop-in aliases.
 
 Classification strings/factors require an ordered public `target_levels`;
 numeric labels already coded in `[0, K-1]` remain compatible.
@@ -218,6 +261,34 @@ initial_arrays(config, input_dim) -> numeric arrays
 local_update(global_arrays, X, y, config) -> numeric arrays
 ```
 
+The call accepts a bounded, JSON-like `app_params` object. Both functions receive
+the same validated public configuration:
+
+```text
+config = {
+  app_params,       # analyst parameters, hash-pinned by the node
+  round_index,      # 0 for initialization; 1..num_rounds for updates
+  num_rounds,
+  task,
+  num_classes
+}
+```
+
+The framework guarantees exact, typed JSON transport and manifest pinning of
+`app_params`; the HookApp author remains responsible for validating and using
+the keys its own code advertises. Unlike first-party declarative contracts,
+arbitrary uploaded code cannot be proven statically to consume a parameter.
+
+Privacy, paths, dependencies, runtime profiles, secrets and round counters are
+reserved and cannot be smuggled through `app_params`. Returned arrays have a
+fixed count and shape for the complete run. The wrapper clips their concatenated
+update and applies the Gaussian mechanism on every round; its calibration
+composes the full round transcript under the run allocation. This is the
+standard numeric output-DP mechanism for the fixed released vector (subject to
+the finite-precision caveat above), independent of whether the child uses NumPy
+or PyTorch. It is not internal DP-SGD and can have materially lower utility for a
+high-dimensional update.
+
 A HookApp is not a general trusted Flower App and cannot generically receive
 DP-SGD-level protection. The node runs it only when the custodian has enabled
 HookApps and attested the required Bubblewrap filesystem/network sandbox and
@@ -229,12 +300,60 @@ pinned number of disjoint data-independent blocks.
 That envelope is timing defense in depth, not a formal constant-time proof;
 cleanup, availability and storage behavior remain outside the numeric DP claim.
 
-If any execution gate is absent, the untrusted package is not run and the node
-returns the incoming public model unchanged. Archive scanning and hash pinning
-are integrity defenses, not proofs that arbitrary code is private.
+The client checks the public Hook readiness flags before upload and fails with a
+clear deployment error when an administrator gate is absent. If a public gate
+disappears after that preflight, the node refuses to open private data and marks
+the unchanged update unavailable; the coordinator refuses to report it as a
+trained model. A child crash, timeout or malformed result instead
+maps to a zero update and still passes through the same Gaussian mechanism and
+timing envelope, so it cannot bypass numeric DP. Archive scanning and hash
+pinning are integrity defenses, not proofs that arbitrary code is private. A
+trusted-runtime failure after private execution begins is reported only as
+`available = FALSE`; its cause and fallback are not exposed as a trained model.
+Native libraries or analyst-provided `requirements` are not installed
+dynamically; new binary runtime profiles must be curated, locked and enabled by
+the node administrator.
 `ds.flower.tier2.run()` is a deprecated compatibility alias.
 HookApps use the same `target_levels`/`target_bounds` contract and must declare
 `task = "classification"`, `"regression"` or `"count"`.
+
+## Private model validation
+
+`ds.flower.validate()` evaluates a saved declarative model inside the nodes and
+releases one fixed, Gaussian-noised vector of bounded sufficient statistics per
+node. The current validator is for tabular neural and DP-GBDT artifacts; vision
+artifacts fail explicitly. Exact labels, predictions, counts and site metrics remain local; the
+researcher receives only pooled post-processing:
+
+```r
+validation <- ds.flower.validate(
+  conns,
+  model = fit,
+  symbol = "D_test",
+  target = "outcome",
+  bins = 64L
+)
+print(validation)
+```
+
+Binary validation provides threshold metrics, ROC/PR AUC, Brier score,
+calibration and decision-curve summaries; multiclass/ordinal/multilabel use
+bounded confusion and one-vs-rest histograms; bounded regression/count contracts
+provide MAE, MSE/RMSE, R-squared and, for counts, Poisson deviance. All are
+computed from the same private vector, so deriving several reported metrics does
+not create additional releases.
+
+`validation$available` is `FALSE` if the complete fixed-layout release was not
+available from every expected node. In that case `validation$metrics` is `NULL`:
+the API returns no exact, per-node or zero-filled substitute and does not create
+a query-count lockout.
+
+Assigning an independent dataset gives external validation; reusing training
+data gives resubstitution validation. This API does not call the exact validation
+set a holdout and does not claim cross-validation. Honest patient-level holdout
+or K-fold training requires a public, protocol-defined split and separately
+accounted training releases for the fitted fold models; that orchestration is not
+silently simulated by this one-release evaluator.
 
 ## Public feature bounds
 

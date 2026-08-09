@@ -7,12 +7,15 @@
 ds.flower.load_model(path)
 }
 \arguments{
-\item{path}{Character; path to the model directory or \code{.rds} file.}
+\item{path}{Character; path to a model directory, \code{.rds}, or
+\code{.json} file.}
 }
 \value{
 A list with model_id, weights, history, and metadata.
 }
 \description{
-Reads model weights and metadata from a previously saved output directory
-or \code{.rds} file.
+Reads model weights and metadata from a previously saved output directory,
+\code{.rds} file, or \code{.json} file. Files created by
+\code{ds.flower.save_model()} must remain beside their sibling
+\code{<filename>.assets} directory.
 }

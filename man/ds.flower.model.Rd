@@ -15,6 +15,7 @@ ds.flower.model(name = "pytorch_logreg", ...)
 A \code{dsflower_model} object.
 }
 \description{
-Convenience wrapper around the concrete \code{ds.flower.model.*}
-constructors. Existing \code{dsflower_model} objects are returned unchanged.
+Resolves a registered model name and validates its typed parameter contract.
+Existing \code{dsflower_model} objects are canonicalised and revalidated
+against the current registry.
 }

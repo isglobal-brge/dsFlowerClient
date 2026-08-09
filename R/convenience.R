@@ -30,10 +30,27 @@
   do.call(fun, args)
 }
 
+.dsflower_canonical_model_name <- function(name) {
+  aliases <- c(
+    logreg = "pytorch_logreg", logistic = "pytorch_logreg",
+    logistic_regression = "pytorch_logreg",
+    mlp = "pytorch_mlp", torch_mlp = "pytorch_mlp",
+    torch_logreg = "pytorch_logreg", multiclass = "pytorch_multiclass",
+    linear_regression = "pytorch_linear_regression",
+    huber = "pytorch_huber", robust_regression = "pytorch_huber",
+    poisson = "pytorch_poisson", multilabel = "pytorch_multilabel",
+    resnet18 = "pytorch_resnet18", densenet121 = "pytorch_densenet121",
+    xgb = "xgboost", gbdt = "xgboost", dp_gbdt = "xgboost",
+    dp_tree = "xgboost")
+  key <- .dsflower_choice_key(name)
+  if (key %in% names(aliases)) aliases[[key]] else key
+}
+
 #' Create a model spec by name
 #'
-#' Convenience wrapper around the concrete \code{ds.flower.model.*}
-#' constructors. Existing \code{dsflower_model} objects are returned unchanged.
+#' Resolves a registered model name and validates its typed parameter contract.
+#' Existing \code{dsflower_model} objects are canonicalised and revalidated
+#' against the current registry.
 #'
 #' @param name Character model name or a \code{dsflower_model} object.
 #' @param ... Arguments passed to the selected concrete model constructor.
@@ -45,7 +62,17 @@ ds.flower.model <- function(name = "pytorch_logreg", ...) {
       stop("'...' cannot be used when 'name' is already a dsflower_model object.",
            call. = FALSE)
     }
-    return(name)
+    canonical <- .dsflower_canonical_model_name(name$name)
+    registered <- .dsflower_get_model(canonical)
+    params <- .dsflower_resolve_model_params(
+      registered, name$params %||% list())
+    framework <- if (identical(registered$track, "trees")) "xgboost" else
+      if (identical(registered$data_kinds, "image")) "pytorch_vision" else
+        "pytorch"
+    return(structure(list(
+      name = registered$name, track = registered$track,
+      template = registered$name, framework = framework,
+      loss = registered$loss, params = params), class = "dsflower_model"))
   }
   if (!is.character(name) || length(name) != 1L) {
     stop("'name' must be a dsflower_model object or a single model name.",
@@ -55,24 +82,16 @@ ds.flower.model <- function(name = "pytorch_logreg", ...) {
   # Friendly aliases -> canonical registered names (torch + xgboost only; the
   # full model set lives in the client-side registry, extensible by derived
   # packages -- there is NO server-side catalog).
-  aliases <- c(
-    logreg = "pytorch_logreg", logistic = "pytorch_logreg",
-    logistic_regression = "pytorch_logreg",
-    mlp = "pytorch_mlp", torch_mlp = "pytorch_mlp", torch_logreg = "pytorch_logreg",
-    multiclass = "pytorch_multiclass",
-    linear_regression = "pytorch_linear_regression",
-    poisson = "pytorch_poisson", multilabel = "pytorch_multilabel",
-    resnet18 = "pytorch_resnet18", densenet121 = "pytorch_densenet121",
-    xgb = "xgboost", gbdt = "xgboost")
-  key <- .dsflower_choice_key(name)
-  canonical <- if (key %in% names(aliases)) aliases[[key]] else key
+  canonical <- .dsflower_canonical_model_name(name)
 
   m <- .dsflower_get_model(canonical)   # registry lookup; errors listing available
-  params <- utils::modifyList(m$defaults %||% list(), list(...))
+  params <- .dsflower_resolve_model_params(m, list(...))
   # Carry template/framework/loss too: the recipe task-inference, recipe print, run-record
   # metadata and prediction routing all read these. In this spec-based design template == name.
+  framework <- if (identical(m$track, "trees")) "xgboost" else
+    if (identical(m$data_kinds, "image")) "pytorch_vision" else "pytorch"
   structure(list(name = m$name, track = m$track, template = m$name,
-                 framework = if (identical(m$track, "trees")) "xgboost" else "pytorch",
+                 framework = framework,
                  loss = m$loss, params = params),
             class = "dsflower_model")
 }
@@ -183,12 +202,14 @@ ds.flower.task <- function(name = "classification") {
 #'   \code{strategy} is a character value.
 #' @param rounds Integer number of federated rounds.
 #' @param task Optional character task name or \code{dsflower_task} object.
-#' @param label_set Optional imaging label-set name.
+#' @param label_set Reserved compatibility argument. Non-NULL values fail early;
+#'   the enforced-DP training path does not implement label-set selection.
 #' @param masks Reserved compatibility argument. Non-NULL values fail early
 #'   because segmentation is not implemented by the enforced-DP runtime.
-#' @param evaluation_only Logical; accepted for compatibility but NOT yet enforced by the
-#'   enforced-DP path (the model is always released, DP-protected).
-#' @param detached Logical; accepted for back-compat (unused by the enforced-DP path).
+#' @param evaluation_only Logical; must remain \code{FALSE}. \code{TRUE} fails
+#'   early because evaluation-only release semantics are not implemented.
+#' @param detached Logical; must remain \code{FALSE}; detached execution is not
+#'   implemented by the enforced-DP training path.
 #' @param output_dir Optional character; parent directory the trained model is
 #'   saved under (created if missing). Defaults to \code{./dsflower_output}.
 #' @param output_name Optional character; folder/file name for this model inside
@@ -199,9 +220,10 @@ ds.flower.task <- function(name = "classification") {
 #' @param verbose Logical; when \code{TRUE}, also print the raw flwr run log
 #'   (debugging). The tidy per-round progress is shown regardless unless
 #'   \code{silent = TRUE}.
-#' @param disconnect Logical; accepted for compatibility. The submission pipeline always
-#'   cleans up its server-side handles on exit regardless.
-#' @param run_args Named list; accepted for back-compat (unused by the enforced-DP path).
+#' @param disconnect Logical; must remain \code{TRUE}. The submission pipeline
+#'   always cleans up its temporary server-side handles on exit.
+#' @param run_args Named list; must remain empty. Arbitrary runner arguments are
+#'   not accepted by the enforced-DP training path.
 #' @param feature_bounds Optional public feature bounds as
 #'   \code{list(lower=..., upper=...)} in feature order. Appended to the signature
 #'   for positional backward compatibility.
@@ -214,6 +236,9 @@ ds.flower.task <- function(name = "classification") {
 #' @param allow_insecure_http Character vector of exact connection names allowed
 #'   to use plaintext HTTP. Empty by default. This exception does not provide
 #'   transport security; use it only behind an independently trusted network.
+#' @param data_kind Optional input kind, \code{"tabular"} or \code{"image"}.
+#'   It is inferred when the registered model supports exactly one kind; models
+#'   registered for both require an explicit choice.
 #' @return A \code{dsflower_run} object.
 #' @export
 ds.flower.fit <- function(conns,
@@ -243,7 +268,8 @@ ds.flower.fit <- function(conns,
                           target_levels = NULL,
                           target_bounds = NULL,
                           allow_insecure_http = getOption(
-                            "dsflower.dsi_allow_insecure_http", character())) {
+                            "dsflower.dsi_allow_insecure_http", character()),
+                          data_kind = NULL) {
   # Set the progress-verbosity option at the outermost entry point so it stays
   # active through every nested step, including the connection teardown that runs
   # in the submission pipeline's on.exit cleanup.
@@ -256,10 +282,18 @@ ds.flower.fit <- function(conns,
   if (missing(target) || is.null(target)) {
     stop("'target' is required.", call. = FALSE)
   }
-  rounds <- suppressWarnings(as.integer(rounds))
-  if (length(rounds) != 1L || is.na(rounds) || rounds < 1L) {
-    stop("'rounds' must be a single positive integer.", call. = FALSE)
+  if (!is.numeric(rounds) || is.logical(rounds)) {
+    stop("'rounds' must be a single positive integer no greater than 500.",
+         call. = FALSE)
   }
+  rounds_value <- as.numeric(rounds)
+  if (length(rounds_value) != 1L || is.na(rounds_value) ||
+      !is.finite(rounds_value) || rounds_value < 1 ||
+      rounds_value %% 1 != 0 || rounds_value > 500) {
+    stop("'rounds' must be a single positive integer no greater than 500.",
+         call. = FALSE)
+  }
+  rounds <- as.integer(rounds_value)
   if (!is.list(model_params) ||
       (length(model_params) > 0L && is.null(names(model_params)))) {
     stop("'model_params' must be a named list.", call. = FALSE)
@@ -271,6 +305,37 @@ ds.flower.fit <- function(conns,
   if (!is.list(run_args) ||
       (length(run_args) > 0L && is.null(names(run_args)))) {
     stop("'run_args' must be a named list.", call. = FALSE)
+  }
+  flag <- function(value, name) {
+    if (!is.logical(value) || length(value) != 1L || is.na(value)) {
+      stop("'", name, "' must be TRUE or FALSE.", call. = FALSE)
+    }
+    value
+  }
+  evaluation_only <- flag(evaluation_only, "evaluation_only")
+  detached <- flag(detached, "detached")
+  disconnect <- flag(disconnect, "disconnect")
+  if (!is.null(label_set)) {
+    stop("'label_set' is not supported by the enforced-DP training path.",
+         call. = FALSE)
+  }
+  if (evaluation_only) {
+    stop("'evaluation_only = TRUE' is not implemented by the enforced-DP path; ",
+         "refusing to release a model contrary to the requested semantics.",
+         call. = FALSE)
+  }
+  if (detached) {
+    stop("'detached = TRUE' is not supported by the enforced-DP training path.",
+         call. = FALSE)
+  }
+  if (!disconnect) {
+    stop("'disconnect = FALSE' is not supported: the enforced-DP submission ",
+         "pipeline always cleans up its temporary server-side connections.",
+         call. = FALSE)
+  }
+  if (length(run_args)) {
+    stop("'run_args' is not supported by the enforced-DP training path.",
+         call. = FALSE)
   }
   if (!is.null(masks)) {
     stop("'masks' requires segmentation, which is not supported by the ",
@@ -290,7 +355,10 @@ ds.flower.fit <- function(conns,
     do.call(ds.flower.model, c(list(name = model), model_params))
   }
   if (inherits(model, "dsflower_model") && length(model_params)) {
-    model_spec$params <- utils::modifyList(model_spec$params %||% list(), model_params)
+    registered <- .dsflower_get_model(model_spec$name)
+    registered$defaults <- model_spec$params %||% list()
+    model_spec$params <- .dsflower_resolve_model_params(
+      registered, model_params)
   }
 
   strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
@@ -307,8 +375,11 @@ ds.flower.fit <- function(conns,
     task_spec <- ds.flower.task(task)
     .assert_supported_task(task_spec)
     model_loss <- model_spec$loss %||% .dsflower_get_model(model_spec$name)$loss
-    expected_task <- if (model_loss %in%
-                         c("mse", "poisson_nll", "negbin_nll", "gamma_nll")) {
+    tree_objective <- (model_spec$params %||% list())$objective %||% ""
+    expected_task <- if (identical(tree_objective, "reg:squarederror") ||
+                         model_loss %in% c(
+                           "mse", "huber", "poisson_nll", "negbin_nll",
+                           "gamma_nll")) {
       "regression"
     } else {
       "classification"
@@ -319,14 +390,25 @@ ds.flower.fit <- function(conns,
     }
   }
 
-  # Vision models train a head on frozen-backbone image features; all else tabular.
-  data_kind <- if (model_spec$name %in% c("pytorch_resnet18", "pytorch_densenet121"))
-    "image" else "tabular"
+  supported_kinds <- .dsflower_get_model(model_spec$name)$data_kinds %||% "tabular"
+  if (is.null(data_kind)) {
+    if (length(supported_kinds) != 1L) {
+      stop("Model '", model_spec$name, "' supports more than one input kind; ",
+           "set 'data_kind' explicitly to one of: ",
+           paste(supported_kinds, collapse = ", "), ".", call. = FALSE)
+    }
+    data_kind <- supported_kinds[[1L]]
+  } else if (!is.character(data_kind) || length(data_kind) != 1L ||
+             is.na(data_kind) || !data_kind %in% supported_kinds) {
+    stop("'data_kind' must be exactly one of the kinds supported by model '",
+         model_spec$name, "': ", paste(supported_kinds, collapse = ", "), ".",
+         call. = FALSE)
+  }
 
   # The submission pipeline owns connect/upload/pin/run/cleanup. The aggregation
   # strategy runs server-side (researcher SuperLink) over already-DP updates, so
-  # any of the supported strategies is DP-safe post-processing (label_set/masks
-  # remain back-compat no-ops for the enforced-DP tracks).
+  # Any supported strategy is DP-safe post-processing. Unsupported compatibility
+  # arguments have already failed above rather than silently changing semantics.
   ds.flower.submit(
     conns, model = model_spec, target = target, features = features,
     data = data, resource = resource, symbol = symbol,

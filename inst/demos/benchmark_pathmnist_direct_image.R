@@ -276,37 +276,9 @@ run_federated <- function(cfg, table_paths, model_spec, rounds,
     num_rounds = rounds
   )
 
-  run_config <- c(
-    recipe$model$params,
-    recipe$strategy$params,
-    list(
-      data_type = "image",
-      num_rounds = recipe$num_rounds,
-      target_column = "label"
-    )
-  )
-
-  symbol <- "flower_pathmnist"
-  with_ds_errors(ds.flower.nodes.init(conns, data = "D", symbol = symbol))
-  on.exit(try(ds.flower.nodes.cleanup(conns, symbol = symbol), silent = TRUE),
-          add = TRUE)
-
-  with_ds_errors(
-    ds.flower.nodes.prepare(
-      conns,
-      symbol = symbol,
-      target_column = "label",
-      feature_columns = NULL,
-      run_config = run_config,
-      template_name = recipe$model$template
-    )
-  )
-  with_ds_errors(
-    ds.flower.nodes.ensure(conns, symbol = symbol,
-                           template_name = recipe$model$template)
-  )
-  run <- with_ds_errors(ds.flower.run.start(recipe, conns = conns, verbose = TRUE))
-  with_ds_errors(ds.flower.nodes.cleanup(conns, symbol = symbol))
+  run <- with_ds_errors(ds.flower.fit(
+    conns, symbol = "D", target = "label", model = model_spec,
+    rounds = rounds, data_kind = "image", verbose = TRUE))
   post_caps <- tryCatch(
     DSI::datashield.aggregate(conns, expr = call("flowerGetCapabilitiesDS")),
     error = function(e) NULL

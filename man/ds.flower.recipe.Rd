@@ -35,7 +35,8 @@ only by the multilabel enforced-DP model.}
 
 \item{target_column}{Alias for \code{target} (backward compat).}
 
-\item{label_set}{Character; name of the label set to use (imaging datasets).}
+\item{label_set}{Reserved compatibility argument. Non-NULL values fail early;
+label-set staging is not implemented by the enforced-DP runtime.}
 
 \item{features}{Character vector; feature column names, or NULL for auto.}
 
@@ -44,7 +45,9 @@ only by the multilabel enforced-DP model.}
 \item{masks}{Reserved compatibility argument. Non-NULL values fail early
 because segmentation is not implemented by the enforced-DP runtime.}
 
-\item{evaluation_only}{Logical; if TRUE, blocks model release.}
+\item{evaluation_only}{Reserved compatibility argument. TRUE fails early;
+evaluation-only execution is not implemented. Use
+\code{ds.flower.validate()} for private model validation.}
 }
 \value{
 A \code{dsflower_recipe} S3 object.

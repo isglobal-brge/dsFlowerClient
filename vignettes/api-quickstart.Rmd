@@ -102,8 +102,10 @@ coordinator-side diagnostic.
 `ds.flower.hook.run()` is available for the restricted `initial_arrays()` /
 `local_update()` ABI. Arbitrary code does not receive declarative DP-SGD
 granularity. If the custodian has not enabled and attested the required sandbox
-and timing envelope, the node does not execute the package and returns an
-unchanged data-independent model.
+and timing envelope, the client stops at the public readiness preflight before
+upload. If a gate disappears after that preflight, the node refuses to open
+private data and the coordinator does not accept the unchanged update as a
+trained model.
 
 ## Cleanup
 

@@ -69,8 +69,122 @@ test_that("fit forwards registry parameters not present in model defaults", {
   expect_identical(seen$model$params$channels, 16L)
 })
 
+test_that("fit canonicalizes model aliases before submission", {
+  seen <- NULL
+  local_mocked_bindings(
+    ds.flower.submit = function(...) {
+      seen <<- list(...)
+      structure(list(), class = "dsflower_run")
+    },
+    .package = "dsFlowerClient"
+  )
+
+  ds.flower.fit(
+    conns = list(site = TRUE), symbol = "D", target = "y", features = "x",
+    model = "xgboost", model_params = list(eta = 0.2)
+  )
+
+  expect_equal(seen$model$params$learning_rate, 0.2)
+  expect_false("eta" %in% names(seen$model$params))
+})
+
+test_that("fit rejects unknown model parameters before submission", {
+  submitted <- FALSE
+  local_mocked_bindings(
+    ds.flower.submit = function(...) {
+      submitted <<- TRUE
+      structure(list(), class = "dsflower_run")
+    },
+    .package = "dsFlowerClient"
+  )
+
+  expect_error(
+    ds.flower.fit(
+      conns = list(site = TRUE), symbol = "D", target = "y", features = "x",
+      model_params = list(max_iter = 100L)
+    ),
+    "Unknown parameter.*max_iter"
+  )
+  expect_false(submitted)
+})
+
+test_that("fit derives or requires the registered input kind", {
+  registry <- get(".dsflower_models", envir = asNamespace("dsFlowerClient"))
+  on.exit(rm(list = c("extension_image_test", "extension_dual_test"),
+             envir = registry), add = TRUE)
+  generator <- function(params) {
+    list(kind = "sequential", layers = list(
+      list(op = "linear", "in" = "@in", out = "@out")))
+  }
+  ds.flower.register_model(
+    "extension_image_test", "neural", generator, loss = "bce_logits",
+    parameter_types = character(), data_kinds = "image", overwrite = TRUE)
+  ds.flower.register_model(
+    "extension_dual_test", "neural", generator, loss = "bce_logits",
+    parameter_types = character(), data_kinds = c("tabular", "image"),
+    overwrite = TRUE)
+
+  seen <- NULL
+  local_mocked_bindings(
+    ds.flower.submit = function(...) {
+      seen <<- list(...)
+      structure(list(), class = "dsflower_run")
+    },
+    .package = "dsFlowerClient"
+  )
+
+  ds.flower.fit(
+    conns = list(site = TRUE), symbol = "D", target = "y",
+    model = "extension_image_test")
+  expect_identical(seen$data_kind, "image")
+
+  expect_error(
+    ds.flower.fit(
+      conns = list(site = TRUE), symbol = "D", target = "y", features = "x",
+      model = "extension_dual_test"),
+    "set 'data_kind' explicitly")
+  ds.flower.fit(
+    conns = list(site = TRUE), symbol = "D", target = "y",
+    model = "extension_dual_test", data_kind = "image")
+  expect_identical(seen$data_kind, "image")
+  expect_error(
+    ds.flower.fit(
+      conns = list(site = TRUE), symbol = "D", target = "y", features = "x",
+      model = "extension_image_test", data_kind = "tabular"),
+    "supported by model")
+})
+
+test_that("fit rejects compatibility arguments whose semantics are unsupported", {
+  submitted <- FALSE
+  local_mocked_bindings(
+    ds.flower.submit = function(...) {
+      submitted <<- TRUE
+      structure(list(), class = "dsflower_run")
+    },
+    .package = "dsFlowerClient"
+  )
+  common <- list(conns = list(site = TRUE), symbol = "D",
+                 target = "y", features = "x")
+
+  expect_error(do.call(ds.flower.fit, c(common, list(evaluation_only = TRUE))),
+               "evaluation_only = TRUE")
+  expect_error(do.call(ds.flower.fit, c(common, list(label_set = "clinical"))),
+               "label_set.*not supported")
+  expect_error(do.call(ds.flower.fit, c(common, list(detached = TRUE))),
+               "detached = TRUE")
+  expect_error(do.call(ds.flower.fit, c(common, list(disconnect = FALSE))),
+               "disconnect = FALSE")
+  expect_error(do.call(ds.flower.fit, c(common, list(run_args = list(foo = 1)))),
+               "run_args.*not supported")
+  expect_false(submitted)
+})
+
 test_that("fit validates required arguments before connecting", {
   expect_error(ds.flower.fit(conns = list()), "target")
+  expect_error(
+    ds.flower.fit(conns = list(), target = "y", rounds = 1.5),
+    "positive integer"
+  )
   expect_error(
     ds.flower.fit(conns = list(), symbol = "D", data = "D", target = "y"),
     "only one"

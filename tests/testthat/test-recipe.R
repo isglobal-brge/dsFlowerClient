@@ -35,4 +35,29 @@ test_that("recipe rejects handcrafted unsupported task specs", {
     ds.flower.recipe(model = ds.flower.model.pytorch_logreg(), masks = "mask"),
     "segmentation"
   )
+  expect_error(
+    ds.flower.recipe(model = "pytorch_logreg", label_set = "labels"),
+    "label_set"
+  )
+  expect_error(
+    ds.flower.recipe(model = "pytorch_logreg", evaluation_only = TRUE),
+    "ds.flower.validate"
+  )
+})
+
+test_that("recipe infers and enforces the registered model task", {
+  expect_identical(
+    ds.flower.recipe(model = "pytorch_huber")$task$type,
+    "regression")
+  expect_identical(
+    ds.flower.recipe(
+      model = ds.flower.model(
+        "xgboost", objective = "reg:squarederror"))$task$type,
+    "regression")
+  expect_error(
+    ds.flower.recipe(
+      model = "pytorch_huber", task = "classification"),
+    "incompatible")
+  expect_error(ds.flower.recipe(model = "pytorch_logreg", num_rounds = "2"),
+               "integer")
 })

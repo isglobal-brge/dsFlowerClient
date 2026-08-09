@@ -20,11 +20,13 @@ ds.flower.run.start(
 \arguments{
 \item{recipe}{A \code{dsflower_recipe} object.}
 
-\item{conns}{DSI connections object. Used to fetch the model template
-from the server. If NULL, uses the connections stored during
+\item{conns}{DSI connections object used to determine the required site count.
+If NULL, uses the connections stored during
 \code{ds.flower.nodes.init}.}
 
-\item{app_dir}{Character; path to a pre-built app directory (optional).}
+\item{app_dir}{Required character path to a pre-built app directory. The
+high-level \code{ds.flower.submit()} and \code{ds.flower.fit()} pipelines
+build and supply it automatically.}
 
 \item{run_config}{Named list; additional run config overrides.}
 
@@ -39,16 +41,16 @@ writes model artefacts. Usually generated automatically.}
 \item{symbol}{Character; server-side Flower handle symbol. Low-level callers
 that initialise the default handle can leave this as \code{"flower"}.}
 
-\item{verbose}{Logical; print flwr output (default TRUE).}
+\item{verbose}{Logical; print flwr output (default FALSE).}
 
 \item{silent}{Logical; suppress progress feedback.}
 }
 \value{
-A \code{dsflower_run} object with weights, history, and predictions.
+A \code{dsflower_run} object with run status and identifiers, model
+  metadata, weights, history, output paths, and captured CLI output.
 }
 \description{
-Fetches the model template from the server, builds a Flower App from
-the recipe, then invokes \code{flwr run} against the running SuperLink.
-Model weights and training history are automatically saved to
+Invokes \code{flwr run} for a pre-built Flower App against the running
+SuperLink. Model weights and training history are automatically saved to
 \code{output_dir} after training completes.
 }

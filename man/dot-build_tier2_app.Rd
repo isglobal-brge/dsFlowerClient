@@ -13,7 +13,11 @@ hook against the node-computed upload hash (so it cannot be tampered with).}
   n_features,
   results_dir,
   n_nodes,
-  num_rounds
+  num_rounds,
+  task,
+  num_classes,
+  app_params_b64,
+  app_params_sha256
 )
 }
 \description{

@@ -11,7 +11,10 @@ Usage:
 """
 
 import argparse
+import base64
+import importlib.util
 import json
+from pathlib import Path
 import sys
 
 import numpy as np
@@ -85,10 +88,126 @@ def _mlp_forward(weights, X_t, output_limit=_MAX_OUTPUT_ABS):
     return h.squeeze(-1)
 
 
-def predict_pytorch(model_path, X, pred_type, template=None):
+def _load_model_spec_module():
+    """Load the same data-only model builder bundled in the trusted runner."""
+    path = (Path(__file__).resolve().parents[1] / "flower_app" /
+            "dsflower_runner" / "model_spec.py")
+    if not path.is_file():
+        raise RuntimeError("bundled declarative model builder is unavailable")
+    module_spec = importlib.util.spec_from_file_location(
+        "_dsflower_predict_model_spec", str(path))
+    if module_spec is None or module_spec.loader is None:
+        raise RuntimeError("could not load the declarative model builder")
+    module = importlib.util.module_from_spec(module_spec)
+    module_spec.loader.exec_module(module)
+    return module
+
+
+def _decode_model_spec(raw):
+    if not isinstance(raw, str) or len(raw) > 256 * 1024:
+        raise ValueError("encoded model spec is missing or oversized")
+    decoded = base64.b64decode(raw, validate=True)
+    if len(decoded) > 128 * 1024:
+        raise ValueError("decoded model spec is oversized")
+    value = json.loads(decoded.decode("utf-8"))
+    if not isinstance(value, dict):
+        raise ValueError("model spec must decode to an object")
+    return value
+
+
+def _ordinal_probabilities(logits):
+    """Convert K-1 cumulative logits to a finite K-class distribution."""
+    import torch
+    q = torch.sigmoid(logits)
+    if q.dim() == 1:
+        q = q.unsqueeze(-1)
+    # Finite samples can violate monotonicity slightly.  Projection is public
+    # post-processing and makes the resulting class probabilities coherent.
+    q = torch.cummin(q, dim=-1).values
+    parts = [1.0 - q[:, :1]]
+    if q.shape[1] > 1:
+        parts.append(q[:, :-1] - q[:, 1:])
+    parts.append(q[:, -1:])
+    probs = torch.clamp(torch.cat(parts, dim=-1), min=0.0, max=1.0)
+    return probs / torch.clamp(probs.sum(dim=-1, keepdim=True), min=1.0e-12)
+
+
+def _apply_loss_semantics(logits, loss_name, pred_type):
+    import torch
+    loss_name = str(loss_name)
+    if loss_name in ("mse", "huber"):
+        return logits.squeeze(-1).detach().numpy().tolist()
+    if loss_name in ("poisson_nll", "negbin_nll", "gamma_nll"):
+        return torch.exp(torch.clamp(logits.squeeze(-1), -30.0, 30.0)).detach().numpy().tolist()
+    if loss_name == "multilabel_bce":
+        probs = torch.sigmoid(logits)
+        return (probs if pred_type == "prob" else (probs > 0.5).int()).detach().numpy().tolist()
+    if loss_name == "ordinal":
+        probs = _ordinal_probabilities(logits)
+        return (probs if pred_type == "prob" else torch.argmax(probs, dim=-1)).detach().numpy().tolist()
+    if loss_name in ("cross_entropy", "hinge") or (
+            logits.dim() > 1 and logits.shape[-1] > 1):
+        probs = torch.softmax(logits, dim=-1)
+        return (probs if pred_type == "prob" else torch.argmax(probs, dim=-1)).detach().numpy().tolist()
+    flat = logits.squeeze(-1)
+    probs = torch.sigmoid(flat)
+    return (probs if pred_type == "prob" else (flat > 0).int()).detach().numpy().tolist()
+
+
+def _load_state_dict_safely(model_path):
+    """Load tensor weights without enabling arbitrary pickle execution."""
+    import torch
+    try:
+        checkpoint = torch.load(
+            model_path, map_location="cpu", weights_only=True)
+    except TypeError as exc:
+        raise RuntimeError(
+            "Safe checkpoint loading requires PyTorch weights_only support"
+        ) from exc
+    if not isinstance(checkpoint, dict):
+        raise ValueError("PyTorch checkpoint must contain a state_dict mapping")
+    state_dict = checkpoint.get("state_dict", checkpoint)
+    if not isinstance(state_dict, dict) or not state_dict:
+        raise ValueError("PyTorch checkpoint state_dict must be a non-empty mapping")
+    if any(not isinstance(key, str) or not torch.is_tensor(value)
+           for key, value in state_dict.items()):
+        raise ValueError("PyTorch state_dict accepts only named tensor values")
+    return state_dict
+
+
+def predict_pytorch_spec(model_path, X, pred_type, spec_b64, loss_name,
+                         num_classes=2, num_labels=2):
+    """Rebuild the exact declarative architecture, then load its state_dict."""
+    import torch
+    builder = _load_model_spec_module()
+    public_spec = _decode_model_spec(spec_b64)
+    cfg = {"num-classes": int(num_classes), "num-labels": int(num_labels)}
+    out_dim = builder.output_width(str(loss_name), cfg)
+    model = builder.build_from_spec(
+        public_spec, in_dim=int(X.shape[1]), out_dim=int(out_dim),
+        num_labels=int(num_labels),
+        output_limit=builder.output_limit_for_loss(str(loss_name)))
+    state_dict = _load_state_dict_safely(model_path)
+    model.load_state_dict(state_dict, strict=True)
+    model.eval()
+    with torch.no_grad():
+        logits = model(torch.tensor(X, dtype=torch.float32))
+        logits = _finite_torch(logits, builder.output_limit_for_loss(str(loss_name)))
+    return _apply_loss_semantics(logits, loss_name, pred_type)
+
+
+def predict_pytorch(model_path, X, pred_type, template=None, spec_b64=None,
+                    loss_name=None, num_classes=2, num_labels=2):
     """Predict with a PyTorch checkpoint, with template-aware output semantics."""
     import torch
     from collections import OrderedDict
+
+    if spec_b64 is not None:
+        if not loss_name:
+            raise ValueError("declarative prediction requires the pinned loss name")
+        return predict_pytorch_spec(
+            model_path, X, pred_type, spec_b64, loss_name,
+            num_classes=num_classes, num_labels=num_labels)
 
     if _is_unsupported_pt(template):
         print(json.dumps({"error": (
@@ -98,8 +217,7 @@ def predict_pytorch(model_path, X, pred_type, template=None):
             "ClientApp Net.")}), file=sys.stderr)
         sys.exit(2)
 
-    checkpoint = torch.load(model_path, map_location="cpu", weights_only=False)
-    state_dict = checkpoint.get("state_dict", checkpoint)
+    state_dict = _load_state_dict_safely(model_path)
     if isinstance(state_dict, OrderedDict):
         weights = list(state_dict.values())
     else:
@@ -168,7 +286,7 @@ def _xgb_leaf(splits, leaves, row):
 
 
 def _is_dpgbdt_booster(model):
-    """True for the DP-GBDT (S-GBDT) booster format: complete random-split trees
+    """True for the DP-GBDT booster format: complete random-split trees
     serialized as {feat, thr, w} arrays + a top-level depth/base_margin. This is a
     DIFFERENT shape from the splits/leaves dict format predict_xgboost_custom reads."""
     if "depth" not in model or "base_margin" not in model:
@@ -178,7 +296,7 @@ def _is_dpgbdt_booster(model):
 
 
 def predict_dpgbdt(model_path, X, pred_type):
-    """Predict with the DP-GBDT booster (binary:logistic). Mirrors
+    """Predict with the DP-GBDT booster. Mirrors
     dp_gbdt.predict_margin: F(x) = base_margin + sum_t w_t[leaf_t(x)] over the
     complete random-split trees; leaf weights ALREADY include the learning rate
     (Newton step), so we do NOT re-apply it. Routing follows the complete-tree rule
@@ -200,6 +318,15 @@ def predict_dpgbdt(model_path, X, pred_type):
             node = 2 * node + 1 + go_right.astype(np.int64)
         leaf = node - ((1 << depth) - 1)
         F = F + w[leaf]
+    objective = str(model.get("objective", "binary:logistic"))
+    if objective == "reg:squarederror":
+        bounds = np.asarray(model.get("margin_bounds", []), dtype=np.float64)
+        if (bounds.shape != (2,) or not np.all(np.isfinite(bounds))
+                or not bounds[0] < bounds[1]):
+            raise ValueError("bounded regression booster has invalid margin bounds")
+        return np.clip(F, bounds[0], bounds[1]).tolist()
+    if objective != "binary:logistic":
+        raise ValueError("unsupported DP-GBDT objective %r" % objective)
     p = 1.0 / (1.0 + np.exp(-np.clip(F, -60.0, 60.0)))
     if pred_type == "prob":
         return p.tolist()
@@ -305,6 +432,25 @@ def _apply_feature_preprocessing(X, bounds_b64=None, norm_b64=None):
         _MAX_ACTIVATION_ABS).astype(np.float32)
 
 
+def _apply_tree_bounds(X, bounds_b64=None):
+    """Repeat tree training's raw-domain cap and midpoint imputation."""
+    if not bounds_b64:
+        safe = np.where(np.isfinite(X), X, 0.0)
+        return np.clip(safe, -_MAX_INPUT_ABS, _MAX_INPUT_ABS).astype(np.float32)
+    bounds = _decode_b64_json(bounds_b64)
+    lower = np.asarray(bounds.get("lower", []), dtype=np.float64)
+    upper = np.asarray(bounds.get("upper", []), dtype=np.float64)
+    if (lower.shape != (X.shape[1],) or upper.shape != (X.shape[1],)
+            or not np.all(np.isfinite(lower)) or not np.all(np.isfinite(upper))
+            or not np.all(lower < upper)
+            or np.any(np.abs(lower) > _MAX_INPUT_ABS)
+            or np.any(np.abs(upper) > _MAX_INPUT_ABS)):
+        raise ValueError("public tree bounds are invalid or misaligned")
+    midpoint = lower + (upper - lower) / 2.0
+    safe = np.where(np.isfinite(X), X, midpoint)
+    return np.clip(safe, -_MAX_INPUT_ABS, _MAX_INPUT_ABS).astype(np.float32)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True)
@@ -312,9 +458,27 @@ def main():
     parser.add_argument("--type", default="response", choices=["response", "prob"])
     parser.add_argument("--framework", default=None)
     parser.add_argument("--template", default=None)
+    parser.add_argument("--spec-b64", dest="spec_b64", default=None)
+    parser.add_argument("--loss-name", dest="loss_name", default=None)
+    parser.add_argument("--num-classes", dest="num_classes", type=int, default=2)
+    parser.add_argument("--num-labels", dest="num_labels", type=int, default=2)
     parser.add_argument("--bounds-b64", dest="bounds_b64", default=None)
+    parser.add_argument("--tree-bounds-b64", dest="tree_bounds_b64", default=None)
     parser.add_argument("--norm-b64", dest="norm_b64", default=None)
     args = parser.parse_args()
+
+    # Resolve the public artifact kind before selecting its preprocessing path.
+    framework = args.framework
+    if framework is None:
+        if args.model.endswith(".pt"):
+            framework = "pytorch"
+        elif (args.model.endswith(".xgb.json") or args.model.endswith(".xgb")
+              or args.model.endswith(".json")):
+            framework = "xgboost"
+        else:
+            print(json.dumps({"error": "Cannot detect framework from model file"}),
+                  file=sys.stderr)
+            sys.exit(1)
 
     # Read data
     df = pd.read_csv(args.data)
@@ -322,26 +486,19 @@ def main():
 
     # Public bounds take precedence for new models; mean/SD remains a legacy path.
     try:
-        X = _apply_feature_preprocessing(X, args.bounds_b64, args.norm_b64)
+        X = (_apply_tree_bounds(X, args.tree_bounds_b64)
+             if framework == "xgboost"
+             else _apply_feature_preprocessing(X, args.bounds_b64, args.norm_b64))
     except (KeyError, TypeError, ValueError) as exc:
         print(json.dumps({"error": str(exc)}), file=sys.stderr)
         sys.exit(1)
 
-    # Auto-detect framework from model file extension
-    framework = args.framework
-    if framework is None:
-        if args.model.endswith(".pt"):
-            framework = "pytorch"
-        elif args.model.endswith(".xgb.json") or args.model.endswith(".xgb"):
-            framework = "xgboost"
-        else:
-            print(json.dumps({"error": "Cannot detect framework from model file"}),
-                  file=sys.stderr)
-            sys.exit(1)
-
     # Predict
     if framework == "pytorch":
-        preds = predict_pytorch(args.model, X, args.type, args.template)
+        preds = predict_pytorch(
+            args.model, X, args.type, args.template,
+            spec_b64=args.spec_b64, loss_name=args.loss_name,
+            num_classes=args.num_classes, num_labels=args.num_labels)
     elif framework == "xgboost":
         if args.model.endswith(".json"):
             with open(args.model) as _f:

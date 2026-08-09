@@ -5,7 +5,7 @@ image_test_connection <- function() {
   ), class = "dsflower_connection")
 }
 
-test_that("resource connect uses registered dsFlower imaging discovery", {
+test_that("resource connect resolves generically before dsFlower discovery", {
   assigned <- list()
   aggregated <- list()
   labels <- data.frame(
@@ -33,11 +33,19 @@ test_that("resource connect uses registered dsFlower imaging discovery", {
   flower <- ds.flower.connect(
     conns = list(site = NULL), resource = "PROJECT.images")
 
-  expect_identical(as.character(assigned[[1L]]$expr[[1L]]), "imagingInitDS")
+  expect_identical(as.character(assigned[[1L]]$expr[[1L]]), "as.resource.client")
   expect_identical(as.character(assigned[[2L]]$expr[[1L]]), "flowerInitDS")
   expect_identical(as.character(aggregated[[1L]][[1L]]), "flowerImageLabelsDS")
   expect_identical(aggregated[[1L]][[2L]], flower$symbol)
   expect_equal(flower$labels, labels)
+})
+
+test_that("connect requires exactly one data source", {
+  expect_error(ds.flower.connect(list(site = NULL)), "exactly one")
+  expect_error(
+    ds.flower.connect(
+      list(site = NULL), resource = "PROJECT.resource", symbol = "D"),
+    "exactly one")
 })
 
 test_that("image helpers call dsFlower endpoints with Flower handle signatures", {

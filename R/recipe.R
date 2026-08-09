@@ -1,14 +1,6 @@
 # Module: Composable Recipe
 # Combines task, model, and strategy specs into a recipe. Privacy is node-owned.
 
-# Task inference map: model framework -> default task type
-.MODEL_DEFAULT_TASK <- list(
-  pytorch_resnet18 = "classification",
-  pytorch_densenet121 = "classification",
-  pytorch_poisson = "regression",
-  pytorch_linear_regression = "regression"
-)
-
 #' Create a Flower federated learning recipe
 #'
 #' A recipe combines the analyst-controlled specification objects needed for a
@@ -26,12 +18,15 @@
 #' @param target Character; target column name(s). Multiple targets are supported
 #'   only by the multilabel enforced-DP model.
 #' @param target_column Alias for \code{target} (backward compat).
-#' @param label_set Character; name of the label set to use (imaging datasets).
+#' @param label_set Reserved compatibility argument. Non-NULL values fail early;
+#'   label-set staging is not implemented by the enforced-DP runtime.
 #' @param features Character vector; feature column names, or NULL for auto.
 #' @param feature_columns Alias for \code{features} (backward compat).
 #' @param masks Reserved compatibility argument. Non-NULL values fail early
 #'   because segmentation is not implemented by the enforced-DP runtime.
-#' @param evaluation_only Logical; if TRUE, blocks model release.
+#' @param evaluation_only Reserved compatibility argument. TRUE fails early;
+#'   evaluation-only execution is not implemented. Use
+#'   \code{ds.flower.validate()} for private model validation.
 #' @return A \code{dsflower_recipe} S3 object.
 #' @export
 ds.flower.recipe <- function(model,
@@ -49,24 +44,58 @@ ds.flower.recipe <- function(model,
     stop("'masks' requires segmentation, which is not supported by the ",
          "enforced-DP runtime in this release.", call. = FALSE)
   }
-  if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
-  if (!inherits(strategy, "dsflower_strategy")) {
-    strategy <- ds.flower.strategy(strategy)
+  if (!is.null(label_set)) {
+    stop("'label_set' is not supported by the enforced-DP runtime.",
+         call. = FALSE)
   }
-  # Infer task from model if not provided (keyed by model NAME; template == name)
+  if (!is.logical(evaluation_only) || length(evaluation_only) != 1L ||
+      is.na(evaluation_only)) {
+    stop("'evaluation_only' must be TRUE or FALSE.", call. = FALSE)
+  }
+  if (evaluation_only) {
+    stop("'evaluation_only = TRUE' is not implemented; use ",
+         "ds.flower.validate() for disclosure-safe validation.",
+         call. = FALSE)
+  }
+  if (!is.numeric(num_rounds) || is.logical(num_rounds) ||
+      length(num_rounds) != 1L || is.na(num_rounds) ||
+      !is.finite(num_rounds) || num_rounds != floor(num_rounds) ||
+      num_rounds < 1 || num_rounds > 500) {
+    stop("'num_rounds' must be one integer in [1, 500].", call. = FALSE)
+  }
+  if (!is.null(target) && !is.null(target_column) &&
+      !identical(target, target_column)) {
+    stop("'target' and 'target_column' cannot disagree.", call. = FALSE)
+  }
+  if (!is.null(features) && !is.null(feature_columns) &&
+      !identical(features, feature_columns)) {
+    stop("'features' and 'feature_columns' cannot disagree.", call. = FALSE)
+  }
+  model <- ds.flower.model(model)
+  strategy <- if (inherits(strategy, "dsflower_strategy")) {
+    .canonicalize_strategy(strategy)
+  } else {
+    ds.flower.strategy(strategy)
+  }
+  inferred_type <- if (identical(model$track, "trees")) {
+    if (identical(model$params[["objective"]] %||% "binary:logistic",
+                  "reg:squarederror")) "regression" else "classification"
+  } else if (model$loss %in% c(
+      "mse", "huber", "poisson_nll", "negbin_nll", "gamma_nll")) {
+    "regression"
+  } else {
+    "classification"
+  }
   if (is.null(task)) {
-    default_type <- .MODEL_DEFAULT_TASK[[model$template %||% model$name]]
-    if (!is.null(default_type)) {
-      task <- switch(default_type,
-        classification = ds.flower.task.classification(),
-        regression     = ds.flower.task.regression(),
-        ds.flower.task.classification()
-      )
-    } else {
-      task <- ds.flower.task.classification()
+    task <- ds.flower.task(inferred_type)
+  } else {
+    if (!inherits(task, "dsflower_task")) task <- ds.flower.task(task)
+    .assert_supported_task(task)
+    if (!identical(task$type, inferred_type)) {
+      stop("Task '", task$type, "' is incompatible with model '",
+           model$name, "' (expected ", inferred_type, ").", call. = FALSE)
     }
   }
-  if (!inherits(task, "dsflower_task")) task <- ds.flower.task(task)
   .assert_supported_task(task)
 
   # Resolve target (new param wins over backward-compat)
@@ -82,9 +111,9 @@ ds.flower.recipe <- function(model,
     target          = resolved_target,
     feature_columns = resolved_features,
     features        = resolved_features,
-    label_set       = label_set,
+    label_set       = NULL,
     masks           = masks,
-    evaluation_only = isTRUE(evaluation_only)
+    evaluation_only = FALSE
   )
   class(obj) <- "dsflower_recipe"
   obj

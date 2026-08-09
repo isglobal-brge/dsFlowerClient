@@ -75,7 +75,7 @@ test_that("client learning rate cannot be overridden inside a strategy object", 
   expect_error(
     dsFlowerClient:::.strategy_config_lines(
       forged, client_learning_rate = 0.05),
-    "Unknown parameters"
+    "Unknown or inapplicable parameters"
   )
 })
 

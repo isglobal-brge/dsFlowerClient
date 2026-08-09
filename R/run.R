@@ -3,16 +3,17 @@
 
 #' Start a Flower run
 #'
-#' Fetches the model template from the server, builds a Flower App from
-#' the recipe, then invokes \code{flwr run} against the running SuperLink.
-#' Model weights and training history are automatically saved to
+#' Invokes \code{flwr run} for a pre-built Flower App against the running
+#' SuperLink. Model weights and training history are automatically saved to
 #' \code{output_dir} after training completes.
 #'
 #' @param recipe A \code{dsflower_recipe} object.
-#' @param conns DSI connections object. Used to fetch the model template
-#'   from the server. If NULL, uses the connections stored during
+#' @param conns DSI connections object used to determine the required site count.
+#'   If NULL, uses the connections stored during
 #'   \code{ds.flower.nodes.init}.
-#' @param app_dir Character; path to a pre-built app directory (optional).
+#' @param app_dir Required character path to a pre-built app directory. The
+#'   high-level \code{ds.flower.submit()} and \code{ds.flower.fit()} pipelines
+#'   build and supply it automatically.
 #' @param run_config Named list; additional run config overrides.
 #' @param output_dir Character; persistent directory for model output.
 #'   Defaults to \code{"dsflower_output/<timestamp>"} in the working directory.
@@ -21,9 +22,10 @@
 #'   writes model artefacts. Usually generated automatically.
 #' @param symbol Character; server-side Flower handle symbol. Low-level callers
 #'   that initialise the default handle can leave this as \code{"flower"}.
-#' @param verbose Logical; print flwr output (default TRUE).
+#' @param verbose Logical; print flwr output (default FALSE).
 #' @param silent Logical; suppress progress feedback.
-#' @return A \code{dsflower_run} object with weights, history, and predictions.
+#' @return A \code{dsflower_run} object with run status and identifiers, model
+#'   metadata, weights, history, output paths, and captured CLI output.
 #' @export
 ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                  run_config = list(), output_dir = NULL,
@@ -31,14 +33,24 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                  results_dir = NULL,
                                  symbol = "flower",
                                  verbose = FALSE, silent = FALSE) {
+  if (!inherits(recipe, "dsflower_recipe")) {
+    stop("'recipe' must be a dsflower_recipe object.", call. = FALSE)
+  }
+  if (!is.null(recipe$label_set) || !is.null(recipe$masks)) {
+    stop("The enforced-DP runtime does not support label-set or segmentation ",
+         "recipe fields.", call. = FALSE)
+  }
+  if (!is.null(recipe$evaluation_only) &&
+      !identical(recipe$evaluation_only, FALSE)) {
+    stop("'evaluation_only = TRUE' is not implemented; use ",
+         "ds.flower.validate() for disclosure-safe validation.",
+         call. = FALSE)
+  }
+
   .require_flwr_cli()
 
   old_opt <- options(dsflower.silent = isTRUE(silent))
   on.exit(options(old_opt), add = TRUE)
-
-  if (!inherits(recipe, "dsflower_recipe")) {
-    stop("'recipe' must be a dsflower_recipe object.", call. = FALSE)
-  }
 
   # Check SuperLink is running
   sl_info <- .dsflower_client_env$.superlink
@@ -61,12 +73,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   }
   dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
-  # Get connections for template fetching
+  # Resolve the connections used for this federated run.
   if (is.null(conns)) {
     conns <- .dsflower_client_env$.conns
   }
   if (is.null(conns)) {
-    stop("'conns' is required to fetch templates from the server.", call. = FALSE)
+    stop("'conns' is required to run the federated app.", call. = FALSE)
   }
 
   # Set min_fit_clients and min_available_clients from number of connections
@@ -120,7 +132,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     env = .client_venv_env(extra = c(FLWR_HOME = sl_info$flwr_home,
                                       PYTHONUNBUFFERED = "1")),
     results_dir = results_dir,
-    num_rounds = recipe$num_rounds,
+    num_rounds = eff_rounds,
     expect_artifacts = !isTRUE(recipe$evaluation_only)
   )
 
@@ -156,18 +168,42 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
          "); no model was accepted or saved.", call. = FALSE)
   }
 
+  available_rounds <- if (is.data.frame(history) && nrow(history)) {
+    if ("available" %in% names(history)) {
+      keep <- !is.na(history$available) & as.logical(history$available)
+      if ("round" %in% names(history)) {
+        as.integer(history$round[keep])
+      } else {
+        which(keep)
+      }
+    } else {
+      seq_len(nrow(history))
+    }
+  } else {
+    integer()
+  }
+  available <- length(available_rounds) > 0L ||
+    (!is.null(weights) && is.null(history))
   if (!is.null(weights) || !is.null(history)) {
-    n_done <- if (is.data.frame(history) && nrow(history)) nrow(history) else recipe$num_rounds
-    .dsf_msg("Training complete: ", n_done, " round(s) aggregated across ",
-             n_clients, " site(s) with strategy '", recipe$strategy$name,
-             "'. Differential privacy was enforced by the nodes.")
+    n_done <- if (is.data.frame(history) && nrow(history)) nrow(history) else eff_rounds
+    if (available) {
+      n_available <- if (length(available_rounds)) length(available_rounds) else n_done
+      .dsf_msg("Training complete: ", n_available,
+               " private round(s) available across ", n_clients,
+               " site(s) with strategy '", recipe$strategy$name,
+               "'. Differential privacy was enforced by the nodes.")
+    } else {
+      .dsf_msg("Training request completed, but no private model release is ",
+               "available under the node privacy policy. The request was not ",
+               "blocked and no public fallback was saved as a trained model.")
+    }
   }
 
   # Generate a unique model ID for identification
   model_id <- paste0(
     recipe$model$template, "_",
     recipe$strategy$name, "_",
-    recipe$num_rounds, "r_",
+    eff_rounds, "r_",
     format(Sys.time(), "%Y%m%d_%H%M%S")
   )
 
@@ -190,9 +226,17 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       model      = recipe$model$name,
       template   = recipe$model$template,
       framework  = recipe$model$framework,
+      track      = recipe$model$track %||% NULL,
+      model_spec = recipe$model_spec %||% NULL,
+      model_params = recipe$model_params %||% list(),
+      loss_name  = recipe$loss_name %||% NULL,
+      data_kind  = recipe$data_kind %||% "tabular",
+      available  = available,
+      available_rounds = as.integer(available_rounds),
       strategy   = recipe$strategy$name,
       privacy    = "server-enforced-dp",
-      num_rounds = recipe$num_rounds,
+      num_rounds = eff_rounds,
+      requested_num_rounds = recipe$num_rounds,
       target_levels = recipe$target_levels %||% NULL,
       target_bounds = recipe$target_bounds %||% NULL,
       run_id     = run_id,
@@ -213,9 +257,18 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       model_id   = model_id,
       model      = recipe$model$name,
       template   = recipe$model$template,
+      framework  = recipe$model$framework,
+      track      = recipe$model$track %||% NULL,
+      model_spec = recipe$model_spec %||% NULL,
+      model_params = recipe$model_params %||% list(),
+      loss_name  = recipe$loss_name %||% NULL,
+      data_kind  = recipe$data_kind %||% "tabular",
+      available  = available,
+      available_rounds = as.integer(available_rounds),
       strategy   = recipe$strategy$name,
       privacy    = "server-enforced-dp",
-      num_rounds = recipe$num_rounds,
+      num_rounds = eff_rounds,
+      requested_num_rounds = recipe$num_rounds,
       n_clients  = length(conns),
       features   = recipe$features,   # training feature order, so predict can align newdata
       # Public preprocessing constants used by the node. New runs record lower/upper
@@ -228,7 +281,11 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       target_levels = recipe$target_levels %||% NULL,
       target_bounds = recipe$target_bounds %||% NULL,
       created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
-      status     = if (runtime_status == 0L) "success" else "failed"
+      status     = if (!available) "unavailable" else if (runtime_status == 0L) {
+        "success"
+      } else {
+        "failed"
+      }
     )
     jsonlite::write_json(meta, file.path(output_dir, "metadata.json"),
                          auto_unbox = TRUE, pretty = TRUE)
@@ -242,8 +299,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       run_id      = run_id,
       status      = runtime_status,
       cli_status  = result$status,
-      num_rounds  = recipe$num_rounds,
+      num_rounds  = eff_rounds,
+      requested_num_rounds = recipe$num_rounds,
       model       = recipe$model$name,
+      data_kind   = recipe$data_kind %||% "tabular",
+      available   = available,
+      available_rounds = as.integer(available_rounds),
       strategy    = recipe$strategy$name,
       weights     = weights,
       history     = history,
@@ -286,7 +347,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   any(file.exists(file.path(
     results_dir,
     c("global_model.json", "global_model.skipped.json",
-      "model.pt", "model.npz", "booster.json")
+      "model.pt", "model.npz", "booster.json", "validation.json")
   )))
 }
 
@@ -301,6 +362,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   }
 
   if (!isTRUE(expect_artifacts)) return(TRUE)
+  if ("available" %in% names(history) &&
+      !any(as.logical(history$available), na.rm = TRUE)) return(TRUE)
   .model_artifact_exists(results_dir)
 }
 
@@ -638,6 +701,7 @@ print.dsflower_run <- function(x, ...) {
   cat("  Strategy: ", x$strategy, "\n")
   cat("  Rounds:   ", x$num_rounds, "\n")
   cat("  Status:   ", if (x$status == 0) "success" else "failed", "\n")
+  cat("  Release:  ", if (isFALSE(x$available)) "unavailable" else "available", "\n")
 
   # Per-round summary. Loss is intentionally not released by the nodes (a
   # disclosure backstop: only a bucketed example count leaves), so we report
@@ -647,8 +711,12 @@ print.dsflower_run <- function(x, ...) {
     has_ex <- "n_examples" %in% names(x$history)
     for (i in seq_len(nrow(x$history))) {
       ex <- if (has_ex) x$history$n_examples[i] else NA
-      cat(sprintf("    round %d aggregated%s\n", x$history$round[i],
-        if (!is.na(ex)) sprintf(" (~%s examples)", ex) else ""))
+      released <- if ("available" %in% names(x$history)) {
+        isTRUE(x$history$available[i])
+      } else TRUE
+      cat(sprintf("    round %d %s%s\n", x$history$round[i],
+        if (released) "aggregated" else "unavailable (privacy tail)",
+        if (released && !is.na(ex)) sprintf(" (~%s examples)", ex) else ""))
     }
   }
 
@@ -669,19 +737,63 @@ print.dsflower_run <- function(x, ...) {
 
 #' Save the global model from a training run
 #'
-#' Saves the federated model weights to a file. Supported formats:
-#' \code{.rds} (R native), \code{.json} (portable).
+#' Saves the federated model metadata to a file, together with a
+#' sibling \code{<filename>.assets} directory containing the native model and
+#' its public reconstruction metadata. Move both entries together. Supported
+#' formats are \code{.rds} (R native) and \code{.json}.
 #'
 #' @param run A \code{dsflower_run} object.
-#' @param path Character; file path to save to.
+#' @param path Character; unused \code{.rds} or \code{.json} file path.
 #' @return Invisible path.
 #' @export
 ds.flower.save_model <- function(run, path) {
   if (!inherits(run, "dsflower_run")) {
     stop("'run' must be a dsflower_run object.", call. = FALSE)
   }
-  if (is.null(run$weights)) {
-    stop("No model weights available in this run.", call. = FALSE)
+  if (isFALSE(run$available)) {
+    stop("No private model release is available in this run.", call. = FALSE)
+  }
+  if (!is.character(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
+    stop("'path' must be one non-empty .rds or .json file path.", call. = FALSE)
+  }
+
+  ext <- tolower(tools::file_ext(path))
+  if (!ext %in% c("rds", "json")) {
+    stop("Unsupported format '.", ext, "'. Use .rds or .json.", call. = FALSE)
+  }
+  parent <- dirname(path)
+  if (!dir.exists(parent) && !dir.create(parent, recursive = TRUE)) {
+    stop("Cannot create model destination directory: ", parent, call. = FALSE)
+  }
+  parent <- normalizePath(parent, winslash = "/", mustWork = TRUE)
+  path <- file.path(parent, basename(path))
+  asset_name <- paste0(basename(path), ".assets")
+  asset_path <- file.path(parent, asset_name)
+  if (file.exists(path) || file.exists(asset_path) || dir.exists(asset_path)) {
+    stop("Model destination already exists: ", path,
+         " (or its .assets directory).", call. = FALSE)
+  }
+
+  source_dir <- run$output_dir %||% NULL
+  if (!is.character(source_dir) || length(source_dir) != 1L ||
+      is.na(source_dir) || !dir.exists(source_dir)) {
+    stop("The run's persisted model directory is unavailable; cannot create ",
+         "a portable model bundle.", call. = FALSE)
+  }
+  source_dir <- normalizePath(source_dir, winslash = "/", mustWork = TRUE)
+  asset_files <- c(
+    "metadata.json", "history.json", "model.pt", "model.npz",
+    "model.xgb.json", "model.xgb", "booster.json", "global_model.json",
+    "global_model.skipped.json"
+  )
+  present <- asset_files[file.exists(file.path(source_dir, asset_files))]
+  model_files <- c(
+    "model.pt", "model.npz", "model.xgb.json", "model.xgb",
+    "booster.json", "global_model.json"
+  )
+  if (!"metadata.json" %in% present || !any(model_files %in% present)) {
+    stop("The run directory does not contain a complete public model bundle.",
+         call. = FALSE)
   }
 
   model_data <- list(
@@ -692,19 +804,43 @@ ds.flower.save_model <- function(run, path) {
     strategy = run$strategy,
     rounds   = run$num_rounds,
     run_id   = run$run_id,
-    saved_at = Sys.time()
+    saved_at = Sys.time(),
+    artifact_bundle = asset_name
   )
 
-  ext <- tolower(tools::file_ext(path))
-  if (ext == "rds") {
-    saveRDS(model_data, path)
-  } else if (ext == "json") {
-    jsonlite::write_json(model_data, path, auto_unbox = TRUE, digits = 10)
-  } else {
-    stop("Unsupported format '.", ext, "'. Use .rds or .json.", call. = FALSE)
+  staged_assets <- tempfile(".dsflower-assets-", tmpdir = parent)
+  staged_model <- tempfile(
+    ".dsflower-model-", tmpdir = parent, fileext = paste0(".", ext))
+  dir.create(staged_assets)
+  installed_assets <- FALSE
+  on.exit({
+    if (file.exists(staged_model)) unlink(staged_model)
+    if (dir.exists(staged_assets)) unlink(staged_assets, recursive = TRUE)
+    if (installed_assets && !file.exists(path) && dir.exists(asset_path)) {
+      unlink(asset_path, recursive = TRUE)
+    }
+  }, add = TRUE)
+  copied <- file.copy(
+    file.path(source_dir, present), staged_assets, overwrite = FALSE)
+  if (!all(copied)) {
+    stop("Failed to copy the native model bundle.", call. = FALSE)
   }
 
-  message("Model saved to ", path)
+  if (ext == "rds") {
+    saveRDS(model_data, staged_model)
+  } else {
+    jsonlite::write_json(
+      model_data, staged_model, auto_unbox = TRUE, digits = 10)
+  }
+  if (!file.rename(staged_assets, asset_path)) {
+    stop("Failed to install the native model bundle.", call. = FALSE)
+  }
+  installed_assets <- TRUE
+  if (!file.rename(staged_model, path)) {
+    stop("Failed to install the saved model file.", call. = FALSE)
+  }
+
+  message("Model saved to ", path, " with assets in ", asset_path)
   invisible(path)
 }
 
@@ -776,13 +912,41 @@ ds.flower.models <- function(base_dir = file.path(".", "dsflower_output")) {
 
 #' Load a saved model
 #'
-#' Reads model weights and metadata from a previously saved output directory
-#' or \code{.rds} file.
+#' Reads model weights and metadata from a previously saved output directory,
+#' \code{.rds} file, or \code{.json} file. Files created by
+#' \code{ds.flower.save_model()} must remain beside their sibling
+#' \code{<filename>.assets} directory.
 #'
-#' @param path Character; path to the model directory or \code{.rds} file.
+#' @param path Character; path to a model directory, \code{.rds}, or
+#'   \code{.json} file.
 #' @return A list with model_id, weights, history, and metadata.
 #' @export
 ds.flower.load_model <- function(path) {
+  if (!is.character(path) || length(path) != 1L || is.na(path) || !nzchar(path)) {
+    stop("'path' must be one non-empty file or directory path.", call. = FALSE)
+  }
+  attach_source <- function(value, source_dir) {
+    if (!is.list(value)) {
+      stop("Saved dsFlower model must contain a list.", call. = FALSE)
+    }
+    bundle <- value[["artifact_bundle"]]
+    if (!is.null(bundle)) {
+      if (!is.character(bundle) || length(bundle) != 1L || is.na(bundle) ||
+          !nzchar(bundle) || grepl("[\\\\/]", bundle) ||
+          bundle %in% c(".", "..")) {
+        stop("Saved dsFlower model has an invalid artifact bundle name.",
+             call. = FALSE)
+      }
+      source_dir <- file.path(source_dir, bundle)
+      if (!dir.exists(source_dir)) {
+        stop("Saved model artifact bundle is missing: ", source_dir,
+             call. = FALSE)
+      }
+    }
+    value$source_dir <- normalizePath(
+      source_dir, winslash = "/", mustWork = TRUE)
+    value
+  }
   if (dir.exists(path)) {
     rds_path <- file.path(path, "model.rds")
     if (!file.exists(rds_path)) {
@@ -793,14 +957,15 @@ ds.flower.load_model <- function(path) {
         stop("No model .rds found in ", path, call. = FALSE)
       rds_path <- cand
     }
-    return(readRDS(rds_path))
+    return(attach_source(readRDS(rds_path), path))
   }
 
   if (file.exists(path)) {
     ext <- tolower(tools::file_ext(path))
-    if (ext == "rds") return(readRDS(path))
+    if (ext == "rds") return(attach_source(readRDS(path), dirname(path)))
     if (ext == "json") {
-      return(jsonlite::fromJSON(path, simplifyVector = FALSE))
+      return(attach_source(
+        jsonlite::fromJSON(path, simplifyVector = FALSE), dirname(path)))
     }
     stop("Unsupported format: ", ext, call. = FALSE)
   }
