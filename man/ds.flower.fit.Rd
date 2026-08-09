@@ -27,7 +27,8 @@ ds.flower.fit(
   target_levels = NULL,
   target_bounds = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
-  data_kind = NULL
+  data_kind = NULL,
+  holdout = NULL
 )
 }
 \arguments{
@@ -101,6 +102,11 @@ transport security; use it only behind an independently trusted network.}
 \item{data_kind}{Optional input kind, \code{"tabular"} or \code{"image"}.
 It is inferred when the registered model supports exactly one kind; models
 registered for both require an explicit choice.}
+
+\item{holdout}{Optional numeric test fraction strictly between zero and one,
+with at most six decimal places. The node assigns complete privacy units
+before training, trains only on the complement, and returns the final model
+together with one pooled differentially-private test metric release.}
 }
 \value{
 A \code{dsflower_run} object.

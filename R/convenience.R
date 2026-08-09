@@ -226,6 +226,10 @@ ds.flower.task <- function(name = "classification") {
 #' @param data_kind Optional input kind, \code{"tabular"} or \code{"image"}.
 #'   It is inferred when the registered model supports exactly one kind; models
 #'   registered for both require an explicit choice.
+#' @param holdout Optional numeric test fraction strictly between zero and one,
+#'   with at most six decimal places. The node assigns complete privacy units
+#'   before training, trains only on the complement, and returns the final model
+#'   together with one pooled differentially-private test metric release.
 #' @return A \code{dsflower_run} object.
 #' @export
 ds.flower.fit <- function(conns,
@@ -251,7 +255,8 @@ ds.flower.fit <- function(conns,
                           target_bounds = NULL,
                           allow_insecure_http = getOption(
                             "dsflower.dsi_allow_insecure_http", character()),
-                          data_kind = NULL) {
+                          data_kind = NULL,
+                          holdout = NULL) {
   # Set the progress-verbosity option at the outermost entry point so it stays
   # active through every nested step, including the connection teardown that runs
   # in the submission pipeline's on.exit cleanup.
@@ -362,6 +367,7 @@ ds.flower.fit <- function(conns,
     feature_cuts = feature_cuts,
     target_levels = target_levels, target_bounds = target_bounds,
     allow_insecure_http = allow_insecure_http,
+    holdout = holdout,
     output_dir = output_dir, output_name = output_name,
     verbose = verbose, silent = silent)
 }

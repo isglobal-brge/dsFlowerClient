@@ -137,6 +137,11 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     weights <- .read_model_weights(results_dir)
   }
   history <- .read_training_history(results_dir)
+  holdout_release <- .read_holdout_result(results_dir)
+  expects_holdout <- !is.null(recipe$holdout_contract)
+  if (!expects_holdout && !is.null(holdout_release)) {
+    stop("Training produced an unexpected holdout transcript.", call. = FALSE)
+  }
   native_history_available <- !is.data.frame(history) || !nrow(history) ||
     !("available" %in% names(history)) ||
     any(as.logical(history$available), na.rm = TRUE)
@@ -157,6 +162,10 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   if (runtime_status != 0L) {
     stop("Federated training failed (status ", runtime_status,
          "); no model was accepted or saved.", call. = FALSE)
+  }
+  if (expects_holdout && is.null(holdout_release)) {
+    stop("Atomic holdout produced no pooled test metric release; no model was ",
+         "accepted or saved.", call. = FALSE)
   }
 
   available_rounds <- if (is.data.frame(history) && nrow(history)) {
@@ -233,6 +242,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       native_tree_request_sha256 =
         recipe$native_tree_request_sha256 %||% NULL,
       public_schema_sha256 = recipe$public_schema_sha256 %||% NULL,
+      holdout = holdout_release$metrics %||% NULL,
+      holdout_contract = recipe$holdout_contract %||% NULL,
       artifact = native_release$artifact %||% NULL,
       sanitization = native_release$sanitization %||% NULL,
       run_id     = run_id,
@@ -288,6 +299,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
         target_levels = recipe$target_levels %||% NULL,
         target_bounds = recipe$target_bounds %||% NULL,
         created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
+        holdout = holdout_release$metrics %||% NULL,
+        holdout_contract = recipe$holdout_contract %||% NULL,
         status     = if (!available) "unavailable" else if (runtime_status == 0L) {
           "success"
         } else {
@@ -321,10 +334,53 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       results_dir = results_dir,
       app_dir     = app_dir,
       stdout      = clean_stdout,
-      stderr      = clean_stderr
+      stderr      = clean_stderr,
+      holdout     = holdout_release$metrics %||% NULL,
+      holdout_contract = recipe$holdout_contract %||% NULL
     ),
     class = "dsflower_run"
   )
+}
+
+.read_holdout_result <- function(results_dir) {
+  path <- file.path(results_dir, "holdout.json")
+  if (!file.exists(path)) return(NULL)
+  info <- file.info(path)
+  if (is.na(info$size) || info$size < 1 || info$size > 8 * 1024^2) {
+    stop("Holdout output failed the pooled-only privacy contract.",
+         call. = FALSE)
+  }
+  value <- tryCatch(
+    jsonlite::fromJSON(path, simplifyVector = FALSE),
+    error = function(e) NULL)
+  allowed <- c("pooled_only", "privacy", "method", "task", "n_nodes",
+               "metrics")
+  required_metric <- if (is.list(value) && length(value$task) == 1L) {
+    switch(as.character(value$task),
+           binary = "accuracy", multiclass = "accuracy",
+           ordinal = "accuracy", multilabel = "macro_f1",
+           regression = "mae", count = "mae", NA_character_)
+  } else {
+    NA_character_
+  }
+  if (!is.list(value) || is.null(names(value)) || anyDuplicated(names(value)) ||
+      !setequal(names(value), allowed) ||
+      !identical(value$pooled_only, TRUE) ||
+      !identical(value$privacy, "node-dp-pooled-postprocessing") ||
+      !identical(value$method, "holdout") ||
+      length(value$task) != 1L || !value$task %in% c(
+        "binary", "multiclass", "ordinal", "multilabel",
+        "regression", "count") ||
+      length(value$n_nodes) != 1L || !is.numeric(value$n_nodes) ||
+      !is.finite(value$n_nodes) || value$n_nodes < 1 ||
+      value$n_nodes != floor(value$n_nodes) || !is.list(value$metrics) ||
+      is.null(names(value$metrics)) || anyDuplicated(names(value$metrics)) ||
+      is.na(required_metric) || !required_metric %in% names(value$metrics) ||
+      any(c("per_node", "predictions", "folds") %in% names(value$metrics))) {
+    stop("Holdout output failed the pooled-only privacy contract.",
+         call. = FALSE)
+  }
+  value
 }
 
 .flwr_run_timeout_secs <- function() {
@@ -720,6 +776,9 @@ print.dsflower_run <- function(x, ...) {
   cat("  Rounds:   ", x$num_rounds, "\n")
   cat("  Status:   ", if (x$status == 0) "success" else "failed", "\n")
   cat("  Release:  ", if (isFALSE(x$available)) "unavailable" else "available", "\n")
+  if (!is.null(x$holdout)) {
+    cat("  Holdout:  pooled DP metrics available in $holdout\n")
+  }
 
   # Per-round summary. Loss is intentionally not released by the nodes (a
   # disclosure backstop: only a bucketed example count leaves), so we report

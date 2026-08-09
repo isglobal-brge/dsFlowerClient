@@ -25,6 +25,7 @@ ds.flower.submit(
   feature_cuts = NULL,
   target_levels = NULL,
   target_bounds = NULL,
+  holdout = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
 )
 }
@@ -81,6 +82,9 @@ saved validation contract retains identical label semantics.}
 
 \item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
 regression/count targets. The node clips each target to these constants.}
+
+\item{holdout}{Optional numeric test fraction for atomic tabular neural
+holdout validation. Unsupported tracks fail before private preparation.}
 
 \item{allow_insecure_http}{Character vector of exact connection names allowed
 to use plaintext HTTP. Empty by default. This exception does not provide

@@ -372,6 +372,8 @@
 #' @param torch_backend Character; node torch backend selection.
 #' @param verbose Logical.
 #' @param silent Logical; suppress progress feedback.
+#' @param holdout Optional numeric test fraction for atomic tabular neural
+#'   holdout validation. Unsupported tracks fail before private preparation.
 #' @return A \code{dsflower_run}.
 #' @export
 ds.flower.submit <- function(conns, model, target, features = NULL,
@@ -384,8 +386,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              silent = FALSE, feature_bounds = NULL,
                              feature_cuts = NULL,
                              target_levels = NULL, target_bounds = NULL,
+                             holdout = NULL,
                              allow_insecure_http = getOption(
                                "dsflower.dsi_allow_insecure_http", character())) {
+  holdout_spec <- .normalize_holdout(holdout)
   torch_backend <- .validate_torch_backend(torch_backend)
   if (!is.numeric(num_rounds) || is.logical(num_rounds)) {
     stop("num_rounds must be a single positive integer no greater than 500.",
@@ -436,6 +440,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   model$params <- .dsflower_resolve_model_params(
     registered_model, model_params)
   sub <- .emit_submission(model)
+  if (!is.null(holdout_spec)) {
+    .assert_holdout_supported(sub, data_kind)
+  }
   target <- .validate_submission_target(sub, target)
   request <- NULL
   if (identical(sub$track, "native_tree")) {
@@ -607,7 +614,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     }
     tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
   }, add = TRUE)
-  .assert_runner_compatibility(conns)
+  capabilities <- .assert_runner_compatibility(conns)
   # Tabular runs need a non-empty feature set. The symbol path auto-detects above; data=/
   # resource= inputs must pass `features` explicitly -- fail with a clear message rather than
   # the downstream "num-features must be set" from the node.
@@ -636,6 +643,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     "data_type" = data_kind,
     "num-server-rounds" = as.integer(num_rounds),
     "num-features" = as.integer(n_features))
+  holdout_contract <- NULL
+  if (!is.null(holdout_spec)) {
+    privacy_unit <- .validation_common_privacy_unit(capabilities)
+    holdout_contract <- .holdout_contract(holdout_spec, privacy_unit)
+    prepare_config <- c(prepare_config, .holdout_config(holdout_contract))
+  }
   if (identical(sub$track, "neural")) {
     p <- sub[["params"]]
     training_config <- .neural_training_config(p, sub$loss)
@@ -679,12 +692,25 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   cfg <- c(
     .toml_kv("dp-track", sub$track),
     .toml_kv("data-kind", data_kind),
+    .toml_kv("task-type", task_type),
     strategy_lines,
     paste0("num-features = ", as.integer(n_features)),
     paste0("num-server-rounds = ", as.integer(num_rounds)),
     paste0("min-train-nodes = ", as.integer(n_clients)),
     .toml_kv("results-dir", results_dir)
   )
+  if (!is.null(holdout_contract)) {
+    holdout_fields <- .holdout_config(holdout_contract)
+    cfg <- c(cfg, unname(vapply(names(holdout_fields), function(key) {
+      .toml_kv(key, holdout_fields[[key]])
+    }, character(1))))
+    if (!is.null(public_target$bounds)) {
+      cfg <- c(
+        cfg,
+        .toml_kv("holdout-target-lower", public_target$bounds$lower),
+        .toml_kv("holdout-target-upper", public_target$bounds$upper))
+    }
+  }
   if (identical(sub$track, "neural")) {
     p <- sub[["params"]]
     training_config <- .neural_training_config(p, sub$loss)
@@ -747,7 +773,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     native_tree_request_sha256 = if (!is.null(request)) request$sha256 else NULL,
     public_schema_sha256 = if (!is.null(request)) {
       request$value$public_schema$sha256
-    } else NULL), class = "dsflower_recipe")
+    } else NULL,
+    holdout_contract = holdout_contract,
+    holdout_validation_bins = if (!is.null(holdout_contract))
+      .HOLDOUT_VALIDATION_BINS else NULL), class = "dsflower_recipe")
 
   # Cleanup (tunnel/handle/app/connection) is guaranteed by the on.exit above, on both a
   # run error and normal completion.

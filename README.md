@@ -65,8 +65,12 @@ fit <- ds.flower.fit(
   features = c("age", "biomarker"),
   model = "pytorch_logreg",
   feature_bounds = list(lower = c(18, 0), upper = c(100, 250)),
-  target_levels = c("control", "case")
+  target_levels = c("control", "case"),
+  holdout = 0.2
 )
+
+# One pooled DP test release from the same all-or-nothing training job.
+fit$holdout
 
 DSI::datashield.logout(conns)
 ```
@@ -83,6 +87,10 @@ training. Its accountant composes that contract across the training's own
 rounds. There is no historical database, quota or resource-specific balance;
 one training never reduces or blocks the next. Distinct trainings compose in
 the standard way when they are analysed together.
+
+When atomic holdout is requested, that same per-training pair is the total job
+budget: the node applies a fixed split between composed training and one pooled
+test release. It does not create a persistent balance or affect later jobs.
 
 Guarantees are per node. If the same person appears at multiple observed nodes,
 their epsilons and deltas compose across those nodes; only disjoint node
@@ -324,11 +332,19 @@ the API returns no exact, per-node or zero-filled substitute and does not create
 a query-count lockout.
 
 Assigning an independent dataset gives external validation; reusing training
-data gives resubstitution validation. This API does not call the exact validation
-set a holdout and does not claim cross-validation. Honest patient-level holdout
-or K-fold training requires a public, protocol-defined split and separately
-accounted training releases for the fitted fold models; that orchestration is not
-silently simulated by this one-release evaluator.
+data gives resubstitution validation. For tabular declarative neural training,
+`ds.flower.fit(..., holdout = 0.2)` instead assigns complete node-owned privacy
+units before training, trains only on the complement, and evaluates the final
+aggregate on the held-out side in the same all-or-nothing job. The fraction is
+canonical, has no analyst seed, and retries recreate the same secret-keyed split.
+The returned `fit$holdout` contains only pooled DP metrics; no predictions,
+unit assignments or site metrics leave the nodes. Other backends fail explicitly
+instead of pretending to support this protocol.
+
+K-fold cross-validation is not exported yet. Honest CV requires a dedicated app
+that runs K real federated trainings, keeps fold models and OOF accumulators in
+memory, and releases one pooled OOF vector only after every fold succeeds; it
+cannot be simulated by repeatedly calling this one-release evaluator.
 
 ## Public feature bounds
 

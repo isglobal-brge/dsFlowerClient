@@ -284,9 +284,9 @@ test_that("fit forwards public feature bounds through its stable argument contra
 
 test_that("submit exposes public target semantics in canonical order", {
   expect_identical(
-    tail(names(formals(ds.flower.submit)), 5L),
+    tail(names(formals(ds.flower.submit)), 6L),
     c("feature_bounds", "feature_cuts", "target_levels", "target_bounds",
-      "allow_insecure_http"))
+      "holdout", "allow_insecure_http"))
 })
 
 test_that("public target semantics are strict and data-independent", {
