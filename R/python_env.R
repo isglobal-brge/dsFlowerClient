@@ -8,7 +8,10 @@
 #
 # Zero system dependencies. No pre-existing Python installation required.
 
-.DSFLOWER_CLIENT_PYTHON_DEPS <- c("flwr[app]>=1.31.0,<1.32.0")
+.DSFLOWER_CLIENT_PYTHON_DEPS <- c(
+  "flwr[app]>=1.31.0,<1.32.0",
+  "optuna==4.8.0"
+)
 
 .client_python_lock_required <- function() {
   value <- Sys.getenv("DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK", "")
