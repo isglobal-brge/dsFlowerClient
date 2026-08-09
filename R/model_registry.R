@@ -544,7 +544,8 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
 #' @return A data.frame with one row per registered model. Column
 #'   \code{available} reports whether the client-side constructor is implemented;
 #'   operational native-runtime availability is probed per node at submission.
-#'   Native validation remains fail-closed until its predictor is wired.
+#'   Released native XGBoost ensembles support private external or
+#'   resubstitution validation.
 #' @export
 ds.flower.list_models <- function() {
   names_ <- ls(.dsflower_models, sorted = TRUE)
@@ -1015,8 +1016,8 @@ ds.flower.model_parameters <- function(name) {
     parameter_choices = list(task = c("binary", "regression")),
     description = paste0(
       "Native-tight DP XGBoost request with task-aware defaults ",
-      "(operational availability is probed per node at submission; native ",
-      "validation remains fail-closed until its predictor is wired)."),
+      "(operational training availability is probed per node at submission; ",
+      "released ensembles support private validation)."),
     data_kinds = "tabular", available = TRUE, vetted = TRUE)
 
   invisible(TRUE)

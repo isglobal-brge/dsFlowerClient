@@ -10,7 +10,8 @@ ds.flower.list_models()
 A data.frame with one row per registered model. Column
   \code{available} reports whether the client-side constructor is implemented;
   operational native-runtime availability is probed per node at submission.
-  Native validation remains fail-closed until its predictor is wired.
+  Released native XGBoost ensembles support private external or
+  resubstitution validation.
 }
 \description{
 List registered dsFlower models

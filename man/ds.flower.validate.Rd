@@ -34,7 +34,8 @@ saved label.}
 
 \item{bins}{Public number of probability bins in \code{[4,512]}.}
 
-\item{torch_backend}{Node torch backend selection.}
+\item{torch_backend}{Node torch backend selection for neural artifacts. Native
+  XGBoost validation does not provision Torch.}
 
 \item{verbose}{Show Flower output.}
 
@@ -48,13 +49,14 @@ A \code{dsflower_validation}. Its \code{available} field is false
   available; no exact or zero-filled substitute metrics are returned.
 }
 \description{
-Evaluates a released tabular declarative neural model on the dataset assigned
-for this call inside each data node. A saved native-tree ensemble and its
-sidecar are recognized and verified locally, but native XGBoost validation
-remains fail-closed before DSI until its predictor pipeline is wired. Vision
-artifacts fail explicitly because this validator does not reconstruct image
-loaders or backbones. Reusing the training dataset is
-resubstitution validation; assigning an independent dataset is external
+Evaluates a released tabular declarative neural model or sanitized native
+XGBoost ensemble on the dataset assigned for this call inside each data node.
+The native request, ensemble and prediction-profile sidecar are pinned into
+the ephemeral execution contract and every node re-sanitizes the ensemble
+before opening its data. Vision artifacts fail explicitly because this
+validator does not reconstruct image loaders or backbones. Reusing the
+training dataset is resubstitution validation; assigning an independent
+dataset is external
 validation. Each protected row/patient contributes one bounded sufficient-statistic
 vector, the node releases it once through the server-owned Gaussian mechanism,
 and only pooled post-processed metrics are returned. Exact predictions,

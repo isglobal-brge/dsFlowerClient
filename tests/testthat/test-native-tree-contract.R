@@ -368,6 +368,21 @@ test_that("native-tree FAB uses isolated entrypoints and no torch dependency", {
   expect_match(toml, "cryptography==46.0.7", fixed = TRUE)
   expect_false(grepl("torch", toml, fixed = TRUE))
   expect_false(grepl("opacus", toml, fixed = TRUE))
+
+  validation_app <- dsFlowerClient:::.build_submission_app(
+    list(track = "native_tree_validation", pkg_dir = NULL),
+    c('dp-track = "validation"'), withr::local_tempdir())
+  validation_toml <- paste(readLines(
+    file.path(validation_app, "pyproject.toml"), warn = FALSE),
+    collapse = "\n")
+  expect_match(validation_toml,
+               "native_tree_validation_server_app:app", fixed = TRUE)
+  expect_match(validation_toml,
+               "native_tree_validation_client_app:app", fixed = TRUE)
+  expect_match(validation_toml, "flwr==1.31.0", fixed = TRUE)
+  expect_match(validation_toml, "numpy==2.4.6", fixed = TRUE)
+  expect_false(grepl("torch", validation_toml, fixed = TRUE))
+  expect_false(grepl("opacus", validation_toml, fixed = TRUE))
 })
 
 test_that("native XGBoost admission requires every fresh node probe", {

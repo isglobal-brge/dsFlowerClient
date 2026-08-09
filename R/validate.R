@@ -1,6 +1,6 @@
 # Standalone, node-private validation of a released dsFlower model.  The public
-# model is transported as Flower arrays; exact predictions, labels, counts and
-# site metrics remain inside each trusted ClientApp.
+# model is transported as bounded Flower data; exact predictions, labels, counts
+# and site metrics remain inside each trusted ClientApp.
 
 .XGBOOST_ENSEMBLE_FILE <- "model.xgboost-ensemble.json"
 .XGBOOST_ENSEMBLE_PROFILE_FILE <- "model.xgboost-ensemble.profile.json"
@@ -209,7 +209,8 @@
   }
   list(
     path = normalizePath(path, winslash = "/", mustWork = TRUE),
-    size_bytes = as.integer(info$size))
+    size_bytes = as.integer(info$size),
+    sha256 = digest::digest(bytes, algo = "sha256", serialize = FALSE))
 }
 
 .validation_scalar_integer <- function(value, name, lower, upper) {
@@ -396,7 +397,7 @@
            call. = FALSE)
     }
     artifact <- .validate_xgboost_ensemble_artifact(meta, model_dir, task)
-    .validate_xgboost_prediction_profile(
+    profile <- .validate_xgboost_prediction_profile(
       model_dir, request$b64, request_sha256,
       artifact$public_schema_sha256, task, meta$artifact)
     return(list(
@@ -407,6 +408,7 @@
       native_tree_request_b64 = request$b64,
       native_tree_request_sha256 = request_sha256,
       public_schema_sha256 = artifact$public_schema_sha256,
+      prediction_profile = profile,
       engine = engine, track = track, task = task, bins = bins,
       features = features, feature_bounds = feature_bounds,
       target_bounds = target_bounds, target_levels = public_levels,
@@ -552,6 +554,21 @@
     num_classes = as.integer(run_config[["num-classes"]]),
     num_labels = as.integer(run_config[["num-labels"]]),
     model_spec_b64 = run_config[["model-spec-b64"]] %||% NULL)
+  if (identical(run_config[["validation-model-track"]], "native_tree")) {
+    payload$native_tree_request_b64 <-
+      run_config[["validation-native-tree-request-b64"]]
+    payload$native_tree_request_sha256 <-
+      run_config[["validation-native-tree-request-sha256"]]
+    payload$artifact_format <- run_config[["validation-artifact-format"]]
+    payload$artifact_sha256 <- run_config[["validation-artifact-sha256"]]
+    payload$artifact_size_bytes <-
+      as.integer(run_config[["validation-artifact-size-bytes"]])
+    payload$profile_sha256 <- run_config[["validation-profile-sha256"]]
+    payload$profile_size_bytes <-
+      as.integer(run_config[["validation-profile-size-bytes"]])
+    payload$public_schema_sha256 <-
+      run_config[["validation-public-schema-sha256"]]
+  }
   canonical <- as.character(jsonlite::toJSON(
     payload, auto_unbox = TRUE, null = "null", na = "null",
     digits = NA, always_decimal = TRUE, pretty = FALSE))
@@ -610,13 +627,14 @@
 
 #' Differentially-private federated model validation
 #'
-#' Evaluates a released tabular declarative neural model on the dataset assigned
-#' for this call inside each data node. A saved native-tree ensemble and its
-#' sidecar are recognized and verified locally, but native XGBoost validation
-#' remains fail-closed before DSI until its predictor pipeline is wired. Vision
-#' artifacts fail explicitly because this validator does not reconstruct image
-#' loaders or backbones. Reusing the training dataset is
-#' resubstitution validation; assigning an independent dataset is external
+#' Evaluates a released tabular declarative neural model or sanitized native
+#' XGBoost ensemble on the dataset assigned for this call inside each data node.
+#' The native request, ensemble and prediction-profile sidecar are pinned into
+#' the ephemeral execution contract and every node re-sanitizes the ensemble
+#' before opening its data. Vision artifacts fail explicitly because this
+#' validator does not reconstruct image loaders or backbones. Reusing the
+#' training dataset is resubstitution validation; assigning an independent
+#' dataset is external
 #' validation. Each protected row/patient contributes one bounded sufficient-statistic
 #' vector, the node releases it once through the server-owned Gaussian mechanism,
 #' and only pooled post-processed metrics are returned. Exact predictions,
@@ -638,7 +656,8 @@
 #' @param resource Optional Opal resource name.
 #' @param symbol Optional server-side handle symbol.
 #' @param bins Public number of probability bins in \code{[4,512]}.
-#' @param torch_backend Node torch backend selection.
+#' @param torch_backend Node torch backend selection for neural artifacts. Native
+#'   XGBoost validation does not provision Torch.
 #' @param verbose Show Flower output.
 #' @param silent Suppress progress messages.
 #' @param allow_insecure_http Exact connection names allowed to use HTTP.
@@ -655,11 +674,6 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
   torch_backend <- .validate_torch_backend(torch_backend)
   contract <- .resolve_validation_contract(model, bins)
   .validate_validation_artifact_preflight(contract)
-  if (identical(contract$track, "native_tree")) {
-    stop("Native XGBoost private validation is recognized but fail-closed: ",
-         "the native prediction/validation pipeline is not wired yet.",
-         call. = FALSE)
-  }
   expected_targets <- if (identical(contract$task, "multilabel")) {
     contract$n_labels
   } else 1L
@@ -702,7 +716,24 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
     "num-features" = length(contract$features),
     "num-classes" = contract$n_classes,
     "num-labels" = contract$n_labels)
-  prepare[["model-spec-b64"]] <- .spec_to_b64(contract$model_spec)
+  if (identical(contract$track, "native_tree")) {
+    prepare[["validation-native-tree-request-b64"]] <-
+      contract$native_tree_request_b64
+    prepare[["validation-native-tree-request-sha256"]] <-
+      contract$native_tree_request_sha256
+    prepare[["validation-artifact-format"]] <- contract$artifact_format
+    prepare[["validation-artifact-sha256"]] <- contract$artifact_sha256
+    prepare[["validation-artifact-size-bytes"]] <-
+      contract$artifact_size_bytes
+    prepare[["validation-profile-sha256"]] <-
+      contract$prediction_profile$sha256
+    prepare[["validation-profile-size-bytes"]] <-
+      contract$prediction_profile$size_bytes
+    prepare[["validation-public-schema-sha256"]] <-
+      contract$public_schema_sha256
+  } else {
+    prepare[["model-spec-b64"]] <- .spec_to_b64(contract$model_spec)
+  }
   if (!is.null(contract$feature_bounds)) {
     prepare[["feature-bounds"]] <- contract$feature_bounds
   }
@@ -737,19 +768,53 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
     .toml_kv("results-dir", results_dir),
     .toml_kv("validation-model-path-b64",
              .validation_model_path_b64(contract$artifact)))
-  config <- c(config,
-    .toml_kv("model-spec-b64", .spec_to_b64(contract$model_spec)))
+  if (identical(contract$track, "native_tree")) {
+    config <- c(config,
+      .toml_kv("validation-profile-path-b64",
+               .validation_model_path_b64(
+                 contract$prediction_profile$path)),
+      .toml_kv("validation-native-tree-request-b64",
+               contract$native_tree_request_b64),
+      .toml_kv("validation-native-tree-request-sha256",
+               contract$native_tree_request_sha256),
+      .toml_kv("validation-artifact-format", contract$artifact_format),
+      .toml_kv("validation-artifact-sha256", contract$artifact_sha256),
+      paste0("validation-artifact-size-bytes = ",
+             contract$artifact_size_bytes),
+      .toml_kv("validation-profile-sha256",
+               contract$prediction_profile$sha256),
+      paste0("validation-profile-size-bytes = ",
+             contract$prediction_profile$size_bytes),
+      .toml_kv("validation-public-schema-sha256",
+               contract$public_schema_sha256))
+  } else {
+    config <- c(config,
+      .toml_kv("model-spec-b64", .spec_to_b64(contract$model_spec)))
+  }
   if (!is.null(contract$target_bounds)) {
     config <- c(config,
       paste0("validation-target-lower = ", contract$target_bounds$lower),
       paste0("validation-target-upper = ", contract$target_bounds$upper))
   }
   app_dir <- .build_submission_app(
-    list(pkg_dir = NULL), config, results_dir, vision = FALSE)
-  .ensure_client_framework("pytorch")
+    list(pkg_dir = NULL,
+         track = if (identical(contract$track, "native_tree")) {
+           "native_tree_validation"
+         } else {
+           "validation"
+         }),
+    config, results_dir, vision = FALSE)
+  if (!identical(contract$track, "native_tree")) {
+    .ensure_client_framework("pytorch")
+  }
   ds.flower.link.up(conns, allow_insecure_http = allow_insecure_http)
   ds.flower.nodes.ensure(
-    conns, hsym, torch_backend = torch_backend)
+    conns, hsym,
+    torch_backend = if (identical(contract$track, "native_tree")) {
+      NULL
+    } else {
+      torch_backend
+    })
 
   superlink <- .dsflower_client_env$.superlink
   result <- .run_flwr_with_artifact_watchdog(

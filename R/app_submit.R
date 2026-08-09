@@ -148,17 +148,24 @@
   pkg_toml <- paste0('["', paste(packages, collapse = '", "'), '"]')
 
   native_tree <- identical(sub$track %||% NULL, "native_tree")
+  native_validation <- identical(
+    sub$track %||% NULL, "native_tree_validation")
+  native_runtime <- native_tree || native_validation
   server_ref <- if (native_tree) {
     "dsflower_runner.native_tree_server_app:app"
+  } else if (native_validation) {
+    "dsflower_runner.native_tree_validation_server_app:app"
   } else {
     "dsflower_runner.server_app:app"
   }
   client_ref <- if (native_tree) {
     "dsflower_runner.native_tree_client_app:app"
+  } else if (native_validation) {
+    "dsflower_runner.native_tree_validation_client_app:app"
   } else {
     "dsflower_runner.client_app:app"
   }
-  dependencies <- if (native_tree) {
+  dependencies <- if (native_runtime) {
     .native_tree_dependencies()
   } else {
     .harness_dependencies(vision)

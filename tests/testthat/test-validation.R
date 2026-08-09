@@ -116,6 +116,10 @@ test_that("validation resolves only a sanitized XGBoost ensemble contract", {
     contract$artifact_format, "dsflower-xgboost-ensemble-json-v1")
   expect_match(contract$artifact_sha256, "^[0-9a-f]{64}$")
   expect_match(contract$native_tree_request_sha256, "^[0-9a-f]{64}$")
+  expect_match(contract$prediction_profile$sha256, "^[0-9a-f]{64}$")
+  expect_identical(
+    contract$prediction_profile$size_bytes,
+    as.integer(file.info(contract$prediction_profile$path)$size))
   expect_identical(
     rawToChar(jsonlite::base64_dec(contract$native_tree_request_b64)),
     dsFlowerClient:::.validate_native_tree_request_wire(
@@ -257,38 +261,9 @@ test_that("portable save revalidates and copies only the exact XGBoost sidecar",
     "not canonically encoded")
 })
 
-test_that("XGBoost validation fails closed before capability, DSI, or private IO", {
+test_that("XGBoost validation rejects public bundle tampering before private IO", {
   expect_identical(
     dsFlowerClient:::.XGBOOST_ENSEMBLE_MAX_BYTES, 64 * 1024^2)
-  path <- xgboost_validation_model_fixture()
-  reached_cli <- FALSE
-  reached_dsi <- FALSE
-  local_mocked_bindings(
-    .validate_dsi_transport_security = function(...) {
-      reached_dsi <<- TRUE
-      stop("transport must not be reached")
-    },
-    .assert_native_xgboost_capability = function(...) {
-      reached_dsi <<- TRUE
-      stop("capability DSI must not be reached")
-    },
-    .require_flwr_cli = function() {
-      reached_cli <<- TRUE
-      stop("CLI must not be reached")
-    },
-    ds.flower.connect = function(...) {
-      reached_dsi <<- TRUE
-      stop("private connection must not be reached")
-    },
-    .package = "dsFlowerClient")
-  expect_error(
-    ds.flower.validate(
-      conns = list(site = TRUE), model = path, target = "outcome",
-      symbol = "D"),
-    "recognized but fail-closed")
-  expect_false(reached_cli)
-  expect_false(reached_dsi)
-
   path <- xgboost_validation_model_fixture()
   profile_path <- file.path(path, "model.xgboost-ensemble.profile.json")
   profile_bytes <- readBin(
@@ -354,7 +329,6 @@ test_that("XGBoost validation fails closed before capability, DSI, or private IO
   expect_error(
     dsFlowerClient:::.resolve_validation_contract(path, 32L),
     "XGBoost binary or regression only")
-  expect_false(reached_cli)
 })
 
 test_that("validation rejects unsupported artifacts and public config early", {
@@ -567,6 +541,98 @@ test_that("ds.flower.validate stages one validation release and returns pooled m
   expect_false(unavailable$available)
   expect_null(unavailable$metrics)
   expect_output(print(unavailable), "no complete private metric release")
+})
+
+test_that("XGBoost validation uses the native app with exact ephemeral pins", {
+  path <- xgboost_validation_model_fixture()
+  contract <- dsFlowerClient:::.resolve_validation_contract(path, 16L)
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(flwr_home = withr::local_tempdir())
+  prepared <- NULL
+  submission <- NULL
+  app_config <- NULL
+  framework_called <- FALSE
+  node_backend <- "not-called"
+
+  local_mocked_bindings(
+    .validate_validation_artifact_preflight = function(...) TRUE,
+    .require_flwr_cli = function() TRUE,
+    .validate_dsi_transport_security = function(...) TRUE,
+    ds.flower.connect = function(conns, ...) structure(
+      list(conns = conns, symbol = "validation_handle"),
+      class = "dsflower_connection"),
+    .assert_runner_compatibility = function(...) list(
+      site_a = list(privacy_unit = "row"),
+      site_b = list(privacy_unit = "row")),
+    ds.flower.nodes.prepare = function(..., run_config) {
+      prepared <<- run_config
+      invisible(NULL)
+    },
+    .build_submission_app = function(sub, config_lines, ...) {
+      submission <<- sub
+      app_config <<- config_lines
+      withr::local_tempdir()
+    },
+    .ensure_client_framework = function(...) {
+      framework_called <<- TRUE
+      stop("native validation must not provision torch")
+    },
+    ds.flower.link.up = function(...) TRUE,
+    ds.flower.nodes.ensure = function(..., torch_backend) {
+      node_backend <<- torch_backend
+      TRUE
+    },
+    .client_flwr_cmd = function() "flwr",
+    .client_venv_env = function(...) character(),
+    .run_flwr_with_artifact_watchdog = function(..., results_dir) {
+      jsonlite::write_json(list(
+        pooled_only = TRUE,
+        privacy = "node-dp-pooled-postprocessing",
+        task = "binary", n_nodes = 2L, available = TRUE,
+        metrics = list(accuracy = 0.75, roc_auc = 0.8)),
+        file.path(results_dir, "validation.json"), auto_unbox = TRUE)
+      list(status = 0L, stdout = "run_id=native-validation", stderr = "")
+    },
+    ds.flower.link.down = function(...) TRUE,
+    ds.flower.nodes.cleanup = function(...) TRUE,
+    ds.flower.disconnect = function(...) TRUE,
+    .package = "dsFlowerClient")
+
+  result <- ds.flower.validate(
+    list(site_a = TRUE, site_b = TRUE), model = path,
+    target = "outcome", symbol = "D", bins = 16L, silent = TRUE)
+
+  expect_s3_class(result, "dsflower_validation")
+  expect_true(result$available)
+  expect_equal(result$metrics$roc_auc, 0.8)
+  expect_identical(submission$track, "native_tree_validation")
+  expect_false(framework_called)
+  expect_null(node_backend)
+  expect_identical(prepared[["validation-model-track"]], "native_tree")
+  expect_identical(prepared[["validation-artifact-format"]],
+                   contract$artifact_format)
+  expect_identical(prepared[["validation-artifact-sha256"]],
+                   contract$artifact_sha256)
+  expect_identical(prepared[["validation-profile-sha256"]],
+                   contract$prediction_profile$sha256)
+  expect_identical(prepared[["validation-public-schema-sha256"]],
+                   contract$public_schema_sha256)
+  expect_match(prepared[["validation-contract-sha256"]], "^[0-9a-f]{64}$")
+  expect_false(any(c(
+    "model-spec-b64", "validation-model-path-b64",
+    "validation-profile-path-b64") %in% names(prepared)))
+  expect_true(any(grepl(
+    paste0('validation-artifact-sha256 = "', contract$artifact_sha256, '"'),
+    app_config, fixed = TRUE)))
+  expect_true(any(grepl(
+    paste0('validation-profile-sha256 = "',
+           contract$prediction_profile$sha256, '"'),
+    app_config, fixed = TRUE)))
+  expect_true(any(grepl("validation-model-path-b64", app_config, fixed = TRUE)))
+  expect_true(any(grepl("validation-profile-path-b64", app_config, fixed = TRUE)))
+  expect_false(any(grepl("model-spec-b64", app_config, fixed = TRUE)))
 })
 
 test_that("pooled validation reader refuses a per-node result", {
