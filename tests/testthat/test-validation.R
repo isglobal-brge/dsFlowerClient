@@ -1,32 +1,18 @@
 validation_model_fixture <- function(track = "neural", loss = "bce_logits") {
   path <- withr::local_tempdir(.local_envir = parent.frame())
-  spec <- if (identical(track, "neural")) {
-    list(kind = "sequential", layers = list(list(op = "linear", out = "@out")))
-  } else {
-    list(objective = if (identical(loss, "mse"))
-      "reg:squarederror" else "binary:logistic")
-  }
+  spec <- list(
+    kind = "sequential", layers = list(list(op = "linear", out = "@out")))
   meta <- list(
     track = track, model_spec = spec, loss_name = loss,
     model_params = list(n_classes = 2L, num_labels = 2L),
     features = c("age", "marker"),
     feature_lower = c(0, -5), feature_upper = c(120, 5),
     target_levels = if (identical(loss, "bce_logits")) c("control", "case") else NULL,
-    target_bounds = if (identical(loss, "mse")) list(lower = 0, upper = 100) else NULL)
+    target_bounds = if (loss %in% c("mse", "quantile"))
+      list(lower = 0, upper = 100) else NULL)
   jsonlite::write_json(meta, file.path(path, "metadata.json"),
                        auto_unbox = TRUE, null = "null")
-  artifact <- file.path(path, if (identical(track, "neural"))
-    "model.pt" else "booster.json")
-  if (identical(track, "trees")) {
-    writeLines(paste0(
-      '{"objective":"', spec$objective,
-      '","depth":1,"n_bins":32,"base_margin":0,',
-      '"learning_rate":0.3,"feature_ranges":[[0,1],[0,1]],',
-      '"trees":[{"feat":[0],"thr":[0.5],"w":[0,0]}]}'),
-      artifact, useBytes = TRUE)
-  } else {
-    writeBin(charToRaw("public-model"), artifact)
-  }
+  writeBin(charToRaw("public-model"), file.path(path, "model.pt"))
   path
 }
 
@@ -39,6 +25,14 @@ test_that("validation contract resolves a declarative neural artifact", {
   expect_identical(contract$features, c("age", "marker"))
   expect_equal(contract$feature_bounds$lower, c(0, -5))
   expect_identical(contract$target_levels, c("control", "case"))
+})
+
+test_that("validation treats quantile output as bounded regression", {
+  path <- validation_model_fixture(loss = "quantile")
+  contract <- dsFlowerClient:::.resolve_validation_contract(path, 24L)
+  expect_identical(contract$task, "regression")
+  expect_identical(contract$loss_name, "quantile")
+  expect_equal(contract$target_bounds, list(lower = 0, upper = 100))
 })
 
 test_that("validation rejects unsupported artifacts and public config early", {
@@ -63,7 +57,13 @@ test_that("validation rejects unsupported artifacts and public config early", {
   jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
   expect_error(
     dsFlowerClient:::.resolve_validation_contract(path, 32L),
-    "declarative neural and dp_gbdt")
+    "declarative neural artifacts")
+
+  meta$track <- "trees"
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "declarative neural artifacts")
 
   path <- validation_model_fixture()
   meta_path <- file.path(path, "metadata.json")
@@ -155,7 +155,7 @@ test_that("validation contract SHA-256 has a cross-package canonical wire", {
 })
 
 test_that("ds.flower.validate stages one validation release and returns pooled metrics", {
-  path <- validation_model_fixture(track = "trees")
+  path <- validation_model_fixture()
   client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
   old_superlink <- client_env$.superlink
   withr::defer(client_env$.superlink <- old_superlink)
@@ -165,6 +165,7 @@ test_that("ds.flower.validate stages one validation release and returns pooled m
   release_available <- TRUE
 
   local_mocked_bindings(
+    .validate_validation_artifact_preflight = function(...) TRUE,
     .require_flwr_cli = function() TRUE,
     .validate_dsi_transport_security = function(...) TRUE,
     ds.flower.connect = function(conns, ...) structure(

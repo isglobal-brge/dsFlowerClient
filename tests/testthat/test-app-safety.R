@@ -48,7 +48,7 @@ test_that("local runner hash matches the server canonical algorithm", {
   )
 })
 
-test_that("runner preflight requires ABI 2 and the exact local hash", {
+test_that("runner preflight requires ABI 3 and the exact local hash", {
   expected <- paste(rep("a", 64L), collapse = "")
   captured <- NULL
   local_mocked_bindings(
@@ -58,8 +58,8 @@ test_that("runner preflight requires ABI 2 and the exact local hash", {
   local_mocked_bindings(
     datashield.aggregate = function(conns, expr) {
       captured <<- expr
-      list(site1 = list(runner_abi = 2L, runner_sha256 = expected),
-           site2 = list(runner_abi = 2, runner_sha256 = toupper(expected)))
+      list(site1 = list(runner_abi = 3L, runner_sha256 = expected),
+           site2 = list(runner_abi = 3, runner_sha256 = toupper(expected)))
     },
     .package = "DSI"
   )
@@ -81,7 +81,7 @@ test_that("runner preflight reports incompatible nodes", {
   local_mocked_bindings(
     datashield.aggregate = function(...) {
       list(old = list(runner_abi = 1L, runner_sha256 = expected),
-           drift = list(runner_abi = 2L,
+           drift = list(runner_abi = 3L,
                         runner_sha256 = paste(rep("b", 64L), collapse = "")))
     },
     .package = "DSI"
@@ -101,7 +101,7 @@ test_that("runner preflight rejects DSI 1.8 NULL and misassociated results", {
     .compute_local_runner_hash = function(...) expected,
     .package = "dsFlowerClient"
   )
-  result <- list(site1 = list(runner_abi = 2L, runner_sha256 = expected),
+  result <- list(site1 = list(runner_abi = 3L, runner_sha256 = expected),
                  site2 = NULL)
   local_mocked_bindings(
     datashield.aggregate = function(...) result,
@@ -113,8 +113,8 @@ test_that("runner preflight rejects DSI 1.8 NULL and misassociated results", {
   )
 
   result <- list(
-    site1 = list(runner_abi = 2L, runner_sha256 = expected),
-    wrong = list(runner_abi = 2L, runner_sha256 = expected)
+    site1 = list(runner_abi = 3L, runner_sha256 = expected),
+    wrong = list(runner_abi = 3L, runner_sha256 = expected)
   )
   expect_error(
     dsFlowerClient:::.assert_runner_compatibility(conns, "flower_handle"),
@@ -364,14 +364,6 @@ test_that("architecture geometry fails before any Flower side effect", {
       target = "y", features = paste0("x", seq_len(63L))),
     "expects 64 public features"
   )
-  expect_error(
-    ds.flower.submit(
-      conns = list(site = TRUE),
-      model = ds.flower.model(
-        "xgboost", feature_ranges = list(c(0, 1), c(-1, 1))),
-      target = "y", features = "x"),
-    "one public feature_ranges interval per feature"
-  )
   expect_false(reached_cli)
 })
 
@@ -419,7 +411,7 @@ test_that("bce_logits cannot silently request a multiclass head", {
   )
 })
 
-test_that("trees reject an inapplicable strategy before any side effect", {
+test_that("retired tree model names fail before any side effect", {
   reached_cli <- FALSE
   local_mocked_bindings(
     .require_flwr_cli = function() {
@@ -429,13 +421,14 @@ test_that("trees reject an inapplicable strategy before any side effect", {
     .package = "dsFlowerClient"
   )
 
-  expect_error(
-    ds.flower.submit(
-      conns = list(site = TRUE), model = "xgboost",
-      target = "y", features = "x",
-      strategy = ds.flower.strategy.fedadam()),
-    "trees track supports only strategy = 'fedavg'"
-  )
+  for (model in c("xgboost", "dp_gbdt")) {
+    expect_error(
+      ds.flower.submit(
+        conns = list(site = TRUE), model = model,
+        target = "y", features = "x"),
+      "Unknown model"
+    )
+  }
   expect_false(reached_cli)
 })
 

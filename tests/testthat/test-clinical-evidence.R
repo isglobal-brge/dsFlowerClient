@@ -6,8 +6,6 @@ test_that("clinical benchmark evidence contains only completed runs", {
   files <- c(
     "dsflower_clinical_algorithm_results.json",
     "dsflower_clinical_secagg_results.json",
-    "dsflower_xgboost_histogram_privacy_results.json",
-    "dsflower_xgboost_histogram_privacy_curve_results.json",
     "dsflower_clinical_dp_results.json",
     "dsflower_clinical_dp_curve_results.json"
   )
@@ -22,12 +20,7 @@ test_that("clinical benchmark evidence contains only completed runs", {
       expect_equal(result$status, "pass", info = file)
       expect_true(is.finite(result$central_metrics$auc), info = file)
       expect_true(is.finite(result$federated_metrics$auc), info = file)
-      auc_limit <- if (identical(result$privacy_profile, "clinical_update_noise") &&
-                       identical(result$model_id, "xgboost_histogram")) {
-        0.12
-      } else if (identical(result$model_id, "xgboost_histogram")) {
-        0.05
-      } else if (identical(result$privacy_profile, "high_sensitivity_dp")) {
+      auc_limit <- if (identical(result$privacy_profile, "high_sensitivity_dp")) {
         0.06
       } else if (identical(result$model_id, "sklearn_sgd")) {
         0.025
@@ -50,8 +43,6 @@ test_that("clinical benchmark evidence records the enforced privacy policy", {
   files <- c(
     "dsflower_clinical_algorithm_results.json",
     "dsflower_clinical_secagg_results.json",
-    "dsflower_xgboost_histogram_privacy_results.json",
-    "dsflower_xgboost_histogram_privacy_curve_results.json",
     "dsflower_clinical_dp_results.json",
     "dsflower_clinical_dp_curve_results.json"
   )
@@ -65,13 +56,10 @@ test_that("clinical benchmark evidence records the enforced privacy policy", {
 
     expected_secagg <- evidence$privacy_profile %in% c(
       "consortium_internal", "clinical_default", "clinical_hardened",
-      "clinical_update_noise", "high_sensitivity_dp"
+      "high_sensitivity_dp"
     )
-    expected_dp <- evidence$privacy_profile %in% c(
-      "clinical_update_noise", "high_sensitivity_dp"
-    )
+    expected_dp <- evidence$privacy_profile %in% "high_sensitivity_dp"
     expected_scope <- switch(evidence$privacy_profile,
-      clinical_update_noise = "update_noise_only",
       high_sensitivity_dp = "patient_level_dp_sgd",
       "none"
     )
@@ -99,6 +87,27 @@ test_that("clinical benchmark evidence records the enforced privacy policy", {
   }
 })
 
+test_that("retired tree evidence is absent from the client package", {
+  retired <- c(
+    "dsflower_xgboost_histogram_privacy_results.json",
+    "dsflower_xgboost_histogram_privacy_curve_results.json"
+  )
+  expect_false(any(file.exists(file.path(
+    system.file("extdata", package = "dsFlowerClient"), retired))))
+
+  retained <- c(
+    "dsflower_clinical_algorithm_results.json",
+    "dsflower_clinical_secagg_results.json",
+    "dsflower_method_validation_results.json"
+  )
+  for (file in retained) {
+    text <- paste(readLines(system.file(
+      "extdata", file, package = "dsFlowerClient"), warn = FALSE),
+      collapse = "\n")
+    expect_false(grepl("xgboost|dp_gbdt", text, ignore.case = TRUE), info = file)
+  }
+})
+
 test_that("clinical_default evidence uses datasets satisfying profile row policy", {
   path <- system.file(
     "extdata", "dsflower_clinical_secagg_results.json",
@@ -118,9 +127,6 @@ test_that("clinical_default evidence uses datasets satisfying profile row policy
     }
     if (identical(result$family, "neural network")) {
       expect_gte(min(site_n), 500)
-    }
-    if (identical(result$family, "tree ensemble")) {
-      expect_gte(min(site_n), 200)
     }
   }
 })
@@ -169,45 +175,6 @@ test_that("DP epsilon curves are comparable within each PyTorch template", {
         identical(x$privacy_parameters$clipping_norm, 1L)
     }, logical(1))), info = model)
   }
-})
-
-test_that("XGBoost update-noise curve covers practical histogram-noise budgets", {
-  path <- system.file(
-    "extdata", "dsflower_xgboost_histogram_privacy_curve_results.json",
-    package = "dsFlowerClient"
-  )
-  evidence <- jsonlite::fromJSON(path, simplifyVector = FALSE)
-  eps <- vapply(evidence$results, `[[`, numeric(1), "curve_epsilon")
-  auc <- vapply(evidence$results, function(x) x$federated_metrics$auc, numeric(1))
-
-  expect_equal(evidence$privacy_profile, "clinical_update_noise")
-  expect_equal(unname(sort(eps)), c(8, 12, 16))
-  expect_true(all(diff(auc[order(eps)]) >= -1e-6))
-  expect_true(all(vapply(evidence$results, function(x) {
-    x$dataset_id == "cdc_diabetes_health_indicators" &&
-      x$model_id == "xgboost_histogram" &&
-      x$n_total == 9000L &&
-      identical(x$privacy_parameters$delta, 1e-5) &&
-      identical(x$privacy_parameters$clipping_norm, 5L) &&
-      abs(x$metric_delta$auc) <= 0.12
-  }, logical(1))))
-})
-
-test_that("standalone XGBoost update-noise evidence uses the representative curve point", {
-  path <- system.file(
-    "extdata", "dsflower_xgboost_histogram_privacy_results.json",
-    package = "dsFlowerClient"
-  )
-  evidence <- jsonlite::fromJSON(path, simplifyVector = FALSE)
-  result <- evidence$results[[1]]
-
-  expect_equal(evidence$privacy_profile, "clinical_update_noise")
-  expect_equal(evidence$source_curve_file,
-               "dsflower_xgboost_histogram_privacy_curve_results.json")
-  expect_equal(evidence$representative_curve_epsilon, 12)
-  expect_equal(result$curve_epsilon, 12)
-  expect_equal(result$privacy_parameters$epsilon, 12)
-  expect_lte(abs(result$metric_delta$auc), 0.06)
 })
 
 test_that("SUPPORT2 method-family evidence covers non-binary families under SecAgg", {
@@ -286,14 +253,6 @@ test_that("thesis-facing privacy validation matrix remains covered", {
     "extdata", "dsflower_clinical_dp_curve_results.json",
     package = "dsFlowerClient"
   ), simplifyVector = FALSE)
-  xgb_noise <- jsonlite::fromJSON(system.file(
-    "extdata", "dsflower_xgboost_histogram_privacy_results.json",
-    package = "dsFlowerClient"
-  ), simplifyVector = FALSE)
-  xgb_curve <- jsonlite::fromJSON(system.file(
-    "extdata", "dsflower_xgboost_histogram_privacy_curve_results.json",
-    package = "dsFlowerClient"
-  ), simplifyVector = FALSE)
   family <- jsonlite::fromJSON(system.file(
     "extdata", "dsflower_method_family_results.json",
     package = "dsFlowerClient"
@@ -308,7 +267,7 @@ test_that("thesis-facing privacy validation matrix remains covered", {
     secagg_models,
     sort(c(
       "sklearn_logreg", "sklearn_ridge", "sklearn_sgd",
-      "pytorch_logreg", "pytorch_mlp", "xgboost_histogram"
+      "pytorch_logreg", "pytorch_mlp"
     ))
   )
   expect_true(all(vapply(secagg$results, function(x) {
@@ -338,17 +297,6 @@ test_that("thesis-facing privacy validation matrix remains covered", {
       "pytorch_mlp:2", "pytorch_mlp:4", "pytorch_mlp:8"
     ))
   )
-
-  representative <- xgb_noise$results[[1]]
-  expect_equal(representative$model_id, "xgboost_histogram")
-  expect_equal(representative$privacy_profile, "clinical_update_noise")
-  expect_true(isTRUE(representative$secure_aggregation_required))
-  expect_true(isTRUE(representative$dp_required))
-  expect_equal(representative$dp_scope, "update_noise_only")
-  expect_equal(representative$curve_epsilon, 12)
-  expect_equal(unname(sort(vapply(
-    xgb_curve$results, `[[`, numeric(1), "curve_epsilon"
-  ))), c(8, 12, 16))
 
   expect_equal(
     sort(family$results$method),

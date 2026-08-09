@@ -21,24 +21,26 @@ ds.flower.register_model(
 )
 }
 \arguments{
-\item{name}{Character; the model name (e.g. "pytorch_logreg", "xgboost").}
+\item{name}{Character; the model name (e.g. "pytorch_logreg").}
 
-\item{track}{Character; the enforced-DP track: "neural" (nn.Module + DP-SGD)
-or "trees" (random-split DP-GBDT spec).}
+\item{track}{Character; the enforced-DP track. The public model registry
+currently accepts only "neural" (nn.Module + DP-SGD). Native tree engines
+are registered by their trusted server adapters, not extension generators.}
 
-\item{generate}{Function of one argument \code{params} (a named list). Both
-tracks MUST return a named list (DATA, never code): for the neural track a
+\item{generate}{Function of one argument \code{params} (a named list). It
+MUST return a named model SPEC (DATA, never code):
 model SPEC \code{list(kind = "sequential", layers = list(...))} the node
-builds with stock torch layers (end with a linear onto \code{"@out"}); for the
-trees track the DP-GBDT spec. The node owns the loop, loss, and optimizer.}
+builds with stock torch layers (end with a linear onto \code{"@out"}). The
+node owns the loop, loss, and optimizer.}
 
-\item{loss}{Character; required for the neural track and required to be NULL
-for the trees track. The per-sample neural loss must come from the node
+\item{loss}{Character; required for the neural track. The per-sample neural
+loss must come from the node
 allowlist: stock losses \code{bce_logits},
 \code{cross_entropy}, \code{mse}, \code{poisson_nll}, \code{multilabel_bce},
 \code{hinge} (linear SVM), \code{ordinal} (CORN); plus vetted custom per-sample
 losses \code{negbin_nll} (overdispersed counts), \code{gamma_nll}
-(positive continuous), and \code{huber} (bounded robust regression).
+(positive continuous), \code{huber} (bounded robust regression), and
+\code{quantile} (bounded conditional-quantile regression).
 The node pins the actual loss; this is the client's request.}
 
 \item{defaults}{Named list of default params merged under user-supplied params.}
@@ -68,7 +70,7 @@ parameters. Values outside the corresponding allowlist fail before any DSI
 operation.}
 
 \item{data_kinds}{Character vector of supported inputs:
-\code{"tabular"}, \code{"image"}, or both. Trees are tabular only.}
+\code{"tabular"}, \code{"image"}, or both.}
 }
 \value{
 Invisibly, the model name.

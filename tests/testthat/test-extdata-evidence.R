@@ -12,7 +12,7 @@ test_that("committed method validation evidence matches thesis constants", {
   path <- extdata_evidence("dsflower_method_validation_results.json")
   evidence <- jsonlite::fromJSON(path)
 
-  expect_equal(nrow(evidence$results), 17)
+  expect_equal(nrow(evidence$results), 16)
   expect_true(all(evidence$results$validation_status == "pass"))
   expect_true(all(is.na(evidence$results$federated_n_failures) |
                     evidence$results$federated_n_failures == 0))

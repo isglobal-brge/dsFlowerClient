@@ -7,7 +7,7 @@
 .ensure_client_framework(framework)
 }
 \arguments{
-\item{framework}{Character; "pytorch", "pytorch_vision", or "xgboost".}
+\item{framework}{Character; "pytorch" or "pytorch_vision".}
 }
 \value{
 Invisible TRUE.

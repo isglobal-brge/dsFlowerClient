@@ -208,18 +208,31 @@
 
 .FRAMEWORK_CLIENT_DEPS <- list(
   pytorch = c("torch>=2.0.0,<3.0.0", "numpy>=1.21.0", "pandas>=1.3.0",
-              "pyarrow>=10.0.0", "opacus>=1.4.0,<2.0.0"),
+              "pyarrow>=10.0.0", "opacus>=1.4.0,<2.0.0",
+              "cryptography>=42.0.0"),
   pytorch_vision = c("torch>=2.0.0,<3.0.0", "torchvision>=0.15.0,<1.0.0", "Pillow>=9.0.0",
                      "numpy>=1.21.0", "pandas>=1.3.0", "pyarrow>=10.0.0",
                      "opacus>=1.4.0,<2.0.0", "nibabel>=5.0.0", "pydicom>=2.4.0",
-                     "pynrrd>=1.0.0"),
-  xgboost = c("xgboost>=1.7.0", "numpy>=1.21.0", "pandas>=1.3.0",
-              "pyarrow>=10.0.0")
+                     "pynrrd>=1.0.0", "SimpleITK>=2.2.0", "monai>=1.3.0",
+                     "cryptography>=42.0.0")
 )
 
 .FRAMEWORK_CHECK_MODULE <- list(
-  pytorch = "torch", pytorch_vision = "torchvision", xgboost = "xgboost"
+  pytorch = c("torch", "numpy", "pandas", "pyarrow", "opacus", "cryptography"),
+  pytorch_vision = c(
+    "torch", "torchvision", "PIL", "numpy", "pandas", "pyarrow", "opacus",
+    "nibabel", "pydicom", "nrrd", "SimpleITK", "monai", "cryptography"
+  )
 )
+
+.framework_modules_available <- function(python, modules) {
+  import_code <- paste(paste("import", modules), collapse = "; ")
+  rc <- suppressWarnings(
+    system2(python, c("-c", shQuote(import_code)),
+            stdout = FALSE, stderr = FALSE)
+  )
+  identical(rc, 0L)
+}
 
 #' Ensure ML framework dependencies are installed in the client venv
 #'
@@ -227,22 +240,23 @@
 #' Installs them on-demand if missing. Called automatically before
 #' training and prediction.
 #'
-#' @param framework Character; "pytorch", "pytorch_vision", or "xgboost".
+#' @param framework Character; "pytorch" or "pytorch_vision".
 #' @return Invisible TRUE.
 #' @keywords internal
 .ensure_client_framework <- function(framework) {
   check_mod <- .FRAMEWORK_CHECK_MODULE[[framework]]
-  if (is.null(check_mod)) return(invisible(TRUE))
+  if (is.null(check_mod)) {
+    stop("Unsupported client framework: ", framework, ".", call. = FALSE)
+  }
 
   python <- .client_python_cmd()
-  rc <- suppressWarnings(
-    system2(python, c("-c", shQuote(paste0("import ", check_mod))),
-            stdout = FALSE, stderr = FALSE)
-  )
-  if (rc == 0L) return(invisible(TRUE))
+  if (.framework_modules_available(python, check_mod)) return(invisible(TRUE))
 
   deps <- .FRAMEWORK_CLIENT_DEPS[[framework]]
-  if (is.null(deps)) return(invisible(TRUE))
+  if (is.null(deps)) {
+    stop("No dependency contract for client framework: ", framework, ".",
+         call. = FALSE)
+  }
 
   message("dsFlowerClient: installing ", framework, " dependencies...")
   uv <- .ensure_client_uv()
@@ -258,13 +272,9 @@
     stop("Failed to install ", framework, " dependencies:\n",
          result$stderr, call. = FALSE)
   }
-  rc <- suppressWarnings(
-    system2(python, c("-c", shQuote(paste0("import ", check_mod))),
-            stdout = FALSE, stderr = FALSE)
-  )
-  if (rc != 0L) {
-    stop("Python requirements did not provide the required module '",
-         check_mod, "'.", call. = FALSE)
+  if (!.framework_modules_available(python, check_mod)) {
+    stop("Python requirements did not provide all required modules: ",
+         paste(check_mod, collapse = ", "), ".", call. = FALSE)
   }
   message("  ", framework, " ready.")
   invisible(TRUE)

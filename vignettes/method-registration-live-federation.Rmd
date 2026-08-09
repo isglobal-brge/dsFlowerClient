@@ -91,7 +91,7 @@ caps <- datashield.aggregate(
 lapply(caps, function(x) x[c(
   "dsflower_version", "runner_abi", "runner_sha256",
   "dp_tracks", "declarative_model_ops", "declarative_losses",
-  "tree_objectives", "aggregation_strategies",
+  "aggregation_strategies",
   "privacy_accountant", "privacy_nonblocking",
   "hook_enabled", "hook_sandbox_attested",
   "hook_resource_isolation_attested"

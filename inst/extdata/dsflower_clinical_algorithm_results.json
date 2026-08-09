@@ -97,22 +97,6 @@
       "rounds": 2
     },
     {
-      "id": "xgboost_histogram",
-      "label": "Histogram XGBoost",
-      "family": "tree ensemble",
-      "validation_datasets": "breast_cancer_wisconsin",
-      "min_rows_per_site": 100,
-      "model_params": {
-        "n_trees": 2,
-        "max_depth": 2,
-        "eta": 0.25,
-        "reg_lambda": 1,
-        "n_bins": 16,
-        "objective": "binary:logistic"
-      },
-      "rounds": 1
-    },
-    {
       "id": "pytorch_mlp",
       "label": "PyTorch MLP",
       "family": "neural network",
@@ -185,104 +169,6 @@
           "loss": 0.0615,
           "n_clients": 3,
           "n_failures": 0
-        }
-      ],
-      "privacy_policy": {
-        "privacy_profile": "trusted_internal",
-        "secure_aggregation_required": false,
-        "secure_aggregation_supported": true,
-        "fixed_client_sampling": false,
-        "allow_per_node_metrics": true,
-        "dp_required": false,
-        "dp_scope": "none",
-        "privacy_mechanism": "none",
-        "policy_source": "dsFlower server trust profile"
-      },
-      "secure_aggregation_required": false,
-      "dp_required": false,
-      "dp_scope": "none",
-      "privacy_mechanism": "none"
-    },
-    "breast_cancer_wisconsin.xgboost_histogram": {
-      "dataset_id": "breast_cancer_wisconsin",
-      "dataset_label": "Breast Cancer Wisconsin (Original)",
-      "domain": "cytology / oncology",
-      "source": "mlbench::BreastCancer / UCI Breast Cancer Wisconsin (Original)",
-      "model_id": "xgboost_histogram",
-      "model_label": "Histogram XGBoost",
-      "family": "tree ensemble",
-      "status": "pass",
-      "n_total": 683,
-      "n_train": 513,
-      "n_test": 170,
-      "n_features": 9,
-      "site_train_n": {
-        "opal1": 171,
-        "opal2": 171,
-        "opal3": 171
-      },
-      "privacy_profile": "trusted_internal",
-      "privacy_parameters": {
-        "mode": "trusted_internal"
-      },
-      "rounds": 1,
-      "model_params": {
-        "n_trees": 2,
-        "max_depth": 2,
-        "eta": 0.25,
-        "reg_lambda": 1,
-        "n_bins": 16,
-        "objective": "binary:logistic"
-      },
-      "central_metrics": {
-        "auc": 0.9755,
-        "accuracy": 0.9118,
-        "log_loss": 0.3833,
-        "brier": 0.1081
-      },
-      "federated_metrics": {
-        "auc": 0.9772,
-        "accuracy": 0.9353,
-        "log_loss": 0.4166,
-        "brier": 0.1183
-      },
-      "metric_delta": {
-        "auc": 0.0018,
-        "accuracy": 0.0235,
-        "log_loss": 0.0332,
-        "brier": 0.0102
-      },
-      "flower_output_dir": "./dsflower_output/xgboost_FedAvg_1r_20260526_222112",
-      "history": [
-        {
-          "tree": 0,
-          "n_splits": 2,
-          "n_leaves": 3,
-          "round": {},
-          "loss": {},
-          "n_clients": {},
-          "n_failures": {},
-          "accuracy": {}
-        },
-        {
-          "tree": {},
-          "n_splits": {},
-          "n_leaves": {},
-          "round": 19,
-          "loss": 0.5167,
-          "n_clients": 3,
-          "n_failures": 0,
-          "accuracy": 0.9357
-        },
-        {
-          "tree": 1,
-          "n_splits": 3,
-          "n_leaves": 4,
-          "round": {},
-          "loss": {},
-          "n_clients": {},
-          "n_failures": {},
-          "accuracy": {}
         }
       ],
       "privacy_policy": {

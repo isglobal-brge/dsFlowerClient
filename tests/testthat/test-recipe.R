@@ -50,13 +50,19 @@ test_that("recipe infers and enforces the registered model task", {
     ds.flower.recipe(model = "pytorch_huber")$task$type,
     "regression")
   expect_identical(
-    ds.flower.recipe(
-      model = ds.flower.model(
-        "xgboost", objective = "reg:squarederror"))$task$type,
+    ds.flower.recipe(model = "pytorch_quantile")$task$type,
     "regression")
+  expect_identical(
+    ds.flower.recipe(model = "pytorch_poisson")$task$type,
+    "count")
+  expect_identical(ds.flower.task("count")$type, "count")
   expect_error(
     ds.flower.recipe(
       model = "pytorch_huber", task = "classification"),
+    "incompatible")
+  expect_error(
+    ds.flower.recipe(
+      model = "pytorch_poisson", task = "regression"),
     "incompatible")
   expect_error(ds.flower.recipe(model = "pytorch_logreg", num_rounds = "2"),
                "integer")

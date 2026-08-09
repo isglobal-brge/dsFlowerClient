@@ -21,8 +21,8 @@ A numeric vector, integer class vector, or probability matrix for
   multiclass, ordinal, and multilabel models.
 }
 \description{
-Uses the saved declarative PyTorch state dictionary or dsFlower DP-GBDT JSON
-artifact to generate tabular predictions via Python. Vision artifacts are not
-accepted by this tabular predictor. The appropriate framework dependencies
-are installed on-demand in the client venv if not already present.
+Uses a saved declarative PyTorch state dictionary to generate tabular
+predictions via Python. Vision artifacts are not accepted by this tabular
+predictor. The appropriate framework dependencies are installed on-demand in
+the client venv if not already present.
 }

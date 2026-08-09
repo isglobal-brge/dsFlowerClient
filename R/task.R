@@ -21,12 +21,22 @@ ds.flower.task.regression <- function() {
   obj
 }
 
+#' Create a count-outcome task specification
+#'
+#' @return A \code{dsflower_task} S3 object with type = "count".
+#' @export
+ds.flower.task.count <- function() {
+  obj <- list(type = "count")
+  class(obj) <- "dsflower_task"
+  obj
+}
+
 .assert_supported_task <- function(task) {
   if (!inherits(task, "dsflower_task") ||
-      !task$type %in% c("classification", "regression")) {
+      !task$type %in% c("classification", "regression", "count")) {
     type <- if (inherits(task, "dsflower_task")) task$type else "invalid"
     stop("Task '", type, "' is not supported by the enforced-DP runtime. ",
-         "Supported tasks: classification, regression.", call. = FALSE)
+         "Supported tasks: classification, regression, count.", call. = FALSE)
   }
   invisible(task)
 }

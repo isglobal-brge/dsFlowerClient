@@ -112,17 +112,10 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   }
 
   # Run via venv flwr with FLWR_HOME pointing to our private config.
-  # Trees are a single federated round (each site trains its full DP-GBDT locally,
-  # then the boosters are bagged), so num_rounds does not apply to that track.
-  is_trees <- identical(recipe$model$track, "trees")
-  eff_rounds <- if (is_trees) 1L else recipe$num_rounds
+  eff_rounds <- recipe$num_rounds
   .dsf_msg("Training ", recipe$model$template, " across ", n_clients,
            " site(s) for ", eff_rounds, " round(s)...")
   flwr_cmd <- .client_flwr_cmd()
-  # The trees track has no flwr [ROUND] stream to parse, so announce its one
-  # round here; the neural/egress tracks stream [ROUND k/N] during training.
-  if (is_trees)
-    .dsf_msg("  Round 1/1: each site trains its DP-GBDT locally, then the boosters are bagged...")
   # PYTHONUNBUFFERED so the flwr child flushes its [ROUND k/N] log lines as they
   # happen (block-buffered pipes otherwise hold them until exit, which hides the
   # per-round progress under a non-interactive front-end such as knitr).
@@ -347,7 +340,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   any(file.exists(file.path(
     results_dir,
     c("global_model.json", "global_model.skipped.json",
-      "model.pt", "model.npz", "booster.json", "validation.json")
+      "model.pt", "model.npz", "validation.json")
   )))
 }
 
@@ -375,9 +368,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
 }
 
 # Parse freshly streamed flwr lines and announce each round as it starts. The
-# ServerApp logs "[ROUND k/N]" per federated round (neural/egress tracks); the
-# one-round trees track has no such marker and relies on the start/complete
-# lines instead. `seen` tracks already-announced rounds across poll iterations.
+# ServerApp logs "[ROUND k/N]" per federated round. `seen` tracks already-
+# announced rounds across poll iterations.
 .emit_round_progress <- function(lines, num_rounds, seen) {
   if (!length(lines) || isTRUE(getOption("dsflower.silent", FALSE))) return(invisible())
   for (ln in lines) {
@@ -625,12 +617,7 @@ ds.flower.run.stop <- function(run_id) {
 #' @keywords internal
 .read_model_weights <- function(results_dir) {
   path <- file.path(results_dir, "global_model.json")
-  native_booster <- FALSE
-  if (!file.exists(path)) {
-    path <- file.path(results_dir, "booster.json")
-    if (!file.exists(path)) return(NULL)
-    native_booster <- TRUE
-  }
+  if (!file.exists(path)) return(NULL)
   size <- file.info(path)$size
   max_bytes <- .flwr_weight_read_max_bytes()
   if (is.finite(size) && !is.na(size) && size > max_bytes) {
@@ -641,10 +628,6 @@ ds.flower.run.stop <- function(run_id) {
   }
 
   raw <- jsonlite::fromJSON(path, simplifyVector = FALSE)
-  if (native_booster) return(raw)
-  if (identical(raw[["model_type"]], "xgboost")) {
-    return(raw)
-  }
   shapes <- raw[["__shapes__"]]
   round <- raw[["__round__"]]
   if (is.null(shapes)) return(NULL)
@@ -783,13 +766,11 @@ ds.flower.save_model <- function(run, path) {
   source_dir <- normalizePath(source_dir, winslash = "/", mustWork = TRUE)
   asset_files <- c(
     "metadata.json", "history.json", "model.pt", "model.npz",
-    "model.xgb.json", "model.xgb", "booster.json", "global_model.json",
-    "global_model.skipped.json"
+    "global_model.json", "global_model.skipped.json"
   )
   present <- asset_files[file.exists(file.path(source_dir, asset_files))]
   model_files <- c(
-    "model.pt", "model.npz", "model.xgb.json", "model.xgb",
-    "booster.json", "global_model.json"
+    "model.pt", "model.npz", "global_model.json"
   )
   if (!"metadata.json" %in% present || !any(model_files %in% present)) {
     stop("The run directory does not contain a complete public model bundle.",

@@ -182,9 +182,7 @@ The client emits data-only specifications; the node-installed runner constructs
 and trains the model:
 
 - neural and vision specifications use Opacus DP-SGD with per-example or
-  server-selected per-patient clipping and noise;
-- tree specifications use DP-GBDT with data-independent structure, bounded
-  gradients/Hessians and noisy leaf histograms.
+  server-selected per-patient clipping and noise.
 
 This is the path that reaches `nn.Module`-level granularity because the trusted
 runner owns the training loop and sees per-sample gradients. The client never
@@ -213,7 +211,8 @@ The first-party suite covers binary, multiclass, multilabel and ordinal
 classification; linear SVM; MLP, CNN, residual, recurrent, temporal and
 Transformer specifications; linear, ridge, lasso, elastic-net and robust Huber
 regression; Poisson, negative-binomial and Gamma outcomes; frozen-backbone
-medical-image classification; and bounded DP-GBDT. Neural contracts expose
+medical-image classification; and bounded conditional-quantile regression.
+Neural contracts expose
 SGD, Adam, AdamW and RMSprop plus none/step/exponential/cosine learning-rate
 schedules. Parameters that are unknown, incompatible with the selected
 optimizer/loss, outside a resource cap, or not implemented fail before staging;
@@ -226,16 +225,12 @@ tabular; they do not yet reconstruct image loaders/backbones for inference or
 validation. This boundary is explicit rather than silently treating images as a
 numeric table.
 
-The registered name `xgboost` (also available as `dp_gbdt`) is a compatibility
-interface to dsFlower's own NumPy DP-GBDT: complete data-independent random-split
-trees, bounded contributions and Gaussian-noised leaf histograms. It currently
-supports `binary:logistic` and bounded `reg:squarederror`, with `n_trees`,
-`max_depth`, `learning_rate`/`eta`, `reg_lambda`, `n_bins`, public feature/margin
-ranges and an optional public regression-gradient bound. It does **not** import
-or claim the full native XGBoost API. Native XGBoost, LightGBM and CatBoost learn
-data-dependent bins, splits, topology, categories and stopping decisions, so
-adding noise only to their final model bytes would not make them formally DP.
-Those libraries are therefore not presented as safe drop-in aliases.
+Tree engines are intentionally not registered in this release. The former
+NumPy random-split compatibility implementation and its `xgboost`/`dp_gbdt`
+aliases have been removed: it was not the native XGBoost engine and must not be
+presented as one. Native XGBoost, LightGBM, CatBoost and random-forest adapters
+will be exposed only through trusted, version-pinned runtimes with a complete
+node-enforced DP mechanism; adding noise only to final model bytes is not DP.
 
 Classification strings/factors require an ordered public `target_levels`;
 numeric labels already coded in `[0, K-1]` remain compatible.
@@ -250,7 +245,7 @@ Public feature/target bounds and unscaled numeric inputs are limited to magnitud
 that domain. Declarative intermediates and parameters use the same finite cap;
 heads are saturated at `30` for logits/log-links and `1e6` for direct MSE
 regression. Per-sample gradients are totalised before Opacus performs the
-server-owned L2 clip. Neural and DP-GBDT learning rates must be in `(0, 10]`.
+server-owned L2 clip. Neural learning rates must be in `(0, 10]`.
 
 ### HookApps (legacy name: Tier2)
 
@@ -321,7 +316,7 @@ HookApps use the same `target_levels`/`target_bounds` contract and must declare
 
 `ds.flower.validate()` evaluates a saved declarative model inside the nodes and
 releases one fixed, Gaussian-noised vector of bounded sufficient statistics per
-node. The current validator is for tabular neural and DP-GBDT artifacts; vision
+node. The current validator is for tabular neural artifacts; vision
 artifacts fail explicitly. Exact labels, predictions, counts and site metrics remain local; the
 researcher receives only pooled post-processing:
 
@@ -372,9 +367,8 @@ follow the exact feature order.
 Training clips each value to its interval and maps it affinely to `[-1, 1]`;
 prediction reuses the stored bounds. These constants must come from public domain
 knowledge or protocol design, not from a query to the protected node. Without
-bounds, neural inputs remain unscaled after coercion/saturation to `[-1e6, 1e6]`
-and DP-GBDT uses a public `[0, 1]` threshold prior, which can reduce utility when
-the real scale differs.
+bounds, neural inputs remain unscaled after coercion/saturation to `[-1e6, 1e6]`,
+which can reduce utility when the real scale differs.
 
 ## Lower-level API
 

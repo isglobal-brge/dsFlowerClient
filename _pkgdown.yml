@@ -86,7 +86,6 @@ reference:
       - ds.flower.model.pytorch_poisson
       - ds.flower.model.pytorch_resnet18
       - ds.flower.model.pytorch_tcn
-      - ds.flower.model.xgboost
 
   - title: "Specification: Strategies"
     desc: "Federated aggregation strategy specifications."

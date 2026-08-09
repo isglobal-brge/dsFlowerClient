@@ -3,10 +3,10 @@
 
 #' Predict with a federated model
 #'
-#' Uses the saved declarative PyTorch state dictionary or dsFlower DP-GBDT JSON
-#' artifact to generate tabular predictions via Python. Vision artifacts are not
-#' accepted by this tabular predictor. The appropriate framework dependencies
-#' are installed on-demand in the client venv if not already present.
+#' Uses a saved declarative PyTorch state dictionary to generate tabular
+#' predictions via Python. Vision artifacts are not accepted by this tabular
+#' predictor. The appropriate framework dependencies are installed on-demand in
+#' the client venv if not already present.
 #'
 #' @param model A \code{dsflower_run} object, a saved model list (from
 #'   \code{ds.flower.load_model}), or a path to a model directory.
@@ -31,7 +31,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
          "require an image/backbone inference pipeline.", call. = FALSE)
   }
 
-  # Ensure framework deps are installed
+  # Ensure only the dependencies required by this artifact kind are installed.
   .ensure_client_framework(framework)
 
   # Align newdata to the TRAINING feature order/names: the model consumes columns
@@ -79,8 +79,6 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
                c("--num-classes", as.character(contract$num_classes %||% 2L)),
              if (!is.null(spec_b64))
                c("--num-labels", as.character(contract$num_labels %||% 2L)),
-             if (identical(framework, "xgboost") && !is.null(info$bounds))
-               c("--tree-bounds-b64", .spec_to_b64(info$bounds)),
              # Repeat the node's public clip + affine transform for new models.
              # Legacy models carry only mean/SD and retain their old prediction path.
              if (identical(framework, "pytorch") && !is.null(info$bounds))
@@ -117,8 +115,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     } else if (file.exists(model)) {
       # Direct file path
       ext <- tolower(tools::file_ext(model))
-      framework <- switch(ext,
-        pt = "pytorch", xgb = "xgboost", json = "xgboost",
+      framework <- switch(
+        ext, pt = "pytorch",
         stop("Unknown model format: ", ext, call. = FALSE))
       tmpl <- .read_template_meta(dirname(model))
       return(list(model_file = model, framework = framework, template = tmpl,
@@ -130,8 +128,6 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     # Loaded model list -- check for source directory
     if (!is.null(model$source_dir)) model_dir <- model$source_dir
     if (is.null(model_dir) && !is.null(model$template)) {
-      # Try to find by framework
-      fw <- if (grepl("xgboost", model$template)) "xgboost" else "pytorch"
       # Need model_dir to find the file
       stop("Cannot predict from in-memory model list without a model directory. ",
            "Pass the output_dir path instead.", call. = FALSE)
@@ -150,14 +146,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   nrm <- .read_meta_norm(model_dir)          # legacy standardization stats (or NULL)
   contract <- .read_meta_model_contract(model_dir)
 
-  # Find native model file (priority: pt > xgb.json > booster.json > xgb). The trees runner
-  # writes the XGBoost model as booster.json.
-  candidates <- list(
-    list(file = "model.pt", framework = "pytorch"),
-    list(file = "model.xgb.json", framework = "xgboost"),
-    list(file = "booster.json", framework = "xgboost"),
-    list(file = "model.xgb", framework = "xgboost")
-  )
+  candidates <- list(list(file = "model.pt", framework = "pytorch"))
 
   for (c in candidates) {
     path <- file.path(model_dir, c$file)
@@ -168,21 +157,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     }
   }
 
-  # Fallback: route global_model.json by the template's framework (metadata).
-  json_path <- file.path(model_dir, "global_model.json")
-  if (file.exists(json_path)) {
-    if (grepl("xgboost", tmpl)) {
-      return(list(model_file = json_path, framework = "xgboost", template = tmpl,
-                  features = feats, bounds = bnd, norm = nrm,
-                  contract = contract))
-    }
-    return(list(model_file = json_path, framework = "pytorch", template = tmpl,
-                features = feats, bounds = bnd, norm = nrm,
-                contract = contract))
-  }
-
   stop("No native model file found in ", model_dir,
-       ". Expected model.pt or model.xgb.json.", call. = FALSE)
+       ". Expected model.pt.", call. = FALSE)
 }
 
 #' Read the template name from a model directory's metadata.json

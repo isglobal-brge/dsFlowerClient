@@ -80,23 +80,6 @@
       "rounds": 2
     },
     {
-      "id": "xgboost_histogram",
-      "label": "Histogram XGBoost",
-      "family": "tree ensemble",
-      "validation_datasets": "breast_cancer_wisconsin",
-      "clinical_validation_datasets": "cdc_diabetes_health_indicators",
-      "min_rows_per_site": 100,
-      "model_params": {
-        "n_trees": 5,
-        "max_depth": 1,
-        "eta": 0.25,
-        "reg_lambda": 1,
-        "n_bins": 16,
-        "objective": "binary:logistic"
-      },
-      "rounds": 1
-    },
-    {
       "id": "sklearn_ridge",
       "label": "Ridge classifier",
       "family": "linear classifier",
@@ -362,100 +345,6 @@
           "loss": 0,
           "n_clients": 3,
           "n_failures": 0
-        }
-      ],
-      "privacy_policy": {
-        "privacy_profile": "clinical_default",
-        "secure_aggregation_required": true,
-        "secure_aggregation_supported": true,
-        "fixed_client_sampling": true,
-        "allow_per_node_metrics": false,
-        "dp_required": false,
-        "dp_scope": "none",
-        "privacy_mechanism": "secure_aggregation",
-        "policy_source": "dsFlower server trust profile"
-      },
-      "secure_aggregation_required": true,
-      "dp_required": false,
-      "dp_scope": "none",
-      "privacy_mechanism": "secure_aggregation"
-    },
-    "cdc_diabetes_health_indicators.xgboost_histogram": {
-      "dataset_id": "cdc_diabetes_health_indicators",
-      "dataset_label": "CDC Diabetes Health Indicators",
-      "domain": "population health / diabetes",
-      "source": "UCI CDC Diabetes Health Indicators, stratified sample",
-      "model_id": "xgboost_histogram",
-      "model_label": "Histogram XGBoost",
-      "family": "tree ensemble",
-      "status": "pass",
-      "n_total": 9000,
-      "n_train": 6751,
-      "n_test": 2249,
-      "n_features": 21,
-      "site_train_n": {
-        "opal1": 2251,
-        "opal2": 2251,
-        "opal3": 2249
-      },
-      "privacy_profile": "clinical_default",
-      "privacy_parameters": {
-        "mode": "clinical_default"
-      },
-      "privacy_ledger_namespace": "clinical_benchmark_clinical_default_4242",
-      "rounds": 1,
-      "model_params": {
-        "n_trees": 5,
-        "max_depth": 1,
-        "eta": 0.25,
-        "reg_lambda": 1,
-        "n_bins": 16,
-        "objective": "binary:logistic"
-      },
-      "central_metrics": {
-        "auc": 0.7998,
-        "accuracy": 0.8608,
-        "log_loss": 0.3551,
-        "brier": 0.1075
-      },
-      "federated_metrics": {
-        "auc": 0.754,
-        "accuracy": 0.8608,
-        "log_loss": 0.3986,
-        "brier": 0.118
-      },
-      "metric_delta": {
-        "auc": -0.0458,
-        "accuracy": 0,
-        "log_loss": 0.0434,
-        "brier": 0.0105
-      },
-      "flower_output_dir": "./dsflower_output/xgboost_FedAvg_1r_20260527_043555",
-      "history": [
-        {
-          "tree": 0,
-          "n_splits": 1,
-          "n_leaves": 2
-        },
-        {
-          "tree": 1,
-          "n_splits": 1,
-          "n_leaves": 2
-        },
-        {
-          "tree": 2,
-          "n_splits": 1,
-          "n_leaves": 2
-        },
-        {
-          "tree": 3,
-          "n_splits": 1,
-          "n_leaves": 2
-        },
-        {
-          "tree": 4,
-          "n_splits": 1,
-          "n_leaves": 2
         }
       ],
       "privacy_policy": {

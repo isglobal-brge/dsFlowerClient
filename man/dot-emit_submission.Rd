@@ -11,8 +11,7 @@
 registry). Extra \code{params} are merged over the registered defaults.}
 }
 \value{
-For neural: list(track="neural", spec, loss, params).
-  For trees: list(track="trees", spec, params).
+A list with track="neural", spec, loss, and params.
 }
 \description{
 Resolve + emit a submission artifact from a model spec.

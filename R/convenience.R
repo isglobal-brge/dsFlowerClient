@@ -38,10 +38,9 @@
     torch_logreg = "pytorch_logreg", multiclass = "pytorch_multiclass",
     linear_regression = "pytorch_linear_regression",
     huber = "pytorch_huber", robust_regression = "pytorch_huber",
+    quantile = "pytorch_quantile", quantile_regression = "pytorch_quantile",
     poisson = "pytorch_poisson", multilabel = "pytorch_multilabel",
-    resnet18 = "pytorch_resnet18", densenet121 = "pytorch_densenet121",
-    xgb = "xgboost", gbdt = "xgboost", dp_gbdt = "xgboost",
-    dp_tree = "xgboost")
+    resnet18 = "pytorch_resnet18", densenet121 = "pytorch_densenet121")
   key <- .dsflower_choice_key(name)
   if (key %in% names(aliases)) aliases[[key]] else key
 }
@@ -66,9 +65,11 @@ ds.flower.model <- function(name = "pytorch_logreg", ...) {
     registered <- .dsflower_get_model(canonical)
     params <- .dsflower_resolve_model_params(
       registered, name$params %||% list())
-    framework <- if (identical(registered$track, "trees")) "xgboost" else
-      if (identical(registered$data_kinds, "image")) "pytorch_vision" else
-        "pytorch"
+    framework <- if (identical(registered$data_kinds, "image")) {
+      "pytorch_vision"
+    } else {
+      "pytorch"
+    }
     return(structure(list(
       name = registered$name, track = registered$track,
       template = registered$name, framework = framework,
@@ -79,7 +80,7 @@ ds.flower.model <- function(name = "pytorch_logreg", ...) {
          call. = FALSE)
   }
 
-  # Friendly aliases -> canonical registered names (torch + xgboost only; the
+  # Friendly aliases -> canonical registered names (declarative PyTorch; the
   # full model set lives in the client-side registry, extensible by derived
   # packages -- there is NO server-side catalog).
   canonical <- .dsflower_canonical_model_name(name)
@@ -88,8 +89,11 @@ ds.flower.model <- function(name = "pytorch_logreg", ...) {
   params <- .dsflower_resolve_model_params(m, list(...))
   # Carry template/framework/loss too: the recipe task-inference, recipe print, run-record
   # metadata and prediction routing all read these. In this spec-based design template == name.
-  framework <- if (identical(m$track, "trees")) "xgboost" else
-    if (identical(m$data_kinds, "image")) "pytorch_vision" else "pytorch"
+  framework <- if (identical(m$data_kinds, "image")) {
+    "pytorch_vision"
+  } else {
+    "pytorch"
+  }
   structure(list(name = m$name, track = m$track, template = m$name,
                  framework = framework,
                  loss = m$loss, params = params),
@@ -163,13 +167,14 @@ ds.flower.task <- function(name = "classification") {
   key <- .dsflower_choice_key(name)
   if (key %in% c("survival", "segmentation")) {
     stop("Task '", name, "' is not supported by the enforced-DP runtime. ",
-         "Supported tasks: classification, regression.", call. = FALSE)
+         "Supported tasks: classification, regression, count.", call. = FALSE)
   }
 
   choices <- c(
     classification = "ds.flower.task.classification",
     class = "ds.flower.task.classification",
-    regression = "ds.flower.task.regression"
+    regression = "ds.flower.task.regression",
+    count = "ds.flower.task.count"
   )
 
   .dsflower_call_constructor(.dsflower_choice(name, choices, "task"), list())
@@ -375,11 +380,10 @@ ds.flower.fit <- function(conns,
     task_spec <- ds.flower.task(task)
     .assert_supported_task(task_spec)
     model_loss <- model_spec$loss %||% .dsflower_get_model(model_spec$name)$loss
-    tree_objective <- (model_spec$params %||% list())$objective %||% ""
-    expected_task <- if (identical(tree_objective, "reg:squarederror") ||
-                         model_loss %in% c(
-                           "mse", "huber", "poisson_nll", "negbin_nll",
-                           "gamma_nll")) {
+    expected_task <- if (model_loss %in% c("poisson_nll", "negbin_nll")) {
+      "count"
+    } else if (model_loss %in% c(
+                 "mse", "huber", "quantile", "gamma_nll")) {
       "regression"
     } else {
       "classification"

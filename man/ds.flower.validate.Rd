@@ -48,7 +48,7 @@ A \code{dsflower_validation}. Its \code{available} field is false
   available; no exact or zero-filled substitute metrics are returned.
 }
 \description{
-Evaluates a released tabular declarative neural or dp_gbdt model on the
+Evaluates a released tabular declarative neural model on the
 dataset assigned for this call inside each data node. Vision artifacts fail
 explicitly because this validator does not reconstruct image loaders or
 backbones. Reusing the training dataset is

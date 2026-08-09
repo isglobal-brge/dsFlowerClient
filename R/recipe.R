@@ -77,11 +77,9 @@ ds.flower.recipe <- function(model,
   } else {
     ds.flower.strategy(strategy)
   }
-  inferred_type <- if (identical(model$track, "trees")) {
-    if (identical(model$params[["objective"]] %||% "binary:logistic",
-                  "reg:squarederror")) "regression" else "classification"
-  } else if (model$loss %in% c(
-      "mse", "huber", "poisson_nll", "negbin_nll", "gamma_nll")) {
+  inferred_type <- if (model$loss %in% c("poisson_nll", "negbin_nll")) {
+    "count"
+  } else if (model$loss %in% c("mse", "huber", "quantile", "gamma_nll")) {
     "regression"
   } else {
     "classification"

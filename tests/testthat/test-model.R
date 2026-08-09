@@ -72,21 +72,22 @@ test_that("pytorch_multiclass accepts overrides", {
   expect_equal(m$params$n_classes, 5L)
 })
 
-test_that("xgboost creates correct model", {
-  m <- ds.flower.model.xgboost()
-  expect_s3_class(m, "dsflower_model")
-  expect_equal(m$name, "xgboost")
-  expect_equal(m$framework, "xgboost")
-  expect_equal(m$params$n_trees, 50L)
-  expect_equal(m$params$max_depth, 3L)
-  expect_equal(m$params$learning_rate, 0.3)
-  expect_equal(m$params$reg_lambda, 1.0)
-  expect_equal(m$params$n_bins, 32L)
-  expect_equal(m$params$objective, "binary:logistic")
+test_that("retired tree backends are not exposed", {
+  registered <- ds.flower.list_models()$name
+  expect_false(any(c("xgboost", "dp_gbdt") %in% registered))
+  for (name in c("xgboost", "dp_gbdt", "xgb", "gbdt", "dp_tree")) {
+    expect_error(ds.flower.model(name), "Unknown model")
+  }
+
+  exports <- getNamespaceExports("dsFlowerClient")
+  expect_false(any(c("ds.flower.model.xgboost",
+                     "ds.flower.model.dp_gbdt") %in% exports))
+  namespace <- asNamespace("dsFlowerClient")
+  expect_false(exists("ds.flower.model.xgboost", namespace, inherits = FALSE))
+  expect_false(exists("ds.flower.model.dp_gbdt", namespace, inherits = FALSE))
 })
 
 test_that("exported model constructors never truncate public parameters", {
-  expect_error(ds.flower.model.xgboost(n_trees = 3.9), "exact finite integer")
   expect_error(
     ds.flower.model.pytorch_multiclass(n_classes = 3.9),
     "exact finite integer")
@@ -132,7 +133,7 @@ test_that("extension models must declare their complete parameter schema", {
     parameter_types = character()), "must declare")
   expect_error(ds.flower.register_model(
     "ignored_loss", "trees", generate = function(params) list(), loss = "mse",
-    parameter_types = character()), "loss = NULL")
+    parameter_types = character()), "neural")
   expect_error(ds.flower.register_model(
     "My-Model", "neural", generate = function(params) list(),
     loss = "bce_logits", parameter_types = character()), "canonical lowercase")
@@ -181,13 +182,6 @@ test_that("model parameter contracts are discoverable", {
   expect_identical(
     neural$default[[which(neural$parameter == "local_epochs")]], 1L)
 
-  trees <- ds.flower.model_parameters("xgb")
-  objective <- trees[trees$parameter == "objective", ]
-  expect_setequal(
-    objective$choices[[1L]], c("binary:logistic", "reg:squarederror"))
-  learning <- trees[trees$parameter == "learning_rate", ]
-  expect_identical(learning$aliases, "eta")
-
   required <- ds.flower.model_parameters("pytorch_cnn")
   input_shape <- required[required$parameter == "input_shape", ]
   expect_true(input_shape$required)
@@ -204,11 +198,6 @@ test_that("model parameter contracts are discoverable", {
 test_that("generic model parameters are canonicalized and validated", {
   multiclass <- ds.flower.model("pytorch_multiclass")
   expect_identical(multiclass$params$n_classes, 3L)
-
-  trees <- ds.flower.model("xgboost", eta = 0.15)
-  expect_equal(trees$params$learning_rate, 0.15)
-  expect_false("eta" %in% names(trees$params))
-  expect_identical(trees$params$n_bins, 32L)
 
   multilabel <- ds.flower.model("pytorch_multilabel", n_labels = 4L)
   expect_identical(multilabel$params$num_labels, 4L)
@@ -236,10 +225,6 @@ test_that("generic model parameters are canonicalized and validated", {
   expect_error(
     ds.flower.model("pytorch_logreg", epsilon = 100),
     "Unknown parameter.*epsilon"
-  )
-  expect_error(
-    ds.flower.model("xgboost", eta = 0.2, learning_rate = 0.1),
-    "both alias 'eta' and canonical"
   )
   expect_error(
     ds.flower.model("pytorch_tcn", input_shape = c(2L, 12L), levels = 1.5),
@@ -293,10 +278,6 @@ test_that("first-party parameter caps fail before execution", {
     ds.flower.model(
       "pytorch_cnn", input_shape = c(1L, 4L, 4L), channels = c(8L, 16L, 32L)),
     "survive")
-  expect_error(ds.flower.model("xgboost", max_depth = 7L),
-               "max_depth.*6")
-  expect_error(ds.flower.model("xgboost", n_trees = 201L),
-               "n_trees.*200")
   expect_error(ds.flower.model("pytorch_multiclass", n_classes = 1L),
                "n_classes")
   expect_error(ds.flower.model("pytorch_logreg", beta2 = 1), "beta2")
@@ -319,19 +300,6 @@ test_that("first-party parameter caps fail before execution", {
   expect_equal(growing$params$scheduler_gamma, 1.1)
 })
 
-test_that("bounded DP-GBDT exposes only implemented objectives and controls", {
-  m <- ds.flower.model(
-    "xgboost", objective = "reg:squarederror",
-    margin_bounds = c(-5, 5), gradient_clip = 2)
-  expect_identical(m$params$objective, "reg:squarederror")
-  expect_equal(m$params$margin_bounds, c(-5, 5))
-  expect_equal(m$params$gradient_clip, 2)
-  expect_error(ds.flower.model("xgboost", objective = "multi:softprob"),
-               "expected one of")
-  expect_error(ds.flower.model("xgboost", margin_bounds = c(1, 1)),
-               "numeric_interval")
-})
-
 test_that("robust regression exposes and validates its applied loss parameter", {
   model <- ds.flower.model("huber", huber_delta = 2.5,
                            optimizer = "adam")
@@ -339,6 +307,17 @@ test_that("robust regression exposes and validates its applied loss parameter", 
   expect_equal(model$params$huber_delta, 2.5)
   expect_identical(model$loss, "huber")
   expect_error(ds.flower.model("huber", huber_delta = 0), "huber_delta")
+})
+
+test_that("quantile regression exposes one bounded applied quantile", {
+  model <- ds.flower.model("pytorch_quantile", quantile = 0.9,
+                           hidden_layers = c(16L, 8L))
+  expect_identical(model$loss, "quantile")
+  expect_equal(model$params$quantile, 0.9)
+  expect_error(ds.flower.model("pytorch_quantile", quantile = 0), "quantile")
+  expect_error(ds.flower.model("pytorch_quantile", quantile = 1), "quantile")
+  cfg <- dsFlowerClient:::.neural_training_config(model$params, model$loss)
+  expect_equal(cfg[["quantile-level"]], 0.9)
 })
 
 test_that("only the selected loss parameter is serialized", {
@@ -356,16 +335,6 @@ test_that("only the selected loss parameter is serialized", {
   expect_false(any(c("nb-dispersion", "gamma-shape") %in% names(huber)))
   expect_equal(negbin[["nb-dispersion"]], 4)
   expect_false(any(c("gamma-shape", "huber-delta") %in% names(negbin)))
-})
-
-test_that("retired XGBoost compatibility parameters fail explicitly", {
-  expect_error(ds.flower.model.xgboost(num_class = 3L), "num_class")
-  expect_error(ds.flower.model.xgboost(min_child_weight = 2),
-               "min_child_weight")
-  expect_error(ds.flower.model.xgboost(fixed_bin_range = 8),
-               "fixed_bin_range")
-  expect_error(ds.flower.model.xgboost(batch_multiclass = TRUE),
-               "batch_multiclass")
 })
 
 test_that("pytorch_resnet18 creates correct model", {

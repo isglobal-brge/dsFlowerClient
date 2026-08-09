@@ -85,8 +85,8 @@
     stop("Saved model metadata is unreadable.", call. = FALSE)
   }
   track <- tolower(as.character(.validation_atomic(meta$track %||% "")))
-  if (length(track) != 1L || !track %in% c("neural", "trees")) {
-    stop("Private validation supports declarative neural and dp_gbdt artifacts.",
+  if (length(track) != 1L || !identical(track, "neural")) {
+    stop("Private validation supports declarative neural artifacts.",
          call. = FALSE)
   }
   data_kind <- tolower(as.character(.validation_atomic(
@@ -133,47 +133,33 @@
     params[["num_labels"]] %||% 2L, "Saved num_labels", 2L, 1024L)
   bins <- .validation_scalar_integer(bins, "bins", 4L, 512L)
 
-  if (identical(track, "neural")) {
-    spec <- meta$model_spec
-    loss <- tolower(as.character(.validation_atomic(meta$loss_name %||% "")))
-    if (!is.list(spec) || !length(spec) || length(loss) != 1L || !nzchar(loss)) {
-      stop("Neural private validation needs the saved declarative spec and loss.",
-           call. = FALSE)
-    }
-    task <- switch(loss,
-      bce_logits = "binary",
-      cross_entropy = if (n_classes > 2L) "multiclass" else "binary",
-      hinge = if (n_classes > 2L) "multiclass" else "binary",
-      ordinal = "ordinal", multilabel_bce = "multilabel",
-      mse = "regression", huber = "regression", gamma_nll = "regression",
-      poisson_nll = "count", negbin_nll = "count", NULL)
-    if (is.null(task)) {
-      stop("Saved neural loss has no trusted validation semantics: ", loss, ".",
-           call. = FALSE)
-    }
-    if (identical(loss, "bce_logits") && n_classes != 2L) {
-      stop("Saved bce_logits model is not a valid multiclass artifact; use cross_entropy.",
-           call. = FALSE)
-    }
-    if (identical(task, "multilabel") && n_classes != 2L) {
-      stop("Saved multilabel model must use binary target levels.",
-           call. = FALSE)
-    }
-    artifact <- file.path(model_dir, "model.pt")
-  } else {
-    spec <- meta$model_spec
-    objective <- if (is.list(spec)) {
-      as.character(.validation_atomic(spec$objective %||% ""))
-    } else ""
-    if (length(objective) != 1L ||
-        !objective %in% c("binary:logistic", "reg:squarederror")) {
-      stop("Saved dp_gbdt objective has no trusted validation semantics.",
-           call. = FALSE)
-    }
-    task <- if (identical(objective, "binary:logistic")) "binary" else "regression"
-    loss <- if (identical(task, "binary")) "bce_logits" else "mse"
-    artifact <- file.path(model_dir, "booster.json")
+  spec <- meta$model_spec
+  loss <- tolower(as.character(.validation_atomic(meta$loss_name %||% "")))
+  if (!is.list(spec) || !length(spec) || length(loss) != 1L || !nzchar(loss)) {
+    stop("Neural private validation needs the saved declarative spec and loss.",
+         call. = FALSE)
   }
+  task <- switch(loss,
+    bce_logits = "binary",
+    cross_entropy = if (n_classes > 2L) "multiclass" else "binary",
+    hinge = if (n_classes > 2L) "multiclass" else "binary",
+    ordinal = "ordinal", multilabel_bce = "multilabel",
+    mse = "regression", huber = "regression", quantile = "regression",
+    gamma_nll = "regression",
+    poisson_nll = "count", negbin_nll = "count", NULL)
+  if (is.null(task)) {
+    stop("Saved neural loss has no trusted validation semantics: ", loss, ".",
+         call. = FALSE)
+  }
+  if (identical(loss, "bce_logits") && n_classes != 2L) {
+    stop("Saved bce_logits model is not a valid multiclass artifact; use cross_entropy.",
+         call. = FALSE)
+  }
+  if (identical(task, "multilabel") && n_classes != 2L) {
+    stop("Saved multilabel model must use binary target levels.",
+         call. = FALSE)
+  }
+  artifact <- file.path(model_dir, "model.pt")
   if (task %in% c("regression", "count") && is.null(target_bounds)) {
     stop("Numeric private validation requires the saved public target_bounds.",
          call. = FALSE)
@@ -215,9 +201,7 @@
     "num-classes" = contract$n_classes,
     "num-labels" = contract$n_labels,
     "loss-name" = contract$loss_name)
-  if (identical(contract$track, "neural")) {
-    config[["model-spec-b64"]] <- .spec_to_b64(contract$model_spec)
-  }
+  config[["model-spec-b64"]] <- .spec_to_b64(contract$model_spec)
   path <- tempfile(fileext = ".json")
   on.exit(unlink(path), add = TRUE)
   jsonlite::write_json(
@@ -330,7 +314,7 @@
 
 #' Differentially-private federated model validation
 #'
-#' Evaluates a released tabular declarative neural or dp_gbdt model on the
+#' Evaluates a released tabular declarative neural model on the
 #' dataset assigned for this call inside each data node. Vision artifacts fail
 #' explicitly because this validator does not reconstruct image loaders or
 #' backbones. Reusing the training dataset is
@@ -415,9 +399,7 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
     "num-features" = length(contract$features),
     "num-classes" = contract$n_classes,
     "num-labels" = contract$n_labels)
-  if (identical(contract$track, "neural")) {
-    prepare[["model-spec-b64"]] <- .spec_to_b64(contract$model_spec)
-  }
+  prepare[["model-spec-b64"]] <- .spec_to_b64(contract$model_spec)
   if (!is.null(contract$feature_bounds)) {
     prepare[["feature-bounds"]] <- contract$feature_bounds
   }
@@ -452,10 +434,8 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
     .toml_kv("results-dir", results_dir),
     .toml_kv("validation-model-path-b64",
              .validation_model_path_b64(contract$artifact)))
-  if (identical(contract$track, "neural")) {
-    config <- c(config,
-      .toml_kv("model-spec-b64", .spec_to_b64(contract$model_spec)))
-  }
+  config <- c(config,
+    .toml_kv("model-spec-b64", .spec_to_b64(contract$model_spec)))
   if (!is.null(contract$target_bounds)) {
     config <- c(config,
       paste0("validation-target-lower = ", contract$target_bounds$lower),

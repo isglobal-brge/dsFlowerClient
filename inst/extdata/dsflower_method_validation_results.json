@@ -377,29 +377,6 @@
       "validation_status": "pass",
       "notes": "Temporal convolutional network over ordered tabular features.",
       "error": ""
-    },
-    {
-      "method": "xgboost",
-      "task": "classification",
-      "target": "outcome",
-      "n_features": 12,
-      "rounds": 1,
-      "centralized_status": "ok",
-      "centralized_metric": "log_loss",
-      "centralized_loss": 0.434830421429592,
-      "centralized_accuracy": 0.896296296296296,
-      "federated_status": "ok",
-      "federated_loss": 0.693147180559945,
-      "federated_accuracy": 0.5,
-      "federated_n_failures": null,
-      "federated_run_id": "5976342020337348991",
-      "delta_loss": 0.258316759130353,
-      "acceptance_max_loss_ratio": 2.5,
-      "acceptance_max_loss_margin": 0.25,
-      "acceptable_loss": true,
-      "validation_status": "pass",
-      "notes": "Histogram XGBoost; SecAgg is enforced by secure privacy profiles.",
-      "error": ""
     }
   ]
 }

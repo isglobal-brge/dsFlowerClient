@@ -260,39 +260,6 @@ test_that("load_model rejects missing or unsafe companion bundle paths", {
   expect_error(ds.flower.load_model(unsafe), "invalid artifact bundle")
 })
 
-test_that("tree artifacts report their one effective Flower round", {
-  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
-  old_superlink <- client_env$.superlink
-  withr::defer(client_env$.superlink <- old_superlink)
-  client_env$.superlink <- list(
-    process = list(is_alive = function() TRUE),
-    flwr_home = withr::local_tempdir())
-  recipe <- ds.flower.recipe(
-    model = ds.flower.model.xgboost(), num_rounds = 9L, features = "x")
-  recipe$model$track <- "trees"
-  observed_rounds <- NULL
-  local_mocked_bindings(
-    .require_flwr_cli = function() TRUE,
-    .ensure_client_framework = function(...) TRUE,
-    .client_flwr_cmd = function() "flwr",
-    .client_venv_env = function(...) character(),
-    .run_flwr_with_artifact_watchdog = function(..., num_rounds) {
-      observed_rounds <<- num_rounds
-      list(status = 0L, stdout = "run_id=tree", stderr = "")
-    },
-    .read_model_weights = function(...) list(objective = "binary:logistic"),
-    .read_training_history = function(...) data.frame(
-      round = 1L, n_failures = 0L),
-    .package = "dsFlowerClient")
-
-  run <- ds.flower.run.start(
-    recipe, conns = list(site = TRUE), app_dir = withr::local_tempdir(),
-    output_dir = withr::local_tempdir(), output_name = "tree", silent = TRUE)
-  expect_identical(observed_rounds, 1L)
-  expect_identical(run$num_rounds, 1L)
-  expect_identical(run$requested_num_rounds, 9L)
-})
-
 test_that("run.start rejects stale caller-supplied result artifacts", {
   client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
   old_superlink <- client_env$.superlink
@@ -382,8 +349,7 @@ test_that("run.start reports a privacy tail as unavailable, not trained", {
   expect_identical(meta$status, "unavailable")
   expect_false(meta$available)
   expect_false(any(file.exists(file.path(
-    run$output_dir, c("model.pt", "model.npz", "booster.json",
-                      "global_model.json")))))
+    run$output_dir, c("model.pt", "model.npz", "global_model.json")))))
 })
 
 test_that(".training_artifacts_complete accepts skipped JSON marker", {
@@ -403,32 +369,19 @@ test_that(".training_artifacts_complete accepts skipped JSON marker", {
   ))
 })
 
-test_that(".read_model_weights returns native XGBoost model JSON", {
+test_that("retired tree artifacts are not accepted as model releases", {
   results_dir <- withr::local_tempdir()
   jsonlite::write_json(
     list(model_type = "xgboost", n_trees = 1L, trees = list()),
     file.path(results_dir, "global_model.json"),
     auto_unbox = TRUE
   )
-  weights <- dsFlowerClient:::.read_model_weights(results_dir)
-  expect_equal(weights$model_type, "xgboost")
-  expect_equal(weights$n_trees, 1L)
-})
+  expect_null(dsFlowerClient:::.read_model_weights(results_dir))
 
-test_that(".read_model_weights returns the canonical DP-GBDT booster", {
-  results_dir <- withr::local_tempdir()
-  jsonlite::write_json(
-    list(
-      objective = "binary:logistic", n_trees = 1L,
-      trees = list(list(feat = 0L, thr = 0.5, w = c(-0.1, 0.1)))
-    ),
-    file.path(results_dir, "booster.json"),
-    auto_unbox = TRUE
-  )
-  weights <- dsFlowerClient:::.read_model_weights(results_dir)
-  expect_equal(weights$objective, "binary:logistic")
-  expect_length(weights$trees, 1L)
-  expect_true(dsFlowerClient:::.model_artifact_exists(results_dir))
+  unlink(file.path(results_dir, "global_model.json"))
+  file.create(file.path(results_dir, "booster.json"))
+  expect_null(dsFlowerClient:::.read_model_weights(results_dir))
+  expect_false(dsFlowerClient:::.model_artifact_exists(results_dir))
 })
 
 test_that(".read_model_weights reconstructs portable neural arrays", {

@@ -46,7 +46,7 @@ distinct columns for a multilabel model.}
 \item{num_rounds}{Integer; federated rounds.}
 
 \item{model_params}{Named list; params merged over the model's defaults.
-Neural and DP-GBDT learning rates must be finite and in \code{(0, 10]}.}
+Neural learning rates must be finite and in \code{(0, 10]}.}
 
 \item{data_kind}{"tabular" or "image".}
 

@@ -77,7 +77,6 @@ count_failures <- function(x) {
 clinical_trusted <- read_extdata('dsflower_clinical_algorithm_results.json')
 clinical_secagg <- read_extdata('dsflower_clinical_secagg_results.json')
 clinical_dp <- read_extdata('dsflower_clinical_dp_results.json')
-xgb_noise <- read_extdata('dsflower_xgboost_histogram_privacy_results.json')
 lung1_rad <- read_extdata('dsflower_lung1_radiomics_results.json')
 lung1_img <- read_extdata('dsflower_lung1_direct_image_results.json')
 pathmnist <- read_extdata('dsflower_pathmnist_direct_image_results.json')
@@ -150,10 +149,9 @@ across three Opal/Rock servers. They are not a current server allowlist.
 They complement the biomedical reports by checking the full template surface
 under deterministic conditions.
 
-The clinical and method-family benchmarks use `clinical_default`,
-`clinical_update_noise` or `high_sensitivity_dp`, so Secure Aggregation,
-profile-level disclosure guards and, where applicable, DP-SGD epsilon curves or
-bounded histogram-noise curves are active. The SUPPORT2 DP-SGD evidence is
+The clinical and method-family benchmarks use `clinical_default` or
+`high_sensitivity_dp`, so Secure Aggregation, profile-level disclosure guards
+and, where applicable, DP-SGD epsilon curves are active. The SUPPORT2 DP-SGD evidence is
 interpreted over the four templates whose losses decompose by sample. CoxPH is
 still validated in the Secure Aggregation run; because its risk-set partial
 likelihood is not a per-example loss, `high_sensitivity_dp` is not the matching
@@ -165,7 +163,6 @@ thesis_evidence <- data.frame(
     'clinical trusted benchmark',
     'clinical SecAgg benchmark',
     'clinical DP-SGD benchmark',
-    'XGBoost histogram update-noise',
     'SUPPORT2 SecAgg families',
     'SUPPORT2 DP-SGD families',
     'LUNG1 radiomics handoff',
@@ -175,7 +172,6 @@ thesis_evidence <- data.frame(
   data = c(
     'Breast Cancer, Heart Disease, Pima, CDC Diabetes',
     'Breast Cancer, Pima, CDC Diabetes',
-    'CDC Diabetes',
     'CDC Diabetes',
     'SUPPORT2',
     'SUPPORT2',
@@ -187,7 +183,6 @@ thesis_evidence <- data.frame(
     clinical_trusted$privacy_profile,
     clinical_secagg$privacy_profile,
     clinical_dp$privacy_profile,
-    xgb_noise$privacy_profile,
     if (!is.null(family_validation)) family_validation$privacy_profile else NA,
     if (!is.null(family_dp_validation)) family_dp_validation$privacy_profile else NA,
     lung1_rad$privacy,
@@ -198,7 +193,6 @@ thesis_evidence <- data.frame(
     count_results(clinical_trusted),
     count_results(clinical_secagg),
     count_results(clinical_dp),
-    count_results(xgb_noise),
     if (!is.null(family_results)) nrow(family_results) else NA,
     if (!is.null(family_dp_results)) nrow(family_dp_results) else NA,
     length(lung1_rad$history),
@@ -209,7 +203,6 @@ thesis_evidence <- data.frame(
     count_failures(clinical_trusted),
     count_failures(clinical_secagg),
     count_failures(clinical_dp),
-    count_failures(xgb_noise),
     if (!is.null(family_results)) sum(family_results$federated_n_failures) else NA,
     if (!is.null(family_dp_results)) sum(family_dp_results$federated_n_failures) else NA,
     sum(vapply(lung1_rad$history, `[[`, numeric(1), 'n_failures')),
@@ -295,8 +288,6 @@ Per-method historical vignettes (evidence only; not a current API index):
 - [pytorch_poisson](validation-pytorch-poisson.html)
 - [pytorch_lstm](validation-pytorch-lstm.html)
 - [pytorch_tcn](validation-pytorch-tcn.html)
-- [xgboost](validation-xgboost.html)
-
 Historical, unsupported in the current enforced-DP runtime:
 
 - [pytorch_coxph](validation-pytorch-coxph.html)

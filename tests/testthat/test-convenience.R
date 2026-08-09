@@ -81,11 +81,11 @@ test_that("fit canonicalizes model aliases before submission", {
 
   ds.flower.fit(
     conns = list(site = TRUE), symbol = "D", target = "y", features = "x",
-    model = "xgboost", model_params = list(eta = 0.2)
+    model = "quantile", model_params = list(quantile = 0.9)
   )
 
-  expect_equal(seen$model$params$learning_rate, 0.2)
-  expect_false("eta" %in% names(seen$model$params))
+  expect_identical(seen$model$name, "pytorch_quantile")
+  expect_equal(seen$model$params$quantile, 0.9)
 })
 
 test_that("fit rejects unknown model parameters before submission", {

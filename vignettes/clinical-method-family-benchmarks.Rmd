@@ -30,10 +30,9 @@ are active. A second evidence file repeats the DP-compatible non-survival
 families under `high_sensitivity_dp`, where SecAgg+ is combined with Opacus
 DP-SGD.
 
-The benchmark complements the binary clinical benchmarks: classification and
-XGBoost are covered there, while this vignette covers continuous regression,
-count regression, multiclass classification, multilabel classification and
-time-to-event survival.
+The benchmark complements the binary clinical benchmarks by covering continuous
+regression, count regression, multiclass classification, multilabel
+classification and time-to-event survival.
 
 ```{r task-map}
 task_map <- data.frame(

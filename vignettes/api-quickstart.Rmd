@@ -62,7 +62,7 @@ knowledge or the study protocol. They must follow feature order. The node never
 returns exact counts, sums, variances or quantiles for preprocessing. Training
 and prediction use the same clipped affine transform.
 
-Before submission, the client verifies that all nodes expose runner ABI 2 and
+Before submission, the client verifies that all nodes expose runner ABI 3 and
 the exact recursive SHA-256 of its bundled canonical runner. The client does not
 send privacy parameters.
 

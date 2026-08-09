@@ -4,8 +4,7 @@
 # submission it is sent; the "catalog" is purely a CLIENT-SIDE convenience that
 # turns a friendly name + params into the artifact shipped in the FAB:
 #   * neural track -> a model SPEC the node builds with stock torch layers
-#   * trees  track -> a validated random-split DP-GBDT spec
-# Both are DATA, never code: nothing the researcher submits runs in the node's
+# Specs are DATA, never code: nothing the researcher submits runs in the node's
 # trusted interpreter (which is what makes the DP-release path unforgeable).
 #
 # The registry is extensible the way tidymodels/parsnip is: a derived
@@ -27,23 +26,25 @@
 #' \code{.onLoad()} to add models to the registry. The model becomes usable via
 #' \code{ds.flower.model("<name>")} / \code{ds.flower.fit(..., model = "<name>")}.
 #'
-#' @param name Character; the model name (e.g. "pytorch_logreg", "xgboost").
-#' @param track Character; the enforced-DP track: "neural" (nn.Module + DP-SGD)
-#'   or "trees" (random-split DP-GBDT spec).
+#' @param name Character; the model name (e.g. "pytorch_logreg").
+#' @param track Character; the enforced-DP track. The public model registry
+#'   currently accepts only "neural" (nn.Module + DP-SGD). Native tree engines
+#'   are registered by their trusted server adapters, not extension generators.
 #' @param data_kinds Character vector of supported inputs:
-#'   \code{"tabular"}, \code{"image"}, or both. Trees are tabular only.
-#' @param generate Function of one argument \code{params} (a named list). Both
-#'   tracks MUST return a named list (DATA, never code): for the neural track a
+#'   \code{"tabular"}, \code{"image"}, or both.
+#' @param generate Function of one argument \code{params} (a named list). It
+#'   MUST return a named model SPEC (DATA, never code):
 #'   model SPEC \code{list(kind = "sequential", layers = list(...))} the node
-#'   builds with stock torch layers (end with a linear onto \code{"@out"}); for the
-#'   trees track the DP-GBDT spec. The node owns the loop, loss, and optimizer.
-#' @param loss Character; required for the neural track and required to be NULL
-#'   for the trees track. The per-sample neural loss must come from the node
+#'   builds with stock torch layers (end with a linear onto \code{"@out"}). The
+#'   node owns the loop, loss, and optimizer.
+#' @param loss Character; required for the neural track. The per-sample neural
+#'   loss must come from the node
 #'   allowlist: stock losses \code{bce_logits},
 #'   \code{cross_entropy}, \code{mse}, \code{poisson_nll}, \code{multilabel_bce},
 #'   \code{hinge} (linear SVM), \code{ordinal} (CORN); plus vetted custom per-sample
 #'   losses \code{negbin_nll} (overdispersed counts), \code{gamma_nll}
-#'   (positive continuous), and \code{huber} (bounded robust regression).
+#'   (positive continuous), \code{huber} (bounded robust regression), and
+#'   \code{quantile} (bounded conditional-quantile regression).
 #'   The node pins the actual loss; this is the client's request.
 #' @param defaults Named list of default params merged under user-supplied params.
 #' @param description Character or NULL; a one-line human description.
@@ -81,15 +82,12 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
     stop("'name' must be a canonical lowercase identifier and must not collide ",
          "with a built-in model alias.", call. = FALSE)
   }
-  track <- match.arg(track, c("neural", "trees"))
+  track <- match.arg(track, "neural")
   if (!is.character(data_kinds) || !length(data_kinds) || anyNA(data_kinds) ||
       anyDuplicated(data_kinds) ||
       length(setdiff(data_kinds, c("tabular", "image")))) {
     stop("'data_kinds' must contain tabular, image, or both without duplicates.",
          call. = FALSE)
-  }
-  if (identical(track, "trees") && !identical(data_kinds, "tabular")) {
-    stop("Trees models support data_kinds = 'tabular' only.", call. = FALSE)
   }
   if (!is.function(generate)) {
     stop("'generate' must be a function(params) -> source/spec.", call. = FALSE)
@@ -97,7 +95,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   if (!is.null(loss)) {
     allowed <- c("bce_logits", "cross_entropy", "mse", "poisson_nll",
                  "multilabel_bce", "hinge", "negbin_nll", "gamma_nll",
-                 "huber", "ordinal")
+                 "huber", "quantile", "ordinal")
     if (!is.character(loss) || length(loss) != 1L || !loss %in% allowed) {
       stop("'loss' must be one of the node allowlist: ",
            paste(allowed, collapse = ", "), ".", call. = FALSE)
@@ -105,10 +103,6 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   }
   if (identical(track, "neural") && is.null(loss)) {
     stop("Neural models must declare one trusted 'loss'.", call. = FALSE)
-  }
-  if (identical(track, "trees") && !is.null(loss)) {
-    stop("Trees models must use loss = NULL; their objective belongs in the ",
-         "validated tree spec.", call. = FALSE)
   }
   if (!is.list(defaults) ||
       (length(defaults) &&
@@ -306,11 +300,11 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   bounded("nb_dispersion", 1e-6, 1e12)
   bounded("gamma_shape", 1e-6, 1e12)
   bounded("huber_delta", 1e-6, 1e6)
+  bounded("quantile", 0, 1, lower_open = TRUE)
+  if (!is.null(params[["quantile"]]) && params[["quantile"]] >= 1) {
+    stop("Model parameter 'quantile' must be in (0, 1).", call. = FALSE)
+  }
   bounded("image_size", 1, 512)
-  bounded("n_trees", 1, 200)
-  bounded("max_depth", 1, 6)
-  bounded("n_bins", 2, 64)
-  bounded("reg_lambda", 1e-6, 1e6)
   bounded("momentum", 0, 1)
   if (!is.null(params[["momentum"]]) && params[["momentum"]] >= 1) {
     stop("Model parameter 'momentum' must be in [0, 1).", call. = FALSE)
@@ -816,6 +810,13 @@ ds.flower.model_parameters <- function(name) {
       parameter_types = with_common(
         hidden_layers = "hidden_layers", huber_delta = "positive_number"),
       description = "Robust bounded-target regression (per-sample Huber loss).")
+  neural_reg("pytorch_quantile", "neural",
+      generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
+      loss = "quantile",
+      defaults = list(hidden_layers = integer(0), quantile = 0.5),
+      parameter_types = with_common(
+        hidden_layers = "hidden_layers", quantile = "positive_number"),
+      description = "Bounded conditional-quantile regression (per-sample pinball loss).")
   neural_reg("pytorch_poisson", "neural",
       generate = function(p) .neural_mlp_spec(p$hidden_layers %||% integer(0)),
       loss = "poisson_nll", defaults = list(hidden_layers = integer(0)),
@@ -968,38 +969,6 @@ ds.flower.model_parameters <- function(name) {
         data_kinds = "image",
         description = paste0("Vision classifier head on a frozen ", nm, " backbone."))
   })
-
-  # ---- trees: random-split DP-GBDT spec (DATA, never code) ----
-  reg("xgboost", "trees",
-      generate = function(p) {
-        list(
-          objective     = p$objective %||% "binary:logistic",
-          max_depth     = as.integer(p$max_depth %||% 3L),
-          n_trees       = as.integer(p$n_trees %||% 50L),
-          learning_rate = as.numeric(p$learning_rate %||% 0.3),
-          reg_lambda    = as.numeric(p$reg_lambda %||% 1.0),
-          n_bins        = as.integer(p$n_bins %||% 32L),
-          feature_ranges = p$feature_ranges %||% NULL,
-          margin_bounds = p$margin_bounds %||% NULL,
-          gradient_clip = p$gradient_clip %||% NULL
-        )
-      },
-      # n_trees=50 (was 20): with the mu/sd binning prior each tree is a useful weak
-      # learner, and ~50 random-split trees recover the signal; far more raises the
-      # DP noise multiplier (sigma grows with the release count) without net gain.
-      defaults = list(objective = "binary:logistic", max_depth = 3L, n_trees = 50L,
-                      learning_rate = 0.3, reg_lambda = 1.0, n_bins = 32L),
-      parameter_types = c(
-        objective = "character", max_depth = "positive_integer",
-        n_trees = "positive_integer", learning_rate = "positive_number",
-        reg_lambda = "positive_number", n_bins = "positive_integer",
-        feature_ranges = "numeric_intervals",
-        margin_bounds = "numeric_interval",
-        gradient_clip = "positive_number"),
-      parameter_aliases = c(eta = "learning_rate"),
-      parameter_choices = list(
-        objective = c("binary:logistic", "reg:squarederror")),
-      description = "Bounded DP gradient-boosted trees (random public splits).")
 
   invisible(TRUE)
 }

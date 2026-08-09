@@ -1,4 +1,4 @@
-"""Prediction parity tests for saved declarative and DP-GBDT artifacts."""
+"""Prediction parity tests for saved declarative PyTorch artifacts."""
 
 import base64
 import importlib.util
@@ -61,6 +61,12 @@ class PredictionParityTests(unittest.TestCase):
         np.testing.assert_allclose(probs.sum(axis=1), 1.0)
         self.assertTrue(np.all(probs >= 0.0))
 
+    def test_quantile_prediction_returns_the_direct_conditional_quantile(self):
+        logits = torch.tensor([[1.25], [-0.5]])
+        self.assertEqual(
+            helper._apply_loss_semantics(logits, "quantile", "response"),
+            [1.25, -0.5])
+
     def test_prediction_never_unpickles_arbitrary_checkpoint_code(self):
         spec = {"kind": "sequential", "layers": [
             {"op": "linear", "in": "@in", "out": "@out"},
@@ -78,26 +84,11 @@ class PredictionParityTests(unittest.TestCase):
                     "bce_logits", 2, 2)
             self.assertFalse(marker.exists())
 
-    def test_tree_bounds_repeat_training_raw_domain_semantics(self):
-        bounds = base64.b64encode(json.dumps(
-            {"lower": [10.0, -4.0], "upper": [20.0, 8.0]}).encode()).decode()
-        X = np.asarray([[np.nan, np.inf], [30.0, -20.0]])
-        got = helper._apply_tree_bounds(X, bounds)
-        np.testing.assert_allclose(
-            got, np.asarray([[15.0, 2.0], [30.0, -20.0]], dtype=np.float32))
-
-    def test_bounded_regression_booster_returns_clipped_margin(self):
-        booster = {
-            "objective": "reg:squarederror", "depth": 1,
-            "base_margin": 5.0, "margin_bounds": [0.0, 10.0],
-            "trees": [{"feat": [0], "thr": [0.0], "w": [-20.0, 20.0]}],
-        }
-        X = np.asarray([[-1.0], [1.0]], dtype=np.float32)
-        with tempfile.NamedTemporaryFile(mode="w+", suffix=".json") as handle:
-            json.dump(booster, handle)
-            handle.flush()
-            got = helper.predict_dpgbdt(handle.name, X, "response")
-        self.assertEqual(got, [0.0, 10.0])
+    def test_retired_tree_predictors_are_not_importable(self):
+        for name in ("predict_xgboost", "predict_xgboost_custom",
+                     "predict_dpgbdt", "_is_dpgbdt_booster",
+                     "_apply_tree_bounds"):
+            self.assertFalse(hasattr(helper, name), name)
 
 
 if __name__ == "__main__":

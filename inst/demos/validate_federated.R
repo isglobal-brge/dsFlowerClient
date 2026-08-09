@@ -2,7 +2,6 @@
 #
 # Exercises every supported use case end-to-end against a live federation:
 #   * tabular neural   : logreg / mlp / linear-regression / poisson / multiclass
-#   * DP trees         : xgboost (DP gradient-boosted)
 #   * registered ext.  : a rich-vocabulary nn spec (layernorm/gelu/dropout/
 #                        silu/leaky_relu) added via ds.flower.register_model()
 #   * vision RESOURCE  : resnet18 + densenet121 over an Opal image resource
@@ -79,14 +78,13 @@ fit_tab <- function(label, sym, table, model, target, params = list(),
                               rounds = cfg$rounds, verbose = FALSE))
 }
 
-message(">>> TABULAR neural + trees (", tab_table, ")")
+message(">>> TABULAR neural (", tab_table, ")")
 fit_tab("logreg (bce)",            "BC_lr",  tab_table, "pytorch_logreg",            "malignant")
 fit_tab("mlp[64,32] (bce)",        "BC_mlp", tab_table, "pytorch_mlp",               "malignant", list(hidden_layers = c(64L, 32L)))
 fit_tab("regression (mse)",        "BC_reg", tab_table, "pytorch_linear_regression", "mean_area",
         target_bounds = list(lower = 0, upper = 5000))
 fit_tab("poisson (poisson_nll)",   "BC_poi", tab_table, "pytorch_poisson",           "mean_smoothness",
         target_bounds = list(lower = 0, upper = 1))
-fit_tab("trees (xgboost)",         "BC_xgb", tab_table, "xgboost",                   "malignant", list(n_trees = 15L))
 
 message(">>> registered rich-vocabulary extension (layernorm/gelu/dropout/silu/leaky_relu)")
 ds.flower.register_model("rich_vocab", "neural",

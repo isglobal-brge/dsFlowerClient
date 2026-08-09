@@ -66,19 +66,14 @@ flat_results <- function(x, label) {
 trusted <- read_evidence("dsflower_clinical_algorithm_results.json")
 secagg <- read_evidence("dsflower_clinical_secagg_results.json")
 dp <- read_evidence("dsflower_clinical_dp_results.json")
-xgb_noise <- read_evidence("dsflower_xgboost_histogram_privacy_results.json")
 dp_curve <- read_evidence("dsflower_clinical_dp_curve_results.json")
-xgb_curve <- read_evidence("dsflower_xgboost_histogram_privacy_curve_results.json")
 results <- rbind(
   flat_results(trusted, "trusted_internal"),
   flat_results(secagg, "clinical_default_secagg"),
-  flat_results(dp, "high_sensitivity_dp"),
-  flat_results(xgb_noise, "xgboost_histogram_update_noise")
+  flat_results(dp, "high_sensitivity_dp")
 )
 curve_results <- flat_results(dp_curve, "dp_epsilon_curve")
 curve_results$epsilon <- vapply(dp_curve$results, `[[`, numeric(1), "curve_epsilon")
-xgb_curve_results <- flat_results(xgb_curve, "xgboost_update_noise_curve")
-xgb_curve_results$epsilon <- vapply(xgb_curve$results, `[[`, numeric(1), "curve_epsilon")
 ```
 
 This vignette reports public clinical benchmark runs executed through the same
@@ -108,13 +103,13 @@ dataset_map <- data.frame(
     "Small cytology classification task used for trusted and SecAgg checks.",
     "Cardiology classification task retained in trusted-internal evidence; the clinical row policy intentionally excludes it.",
     "Medium-size diabetes-onset task used for clinical SecAgg logistic regression.",
-    "Larger population-health diabetes task used for the broader clinical, DP-SGD and XGBoost privacy-profile evidence."
+    "Larger population-health diabetes task used for the broader clinical and DP-SGD evidence."
   ),
   validated_profiles = c(
     "trusted_internal; clinical_default",
     "trusted_internal",
     "trusted_internal; clinical_default",
-    "trusted_internal; clinical_default; clinical_update_noise; high_sensitivity_dp"
+    "trusted_internal; clinical_default; high_sensitivity_dp"
   ),
   stringsAsFactors = FALSE
 )
@@ -176,11 +171,9 @@ DSI::datashield.logout(conns)
 Swapping the `privacy` argument moves between postures: `"trusted_internal"` for
 ordinary federated training, `"clinical_default"` for the Secure Aggregation
 profile over the `sklearn_logreg`, `sklearn_ridge`, `sklearn_sgd`,
-`pytorch_logreg`, `pytorch_mlp` and secure `xgboost_histogram` templates,
-`"high_sensitivity_dp"` for Opacus DP-SGD on the compatible PyTorch templates,
-and `"clinical_update_noise"` for the bounded-noise XGBoost histogram route. The
-epsilon curves below repeat the DP and update-noise rows across a sweep of
-requested budgets.
+`pytorch_logreg` and `pytorch_mlp` templates, and `"high_sensitivity_dp"` for
+Opacus DP-SGD on the compatible PyTorch templates. The epsilon curves below
+repeat the DP rows across a sweep of requested budgets.
 
 ## Evidence map
 
@@ -188,17 +181,14 @@ The committed evidence is split by privacy posture. The `trusted_internal`
 profile exercises ordinary federated training on public datasets. The
 `clinical_default` profile requires Secure Aggregation, fixed three-client
 participation and suppressed per-node metrics. `high_sensitivity_dp` adds
-patient-level DP-SGD for compatible PyTorch losses, and
-`clinical_update_noise` applies bounded histogram noise to the secure XGBoost
-histogram route.
+patient-level DP-SGD for compatible PyTorch losses.
 
 ```{r evidence-map}
 evidence_map <- data.frame(
   evidence = c(
     "trusted_internal",
     "clinical_default_secagg",
-    "high_sensitivity_dp",
-    "xgboost_histogram_update_noise"
+    "high_sensitivity_dp"
   ),
   datasets = c(
     paste(unique(subset(results, evidence == "trusted_internal")$dataset),
@@ -206,8 +196,6 @@ evidence_map <- data.frame(
     paste(unique(subset(results, evidence == "clinical_default_secagg")$dataset),
           collapse = "; "),
     paste(unique(subset(results, evidence == "high_sensitivity_dp")$dataset),
-          collapse = "; "),
-    paste(unique(subset(results, evidence == "xgboost_histogram_update_noise")$dataset),
           collapse = "; ")
   ),
   templates = c(
@@ -216,21 +204,17 @@ evidence_map <- data.frame(
     paste(unique(subset(results, evidence == "clinical_default_secagg")$model),
           collapse = "; "),
     paste(unique(subset(results, evidence == "high_sensitivity_dp")$model),
-          collapse = "; "),
-    paste(unique(subset(results, evidence == "xgboost_histogram_update_noise")$model),
           collapse = "; ")
   ),
   n_runs = c(
     nrow(subset(results, evidence == "trusted_internal")),
     nrow(subset(results, evidence == "clinical_default_secagg")),
-    nrow(subset(results, evidence == "high_sensitivity_dp")),
-    nrow(subset(results, evidence == "xgboost_histogram_update_noise"))
+    nrow(subset(results, evidence == "high_sensitivity_dp"))
   ),
   failures = c(
     sum(subset(results, evidence == "trusted_internal")$failures),
     sum(subset(results, evidence == "clinical_default_secagg")$failures),
-    sum(subset(results, evidence == "high_sensitivity_dp")$failures),
-    sum(subset(results, evidence == "xgboost_histogram_update_noise")$failures)
+    sum(subset(results, evidence == "high_sensitivity_dp")$failures)
   ),
   stringsAsFactors = FALSE
 )
@@ -271,25 +255,9 @@ knitr::kable(
 )
 ```
 
-```{r xgboost-update-noise-table}
-knitr::kable(
-  subset(results, evidence == "xgboost_histogram_update_noise"),
-  digits = 4,
-  row.names = FALSE
-)
-```
-
 The `clinical_default` runs require Secure Aggregation, suppress per-node
 metrics and avoid exact per-site count release. This evidence covers logistic
-regression, ridge, SGD, PyTorch MLP, PyTorch logistic regression and the
-secure boosted-stump path of the XGBoost histogram template. In this secure
-path, each boosting round aggregates one fixed-shape root histogram under
-SecAgg+; the server derives one split and two leaf values from the protected
-aggregate, and the next round asks clients to apply the previous stump before
-building the next encrypted histogram. The representative `clinical_update_noise`
-XGBoost row uses the `epsilon = 12` point from the committed update-noise curve:
-Gaussian noise is added to the bounded histogram contribution before aggregation,
-which demonstrates the stricter privacy profile and its utility cost. The
+regression, ridge, SGD, PyTorch MLP and PyTorch logistic regression. The
 `high_sensitivity_dp` evidence uses Opacus DP-SGD with `delta = 1e-5` and
 clipping norm `1` for both PyTorch MLP and PyTorch logistic regression, in
 addition to the Secure Aggregation requirement.
@@ -333,48 +301,6 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 }
 ```
 
-## XGBoost Histogram Update-Noise Curve
-
-```{r xgboost-update-noise-curve-table}
-knitr::kable(
-  xgb_curve_results[, c("epsilon", "dataset", "model", "central_auc",
-                        "federated_auc", "delta_auc", "failures")],
-  digits = 4,
-  row.names = FALSE
-)
-```
-
-```{r xgboost-update-noise-curve-plot, fig.width=5.8, fig.height=3.3, fig.alt="Update-noise utility curve for secure histogram XGBoost on CDC Diabetes Health Indicators."}
-if (requireNamespace("ggplot2", quietly = TRUE)) {
-  ggplot2::ggplot(
-    xgb_curve_results,
-    ggplot2::aes(x = epsilon, y = federated_auc)
-  ) +
-    ggplot2::geom_hline(
-      yintercept = xgb_curve_results$central_auc[[1]],
-      linewidth = 0.3,
-      linetype = "dashed",
-      color = "grey35"
-    ) +
-    ggplot2::geom_line(linewidth = 0.5, color = "#704C5E") +
-    ggplot2::geom_point(size = 2.2, color = "#704C5E") +
-    ggplot2::scale_x_continuous(breaks = c(8, 12, 16)) +
-    ggplot2::labs(
-      x = "Requested epsilon",
-      y = "Held-out AUC",
-      caption = "Dashed line: centralised non-noisy baseline on the same split."
-    ) +
-    ggplot2::theme_minimal(base_size = 11)
-}
-```
-
-The XGBoost curve uses the `clinical_update_noise` profile rather than
-patient-level DP-SGD. The noise is added to bounded histogram contributions
-before protected aggregation, so it demonstrates the utility trade-off for a
-stricter histogram-update profile. The retained curve shows the expected
-pattern: the most aggressive budget has the largest utility cost, while the
-moderate and relaxed budgets move back toward the SecAgg-only reference.
-
 ## Centralised versus federated AUC
 
 ```{r auc-plot, fig.width=8, fig.height=5, fig.alt="Federated minus centralised AUC deltas by dataset, model and privacy profile."}
@@ -395,11 +321,5 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 }
 ```
 
-All reported runs completed with status `pass` and zero recorded client
-failures. The full XGBoost histogram implementation remains available for
-trusted internal validation. Clinical profiles use secure boosted stumps rather
-than arbitrary-depth tree construction because the latter requires variable
-split and leaf-control phases that are not a stable fit for SecAgg+ workflows.
-The secure route still validates the privacy-relevant computation: histogram
-construction on each server, protected aggregation of those histograms, and
-server-side split and leaf computation from the aggregate only.
+All reported retained runs completed with status `pass` and zero recorded
+client failures.
