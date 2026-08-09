@@ -5,6 +5,8 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import subprocess
+import sys
 import tempfile
 import unittest
 
@@ -36,6 +38,21 @@ class _MaliciousCheckpoint:
 
 
 class PredictionParityTests(unittest.TestCase):
+    def test_feature_preprocessing_uses_public_bounds_or_raw_values(self):
+        raw = np.asarray([[np.nan, np.inf], [2.0e6, -2.0e6]])
+        np.testing.assert_array_equal(
+            helper._apply_feature_preprocessing(raw),
+            np.asarray([[0.0, 0.0], [1.0e6, -1.0e6]], dtype=np.float32))
+
+        bounds = base64.b64encode(json.dumps({
+            "lower": [0.0, -2.0], "upper": [2.0, 2.0],
+        }).encode()).decode()
+        transformed = helper._apply_feature_preprocessing(
+            np.asarray([[-1.0, np.inf], [2.0, -2.0]]), bounds)
+        np.testing.assert_array_equal(
+            transformed,
+            np.asarray([[-1.0, 0.0], [1.0, -1.0]], dtype=np.float32))
+
     def test_declarative_graph_uses_exact_builder(self):
         spec = {
             "kind": "graph", "output": "out", "nodes": [
@@ -83,6 +100,18 @@ class PredictionParityTests(unittest.TestCase):
                     str(checkpoint), X, "response", encoded,
                     "bce_logits", 2, 2)
             self.assertFalse(marker.exists())
+
+    def test_cli_rejects_artifacts_without_a_declarative_contract(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            data_path = Path(tmpdir) / "newdata.csv"
+            data_path.write_text("x\n1\n", encoding="utf-8")
+            result = subprocess.run(
+                [sys.executable, str(PY_ROOT / "predict_helper.py"),
+                 "--model", str(Path(tmpdir) / "model.pt"),
+                 "--data", str(data_path), "--framework", "pytorch"],
+                check=False, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("model_spec and loss_name", result.stderr)
 
     def test_retired_tree_predictors_are_not_importable(self):
         for name in ("predict_xgboost", "predict_xgboost_custom",

@@ -1,12 +1,13 @@
 # Create a model spec by name
 
-Convenience wrapper around the concrete `ds.flower.model.*`
-constructors. Existing `dsflower_model` objects are returned unchanged.
+Resolves a registered model name and validates its typed parameter
+contract. Existing `dsflower_model` objects are canonicalised and
+revalidated against the current registry.
 
 ## Usage
 
 ``` r
-ds.flower.model(name = "sklearn_logreg", ...)
+ds.flower.model(name = "pytorch_logreg", ...)
 ```
 
 ## Arguments

@@ -17,5 +17,5 @@ ds.flower.models(base_dir = file.path(".", "dsflower_output"))
 
 ## Value
 
-A data.frame with columns: model_id, model, template, strategy, privacy,
+A data.frame with columns: model_id, model, strategy, privacy,
 num_rounds, n_clients, created_at, status, path.

@@ -72,7 +72,7 @@ ds.flower.model <- function(name = "pytorch_logreg", ...) {
     }
     return(structure(list(
       name = registered$name, track = registered$track,
-      template = registered$name, framework = framework,
+      framework = framework,
       loss = registered$loss, params = params), class = "dsflower_model"))
   }
   if (!is.character(name) || length(name) != 1L) {
@@ -87,15 +87,12 @@ ds.flower.model <- function(name = "pytorch_logreg", ...) {
 
   m <- .dsflower_get_model(canonical)   # registry lookup; errors listing available
   params <- .dsflower_resolve_model_params(m, list(...))
-  # Carry template/framework/loss too: the recipe task-inference, recipe print, run-record
-  # metadata and prediction routing all read these. In this spec-based design template == name.
   framework <- if (identical(m$data_kinds, "image")) {
     "pytorch_vision"
   } else {
     "pytorch"
   }
-  structure(list(name = m$name, track = m$track, template = m$name,
-                 framework = framework,
+  structure(list(name = m$name, track = m$track, framework = framework,
                  loss = m$loss, params = params),
             class = "dsflower_model")
 }
@@ -196,7 +193,7 @@ ds.flower.task <- function(name = "classification") {
 #' @param target One target-column name, or exactly \code{num_labels} distinct
 #'   target-column names for \code{pytorch_multilabel}.
 #' @param features Character vector of feature column names, or NULL for
-#'   template-specific auto handling.
+#'   model-specific auto handling.
 #' @param model Character model name or \code{dsflower_model} object.
 #' @param model_params Named list passed to \code{ds.flower.model()} when
 #'   \code{model} is a character value.
@@ -207,14 +204,6 @@ ds.flower.task <- function(name = "classification") {
 #'   \code{strategy} is a character value.
 #' @param rounds Integer number of federated rounds.
 #' @param task Optional character task name or \code{dsflower_task} object.
-#' @param label_set Reserved compatibility argument. Non-NULL values fail early;
-#'   the enforced-DP training path does not implement label-set selection.
-#' @param masks Reserved compatibility argument. Non-NULL values fail early
-#'   because segmentation is not implemented by the enforced-DP runtime.
-#' @param evaluation_only Logical; must remain \code{FALSE}. \code{TRUE} fails
-#'   early because evaluation-only release semantics are not implemented.
-#' @param detached Logical; must remain \code{FALSE}; detached execution is not
-#'   implemented by the enforced-DP training path.
 #' @param output_dir Optional character; parent directory the trained model is
 #'   saved under (created if missing). Defaults to \code{./dsflower_output}.
 #' @param output_name Optional character; folder/file name for this model inside
@@ -225,13 +214,8 @@ ds.flower.task <- function(name = "classification") {
 #' @param verbose Logical; when \code{TRUE}, also print the raw flwr run log
 #'   (debugging). The tidy per-round progress is shown regardless unless
 #'   \code{silent = TRUE}.
-#' @param disconnect Logical; must remain \code{TRUE}. The submission pipeline
-#'   always cleans up its temporary server-side handles on exit.
-#' @param run_args Named list; must remain empty. Arbitrary runner arguments are
-#'   not accepted by the enforced-DP training path.
 #' @param feature_bounds Optional public feature bounds as
-#'   \code{list(lower=..., upper=...)} in feature order. Appended to the signature
-#'   for positional backward compatibility.
+#'   \code{list(lower=..., upper=...)} in feature order.
 #' @param target_levels Optional ordered public classification label vocabulary.
 #'   Non-numeric labels require it; missing or unknown values map to public code
 #'   zero. Multilabel applies the same public two-level vocabulary independently
@@ -259,16 +243,10 @@ ds.flower.fit <- function(conns,
                           strategy_params = list(),
                           rounds = 5L,
                           task = NULL,
-                          label_set = NULL,
-                          masks = NULL,
                           output_dir = NULL,
                           output_name = NULL,
                           silent = FALSE,
-                          evaluation_only = FALSE,
-                          detached = FALSE,
                           verbose = FALSE,
-                          disconnect = TRUE,
-                          run_args = list(),
                           feature_bounds = NULL,
                           target_levels = NULL,
                           target_bounds = NULL,
@@ -307,46 +285,6 @@ ds.flower.fit <- function(conns,
       (length(strategy_params) > 0L && is.null(names(strategy_params)))) {
     stop("'strategy_params' must be a named list.", call. = FALSE)
   }
-  if (!is.list(run_args) ||
-      (length(run_args) > 0L && is.null(names(run_args)))) {
-    stop("'run_args' must be a named list.", call. = FALSE)
-  }
-  flag <- function(value, name) {
-    if (!is.logical(value) || length(value) != 1L || is.na(value)) {
-      stop("'", name, "' must be TRUE or FALSE.", call. = FALSE)
-    }
-    value
-  }
-  evaluation_only <- flag(evaluation_only, "evaluation_only")
-  detached <- flag(detached, "detached")
-  disconnect <- flag(disconnect, "disconnect")
-  if (!is.null(label_set)) {
-    stop("'label_set' is not supported by the enforced-DP training path.",
-         call. = FALSE)
-  }
-  if (evaluation_only) {
-    stop("'evaluation_only = TRUE' is not implemented by the enforced-DP path; ",
-         "refusing to release a model contrary to the requested semantics.",
-         call. = FALSE)
-  }
-  if (detached) {
-    stop("'detached = TRUE' is not supported by the enforced-DP training path.",
-         call. = FALSE)
-  }
-  if (!disconnect) {
-    stop("'disconnect = FALSE' is not supported: the enforced-DP submission ",
-         "pipeline always cleans up its temporary server-side connections.",
-         call. = FALSE)
-  }
-  if (length(run_args)) {
-    stop("'run_args' is not supported by the enforced-DP training path.",
-         call. = FALSE)
-  }
-  if (!is.null(masks)) {
-    stop("'masks' requires segmentation, which is not supported by the ",
-         "enforced-DP runtime in this release.", call. = FALSE)
-  }
-
   supplied_sources <- sum(!is.null(data), !is.null(resource), !is.null(symbol))
   if (supplied_sources == 0L) {
     symbol <- "D"
@@ -411,8 +349,7 @@ ds.flower.fit <- function(conns,
 
   # The submission pipeline owns connect/upload/pin/run/cleanup. The aggregation
   # strategy runs server-side (researcher SuperLink) over already-DP updates, so
-  # Any supported strategy is DP-safe post-processing. Unsupported compatibility
-  # arguments have already failed above rather than silently changing semantics.
+  # any supported strategy is DP-safe post-processing.
   ds.flower.submit(
     conns, model = model_spec, target = target, features = features,
     data = data, resource = resource, symbol = symbol,
@@ -424,7 +361,3 @@ ds.flower.fit <- function(conns,
     output_dir = output_dir, output_name = output_name,
     verbose = verbose, silent = silent)
 }
-
-#' @rdname ds.flower.fit
-#' @export
-ds.flower.train <- ds.flower.fit

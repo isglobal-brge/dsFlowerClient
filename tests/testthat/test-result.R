@@ -55,9 +55,9 @@ test_that("as.data.frame returns first per_site if no pooled", {
 test_that("ds.flower.code extracts code", {
   result <- dsFlowerClient:::dsflower_result(
     per_site = list(),
-    meta = list(call_code = 'ds.flower.metrics("flower")')
+    meta = list(call_code = 'ds.flower.describe("flower")')
   )
-  expect_equal(ds.flower.code(result), 'ds.flower.metrics("flower")')
+  expect_equal(ds.flower.code(result), 'ds.flower.describe("flower")')
 })
 
 test_that("ds.flower.code errors for non-result", {

@@ -64,5 +64,5 @@ overlap or ensure cohorts are disjoint.
 If not every expected node returns the fixed private release, the result
 has \code{available=FALSE} and no metrics rather than exact, per-node or
 zero-filled substitutes. This is an operational availability result, not a
-privacy-budget query lockout.
+historical query denial.
 }

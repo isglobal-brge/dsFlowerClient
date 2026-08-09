@@ -1,7 +1,9 @@
 # Save the global model from a training run
 
-Saves the federated model weights to a file. Supported formats: `.rds`
-(R native), `.json` (portable).
+Saves the federated model metadata to a file, together with a sibling
+`<filename>.assets` directory containing the native model and its public
+reconstruction metadata. Move both entries together. Supported formats
+are `.rds` (R native) and `.json`.
 
 ## Usage
 
@@ -17,7 +19,7 @@ ds.flower.save_model(run, path)
 
 - path:
 
-  Character; file path to save to.
+  Character; unused `.rds` or `.json` file path.
 
 ## Value
 

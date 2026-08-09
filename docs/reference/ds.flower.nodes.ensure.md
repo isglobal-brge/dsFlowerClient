@@ -11,7 +11,7 @@ ds.flower.nodes.ensure(
   conns,
   symbol = "flower",
   superlink_address = NULL,
-  template_name = NULL
+  torch_backend = NULL
 )
 ```
 
@@ -35,10 +35,9 @@ ds.flower.nodes.ensure(
 
   - Named list: per-node addresses (names must match connection names).
 
-- template_name:
+- torch_backend:
 
-  Optional Flower template name passed to server-side SuperNode
-  bootstrap.
+  Character or NULL; requested node-side torch backend.
 
 ## Value
 

@@ -11,8 +11,6 @@ ds.flower.nodes.prepare(
   target_column,
   feature_columns = NULL,
   run_config = list(),
-  privacy = NULL,
-  template_name = NULL,
   label_set = NULL
 )
 ```
@@ -38,15 +36,6 @@ ds.flower.nodes.prepare(
 - run_config:
 
   Named list; additional run configuration.
-
-- privacy:
-
-  Optional `dsflower_privacy` object. When supplied, privacy mode and
-  parameters are injected into `run_config`.
-
-- template_name:
-
-  Optional Flower template name used for server-side staging.
 
 - label_set:
 

@@ -3,36 +3,8 @@ pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   api-quickstart: api-quickstart.html
-  clinical-method-family-benchmarks: clinical-method-family-benchmarks.html
-  clinical-privacy-benchmarks: clinical-privacy-benchmarks.html
-  demo-overview: demo-overview.html
-  lung1-direct-image-dsimaging-resnet: lung1-direct-image-dsimaging-resnet.html
-  lung1-radiomics-to-flower: lung1-radiomics-to-flower.html
   method-registration-live-federation: method-registration-live-federation.html
-  pathmnist-direct-image-resnet: pathmnist-direct-image-resnet.html
-  validation-overview: validation-overview.html
-  validation-pytorch-cause-specific-cox: validation-pytorch-cause-specific-cox.html
-  validation-pytorch-coxph: validation-pytorch-coxph.html
-  validation-pytorch-linear-regression: validation-pytorch-linear-regression.html
-  validation-pytorch-lognormal-aft: validation-pytorch-lognormal-aft.html
-  validation-pytorch-logreg: validation-pytorch-logreg.html
-  validation-pytorch-lstm: validation-pytorch-lstm.html
-  validation-pytorch-mlp: validation-pytorch-mlp.html
-  validation-pytorch-multiclass: validation-pytorch-multiclass.html
-  validation-pytorch-multilabel: validation-pytorch-multilabel.html
-  validation-pytorch-poisson: validation-pytorch-poisson.html
-  validation-pytorch-tcn: validation-pytorch-tcn.html
-  validation-sklearn-elastic-net: validation-sklearn-elastic-net.html
-  validation-sklearn-logreg: validation-sklearn-logreg.html
-  validation-sklearn-ridge: validation-sklearn-ridge.html
-  validation-sklearn-sgd: validation-sklearn-sgd.html
-  validation-sklearn-svm: validation-sklearn-svm.html
-  validation-vision-overview: validation-vision-overview.html
-  validation-vision-pytorch-densenet121: validation-vision-pytorch-densenet121.html
-  validation-vision-pytorch-resnet18: validation-vision-pytorch-resnet18.html
-  validation-vision-pytorch-unet2d: validation-vision-pytorch-unet2d.html
-  validation-xgboost: validation-xgboost.html
-last_built: 2026-07-31T16:02Z
+last_built: 2026-08-09T17:01Z
 urls:
   reference: https://isglobal-brge.github.io/dsFlowerClient/reference
   article: https://isglobal-brge.github.io/dsFlowerClient/articles

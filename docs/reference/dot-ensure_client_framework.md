@@ -14,7 +14,7 @@ prediction.
 
 - framework:
 
-  Character; "sklearn", "pytorch", "pytorch_vision", or "xgboost".
+  Character; "pytorch" or "pytorch_vision".
 
 ## Value
 

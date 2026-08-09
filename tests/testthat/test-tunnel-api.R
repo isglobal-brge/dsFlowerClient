@@ -79,7 +79,7 @@ test_that("tunnel ports can be scalar, positional, or named per node", {
   )
 })
 
-test_that("link-up aborts and rolls back every attempted node on partial startup", {
+test_that("link-up aborts and rolls back every attempted node on mixed tunnel ABI", {
   conns <- list(site1 = structure(list(), class = "mock_connection"),
                 site2 = structure(list(), class = "mock_connection"))
   withr::local_options(list(
@@ -123,12 +123,13 @@ test_that("link-up aborts and rolls back every attempted node on partial startup
       server <- names(conns)
       events <<- c(events, paste(method, server, sep = ":"))
       if (identical(method, "flowerTunnelUpDS")) {
-        expect_identical(call$protocol_abi, 3L)
+        expect_identical(call$protocol_abi, 4L)
         up_ports[[server]] <<- as.integer(call[[3]])
-        ok <- identical(server, "site1")
         return(setNames(list(list(
-          ok = ok, listen = paste0("127.0.0.1:", call[[3]]),
-          chunk_bytes = 512L * 1024L, protocol_abi = 3L)), server))
+          ok = TRUE, listen = paste0("127.0.0.1:", call[[3]]),
+          chunk_bytes = 512L * 1024L,
+          protocol_abi = if (identical(server, "site1")) 4L else 3L
+        )), server))
       }
       setNames(list(TRUE), server)
     },

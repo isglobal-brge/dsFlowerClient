@@ -1,9 +1,8 @@
 # Start a Flower run
 
-Fetches the model template from the server, builds a Flower App from the
-recipe, then invokes `flwr run` against the running SuperLink. Model
-weights and training history are automatically saved to `output_dir`
-after training completes.
+Invokes `flwr run` for a pre-built Flower App against the running
+SuperLink. Model weights and training history are automatically saved to
+`output_dir` after training completes.
 
 ## Usage
 
@@ -14,9 +13,11 @@ ds.flower.run.start(
   app_dir = NULL,
   run_config = list(),
   output_dir = NULL,
+  output_name = NULL,
   results_dir = NULL,
   symbol = "flower",
-  verbose = TRUE
+  verbose = FALSE,
+  silent = FALSE
 )
 ```
 
@@ -28,13 +29,16 @@ ds.flower.run.start(
 
 - conns:
 
-  DSI connections object. Used to fetch the model template from the
-  server. If NULL, uses the connections stored during
-  `ds.flower.nodes.init`.
+  DSI connections object used to determine the required site count. If
+  NULL, uses the connections stored during `ds.flower.nodes.init`.
 
 - app_dir:
 
-  Character; path to a pre-built app directory (optional).
+  Required character path to a pre-built app directory. The high-level
+  [`ds.flower.submit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.submit.md)
+  and
+  [`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
+  pipelines build and supply it automatically.
 
 - run_config:
 
@@ -44,6 +48,10 @@ ds.flower.run.start(
 
   Character; persistent directory for model output. Defaults to
   `"dsflower_output/<timestamp>"` in the working directory.
+
+- output_name:
+
+  Optional name for the persisted model artifact.
 
 - results_dir:
 
@@ -57,8 +65,13 @@ ds.flower.run.start(
 
 - verbose:
 
-  Logical; print flwr output (default TRUE).
+  Logical; print flwr output (default FALSE).
+
+- silent:
+
+  Logical; suppress progress feedback.
 
 ## Value
 
-A `dsflower_run` object with weights, history, and predictions.
+A `dsflower_run` object with run status and identifiers, model metadata,
+weights, history, output paths, and captured CLI output.

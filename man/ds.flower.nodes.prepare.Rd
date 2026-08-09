@@ -10,7 +10,6 @@ ds.flower.nodes.prepare(
   target_column,
   feature_columns = NULL,
   run_config = list(),
-  template_name = NULL,
   label_set = NULL
 )
 }
@@ -24,9 +23,6 @@ ds.flower.nodes.prepare(
 \item{feature_columns}{Character vector or NULL; feature column names.}
 
 \item{run_config}{Named list; additional run configuration.}
-
-\item{template_name}{Deprecated compatibility argument. Named executable
-templates have been retired; non-NULL values fail before contacting a node.}
 
 \item{label_set}{Optional imaging label-set name for imaging-backed runs.}
 }

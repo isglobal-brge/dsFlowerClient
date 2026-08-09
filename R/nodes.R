@@ -94,7 +94,7 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
       "Flower handle initialization")
   }
 
-  # Store connections for later use (run.start, templates)
+  # Store connections for later run lifecycle operations.
   .dsflower_client_env$.conns <- conns
 
   code <- .build_code("ds.flower.nodes.init", data = data, symbol = symbol)
@@ -115,25 +115,15 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
 #' @param target_column Character; name of the target column.
 #' @param feature_columns Character vector or NULL; feature column names.
 #' @param run_config Named list; additional run configuration.
-#' @param template_name Deprecated compatibility argument. Named executable
-#'   templates have been retired; non-NULL values fail before contacting a node.
 #' @param label_set Optional imaging label-set name for imaging-backed runs.
 #' @return A \code{dsflower_result} with per-site status.
 #' @export
 ds.flower.nodes.prepare <- function(conns, symbol = "flower",
                                      target_column, feature_columns = NULL,
                                      run_config = list(),
-                                     template_name = NULL,
                                      label_set = NULL) {
-  # DP policy/mechanism pins and the next lifetime epsilon/delta allocation are
-  # set entirely by the node at prepare, before private staging. Ensure later
-  # confirms that same reservation idempotently. The client never injects
-  # privacy parameters.
-
-  if (!is.null(template_name)) {
-    stop("'template_name' is retired. Submit a declarative model specification ",
-         "through ds.flower.submit() instead.", call. = FALSE)
-  }
+  # The per-training DP contract and mechanism pins are set entirely by the
+  # node before private staging. The client never injects privacy parameters.
 
   if (!is.null(label_set)) {
     run_config[["label_set"]] <- label_set
@@ -177,19 +167,12 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 #'     \item Single string: broadcast to all nodes.
 #'     \item Named list: per-node addresses (names must match connection names).
 #'   }
-#' @param template_name Deprecated compatibility argument. Named executable
-#'   templates have been retired; non-NULL values fail before contacting a node.
 #' @param torch_backend Character or NULL; requested node-side torch backend.
 #' @return A \code{dsflower_result} with per-site status.
 #' @export
 ds.flower.nodes.ensure <- function(conns, symbol = "flower",
                                     superlink_address = NULL,
-                                    template_name = NULL,
                                     torch_backend = NULL) {
-  if (!is.null(template_name)) {
-    stop("'template_name' is retired. The hash-pinned declarative runner selects ",
-         "its runtime from the prepared DP track.", call. = FALSE)
-  }
   torch_backend <- .validate_torch_backend(torch_backend)
   # All transport is the DSI tunnel: each SuperNode dials its own node-local
   # loopback forwarder, so the address here is only a placeholder. There is no
@@ -219,7 +202,7 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
     .dsi_assign_expr_exact(
       conns, symbol,
       call("flowerEnsureSuperNodeDS", symbol, superlink_address, fed_id,
-           ca_cert_b64, template_name, torch_backend),
+           ca_cert_b64, torch_backend),
       "SuperNode startup")
   } else if (is.list(superlink_address)) {
     # Per-node addresses
@@ -227,7 +210,7 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
       .dsi_assign_expr_exact(
         conns[srv], symbol,
         call("flowerEnsureSuperNodeDS", symbol, superlink_address[[srv]],
-             fed_id, ca_cert_b64, template_name, torch_backend),
+             fed_id, ca_cert_b64, torch_backend),
         "SuperNode startup")
     }
   }

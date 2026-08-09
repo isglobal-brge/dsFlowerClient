@@ -36,16 +36,6 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   if (!inherits(recipe, "dsflower_recipe")) {
     stop("'recipe' must be a dsflower_recipe object.", call. = FALSE)
   }
-  if (!is.null(recipe$label_set) || !is.null(recipe$masks)) {
-    stop("The enforced-DP runtime does not support label-set or segmentation ",
-         "recipe fields.", call. = FALSE)
-  }
-  if (!is.null(recipe$evaluation_only) &&
-      !identical(recipe$evaluation_only, FALSE)) {
-    stop("'evaluation_only = TRUE' is not implemented; use ",
-         "ds.flower.validate() for disclosure-safe validation.",
-         call. = FALSE)
-  }
 
   .require_flwr_cli()
 
@@ -95,8 +85,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   .ensure_client_framework("pytorch")
 
   # The app dir is always pre-built by the submission pipeline (a dsflower_runner
-  # FAB, content-hash-pinned against the node-resident canonical runner). There is
-  # no legacy in-builder fallback.
+  # FAB, content-hash-pinned against the node-resident canonical runner).
   if (is.null(app_dir)) {
     stop("'app_dir' is required: build the submission app first ",
          "(ds.flower.submit() / ds.flower.fit() do this for you).", call. = FALSE)
@@ -113,7 +102,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
 
   # Run via venv flwr with FLWR_HOME pointing to our private config.
   eff_rounds <- recipe$num_rounds
-  .dsf_msg("Training ", recipe$model$template, " across ", n_clients,
+  .dsf_msg("Training ", recipe$model$name, " across ", n_clients,
            " site(s) for ", eff_rounds, " round(s)...")
   flwr_cmd <- .client_flwr_cmd()
   # PYTHONUNBUFFERED so the flwr child flushes its [ROUND k/N] log lines as they
@@ -126,7 +115,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                       PYTHONUNBUFFERED = "1")),
     results_dir = results_dir,
     num_rounds = eff_rounds,
-    expect_artifacts = !isTRUE(recipe$evaluation_only)
+    expect_artifacts = TRUE
   )
 
   # Clean ANSI escape codes
@@ -153,7 +142,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     stderr = clean_stderr,
     weights = weights,
     history = history,
-    expect_artifacts = !isTRUE(recipe$evaluation_only)
+    expect_artifacts = TRUE
   )
 
   if (runtime_status != 0L) {
@@ -194,7 +183,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
 
   # Generate a unique model ID for identification
   model_id <- paste0(
-    recipe$model$template, "_",
+    recipe$model$name, "_",
     recipe$strategy$name, "_",
     eff_rounds, "r_",
     format(Sys.time(), "%Y%m%d_%H%M%S")
@@ -217,7 +206,6 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       weights    = weights,
       history    = history,
       model      = recipe$model$name,
-      template   = recipe$model$template,
       framework  = recipe$model$framework,
       track      = recipe$model$track %||% NULL,
       model_spec = recipe$model_spec %||% NULL,
@@ -249,7 +237,6 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     meta <- list(
       model_id   = model_id,
       model      = recipe$model$name,
-      template   = recipe$model$template,
       framework  = recipe$model$framework,
       track      = recipe$model$track %||% NULL,
       model_spec = recipe$model_spec %||% NULL,
@@ -264,11 +251,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       requested_num_rounds = recipe$num_rounds,
       n_clients  = length(conns),
       features   = recipe$features,   # training feature order, so predict can align newdata
-      # Public preprocessing constants used by the node. New runs record lower/upper
-      # so prediction can repeat the same clip-to-bounds + affine transform. Keep the
-      # legacy mean/SD fields readable for models trained before public bounds existed.
-      feature_means = recipe$feature_means,
-      feature_sds   = recipe$feature_sds,
+      # Public preprocessing constants used by the node, so prediction can repeat
+      # the same clip-to-bounds + affine transform.
       feature_lower = recipe$feature_lower,
       feature_upper = recipe$feature_upper,
       target_levels = recipe$target_levels %||% NULL,
@@ -521,29 +505,6 @@ ds.flower.run.stop <- function(run_id) {
   result$stdout
 }
 
-#' Compute SHA-256 hash of the Python files in the built app
-#'
-#' Must match the server-side \code{.compute_template_hash()} algorithm.
-#'
-#' @param app_dir Character; path to the built app directory.
-#' @param template_name Character; template name (subdirectory name).
-#' @return Character; hex-encoded SHA-256 hash.
-#' @keywords internal
-.compute_app_hash <- function(app_dir, template_name) {
-  pkg_dir <- file.path(app_dir, template_name)
-  py_files <- sort(list.files(pkg_dir, pattern = "\\.py$",
-                               full.names = FALSE))
-
-  blob <- raw(0)
-  for (fname in py_files) {
-    content <- readBin(file.path(pkg_dir, fname), "raw",
-                       file.info(file.path(pkg_dir, fname))$size)
-    blob <- c(blob, charToRaw(fname), charToRaw("\n"), content, as.raw(0x00))
-  }
-
-  digest::digest(blob, algo = "sha256", serialize = FALSE)
-}
-
 #' Parse run ID from flwr output
 #'
 #' @param stdout Character; stdout from flwr run.
@@ -698,7 +659,7 @@ print.dsflower_run <- function(x, ...) {
         isTRUE(x$history$available[i])
       } else TRUE
       cat(sprintf("    round %d %s%s\n", x$history$round[i],
-        if (released) "aggregated" else "unavailable (privacy tail)",
+        if (released) "aggregated" else "release unavailable",
         if (released && !is.na(ex)) sprintf(" (~%s examples)", ex) else ""))
     }
   }
@@ -832,14 +793,14 @@ ds.flower.save_model <- function(run, path) {
 #'
 #' @param base_dir Character; base directory to scan.
 #'   Defaults to \code{"./dsflower_output"}.
-#' @return A data.frame with columns: model_id, model, template, strategy,
+#' @return A data.frame with columns: model_id, model, strategy,
 #'   privacy, num_rounds, n_clients, created_at, status, path.
 #' @export
 ds.flower.models <- function(base_dir = file.path(".", "dsflower_output")) {
   if (!dir.exists(base_dir)) {
     return(data.frame(
       model_id = character(0), model = character(0),
-      template = character(0), strategy = character(0),
+      strategy = character(0),
       privacy = character(0), num_rounds = integer(0),
       n_clients = integer(0), created_at = character(0),
       status = character(0), path = character(0),
@@ -850,7 +811,7 @@ ds.flower.models <- function(base_dir = file.path(".", "dsflower_output")) {
   subdirs <- list.dirs(base_dir, recursive = FALSE, full.names = TRUE)
   rows <- list()
   # Coerce any metadata field to a single scalar: %||% only replaces NULL, so an empty
-  # (length-0) field from a partial/old metadata.json would make data.frame() error with
+  # (length-0) field from a partial metadata.json would make data.frame() error with
   # "differing number of rows". This keeps the row (NA for the missing field) instead.
   s1 <- function(x, default) { x <- x %||% default; if (length(x) == 0L) default else x[[1]] }
 
@@ -865,7 +826,6 @@ ds.flower.models <- function(base_dir = file.path(".", "dsflower_output")) {
     rows[[length(rows) + 1L]] <- data.frame(
       model_id   = s1(meta$model_id, basename(d)),
       model      = s1(meta$model, NA_character_),
-      template   = s1(meta$template, NA_character_),
       strategy   = s1(meta$strategy, NA_character_),
       privacy    = s1(meta$privacy, NA_character_),
       num_rounds = as.integer(s1(meta$num_rounds, NA_integer_)),
@@ -880,7 +840,7 @@ ds.flower.models <- function(base_dir = file.path(".", "dsflower_output")) {
   if (length(rows) == 0L) {
     return(data.frame(
       model_id = character(0), model = character(0),
-      template = character(0), strategy = character(0),
+      strategy = character(0),
       privacy = character(0), num_rounds = integer(0),
       n_clients = integer(0), created_at = character(0),
       status = character(0), path = character(0),
@@ -931,8 +891,7 @@ ds.flower.load_model <- function(path) {
   if (dir.exists(path)) {
     rds_path <- file.path(path, "model.rds")
     if (!file.exists(rds_path)) {
-      # The bundle is named after the model (output_name.rds); fall back to the
-      # single .rds in the directory when the legacy model.rds is absent.
+      # Runs name the bundle after output_name; accept that single .rds file.
       cand <- list.files(path, pattern = "\\.rds$", full.names = TRUE)
       if (length(cand) != 1L)
         stop("No model .rds found in ", path, call. = FALSE)

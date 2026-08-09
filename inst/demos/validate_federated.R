@@ -14,12 +14,10 @@
 #   DSFLOWER_OPAL_USERS=administrator DSFLOWER_OPAL_PASSWORDS=password \
 #   Rscript validate_federated.R
 #
-# DP NOTE: DP is enforced server-side through a persistent node/domain lifetime
-# ledger with geometric basic composition. Different symbols and targets share
-# the default node domain and do NOT reset privacy accounting. Repeated sweeps
-# therefore receive progressively smaller allocations and eventually safe no-op
-# releases. Run benchmarks on isolated test nodes with their own persistent
-# ledger; never delete or reset a production ledger.
+# DP NOTE: DP is enforced server-side with a fixed administrator-owned
+# per-training epsilon/delta contract. Repeating a semantically identical
+# training deterministically reproduces its protected release; prior trainings
+# neither consume persistent state nor change admission for a later training.
 
 script_dir <- function() {
   file_arg <- grep("^--file=", commandArgs(FALSE), value = TRUE)
@@ -67,7 +65,7 @@ record <- function(label, expr) {
   results[[label]] <<- st
   cat(sprintf("[%s] %-32s status=%s (%ss)\n", format(Sys.time(), "%H:%M:%S"), label, st, dt))
 }
-# Symbols do not reset the node-wide lifetime privacy domain.
+# Symbols do not alter the server-owned per-training privacy policy.
 fit_tab <- function(label, sym, table, model, target, params = list(),
                     target_bounds = NULL) {
   DSI::datashield.assign.table(conns, sym, table)

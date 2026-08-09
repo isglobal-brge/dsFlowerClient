@@ -16,7 +16,7 @@ ds.flower.model.pytorch_linear_regression(
 
 - learning_rate:
 
-  Numeric; learning rate.
+  Numeric in `(0, 10]`; learning rate.
 
 - batch_size:
 

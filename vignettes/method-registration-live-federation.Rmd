@@ -23,7 +23,7 @@ functions: the administrator also registers the package's declared assign and
 aggregate methods with Opal/Rock.
 
 For `dsFlower`, the trusted node package performs data staging, privacy
-reservation, runner verification and SuperNode lifecycle management. The client
+contract validation, runner verification and SuperNode lifecycle management. The client
 cannot register methods, set the node's epsilon/delta or authorize HookApps.
 
 ## Install and configure the node package
@@ -34,25 +34,24 @@ Install `dsFlower` in the compute profile used for the analysis:
 remotes::install_github("isglobal-brge/dsFlower")
 ```
 
-Before accepting runs, configure persistent node-owned state. The following is
-an example; production paths and values are custodian decisions:
+Before accepting runs, configure the node-owned per-training policy and the
+persistent secret path. The following is an example; production paths and
+values are custodian decisions:
 
 ```r
 options(
-  default.dsflower.dp_total_epsilon = 3,
-  default.dsflower.dp_total_delta = 1e-5,
-  default.dsflower.dp_budget_decay = 0.5,
-  default.dsflower.privacy_ledger_path =
-    "/var/lib/dsflower/privacy/ledger.sqlite",
+  default.dsflower.dp_per_training_epsilon = 1,
+  default.dsflower.dp_per_training_delta = 1e-6,
   default.dsflower.node_secret_path =
     "/run/secrets/dsflower_node_key",
   default.dsflower.hook_enabled = FALSE
 )
 ```
 
-The ledger and dedicated 256-bit node secret must persist across service
-sessions, remain writable only by the service account and be protected against
-rollback or cloning. `datashield.seed` is not used as the DP key.
+Only the dedicated 256-bit node secret persists across service sessions. It must
+remain writable only by the service account and be protected against cloning.
+There is no privacy database, historical counter or admission decision based on
+earlier trainings. `datashield.seed` is not used as the DP key.
 
 ## Register methods with Opal
 
@@ -85,14 +84,14 @@ library(DSI)
 
 caps <- datashield.aggregate(
   conns,
-  call("flowerGetCapabilitiesDS", "flower")
+  call("flowerGetCapabilitiesDS")
 )
 
 lapply(caps, function(x) x[c(
   "dsflower_version", "runner_abi", "runner_sha256",
   "dp_tracks", "declarative_model_ops", "declarative_losses",
   "aggregation_strategies",
-  "privacy_accountant", "privacy_nonblocking",
+  "privacy_accountant", "privacy_scope",
   "hook_enabled", "hook_sandbox_attested",
   "hook_resource_isolation_attested"
 )])
@@ -102,28 +101,25 @@ lapply(caps, function(x) x[c(
 before a submission. A mismatch fails early rather than running a different
 implementation from the one the client expected.
 
-The old named-template catalogue is intentionally empty and deprecated. Models
-are now data-only specifications assembled from the advertised declarative
-operations; no researcher-supplied Python executes in the neural track.
+Models are data-only specifications assembled from the advertised declarative
+operations. The advertised operations describe what this software version can
+execute; they are not a privacy permission list. No researcher-supplied Python
+executes in the neural track.
 
 The privacy-policy endpoint is read-only:
 
 ```r
-datashield.aggregate(conns, call("flowerPrivacyBudgetDS"))
+datashield.aggregate(conns, call("flowerPrivacyPolicyDS"))
 ```
 
-By default it exposes the fixed lifetime policy but not the allocation count.
-The custodian can expose operational status with
-`dsflower.expose_privacy_status = TRUE`; this never gives the analyst a privacy
-configuration knob.
+It exposes the fixed server-owned per-training policy. This never gives the
+analyst a privacy configuration knob.
 
 ## Preprocessing uses public bounds
 
-`flowerFeatureStatsDS()` remains registered only as a compatibility endpoint. It
-returns a data-independent disabled response: exact counts, sums and sums of
-squares are not used for normalization and are not released.
-
-Supply bounds from public domain knowledge or the study protocol instead:
+Exact counts, sums and sums of squares are not used for normalization and are
+not released. Supply bounds from public domain knowledge or the study protocol
+instead:
 
 ```r
 fit <- ds.flower.fit(
@@ -160,8 +156,8 @@ produced by the canonical runner.
 
 ## Recap
 
-1. Install `dsFlower` in the compute profile and configure persistent accountant
-   and secret state.
+1. Install `dsFlower` in the compute profile and configure the per-training
+   policy and persistent node secret.
 2. Register only the package's declared DataSHIELD methods as an administrator.
 3. Verify capabilities and runner identity after upgrades.
 4. Use public preprocessing bounds; do not reintroduce exact feature-statistic

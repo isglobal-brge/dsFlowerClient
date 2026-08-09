@@ -8,7 +8,7 @@ Configurable MLP or linear classifier with CrossEntropyLoss.
 ds.flower.model.pytorch_multiclass(
   hidden_layers = integer(0),
   n_classes = 3L,
-  learning_rate = 0.01,
+  learning_rate = 0.1,
   batch_size = 32L,
   local_epochs = 1L
 )
@@ -26,7 +26,7 @@ ds.flower.model.pytorch_multiclass(
 
 - learning_rate:
 
-  Numeric; learning rate.
+  Numeric in `(0, 10]`; learning rate.
 
 - batch_size:
 

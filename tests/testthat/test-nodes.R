@@ -175,22 +175,62 @@ test_that("DSI results must be associated with the exact requested nodes", {
   expect_null(mapped$site2)
 })
 
-test_that("legacy named templates fail before any DSI side effect", {
-  touched <- FALSE
+test_that("nodes.ensure sends torch_backend in the current server ABI slot", {
+  captured <- NULL
+  env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old <- env$.superlink
+  env$.superlink <- list(
+    process = list(is_alive = function() TRUE), pid = 999,
+    fleet_address = "127.0.0.1:9092", control_address = "127.0.0.1:9093",
+    fleet_port = 9092L, control_port = 9093L, serverappio_port = 9091L,
+    flwr_home = tempdir(), log_path = tempfile(), federation_id = "fl-test",
+    ca_cert_pem = NULL, started_at = Sys.time())
+  on.exit(env$.superlink <- old)
+
   local_mocked_bindings(
-    datashield.assign.expr = function(...) touched <<- TRUE,
+    .wait_supernodes_ready = function(...) {
+      list(site = list(supernode_running = TRUE, federation_id = "fl-test"))
+    },
+    .package = "dsFlowerClient"
+  )
+  local_mocked_bindings(
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      captured <<- expr
+      for (node in names(conns)) success(node)
+    },
     .package = "DSI"
   )
 
-  expect_error(
-    ds.flower.nodes.prepare(
-      list(), target_column = "y", template_name = "pytorch_logreg"),
-    "retired"
+  suppressMessages(ds.flower.nodes.ensure(
+    list(site = NULL), superlink_address = "127.0.0.1:9092",
+    torch_backend = "cpu"))
+
+  expect_identical(as.character(captured[[1L]]), "flowerEnsureSuperNodeDS")
+  expect_length(captured, 6L)
+  expect_identical(captured[[6L]], "cpu")
+})
+
+test_that("describe queries capabilities without a handle argument", {
+  captured <- NULL
+  flower <- structure(list(
+    conns = list(site = NULL), symbol = "private_handle",
+    data = "D", data_kind = "tabular"), class = "dsflower_connection")
+  local_mocked_bindings(
+    ds.flower.labels = function(...) list(),
+    ds.flower.masks = function(...) data.frame(),
+    .package = "dsFlowerClient"
   )
-  expect_false(touched)
-  expect_error(
-    ds.flower.nodes.ensure(list(), template_name = "pytorch_logreg"),
-    "retired"
+  local_mocked_bindings(
+    datashield.aggregate = function(conns, expr) {
+      captured <<- expr
+      list(site = list(runner_abi = 3L))
+    },
+    .package = "DSI"
   )
-  expect_false(touched)
+
+  result <- ds.flower.describe(flower)
+
+  expect_s3_class(result, "dsflower_description")
+  expect_identical(as.character(captured[[1L]]), "flowerGetCapabilitiesDS")
+  expect_length(captured, 1L)
 })

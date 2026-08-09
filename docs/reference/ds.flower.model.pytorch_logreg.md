@@ -6,7 +6,7 @@ DP-SGD capable linear classifier for binary classification.
 
 ``` r
 ds.flower.model.pytorch_logreg(
-  learning_rate = 0.01,
+  learning_rate = 0.1,
   batch_size = 32L,
   local_epochs = 1L
 )
@@ -16,7 +16,7 @@ ds.flower.model.pytorch_logreg(
 
 - learning_rate:
 
-  Numeric; learning rate.
+  Numeric in `(0, 10]`; learning rate.
 
 - batch_size:
 

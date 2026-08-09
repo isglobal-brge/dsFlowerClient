@@ -3,9 +3,10 @@
 test_that("pytorch_mlp creates correct model", {
   m <- ds.flower.model.pytorch_mlp()
   expect_s3_class(m, "dsflower_model")
+  expect_named(m, c("name", "track", "framework", "loss", "params"))
   expect_equal(m$name, "pytorch_mlp")
   expect_equal(m$framework, "pytorch")
-  expect_equal(m$params$hidden_layers, "64,32")
+  expect_identical(m$params$hidden_layers, c(64L, 32L))
   expect_equal(m$params$learning_rate, 0.1)
   expect_equal(m$params$batch_size, 32L)
   expect_equal(m$params$local_epochs, 1L)
@@ -17,12 +18,12 @@ test_that("pytorch_mlp accepts overrides", {
     learning_rate = 0.001,
     batch_size = 64L
   )
-  expect_equal(m$params$hidden_layers, "128,64,32")
+  expect_identical(m$params$hidden_layers, c(128L, 64L, 32L))
   expect_equal(m$params$learning_rate, 0.001)
   expect_equal(m$params$batch_size, 64L)
 })
 
-test_that("legacy comma-separated MLP widths emit valid declarative layers", {
+test_that("MLP widths remain typed integer vectors through submission", {
   sub <- dsFlowerClient:::.emit_submission(
     ds.flower.model.pytorch_mlp(hidden_layers = c(128L, 64L)))
   widths <- vapply(
@@ -30,11 +31,6 @@ test_that("legacy comma-separated MLP widths emit valid declarative layers", {
     function(layer) as.character(layer$out), character(1))
 
   expect_identical(widths, c("128", "64", "@out"))
-  expect_error(
-    dsFlowerClient:::.emit_submission(
-      ds.flower.model.pytorch_mlp(hidden_layers = "64,broken")),
-    "Invalid parameter type"
-  )
 })
 
 test_that("pytorch_logreg creates correct model", {
@@ -61,14 +57,14 @@ test_that("pytorch_multiclass creates correct model", {
   expect_equal(m$name, "pytorch_multiclass")
   expect_equal(m$framework, "pytorch")
   expect_equal(m$params$n_classes, 3L)
-  expect_equal(m$params$hidden_layers, "")
+  expect_identical(m$params$hidden_layers, integer(0))
 })
 
 test_that("pytorch_multiclass accepts overrides", {
   m <- ds.flower.model.pytorch_multiclass(
     hidden_layers = c(64L, 32L), n_classes = 5L
   )
-  expect_equal(m$params$hidden_layers, "64,32")
+  expect_identical(m$params$hidden_layers, c(64L, 32L))
   expect_equal(m$params$n_classes, 5L)
 })
 
@@ -361,15 +357,6 @@ test_that("pytorch_densenet121 creates correct model", {
                 getNamespaceExports("dsFlowerClient"))
 })
 
-test_that("unsupported survival and segmentation models are not registered", {
-  registered <- ds.flower.list_models()$name
-  expect_false(any(c("pytorch_coxph", "pytorch_lognormal_aft",
-                     "pytorch_cause_specific_cox", "pytorch_unet2d") %in%
-                   registered))
-  expect_error(ds.flower.model("pytorch_coxph"), "Unknown model")
-  expect_error(ds.flower.model("pytorch_unet2d"), "Unknown model")
-})
-
 test_that("pytorch_tcn creates correct model", {
   m <- ds.flower.model.pytorch_tcn(input_shape = c(2L, 12L),
                                     channels = 16L, levels = 4L)
@@ -406,6 +393,7 @@ test_that("multilabel constructor emits the registry target-width contract", {
   sub <- dsFlowerClient:::.emit_submission(m)
 
   expect_identical(m$params$num_labels, 3L)
+  expect_identical(m$params$hidden_layers, c(64L, 32L))
   expect_identical(sub$params$num_labels, 3L)
   expect_identical(sub$loss, "multilabel_bce")
 })

@@ -6,7 +6,7 @@
 \usage{
 ds.flower.model.pytorch_multilabel(
   n_labels = 2L,
-  hidden_layers = "64,32",
+  hidden_layers = c(64L, 32L),
   learning_rate = 0.1,
   batch_size = 32L,
   local_epochs = 1L
@@ -15,7 +15,7 @@ ds.flower.model.pytorch_multilabel(
 \arguments{
 \item{n_labels}{Integer; number of label columns.}
 
-\item{hidden_layers}{Character; comma-separated hidden layer sizes.}
+\item{hidden_layers}{Integer vector; hidden layer sizes.}
 
 \item{learning_rate}{Numeric in \code{(0, 10]}; learning rate.}
 

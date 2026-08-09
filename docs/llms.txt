@@ -1,19 +1,718 @@
 # dsFlowerClient
 
-Researcher-side orchestration for Flower federated learning through DataSHIELD.
-Privacy is server-authoritative: the client cannot configure epsilon, delta,
-clipping, lifetime accounting domains, or HookApp execution policy.
+`dsFlowerClient` is the researcher-side R package for coordinating
+[Flower](https://flower.ai/) federated learning through
+[DataSHIELD](https://www.datashield.org/). It pairs with the node-side
+[`dsFlower`](https://github.com/isglobal-brge/dsFlower) package
+installed by each data custodian.
 
-Current documentation:
+The client starts a Flower SuperLink, submits a declarative request,
+checks that every node has the byte-identical canonical runner, and
+coordinates staging, training and cleanup. It cannot choose epsilon,
+delta, clipping, the accountant domain or whether arbitrary code is
+allowed. Those decisions belong to each data node.
 
-- Home and security overview: https://isglobal-brge.github.io/dsFlowerClient/
-- API quickstart: https://isglobal-brge.github.io/dsFlowerClient/articles/api-quickstart.html
-- Server method registration: https://isglobal-brge.github.io/dsFlowerClient/articles/method-registration-live-federation.html
-- Function reference: https://isglobal-brge.github.io/dsFlowerClient/reference/
+## Installation
 
-The current contract uses a persistent geometric lifetime accountant,
-release-scoped secret-keyed CSPRNG streams, declarative DP-SGD/DP-GBDT, public
-feature bounds, and a fail-closed HookApp sandbox gate. Exact node feature
-statistics, logs, metrics and cohort weights are disabled. Historical benchmark
-articles marked pre-0.3 are evidence for a retired architecture and are not
-current deployment or security instructions.
+``` r
+
+remotes::install_github("isglobal-brge/dsFlowerClient")
+```
+
+The workstation also needs the Flower CLI:
+
+``` sh
+python -m pip install "flwr[app]>=1.31.0,<1.32.0"
+```
+
+If `uv` is absent, package provisioning refuses mutable
+`latest`/`curl|sh` bootstrap. Either install `uv` through the operating
+system, or set an audited release tag and platform-archive digest in
+`DSFLOWER_UV_VERSION` and `DSFLOWER_UV_SHA256`. For reproducible Python
+environments, set `DSFLOWER_CLIENT_PYTHON_LOCK` to a complete
+requirements file containing hashes for all transitive artifacts;
+installs then use `uv pip install --require-hashes`. Set
+`DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK=true` to reject a missing lock
+instead of falling back to ranges. Also set `DSFLOWER_PYTHON_VERSION` to
+an exact `major.minor.patch`; the default `3.11` permits compatible
+patch updates. Without an exact interpreter and lock, the compatibility
+ranges remain intentionally flexible and the resolved environment is not
+reproducible.
+
+Each Opal/Rock server must have a compatible `dsFlower` installation.
+Tunnel and runner ABI mismatches fail before stream bytes or a run are
+submitted; upgrades that change either ABI require coordinated
+server/client deployment.
+
+## Quick start
+
+``` r
+
+library(dsFlowerClient)
+library(DSI)
+library(DSOpal)
+
+builder <- DSI::newDSLoginBuilder()
+builder$append(server = "site1", url = "https://opal1.example.org",
+               user = "researcher", password = "...",
+               table = "PROJECT.training_data", driver = "OpalDriver")
+builder$append(server = "site2", url = "https://opal2.example.org",
+               user = "researcher", password = "...",
+               table = "PROJECT.training_data", driver = "OpalDriver")
+conns <- DSI::datashield.login(builder$build(), assign = TRUE, symbol = "D")
+
+# Bounds must be public/domain-knowledge constants in the same order as features.
+fit <- ds.flower.fit(
+  conns,
+  symbol = "D",
+  target = "outcome",
+  features = c("age", "biomarker"),
+  model = "pytorch_logreg",
+  feature_bounds = list(lower = c(18, 0), upper = c(100, 250)),
+  target_levels = c("control", "case")
+)
+
+DSI::datashield.logout(conns)
+```
+
+`features` can be omitted for an assigned tabular `symbol`, in which
+case only column names are queried and the target is excluded. Feature
+values, exact feature statistics, node logs and node metrics are never
+requested by this workflow.
+
+## Privacy is server-authoritative
+
+Each node applies one administrator-pinned epsilon/delta contract to
+every training. Its accountant composes that contract across the
+training’s own rounds. There is no historical database, quota or
+resource-specific balance; one training never reduces or blocks the
+next. Distinct trainings compose in the standard way when they are
+analysed together.
+
+Guarantees are per node. If the same person appears at multiple observed
+nodes, their epsilons and deltas compose across those nodes; only
+disjoint node populations receive the parallel-composition bound.
+Cross-site overlap needs a shared federation-level person accountant
+when one global guarantee is required.
+
+The formal adjacency is bounded/replace-one with a fixed number of
+privacy units: neighbouring datasets replace one row, or all records
+belonging to one configured patient. This is not an unbounded add/remove
+membership guarantee for a changing unit count.
+
+Noise and training randomness are derived from a canonical semantic
+identity with HMAC-SHA256 under the node’s dedicated 256-bit secret.
+Equivalent effective trainings recompute the same streams without a
+query database; changes to data, model, mechanism, bounds or round
+change the identity. The secret is not a client seed, R RNG state or
+`datashield.seed`.
+
+The clipping, sensitivity and accounting contracts implement the
+standard `(epsilon, delta)` mechanisms under their mathematical model.
+The shipped finite-precision sampler is ChaCha20-backed and
+computationally hardened, but is not a formally verified
+discrete-Gaussian implementation; the production claim is therefore
+computational/practical DP for the documented valid-input domain.
+
+The server’s `flowerPrivacyPolicyDS()` method reports only the public
+per-training policy. There is no analyst privacy-configuration API or
+historical status to expose.
+
+The Flower Fleet API is carried inside the DataSHIELD channel by a
+capability-bound DSI tunnel. Because the inner Flower connection is
+plaintext on loopback,
+[`ds.flower.link.up()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.up.md)
+validates the outer transport before starting any local service or node
+forwarder:
+
+- DSOpal exposes both its URL and retained curl options, so it requires
+  `https://` and fails if peer or hostname verification is disabled;
+- a recognized DSMolgenisArmadillo connection is accepted automatically
+  when it exposes a valid `https://` URL; its frontend or reverse proxy
+  remains responsible for certificate and hostname validation;
+- DSLite is accepted because it is in-process and has no network
+  transport;
+- unknown connectors, or connections whose endpoint cannot be
+  identified, fail closed unless the operator has independently verified
+  transport confidentiality, integrity, and peer authentication, and
+  attests each exact connection name, for example
+  `options(dsflower.dsi_tls_attested = c("site1", "site2"))`;
+- plaintext or unverifiable loopback endpoints require the explicit
+  development-only option
+  `options(dsflower.dsi_allow_insecure_loopback = TRUE)`.
+
+Attestation records an operational fact; it does not add encryption.
+Plaintext HTTP is rejected by default, but exact sites can be opted in
+with `options(dsflower.dsi_allow_insecure_http = c("site1"))` or the
+equivalent `allow_insecure_http` argument to
+[`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md),
+[`ds.flower.submit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.submit.md),
+[`ds.flower.hook.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hook.run.md),
+or
+[`ds.flower.link.up()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.up.md).
+That exception assumes an independent trusted network layer; it does not
+make HTTP confidential or tamper-resistant. It only relaxes the
+dsFlowerClient preflight: the DSI connector must itself support that
+endpoint (in particular, current `opalr` rejects remote plaintext Opal
+connections before dsFlowerClient is called). Credentials are also
+exchanged when the DSI connection is created, before this preflight can
+inspect it. This client-side gate prevents accidental downgrade;
+production DataSHIELD frontends remain authoritative. Link startup is
+all-or-nothing: if one node does not publish a live, ready loopback
+forwarder, the client tears down every attempted site and aborts. Nodes
+negotiate bounded exchange chunks; the relay keeps a bounded buffer per
+site so TCP backpressure replaces unbounded R-memory growth.
+
+DSI 1.8 exposes a failed per-node operation as a named `NULL`. The
+client never interprets that value as delivery: every mutating path
+requires an explicit ACK from the matching node. For uploads and tunnel
+traffic, an ACK binds the generation, offset, length and content
+identity. If an ACK is lost, only the byte-identical in-flight chunk is
+retried against the idempotent node store; new bytes cannot change that
+chunk’s geometry.
+
+## Supported computation contracts
+
+### Declarative models (recommended)
+
+The client emits data-only specifications; the node-installed runner
+constructs and trains the model:
+
+- neural and vision specifications use Opacus DP-SGD with per-example or
+  server-selected per-patient clipping and noise.
+
+This is the path that reaches `nn.Module`-level granularity because the
+trusted runner owns the training loop and sees per-sample gradients. The
+client never sends an analyst-controlled training loop for declarative
+models.
+
+Available registered training contracts can be inspected with
+[`ds.flower.list_models()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.list_models.md).
+`ds.flower.model_parameters("pytorch_mlp")` returns the accepted names,
+types, aliases, effective defaults and finite choices for one contract.
+Hyperparameters are supplied through `model_params`:
+
+``` r
+
+fit <- ds.flower.fit(
+  conns, symbol = "D", target = "y", features = c("x1", "x2"),
+  model = "pytorch_mlp",
+  model_params = list(
+    hidden_layers = c(64, 32), optimizer = "adamw",
+    beta1 = 0.9, beta2 = 0.999,
+    scheduler = "cosine", scheduler_min_lr = 1e-4
+  ),
+  rounds = 10L,
+  feature_bounds = list(lower = c(0, 0), upper = c(1, 100))
+)
+```
+
+The first-party suite covers binary, multiclass, multilabel and ordinal
+classification; linear SVM; MLP, CNN, residual, recurrent, temporal and
+Transformer specifications; linear, ridge, lasso, elastic-net and robust
+Huber regression; Poisson, negative-binomial and Gamma outcomes;
+frozen-backbone medical-image classification; and bounded
+conditional-quantile regression. Neural contracts expose SGD, Adam,
+AdamW and RMSprop plus none/step/exponential/cosine learning-rate
+schedules. Parameters that are unknown, incompatible with the selected
+optimizer/loss, outside a resource cap, or not implemented fail before
+staging; accepted first-party parameters are pinned in the manifest and
+actually consumed by the trusted runner.
+
+The image contracts currently cover private federated training of their
+frozen- backbone heads. The packaged local predictor and private
+validation API are tabular; they do not yet reconstruct image
+loaders/backbones for inference or validation. This boundary is explicit
+rather than silently treating images as a numeric table.
+
+Tree engines are intentionally not registered in this release. The
+former NumPy random-split compatibility implementation and its
+`xgboost`/`dp_gbdt` aliases have been removed: it was not the native
+XGBoost engine and must not be presented as one. Native XGBoost,
+LightGBM, CatBoost and random-forest adapters will be exposed only
+through trusted, version-pinned runtimes with a complete node-enforced
+DP mechanism; adding noise only to final model bytes is not DP.
+
+Classification strings/factors require an ordered public
+`target_levels`; numeric labels already coded in `[0, K-1]` remain
+compatible. Regression and count models require public
+`target_bounds = list(lower=..., upper=...)`, with `lower >= 0` for
+counts and `lower > 0` for Gamma loss. Nodes never infer label
+vocabularies or ranges from their cohorts. Missing, malformed or unknown
+classification values map to the public code zero, so private values
+cannot create a success/error side channel.
+
+Public feature/target bounds and unscaled numeric inputs are limited to
+magnitude `1e6`; without bounds, inputs remain unscaled but are coerced
+and saturated to that domain. Declarative intermediates and parameters
+use the same finite cap; heads are saturated at `30` for
+logits/log-links and `1e6` for direct MSE regression. Per-sample
+gradients are totalised before Opacus performs the server-owned L2 clip.
+Neural learning rates must be in `(0, 10]`.
+
+### HookApps
+
+[`ds.flower.hook.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hook.run.md)
+accepts a Python package exposing only:
+
+``` text
+initial_arrays(config, input_dim) -> numeric arrays
+local_update(global_arrays, X, y, config) -> numeric arrays
+```
+
+The call accepts a bounded, JSON-like `app_params` object. Both
+functions receive the same validated public configuration:
+
+``` text
+config = {
+  app_params,       # analyst parameters, hash-pinned by the node
+  round_index,      # 0 for initialization; 1..num_rounds for updates
+  num_rounds,
+  task,
+  num_classes
+}
+```
+
+The framework guarantees exact, typed JSON transport and manifest
+pinning of `app_params`; the HookApp author remains responsible for
+validating and using the keys its own code advertises. Unlike
+first-party declarative contracts, arbitrary uploaded code cannot be
+proven statically to consume a parameter.
+
+Privacy, paths, dependencies, runtime profiles, secrets and round
+counters are reserved and cannot be smuggled through `app_params`.
+Returned arrays have a fixed count and shape for the complete run. The
+wrapper clips their concatenated update and applies the Gaussian
+mechanism on every round; its calibration composes the full round
+transcript under the per-training contract. This is the standard numeric
+output-DP mechanism for the fixed released vector (subject to the
+finite-precision caveat above), independent of whether the child uses
+NumPy or PyTorch. It is not internal DP-SGD and can have materially
+lower utility for a high-dimensional update.
+
+A HookApp is not a general trusted Flower App and cannot generically
+receive DP-SGD-level protection. The node runs it only when the
+custodian has enabled HookApps and attested the required Bubblewrap
+filesystem/network sandbox and minimum-duration timing envelope. The
+result is numerically validated, clipped as one complete update and
+passed through a conservatively RDP-calibrated Gaussian mechanism; an
+optional sample-and-aggregate mode uses a fixed, administrator- pinned
+number of disjoint data-independent blocks.
+
+That envelope is timing defense in depth, not a formal constant-time
+proof; cleanup, availability and storage behavior remain outside the
+numeric DP claim.
+
+The client checks the public Hook readiness flags before upload and
+fails with a clear deployment error when an administrator gate is
+absent. If a public gate disappears after that preflight, the node
+refuses to open private data and marks the unchanged update unavailable;
+the coordinator refuses to report it as a trained model. A child crash,
+timeout or malformed result instead maps to a zero update and still
+passes through the same Gaussian mechanism and timing envelope, so it
+cannot bypass numeric DP. Archive scanning and hash pinning are
+integrity defenses, not proofs that arbitrary code is private. A
+trusted-runtime failure after private execution begins is reported only
+as `available = FALSE`; its cause and fallback are not exposed as a
+trained model. Native libraries or analyst-provided `requirements` are
+not installed dynamically; new binary runtime profiles must be curated,
+locked and enabled by the node administrator. HookApps use the same
+`target_levels`/`target_bounds` contract and must declare
+`task = "classification"`, `"regression"` or `"count"`.
+
+## Private model validation
+
+[`ds.flower.validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.validate.md)
+evaluates a saved declarative model inside the nodes and releases one
+fixed, Gaussian-noised vector of bounded sufficient statistics per node.
+The current validator is for tabular neural artifacts; vision artifacts
+fail explicitly. Exact labels, predictions, counts and site metrics
+remain local; the researcher receives only pooled post-processing:
+
+``` r
+
+validation <- ds.flower.validate(
+  conns,
+  model = fit,
+  symbol = "D_test",
+  target = "outcome",
+  bins = 64L
+)
+print(validation)
+```
+
+Binary validation provides threshold metrics, ROC/PR AUC, Brier score,
+calibration and decision-curve summaries; multiclass/ordinal/multilabel
+use bounded confusion and one-vs-rest histograms; bounded
+regression/count contracts provide MAE, MSE/RMSE, R-squared and, for
+counts, Poisson deviance. All are computed from the same private vector,
+so deriving several reported metrics does not create additional
+releases.
+
+`validation$available` is `FALSE` if the complete fixed-layout release
+was not available from every expected node. In that case
+`validation$metrics` is `NULL`: the API returns no exact, per-node or
+zero-filled substitute and does not create a query-count lockout.
+
+Assigning an independent dataset gives external validation; reusing
+training data gives resubstitution validation. This API does not call
+the exact validation set a holdout and does not claim cross-validation.
+Honest patient-level holdout or K-fold training requires a public,
+protocol-defined split and separately accounted training releases for
+the fitted fold models; that orchestration is not silently simulated by
+this one-release evaluator.
+
+## Public feature bounds
+
+Exact node-side `count`, `sum`, `sumsq`, means, variances and quantiles
+are not released for preprocessing. If scale information is useful, pass
+public bounds:
+
+``` r
+
+feature_bounds = list(
+  lower = c(age = 18, biomarker = 0),
+  upper = c(age = 100, biomarker = 250)
+)
+```
+
+Bounds must be finite, have magnitude at most `1e6`, satisfy
+`lower < upper` and follow the exact feature order. Training clips each
+value to its interval and maps it affinely to `[-1, 1]`; prediction
+reuses the stored bounds. These constants must come from public domain
+knowledge or protocol design, not from a query to the protected node.
+Without bounds, neural inputs remain unscaled after coercion/saturation
+to `[-1e6, 1e6]`, which can reduce utility when the real scale differs.
+
+## Lower-level API
+
+[`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
+is the preferred end-to-end API. Power users can call the submission
+pipeline directly:
+
+``` r
+
+result <- ds.flower.submit(
+  conns,
+  model = ds.flower.model("pytorch_mlp", hidden_layers = c(64, 32)),
+  symbol = "D",
+  target = "outcome",
+  features = c("age", "biomarker"),
+  num_rounds = 10L,
+  strategy = "fedadam",
+  feature_bounds = list(lower = c(18, 0), upper = c(100, 250)),
+  target_levels = c("control", "case")
+)
+```
+
+The lower-level API does not weaken the node policy. Nodes expose
+neither raw training logs nor exact per-site metrics. Local SuperLink
+output and the intended DP global-model artifact are separate from
+private node state.
+
+See the [`dsFlower` architecture
+specification](https://github.com/isglobal-brge/dsFlower/blob/main/ARCHITECTURE.md)
+for the complete trust boundary, deployment requirements and residual
+limits.
+
+## Authors
+
+- **David Sarrat González** — <david.sarrat@isglobal.org>
+- **Juan R González** — <juanr.gonzalez@isglobal.org>
+
+[Barcelona Institute for Global Health
+(ISGlobal)](https://www.isglobal.org/)
+
+# Package index
+
+## High-level submission
+
+Declarative DP training and the separately gated HookApp contract.
+
+- [`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
+  : Fit a federated model in one call
+- [`ds.flower.submit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.submit.md)
+  : Submit + run a federated DP job from a model spec (the "pack" API)
+- [`ds.flower.hook.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hook.run.md)
+  : Request a HookApp run through the node-side egress policy
+- [`ds.flower.app.upload()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.app.upload.md)
+  : Upload and hash-verify a HookApp candidate archive
+
+## Lifecycle: Node Management
+
+Connect, prepare, and manage federated nodes on Opal servers.
+
+- [`ds.flower.nodes.init()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.init.md)
+  : Initialize Flower handles on all servers
+- [`ds.flower.nodes.prepare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.prepare.md)
+  : Prepare a training run on all servers
+- [`ds.flower.nodes.ensure()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.ensure.md)
+  : Ensure SuperNodes are running on all servers
+- [`ds.flower.nodes.cleanup()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.cleanup.md)
+  : Clean up training run on all servers
+
+## Lifecycle: SuperLink
+
+Start, monitor, and stop the local Flower SuperLink process.
+
+- [`ds.flower.superlink.start()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.start.md)
+  : Start a Flower SuperLink
+- [`ds.flower.superlink.status()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.status.md)
+  : Get SuperLink status
+- [`ds.flower.superlink.stop()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.stop.md)
+  : Stop the Flower SuperLink
+
+## Lifecycle: Training Runs
+
+Launch and manage federated training runs.
+
+- [`ds.flower.run.start()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.start.md)
+  : Start a Flower run
+- [`ds.flower.run.stop()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.stop.md)
+  : Stop a Flower run
+- [`ds.flower.run.list()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.list.md)
+  : List Flower runs
+- [`ds.flower.run.logs()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.logs.md)
+  : Get Flower run logs
+
+## Specification: Models
+
+Model specification objects for federated learning.
+
+- [`ds.flower.model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.md)
+  : Create a model spec by name
+- [`ds.flower.model.pytorch_linear_regression()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_linear_regression.md)
+  : Create a PyTorch Linear Regression model spec
+- [`ds.flower.model.pytorch_logreg()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_logreg.md)
+  : Create a PyTorch Logistic Regression model spec
+- [`ds.flower.model.pytorch_densenet121()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_densenet121.md)
+  : Create a PyTorch DenseNet-121 model spec
+- [`ds.flower.model.pytorch_lstm()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_lstm.md)
+  : Create a PyTorch LSTM model spec
+- [`ds.flower.model.pytorch_mlp()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_mlp.md)
+  : Create a PyTorch MLP model spec
+- [`ds.flower.model.pytorch_multiclass()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_multiclass.md)
+  : Create a PyTorch Multi-Class Classifier model spec
+- [`ds.flower.model.pytorch_multilabel()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_multilabel.md)
+  : Create a Multi-Label Classification model spec
+- [`ds.flower.model.pytorch_poisson()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_poisson.md)
+  : Create a Poisson Regression model spec
+- [`ds.flower.model.pytorch_resnet18()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_resnet18.md)
+  : Create a PyTorch ResNet-18 model spec
+- [`ds.flower.model.pytorch_tcn()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_tcn.md)
+  : Create a PyTorch TCN model spec
+
+## Specification: Strategies
+
+Federated aggregation strategy specifications.
+
+- [`ds.flower.strategy()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.md)
+  : Create a strategy spec by name
+- [`ds.flower.strategy.fedavg()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedavg.md)
+  : Create a FedAvg strategy spec
+- [`ds.flower.strategy.fedadam()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedadam.md)
+  : Create a FedAdam strategy spec
+- [`ds.flower.strategy.fedadagrad()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedadagrad.md)
+  : Create a FedAdagrad strategy spec
+- [`ds.flower.strategy.fedyogi()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedyogi.md)
+  : Create a FedYogi strategy spec
+- [`ds.flower.strategy.fedavgm()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedavgm.md)
+  : Create a FedAvgM strategy spec
+
+## Specification: Tasks
+
+Task types. Differential privacy policy is node-owned, not a client
+specification.
+
+- [`ds.flower.task()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.md)
+  : Create a task spec by name
+- [`ds.flower.task.classification()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.classification.md)
+  : Create a classification task specification
+- [`ds.flower.task.regression()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.regression.md)
+  : Create a regression task specification
+
+## Specification: Recipe
+
+Combine task, model, and strategy into a recipe; privacy remains
+node-owned.
+
+- [`ds.flower.recipe()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.recipe.md)
+  : Create a Flower federated learning recipe
+
+## Results
+
+Work with model results and local coordinator diagnostics.
+
+- [`ds.flower.compare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.compare.md)
+  : Compare metrics across multiple training runs
+- [`ds.flower.plot()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.plot.md)
+  : Plot training curves
+- [`dsflower_result()`](https://isglobal-brge.github.io/dsFlowerClient/reference/dsflower_result.md)
+  : Create a dsflower_result object
+- [`ds.flower.code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.code.md)
+  : Get the R code that produced a result
+- [`ds.flower.copy_code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.copy_code.md)
+  : Copy reproducible R code to clipboard
+
+## Print Methods
+
+- [`print(`*`<dsflower_model>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_model.md)
+  : Print a dsflower_model
+- [`print(`*`<dsflower_strategy>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_strategy.md)
+  : Print a dsflower_strategy
+- [`print(`*`<dsflower_task>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_task.md)
+  : Print a dsflower_task
+- [`print(`*`<dsflower_recipe>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_recipe.md)
+  : Print a dsflower_recipe
+- [`print(`*`<dsflower_result>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_result.md)
+  : Print a dsflower_result
+- [`as.data.frame(`*`<dsflower_result>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/as.data.frame.dsflower_result.md)
+  : Convert dsflower_result to data.frame
+- [`` `$`( ``*`<dsflower_result>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/cash-.dsflower_result.md)
+  : Access dsflower_result elements
+
+## Full Exported API
+
+Catch-all index for exported helpers not listed above.
+
+- [`ds.flower.app.upload()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.app.upload.md)
+  : Upload and hash-verify a HookApp candidate archive
+- [`ds.flower.code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.code.md)
+  : Get the R code that produced a result
+- [`ds.flower.compare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.compare.md)
+  : Compare metrics across multiple training runs
+- [`ds.flower.connect()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.connect.md)
+  : Connect to a data source for federated learning
+- [`ds.flower.copy_code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.copy_code.md)
+  : Copy reproducible R code to clipboard
+- [`ds.flower.delete_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.delete_model.md)
+  : Delete a saved model
+- [`ds.flower.describe()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.describe.md)
+  : Describe the connected dataset
+- [`ds.flower.disconnect()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.disconnect.md)
+  : Disconnect and clean up a flower connection
+- [`ds.flower.features()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.features.md)
+  : List available feature assets
+- [`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
+  : Fit a federated model in one call
+- [`ds.flower.hook.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hook.run.md)
+  : Request a HookApp run through the node-side egress policy
+- [`ds.flower.labels()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.labels.md)
+  : List available label sets for an imaging dataset
+- [`ds.flower.link.down()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.down.md)
+  : Close the federation link
+- [`ds.flower.link.up()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.up.md)
+  : Open the federation link
+- [`ds.flower.list_models()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.list_models.md)
+  : List registered dsFlower models
+- [`ds.flower.load_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.load_model.md)
+  : Load a saved model
+- [`ds.flower.masks()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.masks.md)
+  : List available segmentation masks
+- [`ds.flower.model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.md)
+  : Create a model spec by name
+- [`ds.flower.model.pytorch_densenet121()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_densenet121.md)
+  : Create a PyTorch DenseNet-121 model spec
+- [`ds.flower.model.pytorch_linear_regression()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_linear_regression.md)
+  : Create a PyTorch Linear Regression model spec
+- [`ds.flower.model.pytorch_logreg()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_logreg.md)
+  : Create a PyTorch Logistic Regression model spec
+- [`ds.flower.model.pytorch_lstm()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_lstm.md)
+  : Create a PyTorch LSTM model spec
+- [`ds.flower.model.pytorch_mlp()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_mlp.md)
+  : Create a PyTorch MLP model spec
+- [`ds.flower.model.pytorch_multiclass()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_multiclass.md)
+  : Create a PyTorch Multi-Class Classifier model spec
+- [`ds.flower.model.pytorch_multilabel()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_multilabel.md)
+  : Create a Multi-Label Classification model spec
+- [`ds.flower.model.pytorch_poisson()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_poisson.md)
+  : Create a Poisson Regression model spec
+- [`ds.flower.model.pytorch_resnet18()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_resnet18.md)
+  : Create a PyTorch ResNet-18 model spec
+- [`ds.flower.model.pytorch_tcn()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_tcn.md)
+  : Create a PyTorch TCN model spec
+- [`ds.flower.model_parameters()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model_parameters.md)
+  : Inspect the public parameter contract for a registered model
+- [`ds.flower.models()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.models.md)
+  : List saved models
+- [`ds.flower.nodes.cleanup()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.cleanup.md)
+  : Clean up training run on all servers
+- [`ds.flower.nodes.ensure()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.ensure.md)
+  : Ensure SuperNodes are running on all servers
+- [`ds.flower.nodes.init()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.init.md)
+  : Initialize Flower handles on all servers
+- [`ds.flower.nodes.prepare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.prepare.md)
+  : Prepare a training run on all servers
+- [`ds.flower.plot()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.plot.md)
+  : Plot training curves
+- [`ds.flower.predict()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.predict.md)
+  : Predict with a federated model
+- [`ds.flower.recipe()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.recipe.md)
+  : Create a Flower federated learning recipe
+- [`ds.flower.register_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.register_model.md)
+  : Register a dsFlower model generator
+- [`ds.flower.run.list()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.list.md)
+  : List Flower runs
+- [`ds.flower.run.logs()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.logs.md)
+  : Get Flower run logs
+- [`ds.flower.run.start()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.start.md)
+  : Start a Flower run
+- [`ds.flower.run.stop()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.stop.md)
+  : Stop a Flower run
+- [`ds.flower.save_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.save_model.md)
+  : Save the global model from a training run
+- [`ds.flower.strategy()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.md)
+  : Create a strategy spec by name
+- [`ds.flower.strategy.fedadagrad()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedadagrad.md)
+  : Create a FedAdagrad strategy spec
+- [`ds.flower.strategy.fedadam()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedadam.md)
+  : Create a FedAdam strategy spec
+- [`ds.flower.strategy.fedavg()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedavg.md)
+  : Create a FedAvg strategy spec
+- [`ds.flower.strategy.fedavgm()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedavgm.md)
+  : Create a FedAvgM strategy spec
+- [`ds.flower.strategy.fedyogi()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.fedyogi.md)
+  : Create a FedYogi strategy spec
+- [`ds.flower.submit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.submit.md)
+  : Submit + run a federated DP job from a model spec (the "pack" API)
+- [`ds.flower.superlink.start()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.start.md)
+  : Start a Flower SuperLink
+- [`ds.flower.superlink.status()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.status.md)
+  : Get SuperLink status
+- [`ds.flower.superlink.stop()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.stop.md)
+  : Stop the Flower SuperLink
+- [`ds.flower.task()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.md)
+  : Create a task spec by name
+- [`ds.flower.task.classification()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.classification.md)
+  : Create a classification task specification
+- [`ds.flower.task.count()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.count.md)
+  : Create a count-outcome task specification
+- [`ds.flower.task.regression()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.task.regression.md)
+  : Create a regression task specification
+- [`ds.flower.validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.validate.md)
+  : Differentially-private federated model validation
+- [`print(`*`<dsflower_app>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_app.md)
+  : Print a dsflower_app
+- [`print(`*`<dsflower_model>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_model.md)
+  : Print a dsflower_model
+- [`print(`*`<dsflower_recipe>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_recipe.md)
+  : Print a dsflower_recipe
+- [`print(`*`<dsflower_result>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_result.md)
+  : Print a dsflower_result
+- [`print(`*`<dsflower_run>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_run.md)
+  : Print a dsflower_run
+- [`print(`*`<dsflower_strategy>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_strategy.md)
+  : Print a dsflower_strategy
+- [`print(`*`<dsflower_task>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_task.md)
+  : Print a dsflower_task
+- [`print(`*`<dsflower_validation>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_validation.md)
+  : Print a private dsFlower validation result
+
+# Articles
+
+### Current guides
+
+- [API
+  Quickstart](https://isglobal-brge.github.io/dsFlowerClient/articles/api-quickstart.md):
+- [Registering dsFlower server
+  methods](https://isglobal-brge.github.io/dsFlowerClient/articles/method-registration-live-federation.md):

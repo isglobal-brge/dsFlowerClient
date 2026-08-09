@@ -8,6 +8,6 @@
 }
 \description{
 Returns list(lower, upper) only when both vectors are finite, aligned, and
-strictly ordered. Missing fields identify a legacy/raw model and return NULL.
+strictly ordered. Models without public bounds return NULL.
 }
 \keyword{internal}

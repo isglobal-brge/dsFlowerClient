@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -46,7 +46,7 @@
 
       <dl><dt>
 
-          <code><a href="ds.flower.fit.html">ds.flower.fit()</a></code> <code><a href="ds.flower.fit.html">ds.flower.train()</a></code>
+          <code><a href="ds.flower.fit.html">ds.flower.fit()</a></code>
 
         </dt>
         <dd>Fit a federated model in one call</dd>
@@ -60,7 +60,7 @@
 
         <dt>
 
-          <code><a href="ds.flower.hook.run.html">ds.flower.hook.run()</a></code> <code><a href="ds.flower.hook.run.html">ds.flower.tier2.run()</a></code>
+          <code><a href="ds.flower.hook.run.html">ds.flower.hook.run()</a></code>
 
         </dt>
         <dd>Request a HookApp run through the node-side egress policy</dd>
@@ -70,7 +70,7 @@
           <code><a href="ds.flower.app.upload.html">ds.flower.app.upload()</a></code>
 
         </dt>
-        <dd>Upload and hash-verify a Flower app archive</dd>
+        <dd>Upload and hash-verify a HookApp candidate archive</dd>
       </dl></div><div class="section level2">
       <h2 id="lifecycle-node-management">Lifecycle: Node Management<a class="anchor" aria-label="anchor" href="#lifecycle-node-management"></a></h2>
 
@@ -208,6 +208,13 @@
 
         <dt>
 
+          <code><a href="ds.flower.model.pytorch_densenet121.html">ds.flower.model.pytorch_densenet121()</a></code>
+
+        </dt>
+        <dd>Create a PyTorch DenseNet-121 model spec</dd>
+
+        <dt>
+
           <code><a href="ds.flower.model.pytorch_lstm.html">ds.flower.model.pytorch_lstm()</a></code>
 
         </dt>
@@ -243,17 +250,17 @@
 
         <dt>
 
+          <code><a href="ds.flower.model.pytorch_resnet18.html">ds.flower.model.pytorch_resnet18()</a></code>
+
+        </dt>
+        <dd>Create a PyTorch ResNet-18 model spec</dd>
+
+        <dt>
+
           <code><a href="ds.flower.model.pytorch_tcn.html">ds.flower.model.pytorch_tcn()</a></code>
 
         </dt>
         <dd>Create a PyTorch TCN model spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.model.xgboost.html">ds.flower.model.xgboost()</a></code>
-
-        </dt>
-        <dd>Create an XGBoost model spec</dd>
       </dl></div><div class="section level2">
       <h2 id="specification-strategies">Specification: Strategies<a class="anchor" aria-label="anchor" href="#specification-strategies"></a></h2>
 
@@ -266,6 +273,13 @@
 
       <dl><dt>
 
+          <code><a href="ds.flower.strategy.html">ds.flower.strategy()</a></code>
+
+        </dt>
+        <dd>Create a strategy spec by name</dd>
+
+        <dt>
+
           <code><a href="ds.flower.strategy.fedavg.html">ds.flower.strategy.fedavg()</a></code>
 
         </dt>
@@ -273,10 +287,31 @@
 
         <dt>
 
-          <code><a href="ds.flower.strategy.fedprox.html">ds.flower.strategy.fedprox()</a></code>
+          <code><a href="ds.flower.strategy.fedadam.html">ds.flower.strategy.fedadam()</a></code>
 
         </dt>
-        <dd>Create a FedProx strategy spec</dd>
+        <dd>Create a FedAdam strategy spec</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.strategy.fedadagrad.html">ds.flower.strategy.fedadagrad()</a></code>
+
+        </dt>
+        <dd>Create a FedAdagrad strategy spec</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.strategy.fedyogi.html">ds.flower.strategy.fedyogi()</a></code>
+
+        </dt>
+        <dd>Create a FedYogi strategy spec</dd>
+
+        <dt>
+
+          <code><a href="ds.flower.strategy.fedavgm.html">ds.flower.strategy.fedavgm()</a></code>
+
+        </dt>
+        <dd>Create a FedAvgM strategy spec</dd>
       </dl></div><div class="section level2">
       <h2 id="specification-tasks">Specification: Tasks<a class="anchor" aria-label="anchor" href="#specification-tasks"></a></h2>
 
@@ -289,6 +324,13 @@
 
       <dl><dt>
 
+          <code><a href="ds.flower.task.html">ds.flower.task()</a></code>
+
+        </dt>
+        <dd>Create a task spec by name</dd>
+
+        <dt>
+
           <code><a href="ds.flower.task.classification.html">ds.flower.task.classification()</a></code>
 
         </dt>
@@ -300,20 +342,6 @@
 
         </dt>
         <dd>Create a regression task specification</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.task.segmentation.html">ds.flower.task.segmentation()</a></code>
-
-        </dt>
-        <dd>Create a segmentation task specification</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.task.survival.html">ds.flower.task.survival()</a></code>
-
-        </dt>
-        <dd>Create a survival task specification</dd>
       </dl></div><div class="section level2">
       <h2 id="specification-recipe">Specification: Recipe<a class="anchor" aria-label="anchor" href="#specification-recipe"></a></h2>
 
@@ -331,9 +359,9 @@
         </dt>
         <dd>Create a Flower federated learning recipe</dd>
       </dl></div><div class="section level2">
-      <h2 id="results-compatibility-diagnostics">Results &amp; Compatibility Diagnostics<a class="anchor" aria-label="anchor" href="#results-compatibility-diagnostics"></a></h2>
+      <h2 id="results">Results<a class="anchor" aria-label="anchor" href="#results"></a></h2>
 
-      <div class="section-desc"><p>Work with model results. Hardened nodes return empty node metrics and logs.</p></div>
+      <div class="section-desc"><p>Work with model results and local coordinator diagnostics.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -341,13 +369,6 @@
 
 
       <dl><dt>
-
-          <code><a href="ds.flower.metrics.html">ds.flower.metrics()</a></code>
-
-        </dt>
-        <dd>Query the disabled node-metrics compatibility endpoint</dd>
-
-        <dt>
 
           <code><a href="ds.flower.compare.html">ds.flower.compare()</a></code>
 
@@ -360,13 +381,6 @@
 
         </dt>
         <dd>Plot training curves</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.log.html">ds.flower.log()</a></code>
-
-        </dt>
-        <dd>Query the disabled node-log compatibility endpoint</dd>
 
         <dt>
 
@@ -461,7 +475,7 @@
           <code><a href="ds.flower.app.upload.html">ds.flower.app.upload()</a></code>
 
         </dt>
-        <dd>Upload and hash-verify a Flower app archive</dd>
+        <dd>Upload and hash-verify a HookApp candidate archive</dd>
 
         <dt>
 
@@ -521,14 +535,14 @@
 
         <dt>
 
-          <code><a href="ds.flower.fit.html">ds.flower.fit()</a></code> <code><a href="ds.flower.fit.html">ds.flower.train()</a></code>
+          <code><a href="ds.flower.fit.html">ds.flower.fit()</a></code>
 
         </dt>
         <dd>Fit a federated model in one call</dd>
 
         <dt>
 
-          <code><a href="ds.flower.hook.run.html">ds.flower.hook.run()</a></code> <code><a href="ds.flower.hook.run.html">ds.flower.tier2.run()</a></code>
+          <code><a href="ds.flower.hook.run.html">ds.flower.hook.run()</a></code>
 
         </dt>
         <dd>Request a HookApp run through the node-side egress policy</dd>
@@ -570,13 +584,6 @@
 
         <dt>
 
-          <code><a href="ds.flower.log.html">ds.flower.log()</a></code>
-
-        </dt>
-        <dd>Query the disabled node-log compatibility endpoint</dd>
-
-        <dt>
-
           <code><a href="ds.flower.masks.html">ds.flower.masks()</a></code>
 
         </dt>
@@ -584,31 +591,10 @@
 
         <dt>
 
-          <code><a href="ds.flower.metrics.html">ds.flower.metrics()</a></code>
-
-        </dt>
-        <dd>Query the disabled node-metrics compatibility endpoint</dd>
-
-        <dt>
-
           <code><a href="ds.flower.model.html">ds.flower.model()</a></code>
 
         </dt>
         <dd>Create a model spec by name</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.model.pytorch_cause_specific_cox.html">ds.flower.model.pytorch_cause_specific_cox()</a></code>
-
-        </dt>
-        <dd>Create a Cause-Specific Cox model spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.model.pytorch_coxph.html">ds.flower.model.pytorch_coxph()</a></code>
-
-        </dt>
-        <dd>Create a PyTorch Cox Proportional Hazards model spec</dd>
 
         <dt>
 
@@ -623,13 +609,6 @@
 
         </dt>
         <dd>Create a PyTorch Linear Regression model spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.model.pytorch_lognormal_aft.html">ds.flower.model.pytorch_lognormal_aft()</a></code>
-
-        </dt>
-        <dd>Create a Log-Normal AFT survival model spec</dd>
 
         <dt>
 
@@ -689,17 +668,10 @@
 
         <dt>
 
-          <code><a href="ds.flower.model.pytorch_unet2d.html">ds.flower.model.pytorch_unet2d()</a></code>
+          <code><a href="ds.flower.model_parameters.html">ds.flower.model_parameters()</a></code>
 
         </dt>
-        <dd>Create a PyTorch U-Net 2D model spec</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.model.xgboost.html">ds.flower.model.xgboost()</a></code>
-
-        </dt>
-        <dd>Create an XGBoost model spec</dd>
+        <dd>Inspect the public parameter contract for a registered model</dd>
 
         <dt>
 
@@ -829,17 +801,17 @@
 
         <dt>
 
-          <code><a href="ds.flower.strategy.fedbn.html">ds.flower.strategy.fedbn()</a></code>
+          <code><a href="ds.flower.strategy.fedavgm.html">ds.flower.strategy.fedavgm()</a></code>
 
         </dt>
-        <dd>Create a FedBN strategy spec</dd>
+        <dd>Create a FedAvgM strategy spec</dd>
 
         <dt>
 
-          <code><a href="ds.flower.strategy.fedprox.html">ds.flower.strategy.fedprox()</a></code>
+          <code><a href="ds.flower.strategy.fedyogi.html">ds.flower.strategy.fedyogi()</a></code>
 
         </dt>
-        <dd>Create a FedProx strategy spec</dd>
+        <dd>Create a FedYogi strategy spec</dd>
 
         <dt>
 
@@ -885,6 +857,13 @@
 
         <dt>
 
+          <code><a href="ds.flower.task.count.html">ds.flower.task.count()</a></code>
+
+        </dt>
+        <dd>Create a count-outcome task specification</dd>
+
+        <dt>
+
           <code><a href="ds.flower.task.regression.html">ds.flower.task.regression()</a></code>
 
         </dt>
@@ -892,17 +871,10 @@
 
         <dt>
 
-          <code><a href="ds.flower.task.segmentation.html">ds.flower.task.segmentation()</a></code>
+          <code><a href="ds.flower.validate.html">ds.flower.validate()</a></code>
 
         </dt>
-        <dd>Create a segmentation task specification</dd>
-
-        <dt>
-
-          <code><a href="ds.flower.task.survival.html">ds.flower.task.survival()</a></code>
-
-        </dt>
-        <dd>Create a survival task specification</dd>
+        <dd>Differentially-private federated model validation</dd>
 
         <dt>
 
@@ -952,6 +924,13 @@
 
         </dt>
         <dd>Print a dsflower_task</dd>
+
+        <dt>
+
+          <code><a href="print.dsflower_validation.html">print(<i>&lt;dsflower_validation&gt;</i>)</a></code>
+
+        </dt>
+        <dd>Print a private dsFlower validation result</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
@@ -972,4 +951,3 @@
 
 
   </body></html>
-

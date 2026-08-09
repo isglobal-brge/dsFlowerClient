@@ -13,7 +13,7 @@ ds.flower.submit() directly for finer control."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,48 +65,15 @@ and return the trained run object. Advanced users can call
 <span>  strategy_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  rounds <span class="op">=</span> <span class="fl">5L</span>,</span>
 <span>  task <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  label_set <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  masks <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  output_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  evaluation_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  detached <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  disconnect <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  run_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  feature_bounds <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  target_levels <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  target_bounds <span class="op">=</span> <span class="cn">NULL</span></span>
-<span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">ds.flower.train</span><span class="op">(</span></span>
-<span>  <span class="va">conns</span>,</span>
-<span>  data <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  resource <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  symbol <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  <span class="va">target</span>,</span>
-<span>  features <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  model <span class="op">=</span> <span class="st">"pytorch_logreg"</span>,</span>
-<span>  model_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  torch_backend <span class="op">=</span> <span class="st">"auto"</span>,</span>
-<span>  strategy <span class="op">=</span> <span class="st">"fedavg"</span>,</span>
-<span>  strategy_params <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  rounds <span class="op">=</span> <span class="fl">5L</span>,</span>
-<span>  task <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  label_set <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  masks <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  output_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  output_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  evaluation_only <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  detached <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  disconnect <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  run_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  feature_bounds <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  target_levels <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  target_bounds <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  target_bounds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  allow_insecure_http <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"dsflower.dsi_allow_insecure_http"</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  data_kind <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -132,12 +99,13 @@ when <code>data</code>, <code>resource</code>, and <code>symbol</code> are all N
 
 
 <dt id="arg-target">target<a class="anchor" aria-label="anchor" href="#arg-target"></a></dt>
-<dd><p>One character target column name.</p></dd>
+<dd><p>One target-column name, or exactly <code>num_labels</code> distinct
+target-column names for <code>pytorch_multilabel</code>.</p></dd>
 
 
 <dt id="arg-features">features<a class="anchor" aria-label="anchor" href="#arg-features"></a></dt>
 <dd><p>Character vector of feature column names, or NULL for
-template-specific auto handling.</p></dd>
+model-specific auto handling.</p></dd>
 
 
 <dt id="arg-model">model<a class="anchor" aria-label="anchor" href="#arg-model"></a></dt>
@@ -171,14 +139,6 @@ template-specific auto handling.</p></dd>
 <dd><p>Optional character task name or <code>dsflower_task</code> object.</p></dd>
 
 
-<dt id="arg-label-set">label_set<a class="anchor" aria-label="anchor" href="#arg-label-set"></a></dt>
-<dd><p>Optional imaging label-set name.</p></dd>
-
-
-<dt id="arg-masks">masks<a class="anchor" aria-label="anchor" href="#arg-masks"></a></dt>
-<dd><p>Optional mask asset alias for segmentation.</p></dd>
-
-
 <dt id="arg-output-dir">output_dir<a class="anchor" aria-label="anchor" href="#arg-output-dir"></a></dt>
 <dd><p>Optional character; parent directory the trained model is
 saved under (created if missing). Defaults to <code>./dsflower_output</code>.</p></dd>
@@ -195,44 +155,39 @@ auto-generated model id.</p></dd>
 feedback (connection, per-round and completion messages).</p></dd>
 
 
-<dt id="arg-evaluation-only">evaluation_only<a class="anchor" aria-label="anchor" href="#arg-evaluation-only"></a></dt>
-<dd><p>Logical; accepted for compatibility but NOT yet enforced by the
-enforced-DP path (the model is always released, DP-protected).</p></dd>
-
-
-<dt id="arg-detached">detached<a class="anchor" aria-label="anchor" href="#arg-detached"></a></dt>
-<dd><p>Logical; accepted for back-compat (unused by the enforced-DP path).</p></dd>
-
-
 <dt id="arg-verbose">verbose<a class="anchor" aria-label="anchor" href="#arg-verbose"></a></dt>
 <dd><p>Logical; when <code>TRUE</code>, also print the raw flwr run log
 (debugging). The tidy per-round progress is shown regardless unless
 <code>silent = TRUE</code>.</p></dd>
 
 
-<dt id="arg-disconnect">disconnect<a class="anchor" aria-label="anchor" href="#arg-disconnect"></a></dt>
-<dd><p>Logical; accepted for compatibility. The submission pipeline always
-cleans up its server-side handles on exit regardless.</p></dd>
-
-
-<dt id="arg-run-args">run_args<a class="anchor" aria-label="anchor" href="#arg-run-args"></a></dt>
-<dd><p>Named list; accepted for back-compat (unused by the enforced-DP path).</p></dd>
-
-
 <dt id="arg-feature-bounds">feature_bounds<a class="anchor" aria-label="anchor" href="#arg-feature-bounds"></a></dt>
 <dd><p>Optional public feature bounds as
-<code>list(lower=..., upper=...)</code> in feature order. Appended to the signature
-for positional backward compatibility.</p></dd>
+<code>list(lower=..., upper=...)</code> in feature order.</p></dd>
 
 
 <dt id="arg-target-levels">target_levels<a class="anchor" aria-label="anchor" href="#arg-target-levels"></a></dt>
-<dd><p>Optional ordered, exhaustive public classification label
-vocabulary. Non-numeric labels require it.</p></dd>
+<dd><p>Optional ordered public classification label vocabulary.
+Non-numeric labels require it; missing or unknown values map to public code
+zero. Multilabel applies the same public two-level vocabulary independently
+to every target column.</p></dd>
 
 
 <dt id="arg-target-bounds">target_bounds<a class="anchor" aria-label="anchor" href="#arg-target-bounds"></a></dt>
 <dd><p>Required public <code>list(lower=..., upper=...)</code> for
 regression/count models.</p></dd>
+
+
+<dt id="arg-allow-insecure-http">allow_insecure_http<a class="anchor" aria-label="anchor" href="#arg-allow-insecure-http"></a></dt>
+<dd><p>Character vector of exact connection names allowed
+to use plaintext HTTP. Empty by default. This exception does not provide
+transport security; use it only behind an independently trusted network.</p></dd>
+
+
+<dt id="arg-data-kind">data_kind<a class="anchor" aria-label="anchor" href="#arg-data-kind"></a></dt>
+<dd><p>Optional input kind, <code>"tabular"</code> or <code>"image"</code>.
+It is inferred when the registered model supports exactly one kind; models
+registered for both require an explicit choice.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -259,4 +214,3 @@ regression/count models.</p></dd>
 
 
   </body></html>
-

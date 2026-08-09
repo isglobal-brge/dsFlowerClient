@@ -1,7 +1,5 @@
 # Tests for R/convenience.R -- string-friendly user API
-# (Tests asserting the removed sklearn_* models / the removed ds.flower.run mock
-# were deleted with the legacy sklearn + recipe-run path; the fit happy path is
-# covered end-to-end by the live federated validation.)
+# The fit happy path is covered end-to-end by the live federated validation.
 
 test_that("generic strategy constructor resolves aliases", {
   strategy <- ds.flower.strategy("yogi", server_learning_rate = 0.25)
@@ -21,6 +19,15 @@ test_that("generic task constructor resolves aliases", {
   expect_error(ds.flower.task("survival"), "not supported")
   expect_error(ds.flower.task("segmentation"), "not supported")
   expect_error(ds.flower.task("not_a_task"), "Unknown task")
+})
+
+test_that("fit exposes only its executable argument contract", {
+  expect_identical(names(formals(ds.flower.fit)), c(
+    "conns", "data", "resource", "symbol", "target", "features", "model",
+    "model_params", "torch_backend", "strategy", "strategy_params", "rounds",
+    "task", "output_dir", "output_name", "silent", "verbose",
+    "feature_bounds", "target_levels", "target_bounds", "allow_insecure_http",
+    "data_kind"))
 })
 
 test_that("fit resolves strategy_params into the executable strategy", {
@@ -154,31 +161,6 @@ test_that("fit derives or requires the registered input kind", {
     "supported by model")
 })
 
-test_that("fit rejects compatibility arguments whose semantics are unsupported", {
-  submitted <- FALSE
-  local_mocked_bindings(
-    ds.flower.submit = function(...) {
-      submitted <<- TRUE
-      structure(list(), class = "dsflower_run")
-    },
-    .package = "dsFlowerClient"
-  )
-  common <- list(conns = list(site = TRUE), symbol = "D",
-                 target = "y", features = "x")
-
-  expect_error(do.call(ds.flower.fit, c(common, list(evaluation_only = TRUE))),
-               "evaluation_only = TRUE")
-  expect_error(do.call(ds.flower.fit, c(common, list(label_set = "clinical"))),
-               "label_set.*not supported")
-  expect_error(do.call(ds.flower.fit, c(common, list(detached = TRUE))),
-               "detached = TRUE")
-  expect_error(do.call(ds.flower.fit, c(common, list(disconnect = FALSE))),
-               "disconnect = FALSE")
-  expect_error(do.call(ds.flower.fit, c(common, list(run_args = list(foo = 1)))),
-               "run_args.*not supported")
-  expect_false(submitted)
-})
-
 test_that("fit validates required arguments before connecting", {
   expect_error(ds.flower.fit(conns = list()), "target")
   expect_error(
@@ -188,9 +170,5 @@ test_that("fit validates required arguments before connecting", {
   expect_error(
     ds.flower.fit(conns = list(), symbol = "D", data = "D", target = "y"),
     "only one"
-  )
-  expect_error(
-    ds.flower.fit(conns = list(), target = "y", masks = "tumour"),
-    "segmentation"
   )
 })

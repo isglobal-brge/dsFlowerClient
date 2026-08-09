@@ -1,7 +1,8 @@
 # List available segmentation masks
 
-Queries the server for validated mask assets from dsImaging. Only shows
-ACTIVE, valid, non-partial masks by default.
+Queries the server for mask assets declared in the node-owned imaging
+manifest. This structural view intentionally excludes completion counts,
+storage locations, and data-derived catalog state.
 
 ## Usage
 
@@ -17,4 +18,5 @@ ds.flower.masks(flower)
 
 ## Value
 
-A data.frame with mask assets, or empty if none.
+A data.frame with public mask aliases, providers, and the constant
+status `"declared"`, or empty if none.

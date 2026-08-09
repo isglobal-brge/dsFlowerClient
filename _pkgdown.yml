@@ -29,16 +29,6 @@ articles:
     contents:
       - api-quickstart
       - method-registration-live-federation
-  - title: Historical pre-0.3 validation records
-    navbar: ~
-    contents:
-      - clinical-method-family-benchmarks
-      - clinical-privacy-benchmarks
-      - demo-overview
-      - lung1-direct-image-dsimaging-resnet
-      - lung1-radiomics-to-flower
-      - pathmnist-direct-image-resnet
-      - starts_with("validation-")
 
 reference:
   - title: "High-level submission"
@@ -109,13 +99,11 @@ reference:
     contents:
       - ds.flower.recipe
 
-  - title: "Results & Compatibility Diagnostics"
-    desc: "Work with model results. Hardened nodes return empty node metrics and logs."
+  - title: "Results"
+    desc: "Work with model results and local coordinator diagnostics."
     contents:
-      - ds.flower.metrics
       - ds.flower.compare
       - ds.flower.plot
-      - ds.flower.log
       - dsflower_result
       - ds.flower.code
       - ds.flower.copy_code

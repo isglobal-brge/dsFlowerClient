@@ -2,13 +2,9 @@
 
 High-level convenience API for the common workflow: connect to assigned
 DataSHIELD data, build a recipe, run Flower, clean up server-side
-handles, and return the trained run object. Advanced users can keep
-using
-[`ds.flower.connect()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.connect.md),
-[`ds.flower.recipe()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.recipe.md),
-and
-[`ds.flower.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.md)
-directly.
+handles, and return the trained run object. Advanced users can call
+[`ds.flower.submit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.submit.md)
+directly for finer control.
 
 ## Usage
 
@@ -20,21 +16,22 @@ ds.flower.fit(
   symbol = NULL,
   target,
   features = NULL,
-  model = "sklearn_logreg",
+  model = "pytorch_logreg",
   model_params = list(),
+  torch_backend = "auto",
   strategy = "fedavg",
   strategy_params = list(),
-  privacy = "auto",
-  privacy_params = list(),
   rounds = 5L,
   task = NULL,
-  label_set = NULL,
-  masks = NULL,
-  evaluation_only = FALSE,
-  detached = FALSE,
-  verbose = TRUE,
-  disconnect = TRUE,
-  run_args = list()
+  output_dir = NULL,
+  output_name = NULL,
+  silent = FALSE,
+  verbose = FALSE,
+  feature_bounds = NULL,
+  target_levels = NULL,
+  target_bounds = NULL,
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
+  data_kind = NULL
 )
 ```
 
@@ -60,12 +57,13 @@ ds.flower.fit(
 
 - target:
 
-  Character target column name, or length-two vector for survival tasks.
+  One target-column name, or exactly `num_labels` distinct target-column
+  names for `pytorch_multilabel`.
 
 - features:
 
-  Character vector of feature column names, or NULL for
-  template-specific auto handling.
+  Character vector of feature column names, or NULL for model-specific
+  auto handling.
 
 - model:
 
@@ -77,6 +75,11 @@ ds.flower.fit(
   [`ds.flower.model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.md)
   when `model` is a character value.
 
+- torch_backend:
+
+  Character; requested node-side torch backend (`"auto"`, `"cpu"`, or a
+  GPU selector).
+
 - strategy:
 
   Character strategy name or `dsflower_strategy` object.
@@ -87,18 +90,6 @@ ds.flower.fit(
   [`ds.flower.strategy()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.strategy.md)
   when `strategy` is a character value.
 
-- privacy:
-
-  Character privacy name or `dsflower_privacy` object. The default
-  `"auto"` uses the strongest practical profile detected from the
-  connected servers.
-
-- privacy_params:
-
-  Named list passed to
-  [`ds.flower.privacy()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.privacy.md)
-  when `privacy` is a character value.
-
 - rounds:
 
   Integer number of federated rounds.
@@ -107,35 +98,55 @@ ds.flower.fit(
 
   Optional character task name or `dsflower_task` object.
 
-- label_set:
+- output_dir:
 
-  Optional imaging label-set name.
+  Optional character; parent directory the trained model is saved under
+  (created if missing). Defaults to `./dsflower_output`.
 
-- masks:
+- output_name:
 
-  Optional mask asset alias for segmentation.
+  Optional character; folder/file name for this model inside
+  `output_dir` (extension is added automatically). Defaults to an
+  auto-generated model id.
 
-- evaluation_only:
+- silent:
 
-  Logical; if TRUE, blocks model release.
-
-- detached:
-
-  Logical; passed to
-  [`ds.flower.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.md).
+  Logical; when `TRUE`, suppress the training progress feedback
+  (connection, per-round and completion messages).
 
 - verbose:
 
-  Logical; print training output.
+  Logical; when `TRUE`, also print the raw flwr run log (debugging). The
+  tidy per-round progress is shown regardless unless `silent = TRUE`.
 
-- disconnect:
+- feature_bounds:
 
-  Logical; remove server-side Flower handles on exit.
+  Optional public feature bounds as `list(lower=..., upper=...)` in
+  feature order.
 
-- run_args:
+- target_levels:
 
-  Named list of additional arguments passed to
-  [`ds.flower.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.run.md).
+  Optional ordered public classification label vocabulary. Non-numeric
+  labels require it; missing or unknown values map to public code zero.
+  Multilabel applies the same public two-level vocabulary independently
+  to every target column.
+
+- target_bounds:
+
+  Required public `list(lower=..., upper=...)` for regression/count
+  models.
+
+- allow_insecure_http:
+
+  Character vector of exact connection names allowed to use plaintext
+  HTTP. Empty by default. This exception does not provide transport
+  security; use it only behind an independently trusted network.
+
+- data_kind:
+
+  Optional input kind, `"tabular"` or `"image"`. It is inferred when the
+  registered model supports exactly one kind; models registered for both
+  require an explicit choice.
 
 ## Value
 

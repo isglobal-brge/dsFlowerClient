@@ -12,8 +12,9 @@ Description: Client-side DataSHIELD package for orchestrating Flower federated
     learning under privacy policy enforced by each data node. Builds declarative
     model specifications, verifies the node-installed runner, manages the
     SuperLink and run lifecycle, and supports data-independent public feature
-    bounds. Privacy budgets are not analyst-configurable; arbitrary hook code is
-    executed only behind the node's fail-closed sandbox and egress policy.
+    bounds. Each training uses node-owned privacy parameters; arbitrary hook
+    code is executed only behind the node's fail-closed sandbox and egress
+    policy.
 License: MIT + file LICENSE
 URL: https://isglobal-brge.github.io/dsFlowerClient/
 Encoding: UTF-8
@@ -31,16 +32,11 @@ Suggests:
     DSMolgenisArmadillo,
     DSOpal,
     DSLite,
-    bslib,
     clipr,
-    DT,
-    ggplot2,
     knitr,
-    mlbench,
     opalr,
     plotly,
     rmarkdown,
-    shiny,
     testthat (>= 3.0.0),
     withr
 Config/testthat/edition: 3

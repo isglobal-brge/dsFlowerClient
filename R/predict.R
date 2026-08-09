@@ -24,11 +24,23 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   info <- .resolve_model_for_predict(model)
   model_file <- info$model_file
   framework <- info$framework
-  template <- info$template %||% ""
   contract <- info$contract %||% list()
-  if (identical(contract$data_kind %||% "tabular", "image")) {
+  if (!is.character(contract$data_kind) || length(contract$data_kind) != 1L ||
+      is.na(contract$data_kind) ||
+      !contract$data_kind %in% c("tabular", "image")) {
+    stop("Saved model metadata must declare data_kind as 'tabular' or 'image'.",
+         call. = FALSE)
+  }
+  if (identical(contract$data_kind, "image")) {
     stop("ds.flower.predict() accepts tabular artifacts only; image models ",
          "require an image/backbone inference pipeline.", call. = FALSE)
+  }
+  if (!is.list(contract$model_spec) || !length(contract$model_spec) ||
+      !is.character(contract$loss_name) || length(contract$loss_name) != 1L ||
+      is.na(contract$loss_name) || !nzchar(contract$loss_name)) {
+    stop("Local prediction requires saved declarative 'model_spec' and ",
+         "'loss_name' metadata; Tier-2 and other no-spec artifacts must use ",
+         "federated validation.", call. = FALSE)
   }
 
   # Ensure only the dependencies required by this artifact kind are installed.
@@ -60,10 +72,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
 
   # Run Python predict
   python <- .client_python_cmd()
-  spec_b64 <- if (identical(framework, "pytorch") &&
-                  is.list(contract$model_spec) && length(contract$model_spec)) {
-    .spec_to_b64(contract$model_spec)
-  } else NULL
+  spec_b64 <- .spec_to_b64(contract$model_spec)
   result <- processx::run(
     command = python,
     args = c(helper,
@@ -71,21 +80,13 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
              "--data", tmp_data,
              "--type", type,
              "--framework", framework,
-             if (nzchar(template)) c("--template", template),
-             if (!is.null(spec_b64)) c("--spec-b64", spec_b64),
-             if (!is.null(spec_b64) && nzchar(contract$loss_name %||% ""))
-               c("--loss-name", as.character(contract$loss_name)),
-             if (!is.null(spec_b64))
-               c("--num-classes", as.character(contract$num_classes %||% 2L)),
-             if (!is.null(spec_b64))
-               c("--num-labels", as.character(contract$num_labels %||% 2L)),
-             # Repeat the node's public clip + affine transform for new models.
-             # Legacy models carry only mean/SD and retain their old prediction path.
+             "--spec-b64", spec_b64,
+             "--loss-name", contract$loss_name,
+             "--num-classes", as.character(contract$num_classes %||% 2L),
+             "--num-labels", as.character(contract$num_labels %||% 2L),
+             # Repeat the node's public clip + affine transform when configured.
              if (identical(framework, "pytorch") && !is.null(info$bounds))
-               c("--bounds-b64", .spec_to_b64(info$bounds))
-             else if (identical(framework, "pytorch") && !is.null(info$norm))
-               c("--norm-b64", .spec_to_b64(list(means = info$norm$means,
-                                                  sds = info$norm$sds)))),
+               c("--bounds-b64", .spec_to_b64(info$bounds))),
     env = .client_venv_env(),
     error_on_status = FALSE
   )
@@ -118,16 +119,14 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
       framework <- switch(
         ext, pt = "pytorch",
         stop("Unknown model format: ", ext, call. = FALSE))
-      tmpl <- .read_template_meta(dirname(model))
-      return(list(model_file = model, framework = framework, template = tmpl,
+      return(list(model_file = model, framework = framework,
                   bounds = .read_meta_bounds(dirname(model)),
-                  norm = .read_meta_norm(dirname(model)),
                   contract = .read_meta_model_contract(dirname(model))))
     }
   } else if (is.list(model)) {
     # Loaded model list -- check for source directory
     if (!is.null(model$source_dir)) model_dir <- model$source_dir
-    if (is.null(model_dir) && !is.null(model$template)) {
+    if (is.null(model_dir)) {
       # Need model_dir to find the file
       stop("Cannot predict from in-memory model list without a model directory. ",
            "Pass the output_dir path instead.", call. = FALSE)
@@ -138,12 +137,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     stop("Cannot resolve model directory for prediction.", call. = FALSE)
   }
 
-  # Template (from metadata.json) drives modality-aware output semantics in the
-  # Python predictor (regression vs classification vs survival vs multilabel ...).
-  tmpl <- .read_template_meta(model_dir)
   feats <- .read_meta_features(model_dir)   # training feature order, to align newdata
   bnd <- .read_meta_bounds(model_dir)        # public clipped-affine bounds (or NULL)
-  nrm <- .read_meta_norm(model_dir)          # legacy standardization stats (or NULL)
   contract <- .read_meta_model_contract(model_dir)
 
   candidates <- list(list(file = "model.pt", framework = "pytorch"))
@@ -151,24 +146,13 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   for (c in candidates) {
     path <- file.path(model_dir, c$file)
     if (file.exists(path)) {
-      return(list(model_file = path, framework = c$framework, template = tmpl,
-                  features = feats, bounds = bnd, norm = nrm,
-                  contract = contract))
+      return(list(model_file = path, framework = c$framework,
+                  features = feats, bounds = bnd, contract = contract))
     }
   }
 
   stop("No native model file found in ", model_dir,
        ". Expected model.pt.", call. = FALSE)
-}
-
-#' Read the template name from a model directory's metadata.json
-#' @keywords internal
-.read_template_meta <- function(model_dir) {
-  if (is.null(model_dir) || !nzchar(model_dir)) return("")
-  meta_path <- file.path(model_dir, "metadata.json")
-  if (!file.exists(meta_path)) return("")
-  meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
-  meta$template %||% meta$model %||% ""
 }
 
 #' Read the training feature names (in order) from a model dir's metadata.json
@@ -186,7 +170,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
 #' @keywords internal
 .read_meta_model_contract <- function(model_dir) {
   empty <- list(model_spec = NULL, loss_name = NULL,
-                num_classes = 2L, num_labels = 2L, data_kind = "tabular")
+                num_classes = 2L, num_labels = 2L, data_kind = NULL)
   if (is.null(model_dir) || !nzchar(model_dir)) return(empty)
   meta_path <- file.path(model_dir, "metadata.json")
   if (!file.exists(meta_path)) return(empty)
@@ -211,14 +195,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   data_kind <- meta$data_kind
   if (!is.character(data_kind) || length(data_kind) != 1L ||
       is.na(data_kind) || !data_kind %in% c("tabular", "image")) {
-    template <- as.character(meta$template %||% meta$model %||% "")
-    framework <- as.character(meta$framework %||% "")
-    data_kind <- if (identical(framework, "pytorch_vision") ||
-                         template %in% c("pytorch_resnet18", "pytorch_densenet121")) {
-      "image"
-    } else {
-      "tabular"
-    }
+    data_kind <- NULL
   }
   list(model_spec = if (is.list(meta$model_spec)) meta$model_spec else NULL,
        loss_name = loss, num_classes = n_classes, num_labels = n_labels,
@@ -228,7 +205,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
 #' Read public feature bounds from a model directory's metadata.json
 #'
 #' Returns list(lower, upper) only when both vectors are finite, aligned, and
-#' strictly ordered. Missing fields identify a legacy/raw model and return NULL.
+#' strictly ordered. Models without public bounds return NULL.
 #' @keywords internal
 .read_meta_bounds <- function(model_dir) {
   if (is.null(model_dir) || !nzchar(model_dir)) return(NULL)
@@ -242,21 +219,4 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   if (any(!is.finite(lower)) || any(!is.finite(upper)) || any(lower >= upper))
     return(NULL)
   list(lower = lower, upper = upper)
-}
-
-#' Read the GLOBAL feature standardization stats from a model dir's metadata.json
-#'
-#' Returns list(means, sds) (numeric, in training feature order) iff the model was
-#' trained with standardization, else NULL (model trained on raw features). Used to
-#' scale newdata at prediction EXACTLY as the training features were scaled.
-#' @keywords internal
-.read_meta_norm <- function(model_dir) {
-  if (is.null(model_dir) || !nzchar(model_dir)) return(NULL)
-  meta_path <- file.path(model_dir, "metadata.json")
-  if (!file.exists(meta_path)) return(NULL)
-  meta <- tryCatch(jsonlite::fromJSON(meta_path), error = function(e) NULL)
-  mu <- meta$feature_means; sd <- meta$feature_sds
-  if (is.null(mu) || is.null(sd) || length(mu) == 0L || length(mu) != length(sd))
-    return(NULL)
-  list(means = as.numeric(mu), sds = as.numeric(sd))
 }

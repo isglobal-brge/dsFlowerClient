@@ -1,8 +1,8 @@
 # Wait for SuperLink to be ready
 
-Verifies the process is alive and the fleet port is listening. Uses
-`lsof` (macOS/Linux) to check port binding without needing a TLS
-handshake.
+Verifies the process is alive and the fleet port is accepting
+connections (via a native socket probe – no subprocess, no TLS handshake
+needed).
 
 ## Usage
 

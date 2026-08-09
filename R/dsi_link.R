@@ -175,7 +175,7 @@ ds.flower.link.up <- function(conns, symbol = "flower",
     expected_listen <- paste0("127.0.0.1:", fwd_ports[[srv]])
     expr <- call(
       "flowerTunnelUpDS", cid, fwd_ports[[srv]], srv,
-      protocol_abi = 3L
+      protocol_abi = 4L
     )
     r <- tryCatch(
       .dsi_retry_exact_aggregate(
@@ -190,7 +190,7 @@ ds.flower.link.up <- function(conns, symbol = "flower",
           isTRUE(value$ok) &&
             identical(as.character(value$listen), expected_listen) &&
             length(ack_abi) == 1L && is.finite(ack_abi) &&
-            ack_abi == floor(ack_abi) && ack_abi == 3 &&
+            ack_abi == floor(ack_abi) && ack_abi == 4 &&
             !inherits(
               try(.client_tunnel_chunk_bytes(value$chunk_bytes), silent = TRUE),
               "try-error")

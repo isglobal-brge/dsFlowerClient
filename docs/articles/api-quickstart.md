@@ -1,9 +1,9 @@
 # API Quickstart
 
-`dsFlowerClient` exposes two API levels. Use
-[`ds.flower.fit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.fit.md)
-for the common case, and drop down to `connect -> recipe -> run` when a
-workflow needs more control.
+`dsFlowerClient` submits declarative model specifications to data nodes
+running `dsFlower`. The analyst chooses the valid computation; each node
+independently owns its per-training epsilon, delta, clipping and
+executable policy.
 
 ## Connect to DataSHIELD
 
@@ -22,14 +22,6 @@ builder$append(
   table = "PROJECT.training_data",
   driver = "OpalDriver"
 )
-builder$append(
-  server = "site2",
-  url = "https://opal2.example.org",
-  user = "researcher",
-  password = "...",
-  table = "PROJECT.training_data",
-  driver = "OpalDriver"
-)
 
 conns <- DSI::datashield.login(
   logins = builder$build(),
@@ -38,7 +30,7 @@ conns <- DSI::datashield.login(
 )
 ```
 
-## Happy path
+## Fit a declarative model
 
 ``` r
 
@@ -46,40 +38,75 @@ fit <- ds.flower.fit(
   conns,
   symbol = "D",
   target = "outcome",
-  features = c("age", "sex", "chol", "thalach"),
-  model = "sklearn_logreg",
-  model_params = list(max_iter = 100L),
-  strategy = "fedavg",
-  privacy = "auto",
-  rounds = 5L
+  features = c("age", "cholesterol", "heart_rate"),
+  model = "pytorch_logreg",
+  rounds = 5L,
+  feature_bounds = list(
+    lower = c(18, 50, 30),
+    upper = c(100, 400, 220)
+  )
 )
 ```
 
-`privacy = "auto"` inspects server capabilities. It uses
-`clinical_default` when Secure Aggregation is available on every server,
-and `trusted_internal` otherwise. Use an explicit privacy value when a
-deployment requires a fixed policy.
+`feature_bounds` are optional data-independent constants from public
+domain knowledge or the study protocol. They must follow feature order.
+The node never returns exact counts, sums, variances or quantiles for
+preprocessing. Training and prediction use the same clipped affine
+transform.
 
-## Advanced path
+Before submission, the client verifies that all nodes expose runner ABI
+3 and the exact recursive SHA-256 of its bundled canonical runner. The
+client does not send privacy parameters.
+
+## Direct submission API
+
+Use
+[`ds.flower.submit()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.submit.md)
+when the explicit submission arguments are useful:
 
 ``` r
 
-flower <- ds.flower.connect(conns, symbol = "D")
-
-recipe <- ds.flower.recipe(
-  model = ds.flower.model("mlp", hidden_layers = c(64, 32)),
-  strategy = ds.flower.strategy("fedprox", proximal_mu = 0.1),
-  privacy = ds.flower.privacy("clinical_default"),
+fit <- ds.flower.submit(
+  conns,
+  model = ds.flower.model("pytorch_mlp", hidden_layers = c(64, 32)),
+  symbol = "D",
   target = "outcome",
-  features = c("age", "sex", "chol", "thalach"),
-  num_rounds = 10L
+  features = c("age", "cholesterol", "heart_rate"),
+  num_rounds = 10L,
+  strategy = "fedadam",
+  feature_bounds = list(
+    lower = c(18, 50, 30),
+    upper = c(100, 400, 220)
+  )
 )
-
-fit <- ds.flower.run(flower, recipe)
-ds.flower.disconnect(flower)
 ```
 
+Aggregation strategy is post-processing of already-private node updates
+and is not an analyst privacy knob.
+
+## Outputs and diagnostics
+
+The intended output is the DP global-model artifact returned by the
+Flower run. Nodes expose neither losses, counts, failures, timing nor
+raw training logs. Local SuperLink logs are a separate coordinator-side
+diagnostic.
+
+## HookApps
+
+[`ds.flower.hook.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hook.run.md)
+is available for the restricted `initial_arrays()` / `local_update()`
+ABI. Arbitrary code does not receive declarative DP-SGD granularity. If
+the custodian has not enabled and attested the required sandbox and
+timing envelope, the client stops at the public readiness preflight
+before upload. If a gate disappears after that preflight, the node
+refuses to open private data and the coordinator does not accept the
+unchanged update as a trained model.
+
 ## Cleanup
+
+The high-level submission path cleans up its temporary server handles
+and app uploads on both success and error. End the DataSHIELD session
+when finished:
 
 ``` r
 

@@ -1,7 +1,5 @@
 # Tests for R/recipe.R — Composable Recipe
-# (Tests that asserted the removed sklearn_* model constructors were deleted with
-# the legacy sklearn track; recipe building is exercised end-to-end by every live
-# ds.flower.fit/submit run.)
+# Recipe building is exercised end-to-end by every live ds.flower.fit/submit run.
 
 test_that("recipe builds (DP is server-enforced; no client privacy knob)", {
   recipe <- ds.flower.recipe(
@@ -10,6 +8,8 @@ test_that("recipe builds (DP is server-enforced; no client privacy knob)", {
     strategy = ds.flower.strategy.fedadam()
   )
   expect_s3_class(recipe, "dsflower_recipe")
+  expect_named(recipe, c(
+    "task", "model", "strategy", "num_rounds", "target", "features"))
   expect_null(recipe$privacy)
 })
 
@@ -30,18 +30,6 @@ test_that("recipe rejects handcrafted unsupported task specs", {
     ds.flower.recipe(model = ds.flower.model.pytorch_logreg(),
                      task = unsupported),
     "not supported"
-  )
-  expect_error(
-    ds.flower.recipe(model = ds.flower.model.pytorch_logreg(), masks = "mask"),
-    "segmentation"
-  )
-  expect_error(
-    ds.flower.recipe(model = "pytorch_logreg", label_set = "labels"),
-    "label_set"
-  )
-  expect_error(
-    ds.flower.recipe(model = "pytorch_logreg", evaluation_only = TRUE),
-    "ds.flower.validate"
   )
 })
 

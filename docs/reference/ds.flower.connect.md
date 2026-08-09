@@ -1,8 +1,8 @@
 # Connect to a data source for federated learning
 
 Single entry point that handles the full init chain: detects data type,
-assigns resources, initializes dsImaging and dsFlower handles, and
-returns a connection handle with metadata.
+resolves generic ResourceClient objects, initializes dsFlower handles,
+and returns a connection handle with metadata.
 
 ## Usage
 

@@ -8,7 +8,6 @@ ds.flower.nodes.ensure(
   conns,
   symbol = "flower",
   superlink_address = NULL,
-  template_name = NULL,
   torch_backend = NULL
 )
 }
@@ -23,9 +22,6 @@ ds.flower.nodes.ensure(
   \item Single string: broadcast to all nodes.
   \item Named list: per-node addresses (names must match connection names).
 }}
-
-\item{template_name}{Deprecated compatibility argument. Named executable
-templates have been retired; non-NULL values fail before contacting a node.}
 
 \item{torch_backend}{Character or NULL; requested node-side torch backend.}
 }

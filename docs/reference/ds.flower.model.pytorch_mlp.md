@@ -7,7 +7,7 @@ Create a PyTorch MLP model spec
 ``` r
 ds.flower.model.pytorch_mlp(
   hidden_layers = c(64L, 32L),
-  learning_rate = 0.01,
+  learning_rate = 0.1,
   batch_size = 32L,
   local_epochs = 1L
 )
@@ -21,7 +21,7 @@ ds.flower.model.pytorch_mlp(
 
 - learning_rate:
 
-  Numeric; learning rate.
+  Numeric in `(0, 10]`; learning rate.
 
 - batch_size:
 

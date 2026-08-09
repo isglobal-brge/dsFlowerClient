@@ -1,24 +1,14 @@
 # Create a FedAvg strategy spec
 
-Federated Averaging: each node trains, sends updated weights, and the
-server computes a weighted average. The number of participating clients
-is determined automatically from the number of connected servers.
+Every node participates in every training round and private evaluation
+is disabled. Node updates carry a constant aggregation weight, so no
+exact cohort size is disclosed to the researcher-side SuperLink.
 
 ## Usage
 
 ``` r
-ds.flower.strategy.fedavg(fraction_fit = 1, fraction_evaluate = 1)
+ds.flower.strategy.fedavg()
 ```
-
-## Arguments
-
-- fraction_fit:
-
-  Numeric; fraction of clients used for training (0-1).
-
-- fraction_evaluate:
-
-  Numeric; fraction of clients used for evaluation (0-1).
 
 ## Value
 

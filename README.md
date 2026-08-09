@@ -71,38 +71,20 @@ fit <- ds.flower.fit(
 DSI::datashield.logout(conns)
 ```
 
-`ds.flower.train()` is an alias of `ds.flower.fit()`. `features` can be omitted
-for an assigned tabular `symbol`, in which case only column names are queried and
-the target is excluded. Feature values, exact feature statistics, node logs and
-node metrics are never requested by this workflow.
+`features` can be omitted for an assigned tabular `symbol`, in which case only
+column names are queried and the target is excluded. Feature values, exact
+feature statistics, node logs and node metrics are never requested by this
+workflow.
 
 ## Privacy is server-authoritative
 
-Each node uses a persistent lifetime accountant. For new run `n`, it allocates a
-geometrically decreasing fraction of its administrator-set total budget:
+Each node applies one administrator-pinned epsilon/delta contract to every
+training. Its accountant composes that contract across the training's own
+rounds. There is no historical database, quota or resource-specific balance;
+one training never reduces or blocks the next. Distinct trainings compose in
+the standard way when they are analysed together.
 
-```text
-w_n       = s (1 - rho) rho^(n - 1),  s = 1 - 10^-12
-epsilon_n = epsilon_total w_n
-delta_n   = delta_total w_n
-```
-
-This bounds every finite prefix and the infinite transcript by the node's
-`(epsilon_total, delta_total)`. Exact Flower-message retries never trigger a
-second private release: the cached response is reused when available; otherwise
-the replay is reported as unavailable and the incoming public model is not
-accepted as a newly trained release. Distinct releases receive distinct,
-secret-keyed random streams.
-
-There is no lifetime query-count rejection. Finite total privacy with infinitely
-many equally informative answers is mathematically impossible, however, so the
-allocations tend to zero. When a per-message allocation becomes numerically too
-small, the result has `available = FALSE` and no fallback is saved as a trained
-model. The request itself is not rejected. The client cannot introduce a
-positive epsilon floor or reset the accountant by renaming or subsetting a
-dataset.
-
-Budgets are per node. If the same person appears at multiple observed nodes,
+Guarantees are per node. If the same person appears at multiple observed nodes,
 their epsilons and deltas compose across those nodes; only disjoint node
 populations receive the parallel-composition bound. Cross-site overlap needs a
 shared federation-level person accountant when one global guarantee is required.
@@ -113,10 +95,10 @@ configured patient.
 This is not an unbounded add/remove membership guarantee for a changing unit
 count.
 
-Noise is deterministic only within one release identity. The node derives
-domain-separated ChaCha20 streams from a dedicated 256-bit secret using
-HMAC-SHA256. This prevents averaging exact retries while avoiding the unsafe
-reuse of one fixed noise vector across related queries. The secret is not a
+Noise and training randomness are derived from a canonical semantic identity
+with HMAC-SHA256 under the node's dedicated 256-bit secret. Equivalent effective
+trainings recompute the same streams without a query database; changes to data,
+model, mechanism, bounds or round change the identity. The secret is not a
 client seed, R RNG state or `datashield.seed`.
 
 The clipping, sensitivity and accounting contracts implement the standard
@@ -125,10 +107,9 @@ finite-precision sampler is ChaCha20-backed and computationally hardened, but is
 not a formally verified discrete-Gaussian implementation; the production claim
 is therefore computational/practical DP for the documented valid-input domain.
 
-The server's `flowerPrivacyBudgetDS()` method reports the public accountant
-policy. Allocation count/status is returned only if the custodian enables
-`dsflower.expose_privacy_status`; there is intentionally no analyst privacy
-configuration API.
+The server's `flowerPrivacyPolicyDS()` method reports only the public
+per-training policy. There is no analyst privacy-configuration API or historical
+status to expose.
 
 The Flower Fleet API is carried inside the DataSHIELD channel by a
 capability-bound DSI tunnel. Because the inner Flower connection is plaintext
@@ -247,7 +228,7 @@ heads are saturated at `30` for logits/log-links and `1e6` for direct MSE
 regression. Per-sample gradients are totalised before Opacus performs the
 server-owned L2 clip. Neural learning rates must be in `(0, 10]`.
 
-### HookApps (legacy name: Tier2)
+### HookApps
 
 `ds.flower.hook.run()` accepts a Python package exposing only:
 
@@ -278,7 +259,7 @@ Privacy, paths, dependencies, runtime profiles, secrets and round counters are
 reserved and cannot be smuggled through `app_params`. Returned arrays have a
 fixed count and shape for the complete run. The wrapper clips their concatenated
 update and applies the Gaussian mechanism on every round; its calibration
-composes the full round transcript under the run allocation. This is the
+composes the full round transcript under the per-training contract. This is the
 standard numeric output-DP mechanism for the fixed released vector (subject to
 the finite-precision caveat above), independent of whether the child uses NumPy
 or PyTorch. It is not internal DP-SGD and can have materially lower utility for a
@@ -308,7 +289,6 @@ trusted-runtime failure after private execution begins is reported only as
 Native libraries or analyst-provided `requirements` are not installed
 dynamically; new binary runtime profiles must be curated, locked and enabled by
 the node administrator.
-`ds.flower.tier2.run()` is a deprecated compatibility alias.
 HookApps use the same `target_levels`/`target_bounds` contract and must declare
 `task = "classification"`, `"regression"` or `"count"`.
 
@@ -389,11 +369,9 @@ result <- ds.flower.submit(
 )
 ```
 
-The lower-level API does not weaken the node policy. Node-returned
-`ds.flower.metrics()` and `ds.flower.log()` calls remain for protocol
-compatibility but return empty results on hardened nodes. Local SuperLink output
-and the intended DP global-model artifact are separate from node log/metric
-egress.
+The lower-level API does not weaken the node policy. Nodes expose neither raw
+training logs nor exact per-site metrics. Local SuperLink output and the intended
+DP global-model artifact are separate from private node state.
 
 See the
 [`dsFlower` architecture specification](https://github.com/isglobal-brge/dsFlower/blob/main/ARCHITECTURE.md)

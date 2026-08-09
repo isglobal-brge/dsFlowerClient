@@ -1,8 +1,9 @@
 # Predict with a federated model
 
-Uses the saved model in native format (joblib/pt/xgb) to generate
-predictions via Python. The appropriate framework dependencies are
-installed on-demand in the client venv if not already present.
+Uses a saved declarative PyTorch state dictionary to generate tabular
+predictions via Python. Vision artifacts are not accepted by this
+tabular predictor. The appropriate framework dependencies are installed
+on-demand in the client venv if not already present.
 
 ## Usage
 
@@ -23,9 +24,11 @@ ds.flower.predict(model, newdata, type = c("response", "prob"))
 
 - type:
 
-  Character; `"response"` for predicted class (default), `"prob"` for
-  probabilities.
+  Character; `"response"` returns a predicted class for classification
+  models and a continuous response for regression/count models. `"prob"`
+  returns probabilities for classification models.
 
 ## Value
 
-A numeric vector of predictions.
+A numeric vector, integer class vector, or probability matrix for
+multiclass, ordinal, and multilabel models.

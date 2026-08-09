@@ -11,7 +11,7 @@ ds.flower.models(base_dir = file.path(".", "dsflower_output"))
 Defaults to \code{"./dsflower_output"}.}
 }
 \value{
-A data.frame with columns: model_id, model, template, strategy,
+A data.frame with columns: model_id, model, strategy,
   privacy, num_rounds, n_clients, created_at, status, path.
 }
 \description{

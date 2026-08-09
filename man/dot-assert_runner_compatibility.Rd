@@ -4,7 +4,7 @@
 \alias{.assert_runner_compatibility}
 \title{Fail early when a node cannot execute this client's trusted runner}
 \usage{
-.assert_runner_compatibility(conns, symbol)
+.assert_runner_compatibility(conns)
 }
 \description{
 Fail early when a node cannot execute this client's trusted runner

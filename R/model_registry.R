@@ -16,7 +16,7 @@
 .dsflower_models <- new.env(parent = emptyenv())
 
 .dsflower_reserved_privacy_parameters <- c(
-  "epsilon", "delta", "privacy", "privacy_budget", "noise",
+  "epsilon", "delta", "privacy", "noise",
   "noise_multiplier", "seed", "random_seed", "secret", "noise_root",
   "max_grad_norm", "clip_norm", "clipping_norm")
 
@@ -249,19 +249,9 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
     positive_integer_vector = is.numeric(value) && length(value) > 0L &&
       !anyNA(value) && all(is.finite(value)) &&
       all(value == floor(value)) && all(value > 0),
-    hidden_layers = {
-      if (is.character(value) && length(value) == 1L && !is.na(value)) {
-        text <- trimws(value)
-        if (!nzchar(text)) TRUE else {
-          widths <- suppressWarnings(as.numeric(strsplit(text, ",", fixed = TRUE)[[1L]]))
-          !anyNA(widths) && all(is.finite(widths)) &&
-            all(widths == floor(widths)) && all(widths > 0)
-        }
-      } else {
-        is.numeric(value) && !anyNA(value) && all(is.finite(value)) &&
-          all(value == floor(value)) && all(value > 0)
-      }
-    },
+    hidden_layers = is.numeric(value) && !is.logical(value) &&
+      !anyNA(value) && all(is.finite(value)) &&
+      all(value == floor(value)) && all(value > 0),
     logical = is.logical(value) && length(value) == 1L && !is.na(value),
     character = is.character(value) && length(value) == 1L &&
       !is.na(value) && nzchar(value),
@@ -330,11 +320,6 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   }
   hidden <- params[["hidden_layers"]]
   if (!is.null(hidden)) {
-    if (is.character(hidden)) {
-      hidden <- trimws(hidden)
-      hidden <- if (!nzchar(hidden)) numeric() else
-        suppressWarnings(as.numeric(strsplit(hidden, ",", fixed = TRUE)[[1L]]))
-    }
     if (length(hidden) > 31L || any(hidden > 8192)) {
       stop("Model parameter 'hidden_layers' permits at most 31 widths, each <= 8192.",
            call. = FALSE)
@@ -615,16 +600,9 @@ ds.flower.model_parameters <- function(name) {
 # width is node-authoritative, never client-set. The input dim "@in" is injected
 # node-side (num-features, or the frozen-backbone feature dim for vision).
 .neural_mlp_spec <- function(hidden = integer(0)) {
-  # Legacy constructors stored widths as one TOML-era string ("64,32").
-  # Normalize that representation before emitting the declarative graph.
-  if (is.character(hidden) && length(hidden) == 1L) {
-    hidden <- trimws(hidden)
-    hidden <- if (!nzchar(hidden)) integer(0) else
-      suppressWarnings(as.integer(strsplit(hidden, ",", fixed = TRUE)[[1L]]))
-  }
-  if (length(hidden) &&
-      (anyNA(hidden) || any(!is.finite(hidden)) || any(hidden < 1L) ||
-       any(hidden != floor(hidden)))) {
+  if (!is.numeric(hidden) || is.logical(hidden) || anyNA(hidden) ||
+      any(!is.finite(hidden)) || any(hidden < 1L) ||
+      any(hidden != floor(hidden))) {
     stop("hidden_layers must contain positive integer widths.", call. = FALSE)
   }
   layers <- list()

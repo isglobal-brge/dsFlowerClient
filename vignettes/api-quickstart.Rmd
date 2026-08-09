@@ -14,7 +14,7 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE,
 
 `dsFlowerClient` submits declarative model specifications to data nodes running
 `dsFlower`. The analyst chooses the valid computation; each node independently
-owns epsilon, delta, clipping, lifetime accounting and executable policy.
+owns its per-training epsilon, delta, clipping and executable policy.
 
 ## Connect to DataSHIELD
 
@@ -92,10 +92,8 @@ not an analyst privacy knob.
 ## Outputs and diagnostics
 
 The intended output is the DP global-model artifact returned by the Flower run.
-Hardened nodes return empty responses from `ds.flower.metrics()` and
-`ds.flower.log()` because node losses, counts, failures, timing and raw logs are
-not covered by the model mechanism's proof. Local SuperLink logs are a separate
-coordinator-side diagnostic.
+Nodes expose neither losses, counts, failures, timing nor raw training logs.
+Local SuperLink logs are a separate coordinator-side diagnostic.
 
 ## HookApps
 

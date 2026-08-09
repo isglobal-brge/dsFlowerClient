@@ -2,7 +2,6 @@
 % Please edit documentation in R/convenience.R
 \name{ds.flower.fit}
 \alias{ds.flower.fit}
-\alias{ds.flower.train}
 \title{Fit a federated model in one call}
 \usage{
 ds.flower.fit(
@@ -19,47 +18,10 @@ ds.flower.fit(
   strategy_params = list(),
   rounds = 5L,
   task = NULL,
-  label_set = NULL,
-  masks = NULL,
   output_dir = NULL,
   output_name = NULL,
   silent = FALSE,
-  evaluation_only = FALSE,
-  detached = FALSE,
   verbose = FALSE,
-  disconnect = TRUE,
-  run_args = list(),
-  feature_bounds = NULL,
-  target_levels = NULL,
-  target_bounds = NULL,
-  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
-  data_kind = NULL
-)
-
-ds.flower.train(
-  conns,
-  data = NULL,
-  resource = NULL,
-  symbol = NULL,
-  target,
-  features = NULL,
-  model = "pytorch_logreg",
-  model_params = list(),
-  torch_backend = "auto",
-  strategy = "fedavg",
-  strategy_params = list(),
-  rounds = 5L,
-  task = NULL,
-  label_set = NULL,
-  masks = NULL,
-  output_dir = NULL,
-  output_name = NULL,
-  silent = FALSE,
-  evaluation_only = FALSE,
-  detached = FALSE,
-  verbose = FALSE,
-  disconnect = TRUE,
-  run_args = list(),
   feature_bounds = NULL,
   target_levels = NULL,
   target_bounds = NULL,
@@ -81,7 +43,7 @@ when \code{data}, \code{resource}, and \code{symbol} are all NULL.}
 target-column names for \code{pytorch_multilabel}.}
 
 \item{features}{Character vector of feature column names, or NULL for
-template-specific auto handling.}
+model-specific auto handling.}
 
 \item{model}{Character model name or \code{dsflower_model} object.}
 
@@ -100,12 +62,6 @@ template-specific auto handling.}
 
 \item{task}{Optional character task name or \code{dsflower_task} object.}
 
-\item{label_set}{Reserved compatibility argument. Non-NULL values fail early;
-the enforced-DP training path does not implement label-set selection.}
-
-\item{masks}{Reserved compatibility argument. Non-NULL values fail early
-because segmentation is not implemented by the enforced-DP runtime.}
-
 \item{output_dir}{Optional character; parent directory the trained model is
 saved under (created if missing). Defaults to \code{./dsflower_output}.}
 
@@ -116,25 +72,12 @@ auto-generated model id.}
 \item{silent}{Logical; when \code{TRUE}, suppress the training progress
 feedback (connection, per-round and completion messages).}
 
-\item{evaluation_only}{Logical; must remain \code{FALSE}. \code{TRUE} fails
-early because evaluation-only release semantics are not implemented.}
-
-\item{detached}{Logical; must remain \code{FALSE}; detached execution is not
-implemented by the enforced-DP training path.}
-
 \item{verbose}{Logical; when \code{TRUE}, also print the raw flwr run log
 (debugging). The tidy per-round progress is shown regardless unless
 \code{silent = TRUE}.}
 
-\item{disconnect}{Logical; must remain \code{TRUE}. The submission pipeline
-always cleans up its temporary server-side handles on exit.}
-
-\item{run_args}{Named list; must remain empty. Arbitrary runner arguments are
-not accepted by the enforced-DP training path.}
-
 \item{feature_bounds}{Optional public feature bounds as
-\code{list(lower=..., upper=...)} in feature order. Appended to the signature
-for positional backward compatibility.}
+\code{list(lower=..., upper=...)} in feature order.}
 
 \item{target_levels}{Optional ordered public classification label vocabulary.
 Non-numeric labels require it; missing or unknown values map to public code

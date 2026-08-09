@@ -20,29 +20,6 @@ test_that(".parse_run_id returns NULL for no match", {
   expect_null(dsFlowerClient:::.parse_run_id("No run id here"))
 })
 
-test_that("run.start rejects forged unsupported recipes before side effects", {
-  touched <- FALSE
-  base <- ds.flower.recipe(model = "pytorch_logreg")
-  local_mocked_bindings(
-    .require_flwr_cli = function() touched <<- TRUE,
-    .package = "dsFlowerClient"
-  )
-
-  evaluation <- base
-  evaluation$evaluation_only <- TRUE
-  expect_error(ds.flower.run.start(evaluation), "ds.flower.validate")
-
-  labels <- base
-  labels$label_set <- "labels"
-  expect_error(ds.flower.run.start(labels), "label-set")
-
-  segmentation <- base
-  segmentation$masks <- "mask"
-  expect_error(ds.flower.run.start(segmentation), "segmentation")
-
-  expect_false(touched)
-})
-
 test_that(".flower_runtime_status detects ServerApp failures masked by CLI status", {
   stdout <- paste(
     "INFO : Requesting initial parameters",
@@ -190,11 +167,17 @@ test_that("run.start persists the exact public model reconstruction contract", {
   expect_identical(meta$data_kind, "tabular")
   expect_equal(meta$model_params$learning_rate, 0.1)
   expect_equal(meta$num_rounds, 2L)
+  listed <- ds.flower.models(output_root)
+  expect_named(listed, c(
+    "model_id", "model", "strategy", "privacy", "num_rounds", "n_clients",
+    "created_at", "status", "path"
+  ))
+  expect_identical(listed$model, "pytorch_logreg")
 })
 
 test_that("load_model retains the relocated bundle directory for prediction", {
   model_dir <- withr::local_tempdir()
-  saveRDS(list(model_id = "m", template = "pytorch_logreg"),
+  saveRDS(list(model_id = "m", model = "pytorch_logreg"),
           file.path(model_dir, "m.rds"))
 
   loaded <- ds.flower.load_model(model_dir)
@@ -211,8 +194,8 @@ test_that("save_model creates portable RDS and JSON native-artifact bundles", {
   dir.create(source_dir)
   file.create(file.path(source_dir, "model.pt"))
   jsonlite::write_json(
-    list(model = "pytorch_logreg", template = "pytorch_logreg",
-         data_kind = "tabular", features = c("x1", "x2")),
+    list(model = "pytorch_logreg", data_kind = "tabular",
+         features = c("x1", "x2")),
     file.path(source_dir, "metadata.json"), auto_unbox = TRUE)
   jsonlite::write_json(
     data.frame(round = 1L, available = TRUE),
@@ -302,7 +285,7 @@ test_that(".training_artifacts_complete waits for final round", {
   ))
 })
 
-test_that("privacy-tail history completes without inventing a model artifact", {
+test_that("unavailable history completes without inventing a model artifact", {
   results_dir <- withr::local_tempdir()
   jsonlite::write_json(
     data.frame(round = 1L, n_failures = 0L, available = FALSE),
@@ -313,7 +296,7 @@ test_that("privacy-tail history completes without inventing a model artifact", {
   expect_false(dsFlowerClient:::.model_artifact_exists(results_dir))
 })
 
-test_that("run.start reports a privacy tail as unavailable, not trained", {
+test_that("run.start reports an unavailable round as not trained", {
   client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
   old_superlink <- client_env$.superlink
   withr::defer(client_env$.superlink <- old_superlink)
@@ -332,7 +315,7 @@ test_that("run.start reports a privacy tail as unavailable, not trained", {
     .client_flwr_cmd = function() "flwr",
     .client_venv_env = function(...) character(),
     .run_flwr_with_artifact_watchdog = function(...) list(
-      status = 0L, stdout = "run_id=privacy-tail", stderr = ""),
+      status = 0L, stdout = "run_id=unavailable-round", stderr = ""),
     .read_model_weights = function(...) NULL,
     .read_training_history = function(...) data.frame(
       round = 1L, n_failures = 0L, available = FALSE),
@@ -340,7 +323,7 @@ test_that("run.start reports a privacy tail as unavailable, not trained", {
 
   run <- ds.flower.run.start(
     recipe, conns = list(site = TRUE), app_dir = withr::local_tempdir(),
-    output_dir = output_root, output_name = "privacy-tail", silent = TRUE)
+    output_dir = output_root, output_name = "unavailable-round", silent = TRUE)
   expect_identical(run$status, 0L)
   expect_false(run$available)
   expect_length(run$available_rounds, 0L)

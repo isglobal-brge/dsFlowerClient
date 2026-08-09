@@ -1,15 +1,17 @@
 # Create a Multi-Label Classification model spec
 
 Multiple binary outcomes per sample (phenotyping, multi-endpoint). Uses
-BCEWithLogitsLoss per label.
+BCEWithLogitsLoss per label. Training requires exactly `n_labels`
+distinct target columns; one public two-level vocabulary is applied to
+each.
 
 ## Usage
 
 ``` r
 ds.flower.model.pytorch_multilabel(
   n_labels = 2L,
-  hidden_layers = "64,32",
-  learning_rate = 0.01,
+  hidden_layers = c(64L, 32L),
+  learning_rate = 0.1,
   batch_size = 32L,
   local_epochs = 1L
 )
@@ -23,11 +25,11 @@ ds.flower.model.pytorch_multilabel(
 
 - hidden_layers:
 
-  Character; comma-separated hidden layer sizes.
+  Integer vector; hidden layer sizes.
 
 - learning_rate:
 
-  Numeric; learning rate.
+  Numeric in `(0, 10]`; learning rate.
 
 - batch_size:
 

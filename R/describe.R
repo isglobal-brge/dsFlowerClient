@@ -17,7 +17,7 @@ ds.flower.describe <- function(flower) {
   # Get data-independent public protocol/runtime capabilities.
   caps <- tryCatch(
     DSI::datashield.aggregate(flower$conns,
-      expr = call("flowerGetCapabilitiesDS", flower$symbol)),
+      expr = call("flowerGetCapabilitiesDS")),
     error = function(e) list()
   )
 

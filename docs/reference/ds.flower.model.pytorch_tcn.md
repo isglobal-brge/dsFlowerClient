@@ -6,9 +6,10 @@ Temporal Convolutional Network for time series classification.
 
 ``` r
 ds.flower.model.pytorch_tcn(
-  n_channels = 1L,
-  kernel_size = 3L,
-  n_layers = 4L,
+  input_shape,
+  channels = 8L,
+  levels = 3L,
+  n_classes = 2L,
   learning_rate = 0.001,
   batch_size = 32L,
   local_epochs = 1L
@@ -17,21 +18,26 @@ ds.flower.model.pytorch_tcn(
 
 ## Arguments
 
-- n_channels:
+- input_shape:
 
-  Integer; number of input channels.
+  Integer vector `c(channels, sequence_length)` whose product must equal
+  the staged feature count.
 
-- kernel_size:
+- channels:
 
-  Integer; convolution kernel size.
+  Integer; number of hidden convolution channels.
 
-- n_layers:
+- levels:
 
-  Integer; number of TCN blocks.
+  Integer; number of dilated TCN blocks.
+
+- n_classes:
+
+  Integer; number of output classes.
 
 - learning_rate:
 
-  Numeric; learning rate.
+  Numeric in `(0, 10]`; learning rate.
 
 - batch_size:
 

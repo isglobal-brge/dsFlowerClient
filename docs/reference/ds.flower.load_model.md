@@ -1,7 +1,9 @@
 # Load a saved model
 
 Reads model weights and metadata from a previously saved output
-directory or `.rds` file.
+directory, `.rds` file, or `.json` file. Files created by
+[`ds.flower.save_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.save_model.md)
+must remain beside their sibling `<filename>.assets` directory.
 
 ## Usage
 
@@ -13,7 +15,7 @@ ds.flower.load_model(path)
 
 - path:
 
-  Character; path to the model directory or `.rds` file.
+  Character; path to a model directory, `.rds`, or `.json` file.
 
 ## Value
 

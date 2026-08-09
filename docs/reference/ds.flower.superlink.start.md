@@ -1,8 +1,7 @@
 # Start a Flower SuperLink
 
 Spawns a `flower-superlink` process. In detached mode, the process
-survives R session exit and can be reattached from a new session via
-[`ds.flower.superlink.attach()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.superlink.attach.md).
+survives R session exit.
 
 ## Usage
 
@@ -11,7 +10,8 @@ ds.flower.superlink.start(
   fleet_port = 9092L,
   control_port = 9093L,
   serverappio_port = 9091L,
-  detached = FALSE
+  detached = FALSE,
+  insecure = getOption("dsflower.superlink_insecure", FALSE)
 )
 ```
 
@@ -33,6 +33,10 @@ ds.flower.superlink.start(
 
   Logical; if TRUE, SuperLink runs as daemon (survives R session exit).
   Default FALSE for interactive use.
+
+- insecure:
+
+  Logical; explicitly allow plaintext local SuperLink transport.
 
 ## Value
 

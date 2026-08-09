@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,9 +43,10 @@
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">ds.flower.model.pytorch_tcn</span><span class="op">(</span></span>
-<span>  n_channels <span class="op">=</span> <span class="fl">1L</span>,</span>
-<span>  kernel_size <span class="op">=</span> <span class="fl">3L</span>,</span>
-<span>  n_layers <span class="op">=</span> <span class="fl">4L</span>,</span>
+<span>  <span class="va">input_shape</span>,</span>
+<span>  channels <span class="op">=</span> <span class="fl">8L</span>,</span>
+<span>  levels <span class="op">=</span> <span class="fl">3L</span>,</span>
+<span>  n_classes <span class="op">=</span> <span class="fl">2L</span>,</span>
 <span>  learning_rate <span class="op">=</span> <span class="fl">0.001</span>,</span>
 <span>  batch_size <span class="op">=</span> <span class="fl">32L</span>,</span>
 <span>  local_epochs <span class="op">=</span> <span class="fl">1L</span></span>
@@ -56,16 +57,21 @@
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
 
 
-<dl><dt id="arg-n-channels">n_channels<a class="anchor" aria-label="anchor" href="#arg-n-channels"></a></dt>
-<dd><p>Integer; number of input channels.</p></dd>
+<dl><dt id="arg-input-shape">input_shape<a class="anchor" aria-label="anchor" href="#arg-input-shape"></a></dt>
+<dd><p>Integer vector <code>c(channels, sequence_length)</code> whose
+product must equal the staged feature count.</p></dd>
 
 
-<dt id="arg-kernel-size">kernel_size<a class="anchor" aria-label="anchor" href="#arg-kernel-size"></a></dt>
-<dd><p>Integer; convolution kernel size.</p></dd>
+<dt id="arg-channels">channels<a class="anchor" aria-label="anchor" href="#arg-channels"></a></dt>
+<dd><p>Integer; number of hidden convolution channels.</p></dd>
 
 
-<dt id="arg-n-layers">n_layers<a class="anchor" aria-label="anchor" href="#arg-n-layers"></a></dt>
-<dd><p>Integer; number of TCN blocks.</p></dd>
+<dt id="arg-levels">levels<a class="anchor" aria-label="anchor" href="#arg-levels"></a></dt>
+<dd><p>Integer; number of dilated TCN blocks.</p></dd>
+
+
+<dt id="arg-n-classes">n_classes<a class="anchor" aria-label="anchor" href="#arg-n-classes"></a></dt>
+<dd><p>Integer; number of output classes.</p></dd>
 
 
 <dt id="arg-learning-rate">learning_rate<a class="anchor" aria-label="anchor" href="#arg-learning-rate"></a></dt>
@@ -104,4 +110,3 @@
 
 
   </body></html>
-

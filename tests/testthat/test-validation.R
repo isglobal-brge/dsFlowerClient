@@ -4,6 +4,7 @@ validation_model_fixture <- function(track = "neural", loss = "bce_logits") {
     kind = "sequential", layers = list(list(op = "linear", out = "@out")))
   meta <- list(
     track = track, model_spec = spec, loss_name = loss,
+    data_kind = "tabular",
     model_params = list(n_classes = 2L, num_labels = 2L),
     features = c("age", "marker"),
     feature_lower = c(0, -5), feature_upper = c(120, 5),
@@ -85,6 +86,18 @@ test_that("validation rejects image artifacts before DSI", {
   expect_error(
     dsFlowerClient:::.resolve_validation_contract(path, 32L),
     "tabular artifacts only")
+})
+
+test_that("validation requires an explicit data kind contract", {
+  path <- validation_model_fixture()
+  meta_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  meta$data_kind <- NULL
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "invalid data_kind contract")
 })
 
 test_that("validation rejects corrupt public artifacts before DSI or staging", {

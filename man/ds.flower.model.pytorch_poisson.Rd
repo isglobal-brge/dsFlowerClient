@@ -5,14 +5,14 @@
 \title{Create a Poisson Regression model spec}
 \usage{
 ds.flower.model.pytorch_poisson(
-  hidden_layers = "",
+  hidden_layers = integer(0),
   learning_rate = 0.01,
   batch_size = 32L,
   local_epochs = 1L
 )
 }
 \arguments{
-\item{hidden_layers}{Character; comma-separated hidden layer sizes (empty = linear).}
+\item{hidden_layers}{Integer vector; hidden layer sizes (empty for linear).}
 
 \item{learning_rate}{Numeric in \code{(0, 10]}; learning rate.}
 

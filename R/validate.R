@@ -89,13 +89,9 @@
     stop("Private validation supports declarative neural artifacts.",
          call. = FALSE)
   }
-  data_kind <- tolower(as.character(.validation_atomic(
-    meta$data_kind %||% if (identical(meta$framework, "pytorch_vision")) {
-      "image"
-    } else {
-      "tabular"
-    })))
-  if (length(data_kind) != 1L || !data_kind %in% c("tabular", "image")) {
+  data_kind <- .validation_atomic(meta$data_kind)
+  if (!is.character(data_kind) || length(data_kind) != 1L ||
+      is.na(data_kind) || !data_kind %in% c("tabular", "image")) {
     stop("Saved model has an invalid data_kind contract.", call. = FALSE)
   }
   if (identical(data_kind, "image")) {
@@ -114,12 +110,6 @@
       length(feature_bounds$lower) != length(features)) {
     stop("Saved public feature bounds do not match the feature contract.",
          call. = FALSE)
-  }
-  if (is.null(feature_bounds) &&
-      (length(.validation_atomic(meta$feature_means)) ||
-       length(.validation_atomic(meta$feature_sds)))) {
-    stop("Legacy data-derived normalization cannot be reused for private validation; ",
-         "retrain with public feature_bounds.", call. = FALSE)
   }
   target_bounds <- .validation_target_bounds(meta)
   params <- meta$model_params
@@ -330,7 +320,7 @@
 #' If not every expected node returns the fixed private release, the result
 #' has \code{available=FALSE} and no metrics rather than exact, per-node or
 #' zero-filled substitutes. This is an operational availability result, not a
-#' privacy-budget query lockout.
+#' historical query denial.
 #'
 #' @param conns DSI connections.
 #' @param model A successful \code{dsflower_run} or saved model directory.
@@ -382,7 +372,7 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
     tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
     tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
   }, add = TRUE)
-  capabilities <- .assert_runner_compatibility(conns, hsym)
+  capabilities <- .assert_runner_compatibility(conns)
   privacy_unit <- .validation_common_privacy_unit(capabilities)
 
   task_type <- if (contract$task %in% c("regression", "count")) {

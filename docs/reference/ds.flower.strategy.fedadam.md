@@ -1,16 +1,16 @@
 # Create a FedAdam strategy spec
 
-FedAdam uses adaptive learning rates on the server side via Adam
-optimizer for more stable convergence in heterogeneous settings.
+These hyperparameters affect only researcher-side post-processing of
+updates that have already been privatized by each node.
 
 ## Usage
 
 ``` r
 ds.flower.strategy.fedadam(
-  server_learning_rate = 0.01,
-  tau = 0.001,
-  fraction_fit = 1,
-  fraction_evaluate = 1
+  server_learning_rate = 0.1,
+  beta_1 = 0.9,
+  beta_2 = 0.99,
+  tau = 0.001
 )
 ```
 
@@ -18,19 +18,19 @@ ds.flower.strategy.fedadam(
 
 - server_learning_rate:
 
-  Numeric; server-side learning rate (eta).
+  Positive server learning rate (Flower `eta`).
+
+- beta_1:
+
+  First-moment coefficient in `[0,1)`.
+
+- beta_2:
+
+  Second-moment coefficient in `[0,1)`.
 
 - tau:
 
-  Numeric; controls adaptivity (higher = more stable).
-
-- fraction_fit:
-
-  Numeric; fraction of clients used for training (0-1).
-
-- fraction_evaluate:
-
-  Numeric; fraction of clients used for evaluation (0-1).
+  Positive adaptivity regularizer.
 
 ## Value
 

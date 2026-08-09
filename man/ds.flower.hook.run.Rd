@@ -2,7 +2,6 @@
 % Please edit documentation in R/app_tier2.R
 \name{ds.flower.hook.run}
 \alias{ds.flower.hook.run}
-\alias{ds.flower.tier2.run}
 \title{Request a HookApp run through the node-side egress policy}
 \usage{
 ds.flower.hook.run(
@@ -18,17 +17,6 @@ ds.flower.hook.run(
   target_bounds = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
   app_params = list()
-)
-
-ds.flower.tier2.run(
-  conns,
-  user_app_dir,
-  target,
-  features,
-  symbol = "D",
-  num_rounds = 1L,
-  verbose = TRUE,
-  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
 )
 }
 \arguments{

@@ -66,10 +66,10 @@ test_that("runner preflight requires ABI 3 and the exact local hash", {
 
   expect_silent(
     dsFlowerClient:::.assert_runner_compatibility(
-      list(site1 = list(), site2 = list()), "flower_handle")
+      list(site1 = list(), site2 = list()))
   )
   expect_identical(as.character(captured[[1L]]), "flowerGetCapabilitiesDS")
-  expect_identical(captured[[2L]], "flower_handle")
+  expect_length(captured, 1L)
 })
 
 test_that("runner preflight reports incompatible nodes", {
@@ -89,7 +89,7 @@ test_that("runner preflight reports incompatible nodes", {
 
   expect_error(
     dsFlowerClient:::.assert_runner_compatibility(
-      list(old = list(), drift = list()), "flower_handle"),
+      list(old = list(), drift = list())),
     "old .*runner_abi=1.*drift"
   )
 })
@@ -108,7 +108,7 @@ test_that("runner preflight rejects DSI 1.8 NULL and misassociated results", {
     .package = "DSI"
   )
   expect_error(
-    dsFlowerClient:::.assert_runner_compatibility(conns, "flower_handle"),
+    dsFlowerClient:::.assert_runner_compatibility(conns),
     "no node capabilities returned on: site2"
   )
 
@@ -117,7 +117,7 @@ test_that("runner preflight rejects DSI 1.8 NULL and misassociated results", {
     wrong = list(runner_abi = 3L, runner_sha256 = expected)
   )
   expect_error(
-    dsFlowerClient:::.assert_runner_compatibility(conns, "flower_handle"),
+    dsFlowerClient:::.assert_runner_compatibility(conns),
     "no node capabilities returned"
   )
 })
@@ -184,7 +184,8 @@ test_that("saved declarative model contract is read without guessing architectur
     list(op = "linear", out = "@out")))
   jsonlite::write_json(
     list(model_spec = spec, loss_name = "cross_entropy",
-         model_params = list(n_classes = 4L, num_labels = 3L)),
+         model_params = list(n_classes = 4L, num_labels = 3L),
+         data_kind = "tabular"),
     file.path(model_dir, "metadata.json"),
     auto_unbox = TRUE
   )
@@ -195,13 +196,15 @@ test_that("saved declarative model contract is read without guessing architectur
   expect_identical(contract$loss_name, "cross_entropy")
   expect_identical(contract$num_classes, 4L)
   expect_identical(contract$num_labels, 3L)
+  expect_identical(contract$data_kind, "tabular")
 })
 
 test_that("malformed metadata cannot expand prediction dimensions", {
   model_dir <- withr::local_tempdir()
   jsonlite::write_json(
     list(model_spec = "not-an-object", loss_name = "",
-         model_params = list(n_classes = 1e9, num_labels = -1)),
+         model_params = list(n_classes = 1e9, num_labels = -1),
+         data_kind = "unsupported"),
     file.path(model_dir, "metadata.json"), auto_unbox = TRUE)
 
   contract <- dsFlowerClient:::.read_meta_model_contract(model_dir)
@@ -209,13 +212,13 @@ test_that("malformed metadata cannot expand prediction dimensions", {
   expect_null(contract$loss_name)
   expect_identical(contract$num_classes, 2L)
   expect_identical(contract$num_labels, 2L)
+  expect_null(contract$data_kind)
 })
 
 test_that("saved data kind prevents tabular prediction of vision artifacts", {
   model_dir <- withr::local_tempdir()
   jsonlite::write_json(
-    list(template = "extension_dual", framework = "pytorch",
-         data_kind = "image", model_spec = list(kind = "linear")),
+    list(data_kind = "image", model_spec = list(kind = "linear")),
     file.path(model_dir, "metadata.json"), auto_unbox = TRUE)
   writeBin(as.raw(0), file.path(model_dir, "model.pt"))
 
@@ -226,18 +229,38 @@ test_that("saved data kind prevents tabular prediction of vision artifacts", {
     "accepts tabular artifacts only")
 
   jsonlite::write_json(
-    list(template = "pytorch_resnet18", framework = "pytorch_vision"),
+    list(model = "pytorch_resnet18", framework = "pytorch_vision"),
     file.path(model_dir, "metadata.json"), auto_unbox = TRUE)
-  expect_identical(
-    dsFlowerClient:::.read_meta_model_contract(model_dir)$data_kind,
-    "image")
+  expect_null(dsFlowerClient:::.read_meta_model_contract(model_dir)$data_kind)
+  expect_error(
+    ds.flower.predict(model_dir, data.frame(x = 1)),
+    "metadata must declare data_kind"
+  )
 })
 
-test_that("fit forwards public feature bounds without shifting legacy arguments", {
+test_that("local prediction rejects Tier-2 and other no-spec artifacts", {
+  model_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    list(model = "tier2", data_kind = "tabular"),
+    file.path(model_dir, "metadata.json"), auto_unbox = TRUE)
+  writeBin(as.raw(0), file.path(model_dir, "model.pt"))
+  local_mocked_bindings(
+    .ensure_client_framework = function(...) {
+      stop("framework setup must not run")
+    },
+    .package = "dsFlowerClient"
+  )
+
+  expect_error(
+    ds.flower.predict(model_dir, data.frame(x = 1)),
+    "model_spec.*loss_name.*Tier-2"
+  )
+})
+
+test_that("fit forwards public feature bounds through its stable argument contract", {
   seen <- NULL
   fake_model <- structure(
-    list(name = "pytorch_logreg", template = "pytorch_logreg",
-         framework = "pytorch", params = list()),
+    list(name = "pytorch_logreg", framework = "pytorch", params = list()),
     class = "dsflower_model"
   )
   local_mocked_bindings(
@@ -259,7 +282,7 @@ test_that("fit forwards public feature bounds without shifting legacy arguments"
   expect_equal(seen$target_levels, levels)
 })
 
-test_that("submit appends public target semantics for positional compatibility", {
+test_that("submit exposes public target semantics in canonical order", {
   expect_identical(
     tail(names(formals(ds.flower.submit)), 4L),
     c("feature_bounds", "target_levels", "target_bounds",
@@ -839,27 +862,6 @@ test_that("hook readiness fails before upload instead of silently no-oping", {
   expect_error(
     dsFlowerClient:::.assert_hook_execution_configured(caps, conns),
     "site.*sandbox,timing")
-})
-
-test_that("legacy tier2 entry point delegates to classification hook", {
-  seen <- NULL
-  local_mocked_bindings(
-    ds.flower.hook.run = function(...) {
-      seen <<- list(...)
-      "ok"
-    },
-    .package = "dsFlowerClient"
-  )
-
-  expect_warning(
-    out <- ds.flower.tier2.run(
-      conns = list(), user_app_dir = "pkg", target = "y",
-      features = "x", num_rounds = 2L),
-    "deprecated"
-  )
-  expect_identical(out, "ok")
-  expect_identical(seen$task, "classification")
-  expect_identical(seen$num_rounds, 2L)
 })
 
 test_that("HookApp parameters are recursively canonical and hash pinned", {

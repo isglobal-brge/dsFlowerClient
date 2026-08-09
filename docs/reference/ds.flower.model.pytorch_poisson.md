@@ -7,7 +7,7 @@ Uses Poisson NLL loss with log link.
 
 ``` r
 ds.flower.model.pytorch_poisson(
-  hidden_layers = "",
+  hidden_layers = integer(0),
   learning_rate = 0.01,
   batch_size = 32L,
   local_epochs = 1L
@@ -18,11 +18,11 @@ ds.flower.model.pytorch_poisson(
 
 - hidden_layers:
 
-  Character; comma-separated hidden layer sizes (empty = linear).
+  Integer vector; hidden layer sizes (empty for linear).
 
 - learning_rate:
 
-  Numeric; learning rate.
+  Numeric in `(0, 10]`; learning rate.
 
 - batch_size:
 

@@ -38,11 +38,11 @@
 
 #' Fail early when a node cannot execute this client's trusted runner
 #' @keywords internal
-.assert_runner_compatibility <- function(conns, symbol) {
+.assert_runner_compatibility <- function(conns) {
   expected_hash <- .compute_local_runner_hash()
   raw_caps <- tryCatch(
     DSI::datashield.aggregate(
-      conns, expr = call("flowerGetCapabilitiesDS", symbol)),
+      conns, expr = call("flowerGetCapabilitiesDS")),
     error = function(e) {
       stop("Could not verify the dsFlower runner compatibility: ",
            conditionMessage(e), call. = FALSE)
@@ -456,9 +456,6 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # constants supplied by the analyst before the run; DP-SGD still clips every
   # per-sample gradient independently of this utility-only transform.
   public_bounds <- .validate_public_feature_bounds(feature_bounds, features)
-  feature_norm <- if (is.null(public_bounds)) NULL else list(
-    means = (public_bounds$lower + public_bounds$upper) / 2,
-    sds = (public_bounds$upper - public_bounds$lower) / 2)
   if (!is.null(public_bounds) && verbose) {
     message("  Preprocessing: using public bounds for ", length(features),
             " feature(s); no node statistics were queried.")
@@ -491,7 +488,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     }
     tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
   }, add = TRUE)
-  .assert_runner_compatibility(conns, hsym)
+  .assert_runner_compatibility(conns)
   # Tabular runs need a non-empty feature set. The symbol path auto-detects above; data=/
   # resource= inputs must pass `features` explicitly -- fail with a clear message rather than
   # the downstream "num-features must be set" from the node.
@@ -598,7 +595,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # inner gRPC the SuperNodes speak and the run hangs.
   ds.flower.link.up(conns, allow_insecure_http = allow_insecure_http)
   recipe <- structure(list(
-    model = list(name = model$name, template = model$template %||% model$name,
+    model = list(name = model$name,
                  framework = model$framework %||% "pytorch", track = sub$track),
     # Persist the exact public contract used to build the trusted model.  The
     # native checkpoint contains only tensors; without this data-only spec the
@@ -611,13 +608,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     strategy = list(name = strategy_spec$name, params = strategy_spec$params),
     num_rounds = as.integer(num_rounds),
     features = features,
-    feature_means = if (!is.null(feature_norm)) feature_norm$means else NULL,
-    feature_sds   = if (!is.null(feature_norm)) feature_norm$sds   else NULL,
     feature_lower = if (!is.null(public_bounds)) public_bounds$lower else NULL,
     feature_upper = if (!is.null(public_bounds)) public_bounds$upper else NULL,
     target_levels = public_target$levels,
-    target_bounds = public_target$bounds,
-    evaluation_only = FALSE), class = "dsflower_recipe")
+    target_bounds = public_target$bounds), class = "dsflower_recipe")
 
   # Cleanup (tunnel/handle/app/connection) is guaranteed by the on.exit above, on both a
   # run error and normal completion.
@@ -826,48 +820,4 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   if (!isTRUE(vision)) return(base)
   c(base, "torchvision>=0.15.0,<1.0.0", "pillow>=9.0.0",
     "nibabel>=5.0.0", "pynrrd>=1.0.0", "SimpleITK>=2.2.0", "monai>=1.3.0")
-}
-
-# Legacy internal helper retained for source compatibility only. It is no longer
-# called by the submission pipeline: hardened nodes disable exact feature
-# statistics, and new runs accept only data-independent public bounds through
-# `feature_bounds`.
-.compute_feature_norm <- function(conns, symbol, features) {
-  features <- as.character(features)
-  if (!length(features)) return(NULL)
-  expr <- call("flowerFeatureStatsDS", symbol, .ds_encode(features))
-  res <- tryCatch(DSI::datashield.aggregate(conns, expr), error = function(e) NULL)
-  if (is.null(res) || !length(res)) return(NULL)
-
-  z <- stats::setNames(numeric(length(features)), features)
-  tot_n <- z; tot_sum <- z; tot_sumsq <- z
-  any_data <- FALSE
-  for (st in res) {
-    if (is.null(st) || is.null(st$features)) next
-    fn <- as.character(unlist(st$features))
-    nn <- as.numeric(unlist(st$n));     ss <- as.numeric(unlist(st$sum))
-    sq <- as.numeric(unlist(st$sumsq))
-    for (i in seq_along(fn)) {
-      f <- fn[i]
-      if (!(f %in% features)) next
-      if (length(nn) >= i && is.finite(nn[i])) { tot_n[f]    <- tot_n[f]    + nn[i]; any_data <- TRUE }
-      if (length(ss) >= i && is.finite(ss[i]))   tot_sum[f]  <- tot_sum[f]  + ss[i]
-      if (length(sq) >= i && is.finite(sq[i]))   tot_sumsq[f]<- tot_sumsq[f]+ sq[i]
-    }
-  }
-  if (!any_data) return(NULL)
-
-  means <- numeric(length(features)); sds <- numeric(length(features))
-  for (i in seq_along(features)) {
-    ni <- tot_n[i]
-    if (is.na(ni) || ni < 1) { means[i] <- 0; sds[i] <- 1; next }   # absent feature -> no-op
-    mu <- tot_sum[i] / ni
-    v  <- tot_sumsq[i] / ni - mu * mu
-    if (!is.finite(v) || v < 0) v <- 0
-    sdv <- sqrt(v)
-    if (!is.finite(mu)) mu <- 0
-    if (!is.finite(sdv) || sdv < 1e-8) sdv <- 1   # constant/degenerate feature -> no scaling
-    means[i] <- mu; sds[i] <- sdv
-  }
-  list(means = means, sds = sds)
 }

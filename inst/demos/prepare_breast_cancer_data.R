@@ -3,8 +3,8 @@
 # partitions and uploads one to each Opal node as table
 # dsflower_demo.breast_cancer. Run once by an operator with Opal admin.
 #
-# The partitions (~190 patients each, ~71 malignant / ~119 benign) satisfy the
-# clinical_default trust-profile thresholds (>=100 rows, >=20 per class).
+# The partitions (~190 patients each, ~71 malignant / ~119 benign) provide
+# stable class coverage for the demonstration.
 
 suppressMessages(library(opalr))
 

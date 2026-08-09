@@ -11,7 +11,7 @@ per node by querying each Opal's environment (Docker vs bare metal)."></head><bo
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,7 +52,6 @@ per node by querying each Opal's environment (Docker vs bare metal).</p>
 <span>  <span class="va">conns</span>,</span>
 <span>  symbol <span class="op">=</span> <span class="st">"flower"</span>,</span>
 <span>  superlink_address <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  template_name <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  torch_backend <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -74,11 +73,6 @@ per node by querying each Opal's environment (Docker vs bare metal).</p>
 <li><p>Single string: broadcast to all nodes.</p></li>
 <li><p>Named list: per-node addresses (names must match connection names).</p></li>
 </ul></dd>
-
-
-<dt id="arg-template-name">template_name<a class="anchor" aria-label="anchor" href="#arg-template-name"></a></dt>
-<dd><p>Optional Flower template name passed to server-side
-SuperNode bootstrap.</p></dd>
 
 
 <dt id="arg-torch-backend">torch_backend<a class="anchor" aria-label="anchor" href="#arg-torch-backend"></a></dt>
@@ -109,4 +103,3 @@ SuperNode bootstrap.</p></dd>
 
 
   </body></html>
-

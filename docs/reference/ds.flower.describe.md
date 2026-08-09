@@ -1,7 +1,8 @@
 # Describe the connected dataset
 
-Returns a compact summary: modality, sample count (bucketed per
-profile), available labels, masks, and feature assets.
+Returns a compact summary of public protocol capabilities and node-owned
+structural imaging declarations. It does not report cohort-derived
+counts or schema discovered from private data.
 
 ## Usage
 

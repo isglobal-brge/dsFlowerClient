@@ -10,12 +10,7 @@ ds.flower.recipe(
   task = NULL,
   num_rounds = 5L,
   target = NULL,
-  target_column = NULL,
-  label_set = NULL,
-  features = NULL,
-  feature_columns = NULL,
-  masks = NULL,
-  evaluation_only = FALSE
+  features = NULL
 )
 }
 \arguments{
@@ -33,21 +28,7 @@ infer from model.}
 \item{target}{Character; target column name(s). Multiple targets are supported
 only by the multilabel enforced-DP model.}
 
-\item{target_column}{Alias for \code{target} (backward compat).}
-
-\item{label_set}{Reserved compatibility argument. Non-NULL values fail early;
-label-set staging is not implemented by the enforced-DP runtime.}
-
 \item{features}{Character vector; feature column names, or NULL for auto.}
-
-\item{feature_columns}{Alias for \code{features} (backward compat).}
-
-\item{masks}{Reserved compatibility argument. Non-NULL values fail early
-because segmentation is not implemented by the enforced-DP runtime.}
-
-\item{evaluation_only}{Reserved compatibility argument. TRUE fails early;
-evaluation-only execution is not implemented. Use
-\code{ds.flower.validate()} for private model validation.}
 }
 \value{
 A \code{dsflower_recipe} S3 object.
@@ -55,6 +36,6 @@ A \code{dsflower_recipe} S3 object.
 \description{
 A recipe combines the analyst-controlled specification objects needed for a
 federated learning experiment. Privacy policy is not part of the recipe; it
-is selected and enforced by each data node. Template is always inferred from
-the model, and task can be inferred when not specified.
+is selected and enforced by each data node. Task can be inferred from the
+model when not specified.
 }

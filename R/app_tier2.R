@@ -428,7 +428,7 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
     }
     tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
   }, add = TRUE)
-  capabilities <- .assert_runner_compatibility(conns, hsym)
+  capabilities <- .assert_runner_compatibility(conns)
   .assert_hook_execution_configured(capabilities, conns)
 
   up <- .upload_user_module(conns, user_app_dir)
@@ -468,8 +468,7 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
   # link.up owns the local SuperLink + DSI tunnel lifecycle; on.exit reverses it.
   ds.flower.link.up(conns, allow_insecure_http = allow_insecure_http)
   recipe <- structure(list(
-    model = list(name = "tier2", template = "tier2", framework = "pytorch",
-                 track = "egress"),
+    model = list(name = "tier2", framework = "pytorch", track = "egress"),
     strategy = list(name = "FedAvg", params = list()),
     num_rounds = as.integer(num_rounds),
     features = features, target_levels = public_target$levels,
@@ -477,26 +476,11 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
     model_params = list(
       app_params = public_app_params$value,
       app_params_sha256 = public_app_params$sha256),
-    data_kind = "tabular", evaluation_only = FALSE),
+    data_kind = "tabular"),
     class = "dsflower_recipe")
 
   ds.flower.nodes.ensure(conns, hsym)
   ds.flower.run.start(recipe, conns, app_dir = app_dir,
                       results_dir = results_dir, symbol = hsym,
                       verbose = verbose)
-}
-
-#' @rdname ds.flower.hook.run
-#' @export
-ds.flower.tier2.run <- function(conns, user_app_dir, target, features,
-                                symbol = "D", num_rounds = 1L,
-                                verbose = TRUE,
-                                allow_insecure_http = getOption(
-                                  "dsflower.dsi_allow_insecure_http", character())) {
-  .Deprecated("ds.flower.hook.run")
-  ds.flower.hook.run(
-    conns = conns, user_app_dir = user_app_dir, target = target,
-    features = features, symbol = symbol, num_rounds = num_rounds,
-    task = "classification", verbose = verbose,
-    allow_insecure_http = allow_insecure_http)
 }
