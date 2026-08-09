@@ -1,12 +1,20 @@
 # Module: Prediction
-# Apply trained federated models to new data via Python (native format).
+# Apply trained federated models to new data via trusted data-only predictors.
+
+.XGBOOST_LOCAL_PREDICTION_CONTRACT <-
+  "dsflower-xgboost-local-prediction-v1"
+.XGBOOST_LOCAL_MAX_ROWS <- 5000000L
+.XGBOOST_LOCAL_MAX_INPUT_BYTES <- 256 * 1024^2
+.XGBOOST_LOCAL_MAX_OUTPUT_BYTES <- 128 * 1024^2
 
 #' Predict with a federated model
 #'
-#' Uses a saved declarative PyTorch state dictionary to generate tabular
-#' predictions via Python. Vision artifacts are not accepted by this tabular
-#' predictor. The appropriate framework dependencies are installed on-demand in
-#' the client venv if not already present.
+#' Uses a saved declarative PyTorch state dictionary or a sanitized native
+#' XGBoost ensemble to generate tabular predictions. XGBoost runs through the
+#' bundled standard-library-only predictor: the artifact, canonical request and
+#' public sidecar are revalidated before execution, and no XGBoost library,
+#' pickle or executable model payload is loaded. Vision artifacts are not
+#' accepted by this tabular predictor.
 #'
 #' @param model A \code{dsflower_run} object, a saved model list (from
 #'   \code{ds.flower.load_model}), or a path to a model directory.
@@ -36,11 +44,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
          "require an image/backbone inference pipeline.", call. = FALSE)
   }
   if (identical(framework, "xgboost")) {
-    stop("Local XGBoost prediction is fail-closed until the client-side trusted ",
-         "predictor consumes the emitted artifact-bound effective public ",
-         "predictor profile. ",
-         "The canonical training request is retained, but no private backend ",
-         "manifest is reconstructed or invented client-side.", call. = FALSE)
+    return(.predict_xgboost_local(info, newdata, type))
   }
   if (!is.list(contract$model_spec) || !length(contract$model_spec) ||
       !is.character(contract$loss_name) || length(contract$loss_name) != 1L ||
@@ -103,6 +107,157 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   }
 
   jsonlite::fromJSON(result$stdout)
+}
+
+.xgboost_prediction_frame <- function(newdata, features) {
+  if (!(is.data.frame(newdata) || is.matrix(newdata))) {
+    stop("XGBoost newdata must be a data.frame or matrix.", call. = FALSE)
+  }
+  frame <- as.data.frame(
+    newdata, stringsAsFactors = FALSE, check.names = FALSE)
+  columns <- names(frame)
+  if (is.null(columns) || anyNA(columns) || any(!nzchar(columns)) ||
+      anyDuplicated(columns)) {
+    stop("XGBoost newdata must have unique, non-empty feature names.",
+         call. = FALSE)
+  }
+  missing <- setdiff(features, columns)
+  extra <- setdiff(columns, features)
+  if (length(missing) || length(extra) || length(columns) != length(features)) {
+    details <- c(
+      if (length(missing)) paste0("missing: ", paste(missing, collapse = ", ")),
+      if (length(extra)) paste0("extra: ", paste(extra, collapse = ", ")))
+    stop("XGBoost newdata columns must match the saved feature contract exactly",
+         if (length(details)) paste0(" (", paste(details, collapse = "; "), ")"),
+         ".", call. = FALSE)
+  }
+  if (nrow(frame) > .XGBOOST_LOCAL_MAX_ROWS) {
+    stop("XGBoost newdata exceeds the local prediction row ceiling.",
+         call. = FALSE)
+  }
+  frame <- frame[, features, drop = FALSE]
+  valid <- vapply(frame, function(column) {
+    is.numeric(column) || is.logical(column)
+  }, logical(1))
+  if (!all(valid)) {
+    stop("XGBoost newdata features must be numeric or logical.",
+         call. = FALSE)
+  }
+  frame[] <- lapply(frame, as.numeric)
+  frame
+}
+
+.xgboost_predict_helper <- function() {
+  helper <- system.file(
+    "python", "xgboost_predict_helper.py", package = "dsFlowerClient")
+  if (!nzchar(helper)) {
+    helper <- file.path("inst", "python", "xgboost_predict_helper.py")
+  }
+  if (!file.exists(helper) || dir.exists(helper)) {
+    stop("Bundled XGBoost prediction helper is unavailable.", call. = FALSE)
+  }
+  normalizePath(helper, winslash = "/", mustWork = TRUE)
+}
+
+.read_xgboost_prediction_output <- function(path, expected_rows, task, type) {
+  info <- file.info(path)
+  if (!file.exists(path) || is.na(info$isdir) || isTRUE(info$isdir) ||
+      is.na(info$size) || info$size < 1 ||
+      info$size > .XGBOOST_LOCAL_MAX_OUTPUT_BYTES) {
+    stop("Local XGBoost predictor produced no bounded data-only output.",
+         call. = FALSE)
+  }
+  bytes <- readBin(path, what = "raw", n = as.integer(info$size))
+  if (length(bytes) != info$size || any(as.integer(bytes) > 127L)) {
+    stop("Local XGBoost predictor output is malformed.", call. = FALSE)
+  }
+  value <- tryCatch(
+    jsonlite::fromJSON(rawToChar(bytes), simplifyVector = TRUE),
+    error = function(e) NULL)
+  expected_fields <- c("contract", "predictions", "task", "type", "version")
+  if (!is.list(value) || is.null(names(value)) || anyDuplicated(names(value)) ||
+      !identical(sort(names(value)), expected_fields) ||
+      !identical(value$contract, .XGBOOST_LOCAL_PREDICTION_CONTRACT) ||
+      !is.integer(value$version) || !identical(value$version, 1L) ||
+      !identical(value$task, task) || !identical(value$type, type) ||
+      !(is.numeric(value$predictions) ||
+        (is.list(value$predictions) && !length(value$predictions))) ||
+      length(value$predictions) != expected_rows) {
+    stop("Local XGBoost predictor output violates its data-only contract.",
+         call. = FALSE)
+  }
+  predictions <- suppressWarnings(as.numeric(value$predictions))
+  if (length(predictions) != expected_rows || any(!is.finite(predictions))) {
+    stop("Local XGBoost predictor returned invalid predictions.",
+         call. = FALSE)
+  }
+  if (identical(task, "binary") &&
+      any(predictions < 0 | predictions > 1)) {
+    stop("Local XGBoost predictor returned invalid probabilities.",
+         call. = FALSE)
+  }
+  predictions
+}
+
+.run_xgboost_local_predict <- function(native_contract, frame, type) {
+  data_path <- tempfile(fileext = ".csv")
+  output_path <- tempfile(fileext = ".json")
+  on.exit(unlink(c(data_path, output_path, paste0(output_path, ".tmp"))),
+          add = TRUE)
+  utils::write.csv(
+    frame, data_path, row.names = FALSE, na = "NA",
+    fileEncoding = "UTF-8")
+  Sys.chmod(data_path, "0600")
+  input_info <- file.info(data_path)
+  if (!file.exists(data_path) || is.na(input_info$isdir) ||
+      isTRUE(input_info$isdir) || is.na(input_info$size) ||
+      input_info$size > .XGBOOST_LOCAL_MAX_INPUT_BYTES) {
+    stop("XGBoost newdata exceeds the local transport byte ceiling.",
+         call. = FALSE)
+  }
+  profile <- file.path(
+    native_contract$model_dir, .XGBOOST_ENSEMBLE_PROFILE_FILE)
+  result <- processx::run(
+    command = .client_python_cmd(),
+    args = c(
+      "-I", "-S", .xgboost_predict_helper(),
+      "--model", native_contract$artifact,
+      "--profile", profile,
+      "--data", data_path,
+      "--output", output_path,
+      "--type", type,
+      "--expected-rows", as.character(nrow(frame))),
+    env = .client_venv_env(), error_on_status = FALSE, timeout = 900)
+  if (!identical(as.integer(result$status), 0L) ||
+      !identical(result$stdout, "ok")) {
+    stop("Local XGBoost prediction rejected the saved bundle or input.",
+         call. = FALSE)
+  }
+  .read_xgboost_prediction_output(
+    output_path, nrow(frame), native_contract$task, type)
+}
+
+.predict_xgboost_local <- function(info, newdata, type) {
+  native <- info$native_contract
+  if (!is.list(native) || !identical(native$engine, "xgboost") ||
+      !native$task %in% c("binary", "regression") ||
+      !is.character(native$features) || !length(native$features)) {
+    stop("Saved XGBoost prediction contract is unavailable.", call. = FALSE)
+  }
+  if (identical(native$task, "regression") && identical(type, "prob")) {
+    stop("type = 'prob' is unavailable for XGBoost regression.",
+         call. = FALSE)
+  }
+  frame <- .xgboost_prediction_frame(newdata, native$features)
+  predictions <- .run_xgboost_local_predict(native, frame, type)
+  if (identical(native$task, "binary") && identical(type, "response")) {
+    levels <- native$target_levels
+    if (length(levels) != 2L || anyNA(levels) || anyDuplicated(levels)) {
+      stop("Saved XGBoost target levels are invalid.", call. = FALSE)
+    }
+    return(unname(levels[ifelse(predictions >= 0.5, 2L, 1L)]))
+  }
+  unname(predictions)
 }
 
 #' Resolve model info for prediction

@@ -21,8 +21,10 @@ A numeric vector, integer class vector, or probability matrix for
   multiclass, ordinal, and multilabel models.
 }
 \description{
-Uses a saved declarative PyTorch state dictionary to generate tabular
-predictions via Python. Vision artifacts are not accepted by this tabular
-predictor. The appropriate framework dependencies are installed on-demand in
-the client venv if not already present.
+Uses a saved declarative PyTorch state dictionary or a sanitized native
+XGBoost ensemble to generate tabular predictions. XGBoost runs through the
+bundled standard-library-only predictor: the artifact, canonical request and
+public sidecar are revalidated before execution, and no XGBoost library,
+pickle or executable model payload is loaded. Vision artifacts are not
+accepted by this tabular predictor.
 }

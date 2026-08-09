@@ -131,7 +131,7 @@ test_that("validation resolves only a sanitized XGBoost ensemble contract", {
   expect_identical(regression$loss_name, "mse")
 })
 
-test_that("prediction recognizes the ensemble without inventing a private manifest", {
+test_that("prediction uses the exact XGBoost contract without provisioning torch", {
   path <- xgboost_validation_model_fixture()
   expect_true(file.exists(file.path(
     path, "model.xgboost-ensemble.profile.json")))
@@ -145,11 +145,51 @@ test_that("prediction recognizes the ensemble without inventing a private manife
       reached_framework <<- TRUE
       stop("must not provision torch")
     },
+    .run_xgboost_local_predict = function(native_contract, frame, type) {
+      expect_identical(native_contract$native_tree_request_sha256,
+                       resolved$native_contract$native_tree_request_sha256)
+      expect_identical(names(frame), c("age", "marker"))
+      expect_identical(type, "response")
+      c(0.49, 0.5)
+    },
     .package = "dsFlowerClient")
-  expect_error(
-    ds.flower.predict(path, data.frame(age = 40, marker = 0)),
-    "effective public predictor profile")
+  expect_identical(
+    ds.flower.predict(
+      path, data.frame(marker = c(0, 1), age = c(40, 65))),
+    c("control", "case"))
   expect_false(reached_framework)
+})
+
+test_that("XGBoost local prediction validates columns, task and output", {
+  expect_identical(
+    names(dsFlowerClient:::.xgboost_prediction_frame(
+      data.frame(marker = 0, age = 40), c("age", "marker"))),
+    c("age", "marker"))
+  expect_error(
+    dsFlowerClient:::.xgboost_prediction_frame(
+      data.frame(age = 40), c("age", "marker")),
+    "missing: marker")
+  expect_error(
+    dsFlowerClient:::.xgboost_prediction_frame(
+      data.frame(age = 40, marker = "x"), c("age", "marker")),
+    "numeric or logical")
+
+  path <- xgboost_validation_model_fixture("regression")
+  expect_error(
+    ds.flower.predict(
+      path, data.frame(age = 40, marker = 0), type = "prob"),
+    "unavailable for XGBoost regression")
+
+  output <- tempfile(fileext = ".json")
+  on.exit(unlink(output), add = TRUE)
+  writeBin(charToRaw(paste0(
+    '{"contract":"dsflower-xgboost-local-prediction-v1",',
+    '"predictions":[0.25,0.75],"task":"binary",',
+    '"type":"prob","version":1}')), output)
+  expect_equal(
+    dsFlowerClient:::.read_xgboost_prediction_output(
+      output, 2L, "binary", "prob"),
+    c(0.25, 0.75))
 })
 
 test_that("native release requires the exact bounded canonical profile sidecar", {
