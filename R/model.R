@@ -110,6 +110,65 @@ ds.flower.model.pytorch_linear_regression <- function(learning_rate = 0.01,
   ds.flower.model(obj)
 }
 
+#' Create a native-tight XGBoost request spec
+#'
+#' This constructor exposes only the typed, data-only parameter profile used by
+#' the trusted native XGBoost adapter. Feature bounds and complete public cuts
+#' are supplied with the training request. Privacy epsilon, delta, clipping,
+#' randomness, objectives, callbacks and I/O are node-owned and cannot be set
+#' here. The constructor is available for request construction while backend
+#' capability remains disabled until the native release gates pass.
+#' Benchmark-driven defaults use 8 trees, depth 2 and learning rate 0.25 for
+#' binary classification, and 5 trees, depth 2 and learning rate 0.30 for
+#' regression. Explicit values always take precedence. Seven data-independent
+#' public cuts per feature are a practical starting point; callers still supply
+#' every cut explicitly, and dsFlower never derives them from private data.
+#'
+#' @param task Either \code{"binary"} or \code{"regression"}.
+#' @param n_estimators Positive integer number of boosting rounds/trees. Defaults
+#'   to 8 for binary classification and 5 for regression.
+#' @param max_depth Positive integer tree depth, at most 30. Defaults to 2.
+#' @param learning_rate Numeric in \code{(0,1]}. Defaults to 0.25 for binary
+#'   classification and 0.30 for regression.
+#' @param min_child_weight Non-negative minimum child Hessian weight.
+#' @param min_split_loss Non-negative minimum split loss reduction.
+#' @param reg_alpha Non-negative L1 leaf regularization.
+#' @param reg_lambda Positive L2 leaf regularization, which keeps the leaf
+#'   denominator strictly positive.
+#' @param max_delta_step Positive maximum leaf-weight step. Together with the
+#'   learning rate it fixes the public leaf-value bound.
+#' @return A \code{dsflower_model} request object. It does not claim that the
+#'   native backend is installed or enabled.
+#' @export
+ds.flower.model.xgboost <- function(task = c("binary", "regression"),
+                                     n_estimators = 8L,
+                                     max_depth = 2L,
+                                     learning_rate = 0.25,
+                                     min_child_weight = 1,
+                                     min_split_loss = 0,
+                                     reg_alpha = 0,
+                                     reg_lambda = 1,
+                                     max_delta_step = 1) {
+  task <- match.arg(task)
+  task_defaults <- .DSFLOWER_XGBOOST_TASK_DEFAULTS[[task]]
+  if (missing(n_estimators)) {
+    n_estimators <- task_defaults$num_boost_round
+  }
+  if (missing(max_depth)) max_depth <- task_defaults$max_depth
+  if (missing(learning_rate)) learning_rate <- task_defaults$learning_rate
+  params <- list(
+    task = task,
+    num_boost_round = .model_exact_integer(n_estimators, "n_estimators"),
+    max_depth = .model_exact_integer(max_depth, "max_depth"),
+    learning_rate = learning_rate,
+    min_child_weight = min_child_weight,
+    min_split_loss = min_split_loss,
+    reg_alpha = reg_alpha,
+    reg_lambda = reg_lambda,
+    max_delta_step = max_delta_step)
+  do.call(ds.flower.model, c(list(name = "xgboost"), params))
+}
+
 #' Create a PyTorch Multi-Class Classifier model spec
 #'
 #' Configurable MLP or linear classifier with CrossEntropyLoss.

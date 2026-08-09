@@ -22,6 +22,7 @@ ds.flower.submit(
   verbose = FALSE,
   silent = FALSE,
   feature_bounds = NULL,
+  feature_cuts = NULL,
   target_levels = NULL,
   target_bounds = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
@@ -66,11 +67,17 @@ Neural learning rates must be finite and in \code{(0, 10]}.}
 \code{list(lower=..., upper=...)} in feature order. These constants are
 supplied without querying node data and define a clipped affine transform.}
 
+\item{feature_cuts}{Required for native-tight tree models: one strictly
+increasing public cut vector per feature, inside \code{feature_bounds}.
+For XGBoost, seven data-independent cuts per feature are the
+benchmark-backed starting point; they are never inferred from private data.}
+
 \item{target_levels}{Optional ordered public label vocabulary for
 classification. Non-numeric targets require it; node values are never used
 to infer label codes, and missing or unknown values map to public code zero.
 Multilabel applies one public two-level vocabulary to each target
-independently.}
+independently. Binary XGBoost requires exactly two ordered levels so the
+saved validation contract retains identical label semantics.}
 
 \item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
 regression/count targets. The node clips each target to these constants.}

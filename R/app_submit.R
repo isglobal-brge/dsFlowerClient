@@ -288,11 +288,16 @@
 #' @param feature_bounds Optional public feature bounds as
 #'   \code{list(lower=..., upper=...)} in feature order. These constants are
 #'   supplied without querying node data and define a clipped affine transform.
+#' @param feature_cuts Required for native-tight tree models: one strictly
+#'   increasing public cut vector per feature, inside \code{feature_bounds}.
+#'   For XGBoost, seven data-independent cuts per feature are the
+#'   benchmark-backed starting point; they are never inferred from private data.
 #' @param target_levels Optional ordered public label vocabulary for
 #'   classification. Non-numeric targets require it; node values are never used
 #'   to infer label codes, and missing or unknown values map to public code zero.
 #'   Multilabel applies one public two-level vocabulary to each target
-#'   independently.
+#'   independently. Binary XGBoost requires exactly two ordered levels so the
+#'   saved validation contract retains identical label semantics.
 #' @param target_bounds Required public \code{list(lower=..., upper=...)} for
 #'   regression/count targets. The node clips each target to these constants.
 #' @param allow_insecure_http Character vector of exact connection names allowed
@@ -317,6 +322,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              output_dir = NULL, output_name = NULL,
                              torch_backend = "auto", verbose = FALSE,
                              silent = FALSE, feature_bounds = NULL,
+                             feature_cuts = NULL,
                              target_levels = NULL, target_bounds = NULL,
                              allow_insecure_http = getOption(
                                "dsflower.dsi_allow_insecure_http", character())) {
@@ -371,6 +377,53 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     registered_model, model_params)
   sub <- .emit_submission(model)
   target <- .validate_submission_target(sub, target)
+  if (identical(sub$track, "native_tree")) {
+    if (!identical(sub$engine, "xgboost")) {
+      stop("Unsupported native-tree engine.", call. = FALSE)
+    }
+    if (!identical(num_rounds, 1L)) {
+      stop("Native XGBoost trains its complete public tree schedule in exactly ",
+           "one Flower round; set num_rounds = 1.", call. = FALSE)
+    }
+    if (!identical(data_kind, "tabular")) {
+      stop("Native XGBoost accepts data_kind = 'tabular' only.", call. = FALSE)
+    }
+    if (is.null(features) || !length(features)) {
+      stop("Native XGBoost requires an explicit ordered public feature list; ",
+           "server schema auto-detection is not permitted.", call. = FALSE)
+    }
+    if (is.null(feature_bounds)) {
+      stop("Native XGBoost requires explicit public feature_bounds.",
+           call. = FALSE)
+    }
+    if (is.null(feature_cuts)) {
+      stop("Native XGBoost requires complete public feature_cuts.",
+           call. = FALSE)
+    }
+    public_bounds <- .validate_public_feature_bounds(feature_bounds, features)
+    public_target <- .validate_public_target_spec(
+      target_levels, target_bounds,
+      task_type = if (identical(sub$task, "regression"))
+        "regression" else "classification",
+      loss_name = sub$loss, n_classes = 2L)
+    if (identical(sub$task, "binary") && is.null(public_target$levels)) {
+      stop("Binary XGBoost requires exactly two ordered public target_levels ",
+           "so its training and validation label semantics are identical.",
+           call. = FALSE)
+    }
+    request <- .build_xgboost_request(
+      sub$params, features, public_bounds[c("lower", "upper")], feature_cuts,
+      target_name = target, target_levels = public_target$levels,
+      target_bounds = public_target$bounds)
+    if (!isTRUE(.NATIVE_TREE_XGBOOST_AVAILABLE)) {
+      stop("Native XGBoost request ", request$sha256,
+           " is valid, but backend capability is not enabled in this release.",
+           call. = FALSE)
+    }
+  } else if (!is.null(feature_cuts)) {
+    stop("feature_cuts is only valid for native-tight tree models.",
+         call. = FALSE)
+  }
   .validate_scheduler_horizon(sub, num_rounds)
   lr <- suppressWarnings(as.numeric(
     (sub$params %||% list())[["learning_rate"]] %||% 0.01))
@@ -461,11 +514,13 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
             " feature(s); no node statistics were queried.")
   }
 
-  task_type <- switch(sub$loss %||% "bce_logits",
-                      mse = "regression", huber = "regression",
-                      quantile = "regression", poisson_nll = "count",
-                      negbin_nll = "count", gamma_nll = "regression",
-                      "classification")
+  task_type <- if (identical(sub$track, "native_tree")) {
+    if (identical(sub$task, "regression")) "regression" else "classification"
+  } else switch(sub$loss %||% "bce_logits",
+                mse = "regression", huber = "regression",
+                quantile = "regression", poisson_nll = "count",
+                negbin_nll = "count", gamma_nll = "regression",
+                "classification")
   p <- sub[["params"]] %||% list()
   n_target_classes <- as.integer(
     p[["n_classes"]] %||% p[["num_classes"]] %||% 2L)

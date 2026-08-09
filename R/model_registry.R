@@ -4,6 +4,7 @@
 # submission it is sent; the "catalog" is purely a CLIENT-SIDE convenience that
 # turns a friendly name + params into the artifact shipped in the FAB:
 #   * neural track -> a model SPEC the node builds with stock torch layers
+#   * native-tree track -> a built-in typed request for a trusted node adapter
 # Specs are DATA, never code: nothing the researcher submits runs in the node's
 # trusted interpreter (which is what makes the DP-release path unforgeable).
 #
@@ -19,6 +20,12 @@
   "epsilon", "delta", "privacy", "noise",
   "noise_multiplier", "seed", "random_seed", "secret", "noise_root",
   "max_grad_norm", "clip_norm", "clipping_norm")
+
+.DSFLOWER_XGBOOST_TASK_DEFAULTS <- list(
+  binary = list(
+    num_boost_round = 8L, max_depth = 2L, learning_rate = 0.25),
+  regression = list(
+    num_boost_round = 5L, max_depth = 2L, learning_rate = 0.30))
 
 #' Register a dsFlower model generator
 #'
@@ -228,6 +235,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
     required_parameters = required_parameters, description = description,
     parameter_choices = parameter_choices,
     data_kinds = data_kinds,
+    available = TRUE,
     vetted = isTRUE(vetted)
   )
   invisible(name)
@@ -450,6 +458,15 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
     }
   }
   defaults <- model$defaults %||% list()
+  if (identical(model$name, "xgboost")) {
+    task <- params[["task"]] %||% defaults[["task"]]
+    if (is.character(task) && length(task) == 1L && !is.na(task)) {
+      task_defaults <- model$task_defaults[[task]]
+      if (!is.null(task_defaults)) {
+        defaults <- utils::modifyList(defaults, task_defaults)
+      }
+    }
+  }
   if ("optimizer" %in% names(params)) {
     conditional <- c(
       "momentum", "nesterov", "beta1", "beta2", "optimizer_eps",
@@ -516,18 +533,24 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
            "channels entry.", call. = FALSE)
     }
   }
+  if (identical(model$name, "xgboost")) {
+    .validate_xgboost_model_params(resolved)
+  }
   resolved
 }
 
 #' List registered dsFlower models
 #'
-#' @return A data.frame with one row per registered model.
+#' @return A data.frame with one row per registered model. Column
+#'   \code{available} is false for a typed request surface whose trusted backend
+#'   has not passed its release gate.
 #' @export
 ds.flower.list_models <- function() {
   names_ <- ls(.dsflower_models, sorted = TRUE)
   if (!length(names_)) {
     return(data.frame(name = character(), track = character(),
                       data_kinds = character(),
+                      available = logical(),
                       loss = character(), vetted = logical(),
                       description = character(), stringsAsFactors = FALSE))
   }
@@ -535,6 +558,7 @@ ds.flower.list_models <- function() {
     m <- .dsflower_models[[nm]]
     data.frame(name = m$name, track = m$track,
                data_kinds = paste(m$data_kinds %||% "tabular", collapse = ","),
+               available = isTRUE(m$available),
                loss = m$loss %||% NA_character_, vetted = m$vetted,
                description = m$description %||% NA_character_,
                stringsAsFactors = FALSE)
@@ -587,6 +611,21 @@ ds.flower.model_parameters <- function(name) {
          call. = FALSE)
   }
   m
+}
+
+# Resolve fields which depend on a built-in model's typed parameters.
+.dsflower_model_loss <- function(model, params) {
+  if (identical(model$track, "native_tree") &&
+      identical(model$engine, "xgboost")) {
+    return(if (identical(params$task, "regression"))
+      "squared_error" else "binary_logistic")
+  }
+  model$loss
+}
+
+.dsflower_model_framework <- function(model) {
+  if (identical(model$track, "native_tree")) return(model$engine)
+  if (identical(model$data_kinds, "image")) "pytorch_vision" else "pytorch"
 }
 
 # --------------------------------------------------------------------------- #
@@ -947,6 +986,36 @@ ds.flower.model_parameters <- function(name) {
         data_kinds = "image",
         description = paste0("Vision classifier head on a frozen ", nm, " backbone."))
   })
+
+  # Native engines are first-party node adapters, never extension generators.
+  # The public object is useful for constructing and hashing the exact request,
+  # but availability remains false until the native backend release gates pass.
+  .dsflower_models[["xgboost"]] <- list(
+    name = "xgboost", track = "native_tree", engine = "xgboost",
+    generate = function(params) params, loss = NULL,
+    defaults = c(list(task = "binary"),
+      .DSFLOWER_XGBOOST_TASK_DEFAULTS$binary, list(
+      min_child_weight = 1,
+      min_split_loss = 0, reg_alpha = 0, reg_lambda = 1,
+      max_delta_step = 1)),
+    task_defaults = .DSFLOWER_XGBOOST_TASK_DEFAULTS,
+    parameter_types = c(
+      task = "character", num_boost_round = "positive_integer",
+      max_depth = "positive_integer", learning_rate = "positive_number",
+      min_child_weight = "nonnegative_number",
+      min_split_loss = "nonnegative_number",
+      reg_alpha = "nonnegative_number", reg_lambda = "positive_number",
+      max_delta_step = "positive_number"),
+    parameter_aliases = c(
+      n_estimators = "num_boost_round", eta = "learning_rate",
+      gamma = "min_split_loss", alpha = "reg_alpha",
+      lambda = "reg_lambda"),
+    required_parameters = character(),
+    parameter_choices = list(task = c("binary", "regression")),
+    description = paste0(
+      "Native-tight DP XGBoost request with task-aware defaults ",
+      "(backend not yet available)."),
+    data_kinds = "tabular", available = FALSE, vetted = TRUE)
 
   invisible(TRUE)
 }

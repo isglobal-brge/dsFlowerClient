@@ -7,7 +7,9 @@
 ds.flower.list_models()
 }
 \value{
-A data.frame with one row per registered model.
+A data.frame with one row per registered model. Column
+  \code{available} is false for a typed request surface whose trusted backend
+  has not passed its release gate.
 }
 \description{
 List registered dsFlower models

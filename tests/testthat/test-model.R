@@ -68,18 +68,19 @@ test_that("pytorch_multiclass accepts overrides", {
   expect_equal(m$params$n_classes, 5L)
 })
 
-test_that("retired tree backends are not exposed", {
+test_that("only the exact native XGBoost request surface is exposed", {
   registered <- ds.flower.list_models()$name
-  expect_false(any(c("xgboost", "dp_gbdt") %in% registered))
-  for (name in c("xgboost", "dp_gbdt", "xgb", "gbdt", "dp_tree")) {
+  expect_true("xgboost" %in% registered)
+  expect_false("dp_gbdt" %in% registered)
+  for (name in c("dp_gbdt", "xgb", "gbdt", "dp_tree")) {
     expect_error(ds.flower.model(name), "Unknown model")
   }
 
   exports <- getNamespaceExports("dsFlowerClient")
-  expect_false(any(c("ds.flower.model.xgboost",
-                     "ds.flower.model.dp_gbdt") %in% exports))
+  expect_true("ds.flower.model.xgboost" %in% exports)
+  expect_false("ds.flower.model.dp_gbdt" %in% exports)
   namespace <- asNamespace("dsFlowerClient")
-  expect_false(exists("ds.flower.model.xgboost", namespace, inherits = FALSE))
+  expect_true(exists("ds.flower.model.xgboost", namespace, inherits = FALSE))
   expect_false(exists("ds.flower.model.dp_gbdt", namespace, inherits = FALSE))
 })
 

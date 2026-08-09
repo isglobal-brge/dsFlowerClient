@@ -284,8 +284,8 @@ test_that("fit forwards public feature bounds through its stable argument contra
 
 test_that("submit exposes public target semantics in canonical order", {
   expect_identical(
-    tail(names(formals(ds.flower.submit)), 4L),
-    c("feature_bounds", "target_levels", "target_bounds",
+    tail(names(formals(ds.flower.submit)), 5L),
+    c("feature_bounds", "feature_cuts", "target_levels", "target_bounds",
       "allow_insecure_http"))
 })
 
@@ -434,7 +434,7 @@ test_that("bce_logits cannot silently request a multiclass head", {
   )
 })
 
-test_that("retired tree model names fail before any side effect", {
+test_that("retired tree model name fails before any side effect", {
   reached_cli <- FALSE
   local_mocked_bindings(
     .require_flwr_cli = function() {
@@ -444,14 +444,12 @@ test_that("retired tree model names fail before any side effect", {
     .package = "dsFlowerClient"
   )
 
-  for (model in c("xgboost", "dp_gbdt")) {
-    expect_error(
-      ds.flower.submit(
-        conns = list(site = TRUE), model = model,
-        target = "y", features = "x"),
-      "Unknown model"
-    )
-  }
+  expect_error(
+    ds.flower.submit(
+      conns = list(site = TRUE), model = "dp_gbdt",
+      target = "y", features = "x"),
+    "Unknown model"
+  )
   expect_false(reached_cli)
 })
 

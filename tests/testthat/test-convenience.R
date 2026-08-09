@@ -26,8 +26,8 @@ test_that("fit exposes only its executable argument contract", {
     "conns", "data", "resource", "symbol", "target", "features", "model",
     "model_params", "torch_backend", "strategy", "strategy_params", "rounds",
     "task", "output_dir", "output_name", "silent", "verbose",
-    "feature_bounds", "target_levels", "target_bounds", "allow_insecure_http",
-    "data_kind"))
+    "feature_bounds", "feature_cuts", "target_levels", "target_bounds",
+    "allow_insecure_http", "data_kind"))
 })
 
 test_that("fit resolves strategy_params into the executable strategy", {

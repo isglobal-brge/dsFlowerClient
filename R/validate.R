@@ -2,6 +2,118 @@
 # model is transported as Flower arrays; exact predictions, labels, counts and
 # site metrics remain inside each trusted ClientApp.
 
+.XGBOOST_ENSEMBLE_FILE <- "model.xgboost-ensemble.json"
+.XGBOOST_ENSEMBLE_FORMAT <- "dsflower-xgboost-ensemble-json-v1"
+.XGBOOST_ENSEMBLE_CONTRACT <- "dsflower-xgboost-ensemble-v1"
+.XGBOOST_ENSEMBLE_MAX_BYTES <- 64 * 1024^2
+.XGBOOST_ENSEMBLE_SANITIZATION <- list(
+  profile = "dsflower-xgboost-ensemble-v1",
+  privacy_basis = "direct-dp-training-postprocessing",
+  contains_raw_records = FALSE,
+  contains_unnoised_statistics = FALSE,
+  contains_feature_names = FALSE,
+  contains_target_name = FALSE,
+  contains_training_history = FALSE,
+  contains_backend_logs = FALSE,
+  contains_paths = FALSE,
+  contains_executable_payload = FALSE)
+
+.validation_sha256 <- function(value, name) {
+  value <- .validation_atomic(value)
+  if (!is.character(value) || length(value) != 1L || is.na(value) ||
+      !grepl("^[0-9a-f]{64}$", value)) {
+    stop(name, " must be one lowercase SHA-256 digest.", call. = FALSE)
+  }
+  value
+}
+
+# Validate the public global ensemble before any DSI or private-data access.
+.validate_xgboost_ensemble_artifact <- function(meta, model_dir, task) {
+  expected_schema_hash <- .validation_sha256(
+    meta$public_schema_sha256, "Saved XGBoost public schema SHA-256")
+  artifact <- meta$artifact
+  if (!is.list(artifact) || !identical(
+      sort(names(artifact)), c("file", "format", "sha256", "size_bytes"))) {
+    stop("Saved XGBoost artifact metadata has unsupported fields.",
+         call. = FALSE)
+  }
+  file <- .validation_atomic(artifact$file)
+  format <- .validation_atomic(artifact$format)
+  if (!identical(file, .XGBOOST_ENSEMBLE_FILE) ||
+      !identical(format, .XGBOOST_ENSEMBLE_FORMAT)) {
+    stop("Saved XGBoost artifact format is not the sanitized ensemble profile.",
+         call. = FALSE)
+  }
+  expected_size <- suppressWarnings(as.numeric(.validation_atomic(
+    artifact$size_bytes)))
+  if (length(expected_size) != 1L || is.na(expected_size) ||
+      !is.finite(expected_size) || expected_size != floor(expected_size) ||
+      expected_size < 1 || expected_size > .XGBOOST_ENSEMBLE_MAX_BYTES) {
+    stop("Saved XGBoost artifact size is outside its public bound.",
+         call. = FALSE)
+  }
+  expected_hash <- .validation_sha256(
+    artifact$sha256, "Saved XGBoost artifact SHA-256")
+  sanitization <- meta$sanitization
+  if (!is.list(sanitization) ||
+      !identical(sort(names(sanitization)),
+                 sort(names(.XGBOOST_ENSEMBLE_SANITIZATION))) ||
+      !identical(sanitization[sort(names(sanitization))],
+                 .XGBOOST_ENSEMBLE_SANITIZATION[
+                   sort(names(.XGBOOST_ENSEMBLE_SANITIZATION))])) {
+    stop("Saved XGBoost artifact lacks the exact sanitization attestation.",
+         call. = FALSE)
+  }
+  path <- file.path(model_dir, file)
+  info <- file.info(path)
+  if (!file.exists(path) || is.na(info$isdir) || isTRUE(info$isdir) ||
+      is.na(info$size) || info$size != expected_size) {
+    stop("Saved XGBoost ensemble artifact is missing or has the wrong size.",
+         call. = FALSE)
+  }
+  con <- file(path, open = "rb")
+  on.exit(close(con), add = TRUE)
+  bytes <- readBin(con, what = "raw", n = as.integer(expected_size))
+  if (length(bytes) != expected_size ||
+      !identical(digest::digest(bytes, algo = "sha256", serialize = FALSE),
+                 expected_hash)) {
+    stop("Saved XGBoost ensemble artifact SHA-256 mismatch.", call. = FALSE)
+  }
+  value <- tryCatch(
+    jsonlite::fromJSON(rawToChar(bytes), simplifyVector = FALSE),
+    error = function(e) NULL)
+  if (!is.list(value) || !identical(
+      sort(names(value)),
+      c("aggregation", "contract", "engine", "models",
+        "public_schema_sha256", "task", "version")) ||
+      !identical(value$contract, .XGBOOST_ENSEMBLE_CONTRACT) ||
+      !identical(value$engine, "xgboost") ||
+      !identical(value$task, task) ||
+      !identical(value$aggregation, "mean_prediction") ||
+      !(is.integer(value$version) || is.numeric(value$version)) ||
+      is.logical(value$version) || length(value$version) != 1L ||
+      is.na(value$version) || !is.finite(value$version) ||
+      value$version != 1 || !is.list(value$models) || !length(value$models) ||
+      !all(vapply(value$models, function(model) {
+        is.list(model) && identical(sort(names(model)), c("learner", "version"))
+      }, logical(1)))) {
+    stop("Saved XGBoost ensemble violates its canonical container contract.",
+         call. = FALSE)
+  }
+  container_schema_hash <- .validation_sha256(
+    value$public_schema_sha256,
+    "Saved XGBoost ensemble public schema SHA-256")
+  if (!identical(container_schema_hash, expected_schema_hash)) {
+    stop("Saved XGBoost ensemble public schema SHA-256 mismatch.",
+         call. = FALSE)
+  }
+  list(
+    path = normalizePath(path, winslash = "/", mustWork = TRUE),
+    format = format, sha256 = expected_hash, size_bytes = as.integer(expected_size),
+    public_schema_sha256 = expected_schema_hash,
+    sanitization = sanitization)
+}
+
 .validation_scalar_integer <- function(value, name, lower, upper) {
   value <- unlist(value, use.names = FALSE)
   if (!is.numeric(value) || is.logical(value)) {
@@ -85,9 +197,9 @@
     stop("Saved model metadata is unreadable.", call. = FALSE)
   }
   track <- tolower(as.character(.validation_atomic(meta$track %||% "")))
-  if (length(track) != 1L || !identical(track, "neural")) {
-    stop("Private validation supports declarative neural artifacts.",
-         call. = FALSE)
+  if (length(track) != 1L || !track %in% c("neural", "native_tree")) {
+    stop("Private validation supports declarative neural artifacts or sanitized ",
+         "native-tree artifacts.", call. = FALSE)
   }
   data_kind <- .validation_atomic(meta$data_kind)
   if (!is.character(data_kind) || length(data_kind) != 1L ||
@@ -112,6 +224,59 @@
          call. = FALSE)
   }
   target_bounds <- .validation_target_bounds(meta)
+  bins <- .validation_scalar_integer(bins, "bins", 4L, 512L)
+
+  if (identical(track, "native_tree")) {
+    expected_fields <- c(
+      "artifact", "data_kind", "engine", "feature_lower", "feature_upper",
+      "features", "native_tree_request_sha256", "public_schema_sha256",
+      "sanitization", "target_bounds", "target_levels", "task", "track")
+    if (is.null(names(meta)) || anyDuplicated(names(meta)) ||
+        !identical(sort(names(meta)), expected_fields)) {
+      stop("Saved XGBoost metadata has unsupported or missing fields.",
+           call. = FALSE)
+    }
+    engine <- tolower(as.character(.validation_atomic(meta$engine %||% "")))
+    task <- tolower(as.character(.validation_atomic(meta$task %||% "")))
+    if (length(engine) != 1L || !identical(engine, "xgboost") ||
+        length(task) != 1L || !task %in% c("binary", "regression")) {
+      stop("Saved native-tree validation supports XGBoost binary or regression only.",
+           call. = FALSE)
+    }
+    if (is.null(feature_bounds)) {
+      stop("Saved XGBoost validation requires exact public feature bounds.",
+           call. = FALSE)
+    }
+    public_levels <- .validation_atomic(meta$target_levels)
+    if (identical(task, "binary")) {
+      if (length(public_levels) != 2L || anyNA(public_levels) ||
+          anyDuplicated(public_levels) || !is.null(target_bounds)) {
+        stop("Saved binary XGBoost requires two public target levels and no ",
+             "regression target bounds.", call. = FALSE)
+      }
+    } else if (!is.null(public_levels) || is.null(target_bounds)) {
+      stop("Saved regression XGBoost requires public target bounds and no ",
+           "classification levels.", call. = FALSE)
+    }
+    request_sha256 <- .validation_sha256(
+      meta$native_tree_request_sha256,
+      "Saved native-tree request SHA-256")
+    artifact <- .validate_xgboost_ensemble_artifact(meta, model_dir, task)
+    return(list(
+      model_dir = model_dir, artifact = artifact$path,
+      artifact_format = artifact$format, artifact_sha256 = artifact$sha256,
+      artifact_size_bytes = artifact$size_bytes,
+      sanitization = artifact$sanitization,
+      native_tree_request_sha256 = request_sha256,
+      public_schema_sha256 = artifact$public_schema_sha256,
+      engine = engine, track = track, task = task, bins = bins,
+      features = features, feature_bounds = feature_bounds,
+      target_bounds = target_bounds, target_levels = public_levels,
+      model_spec = NULL,
+      loss_name = if (identical(task, "binary")) "bce_logits" else "mse",
+      n_classes = 2L, n_labels = 2L, data_kind = data_kind))
+  }
+
   params <- meta$model_params
   if (!is.list(params)) params <- list()
   public_levels <- .validation_atomic(meta$target_levels)
@@ -121,8 +286,6 @@
     "Saved num_classes", 2L, 1024L)
   n_labels <- .validation_scalar_integer(
     params[["num_labels"]] %||% 2L, "Saved num_labels", 2L, 1024L)
-  bins <- .validation_scalar_integer(bins, "bins", 4L, 512L)
-
   spec <- meta$model_spec
   loss <- tolower(as.character(.validation_atomic(meta$loss_name %||% "")))
   if (!is.list(spec) || !length(spec) || length(loss) != 1L || !nzchar(loss)) {
@@ -175,6 +338,11 @@
 }
 
 .validate_validation_artifact_preflight <- function(contract) {
+  if (identical(contract$track, "native_tree")) {
+    # .resolve_validation_contract already parsed, bounded and hash-checked the
+    # singular canonical ensemble without contacting a data node.
+    return(invisible(TRUE))
+  }
   .ensure_client_framework("pytorch")
   script <- system.file(
     "python", "validate_model_artifact.py", package = "dsFlowerClient")
@@ -304,8 +472,9 @@
 
 #' Differentially-private federated model validation
 #'
-#' Evaluates a released tabular declarative neural model on the
-#' dataset assigned for this call inside each data node. Vision artifacts fail
+#' Evaluates a released tabular declarative neural model, or a locally verified
+#' sanitized native-tree ensemble once that backend capability is enabled, on
+#' the dataset assigned for this call inside each data node. Vision artifacts fail
 #' explicitly because this validator does not reconstruct image loaders or
 #' backbones. Reusing the training dataset is
 #' resubstitution validation; assigning an independent dataset is external
@@ -347,6 +516,11 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
   torch_backend <- .validate_torch_backend(torch_backend)
   contract <- .resolve_validation_contract(model, bins)
   .validate_validation_artifact_preflight(contract)
+  if (identical(contract$track, "native_tree") &&
+      !isTRUE(.NATIVE_TREE_XGBOOST_AVAILABLE)) {
+    stop("The sanitized XGBoost validation contract is valid, but native ",
+         "backend capability is not enabled in this release.", call. = FALSE)
+  }
   expected_targets <- if (identical(contract$task, "multilabel")) {
     contract$n_labels
   } else 1L

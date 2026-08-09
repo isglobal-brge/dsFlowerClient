@@ -65,15 +65,12 @@ ds.flower.model <- function(name = "pytorch_logreg", ...) {
     registered <- .dsflower_get_model(canonical)
     params <- .dsflower_resolve_model_params(
       registered, name$params %||% list())
-    framework <- if (identical(registered$data_kinds, "image")) {
-      "pytorch_vision"
-    } else {
-      "pytorch"
-    }
+    framework <- .dsflower_model_framework(registered)
     return(structure(list(
       name = registered$name, track = registered$track,
       framework = framework,
-      loss = registered$loss, params = params), class = "dsflower_model"))
+      loss = .dsflower_model_loss(registered, params), params = params),
+      class = "dsflower_model"))
   }
   if (!is.character(name) || length(name) != 1L) {
     stop("'name' must be a dsflower_model object or a single model name.",
@@ -87,13 +84,9 @@ ds.flower.model <- function(name = "pytorch_logreg", ...) {
 
   m <- .dsflower_get_model(canonical)   # registry lookup; errors listing available
   params <- .dsflower_resolve_model_params(m, list(...))
-  framework <- if (identical(m$data_kinds, "image")) {
-    "pytorch_vision"
-  } else {
-    "pytorch"
-  }
+  framework <- .dsflower_model_framework(m)
   structure(list(name = m$name, track = m$track, framework = framework,
-                 loss = m$loss, params = params),
+                 loss = .dsflower_model_loss(m, params), params = params),
             class = "dsflower_model")
 }
 
@@ -216,10 +209,15 @@ ds.flower.task <- function(name = "classification") {
 #'   \code{silent = TRUE}.
 #' @param feature_bounds Optional public feature bounds as
 #'   \code{list(lower=..., upper=...)} in feature order.
+#' @param feature_cuts Required for native-tight tree models: a list containing
+#'   one strictly increasing vector of public cut points per feature, each
+#'   strictly inside \code{feature_bounds}. For XGBoost, seven data-independent
+#'   cuts per feature are the benchmark-backed starting point; they are never
+#'   inferred from private node data.
 #' @param target_levels Optional ordered public classification label vocabulary.
 #'   Non-numeric labels require it; missing or unknown values map to public code
 #'   zero. Multilabel applies the same public two-level vocabulary independently
-#'   to every target column.
+#'   to every target column. Binary XGBoost requires exactly two ordered levels.
 #' @param target_bounds Required public \code{list(lower=..., upper=...)} for
 #'   regression/count models.
 #' @param allow_insecure_http Character vector of exact connection names allowed
@@ -248,6 +246,7 @@ ds.flower.fit <- function(conns,
                           silent = FALSE,
                           verbose = FALSE,
                           feature_bounds = NULL,
+                          feature_cuts = NULL,
                           target_levels = NULL,
                           target_bounds = NULL,
                           allow_insecure_http = getOption(
@@ -302,6 +301,7 @@ ds.flower.fit <- function(conns,
     registered$defaults <- model_spec$params %||% list()
     model_spec$params <- .dsflower_resolve_model_params(
       registered, model_params)
+    model_spec$loss <- .dsflower_model_loss(registered, model_spec$params)
   }
 
   strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
@@ -318,7 +318,10 @@ ds.flower.fit <- function(conns,
     task_spec <- ds.flower.task(task)
     .assert_supported_task(task_spec)
     model_loss <- model_spec$loss %||% .dsflower_get_model(model_spec$name)$loss
-    expected_task <- if (model_loss %in% c("poisson_nll", "negbin_nll")) {
+    expected_task <- if (identical(model_spec$track, "native_tree")) {
+      if (identical(model_spec$params$task, "regression"))
+        "regression" else "classification"
+    } else if (model_loss %in% c("poisson_nll", "negbin_nll")) {
       "count"
     } else if (model_loss %in% c(
                  "mse", "huber", "quantile", "gamma_nll")) {
@@ -356,6 +359,7 @@ ds.flower.fit <- function(conns,
     num_rounds = rounds, model_params = list(), strategy = strategy_spec,
     data_kind = data_kind, torch_backend = torch_backend,
     feature_bounds = feature_bounds,
+    feature_cuts = feature_cuts,
     target_levels = target_levels, target_bounds = target_bounds,
     allow_insecure_http = allow_insecure_http,
     output_dir = output_dir, output_name = output_name,

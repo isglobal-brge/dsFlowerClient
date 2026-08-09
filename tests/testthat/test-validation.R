@@ -17,6 +17,51 @@ validation_model_fixture <- function(track = "neural", loss = "bce_logits") {
   path
 }
 
+xgboost_validation_model_fixture <- function(task = "binary") {
+  path <- withr::local_tempdir(.local_envir = parent.frame())
+  artifact_name <- "model.xgboost-ensemble.json"
+  public_schema_sha256 <- strrep("b", 64L)
+  container <- list(
+    contract = "dsflower-xgboost-ensemble-v1", version = 1L,
+    engine = "xgboost", task = task, aggregation = "mean_prediction",
+    public_schema_sha256 = public_schema_sha256,
+    models = list(list(learner = list(attributes = list()),
+                       version = list(3L, 4L, 0L))))
+  artifact_path <- file.path(path, artifact_name)
+  jsonlite::write_json(container, artifact_path, auto_unbox = TRUE,
+                       null = "null")
+  bytes <- readBin(artifact_path, "raw", n = file.info(artifact_path)$size)
+  artifact_hash <- digest::digest(bytes, algo = "sha256", serialize = FALSE)
+  sanitization <- list(
+    profile = "dsflower-xgboost-ensemble-v1",
+    privacy_basis = "direct-dp-training-postprocessing",
+    contains_raw_records = FALSE,
+    contains_unnoised_statistics = FALSE,
+    contains_feature_names = FALSE,
+    contains_target_name = FALSE,
+    contains_training_history = FALSE,
+    contains_backend_logs = FALSE,
+    contains_paths = FALSE,
+    contains_executable_payload = FALSE)
+  meta <- list(
+    track = "native_tree", engine = "xgboost", task = task,
+    data_kind = "tabular", features = c("age", "marker"),
+    feature_lower = c(0, -5), feature_upper = c(120, 5),
+    target_levels = if (identical(task, "binary")) c("control", "case") else NULL,
+    target_bounds = if (identical(task, "regression"))
+      list(lower = 0, upper = 100) else NULL,
+    native_tree_request_sha256 = strrep("a", 64L),
+    public_schema_sha256 = public_schema_sha256,
+    artifact = list(
+      file = artifact_name,
+      format = "dsflower-xgboost-ensemble-json-v1",
+      size_bytes = as.integer(length(bytes)), sha256 = artifact_hash),
+    sanitization = sanitization)
+  jsonlite::write_json(meta, file.path(path, "metadata.json"),
+                       auto_unbox = TRUE, null = "null")
+  path
+}
+
 test_that("validation contract resolves a declarative neural artifact", {
   path <- validation_model_fixture()
   contract <- dsFlowerClient:::.resolve_validation_contract(path, 24L)
@@ -34,6 +79,100 @@ test_that("validation treats quantile output as bounded regression", {
   expect_identical(contract$task, "regression")
   expect_identical(contract$loss_name, "quantile")
   expect_equal(contract$target_bounds, list(lower = 0, upper = 100))
+})
+
+test_that("validation resolves only a sanitized XGBoost ensemble contract", {
+  path <- xgboost_validation_model_fixture()
+  contract <- dsFlowerClient:::.resolve_validation_contract(path, 24L)
+  expect_identical(contract$track, "native_tree")
+  expect_identical(contract$engine, "xgboost")
+  expect_identical(contract$task, "binary")
+  expect_identical(contract$data_kind, "tabular")
+  expect_identical(
+    contract$artifact_format, "dsflower-xgboost-ensemble-json-v1")
+  expect_match(contract$artifact_sha256, "^[0-9a-f]{64}$")
+  expect_identical(contract$native_tree_request_sha256, strrep("a", 64L))
+  expect_identical(contract$public_schema_sha256, strrep("b", 64L))
+  expect_identical(contract$loss_name, "bce_logits")
+
+  regression <- dsFlowerClient:::.resolve_validation_contract(
+    xgboost_validation_model_fixture("regression"), 32L)
+  expect_identical(regression$task, "regression")
+  expect_equal(regression$target_bounds, list(lower = 0, upper = 100))
+  expect_identical(regression$loss_name, "mse")
+})
+
+test_that("XGBoost validation artifact failures happen before DSI", {
+  expect_identical(
+    dsFlowerClient:::.XGBOOST_ENSEMBLE_MAX_BYTES, 64 * 1024^2)
+  path <- xgboost_validation_model_fixture()
+  reached_cli <- FALSE
+  local_mocked_bindings(
+    .require_flwr_cli = function() {
+      reached_cli <<- TRUE
+      stop("CLI must not be reached")
+    },
+    .package = "dsFlowerClient")
+  expect_error(
+    ds.flower.validate(
+      conns = list(site = TRUE), model = path, target = "outcome",
+      symbol = "D"),
+    "native backend capability is not enabled")
+  expect_false(reached_cli)
+
+  meta_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  meta$artifact$sha256 <- strrep("0", 64L)
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "SHA-256 mismatch")
+
+  path <- xgboost_validation_model_fixture()
+  meta_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  meta$artifact$size_bytes <- 64 * 1024^2 + 1
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "size is outside")
+
+  path <- xgboost_validation_model_fixture()
+  meta_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  meta$sanitization$contains_backend_logs <- TRUE
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "sanitization attestation")
+
+  path <- xgboost_validation_model_fixture()
+  meta_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  meta$public_schema_sha256 <- strrep("c", 64L)
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "public schema SHA-256 mismatch")
+
+  path <- xgboost_validation_model_fixture()
+  meta_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  meta$target_bounds <- list(lower = 0, upper = 1)
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "two public target levels and no regression target bounds")
+
+  path <- xgboost_validation_model_fixture("regression")
+  meta_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  meta$task <- "multiclass"
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "XGBoost binary or regression only")
+  expect_false(reached_cli)
 })
 
 test_that("validation rejects unsupported artifacts and public config early", {

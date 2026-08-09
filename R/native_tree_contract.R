@@ -7,7 +7,7 @@
 .NATIVE_TREE_CONTRACT <- "dsflower-native-tree-request-v1"
 .NATIVE_TREE_ENGINES <- c(
   "catboost", "lightgbm", "random_forest", "xgboost")
-.NATIVE_TREE_MODES <- c("native-tight", "synopsis-flex")
+.NATIVE_TREE_MODES <- "native-tight"
 .NATIVE_TREE_TASKS <- c("binary", "regression")
 .NATIVE_TREE_PARAMETER_TYPES <- c(
   "boolean", "integer", "number", "string",
@@ -38,6 +38,21 @@
 .NATIVE_TREE_MAX_FLOAT_ABS <- 1e12
 .NATIVE_TREE_MAX_TOTAL_CUTS <- 16384L
 .NATIVE_TREE_MANIFEST_MAX_BYTES <- 65536L
+.NATIVE_TREE_XGBOOST_AVAILABLE <- FALSE
+.NATIVE_TREE_XGBOOST_MAX_DEPTH <- 30L
+.NATIVE_TREE_XGBOOST_REQUIRED_PARAMETERS <- c(
+  "learning_rate", "max_delta_step", "max_depth", "min_child_weight",
+  "min_split_loss", "num_boost_round", "reg_alpha", "reg_lambda")
+.NATIVE_TREE_XGBOOST_OPTIONAL_PARAMETERS <- character()
+.NATIVE_TREE_XGBOOST_PARAMETER_TYPES <- c(
+  learning_rate = "number",
+  max_delta_step = "number",
+  max_depth = "integer",
+  min_child_weight = "number",
+  min_split_loss = "number",
+  num_boost_round = "integer",
+  reg_alpha = "number",
+  reg_lambda = "number")
 
 #' Canonical JSON bytes for the native-tree cross-runtime ABI
 #' @keywords internal
@@ -96,12 +111,63 @@
   if (isTRUE(integer)) as.integer(value) else as.numeric(value)
 }
 
-#' Canonicalise the public target schema
+#' Round finite public values through the cross-runtime float32 ABI
+#' @keywords internal
+.native_tree_float32 <- function(value, name) {
+  bytes <- writeBin(as.numeric(value), raw(), size = 4L, endian = "little")
+  result <- readBin(
+    bytes, what = numeric(), n = length(value), size = 4L, endian = "little")
+  if (length(result) != length(value) || any(!is.finite(result))) {
+    stop(name, " must remain finite as float32.", call. = FALSE)
+  }
+  result[result == 0] <- 0
+  result
+}
+
+# Canonicalise one type-preserving public classification label.
+.native_tree_target_level <- function(record) {
+  if (!is.list(record) ||
+      !identical(sort(names(record)), c("type", "value"))) {
+    stop("Each target level must contain exactly type and value.",
+         call. = FALSE)
+  }
+  type <- .native_tree_string(
+    record$type, "target level type", "^(string|boolean|number)$", 16L)
+  value <- record$value
+  if (is.list(value)) {
+    value <- unlist(value, recursive = FALSE, use.names = FALSE)
+  }
+  if (length(value) != 1L || is.object(value) || anyNA(value)) {
+    stop("Each target level must contain one plain non-missing scalar.",
+         call. = FALSE)
+  }
+  if (identical(type, "string")) {
+    if (!is.character(value)) {
+      stop("string target levels must be character.", call. = FALSE)
+    }
+    value <- .native_tree_string(
+      value, "string target level", max_bytes = 512L)
+  } else if (identical(type, "boolean")) {
+    if (!is.logical(value)) {
+      stop("boolean target levels must be logical.", call. = FALSE)
+    }
+    value <- as.logical(value)
+  } else {
+    value <- .native_tree_number_vector(value, "number target level")
+    if (length(value) != 1L) {
+      stop("number target levels must be scalar.", call. = FALSE)
+    }
+    value <- value[[1L]]
+  }
+  list(type = type, value = unname(value))
+}
+
+#' Canonicalise the public target schema and typed binary labels
 #' @keywords internal
 .native_tree_target_schema <- function(target, task, features) {
-  if (!is.list(target) ||
-      !identical(sort(names(target)), c("kind", "lower", "name", "upper"))) {
-    stop("target must contain exactly name, kind, lower and upper.",
+  if (!is.list(target) || !identical(
+      sort(names(target)), c("kind", "levels", "lower", "name", "upper"))) {
+    stop("target must contain exactly name, kind, levels, lower and upper.",
          call. = FALSE)
   }
   name <- .native_tree_string(target$name, "target name",
@@ -122,11 +188,27 @@
       stop("binary task requires target kind binary with public bounds 0 and 1.",
            call. = FALSE)
     }
+    if (!is.list(target$levels) || length(target$levels) != 2L) {
+      stop("binary task requires exactly two ordered tagged target levels.",
+           call. = FALSE)
+    }
+    levels <- lapply(target$levels, .native_tree_target_level)
+    identities <- vapply(
+      levels, function(value) rawToChar(.native_tree_json(value)), character(1))
+    if (anyDuplicated(identities)) {
+      stop("binary target levels must be distinct and ordered.", call. = FALSE)
+    }
   } else if (!identical(kind, "continuous") || lower >= upper) {
     stop("regression task requires continuous target with lower < upper.",
          call. = FALSE)
+  } else {
+    if (!is.null(target$levels)) {
+      stop("regression target levels must be null.", call. = FALSE)
+    }
+    levels <- NULL
   }
-  list(name = name, kind = kind, lower = lower, upper = upper)
+  list(name = name, kind = kind, levels = levels,
+       lower = lower, upper = upper)
 }
 
 #' Canonicalise and hash the public feature and target schema
@@ -294,14 +376,87 @@
   if (anyDuplicated(names)) stop("Parameter names must be unique.", call. = FALSE)
   out <- out[order(names, method = "radix")]
   names <- sort(names, method = "radix")
-  if (identical(mode, "native-tight")) {
-    forbidden <- intersect(names, .NATIVE_TREE_TIGHT_FORBIDDEN)
-    if (length(forbidden)) {
-      stop("native-tight forbids callbacks, objectives, evaluation and early stopping: ",
-           paste(forbidden, collapse = ", "), ".", call. = FALSE)
-    }
+  forbidden <- intersect(names, .NATIVE_TREE_TIGHT_FORBIDDEN)
+  if (length(forbidden)) {
+    stop("native-tight forbids callbacks, objectives, evaluation and early stopping: ",
+         paste(forbidden, collapse = ", "), ".", call. = FALSE)
   }
   unname(out)
+}
+
+#' Enforce the initial native-tight XGBoost parameter profile
+#' @keywords internal
+.native_tree_xgboost_parameters <- function(parameters, schema, mode) {
+  if (!identical(mode, "native-tight")) {
+    stop("XGBoost request v1 supports native-tight mode only.", call. = FALSE)
+  }
+  by_name <- stats::setNames(
+    parameters, vapply(parameters, `[[`, character(1), "name"))
+  actual <- names(by_name)
+  allowed <- c(.NATIVE_TREE_XGBOOST_REQUIRED_PARAMETERS,
+               .NATIVE_TREE_XGBOOST_OPTIONAL_PARAMETERS)
+  unknown <- setdiff(actual, allowed)
+  missing <- setdiff(.NATIVE_TREE_XGBOOST_REQUIRED_PARAMETERS, actual)
+  if (length(unknown)) {
+    stop("Unsupported XGBoost parameter(s): ",
+         paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  if (length(missing)) {
+    stop("Missing required XGBoost parameter(s): ",
+         paste(missing, collapse = ", "), ".", call. = FALSE)
+  }
+  for (name in actual) {
+    if (!identical(by_name[[name]]$type,
+                   unname(.NATIVE_TREE_XGBOOST_PARAMETER_TYPES[[name]]))) {
+      stop("XGBoost parameter '", name, "' has the wrong declared type.",
+           call. = FALSE)
+    }
+  }
+  bounded <- function(name, lower, upper, lower_open = FALSE) {
+    value <- by_name[[name]]$value
+    lower_ok <- if (isTRUE(lower_open)) value > lower else value >= lower
+    if (length(value) != 1L || !lower_ok || value > upper) {
+      stop("XGBoost parameter '", name, "' is outside its supported range.",
+           call. = FALSE)
+    }
+  }
+  bounded("learning_rate", 0, 1, lower_open = TRUE)
+  bounded("max_delta_step", 0, .NATIVE_TREE_MAX_FLOAT_ABS, lower_open = TRUE)
+  bounded("max_depth", 1, .NATIVE_TREE_XGBOOST_MAX_DEPTH)
+  bounded("min_child_weight", 0, .NATIVE_TREE_MAX_FLOAT_ABS)
+  bounded("min_split_loss", 0, .NATIVE_TREE_MAX_FLOAT_ABS)
+  bounded("num_boost_round", 1, .NATIVE_TREE_RESOURCE_LIMITS$max_trees)
+  bounded("reg_alpha", 0, .NATIVE_TREE_MAX_FLOAT_ABS)
+  bounded("reg_lambda", 0, .NATIVE_TREE_MAX_FLOAT_ABS, lower_open = TRUE)
+  for (name in c("learning_rate", "max_delta_step", "reg_lambda")) {
+    if (.native_tree_float32(by_name[[name]]$value, name) <= 0) {
+      stop("XGBoost parameter '", name,
+           "' must remain positive as float32.", call. = FALSE)
+    }
+  }
+  if (!is.null(schema$lower) && !is.null(schema$upper) &&
+      !is.null(schema$cuts)) {
+    lower <- .native_tree_float32(schema$lower, "public feature lower bounds")
+    upper <- .native_tree_float32(schema$upper, "public feature upper bounds")
+    cuts <- lapply(schema$cuts, .native_tree_float32,
+                   name = "public feature cuts")
+    valid <- lower < upper
+    for (i in seq_along(cuts)) {
+      valid[[i]] <- valid[[i]] && all(diff(cuts[[i]]) > 0) &&
+        all(cuts[[i]] > lower[[i]]) && all(cuts[[i]] < upper[[i]])
+    }
+    if (!all(valid)) {
+      stop("XGBoost public cuts and bounds must remain strict as float32.",
+           call. = FALSE)
+    }
+    target <- .native_tree_float32(
+      c(schema$target$lower, schema$target$upper), "public target bounds")
+    if (target[[1L]] >= target[[2L]]) {
+      stop("XGBoost public target bounds must remain strict as float32.",
+           call. = FALSE)
+    }
+  }
+  invisible(TRUE)
 }
 
 #' Canonicalise hard execution ceilings
@@ -383,7 +538,7 @@
   schema <- .native_tree_public_schema(
     schema$features, list(lower = schema$lower, upper = schema$upper),
     schema$cuts, schema$target, task, schema$sha256)
-  if (identical(mode, "native-tight") && is.null(schema$cuts)) {
+  if (is.null(schema$cuts)) {
     stop("native-tight requires public cuts for every feature.", call. = FALSE)
   }
   parameters <- .native_tree_parameters(manifest$parameters, mode)
@@ -394,6 +549,9 @@
   if (!is.null(schema$cuts) &&
       max(vapply(schema$cuts, length, integer(1)) + 1L) > resources$max_bins) {
     stop("Public cut count exceeds resources$max_bins.", call. = FALSE)
+  }
+  if (identical(engine, "xgboost")) {
+    .native_tree_xgboost_parameters(parameters, schema, mode)
   }
   .native_tree_parameter_resource_check(parameters, resources)
   list(
@@ -488,4 +646,117 @@
     json = rawToChar(bytes),
     b64 = gsub("[\r\n]", "", jsonlite::base64_enc(bytes)),
     sha256 = digest::digest(bytes, algo = "sha256", serialize = FALSE))
+}
+
+#' Build the exact typed XGBoost parameter array for request v1
+#' @keywords internal
+.native_tree_xgboost_parameter_values <- function(params) {
+  if (!is.list(params) || is.null(names(params)) || anyNA(names(params)) ||
+      any(!nzchar(names(params))) || anyDuplicated(names(params))) {
+    stop("XGBoost params must be a uniquely named list.", call. = FALSE)
+  }
+  names <- c(.NATIVE_TREE_XGBOOST_REQUIRED_PARAMETERS,
+             .NATIVE_TREE_XGBOOST_OPTIONAL_PARAMETERS)
+  unknown <- setdiff(names(params), c("task", names))
+  if (length(unknown)) {
+    stop("Unsupported XGBoost parameter(s): ",
+         paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  present <- intersect(names, names(params))
+  values <- stats::setNames(vector("list", length(present)), present)
+  for (name in present) {
+    type <- unname(.NATIVE_TREE_XGBOOST_PARAMETER_TYPES[[name]])
+    values[[name]] <- list(type = type, value = params[[name]])
+  }
+  values
+}
+
+#' Validate XGBoost modelling parameters before a public schema is available
+#' @keywords internal
+.validate_xgboost_model_params <- function(params) {
+  values <- .native_tree_xgboost_parameter_values(params)
+  records <- .build_native_tree_parameters(values)
+  canonical <- .native_tree_parameters(records, "native-tight")
+  .native_tree_xgboost_parameters(
+    canonical, list(features = character()), "native-tight")
+  invisible(params)
+}
+
+# Tag the public binary vocabulary without coercing its scalar type.
+.native_tree_tag_target_levels <- function(levels) {
+  if (is.factor(levels)) levels <- as.character(levels)
+  if (!is.atomic(levels) || !is.null(dim(levels)) || length(levels) != 2L ||
+      anyNA(levels) || anyDuplicated(levels)) {
+    stop("Binary XGBoost requires exactly two distinct ordered public target_levels.",
+         call. = FALSE)
+  }
+  type <- if (is.character(levels)) {
+    "string"
+  } else if (is.logical(levels)) {
+    "boolean"
+  } else if (is.numeric(levels)) {
+    if (any(!is.finite(levels))) {
+      stop("Numeric target_levels must be finite.", call. = FALSE)
+    }
+    "number"
+  } else {
+    stop("target_levels must be character, logical, or numeric.",
+         call. = FALSE)
+  }
+  lapply(seq_along(levels), function(index) {
+    .native_tree_target_level(list(type = type, value = levels[[index]]))
+  })
+}
+
+#' Build one canonical analyst-facing XGBoost request
+#' @keywords internal
+.build_xgboost_request <- function(params, features, feature_bounds,
+                                   feature_cuts, target_name, target_levels = NULL,
+                                   target_bounds = NULL,
+                                   schema_sha256 = NULL) {
+  if (!is.list(params) || !is.character(params$task) ||
+      length(params$task) != 1L || is.na(params$task) ||
+      !params$task %in% .NATIVE_TREE_TASKS) {
+    stop("XGBoost params must contain task='binary' or task='regression'.",
+         call. = FALSE)
+  }
+  task <- params$task
+  target <- if (identical(task, "binary")) {
+    if (!is.null(target_bounds)) {
+      stop("Binary XGBoost fixes encoded target bounds to 0 and 1.",
+           call. = FALSE)
+    }
+    list(name = target_name, kind = "binary",
+         levels = .native_tree_tag_target_levels(target_levels),
+         lower = 0, upper = 1)
+  } else {
+    if (!is.null(target_levels)) {
+      stop("Regression XGBoost does not accept target_levels.",
+           call. = FALSE)
+    }
+    if (!is.list(target_bounds) ||
+        !identical(sort(names(target_bounds)), c("lower", "upper"))) {
+      stop("Regression XGBoost requires target_bounds with lower and upper.",
+           call. = FALSE)
+    }
+    list(name = target_name, kind = "continuous", levels = NULL,
+         lower = target_bounds$lower, upper = target_bounds$upper)
+  }
+  cut_counts <- if (is.list(feature_cuts)) {
+    vapply(feature_cuts, length, integer(1))
+  } else {
+    integer()
+  }
+  max_bins <- if (length(cut_counts)) max(cut_counts + 1L) else 2L
+  resources <- .NATIVE_TREE_RESOURCE_DEFAULTS
+  resources$max_features <- length(features)
+  resources$max_trees <- as.integer(params$num_boost_round)
+  resources$max_depth <- as.integer(params$max_depth)
+  resources$max_bins <- as.integer(max_bins)
+  .build_native_tree_manifest(
+    engine = "xgboost", mode = "native-tight", task = task,
+    features = features, bounds = feature_bounds, cuts = feature_cuts,
+    target = target,
+    parameters = .native_tree_xgboost_parameter_values(params),
+    resources = resources, schema_sha256 = schema_sha256)
 }

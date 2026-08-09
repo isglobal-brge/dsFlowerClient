@@ -23,6 +23,7 @@ ds.flower.fit(
   silent = FALSE,
   verbose = FALSE,
   feature_bounds = NULL,
+  feature_cuts = NULL,
   target_levels = NULL,
   target_bounds = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
@@ -79,10 +80,16 @@ feedback (connection, per-round and completion messages).}
 \item{feature_bounds}{Optional public feature bounds as
 \code{list(lower=..., upper=...)} in feature order.}
 
+\item{feature_cuts}{Required for native-tight tree models: a list containing
+one strictly increasing vector of public cut points per feature, each
+strictly inside \code{feature_bounds}. For XGBoost, seven data-independent
+cuts per feature are the benchmark-backed starting point; they are never
+inferred from private node data.}
+
 \item{target_levels}{Optional ordered public classification label vocabulary.
 Non-numeric labels require it; missing or unknown values map to public code
 zero. Multilabel applies the same public two-level vocabulary independently
-to every target column.}
+to every target column. Binary XGBoost requires exactly two ordered levels.}
 
 \item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
 regression/count models.}
