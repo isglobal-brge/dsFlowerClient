@@ -6,7 +6,7 @@
 
 .NATIVE_TREE_CONTRACT <- "dsflower-native-tree-request-v1"
 .NATIVE_TREE_ENGINES <- c(
-  "catboost", "lightgbm", "random_forest", "xgboost")
+  "catboost", "extra_trees", "lightgbm", "random_forest", "xgboost")
 .NATIVE_TREE_MODES <- "native-tight"
 .NATIVE_TREE_TASKS <- c("binary", "regression")
 .NATIVE_TREE_PARAMETER_TYPES <- c(
@@ -52,6 +52,29 @@
   num_boost_round = "integer",
   reg_alpha = "number",
   reg_lambda = "number")
+.NATIVE_TREE_EXTRA_TREES_MAX_DEPTH <- 12L
+.NATIVE_TREE_EXTRA_TREES_MAX_TREES <- 512L
+.NATIVE_TREE_EXTRA_TREES_REQUIRED_PARAMETERS <- c(
+  "max_depth", "n_estimators")
+.NATIVE_TREE_EXTRA_TREES_PARAMETER_TYPES <- c(
+  max_depth = "integer", n_estimators = "integer")
+.NATIVE_TREE_LIGHTGBM_MAX_DEPTH <- 32L
+.NATIVE_TREE_LIGHTGBM_MAX_LEAVES <- 256L
+.NATIVE_TREE_LIGHTGBM_REQUIRED_PARAMETERS <- c(
+  "lambda_l1", "lambda_l2", "learning_rate", "max_delta_step",
+  "max_depth", "min_data_in_leaf", "min_gain_to_split", "num_iterations",
+  "num_leaves")
+.NATIVE_TREE_LIGHTGBM_PARAMETER_TYPES <- c(
+  lambda_l1 = "number", lambda_l2 = "number", learning_rate = "number",
+  max_delta_step = "number", max_depth = "integer",
+  min_data_in_leaf = "integer", min_gain_to_split = "number",
+  num_iterations = "integer", num_leaves = "integer")
+.NATIVE_TREE_CATBOOST_MAX_DEPTH <- 16L
+.NATIVE_TREE_CATBOOST_REQUIRED_PARAMETERS <- c(
+  "depth", "iterations", "l2_leaf_reg", "learning_rate", "max_delta_step")
+.NATIVE_TREE_CATBOOST_PARAMETER_TYPES <- c(
+  depth = "integer", iterations = "integer", l2_leaf_reg = "number",
+  learning_rate = "number", max_delta_step = "number")
 
 #' Canonical JSON bytes for the native-tree cross-runtime ABI
 #' @keywords internal
@@ -458,6 +481,175 @@
   invisible(TRUE)
 }
 
+#' Enforce the data-independent ExtraTrees parameter profile
+#' @keywords internal
+.native_tree_extra_trees_parameters <- function(parameters, schema, mode) {
+  if (!identical(mode, "native-tight")) {
+    stop("ExtraTrees request v1 supports native-tight mode only.",
+         call. = FALSE)
+  }
+  by_name <- stats::setNames(
+    parameters, vapply(parameters, `[[`, character(1), "name"))
+  actual <- names(by_name)
+  unknown <- setdiff(actual, .NATIVE_TREE_EXTRA_TREES_REQUIRED_PARAMETERS)
+  missing <- setdiff(.NATIVE_TREE_EXTRA_TREES_REQUIRED_PARAMETERS, actual)
+  if (length(unknown)) {
+    stop("Unsupported ExtraTrees parameter(s): ",
+         paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  if (length(missing)) {
+    stop("Missing required ExtraTrees parameter(s): ",
+         paste(missing, collapse = ", "), ".", call. = FALSE)
+  }
+  for (name in actual) {
+    if (!identical(by_name[[name]]$type,
+                   unname(.NATIVE_TREE_EXTRA_TREES_PARAMETER_TYPES[[name]]))) {
+      stop("ExtraTrees parameter '", name, "' has the wrong declared type.",
+           call. = FALSE)
+    }
+  }
+  depth <- by_name$max_depth$value
+  trees <- by_name$n_estimators$value
+  if (length(depth) != 1L || depth < 1L ||
+      depth > .NATIVE_TREE_EXTRA_TREES_MAX_DEPTH) {
+    stop("ExtraTrees parameter 'max_depth' is outside its supported range.",
+         call. = FALSE)
+  }
+  if (length(trees) != 1L || trees < 1L ||
+      trees > .NATIVE_TREE_EXTRA_TREES_MAX_TREES) {
+    stop("ExtraTrees parameter 'n_estimators' is outside its supported range.",
+         call. = FALSE)
+  }
+  if (!is.null(schema$lower) && !is.null(schema$upper) &&
+      !is.null(schema$cuts)) {
+    lower <- .native_tree_float32(schema$lower, "public feature lower bounds")
+    upper <- .native_tree_float32(schema$upper, "public feature upper bounds")
+    cuts <- lapply(schema$cuts, .native_tree_float32,
+                   name = "public feature cuts")
+    valid <- lower < upper
+    for (i in seq_along(cuts)) {
+      valid[[i]] <- valid[[i]] && all(diff(cuts[[i]]) > 0) &&
+        all(cuts[[i]] > lower[[i]]) && all(cuts[[i]] < upper[[i]])
+    }
+    if (!all(valid)) {
+      stop("ExtraTrees public cuts and bounds must remain strict as float32.",
+           call. = FALSE)
+    }
+    target <- .native_tree_float32(
+      c(schema$target$lower, schema$target$upper), "public target bounds")
+    if (target[[1L]] >= target[[2L]]) {
+      stop("ExtraTrees public target bounds must remain strict as float32.",
+           call. = FALSE)
+    }
+  }
+  invisible(TRUE)
+}
+
+#' Enforce the dsFlower asymmetric public-bin boosting profile
+#' @keywords internal
+.native_tree_lightgbm_parameters <- function(parameters, schema, mode) {
+  if (!identical(mode, "native-tight")) {
+    stop("LightGBM-style request v1 supports native-tight mode only.",
+         call. = FALSE)
+  }
+  by_name <- stats::setNames(
+    parameters, vapply(parameters, `[[`, character(1), "name"))
+  actual <- names(by_name)
+  unknown <- setdiff(actual, .NATIVE_TREE_LIGHTGBM_REQUIRED_PARAMETERS)
+  missing <- setdiff(.NATIVE_TREE_LIGHTGBM_REQUIRED_PARAMETERS, actual)
+  if (length(unknown)) {
+    stop("Unsupported LightGBM-style parameter(s): ",
+         paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  if (length(missing)) {
+    stop("Missing required LightGBM-style parameter(s): ",
+         paste(missing, collapse = ", "), ".", call. = FALSE)
+  }
+  for (name in actual) {
+    if (!identical(by_name[[name]]$type,
+                   unname(.NATIVE_TREE_LIGHTGBM_PARAMETER_TYPES[[name]]))) {
+      stop("LightGBM-style parameter '", name,
+           "' has the wrong declared type.", call. = FALSE)
+    }
+  }
+  bounded <- function(name, lower, upper, lower_open = FALSE) {
+    value <- by_name[[name]]$value
+    lower_ok <- if (isTRUE(lower_open)) value > lower else value >= lower
+    if (length(value) != 1L || !lower_ok || value > upper) {
+      stop("LightGBM-style parameter '", name,
+           "' is outside its supported range.", call. = FALSE)
+    }
+  }
+  bounded("learning_rate", 0, 1, TRUE)
+  bounded("max_delta_step", 0, .NATIVE_TREE_MAX_FLOAT_ABS, TRUE)
+  bounded("max_depth", 1, .NATIVE_TREE_LIGHTGBM_MAX_DEPTH)
+  bounded("min_data_in_leaf", 1, .Machine$integer.max)
+  bounded("min_gain_to_split", 0, .NATIVE_TREE_MAX_FLOAT_ABS)
+  bounded("num_iterations", 1, .NATIVE_TREE_RESOURCE_LIMITS$max_trees)
+  bounded("lambda_l1", 0, .NATIVE_TREE_MAX_FLOAT_ABS)
+  bounded("lambda_l2", 0, .NATIVE_TREE_MAX_FLOAT_ABS, TRUE)
+  max_leaves <- min(.NATIVE_TREE_LIGHTGBM_MAX_LEAVES,
+                    2^(min(by_name$max_depth$value, 8L)))
+  bounded("num_leaves", 2, max_leaves)
+  invisible(TRUE)
+}
+
+#' Enforce the dsFlower numeric oblivious public-bin boosting profile
+#' @keywords internal
+.native_tree_catboost_parameters <- function(parameters, schema, mode) {
+  if (!identical(mode, "native-tight")) {
+    stop("CatBoost-style request v1 supports native-tight mode only.",
+         call. = FALSE)
+  }
+  by_name <- stats::setNames(
+    parameters, vapply(parameters, `[[`, character(1), "name"))
+  actual <- names(by_name)
+  unknown <- setdiff(actual, .NATIVE_TREE_CATBOOST_REQUIRED_PARAMETERS)
+  missing <- setdiff(.NATIVE_TREE_CATBOOST_REQUIRED_PARAMETERS, actual)
+  if (length(unknown)) {
+    stop("Unsupported CatBoost-style parameter(s): ",
+         paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  if (length(missing)) {
+    stop("Missing required CatBoost-style parameter(s): ",
+         paste(missing, collapse = ", "), ".", call. = FALSE)
+  }
+  for (name in actual) {
+    if (!identical(by_name[[name]]$type,
+                   unname(.NATIVE_TREE_CATBOOST_PARAMETER_TYPES[[name]]))) {
+      stop("CatBoost-style parameter '", name,
+           "' has the wrong declared type.", call. = FALSE)
+    }
+  }
+  bounded <- function(name, lower, upper, lower_open = FALSE) {
+    value <- by_name[[name]]$value
+    lower_ok <- if (isTRUE(lower_open)) value > lower else value >= lower
+    if (length(value) != 1L || !lower_ok || value > upper) {
+      stop("CatBoost-style parameter '", name,
+           "' is outside its supported range.", call. = FALSE)
+    }
+  }
+  bounded("depth", 1, .NATIVE_TREE_CATBOOST_MAX_DEPTH)
+  bounded("iterations", 1, .NATIVE_TREE_RESOURCE_LIMITS$max_trees)
+  bounded("l2_leaf_reg", 0, .NATIVE_TREE_MAX_FLOAT_ABS, TRUE)
+  bounded("learning_rate", 0, 1, TRUE)
+  bounded("max_delta_step", 0, .NATIVE_TREE_MAX_FLOAT_ABS, TRUE)
+  lower <- .native_tree_float32(schema$lower, "public feature lower bounds")
+  upper <- .native_tree_float32(schema$upper, "public feature upper bounds")
+  cuts <- lapply(schema$cuts, .native_tree_float32,
+                 name = "public feature cuts")
+  valid <- lower < upper
+  for (i in seq_along(cuts)) {
+    valid[[i]] <- valid[[i]] && all(diff(cuts[[i]]) > 0) &&
+      all(cuts[[i]] > lower[[i]]) && all(cuts[[i]] < upper[[i]])
+  }
+  if (!all(valid)) {
+    stop("CatBoost-style public cuts and bounds must remain strict as float32.",
+         call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
 #' Canonicalise hard execution ceilings
 #' @keywords internal
 .native_tree_resources <- function(resources) {
@@ -551,6 +743,12 @@
   }
   if (identical(engine, "xgboost")) {
     .native_tree_xgboost_parameters(parameters, schema, mode)
+  } else if (identical(engine, "extra_trees")) {
+    .native_tree_extra_trees_parameters(parameters, schema, mode)
+  } else if (identical(engine, "lightgbm")) {
+    .native_tree_lightgbm_parameters(parameters, schema, mode)
+  } else if (identical(engine, "catboost")) {
+    .native_tree_catboost_parameters(parameters, schema, mode)
   }
   .native_tree_parameter_resource_check(parameters, resources)
   list(
@@ -727,11 +925,12 @@
 }
 
 # Tag the public binary vocabulary without coercing its scalar type.
-.native_tree_tag_target_levels <- function(levels) {
+.native_tree_tag_target_levels <- function(levels, model = "XGBoost") {
   if (is.factor(levels)) levels <- as.character(levels)
   if (!is.atomic(levels) || !is.null(dim(levels)) || length(levels) != 2L ||
       anyNA(levels) || anyDuplicated(levels)) {
-    stop("Binary XGBoost requires exactly two distinct ordered public target_levels.",
+    stop("Binary ", model,
+         " requires exactly two distinct ordered public target_levels.",
          call. = FALSE)
   }
   type <- if (is.character(levels)) {
@@ -750,6 +949,94 @@
   lapply(seq_along(levels), function(index) {
     .native_tree_target_level(list(type = type, value = levels[[index]]))
   })
+}
+
+#' Build the exact typed ExtraTrees parameter array for request v1
+#' @keywords internal
+.native_tree_extra_trees_parameter_values <- function(params) {
+  if (!is.list(params) || is.null(names(params)) || anyNA(names(params)) ||
+      any(!nzchar(names(params))) || anyDuplicated(names(params))) {
+    stop("ExtraTrees params must be a uniquely named list.", call. = FALSE)
+  }
+  unknown <- setdiff(
+    names(params), c("task", .NATIVE_TREE_EXTRA_TREES_REQUIRED_PARAMETERS))
+  if (length(unknown)) {
+    stop("Unsupported ExtraTrees parameter(s): ",
+         paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  present <- intersect(
+    .NATIVE_TREE_EXTRA_TREES_REQUIRED_PARAMETERS, names(params))
+  values <- stats::setNames(vector("list", length(present)), present)
+  for (name in present) {
+    values[[name]] <- list(
+      type = unname(.NATIVE_TREE_EXTRA_TREES_PARAMETER_TYPES[[name]]),
+      value = params[[name]])
+  }
+  values
+}
+
+#' Validate ExtraTrees modelling parameters before public schema is available
+#' @keywords internal
+.validate_extra_trees_model_params <- function(params) {
+  values <- .native_tree_extra_trees_parameter_values(params)
+  records <- .build_native_tree_parameters(values)
+  canonical <- .native_tree_parameters(records, "native-tight")
+  .native_tree_extra_trees_parameters(
+    canonical, list(features = character()), "native-tight")
+  invisible(params)
+}
+
+#' Build one canonical analyst-facing ExtraTrees request
+#' @keywords internal
+.build_extra_trees_request <- function(
+    params, features, feature_bounds, feature_cuts, target_name,
+    target_levels = NULL, target_bounds = NULL, schema_sha256 = NULL) {
+  if (!is.list(params) || !is.character(params$task) ||
+      length(params$task) != 1L || is.na(params$task) ||
+      !params$task %in% .NATIVE_TREE_TASKS) {
+    stop("ExtraTrees params must contain task='binary' or task='regression'.",
+         call. = FALSE)
+  }
+  .validate_extra_trees_model_params(params)
+  task <- params$task
+  target <- if (identical(task, "binary")) {
+    if (!is.null(target_bounds)) {
+      stop("Binary ExtraTrees fixes encoded target bounds to 0 and 1.",
+           call. = FALSE)
+    }
+    list(name = target_name, kind = "binary",
+         levels = .native_tree_tag_target_levels(
+           target_levels, "ExtraTrees"), lower = 0, upper = 1)
+  } else {
+    if (!is.null(target_levels)) {
+      stop("Regression ExtraTrees does not accept target_levels.",
+           call. = FALSE)
+    }
+    if (!is.list(target_bounds) ||
+        !identical(sort(names(target_bounds)), c("lower", "upper"))) {
+      stop("Regression ExtraTrees requires target_bounds with lower and upper.",
+           call. = FALSE)
+    }
+    list(name = target_name, kind = "continuous", levels = NULL,
+         lower = target_bounds$lower, upper = target_bounds$upper)
+  }
+  cut_counts <- if (is.list(feature_cuts)) {
+    vapply(feature_cuts, length, integer(1))
+  } else {
+    integer()
+  }
+  max_bins <- if (length(cut_counts)) max(cut_counts + 1L) else 2L
+  resources <- .NATIVE_TREE_RESOURCE_DEFAULTS
+  resources$max_features <- length(features)
+  resources$max_trees <- as.integer(params$n_estimators)
+  resources$max_depth <- as.integer(params$max_depth)
+  resources$max_bins <- as.integer(max_bins)
+  .build_native_tree_manifest(
+    engine = "extra_trees", mode = "native-tight", task = task,
+    features = features, bounds = feature_bounds, cuts = feature_cuts,
+    target = target,
+    parameters = .native_tree_extra_trees_parameter_values(params),
+    resources = resources, schema_sha256 = schema_sha256)
 }
 
 #' Build one canonical analyst-facing XGBoost request

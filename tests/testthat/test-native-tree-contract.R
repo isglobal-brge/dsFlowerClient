@@ -78,13 +78,16 @@ test_that("native-tree wire preserves one-element arrays", {
   manifest <- dsFlowerClient:::.build_native_tree_manifest(
     "catboost", "native-tight", "binary", "x",
     list(lower = 0, upper = 1), .native_tree_binary_target(), list(0.5),
-    parameters = list(one_element_array = list(
-      type = "integer_array", value = 1L)))
+    parameters = list(depth = 2L, iterations = 3L, l2_leaf_reg = 1,
+                      learning_rate = 0.1, max_delta_step = 2))
 
   expect_match(manifest$json, '"features":\\["x"\\]')
   expect_match(manifest$json, '"lower":\\[0.0\\]')
   expect_match(manifest$json, '"cuts":\\[\\[0.5\\]\\]')
-  expect_match(manifest$json, '"value":\\[1\\]')
+  parameter <- dsFlowerClient:::.native_tree_parameter_record(list(
+    name = "one_element_array", type = "integer_array", value = list(1L)))
+  expect_match(rawToChar(dsFlowerClient:::.native_tree_json(parameter)),
+               '"value":\\[1\\]')
   expect_identical(
     manifest$value$public_schema$sha256,
     "c42dbee96310e9be8fa0d61ce747716e20057146687ebd5e49a1c0f79fab8628")
@@ -147,9 +150,9 @@ test_that("native-tree schema hashes and resource ceilings fail closed", {
     "strictly increasing")
   expect_error(
     dsFlowerClient:::.build_native_tree_manifest(
-      "catboost", "native-tight", "binary", "x",
+      "extra_trees", "native-tight", "binary", "x",
       list(lower = 0, upper = 1), .native_tree_binary_target(), list(0.5),
-      parameters = list(n_estimators = 101L),
+      parameters = list(max_depth = 2L, n_estimators = 101L),
       resources = list(max_trees = 100L)),
     "exceeds resources\\$max_trees")
   expect_error(
@@ -159,6 +162,63 @@ test_that("native-tree schema hashes and resource ceilings fail closed", {
       parameters = list(epsilon = 1)),
     "reserved by the server")
   expect_match(manifest$value$public_schema$sha256, "^[0-9a-f]{64}$")
+})
+
+.boosting_manifest_fixture <- function(engine) {
+  manifest <- jsonlite::fromJSON(
+    .native_tree_expected_json, simplifyVector = FALSE)
+  manifest$engine <- engine
+  values <- if (identical(engine, "lightgbm")) {
+    list(lambda_l1 = 0, lambda_l2 = 1, learning_rate = 0.1,
+         max_delta_step = 2, max_depth = 2L, min_data_in_leaf = 1L,
+         min_gain_to_split = 0, num_iterations = 3L, num_leaves = 2L)
+  } else {
+    list(depth = 2L, iterations = 3L, l2_leaf_reg = 1,
+         learning_rate = 0.1, max_delta_step = 2)
+  }
+  manifest$parameters <- lapply(names(values), function(name) list(
+    name = name,
+    type = if (is.integer(values[[name]])) "integer" else "number",
+    value = values[[name]]))
+  manifest
+}
+
+test_that("client enforces exact LightGBM-style and CatBoost-style profiles", {
+  for (engine in c("lightgbm", "catboost")) {
+    manifest <- .boosting_manifest_fixture(engine)
+    expect_no_error(dsFlowerClient:::.canonical_native_tree_manifest(manifest))
+
+    extra <- manifest
+    extra$parameters[[length(extra$parameters) + 1L]] <- list(
+      name = "subsample", type = "number", value = 0.5)
+    expect_error(
+      dsFlowerClient:::.canonical_native_tree_manifest(extra),
+      paste0("Unsupported ", if (engine == "lightgbm") {
+        "LightGBM-style"
+      } else {
+        "CatBoost-style"
+      }, " parameter"))
+
+    wrong <- manifest
+    index <- which(vapply(
+      wrong$parameters, `[[`, character(1), "name") == "learning_rate")
+    wrong$parameters[[index]]$type <- "integer"
+    wrong$parameters[[index]]$value <- 1L
+    expect_error(
+      dsFlowerClient:::.canonical_native_tree_manifest(wrong),
+      "learning_rate.*wrong declared type")
+  }
+
+  collapsed <- .boosting_manifest_fixture("catboost")
+  collapsed$public_schema$cuts[[1L]][[2L]] <-
+    collapsed$public_schema$cuts[[1L]][[1L]] + 1e-10
+  core <- collapsed$public_schema[c(
+    "version", "features", "lower", "upper", "cuts", "target")]
+  collapsed$public_schema$sha256 <- digest::digest(
+    dsFlowerClient:::.native_tree_json(core),
+    algo = "sha256", serialize = FALSE)
+  expect_error(
+    dsFlowerClient:::.canonical_native_tree_manifest(collapsed), "float32")
 })
 
 test_that("native-tree target schema is task-bound", {
@@ -177,8 +237,10 @@ test_that("native-tree target schema is task-bound", {
       "target|binary task")
   }
   regression <- dsFlowerClient:::.build_native_tree_manifest(
-    "lightgbm", "native-tight", "regression", "x",
-    list(lower = 0, upper = 1), .native_tree_continuous_target(), list(0.5))
+    "catboost", "native-tight", "regression", "x",
+    list(lower = 0, upper = 1), .native_tree_continuous_target(), list(0.5),
+    parameters = list(depth = 2L, iterations = 3L, l2_leaf_reg = 1,
+                      learning_rate = 0.1, max_delta_step = 2))
   expect_identical(regression$value$public_schema$target$kind, "continuous")
 
   changed <- .build_native_tree_fixture()
@@ -248,6 +310,51 @@ test_that("XGBoost request v1 uses an exact typed allowlist", {
   expect_equal(request$value$public_schema$target[c("lower", "upper")],
                list(lower = -10, upper = 10))
   expect_null(request$value$public_schema$target$levels)
+})
+
+test_that("ExtraTrees request uses the data-independent exact profile", {
+  params <- list(task = "binary", n_estimators = 32L, max_depth = 4L)
+  request <- dsFlowerClient:::.build_extra_trees_request(
+    params, c("age", "marker"),
+    list(lower = c(0, -5), upper = c(100, 5)),
+    list(c(18, 40, 65), c(-1, 0, 1)), "outcome",
+    target_levels = c("control", "case"))
+
+  expect_identical(request$value$engine, "extra_trees")
+  expect_identical(request$value$task, "binary")
+  expect_identical(
+    vapply(request$value$parameters, `[[`, character(1), "name"),
+    c("max_depth", "n_estimators"))
+  expect_identical(
+    vapply(request$value$parameters, `[[`, character(1), "type"),
+    c("integer", "integer"))
+  expect_identical(request$value$resources$max_trees, 32L)
+  expect_identical(request$value$resources$max_depth, 4L)
+  expect_identical(
+    dsFlowerClient:::.validate_native_tree_request_wire(
+      request$b64, request$sha256)$json,
+    request$json)
+
+  for (changed in list(
+      list(task = "binary", n_estimators = 513L, max_depth = 4L),
+      list(task = "binary", n_estimators = 32L, max_depth = 13L),
+      list(task = "binary", n_estimators = 32L, max_depth = 4L,
+           criterion = "gini"))) {
+    expect_error(
+      dsFlowerClient:::.build_extra_trees_request(
+        changed, c("age", "marker"),
+        list(lower = c(0, -5), upper = c(100, 5)),
+        list(c(18, 40, 65), c(-1, 0, 1)), "outcome",
+        target_levels = c("control", "case")),
+      "ExtraTrees")
+  }
+  expect_error(
+    dsFlowerClient:::.build_extra_trees_request(
+      params, c("age", "marker"),
+      list(lower = c(0, -5), upper = c(100, 5)),
+      list(c(18, 18 + 1e-10, 65), c(-1, 0, 1)), "outcome",
+      target_levels = c("control", "case")),
+    "strict as float32")
 })
 
 test_that("XGBoost defaults are task-aware and explicit values win", {
@@ -408,13 +515,17 @@ test_that("native-tree request has bounded cuts and canonical bytes", {
       list(seq_len(16385L)), resources = list(max_bins = 20000L)),
     "16384-cut contract cap")
 
-  values <- stats::setNames(
-    rep(list(strrep("x", 512L)), 128L),
-    sprintf("parameter_%03d", seq_len(128L)))
+  features <- vapply(seq_len(400L), function(i) {
+    paste0(sprintf("f%03d_", i), strrep("x", 190L))
+  }, character(1))
+  values <- dsFlowerClient:::.native_tree_xgboost_parameter_values(
+    ds.flower.model.xgboost()$params)
   expect_error(
     dsFlowerClient:::.build_native_tree_manifest(
-      "catboost", "native-tight", "binary", "x",
-      list(lower = 0, upper = 1), .native_tree_binary_target(),
-      cuts = list(0.5), parameters = values),
+      "xgboost", "native-tight", "binary", features,
+      list(lower = rep(0, length(features)),
+           upper = rep(1, length(features))), .native_tree_binary_target(),
+      cuts = lapply(features, function(...) 0.5), parameters = values,
+      resources = list(max_features = length(features))),
     "exceeds 65536 bytes")
 })
