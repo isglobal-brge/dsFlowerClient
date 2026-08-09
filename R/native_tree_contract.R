@@ -38,7 +38,6 @@
 .NATIVE_TREE_MAX_FLOAT_ABS <- 1e12
 .NATIVE_TREE_MAX_TOTAL_CUTS <- 16384L
 .NATIVE_TREE_MANIFEST_MAX_BYTES <- 65536L
-.NATIVE_TREE_XGBOOST_AVAILABLE <- FALSE
 .NATIVE_TREE_XGBOOST_MAX_DEPTH <- 30L
 .NATIVE_TREE_XGBOOST_REQUIRED_PARAMETERS <- c(
   "learning_rate", "max_delta_step", "max_depth", "min_child_weight",
@@ -646,6 +645,51 @@
     json = rawToChar(bytes),
     b64 = gsub("[\r\n]", "", jsonlite::base64_enc(bytes)),
     sha256 = digest::digest(bytes, algo = "sha256", serialize = FALSE))
+}
+
+#' Decode and re-pin exact canonical native-tree request bytes
+#' @keywords internal
+.validate_native_tree_request_wire <- function(request_b64, request_sha256) {
+  if (!is.character(request_b64) || length(request_b64) != 1L ||
+      is.na(request_b64) || !nzchar(request_b64) ||
+      nchar(request_b64, type = "bytes") >
+        4L * ceiling(.NATIVE_TREE_MANIFEST_MAX_BYTES / 3L)) {
+    stop("native-tree request must be one bounded canonical base64 string.",
+         call. = FALSE)
+  }
+  if (!is.character(request_sha256) || length(request_sha256) != 1L ||
+      is.na(request_sha256) ||
+      !grepl("^[0-9a-f]{64}$", request_sha256)) {
+    stop("native-tree request SHA-256 must be one lowercase digest.",
+         call. = FALSE)
+  }
+  decoded <- tryCatch(jsonlite::base64_dec(request_b64),
+                      error = function(e) NULL)
+  canonical_b64 <- if (is.null(decoded)) NULL else
+    gsub("[\r\n]", "", jsonlite::base64_enc(decoded))
+  if (is.null(decoded) || !length(decoded) ||
+      length(decoded) > .NATIVE_TREE_MANIFEST_MAX_BYTES ||
+      !identical(canonical_b64, request_b64)) {
+    stop("native-tree request base64 is not canonical and bounded.",
+         call. = FALSE)
+  }
+  json <- tryCatch(rawToChar(decoded), error = function(e) NULL)
+  parsed <- tryCatch(
+    jsonlite::fromJSON(json, simplifyVector = FALSE),
+    error = function(e) NULL)
+  if (is.null(json) || !is.list(parsed) ||
+      is.na(iconv(json, from = "UTF-8", to = "UTF-8", sub = NA_character_))) {
+    stop("native-tree request must decode to valid UTF-8 JSON.",
+         call. = FALSE)
+  }
+  value <- .canonical_native_tree_manifest(parsed)
+  bytes <- .native_tree_json(value)
+  actual <- digest::digest(bytes, algo = "sha256", serialize = FALSE)
+  if (!identical(bytes, decoded) || !identical(actual, request_sha256)) {
+    stop("native-tree request bytes or SHA-256 do not match the canonical request.",
+         call. = FALSE)
+  }
+  list(value = value, json = json, b64 = request_b64, sha256 = actual)
 }
 
 #' Build the exact typed XGBoost parameter array for request v1

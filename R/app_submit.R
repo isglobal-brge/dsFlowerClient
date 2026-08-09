@@ -93,6 +93,43 @@
   invisible(caps)
 }
 
+#' Require a fresh operational native-XGBoost probe from every selected node
+#' @keywords internal
+.assert_native_xgboost_capability <- function(conns) {
+  raw_caps <- tryCatch(
+    DSI::datashield.aggregate(
+      conns, expr = call("flowerGetCapabilitiesDS")),
+    error = function(e) {
+      stop("Could not verify native XGBoost capability: ",
+           conditionMessage(e), call. = FALSE)
+    })
+  caps <- .dsi_exact_node_results(raw_caps, conns)
+  missing <- if (is.null(caps)) names(conns) else
+    names(conns)[vapply(caps, is.null, logical(1))]
+  unavailable <- missing
+  if (!is.null(caps)) {
+    for (i in seq_along(caps)) {
+      native <- if (is.list(caps[[i]])) caps[[i]][["native_tree"]] else NULL
+      ready <- is.list(native) &&
+        identical(as.character(native[["contract"]] %||% ""),
+                  .NATIVE_TREE_CONTRACT) &&
+        isTRUE(native[["xgboost_native_tight_available"]])
+      if (!ready) unavailable <- c(unavailable, names(caps)[[i]])
+    }
+  }
+  unavailable <- unique(unavailable)
+  if (is.null(caps) || length(unavailable)) {
+    detail <- if (length(unavailable)) {
+      paste0(" on: ", paste(unavailable, collapse = ", "))
+    } else {
+      ""
+    }
+    stop("Verified native XGBoost capability is unavailable", detail, ".",
+         call. = FALSE)
+  }
+  invisible(caps)
+}
+
 #' Build the submission FAB: the trusted runner skeleton + (neural/egress) the
 #' user package + a pyproject carrying the dp-track and run config.
 #' @keywords internal
@@ -110,17 +147,33 @@
   }
   pkg_toml <- paste0('["', paste(packages, collapse = '", "'), '"]')
 
+  native_tree <- identical(sub$track %||% NULL, "native_tree")
+  server_ref <- if (native_tree) {
+    "dsflower_runner.native_tree_server_app:app"
+  } else {
+    "dsflower_runner.server_app:app"
+  }
+  client_ref <- if (native_tree) {
+    "dsflower_runner.native_tree_client_app:app"
+  } else {
+    "dsflower_runner.client_app:app"
+  }
+  dependencies <- if (native_tree) {
+    .native_tree_dependencies()
+  } else {
+    .harness_dependencies(vision)
+  }
   toml <- paste0(
     '[build-system]\nrequires = ["hatchling"]\n',
     'build-backend = "hatchling.build"\n\n',
     '[project]\nname = "dsflower-app"\nversion = "1.0.0"\n',
     'description = "dsFlower submission"\nlicense = "MIT"\n',
-    'dependencies = [', paste0('"', .harness_dependencies(vision), '"', collapse = ", "), ']\n\n',
+    'dependencies = [', paste0('"', dependencies, '"', collapse = ", "), ']\n\n',
     '[tool.hatch.build.targets.wheel]\npackages = ', pkg_toml, '\n\n',
     '[tool.flwr.app]\npublisher = "dsflower"\n\n',
     '[tool.flwr.app.components]\n',
-    'serverapp = "dsflower_runner.server_app:app"\n',
-    'clientapp = "dsflower_runner.client_app:app"\n\n',
+    'serverapp = "', server_ref, '"\n',
+    'clientapp = "', client_ref, '"\n\n',
     '[tool.flwr.app.config]\n', paste(config_lines, collapse = "\n"), '\n'
   )
   writeLines(toml, file.path(app_dir, "pyproject.toml"))
@@ -377,6 +430,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     registered_model, model_params)
   sub <- .emit_submission(model)
   target <- .validate_submission_target(sub, target)
+  request <- NULL
   if (identical(sub$track, "native_tree")) {
     if (!identical(sub$engine, "xgboost")) {
       stop("Unsupported native-tree engine.", call. = FALSE)
@@ -415,11 +469,6 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       sub$params, features, public_bounds[c("lower", "upper")], feature_cuts,
       target_name = target, target_levels = public_target$levels,
       target_bounds = public_target$bounds)
-    if (!isTRUE(.NATIVE_TREE_XGBOOST_AVAILABLE)) {
-      stop("Native XGBoost request ", request$sha256,
-           " is valid, but backend capability is not enabled in this release.",
-           call. = FALSE)
-    }
   } else if (!is.null(feature_cuts)) {
     stop("feature_cuts is only valid for native-tight tree models.",
          call. = FALSE)
@@ -451,8 +500,14 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       model$name, sub, early_features)
   }
 
-  # All validation above is data-independent and must run before any CLI, DSI,
-  # upload, or node-side staging side effect.
+  # All validation above is data-independent. Verify the outer transport before
+  # the first public capability DSI request, then stop before CLI/private staging
+  # if any selected node lacks the trusted native runtime.
+  if (identical(sub$track, "native_tree")) {
+    suppressWarnings(.validate_dsi_transport_security(
+      conns, allow_insecure_http = allow_insecure_http))
+    .assert_native_xgboost_capability(conns)
+  }
   .require_flwr_cli()
   if (!is.null(features)) {
     .validate_declarative_model_preflight(
@@ -469,8 +524,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # (including schema auto-detection, handle creation, staging or app upload).
   # link.up validates again immediately before starting the tunnel and emits the
   # single warning for an explicitly allowed HTTP site.
-  suppressWarnings(.validate_dsi_transport_security(
-    conns, allow_insecure_http = allow_insecure_http))
+  if (!identical(sub$track, "native_tree")) {
+    suppressWarnings(.validate_dsi_transport_security(
+      conns, allow_insecure_http = allow_insecure_http))
+  }
 
   # Auto-detect tabular features = every column except the target(s), from the DATA symbol's
   # schema (the assigned data.frame -- NOT the flower handle). Column NAMES are schema, not
@@ -584,6 +641,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       "local-epochs" = as.integer(p[["local_epochs"]] %||% 1L),
       "batch-size" = as.integer(p[["batch_size"]] %||% 32L)),
       training_config)
+  } else if (identical(sub$track, "native_tree")) {
+    prepare_config <- c(prepare_config, list(
+      "native-tree-request-b64" = request$b64,
+      "native-tree-request-sha256" = request$sha256))
   }
   if (!is.null(public_bounds)) {
     prepare_config[["feature-bounds"]] <- public_bounds
@@ -638,11 +699,18 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         "backbone", as.character(p[["backbone"]] %||% "resnet18")),
         paste0("image-size = ", as.integer(p[["image_size"]] %||% 224L)))
     }
+  } else if (identical(sub$track, "native_tree")) {
+    cfg <- c(
+      cfg,
+      .toml_kv("native-tree-request-b64", request$b64),
+      .toml_kv("native-tree-request-sha256", request$sha256))
   }
 
   app_dir <- .build_submission_app(sub, cfg, results_dir,
                                    vision = identical(data_kind, "image"))
-  .ensure_client_framework("pytorch")
+  if (!identical(sub$track, "native_tree")) {
+    .ensure_client_framework("pytorch")
+  }
 
   # link.up starts the loopback-only insecure SuperLink after validating the
   # outer DSI transport, then starts the per-node tunnel forwarders. Do not start
@@ -651,7 +719,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   ds.flower.link.up(conns, allow_insecure_http = allow_insecure_http)
   recipe <- structure(list(
     model = list(name = model$name,
-                 framework = model$framework %||% "pytorch", track = sub$track),
+                 framework = model$framework %||% "pytorch", track = sub$track,
+                 engine = sub$engine %||% NULL, task = sub$task %||% NULL),
     # Persist the exact public contract used to build the trusted model.  The
     # native checkpoint contains only tensors; without this data-only spec the
     # client cannot reconstruct CNN/DAG/recurrent models faithfully for
@@ -666,11 +735,18 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     feature_lower = if (!is.null(public_bounds)) public_bounds$lower else NULL,
     feature_upper = if (!is.null(public_bounds)) public_bounds$upper else NULL,
     target_levels = public_target$levels,
-    target_bounds = public_target$bounds), class = "dsflower_recipe")
+    target_bounds = public_target$bounds,
+    native_tree_request_b64 = if (!is.null(request)) request$b64 else NULL,
+    native_tree_request_sha256 = if (!is.null(request)) request$sha256 else NULL,
+    public_schema_sha256 = if (!is.null(request)) {
+      request$value$public_schema$sha256
+    } else NULL), class = "dsflower_recipe")
 
   # Cleanup (tunnel/handle/app/connection) is guaranteed by the on.exit above, on both a
   # run error and normal completion.
-  ds.flower.nodes.ensure(conns, hsym, torch_backend = torch_backend)
+  ds.flower.nodes.ensure(
+    conns, hsym,
+    torch_backend = if (identical(sub$track, "native_tree")) NULL else torch_backend)
   ds.flower.run.start(recipe, conns, app_dir = app_dir,
                       results_dir = results_dir, symbol = hsym,
                       output_dir = output_dir, output_name = output_name,
@@ -875,4 +951,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   if (!isTRUE(vision)) return(base)
   c(base, "torchvision>=0.15.0,<1.0.0", "pillow>=9.0.0",
     "nibabel>=5.0.0", "pynrrd>=1.0.0", "SimpleITK>=2.2.0", "monai>=1.3.0")
+}
+
+.native_tree_dependencies <- function() {
+  c("flwr==1.31.0", "numpy==2.4.6", "pandas==3.0.3",
+    "pyarrow==23.0.1", "cryptography==46.0.7")
 }

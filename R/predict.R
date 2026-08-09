@@ -35,6 +35,13 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     stop("ds.flower.predict() accepts tabular artifacts only; image models ",
          "require an image/backbone inference pipeline.", call. = FALSE)
   }
+  if (identical(framework, "xgboost")) {
+    stop("Local XGBoost prediction is fail-closed until the client-side trusted ",
+         "predictor consumes the emitted artifact-bound effective public ",
+         "predictor profile. ",
+         "The canonical training request is retained, but no private backend ",
+         "manifest is reconstructed or invented client-side.", call. = FALSE)
+  }
   if (!is.list(contract$model_spec) || !length(contract$model_spec) ||
       !is.character(contract$loss_name) || length(contract$loss_name) != 1L ||
       is.na(contract$loss_name) || !nzchar(contract$loss_name)) {
@@ -115,10 +122,21 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
       model_dir <- model
     } else if (file.exists(model)) {
       # Direct file path
-      ext <- tolower(tools::file_ext(model))
-      framework <- switch(
-        ext, pt = "pytorch",
-        stop("Unknown model format: ", ext, call. = FALSE))
+      framework <- if (identical(basename(model), .XGBOOST_ENSEMBLE_FILE)) {
+        "xgboost"
+      } else {
+        ext <- tolower(tools::file_ext(model))
+        switch(ext, pt = "pytorch",
+               stop("Unknown model format: ", ext, call. = FALSE))
+      }
+      if (identical(framework, "xgboost")) {
+        native <- .resolve_validation_contract(dirname(model), 32L)
+        return(list(
+          model_file = native$artifact, framework = framework,
+          features = native$features, bounds = native$feature_bounds,
+          contract = list(data_kind = native$data_kind),
+          native_contract = native))
+      }
       return(list(model_file = model, framework = framework,
                   bounds = .read_meta_bounds(dirname(model)),
                   contract = .read_meta_model_contract(dirname(model))))
@@ -141,18 +159,29 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   bnd <- .read_meta_bounds(model_dir)        # public clipped-affine bounds (or NULL)
   contract <- .read_meta_model_contract(model_dir)
 
-  candidates <- list(list(file = "model.pt", framework = "pytorch"))
+  candidates <- list(
+    list(file = .XGBOOST_ENSEMBLE_FILE, framework = "xgboost"),
+    list(file = "model.pt", framework = "pytorch"))
 
   for (c in candidates) {
     path <- file.path(model_dir, c$file)
     if (file.exists(path)) {
+      if (identical(c$framework, "xgboost")) {
+        native <- .resolve_validation_contract(model_dir, 32L)
+        return(list(
+          model_file = native$artifact, framework = c$framework,
+          features = native$features, bounds = native$feature_bounds,
+          contract = list(data_kind = native$data_kind),
+          native_contract = native))
+      }
       return(list(model_file = path, framework = c$framework,
                   features = feats, bounds = bnd, contract = contract))
     }
   }
 
   stop("No native model file found in ", model_dir,
-       ". Expected model.pt.", call. = FALSE)
+       ". Expected model.pt or ", .XGBOOST_ENSEMBLE_FILE, ".",
+       call. = FALSE)
 }
 
 #' Read the training feature names (in order) from a model dir's metadata.json

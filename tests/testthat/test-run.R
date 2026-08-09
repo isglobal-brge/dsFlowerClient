@@ -285,6 +285,18 @@ test_that(".training_artifacts_complete waits for final round", {
   ))
 })
 
+test_that("watchdog recognizes the named XGBoost ensemble", {
+  results_dir <- withr::local_tempdir()
+  jsonlite::write_json(
+    data.frame(round = 1L, available = TRUE),
+    file.path(results_dir, "history.json"), auto_unbox = TRUE)
+  writeBin(charToRaw("{}"),
+           file.path(results_dir, "model.xgboost-ensemble.json"))
+  expect_true(dsFlowerClient:::.model_artifact_exists(results_dir))
+  expect_true(dsFlowerClient:::.training_artifacts_complete(
+    results_dir, num_rounds = 1L))
+})
+
 test_that("unavailable history completes without inventing a model artifact", {
   results_dir <- withr::local_tempdir()
   jsonlite::write_json(

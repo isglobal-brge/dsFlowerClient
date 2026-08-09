@@ -8,8 +8,9 @@ ds.flower.list_models()
 }
 \value{
 A data.frame with one row per registered model. Column
-  \code{available} is false for a typed request surface whose trusted backend
-  has not passed its release gate.
+  \code{available} reports whether the client-side constructor is implemented;
+  operational native-runtime availability is probed per node at submission.
+  Native validation remains fail-closed until its predictor is wired.
 }
 \description{
 List registered dsFlower models

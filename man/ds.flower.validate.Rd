@@ -48,11 +48,12 @@ A \code{dsflower_validation}. Its \code{available} field is false
   available; no exact or zero-filled substitute metrics are returned.
 }
 \description{
-Evaluates a released tabular declarative neural model, or a locally verified
-sanitized native-tree ensemble once that backend capability is enabled, on
-the dataset assigned for this call inside each data node. Vision artifacts fail
-explicitly because this validator does not reconstruct image loaders or
-backbones. Reusing the training dataset is
+Evaluates a released tabular declarative neural model on the dataset assigned
+for this call inside each data node. A saved native-tree ensemble and its
+sidecar are recognized and verified locally, but native XGBoost validation
+remains fail-closed before DSI until its predictor pipeline is wired. Vision
+artifacts fail explicitly because this validator does not reconstruct image
+loaders or backbones. Reusing the training dataset is
 resubstitution validation; assigning an independent dataset is external
 validation. Each protected row/patient contributes one bounded sufficient-statistic
 vector, the node releases it once through the server-owned Gaussian mechanism,

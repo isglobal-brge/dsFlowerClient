@@ -57,6 +57,11 @@ test_that("native-tree builder emits the canonical cross-package wire", {
     vapply(manifest$value$parameters, `[[`, character(1), "type"),
     c("number", "number", "integer", "number", "number", "integer",
       "number", "number"))
+  pinned <- dsFlowerClient:::.validate_native_tree_request_wire(
+    manifest$b64, manifest$sha256)
+  expect_identical(pinned$json, manifest$json)
+  expect_error(dsFlowerClient:::.validate_native_tree_request_wire(
+    manifest$b64, strrep("0", 64L)), "do not match")
 
   reordered <- dsFlowerClient:::.build_xgboost_request(
     params = ds.flower.model(
@@ -192,7 +197,7 @@ test_that("XGBoost request v1 uses an exact typed allowlist", {
   expect_identical(model$track, "native_tree")
   expect_identical(model$framework, "xgboost")
   expect_identical(model$loss, "binary_logistic")
-  expect_false(ds.flower.list_models()$available[
+  expect_true(ds.flower.list_models()$available[
     ds.flower.list_models()$name == "xgboost"])
   expect_error(ds.flower.model("xgboost", subsample = 0.8),
                "Unknown parameter.*subsample")
@@ -303,10 +308,20 @@ test_that("XGBoost target levels preserve their ordered public scalar type", {
 
 test_that("XGBoost submission validates its one-round public request pre-DSI", {
   reached_cli <- FALSE
+  reached_private_path <- FALSE
   local_mocked_bindings(
+    .validate_dsi_transport_security = function(...) TRUE,
+    .assert_native_xgboost_capability = function(...) {
+      stop("Verified native XGBoost capability is unavailable on: site.",
+           call. = FALSE)
+    },
     .require_flwr_cli = function() {
       reached_cli <<- TRUE
       stop("CLI must not be reached")
+    },
+    ds.flower.connect = function(...) {
+      reached_private_path <<- TRUE
+      stop("private path must not be reached")
     },
     .package = "dsFlowerClient")
   args <- list(
@@ -316,8 +331,9 @@ test_that("XGBoost submission validates its one-round public request pre-DSI", {
     feature_bounds = list(lower = c(0, -5), upper = c(100, 5)),
     feature_cuts = list(c(18, 40, 65), c(-1, 0, 1)),
     target_levels = c(0, 1))
-  expect_error(do.call(ds.flower.submit, args), "capability is not enabled")
+  expect_error(do.call(ds.flower.submit, args), "capability is unavailable")
   expect_false(reached_cli)
+  expect_false(reached_private_path)
 
   args$num_rounds <- 2L
   expect_error(do.call(ds.flower.submit, args), "exactly one Flower round")
@@ -328,6 +344,45 @@ test_that("XGBoost submission validates its one-round public request pre-DSI", {
   args$target_levels <- NULL
   expect_error(do.call(ds.flower.submit, args), "two ordered public target_levels")
   expect_false(reached_cli)
+  expect_false(reached_private_path)
+})
+
+test_that("native-tree FAB uses isolated entrypoints and no torch dependency", {
+  runner <- file.path(withr::local_tempdir(), "dsflower_runner")
+  dir.create(runner)
+  file.create(file.path(runner, "__init__.py"))
+  local_mocked_bindings(
+    .runner_skeleton_dir = function() runner,
+    .package = "dsFlowerClient")
+  app <- dsFlowerClient:::.build_submission_app(
+    list(track = "native_tree", pkg_dir = NULL),
+    c('dp-track = "native_tree"'), withr::local_tempdir())
+  toml <- paste(readLines(file.path(app, "pyproject.toml"), warn = FALSE),
+                collapse = "\n")
+  expect_match(toml, "native_tree_server_app:app", fixed = TRUE)
+  expect_match(toml, "native_tree_client_app:app", fixed = TRUE)
+  expect_match(toml, "flwr==1.31.0", fixed = TRUE)
+  expect_match(toml, "numpy==2.4.6", fixed = TRUE)
+  expect_match(toml, "pandas==3.0.3", fixed = TRUE)
+  expect_match(toml, "pyarrow==23.0.1", fixed = TRUE)
+  expect_match(toml, "cryptography==46.0.7", fixed = TRUE)
+  expect_false(grepl("torch", toml, fixed = TRUE))
+  expect_false(grepl("opacus", toml, fixed = TRUE))
+})
+
+test_that("native XGBoost admission requires every fresh node probe", {
+  result <- list(site = list(native_tree = list(
+    contract = "dsflower-native-tree-request-v1",
+    xgboost_native_tight_available = FALSE)))
+  local_mocked_bindings(
+    datashield.aggregate = function(...) result,
+    .package = "DSI")
+  expect_error(
+    dsFlowerClient:::.assert_native_xgboost_capability(list(site = TRUE)),
+    "unavailable on: site")
+  result$site$native_tree$xgboost_native_tight_available <- TRUE
+  expect_no_error(
+    dsFlowerClient:::.assert_native_xgboost_capability(list(site = TRUE)))
 })
 
 test_that("native-tree request has bounded cuts and canonical bytes", {

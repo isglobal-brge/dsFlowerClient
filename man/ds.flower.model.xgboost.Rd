@@ -48,8 +48,9 @@ This constructor exposes only the typed, data-only parameter profile used by
 the trusted native XGBoost adapter. Feature bounds and complete public cuts
 are supplied with the training request. Privacy epsilon, delta, clipping,
 randomness, objectives, callbacks and I/O are node-owned and cannot be set
-here. The constructor is available for request construction while backend
-capability remains disabled until the native release gates pass.
+here. The constructor is implemented client-side; operational availability
+is probed afresh on every selected node at submission time. Native validation
+remains fail-closed until its predictor pipeline is wired.
 Benchmark-driven defaults use 8 trees, depth 2 and learning rate 0.25 for
 binary classification, and 5 trees, depth 2 and learning rate 0.30 for
 regression. Explicit values always take precedence. Seven data-independent

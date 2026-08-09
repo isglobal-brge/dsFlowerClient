@@ -542,8 +542,9 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
 #' List registered dsFlower models
 #'
 #' @return A data.frame with one row per registered model. Column
-#'   \code{available} is false for a typed request surface whose trusted backend
-#'   has not passed its release gate.
+#'   \code{available} reports whether the client-side constructor is implemented;
+#'   operational native-runtime availability is probed per node at submission.
+#'   Native validation remains fail-closed until its predictor is wired.
 #' @export
 ds.flower.list_models <- function() {
   names_ <- ls(.dsflower_models, sorted = TRUE)
@@ -988,8 +989,8 @@ ds.flower.model_parameters <- function(name) {
   })
 
   # Native engines are first-party node adapters, never extension generators.
-  # The public object is useful for constructing and hashing the exact request,
-  # but availability remains false until the native backend release gates pass.
+  # This registry reports the implemented constructor; node runtime availability
+  # is established only by the fresh operational probe at submission.
   .dsflower_models[["xgboost"]] <- list(
     name = "xgboost", track = "native_tree", engine = "xgboost",
     generate = function(params) params, loss = NULL,
@@ -1014,8 +1015,9 @@ ds.flower.model_parameters <- function(name) {
     parameter_choices = list(task = c("binary", "regression")),
     description = paste0(
       "Native-tight DP XGBoost request with task-aware defaults ",
-      "(backend not yet available)."),
-    data_kinds = "tabular", available = FALSE, vetted = TRUE)
+      "(operational availability is probed per node at submission; native ",
+      "validation remains fail-closed until its predictor is wired)."),
+    data_kinds = "tabular", available = TRUE, vetted = TRUE)
 
   invisible(TRUE)
 }

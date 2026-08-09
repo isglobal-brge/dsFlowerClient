@@ -80,9 +80,10 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   # client carries no privacy spec. Always include every node each round.
   recipe$strategy$params$fraction_fit <- 1.0
 
-  # The Tier-1 harness is a torch app; ensure its runtime client-side (the
-  # ServerApp builds the initial model).
-  .ensure_client_framework("pytorch")
+  # Neural ServerApps build the initial torch model. The native-tree app has a
+  # separate dependency-light entrypoint and must not install or import torch.
+  native_tree <- identical(recipe$model$track %||% NULL, "native_tree")
+  if (!native_tree) .ensure_client_framework("pytorch")
 
   # The app dir is always pre-built by the submission pipeline (a dsflower_runner
   # FAB, content-hash-pinned against the node-resident canonical runner).
@@ -136,6 +137,14 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     weights <- .read_model_weights(results_dir)
   }
   history <- .read_training_history(results_dir)
+  native_history_available <- !is.data.frame(history) || !nrow(history) ||
+    !("available" %in% names(history)) ||
+    any(as.logical(history$available), na.rm = TRUE)
+  native_release <- NULL
+  if (native_tree && identical(as.integer(result$status), 0L) &&
+      native_history_available) {
+    native_release <- .native_xgboost_release_metadata(recipe, results_dir)
+  }
   runtime_status <- .flower_runtime_status(
     cli_status = result$status,
     stdout = clean_stdout,
@@ -220,6 +229,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       requested_num_rounds = recipe$num_rounds,
       target_levels = recipe$target_levels %||% NULL,
       target_bounds = recipe$target_bounds %||% NULL,
+      native_tree_request_b64 = recipe$native_tree_request_b64 %||% NULL,
+      native_tree_request_sha256 =
+        recipe$native_tree_request_sha256 %||% NULL,
+      public_schema_sha256 = recipe$public_schema_sha256 %||% NULL,
+      artifact = native_release$artifact %||% NULL,
+      sanitization = native_release$sanitization %||% NULL,
       run_id     = run_id,
       created_at = Sys.time(),
       n_clients  = length(conns)
@@ -234,38 +249,54 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     }
 
     # Write metadata for listing/identification
-    meta <- list(
-      model_id   = model_id,
-      model      = recipe$model$name,
-      framework  = recipe$model$framework,
-      track      = recipe$model$track %||% NULL,
-      model_spec = recipe$model_spec %||% NULL,
-      model_params = recipe$model_params %||% list(),
-      loss_name  = recipe$loss_name %||% NULL,
-      data_kind  = recipe$data_kind %||% "tabular",
-      available  = available,
-      available_rounds = as.integer(available_rounds),
-      strategy   = recipe$strategy$name,
-      privacy    = "server-enforced-dp",
-      num_rounds = eff_rounds,
-      requested_num_rounds = recipe$num_rounds,
-      n_clients  = length(conns),
-      features   = recipe$features,   # training feature order, so predict can align newdata
-      # Public preprocessing constants used by the node, so prediction can repeat
-      # the same clip-to-bounds + affine transform.
-      feature_lower = recipe$feature_lower,
-      feature_upper = recipe$feature_upper,
-      target_levels = recipe$target_levels %||% NULL,
-      target_bounds = recipe$target_bounds %||% NULL,
-      created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
-      status     = if (!available) "unavailable" else if (runtime_status == 0L) {
-        "success"
-      } else {
-        "failed"
-      }
-    )
+    meta <- if (native_tree && available) {
+      list(
+        track = "native_tree",
+        engine = "xgboost",
+        task = recipe$model$task,
+        data_kind = recipe$data_kind %||% "tabular",
+        features = recipe$features,
+        feature_lower = recipe$feature_lower,
+        feature_upper = recipe$feature_upper,
+        target_levels = recipe$target_levels %||% NULL,
+        target_bounds = recipe$target_bounds %||% NULL,
+        native_tree_request_b64 = recipe$native_tree_request_b64,
+        native_tree_request_sha256 = recipe$native_tree_request_sha256,
+        public_schema_sha256 = recipe$public_schema_sha256,
+        artifact = native_release$artifact,
+        sanitization = native_release$sanitization)
+    } else {
+      list(
+        model_id   = model_id,
+        model      = recipe$model$name,
+        framework  = recipe$model$framework,
+        track      = recipe$model$track %||% NULL,
+        model_spec = recipe$model_spec %||% NULL,
+        model_params = recipe$model_params %||% list(),
+        loss_name  = recipe$loss_name %||% NULL,
+        data_kind  = recipe$data_kind %||% "tabular",
+        available  = available,
+        available_rounds = as.integer(available_rounds),
+        strategy   = recipe$strategy$name,
+        privacy    = "server-enforced-dp",
+        num_rounds = eff_rounds,
+        requested_num_rounds = recipe$num_rounds,
+        n_clients  = length(conns),
+        features   = recipe$features,
+        feature_lower = recipe$feature_lower,
+        feature_upper = recipe$feature_upper,
+        target_levels = recipe$target_levels %||% NULL,
+        target_bounds = recipe$target_bounds %||% NULL,
+        created_at = format(Sys.time(), "%Y-%m-%dT%H:%M:%S"),
+        status     = if (!available) "unavailable" else if (runtime_status == 0L) {
+          "success"
+        } else {
+          "failed"
+        })
+    }
     jsonlite::write_json(meta, file.path(output_dir, "metadata.json"),
-                         auto_unbox = TRUE, pretty = TRUE)
+                         auto_unbox = TRUE, pretty = TRUE,
+                         null = if (native_tree && available) "null" else "list")
 
     .dsf_msg("Model saved to ", output_dir)
   }
@@ -324,8 +355,51 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   any(file.exists(file.path(
     results_dir,
     c("global_model.json", "global_model.skipped.json",
-      "model.pt", "model.npz", "validation.json")
+      "model.pt", "model.npz", "model.xgboost-ensemble.json",
+      "validation.json")
   )))
+}
+
+.native_xgboost_release_metadata <- function(recipe, results_dir) {
+  request <- .validate_native_tree_request_wire(
+    recipe$native_tree_request_b64,
+    recipe$native_tree_request_sha256)
+  if (!identical(request$value$engine, "xgboost") ||
+      !identical(request$value$task, recipe$model$task) ||
+      !identical(request$value$public_schema$sha256,
+                 recipe$public_schema_sha256)) {
+    stop("Native XGBoost recipe no longer matches its canonical request.",
+         call. = FALSE)
+  }
+  path <- file.path(results_dir, .XGBOOST_ENSEMBLE_FILE)
+  info <- file.info(path)
+  if (!file.exists(path) || is.na(info$isdir) || isTRUE(info$isdir) ||
+      is.na(info$size) || info$size < 1 ||
+      info$size > .XGBOOST_ENSEMBLE_MAX_BYTES) {
+    stop("Native XGBoost produced no bounded sanitized ensemble artifact.",
+         call. = FALSE)
+  }
+  bytes <- readBin(path, what = "raw", n = as.integer(info$size))
+  artifact <- list(
+    file = .XGBOOST_ENSEMBLE_FILE,
+    format = .XGBOOST_ENSEMBLE_FORMAT,
+    size_bytes = as.integer(length(bytes)),
+    sha256 = digest::digest(bytes, algo = "sha256", serialize = FALSE))
+  candidate <- list(
+    public_schema_sha256 = recipe$public_schema_sha256,
+    artifact = artifact,
+    sanitization = .XGBOOST_ENSEMBLE_SANITIZATION)
+  .validate_xgboost_ensemble_artifact(
+    candidate, results_dir, recipe$model$task)
+  .validate_xgboost_prediction_profile(
+    results_dir,
+    recipe$native_tree_request_b64,
+    recipe$native_tree_request_sha256,
+    recipe$public_schema_sha256,
+    recipe$model$task,
+    artifact)
+  list(artifact = artifact,
+       sanitization = .XGBOOST_ENSEMBLE_SANITIZATION)
 }
 
 .training_artifacts_complete <- function(results_dir, num_rounds,
@@ -727,15 +801,20 @@ ds.flower.save_model <- function(run, path) {
   source_dir <- normalizePath(source_dir, winslash = "/", mustWork = TRUE)
   asset_files <- c(
     "metadata.json", "history.json", "model.pt", "model.npz",
-    "global_model.json", "global_model.skipped.json"
+    "global_model.json", "global_model.skipped.json",
+    "model.xgboost-ensemble.json", "model.xgboost-ensemble.profile.json"
   )
   present <- asset_files[file.exists(file.path(source_dir, asset_files))]
   model_files <- c(
-    "model.pt", "model.npz", "global_model.json"
+    "model.pt", "model.npz", "global_model.json",
+    "model.xgboost-ensemble.json"
   )
   if (!"metadata.json" %in% present || !any(model_files %in% present)) {
     stop("The run directory does not contain a complete public model bundle.",
          call. = FALSE)
+  }
+  if (.XGBOOST_ENSEMBLE_FILE %in% present) {
+    .resolve_validation_contract(source_dir, 32L)
   }
 
   model_data <- list(

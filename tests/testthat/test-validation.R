@@ -20,7 +20,17 @@ validation_model_fixture <- function(track = "neural", loss = "bce_logits") {
 xgboost_validation_model_fixture <- function(task = "binary") {
   path <- withr::local_tempdir(.local_envir = parent.frame())
   artifact_name <- "model.xgboost-ensemble.json"
-  public_schema_sha256 <- strrep("b", 64L)
+  model <- ds.flower.model.xgboost(task = task)
+  request <- dsFlowerClient:::.build_xgboost_request(
+    model$params, c("age", "marker"),
+    list(lower = c(0, -5), upper = c(120, 5)),
+    list(c(18, 40, 65), c(-1, 0, 1)),
+    target_name = "outcome",
+    target_levels = if (identical(task, "binary")) c("control", "case") else NULL,
+    target_bounds = if (identical(task, "regression")) {
+      list(lower = 0, upper = 100)
+    } else NULL)
+  public_schema_sha256 <- request$value$public_schema$sha256
   container <- list(
     contract = "dsflower-xgboost-ensemble-v1", version = 1L,
     engine = "xgboost", task = task, aggregation = "mean_prediction",
@@ -50,7 +60,8 @@ xgboost_validation_model_fixture <- function(task = "binary") {
     target_levels = if (identical(task, "binary")) c("control", "case") else NULL,
     target_bounds = if (identical(task, "regression"))
       list(lower = 0, upper = 100) else NULL,
-    native_tree_request_sha256 = strrep("a", 64L),
+    native_tree_request_b64 = request$b64,
+    native_tree_request_sha256 = request$sha256,
     public_schema_sha256 = public_schema_sha256,
     artifact = list(
       file = artifact_name,
@@ -59,6 +70,19 @@ xgboost_validation_model_fixture <- function(task = "binary") {
     sanitization = sanitization)
   jsonlite::write_json(meta, file.path(path, "metadata.json"),
                        auto_unbox = TRUE, null = "null")
+  profile <- list(
+    artifact = list(
+      format = "dsflower-xgboost-ensemble-json-v1",
+      sha256 = artifact_hash, size_bytes = as.integer(length(bytes))),
+    contract = "dsflower-xgboost-prediction-profile-v1",
+    native_tree_request_b64 = request$b64,
+    native_tree_request_sha256 = request$sha256,
+    public_schema_sha256 = public_schema_sha256,
+    task = task,
+    version = 1L)
+  writeBin(
+    dsFlowerClient:::.native_tree_json(profile),
+    file.path(path, "model.xgboost-ensemble.profile.json"))
   path
 }
 
@@ -91,8 +115,13 @@ test_that("validation resolves only a sanitized XGBoost ensemble contract", {
   expect_identical(
     contract$artifact_format, "dsflower-xgboost-ensemble-json-v1")
   expect_match(contract$artifact_sha256, "^[0-9a-f]{64}$")
-  expect_identical(contract$native_tree_request_sha256, strrep("a", 64L))
-  expect_identical(contract$public_schema_sha256, strrep("b", 64L))
+  expect_match(contract$native_tree_request_sha256, "^[0-9a-f]{64}$")
+  expect_identical(
+    rawToChar(jsonlite::base64_dec(contract$native_tree_request_b64)),
+    dsFlowerClient:::.validate_native_tree_request_wire(
+      contract$native_tree_request_b64,
+      contract$native_tree_request_sha256)$json)
+  expect_match(contract$public_schema_sha256, "^[0-9a-f]{64}$")
   expect_identical(contract$loss_name, "bce_logits")
 
   regression <- dsFlowerClient:::.resolve_validation_contract(
@@ -102,24 +131,137 @@ test_that("validation resolves only a sanitized XGBoost ensemble contract", {
   expect_identical(regression$loss_name, "mse")
 })
 
-test_that("XGBoost validation artifact failures happen before DSI", {
+test_that("prediction recognizes the ensemble without inventing a private manifest", {
+  path <- xgboost_validation_model_fixture()
+  expect_true(file.exists(file.path(
+    path, "model.xgboost-ensemble.profile.json")))
+  resolved <- dsFlowerClient:::.resolve_model_for_predict(path)
+  expect_identical(resolved$framework, "xgboost")
+  expect_identical(basename(resolved$model_file),
+                   "model.xgboost-ensemble.json")
+  reached_framework <- FALSE
+  local_mocked_bindings(
+    .ensure_client_framework = function(...) {
+      reached_framework <<- TRUE
+      stop("must not provision torch")
+    },
+    .package = "dsFlowerClient")
+  expect_error(
+    ds.flower.predict(path, data.frame(age = 40, marker = 0)),
+    "effective public predictor profile")
+  expect_false(reached_framework)
+})
+
+test_that("native release requires the exact bounded canonical profile sidecar", {
+  expect_identical(
+    dsFlowerClient:::.XGBOOST_PREDICTION_PROFILE_MAX_BYTES, 128 * 1024L)
+  path <- xgboost_validation_model_fixture()
+  meta <- jsonlite::fromJSON(
+    file.path(path, "metadata.json"), simplifyVector = TRUE)
+  recipe <- list(
+    model = list(task = "binary"),
+    native_tree_request_b64 = meta$native_tree_request_b64,
+    native_tree_request_sha256 = meta$native_tree_request_sha256,
+    public_schema_sha256 = meta$public_schema_sha256)
+  expect_no_error(dsFlowerClient:::.native_xgboost_release_metadata(
+    recipe, path))
+  profile_path <- file.path(path, "model.xgboost-ensemble.profile.json")
+  writeBin(charToRaw("opaque-public-profile"),
+           profile_path)
+  expect_error(
+    dsFlowerClient:::.native_xgboost_release_metadata(recipe, path),
+    "exact contract")
+  writeBin(raw(128 * 1024L), profile_path)
+  expect_error(
+    dsFlowerClient:::.native_xgboost_release_metadata(recipe, path),
+    "exact contract")
+  writeBin(raw(128 * 1024L + 1L), profile_path)
+  expect_error(
+    dsFlowerClient:::.native_xgboost_release_metadata(recipe, path),
+    "outside its byte bound")
+  unlink(profile_path)
+  expect_error(
+    dsFlowerClient:::.native_xgboost_release_metadata(recipe, path),
+    "missing or outside its byte bound")
+})
+
+test_that("portable save revalidates and copies only the exact XGBoost sidecar", {
+  path <- xgboost_validation_model_fixture()
+  writeBin(charToRaw("must-not-copy"), file.path(
+    path, "model.xgboost-ensemble.profile.json.bak"))
+  run <- structure(list(
+    model_id = "native", weights = NULL, available = TRUE,
+    history = data.frame(round = 1L), model = "xgboost",
+    strategy = "mean_prediction", num_rounds = 1L, run_id = "run-native",
+    output_dir = path), class = "dsflower_run")
+  destination <- file.path(withr::local_tempdir(), "native.rds")
+  expect_identical(
+    ds.flower.save_model(run, destination),
+    normalizePath(destination, winslash = "/", mustWork = TRUE))
+  assets <- paste0(destination, ".assets")
+  expect_true(file.exists(file.path(
+    assets, "model.xgboost-ensemble.json")))
+  expect_true(file.exists(file.path(
+    assets, "model.xgboost-ensemble.profile.json")))
+  expect_false(file.exists(file.path(
+    assets, "model.xgboost-ensemble.profile.json.bak")))
+
+  path <- xgboost_validation_model_fixture()
+  profile_path <- file.path(path, "model.xgboost-ensemble.profile.json")
+  bytes <- readBin(profile_path, "raw", n = file.info(profile_path)$size)
+  writeBin(c(bytes, charToRaw("\n")), profile_path)
+  run$output_dir <- path
+  expect_error(
+    ds.flower.save_model(
+      run, file.path(withr::local_tempdir(), "tampered.rds")),
+    "not canonically encoded")
+})
+
+test_that("XGBoost validation fails closed before capability, DSI, or private IO", {
   expect_identical(
     dsFlowerClient:::.XGBOOST_ENSEMBLE_MAX_BYTES, 64 * 1024^2)
   path <- xgboost_validation_model_fixture()
   reached_cli <- FALSE
+  reached_dsi <- FALSE
   local_mocked_bindings(
+    .validate_dsi_transport_security = function(...) {
+      reached_dsi <<- TRUE
+      stop("transport must not be reached")
+    },
+    .assert_native_xgboost_capability = function(...) {
+      reached_dsi <<- TRUE
+      stop("capability DSI must not be reached")
+    },
     .require_flwr_cli = function() {
       reached_cli <<- TRUE
       stop("CLI must not be reached")
+    },
+    ds.flower.connect = function(...) {
+      reached_dsi <<- TRUE
+      stop("private connection must not be reached")
     },
     .package = "dsFlowerClient")
   expect_error(
     ds.flower.validate(
       conns = list(site = TRUE), model = path, target = "outcome",
       symbol = "D"),
-    "native backend capability is not enabled")
+    "recognized but fail-closed")
   expect_false(reached_cli)
+  expect_false(reached_dsi)
 
+  path <- xgboost_validation_model_fixture()
+  profile_path <- file.path(path, "model.xgboost-ensemble.profile.json")
+  profile_bytes <- readBin(
+    profile_path, what = "raw", n = file.info(profile_path)$size)
+  writeBin(c(profile_bytes, charToRaw("\n")), profile_path)
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "not canonically encoded")
+  expect_error(
+    dsFlowerClient:::.resolve_model_for_predict(path),
+    "not canonically encoded")
+
+  path <- xgboost_validation_model_fixture()
   meta_path <- file.path(path, "metadata.json")
   meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
   meta$artifact$sha256 <- strrep("0", 64L)
@@ -153,7 +295,7 @@ test_that("XGBoost validation artifact failures happen before DSI", {
   jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
   expect_error(
     dsFlowerClient:::.resolve_validation_contract(path, 32L),
-    "public schema SHA-256 mismatch")
+    "request differs|public schema SHA-256 mismatch")
 
   path <- xgboost_validation_model_fixture()
   meta_path <- file.path(path, "metadata.json")
