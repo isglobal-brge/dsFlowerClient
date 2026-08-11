@@ -381,9 +381,15 @@ CV-job and resampling-contract hashes. No fold model, prediction, fold/site metr
 is returned or saved. A failed or restarted job publishes nothing and recomputes
 the whole deterministic job.
 
-Local HPO can use that pooled OOF result directly:
+Metric selection is local post-processing of that one release. Inspect the
+scoreable metrics for the task, including their optimization direction, with
+`ds.flower.metrics(cv)`. Curves, calibration bins and confusion matrices remain
+in `cv$metrics`, but are deliberately not accepted as scalar HPO objectives.
+
+Local HPO can then use the pooled OOF result directly:
 
 ```r
+metric <- "roc_auc"
 hpo <- ds.flower.hpo(
   objective = function(params) {
     cv <- ds.flower.cross_validate(
@@ -397,13 +403,13 @@ hpo <- ds.flower.hpo(
       target_levels = c("control", "case"),
       folds = 3L
     )
-    cv$metrics$accuracy
+    ds.flower.score(cv, metric)
   },
   space = list(
     learning_rate = ds.flower.hpo.float(1e-4, 0.1, log = TRUE)
   ),
   n_trials = 10L,
-  direction = "maximize",
+  direction = ds.flower.metric_direction(metric, task = "binary"),
   seed = 1L
 )
 hpo$best_params
@@ -413,7 +419,7 @@ The objective function and Optuna study stay local to the researcher. Each
 trial above starts an independent cross-validation job with its own
 server-enforced DP contract; HPO does not pool privacy budgets or relax node
 policy across trials. Select the objective metric for the task rather than
-using one universal score—for example, maximize accuracy (as above) or ROC AUC
+using one universal score—for example, maximize accuracy or ROC AUC
 for binary classification, maximize macro F1 for multilabel classification, or
 minimize MAE for bounded regression/count outcomes.
 
