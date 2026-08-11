@@ -38,11 +38,14 @@
 
 #' Define a bounded floating-point HPO dimension
 #'
-#' @param lower,upper Finite numeric endpoints with `lower < upper`.
+#' @param lower,upper Finite endpoints with `lower < upper`. Float dimensions
+#'   accept numeric endpoints; integer dimensions require integer endpoints.
 #' @param log Whether Optuna samples on a logarithmic scale. Logarithmic bounds
-#'   must be positive and cannot be combined with `step`.
-#' @param step Optional positive discretization step. It must divide the range
-#'   exactly so Optuna never silently changes the upper endpoint.
+#'   must be positive. Float dimensions cannot combine `log` with `step`;
+#'   integer dimensions require `step = 1`.
+#' @param step Discretization step that must be positive and divide the range
+#'   exactly. Float dimensions accept a finite numeric step or `NULL`; integer
+#'   dimensions require a positive integer step.
 #' @return A typed local HPO dimension for `ds.flower.hpo()`.
 #' @rdname ds.flower.hpo.dimensions
 #' @export
@@ -75,10 +78,14 @@ ds.flower.hpo.float <- function(lower, upper, log = FALSE, step = NULL) {
 
 #' Define a bounded integer HPO dimension
 #'
-#' @param lower,upper Integer endpoints with `lower < upper`.
-#' @param log Whether Optuna samples on a logarithmic scale. This requires a
-#'   positive lower endpoint and `step = 1`.
-#' @param step Positive integer step that divides the range exactly.
+#' @param lower,upper Finite endpoints with `lower < upper`. Float dimensions
+#'   accept numeric endpoints; integer dimensions require integer endpoints.
+#' @param log Whether Optuna samples on a logarithmic scale. Logarithmic bounds
+#'   must be positive. Float dimensions cannot combine `log` with `step`;
+#'   integer dimensions require `step = 1`.
+#' @param step Discretization step that must be positive and divide the range
+#'   exactly. Float dimensions accept a finite numeric step or `NULL`; integer
+#'   dimensions require a positive integer step.
 #' @return A typed local HPO dimension for `ds.flower.hpo()`.
 #' @rdname ds.flower.hpo.dimensions
 #' @export

@@ -381,6 +381,42 @@ CV-job and resampling-contract hashes. No fold model, prediction, fold/site metr
 is returned or saved. A failed or restarted job publishes nothing and recomputes
 the whole deterministic job.
 
+Local HPO can use that pooled OOF result directly:
+
+```r
+hpo <- ds.flower.hpo(
+  objective = function(params) {
+    cv <- ds.flower.cross_validate(
+      conns,
+      symbol = "D",
+      target = "outcome",
+      features = c("age", "biomarker"),
+      model = "pytorch_logreg",
+      model_params = list(learning_rate = params$learning_rate),
+      feature_bounds = list(lower = c(18, 0), upper = c(100, 250)),
+      target_levels = c("control", "case"),
+      folds = 3L
+    )
+    cv$metrics$accuracy
+  },
+  space = list(
+    learning_rate = ds.flower.hpo.float(1e-4, 0.1, log = TRUE)
+  ),
+  n_trials = 10L,
+  direction = "maximize",
+  seed = 1L
+)
+hpo$best_params
+```
+
+The objective function and Optuna study stay local to the researcher. Each
+trial above starts an independent cross-validation job with its own
+server-enforced DP contract; HPO does not pool privacy budgets or relax node
+policy across trials. Select the objective metric for the task rather than
+using one universal score—for example, maximize accuracy (as above) or ROC AUC
+for binary classification, maximize macro F1 for multilabel classification, or
+minimize MAE for bounded regression/count outcomes.
+
 ## Public feature bounds
 
 Exact node-side `count`, `sum`, `sumsq`, means, variances and quantiles are not

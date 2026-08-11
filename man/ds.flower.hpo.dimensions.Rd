@@ -13,12 +13,16 @@ ds.flower.hpo.integer(lower, upper, log = FALSE, step = 1L)
 ds.flower.hpo.categorical(values)
 }
 \arguments{
-\item{lower, upper}{Integer endpoints with `lower < upper`.}
+\item{lower, upper}{Finite endpoints with `lower < upper`. Float dimensions
+accept numeric endpoints; integer dimensions require integer endpoints.}
 
-\item{log}{Whether Optuna samples on a logarithmic scale. This requires a
-positive lower endpoint and `step = 1`.}
+\item{log}{Whether Optuna samples on a logarithmic scale. Logarithmic bounds
+must be positive. Float dimensions cannot combine `log` with `step`;
+integer dimensions require `step = 1`.}
 
-\item{step}{Positive integer step that divides the range exactly.}
+\item{step}{Discretization step that must be positive and divide the range
+exactly. Float dimensions accept a finite numeric step or `NULL`; integer
+dimensions require a positive integer step.}
 
 \item{values}{A non-empty atomic vector of unique finite values. Character,
 logical, integer and numeric choices are supported.}
