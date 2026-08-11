@@ -5,7 +5,9 @@ on:
     paths:
       - ".github/workflows/native-tree-client.yml"
       - "inst/python/native_tree_predict_helper.py"
+      - "inst/python/import_xgboost_model.py"
       - "inst/python/tests/test_native_tree_predict_helper.py"
+      - "inst/python/tests/test_import_xgboost_model.py"
       - "inst/flower_app/dsflower_runner/native_tree_*.py"
       - "inst/flower_app/dsflower_runner/boosting_*.py"
       - "inst/flower_app/dsflower_runner/*boost_artifact.py"
@@ -22,7 +24,9 @@ on:
     paths:
       - ".github/workflows/native-tree-client.yml"
       - "inst/python/native_tree_predict_helper.py"
+      - "inst/python/import_xgboost_model.py"
       - "inst/python/tests/test_native_tree_predict_helper.py"
+      - "inst/python/tests/test_import_xgboost_model.py"
       - "inst/flower_app/dsflower_runner/native_tree_*.py"
       - "inst/flower_app/dsflower_runner/boosting_*.py"
       - "inst/flower_app/dsflower_runner/*boost_artifact.py"
@@ -67,6 +71,7 @@ jobs:
             pyarrow==23.0.1 \
             cryptography==46.0.7
           "$contract_python" -m unittest -v \
+            inst/python/tests/test_import_xgboost_model.py \
             inst/python/tests/test_native_tree_predict_helper.py \
             inst/python/tests/test_boosting_adapter.py \
             inst/python/tests/test_boosting_artifacts.py

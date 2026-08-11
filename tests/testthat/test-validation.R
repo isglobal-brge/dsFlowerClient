@@ -235,6 +235,7 @@ test_that("prediction uses the exact XGBoost contract without provisioning torch
                    "model.xgboost-ensemble.json")
   reached_framework <- FALSE
   local_mocked_bindings(
+    .validate_validation_artifact_preflight = function(...) invisible(TRUE),
     .ensure_client_framework = function(...) {
       reached_framework <<- TRUE
       stop("must not provision torch")
@@ -697,6 +698,9 @@ test_that("XGBoost validation uses the native app with exact ephemeral pins", {
   expect_s3_class(result, "dsflower_validation")
   expect_true(result$available)
   expect_equal(result$metrics$roc_auc, 0.8)
+  expect_identical(
+    result$model_training_privacy,
+    "direct-dp-training-postprocessing")
   expect_identical(submission$track, "native_tree_validation")
   expect_false(framework_called)
   expect_null(node_backend)

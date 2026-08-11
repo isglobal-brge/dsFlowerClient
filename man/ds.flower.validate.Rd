@@ -21,7 +21,8 @@ ds.flower.validate(
 \arguments{
 \item{conns}{DSI connections.}
 
-\item{model}{A successful \code{dsflower_run} or saved model directory.}
+\item{model}{A successful \code{dsflower_run}, saved model directory, or
+path returned by \code{ds.flower.import_xgboost()}.}
 
 \item{target}{Target column name(s); multilabel validation requires one per
 saved label.}
@@ -46,11 +47,14 @@ Native-tree validation does not provision Torch.}
 \value{
 A \code{dsflower_validation}. Its \code{available} field is false
   and \code{metrics} is null when the complete pooled release was not
-  available; no exact or zero-filled substitute metrics are returned.
+  available; no exact or zero-filled substitute metrics are returned. The
+  \code{model_training_privacy} field keeps model provenance separate from
+  the node-DP metric release.
 }
 \description{
-Evaluates a released tabular declarative neural model or sanitized
-native-tree ensemble on the dataset assigned for this call inside each data node.
+Evaluates a released tabular declarative neural model, sanitized native-tree
+ensemble, or explicitly external-unverified imported XGBoost bundle on the
+dataset assigned for this call inside each data node.
 The native request, ensemble and prediction-profile sidecar are pinned into
 the ephemeral execution contract and every node re-sanitizes the ensemble
 before opening its data. Vision artifacts fail explicitly because this

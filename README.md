@@ -235,6 +235,39 @@ Forest and the two dsFlower-style boosters use the small runtime provisioned by
 the server package. XGBoost remains unavailable on a clean install until the
 custodian supplies its separately built and verified platform bundle.
 
+An already-trained XGBoost 3.4.0 JSON model can instead be admitted locally as
+a data-only prediction/validation bundle without installing or executing the
+XGBoost runtime:
+
+```r
+imported <- ds.flower.import_xgboost(
+  artifact = "external-model.json",
+  model = ds.flower.model.xgboost(
+    task = "binary", n_estimators = 1L, max_depth = 1L),
+  features = c("age", "marker"),
+  feature_bounds = list(lower = c(0, -5), upper = c(100, 5)),
+  feature_cuts = list(c(18, 40, 65), c(-1, 0, 1)),
+  target = "outcome",
+  target_levels = c("control", "case"),
+  output_dir = "external-model.dsflower"
+)
+ds.flower.predict(imported, newdata)
+ds.flower.validate(conns, imported, target = "outcome", symbol = "D_test")
+```
+
+This is deliberately not a general upstream-model loader: only bounded
+single-output `gbtree` JSON matching the supplied public cuts, topology caps,
+objective and leaf bounds is accepted. Pickle, joblib, callbacks, feature names,
+training history and executable payloads are rejected. The importer emits the
+saved provenance as `external-unverified`; only metrics released by the later
+private validation job carry dsFlower's node-DP guarantee.
+The external origin is also encoded in the hashed ensemble contract, so editing
+only metadata cannot reclassify it as an internal release. This is local format
+provenance, not a cryptographic signature against the model-directory owner.
+The structural flags describe channels present in the sanitized JSON; because
+external leaf values may be ordinary non-private statistics, the bundle records
+`contains_unnoised_statistics = true` and never attributes DP training.
+
 Classification strings/factors require an ordered public `target_levels`;
 numeric labels already coded in `[0, K-1]` remain compatible.
 Regression and count models require public

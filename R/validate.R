@@ -4,18 +4,119 @@
 
 .NATIVE_TREE_ENSEMBLE_MAX_BYTES <- 64 * 1024^2
 .NATIVE_TREE_PREDICTION_PROFILE_MAX_BYTES <- 128 * 1024L
+.EXTERNAL_XGBOOST_IMPORT_CONTRACT <- "dsflower-external-xgboost-import-v1"
+.EXTERNAL_XGBOOST_ENSEMBLE_CONTRACT <-
+  "dsflower-external-xgboost-ensemble-v1"
+.EXTERNAL_XGBOOST_IMPORT_VERSION <- 1L
+.EXTERNAL_XGBOOST_METADATA_MAX_BYTES <- 256 * 1024L
+.VALIDATION_METADATA_MAX_BYTES <- 64 * 1024^2
 
-.native_tree_sanitization_attestation <- function(engine) list(
-  profile = .native_tree_release_spec(engine)$artifact_contract,
-  privacy_basis = "direct-dp-training-postprocessing",
-  contains_raw_records = FALSE,
-  contains_unnoised_statistics = FALSE,
-  contains_feature_names = FALSE,
-  contains_target_name = FALSE,
-  contains_training_history = FALSE,
-  contains_backend_logs = FALSE,
-  contains_paths = FALSE,
-  contains_executable_payload = FALSE)
+.native_tree_sort_json_objects <- function(value) {
+  if (!is.list(value)) return(value)
+  if (!is.null(names(value))) {
+    value <- value[order(names(value), method = "radix")]
+  }
+  lapply(value, .native_tree_sort_json_objects)
+}
+
+.native_tree_ascii_json <- function(value) {
+  value <- .native_tree_sort_json_objects(value)
+  codepoints <- utf8ToInt(enc2utf8(rawToChar(.native_tree_json(value))))
+  encoded <- vapply(codepoints, function(codepoint) {
+    if (codepoint <= 127L) return(intToUtf8(codepoint))
+    if (codepoint <= 65535L) return(sprintf("\\u%04x", codepoint))
+    scalar <- codepoint - 65536L
+    sprintf(
+      "\\u%04x\\u%04x",
+      55296L + bitwShiftR(scalar, 10L),
+      56320L + bitwAnd(scalar, 1023L))
+  }, character(1), USE.NAMES = FALSE)
+  charToRaw(paste0(encoded, collapse = ""))
+}
+
+.external_xgboost_metadata_has_exact_types <- function(meta) {
+  scalar_character <- function(value) {
+    is.character(value) && length(value) == 1L && !is.na(value)
+  }
+  scalar_double <- function(value) {
+    is.double(value) && length(value) == 1L && !is.na(value) &&
+      is.finite(value)
+  }
+  json_array <- function(value, predicate) {
+    is.list(value) && is.null(names(value)) &&
+      all(vapply(value, predicate, logical(1)))
+  }
+  target_value <- function(value) {
+    length(value) == 1L && !is.na(value) &&
+      (is.character(value) || is.logical(value) ||
+       (is.double(value) && is.finite(value)))
+  }
+  artifact <- meta$artifact
+  profile <- meta$prediction_profile
+  target_bounds <- meta$target_bounds
+  sanitization <- meta$sanitization
+  string_fields <- c(
+    "contract", "data_kind", "engine", "native_tree_request_b64",
+    "native_tree_request_sha256", "public_schema_sha256", "task", "track")
+  all(vapply(meta[string_fields], scalar_character, logical(1))) &&
+    is.integer(meta$version) &&
+    identical(meta$version, .EXTERNAL_XGBOOST_IMPORT_VERSION) &&
+    json_array(meta$features, scalar_character) && length(meta$features) > 0L &&
+    json_array(meta$feature_lower, scalar_double) &&
+    json_array(meta$feature_upper, scalar_double) &&
+    (is.null(meta$target_levels) ||
+     json_array(meta$target_levels, target_value)) &&
+    (is.null(target_bounds) ||
+     (is.list(target_bounds) &&
+      identical(sort(names(target_bounds)), c("lower", "upper")) &&
+      scalar_double(target_bounds$lower) && scalar_double(target_bounds$upper))) &&
+    is.list(artifact) &&
+    identical(sort(names(artifact)), c("file", "format", "sha256", "size_bytes")) &&
+    all(vapply(artifact[c("file", "format", "sha256")],
+               scalar_character, logical(1))) &&
+    is.integer(artifact$size_bytes) && length(artifact$size_bytes) == 1L &&
+    is.list(profile) &&
+    identical(sort(names(profile)), c("file", "sha256", "size_bytes")) &&
+    all(vapply(profile[c("file", "sha256")],
+               scalar_character, logical(1))) &&
+    is.integer(profile$size_bytes) && length(profile$size_bytes) == 1L &&
+    is.list(sanitization) &&
+    all(vapply(
+      sanitization[c("profile", "privacy_basis")],
+      scalar_character, logical(1))) &&
+    all(vapply(
+      sanitization[setdiff(names(sanitization), c("profile", "privacy_basis"))],
+      function(value) is.logical(value) && length(value) == 1L && !is.na(value),
+      logical(1)))
+}
+
+.native_tree_sanitization_attestation <- function(
+    engine, origin = c("internal", "external")) {
+  origin <- match.arg(origin)
+  if (identical(origin, "external") && !identical(engine, "xgboost")) {
+    stop("External native-tree provenance is implemented only for XGBoost.",
+         call. = FALSE)
+  }
+  list(
+    profile = if (identical(origin, "external")) {
+      .EXTERNAL_XGBOOST_ENSEMBLE_CONTRACT
+    } else {
+      .native_tree_release_spec(engine)$artifact_contract
+    },
+    privacy_basis = if (identical(origin, "external")) {
+      "external-unverified"
+    } else {
+      "direct-dp-training-postprocessing"
+    },
+    contains_raw_records = FALSE,
+    contains_unnoised_statistics = identical(origin, "external"),
+    contains_feature_names = FALSE,
+    contains_target_name = FALSE,
+    contains_training_history = FALSE,
+    contains_backend_logs = FALSE,
+    contains_paths = FALSE,
+    contains_executable_payload = FALSE)
+}
 
 .validation_sha256 <- function(value, name) {
   value <- .validation_atomic(value)
@@ -28,8 +129,14 @@
 
 # Validate the public global ensemble before any DSI or private-data access.
 .validate_native_tree_ensemble_artifact <- function(
-    meta, model_dir, task, engine) {
+    meta, model_dir, task, engine, origin = c("internal", "external")) {
+  origin <- match.arg(origin)
   release_spec <- .native_tree_release_spec(engine)
+  expected_contract <- if (identical(origin, "external")) {
+    .EXTERNAL_XGBOOST_ENSEMBLE_CONTRACT
+  } else {
+    release_spec$artifact_contract
+  }
   expected_schema_hash <- .validation_sha256(
     meta$public_schema_sha256, "Saved native-tree public schema SHA-256")
   artifact <- meta$artifact
@@ -56,7 +163,8 @@
   expected_hash <- .validation_sha256(
     artifact$sha256, "Saved native-tree artifact SHA-256")
   sanitization <- meta$sanitization
-  expected_sanitization <- .native_tree_sanitization_attestation(engine)
+  expected_sanitization <- .native_tree_sanitization_attestation(
+    engine, origin)
   if (!is.list(sanitization) ||
       !identical(sort(names(sanitization)),
                  sort(names(expected_sanitization))) ||
@@ -84,11 +192,17 @@
   value <- tryCatch(
     jsonlite::fromJSON(rawToChar(bytes), simplifyVector = FALSE),
     error = function(e) NULL)
+  # XGBoost's trusted Python sanitizer emits the shortest round-trippable
+  # binary64 spelling. jsonlite cannot reproduce every such spelling, so the
+  # isolated predictor re-checks canonical member bytes before any private I/O.
+  # The pure R/Python tree formats remain byte-round-trippable here.
+  r_canonical <- identical(engine, "xgboost") ||
+    identical(bytes, .native_tree_json(value))
   if (!is.list(value) || !identical(
       sort(names(value)),
       c("aggregation", "contract", "engine", "models",
         "public_schema_sha256", "task", "version")) ||
-      !identical(value$contract, release_spec$artifact_contract) ||
+      !identical(value$contract, expected_contract) ||
       !identical(value$engine, engine) ||
       !identical(value$task, task) ||
       !identical(value$aggregation, "mean_prediction") ||
@@ -97,7 +211,7 @@
       is.na(value$version) || !is.finite(value$version) ||
       value$version != 1 || !is.list(value$models) || !length(value$models) ||
       !all(vapply(value$models, is.list, logical(1))) ||
-      !identical(bytes, .native_tree_json(value))) {
+      !r_canonical) {
     stop("Saved native-tree ensemble violates its canonical container contract.",
          call. = FALSE)
   }
@@ -292,12 +406,23 @@
 .resolve_validation_contract <- function(model, bins) {
   model_dir <- .validation_model_dir(model)
   metadata_path <- file.path(model_dir, "metadata.json")
-  if (!file.exists(metadata_path)) {
+  metadata_info <- file.info(metadata_path)
+  if (!file.exists(metadata_path) || is.na(metadata_info$isdir) ||
+      isTRUE(metadata_info$isdir) || is.na(metadata_info$size) ||
+      metadata_info$size < 1 ||
+      metadata_info$size > .VALIDATION_METADATA_MAX_BYTES) {
     stop("Private validation requires the model's metadata.json contract.",
          call. = FALSE)
   }
+  metadata_con <- file(metadata_path, open = "rb")
+  on.exit(close(metadata_con), add = TRUE)
+  metadata_bytes <- readBin(
+    metadata_con, what = "raw", n = as.integer(metadata_info$size))
+  if (length(metadata_bytes) != metadata_info$size) {
+    stop("Saved model metadata is unreadable.", call. = FALSE)
+  }
   meta <- tryCatch(
-    jsonlite::fromJSON(metadata_path, simplifyVector = FALSE),
+    jsonlite::fromJSON(rawToChar(metadata_bytes), simplifyVector = FALSE),
     error = function(e) NULL)
   if (!is.list(meta)) {
     stop("Saved model metadata is unreadable.", call. = FALSE)
@@ -333,13 +458,19 @@
   bins <- .validation_scalar_integer(bins, "bins", 4L, 512L)
 
   if (identical(track, "native_tree")) {
-    expected_fields <- c(
+    internal_fields <- c(
       "artifact", "data_kind", "engine", "feature_lower", "feature_upper",
       "features", "native_tree_request_b64", "native_tree_request_sha256",
       "public_schema_sha256", "sanitization", "target_bounds",
       "target_levels", "task", "track")
+    external_fields <- c(
+      internal_fields, "contract", "prediction_profile", "version")
+    external_import <- identical(
+      .validation_atomic(meta$contract %||% ""),
+      .EXTERNAL_XGBOOST_IMPORT_CONTRACT)
+    expected_fields <- if (external_import) external_fields else internal_fields
     if (is.null(names(meta)) || anyDuplicated(names(meta)) ||
-        !identical(sort(names(meta)), expected_fields)) {
+        !identical(sort(names(meta)), sort(expected_fields))) {
       stop("Saved native-tree metadata has unsupported or missing fields.",
            call. = FALSE)
     }
@@ -350,6 +481,27 @@
         length(task) != 1L || !task %in% c("binary", "regression")) {
       stop("Saved native-tree engine/task is not executable in this release.",
            call. = FALSE)
+    }
+    origin <- "internal"
+    if (external_import) {
+      if (!.external_xgboost_metadata_has_exact_types(meta) ||
+          !identical(meta$contract, .EXTERNAL_XGBOOST_IMPORT_CONTRACT) ||
+          !identical(meta$data_kind, "tabular") ||
+          !identical(meta$engine, "xgboost") ||
+          !identical(meta$task, task) || !identical(meta$track, "native_tree")) {
+        stop("Saved external import has an unsupported contract version.",
+             call. = FALSE)
+      }
+      if (metadata_info$size > .EXTERNAL_XGBOOST_METADATA_MAX_BYTES) {
+        stop("Saved external import metadata is outside its byte bound.",
+             call. = FALSE)
+      }
+      if (any(as.integer(metadata_bytes) > 127L) ||
+          !identical(metadata_bytes, .native_tree_ascii_json(meta))) {
+        stop("Saved external import metadata is not canonical ASCII JSON.",
+             call. = FALSE)
+      }
+      origin <- "external"
     }
     if (is.null(feature_bounds)) {
       stop("Saved native-tree validation requires exact public feature bounds.",
@@ -405,15 +557,38 @@
            call. = FALSE)
     }
     artifact <- .validate_native_tree_ensemble_artifact(
-      meta, model_dir, task, engine)
+      meta, model_dir, task, engine, origin)
     profile <- .validate_native_tree_prediction_profile(
       model_dir, request$b64, request_sha256,
       artifact$public_schema_sha256, task, engine, meta$artifact)
+    if (external_import) {
+      binding <- meta$prediction_profile
+      if (!is.list(binding) || is.null(names(binding)) ||
+          anyDuplicated(names(binding)) || !identical(
+            sort(names(binding)), c("file", "sha256", "size_bytes"))) {
+        stop("Saved external import profile binding is invalid.",
+             call. = FALSE)
+      }
+      binding_file <- .validation_atomic(binding$file)
+      binding_sha256 <- .validation_sha256(
+        binding$sha256, "Saved external import profile SHA-256")
+      binding_size <- .validation_scalar_integer(
+        binding$size_bytes, "Saved external import profile size", 1L,
+        .NATIVE_TREE_PREDICTION_PROFILE_MAX_BYTES)
+      if (!identical(binding_file,
+                     .native_tree_release_spec(engine)$profile_file) ||
+          !identical(binding_sha256, profile$sha256) ||
+          !identical(binding_size, profile$size_bytes)) {
+        stop("Saved external import profile binding does not match its sidecar.",
+             call. = FALSE)
+      }
+    }
     return(list(
       model_dir = model_dir, artifact = artifact$path,
       artifact_format = artifact$format, artifact_sha256 = artifact$sha256,
       artifact_size_bytes = artifact$size_bytes,
       sanitization = artifact$sanitization,
+      model_training_privacy = artifact$sanitization$privacy_basis,
       native_tree_request_b64 = request$b64,
       native_tree_request_sha256 = request_sha256,
       public_schema_sha256 = artifact$public_schema_sha256,
@@ -660,8 +835,9 @@
 
 #' Differentially-private federated model validation
 #'
-#' Evaluates a released tabular declarative neural model or sanitized
-#' native-tree ensemble on the dataset assigned for this call inside each data node.
+#' Evaluates a released tabular declarative neural model, sanitized native-tree
+#' ensemble, or explicitly external-unverified imported XGBoost bundle on the
+#' dataset assigned for this call inside each data node.
 #' The native request, ensemble and prediction-profile sidecar are pinned into
 #' the ephemeral execution contract and every node re-sanitizes the ensemble
 #' before opening its data. Vision artifacts fail explicitly because this
@@ -682,7 +858,8 @@
 #' historical query denial.
 #'
 #' @param conns DSI connections.
-#' @param model A successful \code{dsflower_run} or saved model directory.
+#' @param model A successful \code{dsflower_run}, saved model directory, or
+#'   path returned by \code{ds.flower.import_xgboost()}.
 #' @param target Target column name(s); multilabel validation requires one per
 #'   saved label.
 #' @param data Optional server-side data symbol.
@@ -696,7 +873,9 @@
 #' @param allow_insecure_http Exact connection names allowed to use HTTP.
 #' @return A \code{dsflower_validation}. Its \code{available} field is false
 #'   and \code{metrics} is null when the complete pooled release was not
-#'   available; no exact or zero-filled substitute metrics are returned.
+#'   available; no exact or zero-filled substitute metrics are returned. The
+#'   \code{model_training_privacy} field keeps model provenance separate from
+#'   the node-DP metric release.
 #' @export
 ds.flower.validate <- function(conns, model, target, data = NULL,
                                resource = NULL, symbol = NULL, bins = 32L,
@@ -872,6 +1051,7 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
     available = released$available, metrics = released$metrics,
     task = released$task,
     privacy = released$privacy, pooled_only = TRUE,
+    model_training_privacy = contract$model_training_privacy %||% NULL,
     n_nodes = released$n_nodes, bins = contract$bins,
     model_dir = contract$model_dir, results_dir = results_dir,
     stdout = stdout, stderr = stderr),
@@ -887,6 +1067,11 @@ print.dsflower_validation <- function(x, ...) {
   cat("  Task:    ", x$task, "\n")
   cat("  Sites:   ", x$n_nodes, "\n")
   cat("  Privacy: node-DP, pooled metrics only\n")
+  if (is.character(x$model_training_privacy) &&
+      length(x$model_training_privacy) == 1L &&
+      identical(x$model_training_privacy, "external-unverified")) {
+    cat("  Model:   external training privacy unverified\n")
+  }
   if (!isTRUE(x$available)) {
     cat("  Available: no complete private metric release\n")
     return(invisible(x))
