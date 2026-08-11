@@ -262,6 +262,35 @@ test_that("private metric schemas pin shapes, ranges, and task nullability", {
   expect_false(valid(invalid, "count"))
 })
 
+test_that("JSON-list metric arrays retain their exact scalar contract", {
+  metrics <- .test_binary_metrics()
+  groups <- c("roc", "precision_recall", "calibration", "decision_curve")
+  for (group in groups) {
+    metrics[[group]] <- lapply(metrics[[group]], as.list)
+  }
+  metrics$calibration$predicted[[1L]] <- 0L
+  expect_true(dsFlowerClient:::.private_metrics_valid(metrics, "binary"))
+
+  values <- metrics$calibration$predicted
+  adversarial <- list(
+    logical = replace(values, 2L, list(TRUE)),
+    character = replace(values, 2L, list("0.5")),
+    nested = replace(values, 2L, list(list(0.5))),
+    named = replace(values, 2L, list(structure(0.5, names = "x"))),
+    dimensioned = replace(values, 2L, list(matrix(0.5))),
+    multi_value = replace(values, 2L, list(c(0.4, 0.5))),
+    null = replace(values, 2L, list(NULL)),
+    non_finite = replace(values, 2L, list(Inf))
+  )
+  for (case in names(adversarial)) {
+    invalid <- metrics
+    invalid$calibration$predicted <- adversarial[[case]]
+    expect_false(
+      dsFlowerClient:::.private_metrics_valid(invalid, "binary"),
+      info = case)
+  }
+})
+
 test_that("noise-only nullable primary metrics remain valid", {
   for (task in c("multiclass", "ordinal", "multilabel")) {
     metrics <- .test_private_metrics(task, null_primary = TRUE)

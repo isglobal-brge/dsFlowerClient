@@ -85,7 +85,11 @@
       return(as.numeric(value))
     }
     if (!is.list(value) || !is.null(names(value)) ||
-        !all(vapply(value, finite_scalar, logical(1)))) {
+        any(lengths(value) != 1L) ||
+        !all(vapply(value, function(item) {
+          is.numeric(item) && !is.logical(item) &&
+            is.null(dim(item)) && is.null(names(item))
+        }, logical(1), USE.NAMES = FALSE))) {
       return(NULL)
     }
     as.numeric(unlist(value, recursive = FALSE, use.names = FALSE))
