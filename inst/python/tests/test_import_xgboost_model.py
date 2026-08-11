@@ -184,6 +184,10 @@ def _command(artifact, output, request, request_sha256, python_flags=None):
     ]
 
 
+def _portable_stderr(value):
+    return value.replace(b"\r\n", b"\n")
+
+
 def _invoke(root, task="binary", *, raw=None, request=None):
     root = Path(root)
     artifact = root / "external model.json"
@@ -342,7 +346,9 @@ class ExternalXGBoostImporterTests(unittest.TestCase):
                 result, output, manifest, _ = _invoke(root, raw=raw)
                 self.assertEqual(result.returncode, 1)
                 self.assertEqual(result.stdout, b"")
-                self.assertEqual(result.stderr, helper.ERROR_MESSAGE.encode())
+                self.assertEqual(
+                    _portable_stderr(result.stderr),
+                    helper.ERROR_MESSAGE.encode())
                 self.assertIsNone(manifest)
                 self.assertEqual(list(output.iterdir()), [])
 
@@ -352,7 +358,8 @@ class ExternalXGBoostImporterTests(unittest.TestCase):
                 root, request=(request, request_b64, "0" * 64))
             self.assertEqual(result.returncode, 1)
             self.assertEqual(result.stdout, b"")
-            self.assertEqual(result.stderr, helper.ERROR_MESSAGE.encode())
+            self.assertEqual(
+                _portable_stderr(result.stderr), helper.ERROR_MESSAGE.encode())
             self.assertIsNone(manifest)
             self.assertEqual(list(output.iterdir()), [])
 
@@ -360,7 +367,8 @@ class ExternalXGBoostImporterTests(unittest.TestCase):
             result, output, manifest, _ = _invoke(
                 root, request=_request_wire(engine="lightgbm"))
             self.assertEqual(result.returncode, 1)
-            self.assertEqual(result.stderr, helper.ERROR_MESSAGE.encode())
+            self.assertEqual(
+                _portable_stderr(result.stderr), helper.ERROR_MESSAGE.encode())
             self.assertIsNone(manifest)
             self.assertEqual(list(output.iterdir()), [])
 
@@ -395,7 +403,9 @@ class ExternalXGBoostImporterTests(unittest.TestCase):
                     check=False)
                 self.assertEqual(result.returncode, 1)
                 self.assertEqual(result.stdout, b"")
-                self.assertEqual(result.stderr, helper.ERROR_MESSAGE.encode())
+                self.assertEqual(
+                    _portable_stderr(result.stderr),
+                    helper.ERROR_MESSAGE.encode())
                 self.assertEqual(list(output.iterdir()), [])
 
     def test_cli_requires_isolated_python_without_site(self):
@@ -419,7 +429,9 @@ class ExternalXGBoostImporterTests(unittest.TestCase):
                     check=False)
                 self.assertEqual(result.returncode, 1)
                 self.assertEqual(result.stdout, b"")
-                self.assertEqual(result.stderr, helper.ERROR_MESSAGE.encode())
+                self.assertEqual(
+                    _portable_stderr(result.stderr),
+                    helper.ERROR_MESSAGE.encode())
                 self.assertEqual(list(output.iterdir()), [])
 
     def test_oversized_symlink_and_nonempty_destinations_are_rejected(self):
@@ -438,7 +450,8 @@ class ExternalXGBoostImporterTests(unittest.TestCase):
                 _command(artifact, output, request_path, request_sha256),
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
             self.assertEqual(result.returncode, 1)
-            self.assertEqual(result.stderr, helper.ERROR_MESSAGE.encode())
+            self.assertEqual(
+                _portable_stderr(result.stderr), helper.ERROR_MESSAGE.encode())
             self.assertEqual(list(output.iterdir()), [])
 
         with tempfile.TemporaryDirectory() as root:
