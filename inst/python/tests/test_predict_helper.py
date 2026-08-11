@@ -113,12 +113,5 @@ class PredictionParityTests(unittest.TestCase):
         self.assertEqual(result.returncode, 2)
         self.assertIn("model_spec and loss_name", result.stderr)
 
-    def test_retired_tree_predictors_are_not_importable(self):
-        for name in ("predict_xgboost", "predict_xgboost_custom",
-                     "predict_dpgbdt", "_is_dpgbdt_booster",
-                     "_apply_tree_bounds"):
-            self.assertFalse(hasattr(helper, name), name)
-
-
 if __name__ == "__main__":
     unittest.main()

@@ -34,8 +34,8 @@ saved label.}
 
 \item{bins}{Public number of probability bins in \code{[4,512]}.}
 
-\item{torch_backend}{Node torch backend selection for neural artifacts. Native
-  XGBoost validation does not provision Torch.}
+\item{torch_backend}{Node torch backend selection for neural artifacts.
+Native-tree validation does not provision Torch.}
 
 \item{verbose}{Show Flower output.}
 
@@ -49,8 +49,8 @@ A \code{dsflower_validation}. Its \code{available} field is false
   available; no exact or zero-filled substitute metrics are returned.
 }
 \description{
-Evaluates a released tabular declarative neural model or sanitized native
-XGBoost ensemble on the dataset assigned for this call inside each data node.
+Evaluates a released tabular declarative neural model or sanitized
+native-tree ensemble on the dataset assigned for this call inside each data node.
 The native request, ensemble and prediction-profile sidecar are pinned into
 the ephemeral execution contract and every node re-sanitizes the ensemble
 before opening its data. Vision artifacts fail explicitly because this

@@ -1,19 +1,19 @@
 # Module: Prediction
 # Apply trained federated models to new data via trusted data-only predictors.
 
-.XGBOOST_LOCAL_PREDICTION_CONTRACT <-
-  "dsflower-xgboost-local-prediction-v1"
-.XGBOOST_LOCAL_MAX_ROWS <- 5000000L
-.XGBOOST_LOCAL_MAX_INPUT_BYTES <- 256 * 1024^2
-.XGBOOST_LOCAL_MAX_OUTPUT_BYTES <- 128 * 1024^2
+.NATIVE_TREE_LOCAL_PREDICTION_CONTRACT <-
+  "dsflower-native-tree-local-prediction-v1"
+.NATIVE_TREE_LOCAL_MAX_ROWS <- 5000000L
+.NATIVE_TREE_LOCAL_MAX_INPUT_BYTES <- 256 * 1024^2
+.NATIVE_TREE_LOCAL_MAX_OUTPUT_BYTES <- 128 * 1024^2
 
 #' Predict with a federated model
 #'
-#' Uses a saved declarative PyTorch state dictionary or a sanitized native
-#' XGBoost ensemble to generate tabular predictions. XGBoost runs through the
-#' bundled standard-library-only predictor: the artifact, canonical request and
-#' public sidecar are revalidated before execution, and no XGBoost library,
-#' pickle or executable model payload is loaded. Vision artifacts are not
+#' Uses a saved declarative PyTorch state dictionary or a sanitized native-tree
+#' ensemble to generate tabular predictions. Native trees run
+#' through the bundled standard-library-only predictor: the artifact, canonical
+#' request and public sidecar are revalidated before execution, and no upstream
+#' tree library, pickle or executable model payload is loaded. Vision artifacts are not
 #' accepted by this tabular predictor.
 #'
 #' @param model A \code{dsflower_run} object, a saved model list (from
@@ -43,8 +43,8 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     stop("ds.flower.predict() accepts tabular artifacts only; image models ",
          "require an image/backbone inference pipeline.", call. = FALSE)
   }
-  if (identical(framework, "xgboost")) {
-    return(.predict_xgboost_local(info, newdata, type))
+  if (identical(framework, "native_tree")) {
+    return(.predict_native_tree_local(info, newdata, type))
   }
   if (!is.list(contract$model_spec) || !length(contract$model_spec) ||
       !is.character(contract$loss_name) || length(contract$loss_name) != 1L ||
@@ -109,16 +109,16 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   jsonlite::fromJSON(result$stdout)
 }
 
-.xgboost_prediction_frame <- function(newdata, features) {
+.native_tree_prediction_frame <- function(newdata, features) {
   if (!(is.data.frame(newdata) || is.matrix(newdata))) {
-    stop("XGBoost newdata must be a data.frame or matrix.", call. = FALSE)
+    stop("Native-tree newdata must be a data.frame or matrix.", call. = FALSE)
   }
   frame <- as.data.frame(
     newdata, stringsAsFactors = FALSE, check.names = FALSE)
   columns <- names(frame)
   if (is.null(columns) || anyNA(columns) || any(!nzchar(columns)) ||
       anyDuplicated(columns)) {
-    stop("XGBoost newdata must have unique, non-empty feature names.",
+    stop("Native-tree newdata must have unique, non-empty feature names.",
          call. = FALSE)
   }
   missing <- setdiff(features, columns)
@@ -127,12 +127,12 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     details <- c(
       if (length(missing)) paste0("missing: ", paste(missing, collapse = ", ")),
       if (length(extra)) paste0("extra: ", paste(extra, collapse = ", ")))
-    stop("XGBoost newdata columns must match the saved feature contract exactly",
+    stop("Native-tree newdata columns must match the saved feature contract exactly",
          if (length(details)) paste0(" (", paste(details, collapse = "; "), ")"),
          ".", call. = FALSE)
   }
-  if (nrow(frame) > .XGBOOST_LOCAL_MAX_ROWS) {
-    stop("XGBoost newdata exceeds the local prediction row ceiling.",
+  if (nrow(frame) > .NATIVE_TREE_LOCAL_MAX_ROWS) {
+    stop("Native-tree newdata exceeds the local prediction row ceiling.",
          call. = FALSE)
   }
   frame <- frame[, features, drop = FALSE]
@@ -140,66 +140,69 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     is.numeric(column) || is.logical(column)
   }, logical(1))
   if (!all(valid)) {
-    stop("XGBoost newdata features must be numeric or logical.",
+    stop("Native-tree newdata features must be numeric or logical.",
          call. = FALSE)
   }
   frame[] <- lapply(frame, as.numeric)
   frame
 }
 
-.xgboost_predict_helper <- function() {
+.native_tree_predict_helper <- function() {
   helper <- system.file(
-    "python", "xgboost_predict_helper.py", package = "dsFlowerClient")
+    "python", "native_tree_predict_helper.py", package = "dsFlowerClient")
   if (!nzchar(helper)) {
-    helper <- file.path("inst", "python", "xgboost_predict_helper.py")
+    helper <- file.path("inst", "python", "native_tree_predict_helper.py")
   }
   if (!file.exists(helper) || dir.exists(helper)) {
-    stop("Bundled XGBoost prediction helper is unavailable.", call. = FALSE)
+    stop("Bundled native-tree prediction helper is unavailable.", call. = FALSE)
   }
   normalizePath(helper, winslash = "/", mustWork = TRUE)
 }
 
-.read_xgboost_prediction_output <- function(path, expected_rows, task, type) {
+.read_native_tree_prediction_output <- function(
+    path, expected_rows, task, engine, type) {
   info <- file.info(path)
   if (!file.exists(path) || is.na(info$isdir) || isTRUE(info$isdir) ||
       is.na(info$size) || info$size < 1 ||
-      info$size > .XGBOOST_LOCAL_MAX_OUTPUT_BYTES) {
-    stop("Local XGBoost predictor produced no bounded data-only output.",
+      info$size > .NATIVE_TREE_LOCAL_MAX_OUTPUT_BYTES) {
+    stop("Local native-tree predictor produced no bounded data-only output.",
          call. = FALSE)
   }
   bytes <- readBin(path, what = "raw", n = as.integer(info$size))
   if (length(bytes) != info$size || any(as.integer(bytes) > 127L)) {
-    stop("Local XGBoost predictor output is malformed.", call. = FALSE)
+    stop("Local native-tree predictor output is malformed.", call. = FALSE)
   }
   value <- tryCatch(
     jsonlite::fromJSON(rawToChar(bytes), simplifyVector = TRUE),
     error = function(e) NULL)
-  expected_fields <- c("contract", "predictions", "task", "type", "version")
+  expected_fields <- c(
+    "contract", "engine", "predictions", "task", "type", "version")
   if (!is.list(value) || is.null(names(value)) || anyDuplicated(names(value)) ||
       !identical(sort(names(value)), expected_fields) ||
-      !identical(value$contract, .XGBOOST_LOCAL_PREDICTION_CONTRACT) ||
+      !identical(value$contract, .NATIVE_TREE_LOCAL_PREDICTION_CONTRACT) ||
       !is.integer(value$version) || !identical(value$version, 1L) ||
-      !identical(value$task, task) || !identical(value$type, type) ||
+      !identical(value$engine, engine) || !identical(value$task, task) ||
+      !identical(value$type, type) ||
       !(is.numeric(value$predictions) ||
         (is.list(value$predictions) && !length(value$predictions))) ||
       length(value$predictions) != expected_rows) {
-    stop("Local XGBoost predictor output violates its data-only contract.",
+    stop("Local native-tree predictor output violates its data-only contract.",
          call. = FALSE)
   }
   predictions <- suppressWarnings(as.numeric(value$predictions))
   if (length(predictions) != expected_rows || any(!is.finite(predictions))) {
-    stop("Local XGBoost predictor returned invalid predictions.",
+    stop("Local native-tree predictor returned invalid predictions.",
          call. = FALSE)
   }
   if (identical(task, "binary") &&
       any(predictions < 0 | predictions > 1)) {
-    stop("Local XGBoost predictor returned invalid probabilities.",
+    stop("Local native-tree predictor returned invalid probabilities.",
          call. = FALSE)
   }
   predictions
 }
 
-.run_xgboost_local_predict <- function(native_contract, frame, type) {
+.run_native_tree_local_predict <- function(native_contract, frame, type) {
   data_path <- tempfile(fileext = ".csv")
   output_path <- tempfile(fileext = ".json")
   on.exit(unlink(c(data_path, output_path, paste0(output_path, ".tmp"))),
@@ -211,16 +214,17 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   input_info <- file.info(data_path)
   if (!file.exists(data_path) || is.na(input_info$isdir) ||
       isTRUE(input_info$isdir) || is.na(input_info$size) ||
-      input_info$size > .XGBOOST_LOCAL_MAX_INPUT_BYTES) {
-    stop("XGBoost newdata exceeds the local transport byte ceiling.",
+      input_info$size > .NATIVE_TREE_LOCAL_MAX_INPUT_BYTES) {
+    stop("Native-tree newdata exceeds the local transport byte ceiling.",
          call. = FALSE)
   }
-  profile <- file.path(
-    native_contract$model_dir, .XGBOOST_ENSEMBLE_PROFILE_FILE)
+  profile <- file.path(native_contract$model_dir,
+                       .native_tree_release_spec(
+                         native_contract$engine)$profile_file)
   result <- processx::run(
     command = .client_python_cmd(),
     args = c(
-      "-I", "-S", .xgboost_predict_helper(),
+      "-I", "-S", .native_tree_predict_helper(),
       "--model", native_contract$artifact,
       "--profile", profile,
       "--data", data_path,
@@ -230,30 +234,32 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     env = .client_venv_env(), error_on_status = FALSE, timeout = 900)
   if (!identical(as.integer(result$status), 0L) ||
       !identical(result$stdout, "ok")) {
-    stop("Local XGBoost prediction rejected the saved bundle or input.",
+    stop("Local native-tree prediction rejected the saved bundle or input.",
          call. = FALSE)
   }
-  .read_xgboost_prediction_output(
-    output_path, nrow(frame), native_contract$task, type)
+  .read_native_tree_prediction_output(
+    output_path, nrow(frame), native_contract$task,
+    native_contract$engine, type)
 }
 
-.predict_xgboost_local <- function(info, newdata, type) {
+.predict_native_tree_local <- function(info, newdata, type) {
   native <- info$native_contract
-  if (!is.list(native) || !identical(native$engine, "xgboost") ||
+  if (!is.list(native) ||
+      !native$engine %in% .NATIVE_TREE_ENGINES ||
       !native$task %in% c("binary", "regression") ||
       !is.character(native$features) || !length(native$features)) {
-    stop("Saved XGBoost prediction contract is unavailable.", call. = FALSE)
+    stop("Saved native-tree prediction contract is unavailable.", call. = FALSE)
   }
   if (identical(native$task, "regression") && identical(type, "prob")) {
-    stop("type = 'prob' is unavailable for XGBoost regression.",
+    stop("type = 'prob' is unavailable for native-tree regression.",
          call. = FALSE)
   }
-  frame <- .xgboost_prediction_frame(newdata, native$features)
-  predictions <- .run_xgboost_local_predict(native, frame, type)
+  frame <- .native_tree_prediction_frame(newdata, native$features)
+  predictions <- .run_native_tree_local_predict(native, frame, type)
   if (identical(native$task, "binary") && identical(type, "response")) {
     levels <- native$target_levels
     if (length(levels) != 2L || anyNA(levels) || anyDuplicated(levels)) {
-      stop("Saved XGBoost target levels are invalid.", call. = FALSE)
+      stop("Saved native-tree target levels are invalid.", call. = FALSE)
     }
     return(unname(levels[ifelse(predictions >= 0.5, 2L, 1L)]))
   }
@@ -277,14 +283,16 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
       model_dir <- model
     } else if (file.exists(model)) {
       # Direct file path
-      framework <- if (identical(basename(model), .XGBOOST_ENSEMBLE_FILE)) {
-        "xgboost"
+      native_files <- vapply(
+        .NATIVE_TREE_RELEASE_SPECS, `[[`, character(1), "artifact_file")
+      framework <- if (basename(model) %in% native_files) {
+        "native_tree"
       } else {
         ext <- tolower(tools::file_ext(model))
         switch(ext, pt = "pytorch",
                stop("Unknown model format: ", ext, call. = FALSE))
       }
-      if (identical(framework, "xgboost")) {
+      if (identical(framework, "native_tree")) {
         native <- .resolve_validation_contract(dirname(model), 32L)
         return(list(
           model_file = native$artifact, framework = framework,
@@ -314,14 +322,16 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   bnd <- .read_meta_bounds(model_dir)        # public clipped-affine bounds (or NULL)
   contract <- .read_meta_model_contract(model_dir)
 
-  candidates <- list(
-    list(file = .XGBOOST_ENSEMBLE_FILE, framework = "xgboost"),
-    list(file = "model.pt", framework = "pytorch"))
+  candidates <- c(
+    lapply(.NATIVE_TREE_RELEASE_SPECS, function(spec) {
+      list(file = spec$artifact_file, framework = "native_tree")
+    }),
+    list(list(file = "model.pt", framework = "pytorch")))
 
   for (c in candidates) {
     path <- file.path(model_dir, c$file)
     if (file.exists(path)) {
-      if (identical(c$framework, "xgboost")) {
+      if (identical(c$framework, "native_tree")) {
         native <- .resolve_validation_contract(model_dir, 32L)
         return(list(
           model_file = native$artifact, framework = c$framework,
@@ -335,7 +345,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   }
 
   stop("No native model file found in ", model_dir,
-       ". Expected model.pt or ", .XGBOOST_ENSEMBLE_FILE, ".",
+       ". Expected model.pt or one released native-tree ensemble.",
        call. = FALSE)
 }
 

@@ -28,10 +28,13 @@ ds.flower.fit(
   silent = FALSE,
   verbose = FALSE,
   feature_bounds = NULL,
+  feature_cuts = NULL,
   target_levels = NULL,
   target_bounds = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
-  data_kind = NULL
+  data_kind = NULL,
+  holdout = NULL,
+  cross_validation = NULL
 )
 ```
 
@@ -124,12 +127,21 @@ ds.flower.fit(
   Optional public feature bounds as `list(lower=..., upper=...)` in
   feature order.
 
+- feature_cuts:
+
+  Required for native-tight tree models: a list containing one strictly
+  increasing vector of public cut points per feature, each strictly
+  inside `feature_bounds`. Seven data-independent cuts per feature are a
+  practical benchmark-backed starting point; they are never inferred
+  from private node data.
+
 - target_levels:
 
   Optional ordered public classification label vocabulary. Non-numeric
   labels require it; missing or unknown values map to public code zero.
   Multilabel applies the same public two-level vocabulary independently
-  to every target column.
+  to every target column. Binary native-tree models require exactly two
+  ordered levels.
 
 - target_bounds:
 
@@ -148,6 +160,22 @@ ds.flower.fit(
   registered model supports exactly one kind; models registered for both
   require an explicit choice.
 
+- holdout:
+
+  Optional numeric test fraction strictly between zero and one, with at
+  most six decimal places. The node assigns complete privacy units
+  before training, trains only on the complement, and returns the final
+  model together with one pooled differentially-private test metric
+  release.
+
+- cross_validation:
+
+  Optional integer in `[2, 10]`. This runs a dedicated metrics-only
+  federated CV job; prefer
+  [`ds.flower.cross_validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.cross_validate.md)
+  for this workflow.
+
 ## Value
 
-A `dsflower_run` object.
+A `dsflower_run` object, or a `dsflower_cv` when `cross_validation` is
+set.

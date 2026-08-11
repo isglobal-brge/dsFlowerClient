@@ -1,7 +1,10 @@
 # Differentially-private federated model validation
 
-Evaluates a released tabular declarative neural model on the dataset
-assigned for this call inside each data node. Vision artifacts fail
+Evaluates a released tabular declarative neural model or sanitized
+native-tree ensemble on the dataset assigned for this call inside each
+data node. The native request, ensemble and prediction-profile sidecar
+are pinned into the ephemeral execution contract and every node
+re-sanitizes the ensemble before opening its data. Vision artifacts fail
 explicitly because this validator does not reconstruct image loaders or
 backbones. Reusing the training dataset is resubstitution validation;
 assigning an independent dataset is external validation. Each protected
@@ -68,7 +71,8 @@ ds.flower.validate(
 
 - torch_backend:
 
-  Node torch backend selection.
+  Node torch backend selection for neural artifacts. Native-tree
+  validation does not provision Torch.
 
 - verbose:
 

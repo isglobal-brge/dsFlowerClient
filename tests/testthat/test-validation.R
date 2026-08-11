@@ -38,8 +38,7 @@ xgboost_validation_model_fixture <- function(task = "binary") {
     models = list(list(learner = list(attributes = list()),
                        version = list(3L, 4L, 0L))))
   artifact_path <- file.path(path, artifact_name)
-  jsonlite::write_json(container, artifact_path, auto_unbox = TRUE,
-                       null = "null")
+  writeBin(dsFlowerClient:::.native_tree_json(container), artifact_path)
   bytes <- readBin(artifact_path, "raw", n = file.info(artifact_path)$size)
   artifact_hash <- digest::digest(bytes, algo = "sha256", serialize = FALSE)
   sanitization <- list(
@@ -83,6 +82,65 @@ xgboost_validation_model_fixture <- function(task = "binary") {
   writeBin(
     dsFlowerClient:::.native_tree_json(profile),
     file.path(path, "model.xgboost-ensemble.profile.json"))
+  path
+}
+
+pure_native_tree_validation_model_fixture <- function(
+    engine, task = "binary", .local_envir = parent.frame()) {
+  path <- withr::local_tempdir(.local_envir = .local_envir)
+  constructor <- switch(engine,
+    extra_trees = ds.flower.model.extra_trees,
+    random_forest = ds.flower.model.random_forest,
+    lightgbm = ds.flower.model.lightgbm,
+    catboost = ds.flower.model.catboost,
+    stop("pure native-tree fixture engine is unsupported"))
+  model <- constructor(task = task)
+  request <- dsFlowerClient:::.build_native_tree_request(
+    engine, model$params, c("age", "marker"),
+    list(lower = c(0, -5), upper = c(120, 5)),
+    list(c(18, 40, 65), c(-1, 0, 1)), "outcome",
+    target_levels = if (identical(task, "binary"))
+      c("control", "case") else NULL,
+    target_bounds = if (identical(task, "regression"))
+      list(lower = 0, upper = 100) else NULL)
+  spec <- dsFlowerClient:::.native_tree_release_spec(engine)
+  schema_hash <- request$value$public_schema$sha256
+  container <- list(
+    aggregation = "mean_prediction", contract = spec$artifact_contract,
+    engine = engine, models = list(list()),
+    public_schema_sha256 = schema_hash, task = task, version = 1L)
+  artifact_path <- file.path(path, spec$artifact_file)
+  writeBin(dsFlowerClient:::.native_tree_json(container), artifact_path)
+  bytes <- readBin(artifact_path, "raw", n = file.info(artifact_path)$size)
+  artifact_hash <- digest::digest(bytes, algo = "sha256", serialize = FALSE)
+  artifact <- list(
+    file = spec$artifact_file, format = spec$artifact_format,
+    size_bytes = as.integer(length(bytes)), sha256 = artifact_hash)
+  meta <- list(
+    track = "native_tree", engine = engine, task = task,
+    data_kind = "tabular", features = c("age", "marker"),
+    feature_lower = c(0, -5), feature_upper = c(120, 5),
+    target_levels = if (identical(task, "binary"))
+      c("control", "case") else NULL,
+    target_bounds = if (identical(task, "regression"))
+      list(lower = 0, upper = 100) else NULL,
+    native_tree_request_b64 = request$b64,
+    native_tree_request_sha256 = request$sha256,
+    public_schema_sha256 = schema_hash, artifact = artifact,
+    sanitization = dsFlowerClient:::.native_tree_sanitization_attestation(
+      engine))
+  jsonlite::write_json(
+    meta, file.path(path, "metadata.json"), auto_unbox = TRUE, null = "null")
+  profile <- list(
+    artifact = artifact[c("format", "sha256", "size_bytes")],
+    contract = spec$profile_contract, engine = engine,
+    native_tree_request_b64 = request$b64,
+    native_tree_request_sha256 = request$sha256,
+    public_schema_sha256 = schema_hash, task = task,
+    version = spec$profile_version)
+  writeBin(
+    dsFlowerClient:::.native_tree_json(profile),
+    file.path(path, spec$profile_file))
   path
 }
 
@@ -135,12 +193,44 @@ test_that("validation resolves only a sanitized XGBoost ensemble contract", {
   expect_identical(regression$loss_name, "mse")
 })
 
+test_that("pure native-tree bundles save and reopen with engine-specific assets", {
+  for (engine in c("extra_trees", "random_forest", "lightgbm", "catboost")) {
+    withr::local_tempdir()
+    path <- pure_native_tree_validation_model_fixture(
+      engine, .local_envir = environment())
+    spec <- dsFlowerClient:::.native_tree_release_spec(engine)
+    contract <- dsFlowerClient:::.resolve_validation_contract(path, 24L)
+    expect_identical(contract$engine, engine)
+    expect_identical(contract$artifact_format, spec$artifact_format)
+    recipe <- list(
+      model = list(engine = engine, task = "binary"),
+      native_tree_request_b64 = contract$native_tree_request_b64,
+      native_tree_request_sha256 = contract$native_tree_request_sha256,
+      public_schema_sha256 = contract$public_schema_sha256)
+    expect_no_error(dsFlowerClient:::.native_tree_release_metadata(recipe, path))
+
+    run <- structure(list(
+      model_id = engine, weights = NULL, available = TRUE,
+      history = data.frame(round = 1L), model = engine,
+      strategy = "mean_prediction", num_rounds = 1L,
+      run_id = paste0("run-", engine), output_dir = path),
+      class = "dsflower_run")
+    destination <- file.path(withr::local_tempdir(), paste0(engine, ".rds"))
+    expect_no_error(ds.flower.save_model(run, destination))
+    assets <- paste0(destination, ".assets")
+    expect_true(file.exists(file.path(assets, spec$artifact_file)))
+    expect_true(file.exists(file.path(assets, spec$profile_file)))
+    reopened <- dsFlowerClient:::.resolve_model_for_predict(assets)
+    expect_identical(reopened$native_contract$engine, engine)
+  }
+})
+
 test_that("prediction uses the exact XGBoost contract without provisioning torch", {
   path <- xgboost_validation_model_fixture()
   expect_true(file.exists(file.path(
     path, "model.xgboost-ensemble.profile.json")))
   resolved <- dsFlowerClient:::.resolve_model_for_predict(path)
-  expect_identical(resolved$framework, "xgboost")
+  expect_identical(resolved$framework, "native_tree")
   expect_identical(basename(resolved$model_file),
                    "model.xgboost-ensemble.json")
   reached_framework <- FALSE
@@ -149,7 +239,7 @@ test_that("prediction uses the exact XGBoost contract without provisioning torch
       reached_framework <<- TRUE
       stop("must not provision torch")
     },
-    .run_xgboost_local_predict = function(native_contract, frame, type) {
+    .run_native_tree_local_predict = function(native_contract, frame, type) {
       expect_identical(native_contract$native_tree_request_sha256,
                        resolved$native_contract$native_tree_request_sha256)
       expect_identical(names(frame), c("age", "marker"))
@@ -166,15 +256,15 @@ test_that("prediction uses the exact XGBoost contract without provisioning torch
 
 test_that("XGBoost local prediction validates columns, task and output", {
   expect_identical(
-    names(dsFlowerClient:::.xgboost_prediction_frame(
+    names(dsFlowerClient:::.native_tree_prediction_frame(
       data.frame(marker = 0, age = 40), c("age", "marker"))),
     c("age", "marker"))
   expect_error(
-    dsFlowerClient:::.xgboost_prediction_frame(
+    dsFlowerClient:::.native_tree_prediction_frame(
       data.frame(age = 40), c("age", "marker")),
     "missing: marker")
   expect_error(
-    dsFlowerClient:::.xgboost_prediction_frame(
+    dsFlowerClient:::.native_tree_prediction_frame(
       data.frame(age = 40, marker = "x"), c("age", "marker")),
     "numeric or logical")
 
@@ -182,50 +272,50 @@ test_that("XGBoost local prediction validates columns, task and output", {
   expect_error(
     ds.flower.predict(
       path, data.frame(age = 40, marker = 0), type = "prob"),
-    "unavailable for XGBoost regression")
+    "unavailable for native-tree regression")
 
   output <- tempfile(fileext = ".json")
   on.exit(unlink(output), add = TRUE)
   writeBin(charToRaw(paste0(
-    '{"contract":"dsflower-xgboost-local-prediction-v1",',
-    '"predictions":[0.25,0.75],"task":"binary",',
+    '{"contract":"dsflower-native-tree-local-prediction-v1",',
+    '"engine":"xgboost","predictions":[0.25,0.75],"task":"binary",',
     '"type":"prob","version":1}')), output)
   expect_equal(
-    dsFlowerClient:::.read_xgboost_prediction_output(
-      output, 2L, "binary", "prob"),
+    dsFlowerClient:::.read_native_tree_prediction_output(
+      output, 2L, "binary", "xgboost", "prob"),
     c(0.25, 0.75))
 })
 
 test_that("native release requires the exact bounded canonical profile sidecar", {
   expect_identical(
-    dsFlowerClient:::.XGBOOST_PREDICTION_PROFILE_MAX_BYTES, 128 * 1024L)
+    dsFlowerClient:::.NATIVE_TREE_PREDICTION_PROFILE_MAX_BYTES, 128 * 1024L)
   path <- xgboost_validation_model_fixture()
   meta <- jsonlite::fromJSON(
     file.path(path, "metadata.json"), simplifyVector = TRUE)
   recipe <- list(
-    model = list(task = "binary"),
+    model = list(engine = "xgboost", task = "binary"),
     native_tree_request_b64 = meta$native_tree_request_b64,
     native_tree_request_sha256 = meta$native_tree_request_sha256,
     public_schema_sha256 = meta$public_schema_sha256)
-  expect_no_error(dsFlowerClient:::.native_xgboost_release_metadata(
+  expect_no_error(dsFlowerClient:::.native_tree_release_metadata(
     recipe, path))
   profile_path <- file.path(path, "model.xgboost-ensemble.profile.json")
   writeBin(charToRaw("opaque-public-profile"),
            profile_path)
   expect_error(
-    dsFlowerClient:::.native_xgboost_release_metadata(recipe, path),
+    dsFlowerClient:::.native_tree_release_metadata(recipe, path),
     "exact contract")
   writeBin(raw(128 * 1024L), profile_path)
   expect_error(
-    dsFlowerClient:::.native_xgboost_release_metadata(recipe, path),
+    dsFlowerClient:::.native_tree_release_metadata(recipe, path),
     "exact contract")
   writeBin(raw(128 * 1024L + 1L), profile_path)
   expect_error(
-    dsFlowerClient:::.native_xgboost_release_metadata(recipe, path),
+    dsFlowerClient:::.native_tree_release_metadata(recipe, path),
     "outside its byte bound")
   unlink(profile_path)
   expect_error(
-    dsFlowerClient:::.native_xgboost_release_metadata(recipe, path),
+    dsFlowerClient:::.native_tree_release_metadata(recipe, path),
     "missing or outside its byte bound")
 })
 
@@ -263,7 +353,7 @@ test_that("portable save revalidates and copies only the exact XGBoost sidecar",
 
 test_that("XGBoost validation rejects public bundle tampering before private IO", {
   expect_identical(
-    dsFlowerClient:::.XGBOOST_ENSEMBLE_MAX_BYTES, 64 * 1024^2)
+    dsFlowerClient:::.NATIVE_TREE_ENSEMBLE_MAX_BYTES, 64 * 1024^2)
   path <- xgboost_validation_model_fixture()
   profile_path <- file.path(path, "model.xgboost-ensemble.profile.json")
   profile_bytes <- readBin(
@@ -328,7 +418,7 @@ test_that("XGBoost validation rejects public bundle tampering before private IO"
   jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
   expect_error(
     dsFlowerClient:::.resolve_validation_contract(path, 32L),
-    "XGBoost binary or regression only")
+    "engine/task is not executable")
 })
 
 test_that("validation rejects unsupported artifacts and public config early", {

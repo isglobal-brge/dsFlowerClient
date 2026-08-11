@@ -357,6 +357,49 @@ test_that("ExtraTrees request uses the data-independent exact profile", {
     "strict as float32")
 })
 
+test_that("Random Forest resolves task-aware defaults and public mtry exactly", {
+  binary <- ds.flower.model.random_forest()
+  regression <- ds.flower.model.random_forest(task = "regression")
+  expect_equal(
+    binary$params[c("n_estimators", "max_depth", "max_features")],
+    list(n_estimators = 8L, max_depth = 4L, max_features = "auto"))
+  expect_equal(
+    regression$params[c("n_estimators", "max_depth", "max_features")],
+    list(n_estimators = 4L, max_depth = 4L, max_features = "auto"))
+
+  build <- function(model, features) dsFlowerClient:::.build_random_forest_request(
+    model$params, features,
+    list(lower = rep(0, length(features)), upper = rep(1, length(features))),
+    lapply(features, function(...) 0.5), "outcome",
+    target_levels = if (identical(model$params$task, "binary"))
+      c("control", "case") else NULL,
+    target_bounds = if (identical(model$params$task, "regression"))
+      list(lower = -1, upper = 1) else NULL)
+  parameter <- function(request, name) {
+    index <- which(vapply(
+      request$value$parameters, `[[`, character(1), "name") == name)
+    request$value$parameters[[index]]$value
+  }
+  binary_request <- build(binary, paste0("x", seq_len(5L)))
+  regression_request <- build(regression, paste0("x", seq_len(5L)))
+  expect_identical(parameter(binary_request, "max_features"), 3L)
+  expect_identical(parameter(regression_request, "max_features"), 2L)
+  expect_identical(parameter(binary_request, "n_estimators"), 8L)
+  expect_identical(parameter(regression_request, "n_estimators"), 4L)
+  expect_false(any(vapply(
+    binary_request$value$parameters, function(record) is.character(record$value),
+    logical(1))))
+
+  explicit <- build(
+    ds.flower.model.random_forest(max_features = 2L), paste0("x", 1:10))
+  expect_identical(parameter(explicit, "max_features"), 2L)
+  expect_error(
+    build(ds.flower.model.random_forest(max_features = 11L), paste0("x", 1:10)),
+    "cannot exceed the public feature count")
+  expect_error(ds.flower.model.random_forest(max_features = "sqrt"),
+               "NULL, 'auto', or a positive integer")
+})
+
 test_that("XGBoost defaults are task-aware and explicit values win", {
   expected_binary <- list(
     num_boost_round = 8L, max_depth = 2L, learning_rate = 0.25)
@@ -418,8 +461,8 @@ test_that("XGBoost submission validates its one-round public request pre-DSI", {
   reached_private_path <- FALSE
   local_mocked_bindings(
     .validate_dsi_transport_security = function(...) TRUE,
-    .assert_native_xgboost_capability = function(...) {
-      stop("Verified native XGBoost capability is unavailable on: site.",
+    .assert_native_tree_capability = function(...) {
+      stop("Verified native-tree capability for 'xgboost' is unavailable on: site.",
            call. = FALSE)
     },
     .require_flwr_cli = function() {
@@ -438,7 +481,7 @@ test_that("XGBoost submission validates its one-round public request pre-DSI", {
     feature_bounds = list(lower = c(0, -5), upper = c(100, 5)),
     feature_cuts = list(c(18, 40, 65), c(-1, 0, 1)),
     target_levels = c(0, 1))
-  expect_error(do.call(ds.flower.submit, args), "capability is unavailable")
+  expect_error(do.call(ds.flower.submit, args), "capability.*is unavailable")
   expect_false(reached_cli)
   expect_false(reached_private_path)
 
@@ -452,6 +495,64 @@ test_that("XGBoost submission validates its one-round public request pre-DSI", {
   expect_error(do.call(ds.flower.submit, args), "two ordered public target_levels")
   expect_false(reached_cli)
   expect_false(reached_private_path)
+})
+
+test_that("native-tree submission reuses its targeted capability response", {
+  events <- character()
+  local_conn <- structure(list(), class = "DSLiteConnection")
+  flower <- structure(
+    list(conns = list(site = local_conn), symbol = "flower"),
+    class = "dsflower_connection")
+  capabilities <- list(site = list(
+    runner_abi = 3L,
+    runner_sha256 = paste(rep("a", 64L), collapse = "")))
+  local_mocked_bindings(
+    .validate_dsi_transport_security = function(...) TRUE,
+    .assert_native_tree_capability = function(conns, engine) {
+      events <<- c(events, paste0("targeted:", engine))
+      capabilities
+    },
+    .assert_runner_compatibility = function(...) {
+      events <<- c(events, "unexpected-common-capability")
+      stop("second capability query", call. = FALSE)
+    },
+    .require_flwr_cli = function() TRUE,
+    .validate_declarative_model_preflight = function(...) TRUE,
+    ds.flower.connect = function(...) {
+      events <<- c(events, "connect")
+      flower
+    },
+    ds.flower.nodes.prepare = function(...) {
+      events <<- c(events, "prepare")
+      stop("prepared sentinel", call. = FALSE)
+    },
+    ds.flower.link.down = function(...) {
+      events <<- c(events, "link")
+      invisible(TRUE)
+    },
+    ds.flower.nodes.cleanup = function(...) {
+      events <<- c(events, "nodes")
+      invisible(TRUE)
+    },
+    ds.flower.disconnect = function(...) {
+      events <<- c(events, "disconnect")
+      invisible(TRUE)
+    },
+    .package = "dsFlowerClient")
+
+  expect_error(
+    ds.flower.submit(
+      conns = list(site = local_conn), model = ds.flower.model.xgboost(),
+      target = "outcome", features = c("age", "marker"), symbol = "D",
+      feature_bounds = list(lower = c(0, -5), upper = c(100, 5)),
+      feature_cuts = list(c(18, 40, 65), c(-1, 0, 1)),
+      target_levels = c(0, 1)),
+    "prepared sentinel")
+  expect_false("unexpected-common-capability" %in% events)
+  expect_identical(
+    events,
+    c("targeted:xgboost", "connect", "prepare", "link", "nodes",
+      "disconnect"))
 })
 
 test_that("native-tree FAB uses isolated entrypoints and no torch dependency", {
@@ -492,19 +593,51 @@ test_that("native-tree FAB uses isolated entrypoints and no torch dependency", {
   expect_false(grepl("opacus", validation_toml, fixed = TRUE))
 })
 
-test_that("native XGBoost admission requires every fresh node probe", {
-  result <- list(site = list(native_tree = list(
-    contract = "dsflower-native-tree-request-v1",
-    xgboost_native_tight_available = FALSE)))
+test_that("native-tree admission uses the selected engine's fresh probe", {
+  expected <- paste(rep("a", 64L), collapse = "")
+  calls <- 0L
+  captured <- NULL
+  result <- list(site = list(
+    runner_abi = 3L,
+    runner_sha256 = expected,
+    native_tree = list(
+      contract = "dsflower-native-tree-request-v1",
+      probed_engines = "random_forest",
+      random_forest_native_tight_available = FALSE)))
   local_mocked_bindings(
-    datashield.aggregate = function(...) result,
+    .compute_local_runner_hash = function(...) expected,
+    .package = "dsFlowerClient")
+  local_mocked_bindings(
+    datashield.aggregate = function(conns, expr) {
+      calls <<- calls + 1L
+      captured <<- expr
+      result
+    },
     .package = "DSI")
   expect_error(
-    dsFlowerClient:::.assert_native_xgboost_capability(list(site = TRUE)),
+    dsFlowerClient:::.assert_native_tree_capability(
+      list(site = TRUE), "random_forest"),
     "unavailable on: site")
-  result$site$native_tree$xgboost_native_tight_available <- TRUE
+  expect_identical(calls, 1L)
+  expect_identical(as.character(captured[[1L]]), "flowerGetCapabilitiesDS")
+  expect_identical(as.character(captured[[2L]]), "random_forest")
+  result$site$native_tree$random_forest_native_tight_available <- TRUE
   expect_no_error(
-    dsFlowerClient:::.assert_native_xgboost_capability(list(site = TRUE)))
+    dsFlowerClient:::.assert_native_tree_capability(
+      list(site = TRUE), "random_forest"))
+  expect_identical(calls, 2L)
+
+  result$site$runner_abi <- 2L
+  expect_error(
+    dsFlowerClient:::.assert_native_tree_capability(
+      list(site = TRUE), "random_forest"),
+    "Incompatible dsFlower runner")
+  before_invalid <- calls
+  expect_error(
+    dsFlowerClient:::.assert_native_tree_capability(
+      list(site = TRUE), "Random_Forest"),
+    "no implemented capability probe")
+  expect_identical(calls, before_invalid)
 })
 
 test_that("native-tree request has bounded cuts and canonical bytes", {

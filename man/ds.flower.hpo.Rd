@@ -16,59 +16,42 @@ ds.flower.hpo(
 \item{objective}{Local R function accepting one named parameter list and
 returning one finite numeric scalar.}
 
-\item{space}{Non-empty named list built with the
-\code{ds.flower.hpo.*()} dimension constructors.}
+\item{space}{Non-empty named list of dimensions created with
+`ds.flower.hpo.float()`, `ds.flower.hpo.integer()`, or
+`ds.flower.hpo.categorical()`. Parameter names are unrestricted by a
+model catalog.}
 
-\item{n_trials}{Positive integer number of trials in this local study, at most
-one million. This per-process memory ceiling is not a historical quota or a
-limit on the number of HPO calls.}
+\item{n_trials}{Positive integer number of trials in this local study, at
+most one million. This per-process memory ceiling is not a historical
+quota or a limit on the number of HPO calls.}
 
-\item{direction}{Either \code{"minimize"} or \code{"maximize"}.}
+\item{direction}{Either `"minimize"` or `"maximize"`.}
 
-\item{seed}{Integer in \code{[0, 2^32 - 1]} controlling only local Optuna
+\item{seed}{Integer in `[0, 2^32 - 1]` controlling only local Optuna
 suggestions. It is unrelated to node-owned privacy randomness.}
 }
 \value{
-A \code{dsflower_hpo} object containing the best value and parameters, full
-local trial history, direction, seed, sampler, and exact Optuna version.
+A `dsflower_hpo` object with the best value and parameters,
+  complete local trial history, seed, direction, and Optuna version.
 }
 \description{
-Runs one sequential Optuna 4.8.0 TPE study on the researcher's machine using
-ephemeral in-memory storage. Optuna proposes parameters over a JSON-lines pipe;
-\code{objective(params)} runs in the current R process. The function is never
-serialized, uploaded, or sent to a data node.
+Runs one sequential Optuna TPE study entirely on the researcher's machine.
+Optuna uses ephemeral in-memory storage. For each suggestion this function
+calls `objective(params)` in the current R process; the function itself
+is never serialized, uploaded, or sent to a data node. It must return one
+finite numeric value.
 }
 \details{
-The objective may explicitly call federated training and private validation.
-Each call retains its ordinary node-enforced privacy contract. HPO does not
-alter node privacy policy. \code{n_trials} describes only this local execution;
+The objective may explicitly call `ds.flower.fit()` and a suitable
+private validation API. Each such call remains an ordinary independent
+server-enforced training or validation release. HPO does not weaken or alter
+node privacy policy. `n_trials` is only the geometry of this local call:
 it is not a rate limit, quota, catalog permission, or persistent budget.
 
-With the same Optuna version, seed, search space, and sequence of objective
-values, the suggestion sequence is reproducible. Objective values are only as
-reproducible as the objective itself. Static typed spaces are intentional:
-conditional search logic would require exposing Python \code{Trial} semantics
-to R or serializing code, neither of which is part of this data-only local
-bridge.
-}
-\examples{
-space <- list(
-  trees = ds.flower.hpo.integer(4L, 16L, step = 2L),
-  learning_rate = ds.flower.hpo.float(0.01, 0.3, log = TRUE),
-  family = ds.flower.hpo.categorical(c("xgboost", "random_forest"))
-)
-
-\dontrun{
-result <- ds.flower.hpo(
-  objective = function(params) {
-    # Build a declarative model, fit it, validate it, and return one metric.
-    private_validation_metric(params)
-  },
-  space = space,
-  n_trials = 20L,
-  direction = "maximize",
-  seed = 2026L
-)
-result$best_params
-}
+Repeating a study with Optuna 4.8.0, the same seed, search space, and
+sequence of objective values reproduces its suggestions. Reproducibility of
+the returned values additionally depends on the objective itself.
+Static typed spaces are intentional: conditional search logic would require
+exposing Python Trial semantics to R or serializing code, neither of which
+is part of this data-only local bridge.
 }

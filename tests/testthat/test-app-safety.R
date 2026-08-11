@@ -8,7 +8,7 @@ test_that("harness dependencies include the secure RNG backend", {
   )
   expect_true("cryptography>=42.0.0" %in%
                 dsFlowerClient:::.harness_dependencies())
-  expect_true("flwr[app]>=1.31.0,<1.32.0" %in%
+  expect_true("flwr==1.31.0" %in%
                 dsFlowerClient:::.harness_dependencies())
   expect_true("torch>=2.0.0,<3.0.0" %in%
                 dsFlowerClient:::.harness_dependencies())
@@ -31,7 +31,7 @@ test_that("client venv marker invalidates an incompatible Flower runtime", {
   )
 
   expect_true(dsFlowerClient:::.client_venv_is_healthy())
-  writeLines("flwr[app]>=1.31.0", marker)
+  writeLines("flwr==1.30.0", marker)
   expect_false(dsFlowerClient:::.client_venv_is_healthy())
 })
 
@@ -74,7 +74,8 @@ test_that("runner preflight requires ABI 3 and the exact local hash", {
       list(site1 = list(), site2 = list()))
   )
   expect_identical(as.character(captured[[1L]]), "flowerGetCapabilitiesDS")
-  expect_length(captured, 1L)
+  expect_identical(as.character(captured[[2L]]), "none")
+  expect_length(captured, 2L)
 })
 
 test_that("runner preflight reports incompatible nodes", {
@@ -289,9 +290,9 @@ test_that("fit forwards public feature bounds through its stable argument contra
 
 test_that("submit exposes public target semantics in canonical order", {
   expect_identical(
-    tail(names(formals(ds.flower.submit)), 6L),
+    tail(names(formals(ds.flower.submit)), 7L),
     c("feature_bounds", "feature_cuts", "target_levels", "target_bounds",
-      "holdout", "allow_insecure_http"))
+      "holdout", "cross_validation", "allow_insecure_http"))
 })
 
 test_that("public target semantics are strict and data-independent", {
@@ -439,7 +440,7 @@ test_that("bce_logits cannot silently request a multiclass head", {
   )
 })
 
-test_that("retired tree model name fails before any side effect", {
+test_that("unknown model names fail before any side effect", {
   reached_cli <- FALSE
   local_mocked_bindings(
     .require_flwr_cli = function() {
@@ -451,7 +452,7 @@ test_that("retired tree model name fails before any side effect", {
 
   expect_error(
     ds.flower.submit(
-      conns = list(site = TRUE), model = "dp_gbdt",
+      conns = list(site = TRUE), model = "unknown_model",
       target = "y", features = "x"),
     "Unknown model"
   )

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Windows uses configure.win rather than configure. Keep one provisioning
+# implementation so the Flower/Optuna pins and health marker cannot drift.
+exec sh ./configure "$@"

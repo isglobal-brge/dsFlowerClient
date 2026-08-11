@@ -170,6 +170,154 @@ ds.flower.model.xgboost <- function(task = c("binary", "regression"),
   do.call(ds.flower.model, c(list(name = "xgboost"), params))
 }
 
+#' Create a private ExtraTrees request spec
+#'
+#' The trusted node creates a complete data-independent random topology from its
+#' custodial PRF and releases all leaf sufficient statistics once through the
+#' joint Gaussian mechanism. No analyst seed, callback, objective or private
+#' split search is accepted.
+#'
+#' @param task Either \code{"binary"} or \code{"regression"}.
+#' @param n_estimators Positive number of trees, at most 512.
+#' @param max_depth Positive complete-tree depth, at most 12.
+#' @return A \code{dsflower_model} request object. Operational availability is
+#'   probed on every selected node at submission.
+#' @export
+ds.flower.model.extra_trees <- function(task = c("binary", "regression"),
+                                        n_estimators = 32L,
+                                        max_depth = 3L) {
+  task <- match.arg(task)
+  ds.flower.model(
+    "extra_trees", task = task,
+    n_estimators = .model_exact_integer(n_estimators, "n_estimators"),
+    max_depth = .model_exact_integer(max_depth, "max_depth"))
+}
+
+#' Create an adaptive private Random Forest request spec
+#'
+#' The trusted node grows adaptive trees with a fixed public schedule and
+#' custodial sticky randomness. Split histograms and terminal sufficient
+#' statistics are released through the node-owned DP mechanism; analyst seeds,
+#' callbacks, arbitrary objectives and executable model code are not accepted.
+#' This is a disjoint-partition DP forest: each effective privacy unit is
+#' assigned to one tree. It is not upstream bootstrap/bagging Random Forest, and
+#' small cohorts can therefore have fewer effective units available per tree.
+#' Defaults are 8 trees of depth 4 for binary classification and 4 trees of
+#' depth 4 for regression. At request construction, \code{max_features = NULL}
+#' or \code{"auto"} resolves from the public feature count to
+#' \code{ceil(sqrt(p))} for binary classification or \code{ceil(p/3)} for
+#' regression. The wire contract always contains the resulting exact integer.
+#'
+#' @param task Either \code{"binary"} or \code{"regression"}.
+#' @param n_estimators Positive number of trees, at most 512.
+#' @param max_depth Positive tree depth, at most 12.
+#' @param max_features \code{NULL}, \code{"auto"}, or a positive integer no
+#'   greater than the public feature count.
+#' @return A \code{dsflower_model} request object. Operational availability is
+#'   probed on every selected node at submission.
+#' @export
+ds.flower.model.random_forest <- function(
+    task = c("binary", "regression"), n_estimators = 8L,
+    max_depth = 4L, max_features = NULL) {
+  task <- match.arg(task)
+  defaults <- .DSFLOWER_RANDOM_FOREST_TASK_DEFAULTS[[task]]
+  if (missing(n_estimators)) n_estimators <- defaults$n_estimators
+  if (missing(max_depth)) max_depth <- defaults$max_depth
+  if (is.null(max_features)) {
+    max_features <- "auto"
+  } else if (is.character(max_features)) {
+    if (length(max_features) != 1L || is.na(max_features) ||
+        !identical(tolower(max_features), "auto")) {
+      stop("'max_features' must be NULL, 'auto', or a positive integer.",
+           call. = FALSE)
+    }
+    max_features <- "auto"
+  } else {
+    max_features <- .model_exact_integer(max_features, "max_features")
+  }
+  ds.flower.model(
+    "random_forest", task = task,
+    n_estimators = .model_exact_integer(n_estimators, "n_estimators"),
+    max_depth = .model_exact_integer(max_depth, "max_depth"),
+    max_features = max_features)
+}
+
+#' Create a dsFlower LightGBM-style private boosting request
+#'
+#' This is dsFlower's reviewed asymmetric public-bin numeric boosting engine. It
+#' does not load or claim compatibility with the upstream LightGBM binary/model
+#' runtime. Splits follow a fixed public transcript and private histograms are
+#' released only through the node-owned sticky Gaussian mechanism.
+#'
+#' @param task Either \code{"binary"} or \code{"regression"}.
+#' @param n_estimators Positive boosting iteration count.
+#' @param max_depth Positive maximum depth, at most 32.
+#' @param num_leaves Positive leaf ceiling between 2 and 256 and compatible with
+#'   \code{max_depth}.
+#' @param learning_rate Numeric in \code{(0,1]}.
+#' @param min_data_in_leaf Positive public minimum noisy count used for splits.
+#' @param min_gain_to_split Non-negative public split threshold.
+#' @param reg_alpha Non-negative L1 leaf regularization.
+#' @param reg_lambda Positive L2 leaf regularization.
+#' @param max_delta_step Positive public leaf-step bound.
+#' @return A \code{dsflower_model} request object.
+#' @export
+ds.flower.model.lightgbm <- function(
+    task = c("binary", "regression"), n_estimators = 8L,
+    max_depth = 2L, num_leaves = 4L, learning_rate = 0.25,
+    min_data_in_leaf = 1L, min_gain_to_split = 0,
+    reg_alpha = 0, reg_lambda = 1, max_delta_step = 1) {
+  task <- match.arg(task)
+  defaults <- .DSFLOWER_LIGHTGBM_TASK_DEFAULTS[[task]]
+  if (missing(n_estimators)) n_estimators <- defaults$num_iterations
+  if (missing(max_depth)) max_depth <- defaults$max_depth
+  if (missing(num_leaves)) num_leaves <- defaults$num_leaves
+  if (missing(learning_rate)) learning_rate <- defaults$learning_rate
+  ds.flower.model(
+    "lightgbm", task = task,
+    num_iterations = .model_exact_integer(n_estimators, "n_estimators"),
+    max_depth = .model_exact_integer(max_depth, "max_depth"),
+    num_leaves = .model_exact_integer(num_leaves, "num_leaves"),
+    learning_rate = learning_rate,
+    min_data_in_leaf = .model_exact_integer(
+      min_data_in_leaf, "min_data_in_leaf"),
+    min_gain_to_split = min_gain_to_split,
+    lambda_l1 = reg_alpha, lambda_l2 = reg_lambda,
+    max_delta_step = max_delta_step)
+}
+
+#' Create a dsFlower CatBoost-style private boosting request
+#'
+#' This is dsFlower's reviewed numeric oblivious-tree engine. It does not load
+#' CatBoost CBM files or the upstream CatBoost runtime. Categoricals, ordered
+#' target statistics, analyst seeds and executable callbacks are deliberately
+#' outside this safe numeric profile.
+#'
+#' @param task Either \code{"binary"} or \code{"regression"}.
+#' @param n_estimators Positive boosting iteration count.
+#' @param depth Positive oblivious-tree depth, at most 16.
+#' @param learning_rate Numeric in \code{(0,1]}.
+#' @param l2_leaf_reg Positive L2 leaf regularization.
+#' @param max_delta_step Positive public leaf-step bound.
+#' @return A \code{dsflower_model} request object.
+#' @export
+ds.flower.model.catboost <- function(
+    task = c("binary", "regression"), n_estimators = 8L,
+    depth = 2L, learning_rate = 0.25, l2_leaf_reg = 1,
+    max_delta_step = 1) {
+  task <- match.arg(task)
+  defaults <- .DSFLOWER_CATBOOST_TASK_DEFAULTS[[task]]
+  if (missing(n_estimators)) n_estimators <- defaults$iterations
+  if (missing(depth)) depth <- defaults$depth
+  if (missing(learning_rate)) learning_rate <- defaults$learning_rate
+  ds.flower.model(
+    "catboost", task = task,
+    iterations = .model_exact_integer(n_estimators, "n_estimators"),
+    depth = .model_exact_integer(depth, "depth"),
+    learning_rate = learning_rate, l2_leaf_reg = l2_leaf_reg,
+    max_delta_step = max_delta_step)
+}
+
 #' Create a PyTorch Multi-Class Classifier model spec
 #'
 #' Configurable MLP or linear classifier with CrossEntropyLoss.

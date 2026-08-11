@@ -7,13 +7,13 @@
 \method{print}{dsflower_hpo}(x, ...)
 }
 \arguments{
-\item{x}{A \code{dsflower_hpo} object.}
+\item{x}{A `dsflower_hpo` object.}
 
 \item{...}{Ignored.}
 }
 \value{
-Invisibly returns \code{x}.
+Invisibly returns `x`.
 }
 \description{
-Prints the local backend, direction, trial count, and best result.
+Print a local HPO result
 }

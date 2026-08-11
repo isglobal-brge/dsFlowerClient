@@ -38,8 +38,8 @@
     list(track = "neural", spec = spec, loss = m$loss, params = params)
 
   } else if (identical(m$track, "native_tree") &&
-             identical(m$engine, "xgboost")) {
-    list(track = "native_tree", engine = "xgboost", task = params$task,
+             m$engine %in% .NATIVE_TREE_ENGINES) {
+    list(track = "native_tree", engine = m$engine, task = params$task,
          spec = NULL, loss = .dsflower_model_loss(m, params), params = params)
   } else {
     stop("model '", model$name, "' has unknown track '", m$track, "'.",

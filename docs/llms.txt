@@ -22,7 +22,7 @@ remotes::install_github("isglobal-brge/dsFlowerClient")
 The workstation also needs the Flower CLI:
 
 ``` sh
-python -m pip install "flwr[app]>=1.31.0,<1.32.0"
+python -m pip install "flwr==1.31.0"
 ```
 
 If `uv` is absent, package provisioning refuses mutable
@@ -33,11 +33,11 @@ environments, set `DSFLOWER_CLIENT_PYTHON_LOCK` to a complete
 requirements file containing hashes for all transitive artifacts;
 installs then use `uv pip install --require-hashes`. Set
 `DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK=true` to reject a missing lock
-instead of falling back to ranges. Also set `DSFLOWER_PYTHON_VERSION` to
-an exact `major.minor.patch`; the default `3.11` permits compatible
-patch updates. Without an exact interpreter and lock, the compatibility
-ranges remain intentionally flexible and the resolved environment is not
-reproducible.
+instead of falling back to the tested direct requirements. Also set
+`DSFLOWER_PYTHON_VERSION` to an exact `major.minor.patch`; the default
+`3.11` permits compatible patch updates. Without an exact interpreter
+and lock, transitive dependencies can still vary and the resolved
+environment is not fully reproducible.
 
 Each Opal/Rock server must have a compatible `dsFlower` installation.
 Tunnel and runner ABI mismatches fail before stream bytes or a run are
@@ -69,8 +69,12 @@ fit <- ds.flower.fit(
   features = c("age", "biomarker"),
   model = "pytorch_logreg",
   feature_bounds = list(lower = c(18, 0), upper = c(100, 250)),
-  target_levels = c("control", "case")
+  target_levels = c("control", "case"),
+  holdout = 0.2
 )
+
+# One pooled DP test release from the same all-or-nothing training job.
+fit$holdout
 
 DSI::datashield.logout(conns)
 ```
@@ -88,6 +92,15 @@ training’s own rounds. There is no historical database, quota or
 resource-specific balance; one training never reduces or blocks the
 next. Distinct trainings compose in the standard way when they are
 analysed together.
+
+When atomic holdout is requested, that same per-training pair is the
+total job budget: the node applies a fixed split between composed
+training and one pooled test release. It does not create a persistent
+balance or affect later jobs. Cross-validation follows the same per-job
+rule: 80 percent is divided across the `K` real trainings and the
+remaining 20 percent is used once for the pooled OOF release. Higher `K`
+can therefore reduce DP-SGD utility under the same contract; the API
+defaults to three folds.
 
 Guarantees are per node. If the same person appears at multiple observed
 nodes, their epsilons and deltas compose across those nodes; only
@@ -225,13 +238,24 @@ validation API are tabular; they do not yet reconstruct image
 loaders/backbones for inference or validation. This boundary is explicit
 rather than silently treating images as a numeric table.
 
-Tree engines are intentionally not registered in this release. The
-former NumPy random-split compatibility implementation and its
-`xgboost`/`dp_gbdt` aliases have been removed: it was not the native
-XGBoost engine and must not be presented as one. Native XGBoost,
-LightGBM, CatBoost and random-forest adapters will be exposed only
-through trusted, version-pinned runtimes with a complete node-enforced
-DP mechanism; adding noise only to final model bytes is not DP.
+The first-party native-tree constructors are `xgboost`, `extra_trees`,
+`random_forest`, `lightgbm` and `catboost`. They run only in the
+dedicated trusted node runtime, require public bounds and complete
+public cuts, and emit sanitized data-only ensembles that can be saved,
+reopened, predicted locally with the bundled standard-library predictor,
+or validated privately. Random Forest resolves `max_features = "auto"`
+from the public feature count when the request is built. It is a
+disjoint-partition DP forest in which each effective privacy unit
+belongs to one tree, not upstream bootstrap/bagging Random Forest; small
+cohorts can therefore have fewer effective units per tree. LightGBM and
+CatBoost are dsFlower-style safe numeric engines, not the upstream
+binaries or their model formats. A node advertises an engine only after
+a fresh executable end-to-end probe; this is operational readiness, not
+a model catalogue used as a privacy permission list. ExtraTrees, Random
+Forest and the two dsFlower-style boosters use the small runtime
+provisioned by the server package. XGBoost remains unavailable on a
+clean install until the custodian supplies its separately built and
+verified platform bundle.
 
 Classification strings/factors require an ordered public
 `target_levels`; numeric labels already coded in `[0, K-1]` remain
@@ -323,11 +347,12 @@ locked and enabled by the node administrator. HookApps use the same
 ## Private model validation
 
 [`ds.flower.validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.validate.md)
-evaluates a saved declarative model inside the nodes and releases one
-fixed, Gaussian-noised vector of bounded sufficient statistics per node.
-The current validator is for tabular neural artifacts; vision artifacts
-fail explicitly. Exact labels, predictions, counts and site metrics
-remain local; the researcher receives only pooled post-processing:
+evaluates a saved declarative neural or sanitized native-tree model
+inside the nodes and releases one fixed, Gaussian-noised vector of
+bounded sufficient statistics per node. The current validator accepts
+those tabular artifacts; vision artifacts fail explicitly. Exact labels,
+predictions, counts and site metrics remain local; the researcher
+receives only pooled post-processing:
 
 ``` r
 
@@ -355,12 +380,42 @@ was not available from every expected node. In that case
 zero-filled substitute and does not create a query-count lockout.
 
 Assigning an independent dataset gives external validation; reusing
-training data gives resubstitution validation. This API does not call
-the exact validation set a holdout and does not claim cross-validation.
-Honest patient-level holdout or K-fold training requires a public,
-protocol-defined split and separately accounted training releases for
-the fitted fold models; that orchestration is not silently simulated by
-this one-release evaluator.
+training data gives resubstitution validation. For tabular declarative
+neural training, `ds.flower.fit(..., holdout = 0.2)` instead assigns
+complete node-owned privacy units before training, trains only on the
+complement, and evaluates the final aggregate on the held-out side in
+the same all-or-nothing job. The fraction is canonical, has no analyst
+seed, and retries recreate the same secret-keyed split. The returned
+`fit$holdout` contains only pooled DP metrics; no predictions, unit
+assignments or site metrics leave the nodes. Other backends fail
+explicitly instead of pretending to support this protocol.
+
+For honest K-fold validation, use the dedicated metrics-only workflow:
+
+``` r
+
+cv <- ds.flower.cross_validate(
+  conns,
+  symbol = "D",
+  target = "outcome",
+  features = c("age", "biomarker"),
+  model = "pytorch_logreg",
+  feature_bounds = list(lower = c(18, 0), upper = c(100, 250)),
+  target_levels = c("control", "case"),
+  folds = 3L
+)
+cv$metrics
+```
+
+This runs `K` clean-initialized federated trainings, excludes each
+held-out fold before its first training read, and retains raw OOF
+sufficient statistics only in namespaced Flower `Context.state` backed
+by the pinned in-memory node runtime—never a file or database. If every
+fold succeeds, the nodes make one final DP release and the client
+accepts only `cv.json`, pinned to the submitted CV-job and
+resampling-contract hashes. No fold model, prediction, fold/site metric
+or history is returned or saved. A failed or restarted job publishes
+nothing and recomputes the whole deterministic job.
 
 ## Public feature bounds
 
@@ -501,6 +556,16 @@ Model specification objects for federated learning.
   : Create a PyTorch ResNet-18 model spec
 - [`ds.flower.model.pytorch_tcn()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_tcn.md)
   : Create a PyTorch TCN model spec
+- [`ds.flower.model.xgboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.xgboost.md)
+  : Create a native-tight XGBoost request spec
+- [`ds.flower.model.extra_trees()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.extra_trees.md)
+  : Create a private ExtraTrees request spec
+- [`ds.flower.model.random_forest()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.random_forest.md)
+  : Create an adaptive private Random Forest request spec
+- [`ds.flower.model.lightgbm()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.lightgbm.md)
+  : Create a dsFlower LightGBM-style private boosting request
+- [`ds.flower.model.catboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.catboost.md)
+  : Create a dsFlower CatBoost-style private boosting request
 
 ## Specification: Strategies
 
@@ -585,6 +650,8 @@ Catch-all index for exported helpers not listed above.
   : Connect to a data source for federated learning
 - [`ds.flower.copy_code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.copy_code.md)
   : Copy reproducible R code to clipboard
+- [`ds.flower.cross_validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.cross_validate.md)
+  : Cross-validate a neural model across federated data
 - [`ds.flower.delete_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.delete_model.md)
   : Delete a saved model
 - [`ds.flower.describe()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.describe.md)
@@ -597,6 +664,12 @@ Catch-all index for exported helpers not listed above.
   : Fit a federated model in one call
 - [`ds.flower.hook.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hook.run.md)
   : Request a HookApp run through the node-side egress policy
+- [`ds.flower.hpo()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.md)
+  : Optimize an explicit objective locally with Optuna
+- [`ds.flower.hpo.float()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.md)
+  [`ds.flower.hpo.integer()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.md)
+  [`ds.flower.hpo.categorical()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.md)
+  : Define a bounded floating-point HPO dimension
 - [`ds.flower.labels()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.labels.md)
   : List available label sets for an imaging dataset
 - [`ds.flower.link.down()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.down.md)
@@ -611,6 +684,12 @@ Catch-all index for exported helpers not listed above.
   : List available segmentation masks
 - [`ds.flower.model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.md)
   : Create a model spec by name
+- [`ds.flower.model.catboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.catboost.md)
+  : Create a dsFlower CatBoost-style private boosting request
+- [`ds.flower.model.extra_trees()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.extra_trees.md)
+  : Create a private ExtraTrees request spec
+- [`ds.flower.model.lightgbm()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.lightgbm.md)
+  : Create a dsFlower LightGBM-style private boosting request
 - [`ds.flower.model.pytorch_densenet121()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_densenet121.md)
   : Create a PyTorch DenseNet-121 model spec
 - [`ds.flower.model.pytorch_linear_regression()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_linear_regression.md)
@@ -631,6 +710,10 @@ Catch-all index for exported helpers not listed above.
   : Create a PyTorch ResNet-18 model spec
 - [`ds.flower.model.pytorch_tcn()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_tcn.md)
   : Create a PyTorch TCN model spec
+- [`ds.flower.model.random_forest()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.random_forest.md)
+  : Create an adaptive private Random Forest request spec
+- [`ds.flower.model.xgboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.xgboost.md)
+  : Create a native-tight XGBoost request spec
 - [`ds.flower.model_parameters()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model_parameters.md)
   : Inspect the public parameter contract for a registered model
 - [`ds.flower.models()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.models.md)
@@ -693,6 +776,10 @@ Catch-all index for exported helpers not listed above.
   : Differentially-private federated model validation
 - [`print(`*`<dsflower_app>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_app.md)
   : Print a dsflower_app
+- [`print(`*`<dsflower_cv>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_cv.md)
+  : Print a federated cross-validation result
+- [`print(`*`<dsflower_hpo>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_hpo.md)
+  : Print a local HPO result
 - [`print(`*`<dsflower_model>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_model.md)
   : Print a dsflower_model
 - [`print(`*`<dsflower_recipe>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_recipe.md)

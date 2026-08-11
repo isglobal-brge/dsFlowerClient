@@ -28,7 +28,8 @@ ds.flower.fit(
   target_bounds = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
   data_kind = NULL,
-  holdout = NULL
+  holdout = NULL,
+  cross_validation = NULL
 )
 }
 \arguments{
@@ -83,14 +84,15 @@ feedback (connection, per-round and completion messages).}
 
 \item{feature_cuts}{Required for native-tight tree models: a list containing
 one strictly increasing vector of public cut points per feature, each
-strictly inside \code{feature_bounds}. For XGBoost, seven data-independent
-cuts per feature are the benchmark-backed starting point; they are never
+strictly inside \code{feature_bounds}. Seven data-independent
+cuts per feature are a practical benchmark-backed starting point; they are never
 inferred from private node data.}
 
 \item{target_levels}{Optional ordered public classification label vocabulary.
 Non-numeric labels require it; missing or unknown values map to public code
 zero. Multilabel applies the same public two-level vocabulary independently
-to every target column. Binary XGBoost requires exactly two ordered levels.}
+to every target column. Binary native-tree models require exactly two
+ordered levels.}
 
 \item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
 regression/count models.}
@@ -107,9 +109,14 @@ registered for both require an explicit choice.}
 with at most six decimal places. The node assigns complete privacy units
 before training, trains only on the complement, and returns the final model
 together with one pooled differentially-private test metric release.}
+
+\item{cross_validation}{Optional integer in \code{[2, 10]}. This runs a
+dedicated metrics-only federated CV job; prefer
+\code{ds.flower.cross_validate()} for this workflow.}
 }
 \value{
-A \code{dsflower_run} object.
+A \code{dsflower_run} object, or a \code{dsflower_cv} when
+  \code{cross_validation} is set.
 }
 \description{
 High-level convenience API for the common workflow: connect to assigned

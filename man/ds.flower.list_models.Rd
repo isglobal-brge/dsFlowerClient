@@ -10,7 +10,7 @@ ds.flower.list_models()
 A data.frame with one row per registered model. Column
   \code{available} reports whether the client-side constructor is implemented;
   operational native-runtime availability is probed per node at submission.
-  Released native XGBoost ensembles support private external or
+  Released native-tree ensembles support private external or
   resubstitution validation.
 }
 \description{

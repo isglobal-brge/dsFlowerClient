@@ -76,6 +76,16 @@ Model specification objects for federated learning.
   : Create a PyTorch ResNet-18 model spec
 - [`ds.flower.model.pytorch_tcn()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_tcn.md)
   : Create a PyTorch TCN model spec
+- [`ds.flower.model.xgboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.xgboost.md)
+  : Create a native-tight XGBoost request spec
+- [`ds.flower.model.extra_trees()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.extra_trees.md)
+  : Create a private ExtraTrees request spec
+- [`ds.flower.model.random_forest()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.random_forest.md)
+  : Create an adaptive private Random Forest request spec
+- [`ds.flower.model.lightgbm()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.lightgbm.md)
+  : Create a dsFlower LightGBM-style private boosting request
+- [`ds.flower.model.catboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.catboost.md)
+  : Create a dsFlower CatBoost-style private boosting request
 
 ## Specification: Strategies
 
@@ -160,6 +170,8 @@ Catch-all index for exported helpers not listed above.
   : Connect to a data source for federated learning
 - [`ds.flower.copy_code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.copy_code.md)
   : Copy reproducible R code to clipboard
+- [`ds.flower.cross_validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.cross_validate.md)
+  : Cross-validate a neural model across federated data
 - [`ds.flower.delete_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.delete_model.md)
   : Delete a saved model
 - [`ds.flower.describe()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.describe.md)
@@ -172,6 +184,12 @@ Catch-all index for exported helpers not listed above.
   : Fit a federated model in one call
 - [`ds.flower.hook.run()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hook.run.md)
   : Request a HookApp run through the node-side egress policy
+- [`ds.flower.hpo()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.md)
+  : Optimize an explicit objective locally with Optuna
+- [`ds.flower.hpo.float()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.md)
+  [`ds.flower.hpo.integer()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.md)
+  [`ds.flower.hpo.categorical()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.md)
+  : Define a bounded floating-point HPO dimension
 - [`ds.flower.labels()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.labels.md)
   : List available label sets for an imaging dataset
 - [`ds.flower.link.down()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.down.md)
@@ -186,6 +204,12 @@ Catch-all index for exported helpers not listed above.
   : List available segmentation masks
 - [`ds.flower.model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.md)
   : Create a model spec by name
+- [`ds.flower.model.catboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.catboost.md)
+  : Create a dsFlower CatBoost-style private boosting request
+- [`ds.flower.model.extra_trees()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.extra_trees.md)
+  : Create a private ExtraTrees request spec
+- [`ds.flower.model.lightgbm()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.lightgbm.md)
+  : Create a dsFlower LightGBM-style private boosting request
 - [`ds.flower.model.pytorch_densenet121()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_densenet121.md)
   : Create a PyTorch DenseNet-121 model spec
 - [`ds.flower.model.pytorch_linear_regression()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_linear_regression.md)
@@ -206,6 +230,10 @@ Catch-all index for exported helpers not listed above.
   : Create a PyTorch ResNet-18 model spec
 - [`ds.flower.model.pytorch_tcn()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.pytorch_tcn.md)
   : Create a PyTorch TCN model spec
+- [`ds.flower.model.random_forest()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.random_forest.md)
+  : Create an adaptive private Random Forest request spec
+- [`ds.flower.model.xgboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.xgboost.md)
+  : Create a native-tight XGBoost request spec
 - [`ds.flower.model_parameters()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model_parameters.md)
   : Inspect the public parameter contract for a registered model
 - [`ds.flower.models()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.models.md)
@@ -268,6 +296,10 @@ Catch-all index for exported helpers not listed above.
   : Differentially-private federated model validation
 - [`print(`*`<dsflower_app>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_app.md)
   : Print a dsflower_app
+- [`print(`*`<dsflower_cv>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_cv.md)
+  : Print a federated cross-validation result
+- [`print(`*`<dsflower_hpo>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_hpo.md)
+  : Print a local HPO result
 - [`print(`*`<dsflower_model>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_model.md)
   : Print a dsflower_model
 - [`print(`*`<dsflower_recipe>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_recipe.md)

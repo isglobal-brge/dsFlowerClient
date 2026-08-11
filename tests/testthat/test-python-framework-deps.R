@@ -28,16 +28,12 @@ test_that("framework health checks cover every required import", {
   )
 })
 
-test_that("retired tree frameworks have no client dependency contract", {
+test_that("client dependency contracts remain limited to PyTorch runtimes", {
   deps <- dsFlowerClient:::.FRAMEWORK_CLIENT_DEPS
 
   expect_setequal(names(deps), c("pytorch", "pytorch_vision"))
-  expect_null(deps$dp_gbdt)
   expect_null(deps$xgboost)
   expect_true("cryptography>=42.0.0" %in% deps$pytorch)
-  expect_error(
-    dsFlowerClient:::.ensure_client_framework("dp_gbdt"),
-    "Unsupported client framework")
   expect_error(
     dsFlowerClient:::.ensure_client_framework("xgboost"),
     "Unsupported client framework")

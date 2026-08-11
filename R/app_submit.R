@@ -36,18 +36,9 @@
   digest::digest(blob, algo = "sha256", serialize = FALSE)
 }
 
-#' Fail early when a node cannot execute this client's trusted runner
+#' Validate one exact node capability response against the bundled runner
 #' @keywords internal
-.assert_runner_compatibility <- function(conns) {
-  expected_hash <- .compute_local_runner_hash()
-  raw_caps <- tryCatch(
-    DSI::datashield.aggregate(
-      conns, expr = call("flowerGetCapabilitiesDS")),
-    error = function(e) {
-      stop("Could not verify the dsFlower runner compatibility: ",
-           conditionMessage(e), call. = FALSE)
-    }
-  )
+.validate_runner_compatibility <- function(raw_caps, conns, expected_hash) {
   caps <- .dsi_exact_node_results(raw_caps, conns)
   missing <- if (is.null(caps)) names(conns) else
     names(conns)[vapply(caps, is.null, logical(1))]
@@ -93,38 +84,61 @@
   invisible(caps)
 }
 
-#' Require a fresh operational native-XGBoost probe from every selected node
+#' Fail early when a node cannot execute this client's trusted runner
 #' @keywords internal
-.assert_native_xgboost_capability <- function(conns) {
+.assert_runner_compatibility <- function(conns) {
+  expected_hash <- .compute_local_runner_hash()
   raw_caps <- tryCatch(
     DSI::datashield.aggregate(
-      conns, expr = call("flowerGetCapabilitiesDS")),
+      conns, expr = call("flowerGetCapabilitiesDS", "none")),
     error = function(e) {
-      stop("Could not verify native XGBoost capability: ",
+      stop("Could not verify the dsFlower runner compatibility: ",
+           conditionMessage(e), call. = FALSE)
+    }
+  )
+  .validate_runner_compatibility(raw_caps, conns, expected_hash)
+}
+
+#' Require a fresh operational probe for one native-tree engine on every node
+#' @keywords internal
+.assert_native_tree_capability <- function(conns, engine) {
+  if (!is.character(engine) || length(engine) != 1L || is.na(engine) ||
+      !engine %in% .NATIVE_TREE_ENGINES) {
+    stop("Native-tree engine has no implemented capability probe.",
+         call. = FALSE)
+  }
+  expected_hash <- .compute_local_runner_hash()
+  raw_caps <- tryCatch(
+    DSI::datashield.aggregate(
+      conns, expr = call("flowerGetCapabilitiesDS", engine)),
+    error = function(e) {
+      stop("Could not verify native-tree capability for '", engine, "': ",
            conditionMessage(e), call. = FALSE)
     })
-  caps <- .dsi_exact_node_results(raw_caps, conns)
-  missing <- if (is.null(caps)) names(conns) else
-    names(conns)[vapply(caps, is.null, logical(1))]
-  unavailable <- missing
-  if (!is.null(caps)) {
-    for (i in seq_along(caps)) {
-      native <- if (is.list(caps[[i]])) caps[[i]][["native_tree"]] else NULL
-      ready <- is.list(native) &&
-        identical(as.character(native[["contract"]] %||% ""),
-                  .NATIVE_TREE_CONTRACT) &&
-        isTRUE(native[["xgboost_native_tight_available"]])
-      if (!ready) unavailable <- c(unavailable, names(caps)[[i]])
+  caps <- .validate_runner_compatibility(raw_caps, conns, expected_hash)
+  unavailable <- character()
+  for (i in seq_along(caps)) {
+    native <- if (is.list(caps[[i]])) caps[[i]][["native_tree"]] else NULL
+    availability <- paste0(engine, "_native_tight_available")
+    probed <- if (is.list(native)) {
+      as.character(unlist(native[["probed_engines"]], use.names = FALSE))
+    } else {
+      character()
     }
+    ready <- is.list(native) && identical(probed, engine) &&
+      identical(as.character(native[["contract"]] %||% ""),
+                .NATIVE_TREE_CONTRACT) &&
+      isTRUE(native[[availability]])
+    if (!ready) unavailable <- c(unavailable, names(caps)[[i]])
   }
-  unavailable <- unique(unavailable)
-  if (is.null(caps) || length(unavailable)) {
+  if (length(unavailable)) {
     detail <- if (length(unavailable)) {
       paste0(" on: ", paste(unavailable, collapse = ", "))
     } else {
       ""
     }
-    stop("Verified native XGBoost capability is unavailable", detail, ".",
+    stop("Verified native-tree capability for '", engine,
+         "' is unavailable", detail, ".",
          call. = FALSE)
   }
   invisible(caps)
@@ -350,13 +364,13 @@
 #'   supplied without querying node data and define a clipped affine transform.
 #' @param feature_cuts Required for native-tight tree models: one strictly
 #'   increasing public cut vector per feature, inside \code{feature_bounds}.
-#'   For XGBoost, seven data-independent cuts per feature are the
+#'   Seven data-independent cuts per feature are a practical
 #'   benchmark-backed starting point; they are never inferred from private data.
 #' @param target_levels Optional ordered public label vocabulary for
 #'   classification. Non-numeric targets require it; node values are never used
 #'   to infer label codes, and missing or unknown values map to public code zero.
 #'   Multilabel applies one public two-level vocabulary to each target
-#'   independently. Binary XGBoost requires exactly two ordered levels so the
+#'   independently. Binary native-tree models require exactly two ordered levels so the
 #'   saved validation contract retains identical label semantics.
 #' @param target_bounds Required public \code{list(lower=..., upper=...)} for
 #'   regression/count targets. The node clips each target to these constants.
@@ -374,7 +388,11 @@
 #' @param silent Logical; suppress progress feedback.
 #' @param holdout Optional numeric test fraction for atomic tabular neural
 #'   holdout validation. Unsupported tracks fail before private preparation.
-#' @return A \code{dsflower_run}.
+#' @param cross_validation Optional integer in \code{[2, 10]} selecting a
+#'   dedicated federated cross-validation job. Prefer the user-facing
+#'   \code{ds.flower.cross_validate()} wrapper.
+#' @return A \code{dsflower_run}, or a \code{dsflower_cv} when
+#'   \code{cross_validation} is set.
 #' @export
 ds.flower.submit <- function(conns, model, target, features = NULL,
                              data = NULL, resource = NULL, symbol = NULL,
@@ -387,9 +405,14 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              feature_cuts = NULL,
                              target_levels = NULL, target_bounds = NULL,
                              holdout = NULL,
+                             cross_validation = NULL,
                              allow_insecure_http = getOption(
                                "dsflower.dsi_allow_insecure_http", character())) {
   holdout_spec <- .normalize_holdout(holdout)
+  cv_spec <- .normalize_cross_validation(cross_validation)
+  if (!is.null(holdout_spec) && !is.null(cv_spec)) {
+    stop("'holdout' and 'cross_validation' cannot be combined.", call. = FALSE)
+  }
   torch_backend <- .validate_torch_backend(torch_backend)
   if (!is.numeric(num_rounds) || is.logical(num_rounds)) {
     stop("num_rounds must be a single positive integer no greater than 500.",
@@ -443,29 +466,30 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   if (!is.null(holdout_spec)) {
     .assert_holdout_supported(sub, data_kind)
   }
+  if (!is.null(cv_spec)) {
+    .assert_cross_validation_supported(sub, data_kind)
+  }
   target <- .validate_submission_target(sub, target)
   request <- NULL
   if (identical(sub$track, "native_tree")) {
-    if (!identical(sub$engine, "xgboost")) {
-      stop("Unsupported native-tree engine.", call. = FALSE)
-    }
     if (!identical(num_rounds, 1L)) {
-      stop("Native XGBoost trains its complete public tree schedule in exactly ",
+      stop("Native-tree engines train their complete public schedule in exactly ",
            "one Flower round; set num_rounds = 1.", call. = FALSE)
     }
     if (!identical(data_kind, "tabular")) {
-      stop("Native XGBoost accepts data_kind = 'tabular' only.", call. = FALSE)
+      stop("Native-tree engines accept data_kind = 'tabular' only.",
+           call. = FALSE)
     }
     if (is.null(features) || !length(features)) {
-      stop("Native XGBoost requires an explicit ordered public feature list; ",
+      stop("Native-tree engines require an explicit ordered public feature list; ",
            "server schema auto-detection is not permitted.", call. = FALSE)
     }
     if (is.null(feature_bounds)) {
-      stop("Native XGBoost requires explicit public feature_bounds.",
+      stop("Native-tree engines require explicit public feature_bounds.",
            call. = FALSE)
     }
     if (is.null(feature_cuts)) {
-      stop("Native XGBoost requires complete public feature_cuts.",
+      stop("Native-tree engines require complete public feature_cuts.",
            call. = FALSE)
     }
     public_bounds <- .validate_public_feature_bounds(feature_bounds, features)
@@ -475,12 +499,14 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         "regression" else "classification",
       loss_name = sub$loss, n_classes = 2L)
     if (identical(sub$task, "binary") && is.null(public_target$levels)) {
-      stop("Binary XGBoost requires exactly two ordered public target_levels ",
+      stop("Binary native-tree training requires exactly two ordered public ",
+           "target_levels ",
            "so its training and validation label semantics are identical.",
            call. = FALSE)
     }
-    request <- .build_xgboost_request(
-      sub$params, features, public_bounds[c("lower", "upper")], feature_cuts,
+    request <- .build_native_tree_request(
+      sub$engine, sub$params, features,
+      public_bounds[c("lower", "upper")], feature_cuts,
       target_name = target, target_levels = public_target$levels,
       target_bounds = public_target$bounds)
   } else if (!is.null(feature_cuts)) {
@@ -504,6 +530,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   }
   local_learning_rate <- as.numeric(
     (sub$params %||% list())[["learning_rate"]] %||% 0.01)
+  strategy_config <- .strategy_config_values(
+    strategy_spec, client_learning_rate = local_learning_rate)
   strategy_lines <- .strategy_config_lines(
     strategy_spec, client_learning_rate = local_learning_rate)
 
@@ -517,10 +545,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # All validation above is data-independent. Verify the outer transport before
   # the first public capability DSI request, then stop before CLI/private staging
   # if any selected node lacks the trusted native runtime.
+  preflight_capabilities <- NULL
   if (identical(sub$track, "native_tree")) {
     suppressWarnings(.validate_dsi_transport_security(
       conns, allow_insecure_http = allow_insecure_http))
-    .assert_native_xgboost_capability(conns)
+    preflight_capabilities <-
+      .assert_native_tree_capability(conns, sub$engine)
   }
   .require_flwr_cli()
   if (!is.null(features)) {
@@ -614,7 +644,11 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     }
     tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
   }, add = TRUE)
-  capabilities <- .assert_runner_compatibility(conns)
+  capabilities <- if (is.null(preflight_capabilities)) {
+    .assert_runner_compatibility(conns)
+  } else {
+    preflight_capabilities
+  }
   # Tabular runs need a non-empty feature set. The symbol path auto-detects above; data=/
   # resource= inputs must pass `features` explicitly -- fail with a clear message rather than
   # the downstream "num-features must be set" from the node.
@@ -644,10 +678,19 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     "num-server-rounds" = as.integer(num_rounds),
     "num-features" = as.integer(n_features))
   holdout_contract <- NULL
+  cv_contract <- NULL
+  cv_capabilities <- NULL
+  cv_job_sha256 <- NULL
   if (!is.null(holdout_spec)) {
     privacy_unit <- .validation_common_privacy_unit(capabilities)
     holdout_contract <- .holdout_contract(holdout_spec, privacy_unit)
     prepare_config <- c(prepare_config, .holdout_config(holdout_contract))
+  } else if (!is.null(cv_spec)) {
+    cv_capabilities <- .cross_validation_common_capabilities(capabilities)
+    cv_contract <- .cross_validation_contract(
+      cv_spec, cv_capabilities$privacy_unit)
+    prepare_config <- c(
+      prepare_config, .cross_validation_config(cv_contract))
   }
   if (identical(sub$track, "neural")) {
     p <- sub[["params"]]
@@ -675,6 +718,18 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   if (!is.null(public_target$bounds)) {
     prepare_config[["target-bounds"]] <- public_target$bounds
   }
+  if (!is.null(cv_contract)) {
+    prepare_config <- c(
+      prepare_config, strategy_config,
+      list("cv-n-nodes" = as.integer(n_clients)))
+    cv_job_sha256 <- .cv_job_sha256(
+      prepare_config, features, target,
+      runner_abi = cv_capabilities$runner_abi,
+      runner_sha256 = cv_capabilities$runner_sha256,
+      privacy_policy_sha256 = cv_capabilities$privacy_policy_sha256,
+      privacy_clipping_norm = cv_capabilities$privacy_clipping_norm)
+    prepare_config[["cv-job-sha256"]] <- cv_job_sha256
+  }
   ds.flower.nodes.prepare(
     conns, hsym, target_column = target, feature_columns = features,
     run_config = prepare_config)
@@ -685,8 +740,11 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                          paste(unique(unlist(lapply(pin, `[[`, "pinned"))), collapse = ", "), ".")
   }
 
-  results_dir <- file.path(tempdir(), "dsflower_results",
-                           format(Sys.time(), "%Y%m%d_%H%M%S"))
+  results_root <- file.path(tempdir(), "dsflower_results")
+  dir.create(results_root, recursive = TRUE, showWarnings = FALSE)
+  results_dir <- tempfile(
+    pattern = paste0(format(Sys.time(), "%Y%m%d_%H%M%S"), "_"),
+    tmpdir = results_root)
   dir.create(results_dir, recursive = TRUE, showWarnings = FALSE)
 
   cfg <- c(
@@ -710,6 +768,21 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         .toml_kv("holdout-target-lower", public_target$bounds$lower),
         .toml_kv("holdout-target-upper", public_target$bounds$upper))
     }
+  } else if (!is.null(cv_contract)) {
+    cv_fields <- .cross_validation_config(cv_contract)
+    cfg <- c(cfg, unname(vapply(names(cv_fields), function(key) {
+      .toml_kv(key, cv_fields[[key]])
+    }, character(1))))
+    if (!is.null(public_target$bounds)) {
+      cfg <- c(
+        cfg,
+        .toml_kv("cv-target-lower", public_target$bounds$lower),
+        .toml_kv("cv-target-upper", public_target$bounds$upper))
+    }
+    cfg <- c(
+      cfg,
+      .toml_kv("cv-n-nodes", as.integer(n_clients)),
+      .toml_kv("cv-job-sha256", cv_job_sha256))
   }
   if (identical(sub$track, "neural")) {
     p <- sub[["params"]]
@@ -776,7 +849,15 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     } else NULL,
     holdout_contract = holdout_contract,
     holdout_validation_bins = if (!is.null(holdout_contract))
-      .HOLDOUT_VALIDATION_BINS else NULL), class = "dsflower_recipe")
+      .HOLDOUT_VALIDATION_BINS else NULL,
+    cross_validation_contract = cv_contract,
+    cross_validation_bins = if (!is.null(cv_contract))
+      .CV_VALIDATION_BINS else NULL,
+    cross_validation_strategy = if (!is.null(cv_contract))
+      strategy_config else NULL,
+    cross_validation_n_nodes = if (!is.null(cv_contract))
+      as.integer(n_clients) else NULL,
+    cross_validation_job_sha256 = cv_job_sha256), class = "dsflower_recipe")
 
   # Cleanup (tunnel/handle/app/connection) is guaranteed by the on.exit above, on both a
   # run error and normal completion.
@@ -981,7 +1062,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
 #' torchvision + the medical-image readers (2D, plus the MONAI 3D path).
 #' @keywords internal
 .harness_dependencies <- function(vision = FALSE) {
-  base <- c("flwr[app]>=1.31.0,<1.32.0", "numpy>=1.21.0", "pandas>=1.3.0",
+  base <- c("flwr==1.31.0", "numpy>=1.21.0", "pandas>=1.3.0",
             "pyarrow>=10.0.0", "torch>=2.0.0,<3.0.0", "opacus>=1.4.0,<2.0.0",
             "cryptography>=42.0.0")
   if (!isTRUE(vision)) return(base)

@@ -76,6 +76,11 @@ reference:
       - ds.flower.model.pytorch_poisson
       - ds.flower.model.pytorch_resnet18
       - ds.flower.model.pytorch_tcn
+      - ds.flower.model.xgboost
+      - ds.flower.model.extra_trees
+      - ds.flower.model.random_forest
+      - ds.flower.model.lightgbm
+      - ds.flower.model.catboost
 
   - title: "Specification: Strategies"
     desc: "Federated aggregation strategy specifications."

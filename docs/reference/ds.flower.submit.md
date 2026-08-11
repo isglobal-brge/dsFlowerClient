@@ -25,8 +25,11 @@ ds.flower.submit(
   verbose = FALSE,
   silent = FALSE,
   feature_bounds = NULL,
+  feature_cuts = NULL,
   target_levels = NULL,
   target_bounds = NULL,
+  holdout = NULL,
+  cross_validation = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
 )
 ```
@@ -105,18 +108,39 @@ ds.flower.submit(
   feature order. These constants are supplied without querying node data
   and define a clipped affine transform.
 
+- feature_cuts:
+
+  Required for native-tight tree models: one strictly increasing public
+  cut vector per feature, inside `feature_bounds`. Seven
+  data-independent cuts per feature are a practical benchmark-backed
+  starting point; they are never inferred from private data.
+
 - target_levels:
 
   Optional ordered public label vocabulary for classification.
   Non-numeric targets require it; node values are never used to infer
   label codes, and missing or unknown values map to public code zero.
   Multilabel applies one public two-level vocabulary to each target
-  independently.
+  independently. Binary native-tree models require exactly two ordered
+  levels so the saved validation contract retains identical label
+  semantics.
 
 - target_bounds:
 
   Required public `list(lower=..., upper=...)` for regression/count
   targets. The node clips each target to these constants.
+
+- holdout:
+
+  Optional numeric test fraction for atomic tabular neural holdout
+  validation. Unsupported tracks fail before private preparation.
+
+- cross_validation:
+
+  Optional integer in `[2, 10]` selecting a dedicated federated
+  cross-validation job. Prefer the user-facing
+  [`ds.flower.cross_validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.cross_validate.md)
+  wrapper.
 
 - allow_insecure_http:
 
@@ -126,4 +150,4 @@ ds.flower.submit(
 
 ## Value
 
-A `dsflower_run`.
+A `dsflower_run`, or a `dsflower_cv` when `cross_validation` is set.

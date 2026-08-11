@@ -7,6 +7,44 @@
 .NATIVE_TREE_CONTRACT <- "dsflower-native-tree-request-v1"
 .NATIVE_TREE_ENGINES <- c(
   "catboost", "extra_trees", "lightgbm", "random_forest", "xgboost")
+.NATIVE_TREE_PURE_ENGINES <- c(
+  "catboost", "extra_trees", "lightgbm", "random_forest")
+.NATIVE_TREE_RELEASE_SPECS <- list(
+  xgboost = list(
+    artifact_contract = "dsflower-xgboost-ensemble-v1",
+    artifact_format = "dsflower-xgboost-ensemble-json-v1",
+    artifact_file = "model.xgboost-ensemble.json",
+    profile_contract = "dsflower-xgboost-prediction-profile-v1",
+    profile_file = "model.xgboost-ensemble.profile.json",
+    profile_version = 1L),
+  extra_trees = list(
+    artifact_contract = "dsflower-forest-ensemble-v1",
+    artifact_format = "dsflower-forest-ensemble-json-v1",
+    artifact_file = "model.extra-trees-ensemble.json",
+    profile_contract = "dsflower-native-tree-prediction-profile-v2",
+    profile_file = "model.extra-trees-ensemble.profile.json",
+    profile_version = 2L),
+  random_forest = list(
+    artifact_contract = "dsflower-forest-ensemble-v1",
+    artifact_format = "dsflower-forest-ensemble-json-v1",
+    artifact_file = "model.random-forest-ensemble.json",
+    profile_contract = "dsflower-native-tree-prediction-profile-v2",
+    profile_file = "model.random-forest-ensemble.profile.json",
+    profile_version = 2L),
+  lightgbm = list(
+    artifact_contract = "dsflower-lightgbm-safe-ensemble-v1",
+    artifact_format = "dsflower-lightgbm-ensemble-json-v1",
+    artifact_file = "model.lightgbm-ensemble.json",
+    profile_contract = "dsflower-native-tree-prediction-profile-v2",
+    profile_file = "model.lightgbm-ensemble.profile.json",
+    profile_version = 2L),
+  catboost = list(
+    artifact_contract = "dsflower-catboost-safe-ensemble-v1",
+    artifact_format = "dsflower-catboost-ensemble-json-v1",
+    artifact_file = "model.catboost-ensemble.json",
+    profile_contract = "dsflower-native-tree-prediction-profile-v2",
+    profile_file = "model.catboost-ensemble.profile.json",
+    profile_version = 2L))
 .NATIVE_TREE_MODES <- "native-tight"
 .NATIVE_TREE_TASKS <- c("binary", "regression")
 .NATIVE_TREE_PARAMETER_TYPES <- c(
@@ -58,6 +96,12 @@
   "max_depth", "n_estimators")
 .NATIVE_TREE_EXTRA_TREES_PARAMETER_TYPES <- c(
   max_depth = "integer", n_estimators = "integer")
+.NATIVE_TREE_RANDOM_FOREST_MAX_DEPTH <- 12L
+.NATIVE_TREE_RANDOM_FOREST_MAX_TREES <- 512L
+.NATIVE_TREE_RANDOM_FOREST_REQUIRED_PARAMETERS <- c(
+  "max_depth", "max_features", "n_estimators")
+.NATIVE_TREE_RANDOM_FOREST_PARAMETER_TYPES <- c(
+  max_depth = "integer", max_features = "integer", n_estimators = "integer")
 .NATIVE_TREE_LIGHTGBM_MAX_DEPTH <- 32L
 .NATIVE_TREE_LIGHTGBM_MAX_LEAVES <- 256L
 .NATIVE_TREE_LIGHTGBM_REQUIRED_PARAMETERS <- c(
@@ -75,6 +119,16 @@
 .NATIVE_TREE_CATBOOST_PARAMETER_TYPES <- c(
   depth = "integer", iterations = "integer", l2_leaf_reg = "number",
   learning_rate = "number", max_delta_step = "number")
+
+.native_tree_release_spec <- function(engine) {
+  engine <- as.character(engine)
+  if (length(engine) != 1L || is.na(engine) ||
+      !engine %in% names(.NATIVE_TREE_RELEASE_SPECS)) {
+    stop("This release has no executable adapter for the requested tree engine.",
+         call. = FALSE)
+  }
+  .NATIVE_TREE_RELEASE_SPECS[[engine]]
+}
 
 #' Canonical JSON bytes for the native-tree cross-runtime ABI
 #' @keywords internal
@@ -545,6 +599,73 @@
   invisible(TRUE)
 }
 
+#' Enforce the adaptive private Random Forest parameter profile
+#' @keywords internal
+.native_tree_random_forest_parameters <- function(parameters, schema, mode) {
+  if (!identical(mode, "native-tight")) {
+    stop("Random Forest request v1 supports native-tight mode only.",
+         call. = FALSE)
+  }
+  by_name <- stats::setNames(
+    parameters, vapply(parameters, `[[`, character(1), "name"))
+  actual <- names(by_name)
+  unknown <- setdiff(actual, .NATIVE_TREE_RANDOM_FOREST_REQUIRED_PARAMETERS)
+  missing <- setdiff(.NATIVE_TREE_RANDOM_FOREST_REQUIRED_PARAMETERS, actual)
+  if (length(unknown)) {
+    stop("Unsupported Random Forest parameter(s): ",
+         paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  if (length(missing)) {
+    stop("Missing required Random Forest parameter(s): ",
+         paste(missing, collapse = ", "), ".", call. = FALSE)
+  }
+  for (name in actual) {
+    if (!identical(by_name[[name]]$type,
+                   unname(.NATIVE_TREE_RANDOM_FOREST_PARAMETER_TYPES[[name]]))) {
+      stop("Random Forest parameter '", name,
+           "' has the wrong declared type.", call. = FALSE)
+    }
+  }
+  depth <- by_name$max_depth$value
+  trees <- by_name$n_estimators$value
+  max_features <- by_name$max_features$value
+  feature_count <- length(schema$features)
+  if (length(depth) != 1L || depth < 1L ||
+      depth > .NATIVE_TREE_RANDOM_FOREST_MAX_DEPTH) {
+    stop("Random Forest parameter 'max_depth' is outside its supported range.",
+         call. = FALSE)
+  }
+  if (length(trees) != 1L || trees < 1L ||
+      trees > .NATIVE_TREE_RANDOM_FOREST_MAX_TREES) {
+    stop("Random Forest parameter 'n_estimators' is outside its supported range.",
+         call. = FALSE)
+  }
+  if (length(max_features) != 1L || max_features < 1L ||
+      feature_count < 1L || max_features > feature_count) {
+    stop("Random Forest parameter 'max_features' must be within the public feature count.",
+         call. = FALSE)
+  }
+  if (!is.null(schema$lower) && !is.null(schema$upper) &&
+      !is.null(schema$cuts)) {
+    lower <- .native_tree_float32(schema$lower, "public feature lower bounds")
+    upper <- .native_tree_float32(schema$upper, "public feature upper bounds")
+    cuts <- lapply(schema$cuts, .native_tree_float32,
+                   name = "public feature cuts")
+    valid <- lower < upper
+    for (i in seq_along(cuts)) {
+      valid[[i]] <- valid[[i]] && all(diff(cuts[[i]]) > 0) &&
+        all(cuts[[i]] > lower[[i]]) && all(cuts[[i]] < upper[[i]])
+    }
+    target <- .native_tree_float32(
+      c(schema$target$lower, schema$target$upper), "public target bounds")
+    if (!all(valid) || target[[1L]] >= target[[2L]]) {
+      stop("Random Forest public cuts and bounds must remain strict as float32.",
+           call. = FALSE)
+    }
+  }
+  invisible(TRUE)
+}
+
 #' Enforce the dsFlower asymmetric public-bin boosting profile
 #' @keywords internal
 .native_tree_lightgbm_parameters <- function(parameters, schema, mode) {
@@ -745,6 +866,8 @@
     .native_tree_xgboost_parameters(parameters, schema, mode)
   } else if (identical(engine, "extra_trees")) {
     .native_tree_extra_trees_parameters(parameters, schema, mode)
+  } else if (identical(engine, "random_forest")) {
+    .native_tree_random_forest_parameters(parameters, schema, mode)
   } else if (identical(engine, "lightgbm")) {
     .native_tree_lightgbm_parameters(parameters, schema, mode)
   } else if (identical(engine, "catboost")) {
@@ -975,6 +1098,28 @@
   values
 }
 
+.native_tree_random_forest_parameter_values <- function(params) {
+  if (!is.list(params) || is.null(names(params)) || anyNA(names(params)) ||
+      any(!nzchar(names(params))) || anyDuplicated(names(params))) {
+    stop("Random Forest params must be a uniquely named list.", call. = FALSE)
+  }
+  unknown <- setdiff(
+    names(params), c("task", .NATIVE_TREE_RANDOM_FOREST_REQUIRED_PARAMETERS))
+  if (length(unknown)) {
+    stop("Unsupported Random Forest parameter(s): ",
+         paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  present <- intersect(
+    .NATIVE_TREE_RANDOM_FOREST_REQUIRED_PARAMETERS, names(params))
+  values <- stats::setNames(vector("list", length(present)), present)
+  for (name in present) {
+    values[[name]] <- list(
+      type = unname(.NATIVE_TREE_RANDOM_FOREST_PARAMETER_TYPES[[name]]),
+      value = params[[name]])
+  }
+  values
+}
+
 #' Validate ExtraTrees modelling parameters before public schema is available
 #' @keywords internal
 .validate_extra_trees_model_params <- function(params) {
@@ -984,6 +1129,115 @@
   .native_tree_extra_trees_parameters(
     canonical, list(features = character()), "native-tight")
   invisible(params)
+}
+
+.validate_random_forest_model_params <- function(params) {
+  max_features <- params$max_features
+  automatic <- is.null(max_features) ||
+    (is.character(max_features) && length(max_features) == 1L &&
+     !is.na(max_features) && identical(tolower(max_features), "auto"))
+  if (!automatic && (!(is.integer(max_features) || is.numeric(max_features)) ||
+      is.logical(max_features) || length(max_features) != 1L ||
+      is.na(max_features) || !is.finite(max_features) ||
+      max_features != floor(max_features) || max_features < 1L)) {
+    stop("Random Forest max_features must be NULL, 'auto', or a positive integer.",
+         call. = FALSE)
+  }
+  resolved <- params
+  resolved$max_features <- if (automatic) 1L else as.integer(max_features)
+  records <- .build_native_tree_parameters(
+    .native_tree_random_forest_parameter_values(resolved))
+  canonical <- .native_tree_parameters(records, "native-tight")
+  # Placeholder public names validate the typed/ranged profile; the real public
+  # feature count is rechecked when the request resolves mtry.
+  .native_tree_random_forest_parameters(
+    canonical,
+    list(features = paste0("x", seq_len(resolved$max_features))),
+    "native-tight")
+  invisible(params)
+}
+
+#' Build the exact typed dsFlower boosting-style parameter array for request v1
+#' @keywords internal
+.native_tree_boosting_parameter_values <- function(params, engine) {
+  profiles <- list(
+    lightgbm = list(
+      label = "LightGBM-style",
+      required = .NATIVE_TREE_LIGHTGBM_REQUIRED_PARAMETERS,
+      types = .NATIVE_TREE_LIGHTGBM_PARAMETER_TYPES),
+    catboost = list(
+      label = "CatBoost-style",
+      required = .NATIVE_TREE_CATBOOST_REQUIRED_PARAMETERS,
+      types = .NATIVE_TREE_CATBOOST_PARAMETER_TYPES))
+  profile <- profiles[[engine]]
+  if (is.null(profile)) {
+    stop("Unsupported dsFlower boosting-style engine.", call. = FALSE)
+  }
+  if (!is.list(params) || is.null(names(params)) || anyNA(names(params)) ||
+      any(!nzchar(names(params))) || anyDuplicated(names(params))) {
+    stop(profile$label, " params must be a uniquely named list.",
+         call. = FALSE)
+  }
+  unknown <- setdiff(names(params), c("task", profile$required))
+  if (length(unknown)) {
+    stop("Unsupported ", profile$label, " parameter(s): ",
+         paste(unknown, collapse = ", "), ".", call. = FALSE)
+  }
+  present <- intersect(profile$required, names(params))
+  values <- stats::setNames(vector("list", length(present)), present)
+  for (name in present) {
+    values[[name]] <- list(
+      type = unname(profile$types[[name]]), value = params[[name]])
+  }
+  values
+}
+
+.native_tree_lightgbm_parameter_values <- function(params) {
+  .native_tree_boosting_parameter_values(params, "lightgbm")
+}
+
+.native_tree_catboost_parameter_values <- function(params) {
+  .native_tree_boosting_parameter_values(params, "catboost")
+}
+
+#' Validate dsFlower boosting-style parameters before the public schema exists
+#' @keywords internal
+.validate_boosting_style_model_params <- function(params, engine) {
+  values <- .native_tree_boosting_parameter_values(params, engine)
+  records <- .build_native_tree_parameters(values)
+  canonical <- .native_tree_parameters(records, "native-tight")
+  if (identical(engine, "lightgbm")) {
+    .native_tree_lightgbm_parameters(
+      canonical, list(features = character()), "native-tight")
+  } else {
+    # CatBoost's float32 public-cut check needs a real schema, so validate the
+    # exact typed/ranged parameter profile here and repeat the full check when
+    # the request is built.
+    by_name <- stats::setNames(
+      canonical, vapply(canonical, `[[`, character(1), "name"))
+    bounded <- function(name, lower, upper, lower_open = FALSE) {
+      value <- by_name[[name]]$value
+      lower_ok <- if (isTRUE(lower_open)) value > lower else value >= lower
+      if (length(value) != 1L || !lower_ok || value > upper) {
+        stop("CatBoost-style parameter '", name,
+             "' is outside its supported range.", call. = FALSE)
+      }
+    }
+    bounded("depth", 1, .NATIVE_TREE_CATBOOST_MAX_DEPTH)
+    bounded("iterations", 1, .NATIVE_TREE_RESOURCE_LIMITS$max_trees)
+    bounded("l2_leaf_reg", 0, .NATIVE_TREE_MAX_FLOAT_ABS, TRUE)
+    bounded("learning_rate", 0, 1, TRUE)
+    bounded("max_delta_step", 0, .NATIVE_TREE_MAX_FLOAT_ABS, TRUE)
+  }
+  invisible(params)
+}
+
+.validate_lightgbm_model_params <- function(params) {
+  .validate_boosting_style_model_params(params, "lightgbm")
+}
+
+.validate_catboost_model_params <- function(params) {
+  .validate_boosting_style_model_params(params, "catboost")
 }
 
 #' Build one canonical analyst-facing ExtraTrees request
@@ -1039,6 +1293,156 @@
     resources = resources, schema_sha256 = schema_sha256)
 }
 
+.build_random_forest_request <- function(
+    params, features, feature_bounds, feature_cuts, target_name,
+    target_levels = NULL, target_bounds = NULL, schema_sha256 = NULL) {
+  if (!is.list(params) || !is.character(params$task) ||
+      length(params$task) != 1L || is.na(params$task) ||
+      !params$task %in% .NATIVE_TREE_TASKS) {
+    stop("Random Forest params must contain task='binary' or task='regression'.",
+         call. = FALSE)
+  }
+  .validate_random_forest_model_params(params)
+  task <- params$task
+  p <- length(features)
+  if (p < 1L) stop("Random Forest requires at least one public feature.",
+                   call. = FALSE)
+  max_features <- params$max_features
+  automatic <- is.null(max_features) ||
+    (is.character(max_features) && length(max_features) == 1L &&
+     !is.na(max_features) && identical(tolower(max_features), "auto"))
+  if (automatic) {
+    max_features <- if (identical(task, "binary")) {
+      ceiling(sqrt(p))
+    } else {
+      max(1L, ceiling(p / 3))
+    }
+  }
+  max_features <- as.integer(max_features)
+  if (max_features > p) {
+    stop("Random Forest max_features cannot exceed the public feature count.",
+         call. = FALSE)
+  }
+  wire_params <- params
+  wire_params$max_features <- max_features
+  target <- if (identical(task, "binary")) {
+    if (!is.null(target_bounds)) {
+      stop("Binary Random Forest fixes encoded target bounds to 0 and 1.",
+           call. = FALSE)
+    }
+    list(name = target_name, kind = "binary",
+         levels = .native_tree_tag_target_levels(
+           target_levels, "Random Forest"), lower = 0, upper = 1)
+  } else {
+    if (!is.null(target_levels)) {
+      stop("Regression Random Forest does not accept target_levels.",
+           call. = FALSE)
+    }
+    if (!is.list(target_bounds) ||
+        !identical(sort(names(target_bounds)), c("lower", "upper"))) {
+      stop("Regression Random Forest requires target_bounds with lower and upper.",
+           call. = FALSE)
+    }
+    list(name = target_name, kind = "continuous", levels = NULL,
+         lower = target_bounds$lower, upper = target_bounds$upper)
+  }
+  cut_counts <- if (is.list(feature_cuts)) {
+    vapply(feature_cuts, length, integer(1))
+  } else integer()
+  max_bins <- if (length(cut_counts)) max(cut_counts + 1L) else 2L
+  resources <- .NATIVE_TREE_RESOURCE_DEFAULTS
+  resources$max_features <- p
+  resources$max_trees <- as.integer(wire_params$n_estimators)
+  resources$max_depth <- as.integer(wire_params$max_depth)
+  resources$max_bins <- as.integer(max_bins)
+  .build_native_tree_manifest(
+    engine = "random_forest", mode = "native-tight", task = task,
+    features = features, bounds = feature_bounds, cuts = feature_cuts,
+    target = target,
+    parameters = .native_tree_random_forest_parameter_values(wire_params),
+    resources = resources, schema_sha256 = schema_sha256)
+}
+
+#' Build one canonical analyst-facing dsFlower boosting-style request
+#' @keywords internal
+.build_boosting_style_request <- function(
+    params, engine, features, feature_bounds, feature_cuts, target_name,
+    target_levels = NULL, target_bounds = NULL, schema_sha256 = NULL) {
+  label <- if (identical(engine, "lightgbm")) {
+    "LightGBM-style"
+  } else if (identical(engine, "catboost")) {
+    "CatBoost-style"
+  } else {
+    stop("Unsupported dsFlower boosting-style engine.", call. = FALSE)
+  }
+  if (!is.list(params) || !is.character(params$task) ||
+      length(params$task) != 1L || is.na(params$task) ||
+      !params$task %in% .NATIVE_TREE_TASKS) {
+    stop(label, " params must contain task='binary' or task='regression'.",
+         call. = FALSE)
+  }
+  .validate_boosting_style_model_params(params, engine)
+  task <- params$task
+  target <- if (identical(task, "binary")) {
+    if (!is.null(target_bounds)) {
+      stop("Binary ", label, " fixes encoded target bounds to 0 and 1.",
+           call. = FALSE)
+    }
+    list(name = target_name, kind = "binary",
+         levels = .native_tree_tag_target_levels(target_levels, label),
+         lower = 0, upper = 1)
+  } else {
+    if (!is.null(target_levels)) {
+      stop("Regression ", label, " does not accept target_levels.",
+           call. = FALSE)
+    }
+    if (!is.list(target_bounds) ||
+        !identical(sort(names(target_bounds)), c("lower", "upper"))) {
+      stop("Regression ", label,
+           " requires target_bounds with lower and upper.", call. = FALSE)
+    }
+    list(name = target_name, kind = "continuous", levels = NULL,
+         lower = target_bounds$lower, upper = target_bounds$upper)
+  }
+  cut_counts <- if (is.list(feature_cuts)) {
+    vapply(feature_cuts, length, integer(1))
+  } else integer()
+  max_bins <- if (length(cut_counts)) max(cut_counts + 1L) else 2L
+  resources <- .NATIVE_TREE_RESOURCE_DEFAULTS
+  resources$max_features <- length(features)
+  if (identical(engine, "lightgbm")) {
+    resources$max_trees <- as.integer(params$num_iterations)
+    resources$max_depth <- as.integer(params$max_depth)
+    values <- .native_tree_lightgbm_parameter_values(params)
+  } else {
+    resources$max_trees <- as.integer(params$iterations)
+    resources$max_depth <- as.integer(params$depth)
+    values <- .native_tree_catboost_parameter_values(params)
+  }
+  resources$max_bins <- as.integer(max_bins)
+  .build_native_tree_manifest(
+    engine = engine, mode = "native-tight", task = task,
+    features = features, bounds = feature_bounds, cuts = feature_cuts,
+    target = target, parameters = values, resources = resources,
+    schema_sha256 = schema_sha256)
+}
+
+.build_lightgbm_request <- function(
+    params, features, feature_bounds, feature_cuts, target_name,
+    target_levels = NULL, target_bounds = NULL, schema_sha256 = NULL) {
+  .build_boosting_style_request(
+    params, "lightgbm", features, feature_bounds, feature_cuts, target_name,
+    target_levels, target_bounds, schema_sha256)
+}
+
+.build_catboost_request <- function(
+    params, features, feature_bounds, feature_cuts, target_name,
+    target_levels = NULL, target_bounds = NULL, schema_sha256 = NULL) {
+  .build_boosting_style_request(
+    params, "catboost", features, feature_bounds, feature_cuts, target_name,
+    target_levels, target_bounds, schema_sha256)
+}
+
 #' Build one canonical analyst-facing XGBoost request
 #' @keywords internal
 .build_xgboost_request <- function(params, features, feature_bounds,
@@ -1090,4 +1494,22 @@
     target = target,
     parameters = .native_tree_xgboost_parameter_values(params),
     resources = resources, schema_sha256 = schema_sha256)
+}
+
+#' Build the canonical request for one implemented native-tree engine
+#' @keywords internal
+.build_native_tree_request <- function(
+    engine, params, features, feature_bounds, feature_cuts, target_name,
+    target_levels = NULL, target_bounds = NULL, schema_sha256 = NULL) {
+  builder <- switch(engine,
+    xgboost = .build_xgboost_request,
+    extra_trees = .build_extra_trees_request,
+    random_forest = .build_random_forest_request,
+    lightgbm = .build_lightgbm_request,
+    catboost = .build_catboost_request,
+    stop("Native-tree engine has no implemented request builder.",
+         call. = FALSE))
+  builder(
+    params, features, feature_bounds, feature_cuts, target_name,
+    target_levels, target_bounds, schema_sha256)
 }

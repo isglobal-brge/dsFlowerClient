@@ -1,0 +1,62 @@
+name: Native tree client predictor
+
+on:
+  push:
+    paths:
+      - ".github/workflows/native-tree-client.yml"
+      - "inst/python/native_tree_predict_helper.py"
+      - "inst/python/tests/test_native_tree_predict_helper.py"
+      - "inst/flower_app/dsflower_runner/native_tree_*.py"
+      - "inst/flower_app/dsflower_runner/boosting_*.py"
+      - "inst/flower_app/dsflower_runner/*boost_artifact.py"
+      - "inst/flower_app/dsflower_runner/lightgbm_artifact.py"
+      - "inst/flower_app/dsflower_runner/forest_*.py"
+      - "inst/flower_app/dsflower_runner/random_forest_adapter.py"
+      - "inst/flower_app/dsflower_runner/xgboost_*.py"
+  pull_request:
+    paths:
+      - ".github/workflows/native-tree-client.yml"
+      - "inst/python/native_tree_predict_helper.py"
+      - "inst/python/tests/test_native_tree_predict_helper.py"
+      - "inst/flower_app/dsflower_runner/native_tree_*.py"
+      - "inst/flower_app/dsflower_runner/boosting_*.py"
+      - "inst/flower_app/dsflower_runner/*boost_artifact.py"
+      - "inst/flower_app/dsflower_runner/lightgbm_artifact.py"
+      - "inst/flower_app/dsflower_runner/forest_*.py"
+      - "inst/flower_app/dsflower_runner/random_forest_adapter.py"
+      - "inst/flower_app/dsflower_runner/xgboost_*.py"
+
+permissions:
+  contents: read
+
+jobs:
+  stdlib-predictor:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - name: Validate isolated local prediction
+        shell: bash
+        run: |
+          python3 -m venv "$RUNNER_TEMP/native-tree-client-venv"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            contract_python="$RUNNER_TEMP/native-tree-client-venv/Scripts/python.exe"
+          else
+            contract_python="$RUNNER_TEMP/native-tree-client-venv/bin/python"
+          fi
+          "$contract_python" -m pip install --disable-pip-version-check \
+            flwr==1.31.0 \
+            numpy==2.4.6 \
+            pandas==3.0.3 \
+            pyarrow==23.0.1 \
+            cryptography==46.0.7
+          "$contract_python" -m unittest -v \
+            inst/python/tests/test_native_tree_predict_helper.py \
+            inst/python/tests/test_boosting_adapter.py \
+            inst/python/tests/test_boosting_artifacts.py

@@ -26,6 +26,7 @@ ds.flower.submit(
   target_levels = NULL,
   target_bounds = NULL,
   holdout = NULL,
+  cross_validation = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
 )
 }
@@ -70,14 +71,14 @@ supplied without querying node data and define a clipped affine transform.}
 
 \item{feature_cuts}{Required for native-tight tree models: one strictly
 increasing public cut vector per feature, inside \code{feature_bounds}.
-For XGBoost, seven data-independent cuts per feature are the
+Seven data-independent cuts per feature are a practical
 benchmark-backed starting point; they are never inferred from private data.}
 
 \item{target_levels}{Optional ordered public label vocabulary for
 classification. Non-numeric targets require it; node values are never used
 to infer label codes, and missing or unknown values map to public code zero.
 Multilabel applies one public two-level vocabulary to each target
-independently. Binary XGBoost requires exactly two ordered levels so the
+independently. Binary native-tree models require exactly two ordered levels so the
 saved validation contract retains identical label semantics.}
 
 \item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
@@ -86,12 +87,17 @@ regression/count targets. The node clips each target to these constants.}
 \item{holdout}{Optional numeric test fraction for atomic tabular neural
 holdout validation. Unsupported tracks fail before private preparation.}
 
+\item{cross_validation}{Optional integer in \code{[2, 10]} selecting a
+dedicated federated cross-validation job. Prefer the user-facing
+\code{ds.flower.cross_validate()} wrapper.}
+
 \item{allow_insecure_http}{Character vector of exact connection names allowed
 to use plaintext HTTP. Empty by default. This exception does not provide
 transport security; use it only behind an independently trusted network.}
 }
 \value{
-A \code{dsflower_run}.
+A \code{dsflower_run}, or a \code{dsflower_cv} when
+  \code{cross_validation} is set.
 }
 \description{
 Codegens the submission, ships it in one FAB to the DataSHIELD SuperNodes,

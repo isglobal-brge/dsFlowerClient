@@ -160,7 +160,7 @@ ds.flower.strategy.fedavgm <- function(server_learning_rate = 1.0,
       server_momentum = params$server_momentum %||% 0))
 }
 
-.strategy_config_lines <- function(strategy, client_learning_rate = NULL) {
+.strategy_config_values <- function(strategy, client_learning_rate = NULL) {
   if (!inherits(strategy, "dsflower_strategy")) {
     strategy <- ds.flower.strategy(strategy)
   }
@@ -177,16 +177,23 @@ ds.flower.strategy.fedavgm <- function(server_learning_rate = 1.0,
     tau = "strategy-tau", server_learning_rate = "strategy-server-learning-rate",
     server_momentum = "strategy-server-momentum"
   )
-  lines <- c(.toml_kv("strategy", key),
-    vapply(names(strategy$params), function(name) {
-      .toml_kv(keys[[name]], strategy$params[[name]])
-    }, character(1)))
+  values <- list(strategy = key)
+  for (name in names(strategy$params)) {
+    values[[keys[[name]]]] <- strategy$params[[name]]
+  }
   if (key %in% c("fedadam", "fedadagrad", "fedyogi")) {
     eta_l <- .strategy_scalar(client_learning_rate, "model learning_rate",
                               lower = 0, lower_open = TRUE)
-    lines <- c(lines, .toml_kv("strategy-eta-l", eta_l))
+    values[["strategy-eta-l"]] <- eta_l
   }
-  lines
+  values
+}
+
+.strategy_config_lines <- function(strategy, client_learning_rate = NULL) {
+  values <- .strategy_config_values(strategy, client_learning_rate)
+  unname(vapply(names(values), function(key) {
+    .toml_kv(key, values[[key]])
+  }, character(1)))
 }
 
 #' Print a dsflower_strategy

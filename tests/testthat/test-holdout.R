@@ -68,6 +68,14 @@ test_that("pooled holdout output is strict and contains no node transcript", {
     pooled_only = TRUE,
     privacy = "node-dp-pooled-postprocessing",
     method = "holdout", task = "binary", n_nodes = 2L,
+    metrics = list(accuracy = 1.1)
+  ), file.path(root, "holdout.json"), auto_unbox = TRUE)
+  expect_error(dsFlowerClient:::.read_holdout_result(root), "pooled-only")
+
+  jsonlite::write_json(list(
+    pooled_only = TRUE,
+    privacy = "node-dp-pooled-postprocessing",
+    method = "holdout", task = "binary", n_nodes = 2L,
     metrics = list(per_node = list(site = 0.75))
   ), file.path(root, "holdout.json"), auto_unbox = TRUE)
   expect_error(dsFlowerClient:::.read_holdout_result(root), "pooled-only")

@@ -91,6 +91,10 @@ the standard way when they are analysed together.
 When atomic holdout is requested, that same per-training pair is the total job
 budget: the node applies a fixed split between composed training and one pooled
 test release. It does not create a persistent balance or affect later jobs.
+Cross-validation follows the same per-job rule: 80 percent is divided across
+the `K` real trainings and the remaining 20 percent is used once for the pooled
+OOF release. Higher `K` can therefore reduce DP-SGD utility under the same
+contract; the API defaults to three folds.
 
 Guarantees are per node. If the same person appears at multiple observed nodes,
 their epsilons and deltas compose across those nodes; only disjoint node
@@ -214,12 +218,22 @@ tabular; they do not yet reconstruct image loaders/backbones for inference or
 validation. This boundary is explicit rather than silently treating images as a
 numeric table.
 
-Tree engines are intentionally not registered in this release. The former
-NumPy random-split compatibility implementation and its `xgboost`/`dp_gbdt`
-aliases have been removed: it was not the native XGBoost engine and must not be
-presented as one. Native XGBoost, LightGBM, CatBoost and random-forest adapters
-will be exposed only through trusted, version-pinned runtimes with a complete
-node-enforced DP mechanism; adding noise only to final model bytes is not DP.
+The first-party native-tree constructors are `xgboost`, `extra_trees`,
+`random_forest`, `lightgbm` and `catboost`. They run only in the dedicated
+trusted node runtime, require public bounds and complete public cuts, and emit
+sanitized data-only ensembles that can be saved, reopened, predicted locally
+with the bundled standard-library predictor, or validated privately. Random
+Forest resolves `max_features = "auto"` from the public feature count when the
+request is built. It is a disjoint-partition DP forest in which each effective
+privacy unit belongs to one tree, not upstream bootstrap/bagging Random Forest;
+small cohorts can therefore have fewer effective units per tree. LightGBM and
+CatBoost are dsFlower-style safe numeric engines,
+not the upstream binaries or their model formats. A node advertises an engine
+only after a fresh executable end-to-end probe; this is operational readiness,
+not a model catalogue used as a privacy permission list. ExtraTrees, Random
+Forest and the two dsFlower-style boosters use the small runtime provisioned by
+the server package. XGBoost remains unavailable on a clean install until the
+custodian supplies its separately built and verified platform bundle.
 
 Classification strings/factors require an ordered public `target_levels`;
 numeric labels already coded in `[0, K-1]` remain compatible.
@@ -302,11 +316,12 @@ HookApps use the same `target_levels`/`target_bounds` contract and must declare
 
 ## Private model validation
 
-`ds.flower.validate()` evaluates a saved declarative model inside the nodes and
-releases one fixed, Gaussian-noised vector of bounded sufficient statistics per
-node. The current validator is for tabular neural artifacts; vision
-artifacts fail explicitly. Exact labels, predictions, counts and site metrics remain local; the
-researcher receives only pooled post-processing:
+`ds.flower.validate()` evaluates a saved declarative neural or sanitized
+native-tree model inside the nodes and releases one fixed, Gaussian-noised
+vector of bounded sufficient statistics per node. The current validator accepts
+those tabular artifacts; vision artifacts fail explicitly. Exact labels,
+predictions, counts and site metrics remain local; the researcher receives only
+pooled post-processing:
 
 ```r
 validation <- ds.flower.validate(
@@ -341,10 +356,30 @@ The returned `fit$holdout` contains only pooled DP metrics; no predictions,
 unit assignments or site metrics leave the nodes. Other backends fail explicitly
 instead of pretending to support this protocol.
 
-K-fold cross-validation is not exported yet. Honest CV requires a dedicated app
-that runs K real federated trainings, keeps fold models and OOF accumulators in
-memory, and releases one pooled OOF vector only after every fold succeeds; it
-cannot be simulated by repeatedly calling this one-release evaluator.
+For honest K-fold validation, use the dedicated metrics-only workflow:
+
+```r
+cv <- ds.flower.cross_validate(
+  conns,
+  symbol = "D",
+  target = "outcome",
+  features = c("age", "biomarker"),
+  model = "pytorch_logreg",
+  feature_bounds = list(lower = c(18, 0), upper = c(100, 250)),
+  target_levels = c("control", "case"),
+  folds = 3L
+)
+cv$metrics
+```
+
+This runs `K` clean-initialized federated trainings, excludes each held-out fold
+before its first training read, and retains raw OOF sufficient statistics only
+in namespaced Flower `Context.state` backed by the pinned in-memory node
+runtime—never a file or database. If every fold succeeds, the nodes make one final DP
+release and the client accepts only `cv.json`, pinned to the submitted
+CV-job and resampling-contract hashes. No fold model, prediction, fold/site metric or history
+is returned or saved. A failed or restarted job publishes nothing and recomputes
+the whole deterministic job.
 
 ## Public feature bounds
 

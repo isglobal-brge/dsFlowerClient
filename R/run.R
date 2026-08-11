@@ -83,6 +83,20 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   # Neural ServerApps build the initial torch model. The native-tree app has a
   # separate dependency-light entrypoint and must not install or import torch.
   native_tree <- identical(recipe$model$track %||% NULL, "native_tree")
+  cv_job <- !is.null(recipe$cross_validation_contract)
+  if (cv_job && native_tree) {
+    stop("Cross-validation requires a neural recipe.", call. = FALSE)
+  }
+  if (cv_job &&
+      (!is.character(recipe$cross_validation_job_sha256) ||
+       length(recipe$cross_validation_job_sha256) != 1L ||
+       is.na(recipe$cross_validation_job_sha256) ||
+       !grepl("^[0-9a-f]{64}$", recipe$cross_validation_job_sha256) ||
+       !identical(as.integer(recipe$cross_validation_n_nodes),
+                  as.integer(n_clients)))) {
+    stop("Cross-validation recipe has no exact public job provenance pin.",
+         call. = FALSE)
+  }
   if (!native_tree) .ensure_client_framework("pytorch")
 
   # The app dir is always pre-built by the submission pipeline (a dsflower_runner
@@ -103,8 +117,14 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
 
   # Run via venv flwr with FLWR_HOME pointing to our private config.
   eff_rounds <- recipe$num_rounds
-  .dsf_msg("Training ", recipe$model$name, " across ", n_clients,
-           " site(s) for ", eff_rounds, " round(s)...")
+  if (cv_job) {
+    .dsf_msg("Cross-validating ", recipe$model$name, " across ", n_clients,
+             " site(s), ", recipe$cross_validation_contract$folds,
+             " fold(s) and ", eff_rounds, " round(s) per fold...")
+  } else {
+    .dsf_msg("Training ", recipe$model$name, " across ", n_clients,
+             " site(s) for ", eff_rounds, " round(s)...")
+  }
   flwr_cmd <- .client_flwr_cmd()
   # PYTHONUNBUFFERED so the flwr child flushes its [ROUND k/N] log lines as they
   # happen (block-buffered pipes otherwise hold them until exit, which hides the
@@ -116,7 +136,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                       PYTHONUNBUFFERED = "1")),
     results_dir = results_dir,
     num_rounds = eff_rounds,
-    expect_artifacts = TRUE
+    expect_artifacts = TRUE,
+    cross_validation = cv_job
   )
 
   # Clean ANSI escape codes
@@ -138,6 +159,76 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   }
   history <- .read_training_history(results_dir)
   holdout_release <- .read_holdout_result(results_dir)
+  cv_release <- .read_cross_validation_result(results_dir)
+  if (cv_job) {
+    unexpected <- setdiff(
+      list.files(results_dir, all.files = TRUE, no.. = TRUE), "cv.json")
+    if (result$status != 0L || is.null(cv_release) || !is.null(weights) ||
+        !is.null(history) || !is.null(holdout_release) || length(unexpected)) {
+      stop("Federated cross-validation failed or produced a forbidden fold ",
+           "artifact; no result was accepted.", call. = FALSE)
+    }
+    if (!identical(
+        cv_release$cv_contract_sha256,
+        recipe$cross_validation_contract$sha256) ||
+        !identical(
+          as.integer(cv_release$folds),
+          as.integer(recipe$cross_validation_contract$folds)) ||
+        !identical(as.integer(cv_release$n_nodes), as.integer(n_clients)) ||
+        !identical(cv_release$cv_job_sha256,
+                   recipe$cross_validation_job_sha256)) {
+      stop("Federated cross-validation output does not match its submitted ",
+           "public contract.", call. = FALSE)
+    }
+    saved_path <- NULL
+    persisted_dir <- NULL
+    if (!is.null(output_dir) || !is.null(output_name)) {
+      parent <- output_dir %||% file.path(".", "dsflower_output")
+      save_name <- output_name %||% paste0(
+        recipe$model$name, "_cv_", format(Sys.time(), "%Y%m%d_%H%M%S"))
+      persisted_dir <- file.path(parent, save_name)
+      if (dir.exists(persisted_dir) && length(list.files(
+          persisted_dir, all.files = TRUE, no.. = TRUE))) {
+        stop("Cross-validation output directory must be empty.", call. = FALSE)
+      }
+      dir.create(persisted_dir, recursive = TRUE, showWarnings = FALSE)
+      persisted_dir <- normalizePath(
+        persisted_dir, winslash = "/", mustWork = FALSE)
+      saved_path <- file.path(persisted_dir, "cv.json")
+      temporary <- tempfile(pattern = ".cv-", tmpdir = persisted_dir)
+      on.exit(unlink(temporary, force = TRUE), add = TRUE)
+      copied <- file.copy(
+        file.path(results_dir, "cv.json"), temporary, overwrite = FALSE)
+      if (!isTRUE(copied) || !file.rename(temporary, saved_path)) {
+        stop("Could not persist the pooled cross-validation result.",
+             call. = FALSE)
+      }
+    }
+    .dsf_msg("Cross-validation complete: one pooled DP OOF metric release; ",
+             "no fold models, predictions, or site metrics were saved.")
+    return(structure(list(
+      run_id = run_id,
+      status = 0L,
+      cli_status = as.integer(result$status),
+      model = recipe$model$name,
+      task = cv_release$task,
+      folds = as.integer(cv_release$folds),
+      rounds = as.integer(eff_rounds),
+      n_nodes = as.integer(cv_release$n_nodes),
+      metrics = cv_release$metrics,
+      contract = recipe$cross_validation_contract,
+      job_sha256 = cv_release$cv_job_sha256,
+      results_dir = results_dir,
+      output_dir = persisted_dir,
+      saved_path = saved_path,
+      stdout = clean_stdout,
+      stderr = clean_stderr
+    ), class = "dsflower_cv"))
+  }
+  if (!is.null(cv_release)) {
+    stop("Training produced an unexpected cross-validation transcript.",
+         call. = FALSE)
+  }
   expects_holdout <- !is.null(recipe$holdout_contract)
   if (!expects_holdout && !is.null(holdout_release)) {
     stop("Training produced an unexpected holdout transcript.", call. = FALSE)
@@ -148,7 +239,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   native_release <- NULL
   if (native_tree && identical(as.integer(result$status), 0L) &&
       native_history_available) {
-    native_release <- .native_xgboost_release_metadata(recipe, results_dir)
+    native_release <- .native_tree_release_metadata(recipe, results_dir)
   }
   runtime_status <- .flower_runtime_status(
     cli_status = result$status,
@@ -268,7 +359,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     meta <- if (native_tree && available) {
       list(
         track = "native_tree",
-        engine = "xgboost",
+        engine = recipe$model$engine,
         task = recipe$model$task,
         data_kind = recipe$data_kind %||% "tabular",
         features = recipe$features,
@@ -368,6 +459,21 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   } else {
     NA_character_
   }
+  primary_task <- if (is.list(value) && length(value$task) == 1L) {
+    as.character(value$task)
+  } else {
+    ""
+  }
+  primary_metric <- if (is.list(value) && is.list(value$metrics) &&
+      !is.na(required_metric) && required_metric %in% names(value$metrics)) {
+    value$metrics[[required_metric]]
+  } else {
+    NULL
+  }
+  plausible_primary <- is.numeric(primary_metric) &&
+    length(primary_metric) == 1L && is.finite(primary_metric) &&
+    primary_metric >= 0 &&
+    (primary_task %in% c("regression", "count") || primary_metric <= 1)
   if (!is.list(value) || is.null(names(value)) || anyDuplicated(names(value)) ||
       !setequal(names(value), allowed) ||
       !identical(value$pooled_only, TRUE) ||
@@ -381,8 +487,88 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       value$n_nodes != floor(value$n_nodes) || !is.list(value$metrics) ||
       is.null(names(value$metrics)) || anyDuplicated(names(value$metrics)) ||
       is.na(required_metric) || !required_metric %in% names(value$metrics) ||
+      !plausible_primary ||
       any(c("per_node", "predictions", "folds") %in% names(value$metrics))) {
     stop("Holdout output failed the pooled-only privacy contract.",
+         call. = FALSE)
+  }
+  value
+}
+
+.read_cross_validation_result <- function(results_dir) {
+  path <- file.path(results_dir, "cv.json")
+  if (!file.exists(path)) return(NULL)
+  info <- file.info(path)
+  if (is.na(info$size) || info$size < 1 || info$size > 8 * 1024^2) {
+    stop("Cross-validation output failed the pooled-only privacy contract.",
+         call. = FALSE)
+  }
+  value <- tryCatch(
+    jsonlite::fromJSON(path, simplifyVector = FALSE),
+    error = function(e) NULL)
+  allowed <- c("pooled_only", "privacy", "method", "task", "n_nodes",
+               "folds", "cv_contract_sha256", "cv_job_sha256", "metrics")
+  required_metric <- if (is.list(value) && length(value$task) == 1L) {
+    switch(as.character(value$task),
+           binary = "accuracy", multiclass = "accuracy",
+           ordinal = "accuracy", multilabel = "macro_f1",
+           regression = "mae", count = "mae", NA_character_)
+  } else {
+    NA_character_
+  }
+  primary_task <- if (is.list(value) && length(value$task) == 1L) {
+    as.character(value$task)
+  } else {
+    ""
+  }
+  primary_metric <- if (is.list(value) && is.list(value$metrics) &&
+      !is.na(required_metric) && required_metric %in% names(value$metrics)) {
+    value$metrics[[required_metric]]
+  } else {
+    NULL
+  }
+  plausible_primary <- is.numeric(primary_metric) &&
+    length(primary_metric) == 1L && is.finite(primary_metric) &&
+    primary_metric >= 0 &&
+    (primary_task %in% c("regression", "count") || primary_metric <= 1)
+  safe_metric_tree <- function(item) {
+    if (is.null(item)) return(TRUE)
+    if (is.numeric(item)) return(all(is.finite(item)))
+    if (!is.list(item)) return(FALSE)
+    keys <- names(item) %||% character()
+    if (any(keys %in% c(
+        "per_node", "per_site", "predictions", "models", "fold",
+        "folds", "per_fold", "fold_metrics"))) return(FALSE)
+    all(vapply(item, safe_metric_tree, logical(1)))
+  }
+  if (!is.list(value) || is.null(names(value)) || anyDuplicated(names(value)) ||
+      !setequal(names(value), allowed) ||
+      !identical(value$pooled_only, TRUE) ||
+      !identical(value$privacy, "node-dp-pooled-postprocessing") ||
+      !identical(value$method, "cross_validation") ||
+      length(value$task) != 1L || !value$task %in% c(
+        "binary", "multiclass", "ordinal", "multilabel",
+        "regression", "count") ||
+      length(value$n_nodes) != 1L || !is.numeric(value$n_nodes) ||
+      !is.finite(value$n_nodes) || value$n_nodes < 1 ||
+      value$n_nodes != floor(value$n_nodes) ||
+      length(value$folds) != 1L || !is.numeric(value$folds) ||
+      !is.finite(value$folds) || value$folds < 2 || value$folds > 10 ||
+      value$folds != floor(value$folds) ||
+      length(value$cv_contract_sha256) != 1L ||
+      !is.character(value$cv_contract_sha256) ||
+      is.na(value$cv_contract_sha256) ||
+      !grepl("^[0-9a-f]{64}$", value$cv_contract_sha256) ||
+      length(value$cv_job_sha256) != 1L ||
+      !is.character(value$cv_job_sha256) ||
+      is.na(value$cv_job_sha256) ||
+      !grepl("^[0-9a-f]{64}$", value$cv_job_sha256) ||
+      !is.list(value$metrics) ||
+      is.null(names(value$metrics)) || anyDuplicated(names(value$metrics)) ||
+      is.na(required_metric) || !required_metric %in% names(value$metrics) ||
+      !plausible_primary ||
+      !safe_metric_tree(value$metrics)) {
+    stop("Cross-validation output failed the pooled-only privacy contract.",
          call. = FALSE)
   }
   value
@@ -413,10 +599,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
 }
 
 .model_artifact_exists <- function(results_dir) {
+  native_files <- vapply(
+    .NATIVE_TREE_RELEASE_SPECS, `[[`, character(1), "artifact_file")
   any(file.exists(file.path(
     results_dir,
     c("global_model.json", "global_model.skipped.json",
-      "model.pt", "model.npz", "model.xgboost-ensemble.json",
+      "model.pt", "model.npz", native_files,
       "validation.json")
   )))
 }
@@ -441,50 +629,63 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     .atomic_neural_model_exists(results_dir)
 }
 
-.native_xgboost_release_metadata <- function(recipe, results_dir) {
+.native_tree_release_metadata <- function(recipe, results_dir) {
   request <- .validate_native_tree_request_wire(
     recipe$native_tree_request_b64,
     recipe$native_tree_request_sha256)
-  if (!identical(request$value$engine, "xgboost") ||
+  engine <- recipe$model$engine %||% NULL
+  task <- recipe$model$task %||% NULL
+  if (!is.character(engine) || length(engine) != 1L || is.na(engine) ||
+      !engine %in% .NATIVE_TREE_ENGINES ||
+      !identical(request$value$engine, engine) ||
       !identical(request$value$task, recipe$model$task) ||
       !identical(request$value$public_schema$sha256,
                  recipe$public_schema_sha256)) {
-    stop("Native XGBoost recipe no longer matches its canonical request.",
+    stop("Native-tree recipe no longer matches its canonical request.",
          call. = FALSE)
   }
-  path <- file.path(results_dir, .XGBOOST_ENSEMBLE_FILE)
+  release_spec <- .native_tree_release_spec(engine)
+  path <- file.path(results_dir, release_spec$artifact_file)
   info <- file.info(path)
   if (!file.exists(path) || is.na(info$isdir) || isTRUE(info$isdir) ||
       is.na(info$size) || info$size < 1 ||
-      info$size > .XGBOOST_ENSEMBLE_MAX_BYTES) {
-    stop("Native XGBoost produced no bounded sanitized ensemble artifact.",
+      info$size > .NATIVE_TREE_ENSEMBLE_MAX_BYTES) {
+    stop("Native-tree training produced no bounded sanitized ensemble artifact.",
          call. = FALSE)
   }
   bytes <- readBin(path, what = "raw", n = as.integer(info$size))
   artifact <- list(
-    file = .XGBOOST_ENSEMBLE_FILE,
-    format = .XGBOOST_ENSEMBLE_FORMAT,
+    file = release_spec$artifact_file,
+    format = release_spec$artifact_format,
     size_bytes = as.integer(length(bytes)),
     sha256 = digest::digest(bytes, algo = "sha256", serialize = FALSE))
+  sanitization <- .native_tree_sanitization_attestation(engine)
   candidate <- list(
     public_schema_sha256 = recipe$public_schema_sha256,
     artifact = artifact,
-    sanitization = .XGBOOST_ENSEMBLE_SANITIZATION)
-  .validate_xgboost_ensemble_artifact(
-    candidate, results_dir, recipe$model$task)
-  .validate_xgboost_prediction_profile(
+    sanitization = sanitization)
+  .validate_native_tree_ensemble_artifact(
+    candidate, results_dir, task, engine)
+  .validate_native_tree_prediction_profile(
     results_dir,
     recipe$native_tree_request_b64,
     recipe$native_tree_request_sha256,
     recipe$public_schema_sha256,
-    recipe$model$task,
+    task, engine,
     artifact)
   list(artifact = artifact,
-       sanitization = .XGBOOST_ENSEMBLE_SANITIZATION)
+       sanitization = sanitization)
 }
 
 .training_artifacts_complete <- function(results_dir, num_rounds,
-                                         expect_artifacts = TRUE) {
+                                         expect_artifacts = TRUE,
+                                         cross_validation = FALSE) {
+  if (isTRUE(cross_validation)) {
+    path <- file.path(results_dir, "cv.json")
+    info <- file.info(path)
+    return(file.exists(path) && !is.na(info$isdir) && !isTRUE(info$isdir) &&
+             !is.na(info$size) && info$size > 0 && info$size <= 8 * 1024^2)
+  }
   history <- .read_training_history(results_dir)
   if (is.null(history) || !NROW(history)) return(FALSE)
 
@@ -533,7 +734,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
 
 .run_flwr_with_artifact_watchdog <- function(command, args, env,
                                              results_dir, num_rounds,
-                                             expect_artifacts = TRUE) {
+                                             expect_artifacts = TRUE,
+                                             cross_validation = FALSE) {
   timeout <- .flwr_run_timeout_secs()
   grace <- .flwr_artifact_watchdog_secs()
   deadline <- Sys.time() + timeout
@@ -567,7 +769,9 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     }
 
     if (proc$is_alive() &&
-        .training_artifacts_complete(results_dir, num_rounds, expect_artifacts)) {
+        .training_artifacts_complete(
+          results_dir, num_rounds, expect_artifacts,
+          cross_validation = cross_validation)) {
       completed_from_artifacts <- TRUE
       if (is.null(artifact_deadline)) {
         artifact_deadline <- Sys.time() + grace
@@ -883,21 +1087,27 @@ ds.flower.save_model <- function(run, path) {
          "a portable model bundle.", call. = FALSE)
   }
   source_dir <- normalizePath(source_dir, winslash = "/", mustWork = TRUE)
+  native_asset_files <- unique(unlist(lapply(
+    .NATIVE_TREE_RELEASE_SPECS,
+    function(spec) c(spec$artifact_file, spec$profile_file)),
+    use.names = FALSE))
+  native_model_files <- vapply(
+    .NATIVE_TREE_RELEASE_SPECS, `[[`, character(1), "artifact_file")
   asset_files <- c(
     "metadata.json", "history.json", "model.pt", "model.npz",
     "global_model.json", "global_model.skipped.json",
-    "model.xgboost-ensemble.json", "model.xgboost-ensemble.profile.json"
+    native_asset_files
   )
   present <- asset_files[file.exists(file.path(source_dir, asset_files))]
   model_files <- c(
     "model.pt", "model.npz", "global_model.json",
-    "model.xgboost-ensemble.json"
+    native_model_files
   )
   if (!"metadata.json" %in% present || !any(model_files %in% present)) {
     stop("The run directory does not contain a complete public model bundle.",
          call. = FALSE)
   }
-  if (.XGBOOST_ENSEMBLE_FILE %in% present) {
+  if (any(native_model_files %in% present)) {
     .resolve_validation_contract(source_dir, 32L)
   }
 

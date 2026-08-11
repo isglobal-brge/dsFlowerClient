@@ -40,6 +40,10 @@
     huber = "pytorch_huber", robust_regression = "pytorch_huber",
     quantile = "pytorch_quantile", quantile_regression = "pytorch_quantile",
     poisson = "pytorch_poisson", multilabel = "pytorch_multilabel",
+    extra_trees_classifier = "extra_trees", extratrees = "extra_trees",
+    randomforest = "random_forest", rf = "random_forest",
+    lightgbm_style = "lightgbm", lgbm = "lightgbm",
+    catboost_style = "catboost",
     resnet18 = "pytorch_resnet18", densenet121 = "pytorch_densenet121")
   key <- .dsflower_choice_key(name)
   if (key %in% names(aliases)) aliases[[key]] else key
@@ -211,13 +215,14 @@ ds.flower.task <- function(name = "classification") {
 #'   \code{list(lower=..., upper=...)} in feature order.
 #' @param feature_cuts Required for native-tight tree models: a list containing
 #'   one strictly increasing vector of public cut points per feature, each
-#'   strictly inside \code{feature_bounds}. For XGBoost, seven data-independent
-#'   cuts per feature are the benchmark-backed starting point; they are never
+#'   strictly inside \code{feature_bounds}. Seven data-independent
+#'   cuts per feature are a practical benchmark-backed starting point; they are never
 #'   inferred from private node data.
 #' @param target_levels Optional ordered public classification label vocabulary.
 #'   Non-numeric labels require it; missing or unknown values map to public code
 #'   zero. Multilabel applies the same public two-level vocabulary independently
-#'   to every target column. Binary XGBoost requires exactly two ordered levels.
+#'   to every target column. Binary native-tree models require exactly two
+#'   ordered levels.
 #' @param target_bounds Required public \code{list(lower=..., upper=...)} for
 #'   regression/count models.
 #' @param allow_insecure_http Character vector of exact connection names allowed
@@ -230,7 +235,11 @@ ds.flower.task <- function(name = "classification") {
 #'   with at most six decimal places. The node assigns complete privacy units
 #'   before training, trains only on the complement, and returns the final model
 #'   together with one pooled differentially-private test metric release.
-#' @return A \code{dsflower_run} object.
+#' @param cross_validation Optional integer in \code{[2, 10]}. This runs a
+#'   dedicated metrics-only federated CV job; prefer
+#'   \code{ds.flower.cross_validate()} for this workflow.
+#' @return A \code{dsflower_run} object, or a \code{dsflower_cv} when
+#'   \code{cross_validation} is set.
 #' @export
 ds.flower.fit <- function(conns,
                           data = NULL,
@@ -256,7 +265,8 @@ ds.flower.fit <- function(conns,
                           allow_insecure_http = getOption(
                             "dsflower.dsi_allow_insecure_http", character()),
                           data_kind = NULL,
-                          holdout = NULL) {
+                          holdout = NULL,
+                          cross_validation = NULL) {
   # Set the progress-verbosity option at the outermost entry point so it stays
   # active through every nested step, including the connection teardown that runs
   # in the submission pipeline's on.exit cleanup.
@@ -368,6 +378,7 @@ ds.flower.fit <- function(conns,
     target_levels = target_levels, target_bounds = target_bounds,
     allow_insecure_http = allow_insecure_http,
     holdout = holdout,
+    cross_validation = cross_validation,
     output_dir = output_dir, output_name = output_name,
     verbose = verbose, silent = silent)
 }

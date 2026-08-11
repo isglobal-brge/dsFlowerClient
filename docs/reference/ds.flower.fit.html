@@ -70,10 +70,13 @@ and return the trained run object. Advanced users can call
 <span>  silent <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  feature_bounds <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  feature_cuts <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  target_levels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  target_bounds <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  allow_insecure_http <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"dsflower.dsi_allow_insecure_http"</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  data_kind <span class="op">=</span> <span class="cn">NULL</span></span>
+<span>  data_kind <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  holdout <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  cross_validation <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -166,11 +169,20 @@ feedback (connection, per-round and completion messages).</p></dd>
 <code>list(lower=..., upper=...)</code> in feature order.</p></dd>
 
 
+<dt id="arg-feature-cuts">feature_cuts<a class="anchor" aria-label="anchor" href="#arg-feature-cuts"></a></dt>
+<dd><p>Required for native-tight tree models: a list containing
+one strictly increasing vector of public cut points per feature, each
+strictly inside <code>feature_bounds</code>. Seven data-independent
+cuts per feature are a practical benchmark-backed starting point; they are never
+inferred from private node data.</p></dd>
+
+
 <dt id="arg-target-levels">target_levels<a class="anchor" aria-label="anchor" href="#arg-target-levels"></a></dt>
 <dd><p>Optional ordered public classification label vocabulary.
 Non-numeric labels require it; missing or unknown values map to public code
 zero. Multilabel applies the same public two-level vocabulary independently
-to every target column.</p></dd>
+to every target column. Binary native-tree models require exactly two
+ordered levels.</p></dd>
 
 
 <dt id="arg-target-bounds">target_bounds<a class="anchor" aria-label="anchor" href="#arg-target-bounds"></a></dt>
@@ -189,10 +201,24 @@ transport security; use it only behind an independently trusted network.</p></dd
 It is inferred when the registered model supports exactly one kind; models
 registered for both require an explicit choice.</p></dd>
 
+
+<dt id="arg-holdout">holdout<a class="anchor" aria-label="anchor" href="#arg-holdout"></a></dt>
+<dd><p>Optional numeric test fraction strictly between zero and one,
+with at most six decimal places. The node assigns complete privacy units
+before training, trains only on the complement, and returns the final model
+together with one pooled differentially-private test metric release.</p></dd>
+
+
+<dt id="arg-cross-validation">cross_validation<a class="anchor" aria-label="anchor" href="#arg-cross-validation"></a></dt>
+<dd><p>Optional integer in <code>[2, 10]</code>. This runs a
+dedicated metrics-only federated CV job; prefer
+<code><a href="ds.flower.cross_validate.html">ds.flower.cross_validate()</a></code> for this workflow.</p></dd>
+
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>dsflower_run</code> object.</p>
+    <p>A <code>dsflower_run</code> object, or a <code>dsflower_cv</code> when
+  <code>cross_validation</code> is set.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

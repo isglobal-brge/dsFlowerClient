@@ -10,6 +10,34 @@
 # DSFLOWER_UV_VERSION and DSFLOWER_UV_SHA256. Mutable curl|sh installers are
 # deliberately not executed.
 
+# Hermetic package checks may explicitly skip all external Python setup. This
+# gate is intentionally before HOME/venv resolution and every host probe.
+case "$(printf '%s' "${DSFLOWER_SKIP_PYTHON_SETUP:-}" | tr 'A-Z' 'a-z')" in
+  1|true|yes)
+    printf '%s\n' "[dsFlowerClient configure] Python setup explicitly skipped."
+    exit 0
+    ;;
+  0|false|no|'') ;;
+  *)
+    printf '%s\n' "[dsFlowerClient configure] WARNING: DSFLOWER_SKIP_PYTHON_SETUP must be true or false; refusing setup." >&2
+    exit 1
+    ;;
+esac
+
+case "$(uname -s 2>/dev/null)" in
+  MINGW*|MSYS*|CYGWIN*) DSFLOWER_WINDOWS=true ;;
+  *) DSFLOWER_WINDOWS=false ;;
+esac
+
+venv_executable() {
+  _venv="$1"; _name="$2"
+  if [ "${DSFLOWER_WINDOWS}" = true ]; then
+    printf '%s/Scripts/%s.exe\n' "${_venv}" "${_name}"
+  else
+    printf '%s/bin/%s\n' "${_venv}" "${_name}"
+  fi
+}
+
 VENV_ROOT="${DSFLOWER_CLIENT_VENV_ROOT:-${HOME}/.dsflower}"
 VENV_PATH="${VENV_ROOT}/venv"
 LOG_PREFIX="[dsFlowerClient configure]"
@@ -70,7 +98,8 @@ ensure_uv() {
   if [ -n "${UV}" ] && [ -x "${UV}" ]; then return 0; fi
 
   # 2. Common install locations
-  for _p in "${HOME}/.local/bin/uv" "${HOME}/.cargo/bin/uv" "/usr/local/bin/uv"; do
+  if [ "${DSFLOWER_WINDOWS}" = true ]; then _uv_name="uv.exe"; else _uv_name="uv"; fi
+  for _p in "${HOME}/.local/bin/${_uv_name}" "${HOME}/.cargo/bin/${_uv_name}" "/usr/local/bin/${_uv_name}"; do
     if [ -x "${_p}" ]; then UV="${_p}"; return 0; fi
   done
 
@@ -97,6 +126,7 @@ ensure_uv() {
   case "$(uname -s 2>/dev/null)" in
     Darwin) _os="apple-darwin" ;;
     Linux) _os="unknown-linux-gnu" ;;
+    MINGW*|MSYS*|CYGWIN*) _os="pc-windows-msvc" ;;
     *) log_warn "Unsupported OS for uv bootstrap."; return 1 ;;
   esac
   case "$(uname -m 2>/dev/null)" in
@@ -106,9 +136,14 @@ ensure_uv() {
   esac
 
   _triple="${_arch}-${_os}"
-  _url="https://github.com/astral-sh/uv/releases/download/${_version}/uv-${_triple}.tar.gz"
+  if [ "${DSFLOWER_WINDOWS}" = true ]; then
+    _archive_ext="zip"; _member="uv-${_triple}/uv.exe"
+  else
+    _archive_ext="tar.gz"; _member="uv-${_triple}/uv"
+  fi
+  _url="https://github.com/astral-sh/uv/releases/download/${_version}/uv-${_triple}.${_archive_ext}"
   _tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/dsflower-uv.XXXXXX")" || return 1
-  _archive="${_tmp_dir}/uv.tar.gz"
+  _archive="${_tmp_dir}/uv.${_archive_ext}"
   log_info "Downloading pinned uv ${_version} (${_triple})..."
   if ! download_file "${_url}" "${_archive}"; then
     rm -rf "${_tmp_dir}"
@@ -121,14 +156,25 @@ ensure_uv() {
     log_warn "uv archive SHA-256 mismatch; refusing to execute it."
     return 1
   fi
-  _member="uv-${_triple}/uv"
-  if ! tar -xzf "${_archive}" -C "${_tmp_dir}" "${_member}" 2>/dev/null; then
+  if [ "${DSFLOWER_WINDOWS}" = true ]; then
+    if command -v unzip >/dev/null 2>&1; then
+      unzip -qq "${_archive}" "${_member}" -d "${_tmp_dir}" 2>/dev/null
+    else
+      Rscript --vanilla -e 'args <- commandArgs(TRUE); utils::unzip(args[[1]], files=args[[2]], exdir=args[[3]])' \
+        "${_archive}" "${_member}" "${_tmp_dir}" >/dev/null 2>&1
+    fi
+    _extract_status=$?
+  else
+    tar -xzf "${_archive}" -C "${_tmp_dir}" "${_member}" 2>/dev/null
+    _extract_status=$?
+  fi
+  if [ "${_extract_status}" -ne 0 ] || [ ! -f "${_tmp_dir}/${_member}" ]; then
     rm -rf "${_tmp_dir}"
     log_warn "Verified uv archive did not contain ${_member}."
     return 1
   fi
   mkdir -p "${HOME}/.local/bin" || { rm -rf "${_tmp_dir}"; return 1; }
-  UV="${HOME}/.local/bin/uv"
+  UV="${HOME}/.local/bin/${_uv_name}"
   if ! cp "${_tmp_dir}/${_member}" "${UV}.tmp" ||
      ! chmod 0755 "${UV}.tmp" || ! mv "${UV}.tmp" "${UV}"; then
     rm -f "${UV}.tmp"
@@ -171,43 +217,47 @@ ensure_python() {
   return 1
 }
 
-# --- Run bootstrap ---
-
-ensure_uv || {
-  log_warn "uv not available. Flower CLI will need to be installed manually."
-  log_warn "Install uv: https://docs.astral.sh/uv/"
-  exit 0
-}
-
-ensure_python || {
-  log_warn "No Python available. Skipping environment setup."
-  exit 0
-}
-
 # Optional complete requirements lock for reproducible provisioning. uv's
 # --require-hashes rejects any unpinned or unhashed transitive dependency.
 PYTHON_LOCK="${DSFLOWER_CLIENT_PYTHON_LOCK:-${DSFLOWER_PYTHON_LOCK:-}}"
 REQUIRE_PYTHON_LOCK="${DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK:-${DSFLOWER_REQUIRE_PYTHON_LOCK:-0}}"
 case "$(printf '%s' "${REQUIRE_PYTHON_LOCK}" | tr 'A-Z' 'a-z')" in
   1|true|yes)
+    REQUIRE_PYTHON_LOCK=true
     if [ -z "${PYTHON_LOCK}" ]; then
       log_warn "DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK is enabled but no client Python lock is set."
-      exit 0
+      exit 1
     fi
     ;;
-  0|false|no|'') ;;
-  *) log_warn "DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK must be true or false."; exit 0 ;;
+  0|false|no|'') REQUIRE_PYTHON_LOCK=false ;;
+  *) log_warn "DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK must be true or false."; exit 1 ;;
 esac
 CLIENT_MARKER="python=${PYTHON_VERSION};${CLIENT_REQUIREMENT};${HPO_REQUIREMENT}"
 if [ -n "${PYTHON_LOCK}" ]; then
   if [ ! -f "${PYTHON_LOCK}" ] || [ ! -r "${PYTHON_LOCK}" ]; then
     log_warn "DSFLOWER_CLIENT_PYTHON_LOCK is not a readable regular file."
-    exit 0
+    if [ "${REQUIRE_PYTHON_LOCK}" = true ]; then exit 1; else exit 0; fi
   fi
+fi
+
+# --- Run bootstrap ---
+
+ensure_uv || {
+  log_warn "uv not available. Flower CLI will need to be installed manually."
+  log_warn "Install uv: https://docs.astral.sh/uv/"
+  if [ "${REQUIRE_PYTHON_LOCK}" = true ]; then exit 1; else exit 0; fi
+}
+
+ensure_python || {
+  log_warn "No Python available. Skipping environment setup."
+  if [ "${REQUIRE_PYTHON_LOCK}" = true ]; then exit 1; else exit 0; fi
+}
+
+if [ -n "${PYTHON_LOCK}" ]; then
   PYTHON_LOCK_HASH="$(file_hash "${PYTHON_LOCK}" 2>/dev/null || true)"
   if [ -z "${PYTHON_LOCK_HASH}" ]; then
     log_warn "Could not hash DSFLOWER_CLIENT_PYTHON_LOCK."
-    exit 0
+    if [ "${REQUIRE_PYTHON_LOCK}" = true ]; then exit 1; else exit 0; fi
   fi
   CLIENT_MARKER="python=${PYTHON_VERSION};lock-sha256:${PYTHON_LOCK_HASH}"
   log_info "Using hash-locked Python requirements (${PYTHON_LOCK_HASH})."
@@ -219,14 +269,15 @@ fi
 
 mkdir -p "${VENV_ROOT}" 2>/dev/null || {
   log_warn "Cannot create ${VENV_ROOT}. Skipping."
-  exit 0
+  if [ "${REQUIRE_PYTHON_LOCK}" = true ]; then exit 1; else exit 0; fi
 }
 
 if [ -d "${VENV_PATH}" ] && [ -f "${VENV_PATH}/.dsflower_client_ready" ]; then
   # Check that binaries exist
   READY_REQUIREMENT="$(sed -n '1p' "${VENV_PATH}/.dsflower_client_ready" 2>/dev/null || true)"
   if [ "${READY_REQUIREMENT}" = "${CLIENT_MARKER}" ] && \
-     [ -x "${VENV_PATH}/bin/flwr" ] && [ -x "${VENV_PATH}/bin/flower-superlink" ]; then
+     [ -x "$(venv_executable "${VENV_PATH}" flwr)" ] && \
+     [ -x "$(venv_executable "${VENV_PATH}" flower-superlink)" ]; then
     log_info "Python environment already provisioned, skipping."
     exit 0
   fi
@@ -237,37 +288,56 @@ log_info "Creating Python environment for Flower..."
 rm -rf "${VENV_PATH}"
 "${UV}" venv --python "${PYTHON}" "${VENV_PATH}" >/dev/null 2>&1 || {
   log_warn "Failed to create venv at ${VENV_PATH}."
-  exit 0
+  rm -rf "${VENV_PATH}"
+  if [ "${REQUIRE_PYTHON_LOCK}" = true ]; then exit 1; else exit 0; fi
 }
 
-VENV_PYTHON="${VENV_PATH}/bin/python"
+VENV_PYTHON="$(venv_executable "${VENV_PATH}" python)"
+INSTALL_LOG="${VENV_PATH}/.dsflower_install.log.tmp"
 if [ -n "${PYTHON_LOCK}" ]; then
   log_info "Installing administrator hash-locked requirements..."
-  "${UV}" pip install --python "${VENV_PYTHON}" --quiet --require-hashes \
-    -r "${PYTHON_LOCK}" 2>&1 | tail -5
+  if "${UV}" pip install --python "${VENV_PYTHON}" --quiet --require-hashes \
+    -r "${PYTHON_LOCK}" > "${INSTALL_LOG}" 2>&1; then
+    INSTALL_STATUS=0
+  else
+    INSTALL_STATUS=$?
+  fi
 else
   log_info "Installing ${CLIENT_REQUIREMENT} and ${HPO_REQUIREMENT}..."
-  "${UV}" pip install --python "${VENV_PYTHON}" --quiet \
-    "${CLIENT_REQUIREMENT}" "${HPO_REQUIREMENT}" 2>&1 | tail -5
-fi || {
+  if "${UV}" pip install --python "${VENV_PYTHON}" --quiet \
+    "${CLIENT_REQUIREMENT}" "${HPO_REQUIREMENT}" > "${INSTALL_LOG}" 2>&1; then
+    INSTALL_STATUS=0
+  else
+    INSTALL_STATUS=$?
+  fi
+fi
+tail -5 "${INSTALL_LOG}" 2>/dev/null || true
+rm -f "${INSTALL_LOG}"
+if [ "${INSTALL_STATUS}" -ne 0 ]; then
   log_warn "pip install failed."
   rm -rf "${VENV_PATH}"
-  exit 0
-}
+  if [ "${REQUIRE_PYTHON_LOCK}" = true ]; then exit 1; else exit 0; fi
+fi
 
 # Verify
-if [ ! -x "${VENV_PATH}/bin/flwr" ] || [ ! -x "${VENV_PATH}/bin/flower-superlink" ]; then
+if [ ! -x "$(venv_executable "${VENV_PATH}" flwr)" ] || \
+   [ ! -x "$(venv_executable "${VENV_PATH}" flower-superlink)" ]; then
   log_warn "flwr/flower-superlink not found after install."
   rm -rf "${VENV_PATH}"
-  exit 0
+  if [ "${REQUIRE_PYTHON_LOCK}" = true ]; then exit 1; else exit 0; fi
 fi
 
 # Mark ready
-printf '%s\n' "${CLIENT_MARKER}" > "${VENV_PATH}/.dsflower_client_ready"
+if ! printf '%s\n' "${CLIENT_MARKER}" > "${VENV_PATH}/.dsflower_client_ready.tmp" ||
+   ! mv "${VENV_PATH}/.dsflower_client_ready.tmp" "${VENV_PATH}/.dsflower_client_ready"; then
+  log_warn "Could not write the client venv readiness marker."
+  rm -rf "${VENV_PATH}"
+  if [ "${REQUIRE_PYTHON_LOCK}" = true ]; then exit 1; else exit 0; fi
+fi
 
 log_info "Python environment ready."
-log_info "  flwr:             ${VENV_PATH}/bin/flwr"
-log_info "  flower-superlink: ${VENV_PATH}/bin/flower-superlink"
+log_info "  flwr:             $(venv_executable "${VENV_PATH}" flwr)"
+log_info "  flower-superlink: $(venv_executable "${VENV_PATH}" flower-superlink)"
 SIZE=$(du -sh "${VENV_PATH}" 2>/dev/null | cut -f1)
 log_info "  Size: ${SIZE}"
 

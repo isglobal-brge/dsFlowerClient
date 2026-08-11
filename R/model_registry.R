@@ -25,7 +25,23 @@
   binary = list(
     num_boost_round = 8L, max_depth = 2L, learning_rate = 0.25),
   regression = list(
-    num_boost_round = 5L, max_depth = 2L, learning_rate = 0.30))
+      num_boost_round = 5L, max_depth = 2L, learning_rate = 0.30))
+
+.DSFLOWER_EXTRA_TREES_DEFAULTS <- list(
+  n_estimators = 32L, max_depth = 3L)
+.DSFLOWER_RANDOM_FOREST_TASK_DEFAULTS <- list(
+  binary = list(n_estimators = 8L, max_depth = 4L),
+  regression = list(n_estimators = 4L, max_depth = 4L))
+.DSFLOWER_LIGHTGBM_TASK_DEFAULTS <- list(
+  binary = list(
+    num_iterations = 8L, max_depth = 2L, num_leaves = 4L,
+    learning_rate = 0.25),
+  regression = list(
+    num_iterations = 5L, max_depth = 2L, num_leaves = 4L,
+    learning_rate = 0.30))
+.DSFLOWER_CATBOOST_TASK_DEFAULTS <- list(
+  binary = list(iterations = 8L, depth = 2L, learning_rate = 0.25),
+  regression = list(iterations = 5L, depth = 2L, learning_rate = 0.30))
 
 #' Register a dsFlower model generator
 #'
@@ -137,6 +153,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
     supported_types <- c(
       "number", "positive_number", "nonnegative_number",
       "integer", "positive_integer", "positive_integer_vector",
+      "positive_integer_or_auto",
       "hidden_layers", "logical", "character", "list",
       "numeric_interval", "numeric_intervals"
     )
@@ -254,6 +271,8 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
     nonnegative_number = scalar_number(value) && value >= 0,
     integer = scalar_integer(value),
     positive_integer = scalar_integer(value) && value > 0,
+    positive_integer_or_auto =
+      (scalar_integer(value) && value > 0) || identical(value, "auto"),
     positive_integer_vector = is.numeric(value) && length(value) > 0L &&
       !anyNA(value) && all(is.finite(value)) &&
       all(value == floor(value)) && all(value > 0),
@@ -458,7 +477,8 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
     }
   }
   defaults <- model$defaults %||% list()
-  if (identical(model$name, "xgboost")) {
+  if (identical(model$track, "native_tree") &&
+      !is.null(model$task_defaults)) {
     task <- params[["task"]] %||% defaults[["task"]]
     if (is.character(task) && length(task) == 1L && !is.na(task)) {
       task_defaults <- model$task_defaults[[task]]
@@ -533,8 +553,15 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
            "channels entry.", call. = FALSE)
     }
   }
-  if (identical(model$name, "xgboost")) {
-    .validate_xgboost_model_params(resolved)
+  if (identical(model$track, "native_tree")) {
+    switch(model$engine,
+      xgboost = .validate_xgboost_model_params(resolved),
+      extra_trees = .validate_extra_trees_model_params(resolved),
+      random_forest = .validate_random_forest_model_params(resolved),
+      lightgbm = .validate_lightgbm_model_params(resolved),
+      catboost = .validate_catboost_model_params(resolved),
+      stop("Native-tree model has no implemented parameter validator.",
+           call. = FALSE))
   }
   resolved
 }
@@ -544,7 +571,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
 #' @return A data.frame with one row per registered model. Column
 #'   \code{available} reports whether the client-side constructor is implemented;
 #'   operational native-runtime availability is probed per node at submission.
-#'   Released native XGBoost ensembles support private external or
+#'   Released native-tree ensembles support private external or
 #'   resubstitution validation.
 #' @export
 ds.flower.list_models <- function() {
@@ -617,8 +644,7 @@ ds.flower.model_parameters <- function(name) {
 
 # Resolve fields which depend on a built-in model's typed parameters.
 .dsflower_model_loss <- function(model, params) {
-  if (identical(model$track, "native_tree") &&
-      identical(model$engine, "xgboost")) {
+  if (identical(model$track, "native_tree")) {
     return(if (identical(params$task, "regression"))
       "squared_error" else "binary_logistic")
   }
@@ -1018,6 +1044,86 @@ ds.flower.model_parameters <- function(name) {
       "Native-tight DP XGBoost request with task-aware defaults ",
       "(operational training availability is probed per node at submission; ",
       "released ensembles support private validation)."),
+    data_kinds = "tabular", available = TRUE, vetted = TRUE)
+
+  .dsflower_models[["extra_trees"]] <- list(
+    name = "extra_trees", track = "native_tree", engine = "extra_trees",
+    generate = function(params) params, loss = NULL,
+    defaults = c(list(task = "binary"), .DSFLOWER_EXTRA_TREES_DEFAULTS),
+    parameter_types = c(
+      task = "character", n_estimators = "positive_integer",
+      max_depth = "positive_integer"),
+    parameter_aliases = character(), required_parameters = character(),
+    parameter_choices = list(task = c("binary", "regression")),
+    description = paste0(
+      "Data-independent ExtraTrees topology with one joint private leaf release ",
+      "(operational training availability is probed per node)."),
+    data_kinds = "tabular", available = TRUE, vetted = TRUE)
+
+  .dsflower_models[["random_forest"]] <- list(
+    name = "random_forest", track = "native_tree", engine = "random_forest",
+    generate = function(params) params, loss = NULL,
+    defaults = c(list(task = "binary"),
+      .DSFLOWER_RANDOM_FOREST_TASK_DEFAULTS$binary,
+      list(max_features = "auto")),
+    task_defaults = .DSFLOWER_RANDOM_FOREST_TASK_DEFAULTS,
+    parameter_types = c(
+      task = "character", n_estimators = "positive_integer",
+      max_depth = "positive_integer",
+      max_features = "positive_integer_or_auto"),
+    parameter_aliases = c(num_trees = "n_estimators", mtry = "max_features"),
+    required_parameters = character(),
+    parameter_choices = list(task = c("binary", "regression")),
+    description = paste0(
+      "Adaptive dsFlower Random Forest with sticky private split histograms ",
+      "and terminal sufficient-statistic releases."),
+    data_kinds = "tabular", available = TRUE, vetted = TRUE)
+
+  .dsflower_models[["lightgbm"]] <- list(
+    name = "lightgbm", track = "native_tree", engine = "lightgbm",
+    generate = function(params) params, loss = NULL,
+    defaults = c(list(task = "binary"),
+      .DSFLOWER_LIGHTGBM_TASK_DEFAULTS$binary, list(
+        min_data_in_leaf = 1L, min_gain_to_split = 0,
+        lambda_l1 = 0, lambda_l2 = 1, max_delta_step = 1)),
+    task_defaults = .DSFLOWER_LIGHTGBM_TASK_DEFAULTS,
+    parameter_types = c(
+      task = "character", num_iterations = "positive_integer",
+      max_depth = "positive_integer", num_leaves = "positive_integer",
+      learning_rate = "positive_number", min_data_in_leaf = "positive_integer",
+      min_gain_to_split = "nonnegative_number",
+      lambda_l1 = "nonnegative_number", lambda_l2 = "positive_number",
+      max_delta_step = "positive_number"),
+    parameter_aliases = c(
+      n_estimators = "num_iterations", eta = "learning_rate",
+      min_child_samples = "min_data_in_leaf", min_split_gain = "min_gain_to_split",
+      reg_alpha = "lambda_l1", reg_lambda = "lambda_l2"),
+    required_parameters = character(),
+    parameter_choices = list(task = c("binary", "regression")),
+    description = paste0(
+      "dsFlower LightGBM-style asymmetric public-bin boosting; this is a safe ",
+      "numeric projection, not the upstream LightGBM binary runtime."),
+    data_kinds = "tabular", available = TRUE, vetted = TRUE)
+
+  .dsflower_models[["catboost"]] <- list(
+    name = "catboost", track = "native_tree", engine = "catboost",
+    generate = function(params) params, loss = NULL,
+    defaults = c(list(task = "binary"),
+      .DSFLOWER_CATBOOST_TASK_DEFAULTS$binary, list(
+        l2_leaf_reg = 1, max_delta_step = 1)),
+    task_defaults = .DSFLOWER_CATBOOST_TASK_DEFAULTS,
+    parameter_types = c(
+      task = "character", iterations = "positive_integer",
+      depth = "positive_integer", learning_rate = "positive_number",
+      l2_leaf_reg = "positive_number", max_delta_step = "positive_number"),
+    parameter_aliases = c(
+      n_estimators = "iterations", eta = "learning_rate",
+      reg_lambda = "l2_leaf_reg"),
+    required_parameters = character(),
+    parameter_choices = list(task = c("binary", "regression")),
+    description = paste0(
+      "dsFlower CatBoost-style numeric oblivious boosting; this is a safe ",
+      "projection, not the upstream CatBoost CBM/runtime."),
     data_kinds = "tabular", available = TRUE, vetted = TRUE)
 
   invisible(TRUE)
