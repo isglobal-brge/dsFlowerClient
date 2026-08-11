@@ -67,10 +67,12 @@ test_that(".generate_tls_certs creates certificate files", {
   expect_true(nchar(result$ca_cert_pem) > 0)
   expect_true(grepl("BEGIN CERTIFICATE", result$ca_cert_pem))
 
-  # CA key should have restricted permissions
-  info <- file.info(result$ca_key_path)
-  mode_str <- as.character(as.octmode(info$mode))
-  expect_equal(mode_str, "600")
+  # POSIX mode bits are not the Windows ACL model.
+  if (.Platform$OS.type != "windows") {
+    info <- file.info(result$ca_key_path)
+    mode_str <- as.character(as.octmode(info$mode))
+    expect_equal(mode_str, "600")
+  }
 })
 
 test_that(".generate_tls_certs errors when openssl is missing", {
