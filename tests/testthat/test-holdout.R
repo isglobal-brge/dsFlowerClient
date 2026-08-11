@@ -87,6 +87,8 @@ test_that("run accepts model and metrics together and rejects a missing release"
   recipe$holdout_contract <- dsFlowerClient:::.holdout_contract(
     dsFlowerClient:::.normalize_holdout(0.2), "row")
   release <- list(metrics = list(accuracy = 0.75))
+  training_history <- data.frame(
+    round = 1L, n_failures = 0L, available = TRUE)
   output_root <- withr::local_tempdir()
 
   local_mocked_bindings(
@@ -97,9 +99,9 @@ test_that("run accepts model and metrics together and rejects a missing release"
     .run_flwr_with_artifact_watchdog = function(...) list(
       status = 0L, stdout = "run_id=atomic-holdout", stderr = ""),
     .read_model_weights = function(...) list(coef = 1),
-    .read_training_history = function(...) data.frame(
-      round = 1L, n_failures = 0L),
+    .read_training_history = function(...) training_history,
     .read_holdout_result = function(...) release,
+    .atomic_neural_model_exists = function(...) TRUE,
     .package = "dsFlowerClient")
 
   run <- ds.flower.run.start(
@@ -111,6 +113,16 @@ test_that("run accepts model and metrics together and rejects a missing release"
   expect_match(paste(capture.output(print(run)), collapse = "\n"),
                "pooled DP metrics")
 
+  training_history <- NULL
+  expect_error(
+    ds.flower.run.start(
+      recipe, conns = list(site = TRUE), app_dir = withr::local_tempdir(),
+      output_dir = output_root, output_name = "uncommitted", silent = TRUE),
+    "commit marker")
+  expect_false(dir.exists(file.path(output_root, "uncommitted")))
+
+  training_history <- data.frame(
+    round = 1L, n_failures = 0L, available = TRUE)
   release <- NULL
   expect_error(
     ds.flower.run.start(

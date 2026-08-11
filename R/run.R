@@ -167,6 +167,11 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     stop("Atomic holdout produced no pooled test metric release; no model was ",
          "accepted or saved.", call. = FALSE)
   }
+  if (expects_holdout && !.atomic_holdout_commit_complete(
+      history, eff_rounds, results_dir)) {
+    stop("Atomic holdout has no complete commit marker; no model was accepted ",
+         "or saved.", call. = FALSE)
+  }
 
   available_rounds <- if (is.data.frame(history) && nrow(history)) {
     if ("available" %in% names(history)) {
@@ -414,6 +419,26 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       "model.pt", "model.npz", "model.xgboost-ensemble.json",
       "validation.json")
   )))
+}
+
+.atomic_neural_model_exists <- function(results_dir) {
+  path <- file.path(results_dir, "model.pt")
+  info <- file.info(path)
+  file.exists(path) && !is.na(info$isdir) && !isTRUE(info$isdir) &&
+    !is.na(info$size) && info$size > 0
+}
+
+.atomic_holdout_commit_complete <- function(history, num_rounds, results_dir) {
+  expected <- seq_len(as.integer(num_rounds))
+  if (!is.data.frame(history) || nrow(history) != length(expected) ||
+      !all(c("round", "available") %in% names(history))) {
+    return(FALSE)
+  }
+  rounds <- suppressWarnings(as.integer(history$round))
+  available <- suppressWarnings(as.logical(history$available))
+  identical(rounds, expected) &&
+    all(!is.na(available) & available) &&
+    .atomic_neural_model_exists(results_dir)
 }
 
 .native_xgboost_release_metadata <- function(recipe, results_dir) {
