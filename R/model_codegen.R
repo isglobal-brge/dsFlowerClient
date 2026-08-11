@@ -6,6 +6,49 @@
 # code in the FAB. This is the only place a model name becomes a concrete
 # submission, entirely client-side.
 
+.VISION_EXTRACTOR_PROFILES <- c(
+  resnet18 = "dsflower-resnet18-imagenet1k-v1-extractor-v1",
+  resnet18_3d = "dsflower-resnet18-monai-seed0-extractor-v1",
+  densenet121 = "dsflower-densenet121-imagenet1k-v1-extractor-v1",
+  densenet121_3d = "dsflower-densenet121-monai-seed0-extractor-v1")
+.VISION_EXTRACTOR_FEATURE_DIMS <- c(
+  resnet18 = 512L, resnet18_3d = 512L,
+  densenet121 = 1024L, densenet121_3d = 1024L)
+.VISION_EXTRACTOR_MIN_IMAGE_SIZES <- c(
+  resnet18 = 1L, resnet18_3d = 1L,
+  densenet121 = 29L, densenet121_3d = 128L)
+
+.vision_extractor_profile <- function(backbone) {
+  profile <- unname(.VISION_EXTRACTOR_PROFILES[[as.character(backbone)]])
+  if (is.null(profile)) {
+    stop("Unsupported trusted image backbone.", call. = FALSE)
+  }
+  profile
+}
+
+.vision_extractor_feature_dim <- function(backbone) {
+  feature_dim <- unname(
+    .VISION_EXTRACTOR_FEATURE_DIMS[[as.character(backbone)]])
+  if (is.null(feature_dim)) {
+    stop("Unsupported trusted image backbone.", call. = FALSE)
+  }
+  feature_dim
+}
+
+.vision_extractor_image_size <- function(backbone, image_size,
+                                         field = "image_size") {
+  minimum <- unname(
+    .VISION_EXTRACTOR_MIN_IMAGE_SIZES[[as.character(backbone)]])
+  if (is.null(minimum) || !is.numeric(image_size) || is.logical(image_size) ||
+      length(image_size) != 1L || is.na(image_size) || !is.finite(image_size) ||
+      image_size != floor(image_size) || image_size < minimum ||
+      image_size > 512L) {
+    stop(field, " is outside the canonical geometry for backbone '",
+         as.character(backbone), "'.", call. = FALSE)
+  }
+  as.integer(image_size)
+}
+
 #' Resolve + emit a submission artifact from a model spec.
 #'
 #' @param model A \code{dsflower_model} object, or a model name (resolved via the
@@ -20,6 +63,10 @@
     params[["backbone"]] <- paste0(
       sub("^pytorch_", "", model$name),
       if (isTRUE(params[["volumetric"]])) "_3d" else "")
+    params[["vision_extractor_profile"]] <-
+      .vision_extractor_profile(params[["backbone"]])
+    params[["image_size"]] <- .vision_extractor_image_size(
+      params[["backbone"]], params[["image_size"]])
   }
 
   if (identical(m$track, "neural")) {

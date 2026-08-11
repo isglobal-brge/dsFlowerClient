@@ -10,6 +10,8 @@
 .EXTERNAL_XGBOOST_IMPORT_VERSION <- 1L
 .EXTERNAL_XGBOOST_METADATA_MAX_BYTES <- 256 * 1024L
 .VALIDATION_METADATA_MAX_BYTES <- 64 * 1024^2
+.VISION_VALIDATION_ARTIFACT_FORMAT <- "pytorch-state-dict-v1"
+.VISION_VALIDATION_ARTIFACT_MAX_BYTES <- 1024^3
 
 .native_tree_sort_json_objects <- function(value) {
   if (!is.list(value)) return(value)
@@ -403,6 +405,112 @@
   normalizePath(path, winslash = "/", mustWork = TRUE)
 }
 
+.resolve_vision_validation_contract <- function(meta, model_dir, bins) {
+  scalar_string <- function(value) {
+    value <- .validation_atomic(value)
+    if (is.character(value) && length(value) == 1L && !is.na(value) &&
+        nzchar(value)) value else NULL
+  }
+  empty_field <- function(value) !length(.validation_atomic(value))
+
+  model_name <- scalar_string(meta$model)
+  framework <- scalar_string(meta$framework)
+  loss <- scalar_string(meta$loss_name)
+  privacy <- scalar_string(meta$privacy)
+  status <- scalar_string(meta$status)
+  params <- meta$model_params
+  spec <- meta$model_spec
+  if (!identical(framework, "pytorch_vision") || is.null(model_name) ||
+      !model_name %in% c("pytorch_resnet18", "pytorch_densenet121") ||
+      !identical(loss, "cross_entropy") ||
+      !identical(privacy, "server-enforced-dp") ||
+      !identical(meta$available, TRUE) || !identical(status, "success") ||
+      !is.list(params) || !is.list(spec) || !length(spec)) {
+    stop("Vision validation requires a successful saved ResNet-18 or ",
+         "DenseNet-121 release.", call. = FALSE)
+  }
+
+  backbone <- scalar_string(params$backbone)
+  volumetric <- params$volumetric
+  if (!is.logical(volumetric) || length(volumetric) != 1L ||
+      is.na(volumetric)) {
+    stop("Saved vision metadata has an invalid volumetric contract.",
+         call. = FALSE)
+  }
+  expected_backbone <- paste0(
+    sub("^pytorch_", "", model_name), if (volumetric) "_3d" else "")
+  if (is.null(backbone) ||
+      !backbone %in% names(.VISION_EXTRACTOR_FEATURE_DIMS) ||
+      !identical(backbone, expected_backbone)) {
+    stop("Saved vision metadata has an unsupported backbone contract.",
+         call. = FALSE)
+  }
+  extractor_profile <- scalar_string(params$vision_extractor_profile)
+  if (!identical(extractor_profile, .vision_extractor_profile(backbone))) {
+    stop("Saved vision metadata has an unsupported extractor profile.",
+         call. = FALSE)
+  }
+  image_size <- .vision_extractor_image_size(
+    backbone, .validation_atomic(params$image_size),
+    field = "Saved vision image_size")
+  n_classes <- .validation_scalar_integer(
+    params$n_classes, "Saved num_classes", 2L, 1024L)
+  n_labels_value <- params$num_labels
+  if (!is.null(n_labels_value) && length(n_labels_value)) {
+    n_labels_value <- .validation_scalar_integer(
+      n_labels_value, "Saved num_labels", 2L, 1024L)
+    if (!identical(n_labels_value, 2L)) {
+      stop("Saved vision classification requires num_labels = 2.",
+           call. = FALSE)
+    }
+  }
+  feature_dim <- .vision_extractor_feature_dim(backbone)
+  public_levels <- .validation_atomic(meta$target_levels)
+  if (length(public_levels) != n_classes || anyNA(public_levels) ||
+      anyDuplicated(public_levels)) {
+    stop("Vision validation requires exactly one public target level per class.",
+         call. = FALSE)
+  }
+  if (!empty_field(meta$features) || !empty_field(meta$feature_lower) ||
+      !empty_field(meta$feature_upper) || !empty_field(meta$target_bounds)) {
+    stop("Saved vision metadata must not contain tabular columns or bounds.",
+         call. = FALSE)
+  }
+
+  artifact <- file.path(model_dir, "model.pt")
+  info <- file.info(artifact)
+  link <- Sys.readlink(artifact)
+  if (!file.exists(artifact) || is.na(info$isdir) || isTRUE(info$isdir) ||
+      is.na(info$size) || info$size < 1 ||
+      info$size > .VISION_VALIDATION_ARTIFACT_MAX_BYTES ||
+      (length(link) == 1L && !is.na(link) && nzchar(link))) {
+    stop("Saved vision model is missing its bounded regular artifact.",
+         call. = FALSE)
+  }
+  artifact <- normalizePath(artifact, winslash = "/", mustWork = TRUE)
+  artifact_sha256 <- digest::digest(
+    file = artifact, algo = "sha256", serialize = FALSE)
+  if (!grepl("^[0-9a-f]{64}$", artifact_sha256)) {
+    stop("Saved vision model artifact could not be pinned.", call. = FALSE)
+  }
+
+  list(
+    model_dir = model_dir, artifact = artifact,
+    artifact_format = .VISION_VALIDATION_ARTIFACT_FORMAT,
+    artifact_sha256 = artifact_sha256,
+    artifact_size_bytes = as.integer(info$size),
+    model_training_privacy = privacy,
+    track = "neural",
+    task = if (n_classes == 2L) "binary" else "multiclass",
+    bins = bins, features = NULL, feature_bounds = NULL,
+    target_bounds = NULL, target_levels = public_levels,
+    model_spec = spec, loss_name = loss,
+    n_classes = n_classes, n_labels = 2L, data_kind = "image",
+    backbone = backbone, image_size = image_size,
+    volumetric = isTRUE(volumetric), feature_dim = as.integer(feature_dim),
+    vision_extractor_profile = extractor_profile)
+}
+
 .resolve_validation_contract <- function(model, bins) {
   model_dir <- .validation_model_dir(model)
   metadata_path <- file.path(model_dir, "metadata.json")
@@ -438,9 +546,12 @@
     stop("Saved model has an invalid data_kind contract.", call. = FALSE)
   }
   if (identical(data_kind, "image")) {
-    stop("ds.flower.validate() currently supports tabular artifacts only; ",
-         "image models require a dedicated image validation protocol.",
-         call. = FALSE)
+    if (!identical(track, "neural")) {
+      stop("Vision validation supports saved neural artifacts only.",
+           call. = FALSE)
+    }
+    bins <- .validation_scalar_integer(bins, "bins", 4L, 512L)
+    return(.resolve_vision_validation_contract(meta, model_dir, bins))
   }
   features <- as.character(.validation_atomic(meta$features))
   if (!length(features) || anyNA(features) || any(!nzchar(features)) ||
@@ -691,7 +802,11 @@
     }
     return(invisible(TRUE))
   }
-  .ensure_client_framework("pytorch")
+  .ensure_client_framework(if (identical(contract$data_kind, "image")) {
+    "pytorch_vision"
+  } else {
+    "pytorch"
+  })
   script <- system.file(
     "python", "validate_model_artifact.py", package = "dsFlowerClient")
   if (!nzchar(script)) {
@@ -703,18 +818,35 @@
   config <- list(
     "validation-model-track" = contract$track,
     "validation-model-path-b64" = .validation_model_path_b64(contract$artifact),
-    "num-features" = length(contract$features),
+    "num-features" = if (identical(contract$data_kind, "image")) {
+      contract$feature_dim
+    } else {
+      length(contract$features)
+    },
     "num-classes" = contract$n_classes,
     "num-labels" = contract$n_labels,
     "loss-name" = contract$loss_name)
   config[["model-spec-b64"]] <- .spec_to_b64(contract$model_spec)
+  if (identical(contract$data_kind, "image")) {
+    config[["data-kind"]] <- "image"
+    config[["validation-task"]] <- contract$task
+    config[["backbone"]] <- contract$backbone
+    config[["image-size"]] <- contract$image_size
+    config[["vision-extractor-profile"]] <-
+      contract$vision_extractor_profile
+    config[["validation-artifact-format"]] <- contract$artifact_format
+    config[["validation-artifact-sha256"]] <- contract$artifact_sha256
+    config[["validation-artifact-size-bytes"]] <-
+      contract$artifact_size_bytes
+  }
   path <- tempfile(fileext = ".json")
   on.exit(unlink(path), add = TRUE)
   jsonlite::write_json(
     config, path, auto_unbox = TRUE, null = "null", digits = NA)
   result <- processx::run(
     command = .client_python_cmd(), args = c(script, path),
-    env = .client_venv_env(), error_on_status = FALSE, timeout = 60)
+    env = .client_venv_env(), error_on_status = FALSE,
+    timeout = if (identical(contract$data_kind, "image")) 300 else 60)
   if (result$status != 0L) {
     detail <- trimws(result$stderr %||% "")
     if (!nzchar(detail)) detail <- "the trusted decoder rejected it"
@@ -739,29 +871,61 @@
     level_type <- if (is.character(level_values)) "character" else
       if (is.logical(level_values)) "logical" else "numeric"
   }
-  payload <- list(
-    schema = 1L,
-    privacy_unit = as.character(privacy_unit),
-    patient_id_canonicalization = if (identical(privacy_unit, "patient"))
-      "trim-utf8-v2" else NULL,
-    features = as.character(feature_columns),
-    targets = as.character(target_column),
-    feature_lower = if (is.null(bounds)) NULL else as.numeric(bounds$lower),
-    feature_upper = if (is.null(bounds)) NULL else as.numeric(bounds$upper),
-    target_level_type = level_type,
-    target_levels = level_values,
-    target_lower = if (is.null(target_bounds)) NULL else
-      as.numeric(target_bounds$lower),
-    target_upper = if (is.null(target_bounds)) NULL else
-      as.numeric(target_bounds$upper),
-    model_track = run_config[["validation-model-track"]],
-    task = run_config[["validation-task"]],
-    bins = as.integer(run_config[["validation-bins"]]),
-    loss = run_config[["loss-name"]],
-    num_features = as.integer(run_config[["num-features"]]),
-    num_classes = as.integer(run_config[["num-classes"]]),
-    num_labels = as.integer(run_config[["num-labels"]]),
-    model_spec_b64 = run_config[["model-spec-b64"]] %||% NULL)
+  data_kind <- as.character(run_config[["data_type"]] %||% "tabular")
+  if (identical(data_kind, "image")) {
+    backbone <- as.character(run_config[["backbone"]])
+    feature_dim <- as.integer(run_config[["num-features"]])
+    payload <- list(
+      schema = 2L,
+      privacy_unit = as.character(privacy_unit),
+      patient_id_canonicalization = if (identical(privacy_unit, "patient"))
+        "trim-utf8-v2" else NULL,
+      data_kind = "image",
+      targets = as.character(target_column),
+      target_level_type = level_type,
+      target_levels = level_values,
+      model_track = run_config[["validation-model-track"]],
+      task = run_config[["validation-task"]],
+      bins = as.integer(run_config[["validation-bins"]]),
+      loss = run_config[["loss-name"]],
+      num_features = feature_dim,
+      num_classes = as.integer(run_config[["num-classes"]]),
+      num_labels = as.integer(run_config[["num-labels"]]),
+      model_spec_b64 = run_config[["model-spec-b64"]] %||% NULL,
+      backbone = backbone,
+      image_size = as.integer(run_config[["image-size"]]),
+      volumetric = endsWith(backbone, "_3d"),
+      feature_dim = feature_dim,
+      vision_extractor_profile = run_config[["vision-extractor-profile"]],
+      artifact_format = run_config[["validation-artifact-format"]],
+      artifact_sha256 = run_config[["validation-artifact-sha256"]],
+      artifact_size_bytes = as.integer(
+        run_config[["validation-artifact-size-bytes"]]))
+  } else {
+    payload <- list(
+      schema = 1L,
+      privacy_unit = as.character(privacy_unit),
+      patient_id_canonicalization = if (identical(privacy_unit, "patient"))
+        "trim-utf8-v2" else NULL,
+      features = as.character(feature_columns),
+      targets = as.character(target_column),
+      feature_lower = if (is.null(bounds)) NULL else as.numeric(bounds$lower),
+      feature_upper = if (is.null(bounds)) NULL else as.numeric(bounds$upper),
+      target_level_type = level_type,
+      target_levels = level_values,
+      target_lower = if (is.null(target_bounds)) NULL else
+        as.numeric(target_bounds$lower),
+      target_upper = if (is.null(target_bounds)) NULL else
+        as.numeric(target_bounds$upper),
+      model_track = run_config[["validation-model-track"]],
+      task = run_config[["validation-task"]],
+      bins = as.integer(run_config[["validation-bins"]]),
+      loss = run_config[["loss-name"]],
+      num_features = as.integer(run_config[["num-features"]]),
+      num_classes = as.integer(run_config[["num-classes"]]),
+      num_labels = as.integer(run_config[["num-labels"]]),
+      model_spec_b64 = run_config[["model-spec-b64"]] %||% NULL)
+  }
   if (identical(run_config[["validation-model-track"]], "native_tree")) {
     payload$native_tree_request_b64 <-
       run_config[["validation-native-tree-request-b64"]]
@@ -835,15 +999,23 @@
 
 #' Differentially-private federated model validation
 #'
-#' Evaluates a released tabular declarative neural model, sanitized native-tree
-#' ensemble, or explicitly external-unverified imported XGBoost bundle on the
-#' dataset assigned for this call inside each data node.
+#' Evaluates a released tabular declarative neural model, saved first-party
+#' ResNet-18 or DenseNet-121 vision classifier, sanitized native-tree ensemble,
+#' or explicitly external-unverified imported XGBoost bundle on the dataset
+#' assigned for this call inside each data node.
 #' The native request, ensemble and prediction-profile sidecar are pinned into
 #' the ephemeral execution contract and every node re-sanitizes the ensemble
-#' before opening its data. Vision artifacts fail explicitly because this
-#' validator does not reconstruct image loaders or backbones. Reusing the
-#' training dataset is resubstitution validation; assigning an independent
-#' dataset is external
+#' before opening its data. Vision validation accepts only binary/multiclass
+#' releases made by \code{pytorch_resnet18} or \code{pytorch_densenet121},
+#' including their volumetric variants. Its canonical backbone, image size,
+#' frozen feature dimension, class vocabulary, declarative head and bounded
+#' \code{model.pt} digest are pinned before DSI. The
+#' \code{vision-extractor-profile} is a versioned semantic ABI, not a
+#' cryptographic signature of extractor state; releases without it fail closed,
+#' and semantic implementation/dependency changes require a profile bump. Image
+#' paths and pixels remain node-private. It does not add local image prediction, holdout, or
+#' cross-validation support. Reusing the training dataset is resubstitution
+#' validation; assigning an independent dataset is external
 #' validation. Each protected row/patient contributes one bounded sufficient-statistic
 #' vector, the node releases it once through the server-owned Gaussian mechanism,
 #' and only pooled post-processed metrics are returned. Exact predictions,
@@ -861,13 +1033,13 @@
 #' @param model A successful \code{dsflower_run}, saved model directory, or
 #'   path returned by \code{ds.flower.import_xgboost()}.
 #' @param target Target column name(s); multilabel validation requires one per
-#'   saved label.
+#'   saved label. Vision validation requires the saved public class vocabulary.
 #' @param data Optional server-side data symbol.
 #' @param resource Optional Opal resource name.
 #' @param symbol Optional server-side handle symbol.
 #' @param bins Public number of probability bins in \code{[4,512]}.
-#' @param torch_backend Node torch backend selection for neural artifacts.
-#'   Native-tree validation does not provision Torch.
+#' @param torch_backend Node torch backend selection for neural artifacts,
+#'   including vision. Native-tree validation does not provision Torch.
 #' @param verbose Show Flower output.
 #' @param silent Suppress progress messages.
 #' @param allow_insecure_http Exact connection names allowed to use HTTP.
@@ -917,6 +1089,11 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
   task_type <- if (contract$task %in% c("regression", "count")) {
     contract$task
   } else "classification"
+  model_num_features <- if (identical(contract$data_kind, "image")) {
+    contract$feature_dim
+  } else {
+    length(contract$features)
+  }
   prepare <- list(
     "dp-track" = "validation",
     "validation-model-track" = contract$track,
@@ -925,7 +1102,7 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
     "task-type" = task_type,
     "loss-name" = contract$loss_name,
     "num-server-rounds" = 1L,
-    "num-features" = length(contract$features),
+    "num-features" = model_num_features,
     "num-classes" = contract$n_classes,
     "num-labels" = contract$n_labels)
   if (identical(contract$track, "native_tree")) {
@@ -945,6 +1122,17 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
       contract$public_schema_sha256
   } else {
     prepare[["model-spec-b64"]] <- .spec_to_b64(contract$model_spec)
+    if (identical(contract$data_kind, "image")) {
+      prepare[["data_type"]] <- "image"
+      prepare[["backbone"]] <- contract$backbone
+      prepare[["image-size"]] <- contract$image_size
+      prepare[["vision-extractor-profile"]] <-
+        contract$vision_extractor_profile
+      prepare[["validation-artifact-format"]] <- contract$artifact_format
+      prepare[["validation-artifact-sha256"]] <- contract$artifact_sha256
+      prepare[["validation-artifact-size-bytes"]] <-
+        contract$artifact_size_bytes
+    }
   }
   if (!is.null(contract$feature_bounds)) {
     prepare[["feature-bounds"]] <- contract$feature_bounds
@@ -971,7 +1159,7 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
     .toml_kv("validation-task", contract$task),
     .toml_kv("validation-contract-sha256", contract_sha256),
     paste0("validation-bins = ", contract$bins),
-    paste0("num-features = ", length(contract$features)),
+    paste0("num-features = ", model_num_features),
     paste0("num-classes = ", contract$n_classes),
     paste0("num-labels = ", contract$n_labels),
     "num-server-rounds = 1",
@@ -1002,6 +1190,18 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
   } else {
     config <- c(config,
       .toml_kv("model-spec-b64", .spec_to_b64(contract$model_spec)))
+    if (identical(contract$data_kind, "image")) {
+      config <- c(config,
+        .toml_kv("data-kind", "image"),
+        .toml_kv("backbone", contract$backbone),
+        paste0("image-size = ", contract$image_size),
+        .toml_kv("vision-extractor-profile",
+                 contract$vision_extractor_profile),
+        .toml_kv("validation-artifact-format", contract$artifact_format),
+        .toml_kv("validation-artifact-sha256", contract$artifact_sha256),
+        paste0("validation-artifact-size-bytes = ",
+               contract$artifact_size_bytes))
+    }
   }
   if (!is.null(contract$target_bounds)) {
     config <- c(config,
@@ -1015,9 +1215,13 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
          } else {
            "validation"
          }),
-    config, results_dir, vision = FALSE)
+    config, results_dir, vision = identical(contract$data_kind, "image"))
   if (!identical(contract$track, "native_tree")) {
-    .ensure_client_framework("pytorch")
+    .ensure_client_framework(if (identical(contract$data_kind, "image")) {
+      "pytorch_vision"
+    } else {
+      "pytorch"
+    })
   }
   ds.flower.link.up(conns, allow_insecure_http = allow_insecure_http)
   ds.flower.nodes.ensure(

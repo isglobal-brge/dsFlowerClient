@@ -661,7 +661,13 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     stop("No feature columns: pass `features` explicitly (auto-detect is only available for ",
          "the `symbol=` data path).", call. = FALSE)
   }
-  n_features <- if (!is.null(features)) length(features) else 0L
+  n_features <- if (identical(data_kind, "image")) {
+    .vision_extractor_feature_dim(p[["backbone"]])
+  } else if (!is.null(features)) {
+    length(features)
+  } else {
+    0L
+  }
 
   up <- NULL
   if (!is.null(sub$pkg_dir)) {
@@ -709,6 +715,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       "local-epochs" = as.integer(p[["local_epochs"]] %||% 1L),
       "batch-size" = as.integer(p[["batch_size"]] %||% 32L)),
       training_config)
+    if (identical(data_kind, "image")) {
+      prepare_config <- c(prepare_config, list(
+        "backbone" = p[["backbone"]],
+        "image-size" = as.integer(p[["image_size"]]),
+        "vision-extractor-profile" = p[["vision_extractor_profile"]]))
+    }
   } else if (identical(sub$track, "native_tree")) {
     prepare_config <- c(prepare_config, list(
       "native-tree-request-b64" = request$b64,
@@ -808,7 +820,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     if (identical(data_kind, "image")) {
       cfg <- c(cfg, .toml_kv(
         "backbone", as.character(p[["backbone"]] %||% "resnet18")),
-        paste0("image-size = ", as.integer(p[["image_size"]] %||% 224L)))
+        paste0("image-size = ", as.integer(p[["image_size"]] %||% 224L)),
+        .toml_kv("vision-extractor-profile",
+                 p[["vision_extractor_profile"]]))
     }
   } else if (identical(sub$track, "native_tree")) {
     cfg <- c(

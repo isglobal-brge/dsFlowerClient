@@ -17,6 +17,39 @@ validation_model_fixture <- function(track = "neural", loss = "bce_logits") {
   path
 }
 
+vision_validation_model_fixture <- function(
+    model = "pytorch_resnet18", n_classes = 2L, volumetric = FALSE,
+    .local_envir = parent.frame()) {
+  path <- withr::local_tempdir(.local_envir = .local_envir)
+  backbone <- paste0(
+    sub("^pytorch_", "", model), if (isTRUE(volumetric)) "_3d" else "")
+  extractor_profile <- dsFlowerClient:::.vision_extractor_profile(backbone)
+  image_size <- if (identical(backbone, "densenet121_3d")) 128L else 96L
+  meta <- list(
+    model_id = "vision-release", model = model,
+    framework = "pytorch_vision", track = "neural",
+    model_spec = list(
+      kind = "sequential",
+      layers = list(list(op = "linear", out = "@out"))),
+    model_params = list(
+      n_classes = as.integer(n_classes), volumetric = volumetric,
+      image_size = image_size, backbone = backbone,
+      vision_extractor_profile = extractor_profile),
+    loss_name = "cross_entropy", data_kind = "image",
+    available = TRUE, available_rounds = 1L,
+    strategy = "fedavg", privacy = "server-enforced-dp",
+    num_rounds = 1L, requested_num_rounds = 1L, n_clients = 2L,
+    features = NULL, feature_lower = NULL, feature_upper = NULL,
+    target_levels = paste0("class-", seq_len(n_classes)),
+    target_bounds = NULL, created_at = "2026-08-11T12:00:00",
+    holdout = NULL, holdout_contract = NULL, status = "success")
+  jsonlite::write_json(
+    meta, file.path(path, "metadata.json"), auto_unbox = TRUE,
+    null = "list")
+  writeBin(charToRaw("bounded-vision-state-dict"), file.path(path, "model.pt"))
+  path
+}
+
 xgboost_validation_model_fixture <- function(task = "binary") {
   path <- withr::local_tempdir(.local_envir = parent.frame())
   artifact_name <- "model.xgboost-ensemble.json"
@@ -462,7 +495,93 @@ test_that("validation rejects unsupported artifacts and public config early", {
     "not a valid multiclass artifact")
 })
 
-test_that("validation rejects image artifacts before DSI", {
+test_that("validation accepts only pinned saved vision classifiers", {
+  binary_path <- vision_validation_model_fixture()
+  binary <- dsFlowerClient:::.resolve_validation_contract(binary_path, 32L)
+  expect_identical(binary$data_kind, "image")
+  expect_identical(binary$task, "binary")
+  expect_identical(binary$backbone, "resnet18")
+  expect_identical(
+    binary$vision_extractor_profile,
+    "dsflower-resnet18-imagenet1k-v1-extractor-v1")
+  expect_identical(binary$feature_dim, 512L)
+  expect_identical(binary$artifact_format, "pytorch-state-dict-v1")
+  expect_match(binary$artifact_sha256, "^[0-9a-f]{64}$")
+  expect_null(binary$features)
+  expect_null(binary$feature_bounds)
+
+  multiclass_path <- vision_validation_model_fixture(
+    model = "pytorch_densenet121", n_classes = 4L, volumetric = TRUE)
+  multiclass <- dsFlowerClient:::.resolve_validation_contract(
+    multiclass_path, 64L)
+  expect_identical(multiclass$task, "multiclass")
+  expect_identical(multiclass$backbone, "densenet121_3d")
+  expect_true(multiclass$volumetric)
+  expect_identical(multiclass$feature_dim, 1024L)
+  expect_identical(multiclass$image_size, 128L)
+  expect_identical(length(multiclass$target_levels), 4L)
+
+  dense_2d_path <- vision_validation_model_fixture(
+    model = "pytorch_densenet121", n_classes = 3L)
+  dense_2d_meta_path <- file.path(dense_2d_path, "metadata.json")
+  dense_2d_meta <- jsonlite::fromJSON(
+    dense_2d_meta_path, simplifyVector = FALSE)
+  dense_2d_meta$model_params$image_size <- 28L
+  jsonlite::write_json(
+    dense_2d_meta, dense_2d_meta_path, auto_unbox = TRUE, null = "list")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(dense_2d_path, 32L),
+    "canonical geometry")
+  dense_2d_meta$model_params$image_size <- 29L
+  jsonlite::write_json(
+    dense_2d_meta, dense_2d_meta_path, auto_unbox = TRUE, null = "list")
+  expect_identical(
+    dsFlowerClient:::.resolve_validation_contract(
+      dense_2d_path, 32L)$image_size,
+    29L)
+
+  multiclass_meta_path <- file.path(multiclass_path, "metadata.json")
+  multiclass_geometry <- jsonlite::fromJSON(
+    multiclass_meta_path, simplifyVector = FALSE)
+  multiclass_geometry$model_params$image_size <- 127L
+  jsonlite::write_json(
+    multiclass_geometry, multiclass_meta_path,
+    auto_unbox = TRUE, null = "list")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(multiclass_path, 32L),
+    "canonical geometry")
+
+  meta_path <- file.path(multiclass_path, "metadata.json")
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  meta$model_params$backbone <- "resnet50"
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(multiclass_path, 32L),
+    "unsupported backbone contract")
+
+  missing_profile_path <- vision_validation_model_fixture()
+  missing_meta_path <- file.path(missing_profile_path, "metadata.json")
+  missing_meta <- jsonlite::fromJSON(missing_meta_path, simplifyVector = FALSE)
+  missing_meta$model_params$vision_extractor_profile <- NULL
+  jsonlite::write_json(
+    missing_meta, missing_meta_path, auto_unbox = TRUE, null = "list")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(missing_profile_path, 32L),
+    "unsupported extractor profile")
+
+  wrong_profile_path <- vision_validation_model_fixture()
+  wrong_meta_path <- file.path(wrong_profile_path, "metadata.json")
+  wrong_meta <- jsonlite::fromJSON(wrong_meta_path, simplifyVector = FALSE)
+  wrong_meta$model_params$vision_extractor_profile <-
+    "dsflower-resnet18-monai-seed0-extractor-v1"
+  jsonlite::write_json(
+    wrong_meta, wrong_meta_path, auto_unbox = TRUE, null = "list")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(wrong_profile_path, 32L),
+    "unsupported extractor profile")
+})
+
+test_that("vision validation rejects unsupported, incomplete and tabular metadata", {
   path <- validation_model_fixture()
   meta_path <- file.path(path, "metadata.json")
   meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
@@ -471,7 +590,53 @@ test_that("validation rejects image artifacts before DSI", {
 
   expect_error(
     dsFlowerClient:::.resolve_validation_contract(path, 32L),
-    "tabular artifacts only")
+    "successful saved ResNet-18 or DenseNet-121")
+
+  path <- vision_validation_model_fixture(n_classes = 3L)
+  meta_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  meta$target_levels <- list()
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "one public target level per class")
+
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  meta$target_levels <- list("a", "b", "c")
+  meta$features <- list("private_pixel")
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE, null = "null")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(path, 32L),
+    "must not contain tabular columns or bounds")
+})
+
+test_that("vision artifact bytes are bound into the validation contract", {
+  path <- vision_validation_model_fixture()
+  first <- dsFlowerClient:::.resolve_validation_contract(path, 32L)
+  config <- list(
+    "dp-track" = "validation", "validation-model-track" = "neural",
+    "validation-task" = first$task, "validation-bins" = first$bins,
+    "task-type" = "classification", "loss-name" = first$loss_name,
+    "model-spec-b64" = dsFlowerClient:::.spec_to_b64(first$model_spec),
+    "num-server-rounds" = 1L, "num-features" = first$feature_dim,
+    "num-classes" = first$n_classes, "num-labels" = first$n_labels,
+    "target-levels" = first$target_levels, "data_type" = "image",
+    "backbone" = first$backbone, "image-size" = first$image_size,
+    "vision-extractor-profile" = first$vision_extractor_profile,
+    "validation-artifact-format" = first$artifact_format,
+    "validation-artifact-sha256" = first$artifact_sha256,
+    "validation-artifact-size-bytes" = first$artifact_size_bytes)
+  first_contract <- dsFlowerClient:::.validation_contract_sha256(
+    config, NULL, "outcome", "row")
+
+  writeBin(charToRaw("tampered"), file.path(path, "model.pt"))
+  second <- dsFlowerClient:::.resolve_validation_contract(path, 32L)
+  config[["validation-artifact-sha256"]] <- second$artifact_sha256
+  config[["validation-artifact-size-bytes"]] <- second$artifact_size_bytes
+  second_contract <- dsFlowerClient:::.validation_contract_sha256(
+    config, NULL, "outcome", "row")
+  expect_false(identical(first$artifact_sha256, second$artifact_sha256))
+  expect_false(identical(first_contract, second_contract))
 })
 
 test_that("validation requires an explicit data kind contract", {
@@ -502,6 +667,31 @@ test_that("validation rejects corrupt public artifacts before DSI or staging", {
       symbol = "D"),
     "Saved model artifact preflight failed")
   expect_false(reached_cli)
+})
+
+test_that("vision preflight has a bounded cold-start window", {
+  timeouts <- numeric()
+  local_mocked_bindings(
+    .ensure_client_framework = function(...) TRUE,
+    .client_python_cmd = function() "python",
+    .client_venv_env = function(...) character(),
+    .package = "dsFlowerClient")
+  local_mocked_bindings(
+    run = function(..., timeout) {
+      timeouts <<- c(timeouts, timeout)
+      list(status = 0L, stderr = "", stdout = "")
+    },
+    .package = "processx")
+
+  image <- dsFlowerClient:::.resolve_validation_contract(
+    vision_validation_model_fixture(), 32L)
+  tabular <- dsFlowerClient:::.resolve_validation_contract(
+    validation_model_fixture(), 32L)
+  expect_no_error(
+    dsFlowerClient:::.validate_validation_artifact_preflight(image))
+  expect_no_error(
+    dsFlowerClient:::.validate_validation_artifact_preflight(tabular))
+  expect_identical(timeouts, c(300, 60))
 })
 
 test_that("validation metadata supports up to 1024 classes and labels", {
@@ -551,6 +741,35 @@ test_that("validation contract SHA-256 has a cross-package canonical wire", {
       changed, c("age", "marker"), "outcome", "patient"),
     dsFlowerClient:::.validation_contract_sha256(
       config, c("age", "marker"), "outcome", "patient")))
+})
+
+test_that("vision validation contract has a cross-package schema-2 wire", {
+  config <- list(
+    "dp-track" = "validation", "validation-model-track" = "neural",
+    "validation-task" = "multiclass", "validation-bins" = 24L,
+    "task-type" = "classification", "loss-name" = "cross_entropy",
+    "model-spec-b64" = "e30=", "num-server-rounds" = 1L,
+    "num-features" = 1024L, "num-classes" = 3L, "num-labels" = 2L,
+    "target-levels" = c("class-1", "class-2", "class-3"),
+    "data_type" = "image", "backbone" = "densenet121_3d",
+    "image-size" = 128L,
+    "vision-extractor-profile" =
+      "dsflower-densenet121-monai-seed0-extractor-v1",
+    "validation-artifact-format" = "pytorch-state-dict-v1",
+    "validation-artifact-sha256" = strrep("a", 64L),
+    "validation-artifact-size-bytes" = 4096L)
+  expect_identical(
+    dsFlowerClient:::.validation_contract_sha256(
+      config, NULL, "diagnosis", "patient"),
+    "95b536d6b8e0902691170a463177bfa64fd3b8dde4c5d002e2e098da94a37959")
+  changed_profile <- config
+  changed_profile[["vision-extractor-profile"]] <-
+    "dsflower-densenet121-imagenet1k-v1-extractor-v1"
+  expect_false(identical(
+    dsFlowerClient:::.validation_contract_sha256(
+      config, NULL, "diagnosis", "patient"),
+    dsFlowerClient:::.validation_contract_sha256(
+      changed_profile, NULL, "diagnosis", "patient")))
 })
 
 test_that("ds.flower.validate stages one validation release and returns pooled metrics", {
@@ -632,6 +851,90 @@ test_that("ds.flower.validate stages one validation release and returns pooled m
   expect_false(unavailable$available)
   expect_null(unavailable$metrics)
   expect_output(print(unavailable), "no complete private metric release")
+})
+
+test_that("vision validation carries only canonical image and artifact pins", {
+  path <- vision_validation_model_fixture(
+    model = "pytorch_densenet121", n_classes = 3L, volumetric = TRUE)
+  contract <- dsFlowerClient:::.resolve_validation_contract(path, 24L)
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(flwr_home = withr::local_tempdir())
+  prepared <- NULL
+  prepared_features <- "not-called"
+  app_config <- NULL
+  app_vision <- FALSE
+  ensured_framework <- NULL
+
+  local_mocked_bindings(
+    .validate_validation_artifact_preflight = function(...) TRUE,
+    .require_flwr_cli = function() TRUE,
+    .validate_dsi_transport_security = function(...) TRUE,
+    ds.flower.connect = function(conns, ...) structure(
+      list(conns = conns, symbol = "validation_handle"),
+      class = "dsflower_connection"),
+    .assert_runner_compatibility = function(...) list(
+      site_a = list(privacy_unit = "row")),
+    ds.flower.nodes.prepare = function(..., feature_columns, run_config) {
+      prepared <<- run_config
+      prepared_features <<- feature_columns
+      invisible(NULL)
+    },
+    .build_submission_app = function(sub, config_lines, vision, ...) {
+      app_config <<- config_lines
+      app_vision <<- vision
+      withr::local_tempdir()
+    },
+    .ensure_client_framework = function(framework) {
+      ensured_framework <<- framework
+      TRUE
+    },
+    ds.flower.link.up = function(...) TRUE,
+    ds.flower.nodes.ensure = function(...) TRUE,
+    .client_flwr_cmd = function() "flwr",
+    .client_venv_env = function(...) character(),
+    .run_flwr_with_artifact_watchdog = function(..., results_dir) {
+      jsonlite::write_json(list(
+        pooled_only = TRUE,
+        privacy = "node-dp-pooled-postprocessing",
+        task = "multiclass", n_nodes = 1L, available = TRUE,
+        metrics = list(accuracy = 0.5)),
+        file.path(results_dir, "validation.json"), auto_unbox = TRUE)
+      list(status = 0L, stdout = "", stderr = "")
+    },
+    ds.flower.link.down = function(...) TRUE,
+    ds.flower.nodes.cleanup = function(...) TRUE,
+    ds.flower.disconnect = function(...) TRUE,
+    .package = "dsFlowerClient")
+
+  result <- ds.flower.validate(
+    list(site_a = TRUE), model = path, target = "diagnosis",
+    symbol = "images", bins = 24L, silent = TRUE)
+
+  expect_true(result$available)
+  expect_identical(prepared_features, NULL)
+  expect_identical(prepared[["data_type"]], "image")
+  expect_identical(prepared[["backbone"]], "densenet121_3d")
+  expect_identical(prepared[["image-size"]], 128L)
+  expect_identical(
+    prepared[["vision-extractor-profile"]],
+    "dsflower-densenet121-monai-seed0-extractor-v1")
+  expect_identical(prepared[["num-features"]], 1024L)
+  expect_identical(
+    prepared[["validation-artifact-sha256"]], contract$artifact_sha256)
+  expect_null(prepared[["feature-bounds"]])
+  expect_true(app_vision)
+  expect_identical(ensured_framework, "pytorch_vision")
+  expect_true(any(grepl('data-kind = "image"', app_config, fixed = TRUE)))
+  expect_true(any(grepl('backbone = "densenet121_3d"',
+                        app_config, fixed = TRUE)))
+  expect_true(any(grepl(
+    'vision-extractor-profile = "dsflower-densenet121-monai-seed0-extractor-v1"',
+    app_config, fixed = TRUE)))
+  expect_true(any(grepl(
+    paste0('validation-artifact-sha256 = "',
+           contract$artifact_sha256, '"'), app_config, fixed = TRUE)))
 })
 
 test_that("XGBoost validation uses the native app with exact ephemeral pins", {

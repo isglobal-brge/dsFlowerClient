@@ -25,7 +25,7 @@ ds.flower.validate(
 path returned by \code{ds.flower.import_xgboost()}.}
 
 \item{target}{Target column name(s); multilabel validation requires one per
-saved label.}
+saved label. Vision validation requires the saved public class vocabulary.}
 
 \item{data}{Optional server-side data symbol.}
 
@@ -35,8 +35,8 @@ saved label.}
 
 \item{bins}{Public number of probability bins in \code{[4,512]}.}
 
-\item{torch_backend}{Node torch backend selection for neural artifacts.
-Native-tree validation does not provision Torch.}
+\item{torch_backend}{Node torch backend selection for neural artifacts,
+including vision. Native-tree validation does not provision Torch.}
 
 \item{verbose}{Show Flower output.}
 
@@ -52,15 +52,23 @@ A \code{dsflower_validation}. Its \code{available} field is false
   the node-DP metric release.
 }
 \description{
-Evaluates a released tabular declarative neural model, sanitized native-tree
-ensemble, or explicitly external-unverified imported XGBoost bundle on the
-dataset assigned for this call inside each data node.
+Evaluates a released tabular declarative neural model, saved first-party
+ResNet-18 or DenseNet-121 vision classifier, sanitized native-tree ensemble,
+or explicitly external-unverified imported XGBoost bundle on the dataset
+assigned for this call inside each data node.
 The native request, ensemble and prediction-profile sidecar are pinned into
 the ephemeral execution contract and every node re-sanitizes the ensemble
-before opening its data. Vision artifacts fail explicitly because this
-validator does not reconstruct image loaders or backbones. Reusing the
-training dataset is resubstitution validation; assigning an independent
-dataset is external
+before opening its data. Vision validation accepts only binary/multiclass
+releases made by \code{pytorch_resnet18} or \code{pytorch_densenet121},
+including their volumetric variants. Its canonical backbone, image size,
+frozen feature dimension, class vocabulary, declarative head and bounded
+\code{model.pt} digest are pinned before DSI. The
+\code{vision-extractor-profile} is a versioned semantic ABI, not a
+cryptographic signature of extractor state; releases without it fail closed,
+and semantic implementation/dependency changes require a profile bump. Image
+paths and pixels remain node-private. It does not add local image prediction, holdout, or
+cross-validation support. Reusing the training dataset is resubstitution
+validation; assigning an independent dataset is external
 validation. Each protected row/patient contributes one bounded sufficient-statistic
 vector, the node releases it once through the server-owned Gaussian mechanism,
 and only pooled post-processed metrics are returned. Exact predictions,

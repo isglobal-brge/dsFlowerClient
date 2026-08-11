@@ -18,16 +18,27 @@ def main():
 
     flower_app = Path(__file__).resolve().parents[1] / "flower_app"
     sys.path.insert(0, str(flower_app))
-    from dsflower_runner import validation
+    from dsflower_runner import validation, vision
 
     arrays = validation.public_model_arrays(config)
     if not isinstance(arrays, list) or not arrays:
         raise ValueError("validation artifact produced no public model arrays")
+    if config.get("data-kind") == "image":
+        encoder, _size, _is_3d, _device = vision.prepare_backbone(
+            config.get("backbone"),
+            config.get("vision-extractor-profile"),
+            config.get("num-features"), config.get("image-size"))
+        del encoder
 
 
-if __name__ == "__main__":
+def _entrypoint():
     try:
         main()
     except Exception as exc:
         print("invalid validation artifact: %s" % exc, file=sys.stderr)
-        raise SystemExit(2)
+        return 2
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(_entrypoint())

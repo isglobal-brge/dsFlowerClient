@@ -6,8 +6,10 @@ on:
       - ".github/workflows/native-tree-client.yml"
       - "inst/python/native_tree_predict_helper.py"
       - "inst/python/import_xgboost_model.py"
+      - "inst/python/validate_model_artifact.py"
       - "inst/python/tests/test_native_tree_predict_helper.py"
       - "inst/python/tests/test_import_xgboost_model.py"
+      - "inst/python/tests/test_validate_model_artifact.py"
       - "inst/flower_app/dsflower_runner/native_tree_*.py"
       - "inst/flower_app/dsflower_runner/boosting_*.py"
       - "inst/flower_app/dsflower_runner/*boost_artifact.py"
@@ -19,14 +21,18 @@ on:
       - "inst/flower_app/dsflower_runner/tree_release.py"
       - "inst/flower_app/dsflower_runner/seeding.py"
       - "inst/flower_app/dsflower_runner/task.py"
+      - "inst/flower_app/dsflower_runner/validation.py"
+      - "inst/flower_app/dsflower_runner/vision.py"
       - "inst/flower_app/dsflower_runner/xgboost_*.py"
   pull_request:
     paths:
       - ".github/workflows/native-tree-client.yml"
       - "inst/python/native_tree_predict_helper.py"
       - "inst/python/import_xgboost_model.py"
+      - "inst/python/validate_model_artifact.py"
       - "inst/python/tests/test_native_tree_predict_helper.py"
       - "inst/python/tests/test_import_xgboost_model.py"
+      - "inst/python/tests/test_validate_model_artifact.py"
       - "inst/flower_app/dsflower_runner/native_tree_*.py"
       - "inst/flower_app/dsflower_runner/boosting_*.py"
       - "inst/flower_app/dsflower_runner/*boost_artifact.py"
@@ -38,6 +44,8 @@ on:
       - "inst/flower_app/dsflower_runner/tree_release.py"
       - "inst/flower_app/dsflower_runner/seeding.py"
       - "inst/flower_app/dsflower_runner/task.py"
+      - "inst/flower_app/dsflower_runner/validation.py"
+      - "inst/flower_app/dsflower_runner/vision.py"
       - "inst/flower_app/dsflower_runner/xgboost_*.py"
 
 permissions:
@@ -73,6 +81,7 @@ jobs:
           "$contract_python" -m unittest -v \
             inst/python/tests/test_import_xgboost_model.py \
             inst/python/tests/test_native_tree_predict_helper.py \
+            inst/python/tests/test_validate_model_artifact.py \
             inst/python/tests/test_boosting_adapter.py \
             inst/python/tests/test_boosting_artifacts.py
           "$contract_python" -I -c \

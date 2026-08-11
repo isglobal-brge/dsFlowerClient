@@ -212,11 +212,16 @@ optimizer/loss, outside a resource cap, or not implemented fail before staging;
 accepted first-party parameters are pinned in the manifest and actually consumed
 by the trusted runner.
 
-The image contracts currently cover private federated training of their frozen-
-backbone heads. The packaged local predictor and private validation API are
-tabular; they do not yet reconstruct image loaders/backbones for inference or
-validation. This boundary is explicit rather than silently treating images as a
-numeric table.
+The image contracts cover private federated training of their frozen-backbone
+heads and private validation of saved first-party ResNet-18/DenseNet-121
+binary or multiclass releases, including the volumetric variants. The packaged
+local predictor remains tabular, and image holdout/cross-validation are not
+implemented. These boundaries are explicit rather than silently treating
+images as a numeric table. Each image release carries a
+`vision-extractor-profile`: a versioned public semantic ABI for its frozen
+extractor, not a cryptographic signature of extractor state. Releases without
+that profile fail closed; implementation or dependency changes that alter
+features require a profile bump.
 
 The first-party native-tree constructors are `xgboost`, `extra_trees`,
 `random_forest`, `lightgbm` and `catboost`. They run only in the dedicated
@@ -349,12 +354,19 @@ HookApps use the same `target_levels`/`target_bounds` contract and must declare
 
 ## Private model validation
 
-`ds.flower.validate()` evaluates a saved declarative neural or sanitized
-native-tree model inside the nodes and releases one fixed, Gaussian-noised
-vector of bounded sufficient statistics per node. The current validator accepts
-those tabular artifacts; vision artifacts fail explicitly. Exact labels,
-predictions, counts and site metrics remain local; the researcher receives only
-pooled post-processing:
+`ds.flower.validate()` evaluates a saved declarative neural, first-party vision,
+or sanitized native-tree model inside the nodes and releases one fixed,
+Gaussian-noised vector of bounded sufficient statistics per node. Vision is
+limited to saved `pytorch_resnet18` and `pytorch_densenet121` binary/multiclass
+releases (2D or `volumetric = TRUE`). The client pins the canonical backbone,
+image size, frozen feature dimension, exact public class levels, declarative
+head, and bounded `model.pt` digest before any DSI call; the server verifies the
+same public contract before private staging. The researcher-side ServerApp
+preflight rehashes the artifact before loading it, and each node revalidates
+the received arrays, pins and extractor profile before opening private pixels.
+No tabular feature columns or bounds are accepted for this path. Exact paths, pixels,
+labels, predictions, counts and site metrics remain local; the researcher
+receives only pooled post-processing:
 
 ```r
 validation <- ds.flower.validate(
@@ -366,6 +378,11 @@ validation <- ds.flower.validate(
 )
 print(validation)
 ```
+
+For vision, assign an image bundle or a samples table routed as image data on
+each node, then pass the saved vision run and its target column to the same API.
+This is validation only: `ds.flower.predict()`, holdout and cross-validation do
+not claim image support.
 
 Binary validation provides threshold metrics, ROC/PR AUC, Brier score,
 calibration and decision-curve summaries; multiclass/ordinal/multilabel use

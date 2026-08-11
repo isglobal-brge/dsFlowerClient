@@ -336,6 +336,14 @@ test_that("pytorch_resnet18 creates correct model", {
   expect_equal(m$params$n_classes, 2L)
   expect_equal(m$params$learning_rate, 0.001)
   expect_equal(m$params$image_size, 224L)
+  expect_identical(
+    unname(vapply(
+      c("resnet18", "resnet18_3d", "densenet121", "densenet121_3d"),
+      dsFlowerClient:::.vision_extractor_profile, character(1))),
+    c("dsflower-resnet18-imagenet1k-v1-extractor-v1",
+      "dsflower-resnet18-monai-seed0-extractor-v1",
+      "dsflower-densenet121-imagenet1k-v1-extractor-v1",
+      "dsflower-densenet121-monai-seed0-extractor-v1"))
 })
 
 test_that("pytorch_densenet121 creates correct model", {
@@ -348,8 +356,35 @@ test_that("pytorch_densenet121 creates correct model", {
 
   sub <- dsFlowerClient:::.emit_submission(ds.flower.model("densenet121"))
   expect_identical(sub$params$backbone, "densenet121")
+  expect_identical(
+    sub$params$vision_extractor_profile,
+    "dsflower-densenet121-imagenet1k-v1-extractor-v1")
+  expect_identical(
+    dsFlowerClient:::.vision_extractor_feature_dim(sub$params$backbone),
+    1024L)
   expect_true("ds.flower.model.pytorch_densenet121" %in%
                 getNamespaceExports("dsFlowerClient"))
+})
+
+test_that("vision codegen enforces backbone-specific image geometry", {
+  expect_error(
+    dsFlowerClient:::.emit_submission(
+      ds.flower.model.pytorch_densenet121(image_size = 28L)),
+    "canonical geometry")
+  expect_identical(
+    dsFlowerClient:::.emit_submission(
+      ds.flower.model.pytorch_densenet121(image_size = 29L))$params$image_size,
+    29L)
+  expect_error(
+    dsFlowerClient:::.emit_submission(
+      ds.flower.model.pytorch_densenet121(
+        image_size = 127L, volumetric = TRUE)),
+    "canonical geometry")
+  expect_identical(
+    dsFlowerClient:::.emit_submission(
+      ds.flower.model.pytorch_densenet121(
+        image_size = 128L, volumetric = TRUE))$params$image_size,
+    128L)
 })
 
 test_that("pytorch_tcn creates correct model", {
