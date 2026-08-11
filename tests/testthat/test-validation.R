@@ -811,7 +811,9 @@ test_that("ds.flower.validate stages one validation release and returns pooled m
         privacy = "node-dp-pooled-postprocessing",
         task = "binary", n_nodes = 2L, available = release_available)
       if (release_available) {
-        payload$metrics <- list(accuracy = 0.81, roc_auc = 0.87)
+        payload$metrics <- .test_private_metrics("binary")
+        payload$metrics$accuracy <- 0.81
+        payload$metrics$roc_auc <- 0.87
       }
       jsonlite::write_json(payload,
         file.path(results_dir, "validation.json"), auto_unbox = TRUE)
@@ -899,8 +901,9 @@ test_that("vision validation carries only canonical image and artifact pins", {
         pooled_only = TRUE,
         privacy = "node-dp-pooled-postprocessing",
         task = "multiclass", n_nodes = 1L, available = TRUE,
-        metrics = list(accuracy = 0.5)),
-        file.path(results_dir, "validation.json"), auto_unbox = TRUE)
+        metrics = .test_private_metrics("multiclass")),
+        file.path(results_dir, "validation.json"), auto_unbox = TRUE,
+        null = "null")
       list(status = 0L, stdout = "", stderr = "")
     },
     ds.flower.link.down = function(...) TRUE,
@@ -981,11 +984,13 @@ test_that("XGBoost validation uses the native app with exact ephemeral pins", {
     .client_flwr_cmd = function() "flwr",
     .client_venv_env = function(...) character(),
     .run_flwr_with_artifact_watchdog = function(..., results_dir) {
+      metrics <- .test_private_metrics("binary")
+      metrics$roc_auc <- 0.8
       jsonlite::write_json(list(
         pooled_only = TRUE,
         privacy = "node-dp-pooled-postprocessing",
         task = "binary", n_nodes = 2L, available = TRUE,
-        metrics = list(accuracy = 0.75, roc_auc = 0.8)),
+        metrics = metrics),
         file.path(results_dir, "validation.json"), auto_unbox = TRUE)
       list(status = 0L, stdout = "run_id=native-validation", stderr = "")
     },

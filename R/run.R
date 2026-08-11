@@ -516,78 +516,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   )
 }
 
-.native_holdout_metrics_valid <- function(metrics, task) {
-  exact_object <- function(value, fields) {
-    is.list(value) && !is.null(names(value)) &&
-      !anyNA(names(value)) && !anyDuplicated(names(value)) &&
-      setequal(names(value), fields)
-  }
-  finite_scalar <- function(
-      value, lower = -Inf, upper = Inf, nullable = FALSE) {
-    if (is.null(value)) return(isTRUE(nullable))
-    is.numeric(value) && length(value) == 1L && !is.na(value) &&
-      is.finite(value) && value >= lower && value <= upper
-  }
-  finite_array <- function(
-      value, expected_length, lower = -Inf, upper = Inf) {
-    is.list(value) && is.null(names(value)) &&
-      length(value) == expected_length &&
-      all(vapply(value, finite_scalar, logical(1),
-                 lower = lower, upper = upper))
-  }
-
-  if (identical(task, "regression")) {
-    fields <- c("n", "mae", "mse", "rmse", "r_squared")
-    return(exact_object(metrics, fields) &&
-      finite_scalar(metrics$n, lower = 0) &&
-      finite_scalar(metrics$mae, lower = 0) &&
-      finite_scalar(metrics$mse, lower = 0) &&
-      finite_scalar(metrics$rmse, lower = 0) &&
-      finite_scalar(metrics$r_squared, upper = 1, nullable = TRUE))
-  }
-  if (!identical(task, "binary")) return(FALSE)
-
-  scalar_fields <- c(
-    "n", "accuracy", "sensitivity", "specificity", "precision",
-    "negative_predictive_value", "f1", "balanced_accuracy", "roc_auc",
-    "pr_auc", "brier", "expected_calibration_error")
-  object_fields <- c("roc", "precision_recall", "calibration", "decision_curve")
-  if (!exact_object(metrics, c(scalar_fields, object_fields)) ||
-      !exact_object(metrics$roc, c("fpr", "tpr")) ||
-      !exact_object(metrics$precision_recall, c("recall", "precision")) ||
-      !exact_object(metrics$calibration, c("predicted", "observed", "weight")) ||
-      !exact_object(metrics$decision_curve, c(
-        "threshold", "net_benefit", "treat_all", "treat_none"))) {
-    return(FALSE)
-  }
-  bins <- length(metrics$calibration$predicted)
-  if (bins < 4L || bins > 512L ||
-      !finite_scalar(metrics$n, lower = 0) ||
-      !finite_scalar(metrics$accuracy, lower = 0, upper = 1) ||
-      !all(vapply(scalar_fields[-(1:2)], function(field) {
-        finite_scalar(
-          metrics[[field]], lower = 0, upper = 1, nullable = TRUE)
-      }, logical(1)))) {
-    return(FALSE)
-  }
-  finite_array(metrics$roc$fpr, bins + 2L, 0, 1) &&
-    finite_array(metrics$roc$tpr, bins + 2L, 0, 1) &&
-    finite_array(metrics$precision_recall$recall, bins + 1L, 0, 1) &&
-    finite_array(metrics$precision_recall$precision, bins + 1L, 0, 1) &&
-    finite_array(metrics$calibration$predicted, bins, 0, 1) &&
-    finite_array(metrics$calibration$observed, bins, 0, 1) &&
-    finite_array(metrics$calibration$weight, bins, 0) &&
-    finite_array(metrics$decision_curve$threshold, bins, 0, 1) &&
-    finite_array(metrics$decision_curve$net_benefit, bins) &&
-    finite_array(metrics$decision_curve$treat_all, bins) &&
-    finite_array(metrics$decision_curve$treat_none, bins)
-}
-
 .read_holdout_result <- function(results_dir, native_tree = FALSE) {
   path <- file.path(results_dir, "holdout.json")
   if (!file.exists(path)) return(NULL)
   info <- file.info(path)
-  if (is.na(info$size) || info$size < 1 || info$size > 8 * 1024^2) {
+  if (is.na(info$size) || info$size < 1 ||
+      info$size > .PRIVATE_METRIC_RESULT_MAX_BYTES) {
     stop("Holdout output failed the pooled-only privacy contract.",
          call. = FALSE)
   }
@@ -599,29 +533,13 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     "public_schema_sha256", "artifact_sha256")
   allowed <- c("pooled_only", "privacy", "method", "task", "n_nodes",
                "metrics", if (isTRUE(native_tree)) "provenance")
-  required_metric <- if (is.list(value) && length(value$task) == 1L) {
-    switch(as.character(value$task),
-           binary = "accuracy", multiclass = "accuracy",
-           ordinal = "accuracy", multilabel = "macro_f1",
-           regression = "mae", count = "mae", NA_character_)
-  } else {
-    NA_character_
-  }
-  primary_task <- if (is.list(value) && length(value$task) == 1L) {
-    as.character(value$task)
+  task_is_scalar <- is.list(value) && is.character(value$task) &&
+    length(value$task) == 1L && !is.na(value$task)
+  primary_task <- if (task_is_scalar) {
+    value$task
   } else {
     ""
   }
-  primary_metric <- if (is.list(value) && is.list(value$metrics) &&
-      !is.na(required_metric) && required_metric %in% names(value$metrics)) {
-    value$metrics[[required_metric]]
-  } else {
-    NULL
-  }
-  plausible_primary <- is.numeric(primary_metric) &&
-    length(primary_metric) == 1L && is.finite(primary_metric) &&
-    primary_metric >= 0 &&
-    (primary_task %in% c("regression", "count") || primary_metric <= 1)
   valid_sha <- function(item) {
     is.character(item) && length(item) == 1L && !is.na(item) &&
       grepl("^[0-9a-f]{64}$", item)
@@ -635,8 +553,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
        valid_sha(value$provenance[[name]])
      }, logical(1))))
   valid_native_metrics <- !isTRUE(native_tree) ||
-    (primary_task %in% c("binary", "regression") &&
-     .native_holdout_metrics_valid(value$metrics, primary_task))
+    primary_task %in% c("binary", "regression")
   contains_forbidden <- function(item) {
     if (!is.list(item)) return(FALSE)
     keys <- tolower(names(item) %||% character())
@@ -650,15 +567,14 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       !identical(value$pooled_only, TRUE) ||
       !identical(value$privacy, "node-dp-pooled-postprocessing") ||
       !identical(value$method, "holdout") ||
-      length(value$task) != 1L || !value$task %in% c(
+      !task_is_scalar || !value$task %in% c(
         "binary", "multiclass", "ordinal", "multilabel",
         "regression", "count") ||
       length(value$n_nodes) != 1L || !is.numeric(value$n_nodes) ||
       !is.finite(value$n_nodes) || value$n_nodes < 1 ||
       value$n_nodes != floor(value$n_nodes) || !is.list(value$metrics) ||
-      is.null(names(value$metrics)) || anyDuplicated(names(value$metrics)) ||
-      is.na(required_metric) || !required_metric %in% names(value$metrics) ||
-      !plausible_primary || !valid_provenance || !valid_native_metrics ||
+      !.private_metrics_valid(value$metrics, primary_task) ||
+      !valid_provenance || !valid_native_metrics ||
       contains_forbidden(value)) {
     stop("Holdout output failed the pooled-only privacy contract.",
          call. = FALSE)
@@ -670,7 +586,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   path <- file.path(results_dir, "cv.json")
   if (!file.exists(path)) return(NULL)
   info <- file.info(path)
-  if (is.na(info$size) || info$size < 1 || info$size > 8 * 1024^2) {
+  if (is.na(info$size) || info$size < 1 ||
+      info$size > .PRIVATE_METRIC_RESULT_MAX_BYTES) {
     stop("Cross-validation output failed the pooled-only privacy contract.",
          call. = FALSE)
   }
@@ -679,45 +596,19 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     error = function(e) NULL)
   allowed <- c("pooled_only", "privacy", "method", "task", "n_nodes",
                "folds", "cv_contract_sha256", "cv_job_sha256", "metrics")
-  required_metric <- if (is.list(value) && length(value$task) == 1L) {
-    switch(as.character(value$task),
-           binary = "accuracy", multiclass = "accuracy",
-           ordinal = "accuracy", multilabel = "macro_f1",
-           regression = "mae", count = "mae", NA_character_)
-  } else {
-    NA_character_
-  }
-  primary_task <- if (is.list(value) && length(value$task) == 1L) {
-    as.character(value$task)
+  task_is_scalar <- is.list(value) && is.character(value$task) &&
+    length(value$task) == 1L && !is.na(value$task)
+  primary_task <- if (task_is_scalar) {
+    value$task
   } else {
     ""
-  }
-  primary_metric <- if (is.list(value) && is.list(value$metrics) &&
-      !is.na(required_metric) && required_metric %in% names(value$metrics)) {
-    value$metrics[[required_metric]]
-  } else {
-    NULL
-  }
-  plausible_primary <- is.numeric(primary_metric) &&
-    length(primary_metric) == 1L && is.finite(primary_metric) &&
-    primary_metric >= 0 &&
-    (primary_task %in% c("regression", "count") || primary_metric <= 1)
-  safe_metric_tree <- function(item) {
-    if (is.null(item)) return(TRUE)
-    if (is.numeric(item)) return(all(is.finite(item)))
-    if (!is.list(item)) return(FALSE)
-    keys <- names(item) %||% character()
-    if (any(keys %in% c(
-        "per_node", "per_site", "predictions", "models", "fold",
-        "folds", "per_fold", "fold_metrics"))) return(FALSE)
-    all(vapply(item, safe_metric_tree, logical(1)))
   }
   if (!is.list(value) || is.null(names(value)) || anyDuplicated(names(value)) ||
       !setequal(names(value), allowed) ||
       !identical(value$pooled_only, TRUE) ||
       !identical(value$privacy, "node-dp-pooled-postprocessing") ||
       !identical(value$method, "cross_validation") ||
-      length(value$task) != 1L || !value$task %in% c(
+      !task_is_scalar || !value$task %in% c(
         "binary", "multiclass", "ordinal", "multilabel",
         "regression", "count") ||
       length(value$n_nodes) != 1L || !is.numeric(value$n_nodes) ||
@@ -735,10 +626,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       is.na(value$cv_job_sha256) ||
       !grepl("^[0-9a-f]{64}$", value$cv_job_sha256) ||
       !is.list(value$metrics) ||
-      is.null(names(value$metrics)) || anyDuplicated(names(value$metrics)) ||
-      is.na(required_metric) || !required_metric %in% names(value$metrics) ||
-      !plausible_primary ||
-      !safe_metric_tree(value$metrics)) {
+      !.private_metrics_valid(value$metrics, primary_task)) {
     stop("Cross-validation output failed the pooled-only privacy contract.",
          call. = FALSE)
   }
@@ -958,7 +846,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     path <- file.path(results_dir, "cv.json")
     info <- file.info(path)
     return(file.exists(path) && !is.na(info$isdir) && !isTRUE(info$isdir) &&
-             !is.na(info$size) && info$size > 0 && info$size <= 8 * 1024^2)
+             !is.na(info$size) && info$size > 0 &&
+             info$size <= .PRIVATE_METRIC_RESULT_MAX_BYTES)
   }
   history <- .read_training_history(results_dir)
   if (is.null(history) || !NROW(history)) return(FALSE)

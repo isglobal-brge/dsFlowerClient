@@ -141,11 +141,13 @@ test_that("private validation reports external model provenance separately", {
     .client_flwr_cmd = function() "flwr",
     .client_venv_env = function(...) character(),
     .run_flwr_with_artifact_watchdog = function(..., results_dir) {
+      metrics <- .test_private_metrics("binary")
+      metrics$roc_auc <- 0.8
       jsonlite::write_json(list(
         pooled_only = TRUE,
         privacy = "node-dp-pooled-postprocessing",
         task = "binary", n_nodes = 2L, available = TRUE,
-        metrics = list(accuracy = 0.75, roc_auc = 0.8)),
+        metrics = metrics),
         file.path(results_dir, "validation.json"), auto_unbox = TRUE)
       list(status = 0L, stdout = "run_id=external-validation", stderr = "")
     },

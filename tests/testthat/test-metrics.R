@@ -25,17 +25,12 @@ test_that("ds.flower.compare errors with no arguments", {
 })
 
 test_that("private metric catalog exposes only task-compatible scalar scores", {
+  metrics <- .test_private_metrics("binary")
+  metrics["sensitivity"] <- list(NULL)
   result <- structure(list(
     available = TRUE,
     task = "binary",
-    metrics = list(
-      n = 24,
-      accuracy = 0.75,
-      roc_auc = 0.81,
-      brier = 0.18,
-      sensitivity = NULL,
-      roc = list(fpr = c(0, 1), tpr = c(0, 1))
-    )
+    metrics = metrics
   ), class = "dsflower_validation")
 
   catalog <- ds.flower.metrics(result)
@@ -57,10 +52,12 @@ test_that("private metric catalog exposes only task-compatible scalar scores", {
 })
 
 test_that("score extracts one finite metric and rejects unsuitable objectives", {
+  metrics <- .test_private_metrics("binary")
+  metrics["sensitivity"] <- list(NULL)
   binary <- structure(list(
     available = TRUE,
     task = "binary",
-    metrics = list(accuracy = 0.75, roc_auc = 0.81, sensitivity = NULL)
+    metrics = metrics
   ), class = "dsflower_validation")
   expect_identical(ds.flower.score(binary, "roc_auc"), 0.81)
   expect_identical(
@@ -85,9 +82,11 @@ test_that("score extracts one finite metric and rejects unsuitable objectives", 
 })
 
 test_that("metric helpers cover CV, atomic holdout, and unavailable releases", {
+  regression <- .test_private_metrics("regression")
+  regression["r_squared"] <- list(NULL)
   cv <- structure(list(
     task = "regression",
-    metrics = list(mae = 0.4, rmse = 0.6, r_squared = NULL)
+    metrics = regression
   ), class = "dsflower_cv")
   expect_identical(ds.flower.score(cv, "mae"), 0.4)
   expect_true(ds.flower.metrics(cv)$available[
@@ -96,9 +95,9 @@ test_that("metric helpers cover CV, atomic holdout, and unavailable releases", {
   run <- structure(list(
     available = TRUE,
     holdout_task = "multilabel",
-    holdout = list(macro_f1 = 0.7, macro_roc_auc = 0.8)
+    holdout = .test_private_metrics("multilabel")
   ), class = "dsflower_run")
-  expect_identical(ds.flower.score(run, "macro_f1"), 0.7)
+  expect_identical(ds.flower.score(run, "macro_f1"), 0.8)
   run$available <- FALSE
   expect_error(ds.flower.metrics(run), "malformed")
 
@@ -114,7 +113,8 @@ test_that("metric helpers cover CV, atomic holdout, and unavailable releases", {
 
   numeric_cv <- structure(list(
     task = "regression",
-    metrics = list(mae = 1L, r_squared = -0.25)
+    metrics = utils::modifyList(
+      .test_private_metrics("regression"), list(mae = 1L))
   ), class = "dsflower_cv")
   expect_identical(ds.flower.score(numeric_cv, "mae"), 1)
   expect_identical(ds.flower.score(numeric_cv, "r_squared"), -0.25)
@@ -166,4 +166,221 @@ test_that("all validation tasks have an explicit score direction", {
         unname(expected[[task]][[metric]]))
     }
   }
+})
+
+test_that("private metric schemas reject impossible values and extra trees", {
+  for (task in c(
+      "binary", "multiclass", "ordinal", "multilabel",
+      "regression", "count")) {
+    valid <- structure(list(
+      available = TRUE, task = task,
+      metrics = .test_private_metrics(task)
+    ), class = "dsflower_validation")
+    expect_no_error(ds.flower.metrics(valid))
+
+    extra <- valid
+    extra$metrics$diagnostics <- list(value = 1)
+    expect_error(ds.flower.metrics(extra), "malformed", info = task)
+  }
+
+  impossible <- structure(list(
+    available = TRUE, task = "binary",
+    metrics = .test_private_metrics("binary")
+  ), class = "dsflower_validation")
+  impossible$metrics$roc_auc <- 9
+  expect_error(ds.flower.score(impossible, "roc_auc"), "malformed")
+
+  impossible <- structure(list(
+    task = "multiclass", metrics = .test_private_metrics("multiclass")
+  ), class = "dsflower_cv")
+  impossible$metrics$confusion_matrix[[1L]] <- -1
+  expect_error(ds.flower.metrics(impossible), "malformed")
+
+  impossible <- structure(list(
+    available = TRUE, holdout_task = "count",
+    holdout = .test_private_metrics("count")
+  ), class = "dsflower_run")
+  impossible$holdout$mean_poisson_deviance_normalized <- 1.1
+  expect_error(ds.flower.metrics(impossible), "malformed")
+})
+
+test_that("private metric schemas pin shapes, ranges, and task nullability", {
+  valid <- function(metrics, task) {
+    dsFlowerClient:::.private_metrics_valid(metrics, task)
+  }
+
+  binary <- .test_private_metrics("binary")
+  nullable_binary <- binary
+  nullable_binary["roc_auc"] <- list(NULL)
+  expect_true(valid(nullable_binary, "binary"))
+  invalid <- binary
+  invalid["accuracy"] <- list(NULL)
+  expect_false(valid(invalid, "binary"))
+  invalid <- binary
+  invalid$roc$fpr <- invalid$roc$fpr[-1L]
+  expect_false(valid(invalid, "binary"))
+  invalid <- binary
+  invalid$roc$extra <- 0
+  expect_false(valid(invalid, "binary"))
+
+  multiclass <- .test_private_metrics("multiclass", null_primary = TRUE)
+  expect_true(valid(multiclass, "multiclass"))
+  invalid <- multiclass
+  invalid["macro_f1"] <- list(NULL)
+  expect_false(valid(invalid, "multiclass"))
+  invalid <- multiclass
+  invalid$confusion_matrix <- matrix(0, nrow = 2L, ncol = 3L)
+  expect_false(valid(invalid, "multiclass"))
+
+  ordinal <- .test_private_metrics("ordinal", null_primary = TRUE)
+  expect_true(valid(ordinal, "ordinal"))
+  invalid <- ordinal
+  invalid$ordinal_mae <- 3
+  expect_false(valid(invalid, "ordinal"))
+
+  multilabel <- .test_private_metrics("multilabel", null_primary = TRUE)
+  expect_true(valid(multilabel, "multilabel"))
+  invalid <- multilabel
+  invalid$labels <- invalid$labels[1L]
+  expect_false(valid(invalid, "multilabel"))
+  invalid <- multilabel
+  invalid$labels[[2L]] <- .test_binary_metrics(5L)
+  expect_false(valid(invalid, "multilabel"))
+
+  regression <- .test_private_metrics("regression")
+  regression["r_squared"] <- list(NULL)
+  expect_true(valid(regression, "regression"))
+  invalid <- regression
+  invalid["mae"] <- list(NULL)
+  expect_false(valid(invalid, "regression"))
+
+  count <- .test_private_metrics("count")
+  count["mean_poisson_deviance_normalized"] <- list(NULL)
+  expect_true(valid(count, "count"))
+  invalid <- count
+  invalid$mean_poisson_deviance_normalized <- 1.1
+  expect_false(valid(invalid, "count"))
+})
+
+test_that("noise-only nullable primary metrics remain valid", {
+  for (task in c("multiclass", "ordinal", "multilabel")) {
+    metrics <- .test_private_metrics(task, null_primary = TRUE)
+    result <- structure(list(
+      available = TRUE, task = task, metrics = metrics
+    ), class = "dsflower_validation")
+    catalog <- ds.flower.metrics(result)
+    primary <- if (identical(task, "multilabel")) "macro_f1" else "accuracy"
+    expect_false(catalog$available[match(primary, catalog$metric)], info = task)
+    expect_error(ds.flower.score(result, primary), "unavailable", info = task)
+  }
+})
+
+test_that("all private readers accept task-valid noise-only primary NULL", {
+  for (task in c("multiclass", "ordinal", "multilabel")) {
+    root <- withr::local_tempdir()
+    metrics <- .test_private_metrics(task, null_primary = TRUE)
+    write_release <- function(value, name) jsonlite::write_json(
+      value, file.path(root, name), auto_unbox = TRUE, null = "null")
+
+    write_release(list(
+      pooled_only = TRUE, privacy = "node-dp-pooled-postprocessing",
+      task = task, n_nodes = 2L, available = TRUE, metrics = metrics
+    ), "validation.json")
+    expect_no_error(dsFlowerClient:::.read_private_validation_result(root))
+
+    write_release(list(
+      pooled_only = TRUE, privacy = "node-dp-pooled-postprocessing",
+      method = "holdout", task = task, n_nodes = 2L, metrics = metrics
+    ), "holdout.json")
+    expect_no_error(dsFlowerClient:::.read_holdout_result(root))
+
+    write_release(list(
+      pooled_only = TRUE, privacy = "node-dp-pooled-postprocessing",
+      method = "cross_validation", task = task, n_nodes = 2L, folds = 3L,
+      cv_contract_sha256 = strrep("a", 64L),
+      cv_job_sha256 = strrep("b", 64L), metrics = metrics
+    ), "cv.json")
+    expect_no_error(dsFlowerClient:::.read_cross_validation_result(root))
+  }
+})
+
+test_that("all private readers reject impossible and extra metric payloads", {
+  root <- withr::local_tempdir()
+  metrics <- .test_private_metrics("binary")
+  metrics$roc_auc <- 9
+  metrics$diagnostics <- list(value = 1)
+  write_release <- function(value, name) jsonlite::write_json(
+    value, file.path(root, name), auto_unbox = TRUE, null = "null")
+
+  write_release(list(
+    pooled_only = TRUE, privacy = "node-dp-pooled-postprocessing",
+    task = "binary", n_nodes = 2L, available = TRUE, metrics = metrics
+  ), "validation.json")
+  expect_error(
+    dsFlowerClient:::.read_private_validation_result(root), "pooled-only")
+
+  write_release(list(
+    pooled_only = TRUE, privacy = "node-dp-pooled-postprocessing",
+    method = "holdout", task = "binary", n_nodes = 2L, metrics = metrics
+  ), "holdout.json")
+  expect_error(dsFlowerClient:::.read_holdout_result(root), "pooled-only")
+
+  write_release(list(
+    pooled_only = TRUE, privacy = "node-dp-pooled-postprocessing",
+    method = "cross_validation", task = "binary", n_nodes = 2L, folds = 3L,
+    cv_contract_sha256 = strrep("a", 64L),
+    cv_job_sha256 = strrep("b", 64L), metrics = metrics
+  ), "cv.json")
+  expect_error(
+    dsFlowerClient:::.read_cross_validation_result(root), "pooled-only")
+})
+
+test_that("private result readers require a scalar task string", {
+  metrics <- .test_private_metrics("binary")
+  for (task in list(list("binary"), list(x = "binary"))) {
+    root <- withr::local_tempdir()
+    write_release <- function(value, name) jsonlite::write_json(
+      value, file.path(root, name), auto_unbox = TRUE, null = "null")
+
+    write_release(list(
+      pooled_only = TRUE, privacy = "node-dp-pooled-postprocessing",
+      task = task, n_nodes = 2L, available = TRUE, metrics = metrics
+    ), "validation.json")
+    expect_error(
+      dsFlowerClient:::.read_private_validation_result(root), "pooled-only")
+
+    write_release(list(
+      pooled_only = TRUE, privacy = "node-dp-pooled-postprocessing",
+      method = "holdout", task = task, n_nodes = 2L, metrics = metrics
+    ), "holdout.json")
+    expect_error(dsFlowerClient:::.read_holdout_result(root), "pooled-only")
+
+    write_release(list(
+      pooled_only = TRUE, privacy = "node-dp-pooled-postprocessing",
+      method = "cross_validation", task = task, n_nodes = 2L, folds = 3L,
+      cv_contract_sha256 = strrep("a", 64L),
+      cv_job_sha256 = strrep("b", 64L), metrics = metrics
+    ), "cv.json")
+    expect_error(
+      dsFlowerClient:::.read_cross_validation_result(root), "pooled-only")
+  }
+})
+
+test_that("private result readers enforce the public 160 MiB wire cap", {
+  root <- withr::local_tempdir()
+  paths <- file.path(root, c("validation.json", "holdout.json", "cv.json"))
+  for (path in paths) writeBin(charToRaw("{}"), path)
+  expect_identical(
+    dsFlowerClient:::.PRIVATE_METRIC_RESULT_MAX_BYTES, 160 * 1024^2)
+  local_mocked_bindings(
+    .PRIVATE_METRIC_RESULT_MAX_BYTES = 1,
+    .package = "dsFlowerClient")
+
+  expect_error(
+    dsFlowerClient:::.read_private_validation_result(root), "pooled-only")
+  expect_error(dsFlowerClient:::.read_holdout_result(root), "pooled-only")
+  expect_error(
+    dsFlowerClient:::.read_cross_validation_result(root), "pooled-only")
+  expect_false(dsFlowerClient:::.training_artifacts_complete(
+    root, num_rounds = 1L, cross_validation = TRUE))
 })

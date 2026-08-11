@@ -1,6 +1,10 @@
 # Module: Private validation metric selection
 # Keeps metric discovery and HPO score extraction as local post-processing.
 
+# The largest public 1024-label/512-bin compact result is below 139 MiB even
+# when every numeric leaf uses the longest finite JSON float representation.
+.PRIVATE_METRIC_RESULT_MAX_BYTES <- 160 * 1024^2
+
 .DSFLOWER_SCORE_METRICS <- list(
   binary = c(
     accuracy = "maximize",
@@ -61,6 +65,155 @@
   .DSFLOWER_SCORE_METRICS[[task]]
 }
 
+.private_metrics_valid <- function(metrics, task) {
+  exact_object <- function(value, fields) {
+    is.list(value) && !is.null(names(value)) &&
+      !anyNA(names(value)) && all(nzchar(names(value))) &&
+      !anyDuplicated(names(value)) && length(value) == length(fields) &&
+      setequal(names(value), fields)
+  }
+  finite_scalar <- function(
+      value, lower = -Inf, upper = Inf, nullable = FALSE) {
+    if (is.null(value)) return(isTRUE(nullable))
+    is.numeric(value) && !is.logical(value) && length(value) == 1L &&
+      is.null(dim(value)) && is.null(names(value)) && !is.na(value) &&
+      is.finite(value) && value >= lower && value <= upper
+  }
+  array_values <- function(value) {
+    if (is.numeric(value) && !is.logical(value) && is.null(dim(value)) &&
+        is.null(names(value))) {
+      return(as.numeric(value))
+    }
+    if (!is.list(value) || !is.null(names(value)) ||
+        !all(vapply(value, finite_scalar, logical(1)))) {
+      return(NULL)
+    }
+    as.numeric(unlist(value, recursive = FALSE, use.names = FALSE))
+  }
+  finite_array <- function(
+      value, expected_length, lower = -Inf, upper = Inf) {
+    values <- array_values(value)
+    !is.null(values) && length(values) == expected_length &&
+      all(is.finite(values)) && all(values >= lower) && all(values <= upper)
+  }
+  confusion_size <- function(value) {
+    if (is.matrix(value)) {
+      dimensions <- dim(value)
+      if (!is.numeric(value) || is.logical(value) ||
+          !is.null(dimnames(value)) || length(dimensions) != 2L ||
+          dimensions[[1L]] != dimensions[[2L]] ||
+          dimensions[[1L]] < 2L || dimensions[[1L]] > 1024L ||
+          anyNA(value) || any(!is.finite(value)) || any(value < 0)) {
+        return(NA_integer_)
+      }
+      return(as.integer(dimensions[[1L]]))
+    }
+    if (!is.list(value) || !is.null(names(value)) ||
+        length(value) < 2L || length(value) > 1024L) {
+      return(NA_integer_)
+    }
+    classes <- length(value)
+    if (!all(vapply(value, finite_array, logical(1),
+                    expected_length = classes, lower = 0))) {
+      return(NA_integer_)
+    }
+    as.integer(classes)
+  }
+  binary_bins <- function(value) {
+    scalar_fields <- c(
+      "n", "accuracy", "sensitivity", "specificity", "precision",
+      "negative_predictive_value", "f1", "balanced_accuracy", "roc_auc",
+      "pr_auc", "brier", "expected_calibration_error")
+    if (!exact_object(value, c(
+        scalar_fields, "roc", "precision_recall", "calibration",
+        "decision_curve")) ||
+        !exact_object(value$roc, c("fpr", "tpr")) ||
+        !exact_object(value$precision_recall, c("recall", "precision")) ||
+        !exact_object(value$calibration,
+                      c("predicted", "observed", "weight")) ||
+        !exact_object(value$decision_curve, c(
+          "threshold", "net_benefit", "treat_all", "treat_none"))) {
+      return(NA_integer_)
+    }
+    predicted <- array_values(value$calibration$predicted)
+    bins <- length(predicted)
+    if (is.null(predicted) || bins < 4L || bins > 512L ||
+        !finite_scalar(value$n, lower = 0) ||
+        !finite_scalar(value$accuracy, lower = 0, upper = 1) ||
+        !all(vapply(scalar_fields[-(1:2)], function(field) {
+          finite_scalar(value[[field]], lower = 0, upper = 1,
+                        nullable = TRUE)
+        }, logical(1))) ||
+        !finite_array(value$roc$fpr, bins + 2L, 0, 1) ||
+        !finite_array(value$roc$tpr, bins + 2L, 0, 1) ||
+        !finite_array(value$precision_recall$recall, bins + 1L, 0, 1) ||
+        !finite_array(value$precision_recall$precision, bins + 1L, 0, 1) ||
+        !finite_array(value$calibration$predicted, bins, 0, 1) ||
+        !finite_array(value$calibration$observed, bins, 0, 1) ||
+        !finite_array(value$calibration$weight, bins, 0) ||
+        !finite_array(value$decision_curve$threshold, bins, 0, 1) ||
+        !finite_array(value$decision_curve$net_benefit, bins) ||
+        !finite_array(value$decision_curve$treat_all, bins) ||
+        !finite_array(value$decision_curve$treat_none, bins)) {
+      return(NA_integer_)
+    }
+    as.integer(bins)
+  }
+
+  if (!is.character(task) || length(task) != 1L || is.na(task)) return(FALSE)
+  if (identical(task, "binary")) return(!is.na(binary_bins(metrics)))
+
+  if (task %in% c("multiclass", "ordinal")) {
+    fields <- c(
+      "n", "accuracy", "balanced_accuracy", "macro_precision",
+      "macro_recall", "macro_f1", "macro_roc_auc", "confusion_matrix",
+      if (identical(task, "ordinal")) "ordinal_mae")
+    if (!exact_object(metrics, fields)) return(FALSE)
+    classes <- confusion_size(metrics$confusion_matrix)
+    valid <- !is.na(classes) && finite_scalar(metrics$n, lower = 0) &&
+      finite_scalar(metrics$accuracy, 0, 1, nullable = TRUE) &&
+      all(vapply(c(
+        "balanced_accuracy", "macro_precision", "macro_recall", "macro_f1"
+      ), function(field) finite_scalar(metrics[[field]], 0, 1), logical(1))) &&
+      finite_scalar(metrics$macro_roc_auc, 0, 1, nullable = TRUE)
+    if (identical(task, "ordinal")) {
+      valid <- valid && finite_scalar(
+        metrics$ordinal_mae, 0, classes - 1, nullable = TRUE)
+    }
+    return(isTRUE(valid))
+  }
+
+  if (identical(task, "multilabel")) {
+    if (!exact_object(metrics, c("labels", "macro_roc_auc", "macro_f1")) ||
+        !is.list(metrics$labels) || !is.null(names(metrics$labels)) ||
+        length(metrics$labels) < 2L || length(metrics$labels) > 1024L) {
+      return(FALSE)
+    }
+    bins <- vapply(metrics$labels, binary_bins, integer(1))
+    return(all(!is.na(bins)) && length(unique(bins)) == 1L &&
+      finite_scalar(metrics$macro_roc_auc, 0, 1, nullable = TRUE) &&
+      finite_scalar(metrics$macro_f1, 0, 1, nullable = TRUE))
+  }
+
+  if (task %in% c("regression", "count")) {
+    fields <- c(
+      "n", "mae", "mse", "rmse", "r_squared",
+      if (identical(task, "count")) "mean_poisson_deviance_normalized")
+    valid <- exact_object(metrics, fields) &&
+      finite_scalar(metrics$n, lower = 0) &&
+      finite_scalar(metrics$mae, lower = 0) &&
+      finite_scalar(metrics$mse, lower = 0) &&
+      finite_scalar(metrics$rmse, lower = 0) &&
+      finite_scalar(metrics$r_squared, upper = 1, nullable = TRUE)
+    if (identical(task, "count")) {
+      valid <- valid && finite_scalar(
+        metrics$mean_poisson_deviance_normalized, 0, 1, nullable = TRUE)
+    }
+    return(isTRUE(valid))
+  }
+  FALSE
+}
+
 .score_metric_name <- function(metric) {
   if (!is.character(metric) || length(metric) != 1L || is.na(metric) ||
       !nzchar(metric)) {
@@ -109,10 +262,7 @@
 
   .score_metric_registry(payload$task)
   if (!is.null(payload$metrics) &&
-      (!is.list(payload$metrics) || !length(payload$metrics) ||
-       is.null(names(payload$metrics)) || anyNA(names(payload$metrics)) ||
-       any(!nzchar(names(payload$metrics))) ||
-       anyDuplicated(names(payload$metrics)))) {
+      !.private_metrics_valid(payload$metrics, payload$task)) {
     stop("Private metric release is malformed.", call. = FALSE)
   }
   payload

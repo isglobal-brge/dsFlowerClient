@@ -969,17 +969,25 @@
 .read_private_validation_result <- function(results_dir) {
   path <- file.path(results_dir, "validation.json")
   if (!file.exists(path)) return(NULL)
+  info <- file.info(path)
+  if (is.na(info$isdir) || isTRUE(info$isdir) || is.na(info$size) ||
+      info$size < 1 || info$size > .PRIVATE_METRIC_RESULT_MAX_BYTES) {
+    stop("Validation output failed the pooled-only privacy contract.",
+         call. = FALSE)
+  }
   value <- tryCatch(jsonlite::fromJSON(path, simplifyVector = FALSE),
                     error = function(e) NULL)
   allowed <- c("pooled_only", "privacy", "task", "n_nodes", "available",
                "metrics")
+  task_is_scalar <- is.list(value) && is.character(value$task) &&
+    length(value$task) == 1L && !is.na(value$task)
   if (!is.list(value) || !identical(value$pooled_only, TRUE) ||
       !identical(value$privacy, "node-dp-pooled-postprocessing") ||
       is.null(names(value)) || anyDuplicated(names(value)) ||
       any(!names(value) %in% allowed) ||
       !(identical(value$available, TRUE) ||
         identical(value$available, FALSE)) ||
-      length(value$task) != 1L || !value$task %in% c(
+      !task_is_scalar || !value$task %in% c(
         "binary", "multiclass", "ordinal", "multilabel",
         "regression", "count") ||
       length(value$n_nodes) != 1L || !is.numeric(value$n_nodes) ||
@@ -991,6 +999,11 @@
   if ((isTRUE(value$available) &&
        (!("metrics" %in% names(value)) || !is.list(value$metrics))) ||
       (!isTRUE(value$available) && "metrics" %in% names(value))) {
+    stop("Validation output failed the pooled-only privacy contract.",
+         call. = FALSE)
+  }
+  if (isTRUE(value$available) &&
+      !.private_metrics_valid(value$metrics, value$task)) {
     stop("Validation output failed the pooled-only privacy contract.",
          call. = FALSE)
   }

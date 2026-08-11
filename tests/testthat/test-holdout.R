@@ -77,7 +77,7 @@ test_that("pooled holdout output is strict and contains no node transcript", {
     method = "holdout",
     task = "binary",
     n_nodes = 2L,
-    metrics = list(accuracy = 0.75, roc_auc = 0.8)
+    metrics = .test_private_metrics("binary")
   ), file.path(root, "holdout.json"), auto_unbox = TRUE)
 
   value <- dsFlowerClient:::.read_holdout_result(root)

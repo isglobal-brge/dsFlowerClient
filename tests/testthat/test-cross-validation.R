@@ -155,7 +155,7 @@ test_that("pooled CV output is finite, provenance-pinned, and transcript-free", 
     folds = 3L,
     cv_contract_sha256 = contract$sha256,
     cv_job_sha256 = strrep("a", 64L),
-    metrics = list(accuracy = 0.75, roc_auc = 0.8))
+    metrics = .test_private_metrics("binary"))
   jsonlite::write_json(
     payload, file.path(root, "cv.json"), auto_unbox = TRUE)
   value <- dsFlowerClient:::.read_cross_validation_result(root)
