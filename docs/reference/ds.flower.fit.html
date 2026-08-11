@@ -207,13 +207,16 @@ registered for both require an explicit choice.</p></dd>
 with at most six decimal places. The node assigns complete privacy units
 before training, trains only on the complement, and returns the final model
 together with one pooled differentially-private test metric release. This
-supports tabular neural and native-tree models.</p></dd>
+supports tabular neural/native-tree models and native dsFlower vision.</p></dd>
 
 
 <dt id="arg-cross-validation">cross_validation<a class="anchor" aria-label="anchor" href="#arg-cross-validation"></a></dt>
 <dd><p>Optional integer in <code>[2, 10]</code>. This runs a
-dedicated metrics-only federated CV job; prefer
-<code><a href="ds.flower.cross_validate.html">ds.flower.cross_validate()</a></code> for this workflow.</p></dd>
+dedicated metrics-only tabular CV job for neural or binary/regression
+native-tree models. It releases one pooled DP OOF result and saves no fold
+model or prediction. When <code>rounds</code> is omitted, native-tree CV uses its
+required single round per fold; an explicit value is never overwritten.
+Prefer <code><a href="ds.flower.cross_validate.html">ds.flower.cross_validate()</a></code> for this workflow.</p></dd>
 
 </dl></div>
     <div class="section level2">

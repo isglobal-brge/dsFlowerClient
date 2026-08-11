@@ -1,4 +1,4 @@
-# Cross-validate a neural model across federated data
+# Cross-validate a tabular neural or native-tree model across federated data
 
 Runs `folds` complete, clean-initialized federated trainings. Each node
 assigns whole privacy units to folds with its custodial HMAC, trains
@@ -6,6 +6,11 @@ every fold only on the complement, and keeps held-out sufficient
 statistics in namespaced Flower runtime memory. Only one pooled
 differentially-private OOF metric vector is released after all folds
 finish; no fold model, prediction, site metric, or fold metric is saved.
+Native-tree cross-validation supports binary classification and bounded
+regression for the five registered engines. It reuses each engine's
+canonical ensemble contract; XGBoost additionally requires the verified
+node-owned native bundle. Native engines run exactly one Flower round
+per fold, while neural models use the requested rounds per fold.
 
 ## Usage
 

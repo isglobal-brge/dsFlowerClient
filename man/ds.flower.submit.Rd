@@ -84,12 +84,14 @@ saved validation contract retains identical label semantics.}
 \item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
 regression/count targets. The node clips each target to these constants.}
 
-\item{holdout}{Optional numeric test fraction for atomic tabular neural or
-native-tree holdout validation. Unsupported tracks fail before private
-preparation.}
+\item{holdout}{Optional numeric test fraction for atomic tabular neural,
+native-tree or native dsFlower vision holdout validation. Unsupported
+tracks fail before private preparation.}
 
 \item{cross_validation}{Optional integer in \code{[2, 10]} selecting a
-dedicated federated cross-validation job. Prefer the user-facing
+dedicated metrics-only tabular cross-validation job for neural models or
+binary/regression native-tree models. It returns one pooled DP OOF result
+and never saves fold models or predictions. Prefer the user-facing
 \code{ds.flower.cross_validate()} wrapper.}
 
 \item{allow_insecure_http}{Character vector of exact connection names allowed

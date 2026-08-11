@@ -235,10 +235,13 @@ ds.flower.task <- function(name = "classification") {
 #'   with at most six decimal places. The node assigns complete privacy units
 #'   before training, trains only on the complement, and returns the final model
 #'   together with one pooled differentially-private test metric release. This
-#'   supports tabular neural and native-tree models.
+#'   supports tabular neural/native-tree models and native dsFlower vision.
 #' @param cross_validation Optional integer in \code{[2, 10]}. This runs a
-#'   dedicated metrics-only federated CV job; prefer
-#'   \code{ds.flower.cross_validate()} for this workflow.
+#'   dedicated metrics-only tabular CV job for neural or binary/regression
+#'   native-tree models. It releases one pooled DP OOF result and saves no fold
+#'   model or prediction. When \code{rounds} is omitted, native-tree CV uses its
+#'   required single round per fold; an explicit value is never overwritten.
+#'   Prefer \code{ds.flower.cross_validate()} for this workflow.
 #' @return A \code{dsflower_run} object, or a \code{dsflower_cv} when
 #'   \code{cross_validation} is set.
 #' @export
@@ -279,6 +282,14 @@ ds.flower.fit <- function(conns,
   }
   if (missing(target) || is.null(target)) {
     stop("'target' is required.", call. = FALSE)
+  }
+  if (missing(rounds) && !is.null(cross_validation)) {
+    registered <- if (inherits(model, "dsflower_model")) {
+      model
+    } else {
+      .dsflower_get_model(model)
+    }
+    if (identical(registered$track %||% NULL, "native_tree")) rounds <- 1L
   }
   if (!is.numeric(rounds) || is.logical(rounds)) {
     stop("'rounds' must be a single positive integer no greater than 500.",

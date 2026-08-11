@@ -43,7 +43,7 @@ ds.flower.associate(
 }
 \value{
 A \code{dsflower_association}. If a complete release is unavailable,
-\code{available} is false and table/measures/noise are null.
+  \code{available} is false and table/measures/noise are null.
 }
 \description{
 Builds one bounded 3x3 exposure/outcome table at each node, applies one

@@ -90,6 +90,80 @@ test_that("CV job provenance has a mirrored golden and binds every public group"
   expect_identical(hash(irrelevant), baseline)
 })
 
+test_that("native-tree CV provenance binds its request without neural fields", {
+  build_request <- function(levels = c("control", "case")) {
+    model <- ds.flower.model.xgboost()
+    dsFlowerClient:::.build_xgboost_request(
+      params = model$params, features = c("age", "marker"),
+      feature_bounds = list(lower = c(0, -5), upper = c(100, 5)),
+      target_name = "outcome", target_levels = levels,
+      feature_cuts = list(c(18, 40, 65), c(-1, 0, 1)))
+  }
+  request <- build_request()
+  contract <- dsFlowerClient:::.cross_validation_contract(
+    dsFlowerClient:::.normalize_cross_validation(3L), "row")
+  config <- list(
+    "task-type" = "classification", "dp-track" = "native_tree",
+    "num-server-rounds" = 1L, "num-features" = 2L,
+    "native-tree-request-b64" = request$b64,
+    "native-tree-request-sha256" = request$sha256,
+    "cv-version" = contract$version, "cv-method" = contract$method,
+    "cv-assignment" = contract$assignment, "cv-folds" = contract$folds,
+    "cv-privacy-unit" = contract$privacy_unit,
+    "cv-unit-canonicalization" = contract$unit_canonicalization,
+    "cv-contract-sha256" = contract$sha256,
+    "cv-validation-bins" = 32L, "cv-n-nodes" = 2L,
+    "feature-bounds" = list(lower = c(0, -5), upper = c(100, 5)),
+    "target-levels" = list(type = "character",
+                           values = c("control", "case")))
+  hash <- function(value = config, runner_abi = 3L,
+                   runner_sha = strrep("a", 64L),
+                   policy_sha = strrep("b", 64L), clipping = 1) {
+    dsFlowerClient:::.cv_job_sha256(
+      value, c("age", "marker"), "outcome", runner_abi, runner_sha,
+      policy_sha, clipping)
+  }
+  baseline <- hash()
+  expect_identical(
+    baseline,
+    "1f8d5520eb02029caad12b3a8e40e929ab58a142edd494b4cfe751dec826982c")
+
+  changed_request <- build_request(c("case", "control"))
+  changed <- config
+  changed[["native-tree-request-b64"]] <- changed_request$b64
+  changed[["native-tree-request-sha256"]] <- changed_request$sha256
+  changed[["target-levels"]]$values <- c("case", "control")
+  expect_false(identical(hash(changed), baseline))
+  expect_false(identical(hash(within(config, `cv-n-nodes` <- 3L)), baseline))
+  expect_false(identical(hash(within(config, `cv-folds` <- 2L)), baseline))
+  expect_false(identical(
+    hash(within(config, `cv-validation-bins` <- 64L)), baseline))
+  expect_false(identical(hash(runner_abi = 4L), baseline))
+  expect_false(identical(hash(runner_sha = strrep("d", 64L)), baseline))
+  expect_false(identical(hash(policy_sha = strrep("e", 64L)), baseline))
+  expect_false(identical(hash(clipping = 2), baseline))
+
+  extra_model <- ds.flower.model.extra_trees()
+  extra_request <- dsFlowerClient:::.build_extra_trees_request(
+    params = extra_model$params, features = c("age", "marker"),
+    feature_bounds = list(lower = c(0, -5), upper = c(100, 5)),
+    target_name = "outcome", target_levels = c("control", "case"),
+    feature_cuts = list(c(18, 40, 65), c(-1, 0, 1)))
+  different_engine <- config
+  different_engine[["native-tree-request-b64"]] <- extra_request$b64
+  different_engine[["native-tree-request-sha256"]] <- extra_request$sha256
+  expect_false(identical(hash(different_engine), baseline))
+
+  # Native provenance is closed over the native request. Neural-only knobs do
+  # not become fake execution fields for the isolated one-round app.
+  irrelevant <- config
+  irrelevant$`model-spec-b64` <- "W10="
+  irrelevant$`loss-name` <- "mse"
+  irrelevant$`optimizer-name` <- "adamw"
+  irrelevant$strategy <- "fedadam"
+  expect_identical(hash(irrelevant), baseline)
+})
+
 test_that("CV requires one common public runner and node privacy contract", {
   capability <- list(
     runner_abi = 3L, runner_sha256 = strrep("a", 64L),
@@ -124,11 +198,51 @@ test_that("cross_validate defaults to three real folds and forwards one job", {
   expect_false("holdout" %in% names(seen))
 })
 
-test_that("CV rejects unsupported engines and holdout combinations before IO", {
-  expect_error(
-    dsFlowerClient:::.assert_cross_validation_supported(
-      list(track = "native_tree"), "tabular"),
-    "neural")
+test_that("cross_validate defaults native-tree folds to one Flower round", {
+  seen <- NULL
+  local_mocked_bindings(
+    ds.flower.fit = function(...) {
+      seen <<- list(...)
+      structure(list(metrics = list(accuracy = 0.5)), class = "dsflower_cv")
+    },
+    .package = "dsFlowerClient"
+  )
+  ds.flower.cross_validate(
+    conns = list(site = TRUE), symbol = "D", target = "y", features = "x",
+    model = "xgboost")
+  expect_identical(seen$rounds, 1L)
+  expect_identical(seen$cross_validation, 3L)
+})
+
+test_that("fit defaults direct native-tree CV without overriding rounds", {
+  seen <- NULL
+  local_mocked_bindings(
+    ds.flower.submit = function(...) {
+      seen <<- list(...)
+      structure(list(), class = "dsflower_cv")
+    },
+    .package = "dsFlowerClient"
+  )
+  arguments <- list(
+    conns = list(site = TRUE), symbol = "D", target = "y", features = "x",
+    model = "xgboost", cross_validation = 3L)
+
+  do.call(ds.flower.fit, arguments)
+  expect_identical(seen$num_rounds, 1L)
+  do.call(ds.flower.fit, c(arguments, list(rounds = 2L)))
+  expect_identical(seen$num_rounds, 2L)
+})
+
+test_that("CV accepts native-tree tabular models and rejects unsupported shapes", {
+  expect_invisible(dsFlowerClient:::.assert_cross_validation_supported(
+    list(track = "native_tree"), "tabular"))
+  for (malformed in list(list(), list(track = NA_character_),
+                         list(track = c("neural", "native_tree")))) {
+    expect_error(
+      dsFlowerClient:::.assert_cross_validation_supported(
+        malformed, "tabular"),
+      "neural and native-tree")
+  }
   expect_error(
     dsFlowerClient:::.assert_cross_validation_supported(
       list(track = "neural"), "image"),
@@ -261,4 +375,54 @@ test_that("run accepts exactly cv.json and verifies the submitted contract", {
         app_dir = withr::local_tempdir(), silent = TRUE),
       "does not match")
   }
+})
+
+test_that("native-tree CV persists only the pooled cv.json", {
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(
+    process = list(is_alive = function() TRUE),
+    flwr_home = withr::local_tempdir())
+  recipe <- ds.flower.recipe(
+    model = ds.flower.model.xgboost(), num_rounds = 1L,
+    features = c("age", "marker"))
+  recipe$model$track <- "native_tree"
+  recipe$cross_validation_contract <-
+    dsFlowerClient:::.cross_validation_contract(
+      dsFlowerClient:::.normalize_cross_validation(3L), "row")
+  recipe$cross_validation_n_nodes <- 1L
+  recipe$cross_validation_job_sha256 <- strrep("a", 64L)
+  release <- list(
+    task = "binary", folds = 3L, n_nodes = 1L,
+    cv_contract_sha256 = recipe$cross_validation_contract$sha256,
+    cv_job_sha256 = recipe$cross_validation_job_sha256,
+    metrics = list(accuracy = 0.75))
+  output <- withr::local_tempdir()
+
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .ensure_client_framework = function(...) {
+      stop("native CV must not provision torch")
+    },
+    .client_flwr_cmd = function() "flwr",
+    .client_venv_env = function(...) character(),
+    .run_flwr_with_artifact_watchdog = function(..., results_dir) {
+      writeBin(charToRaw("{\"pooled_only\":true}"),
+               file.path(results_dir, "cv.json"))
+      list(status = 0L, stdout = "run_id=native-cv", stderr = "")
+    },
+    .read_model_weights = function(...) NULL,
+    .read_training_history = function(...) NULL,
+    .read_holdout_result = function(...) NULL,
+    .read_cross_validation_result = function(...) release,
+    .package = "dsFlowerClient")
+
+  result <- ds.flower.run.start(
+    recipe, conns = list(site = TRUE), app_dir = withr::local_tempdir(),
+    output_dir = output, output_name = "native_cv", silent = TRUE)
+  expect_s3_class(result, "dsflower_cv")
+  expect_identical(basename(result$saved_path), "cv.json")
+  expect_identical(list.files(result$output_dir), "cv.json")
+  expect_true(file.exists(result$saved_path))
 })

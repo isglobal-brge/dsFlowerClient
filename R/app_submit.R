@@ -391,11 +391,13 @@
 #' @param torch_backend Character; node torch backend selection.
 #' @param verbose Logical.
 #' @param silent Logical; suppress progress feedback.
-#' @param holdout Optional numeric test fraction for atomic tabular neural or
-#'   native-tree holdout validation. Unsupported tracks fail before private
-#'   preparation.
+#' @param holdout Optional numeric test fraction for atomic tabular neural,
+#'   native-tree or native dsFlower vision holdout validation. Unsupported
+#'   tracks fail before private preparation.
 #' @param cross_validation Optional integer in \code{[2, 10]} selecting a
-#'   dedicated federated cross-validation job. Prefer the user-facing
+#'   dedicated metrics-only tabular cross-validation job for neural models or
+#'   binary/regression native-tree models. It returns one pooled DP OOF result
+#'   and never saves fold models or predictions. Prefer the user-facing
 #'   \code{ds.flower.cross_validate()} wrapper.
 #' @return A \code{dsflower_run}, or a \code{dsflower_cv} when
 #'   \code{cross_validation} is set.
@@ -737,9 +739,11 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     prepare_config[["target-bounds"]] <- public_target$bounds
   }
   if (!is.null(cv_contract)) {
+    if (identical(sub$track, "neural")) {
+      prepare_config <- c(prepare_config, strategy_config)
+    }
     prepare_config <- c(
-      prepare_config, strategy_config,
-      list("cv-n-nodes" = as.integer(n_clients)))
+      prepare_config, list("cv-n-nodes" = as.integer(n_clients)))
     cv_job_sha256 <- .cv_job_sha256(
       prepare_config, features, target,
       runner_abi = cv_capabilities$runner_abi,
@@ -769,7 +773,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     .toml_kv("dp-track", sub$track),
     .toml_kv("data-kind", data_kind),
     .toml_kv("task-type", task_type),
-    strategy_lines,
+    if (identical(sub$track, "native_tree") && !is.null(cv_contract))
+      character() else strategy_lines,
     paste0("num-features = ", as.integer(n_features)),
     paste0("num-server-rounds = ", as.integer(num_rounds)),
     paste0("min-train-nodes = ", as.integer(n_clients)),
@@ -873,7 +878,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     cross_validation_contract = cv_contract,
     cross_validation_bins = if (!is.null(cv_contract))
       .CV_VALIDATION_BINS else NULL,
-    cross_validation_strategy = if (!is.null(cv_contract))
+    cross_validation_strategy = if (!is.null(cv_contract) &&
+                                     identical(sub$track, "neural"))
       strategy_config else NULL,
     cross_validation_n_nodes = if (!is.null(cv_contract))
       as.integer(n_clients) else NULL,

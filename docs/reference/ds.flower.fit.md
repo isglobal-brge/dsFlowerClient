@@ -166,12 +166,16 @@ ds.flower.fit(
   most six decimal places. The node assigns complete privacy units
   before training, trains only on the complement, and returns the final
   model together with one pooled differentially-private test metric
-  release. This supports tabular neural and native-tree models.
+  release. This supports tabular neural/native-tree models and native
+  dsFlower vision.
 
 - cross_validation:
 
   Optional integer in `[2, 10]`. This runs a dedicated metrics-only
-  federated CV job; prefer
+  tabular CV job for neural or binary/regression native-tree models. It
+  releases one pooled DP OOF result and saves no fold model or
+  prediction. When `rounds` is omitted, native-tree CV uses its required
+  single round per fold; an explicit value is never overwritten. Prefer
   [`ds.flower.cross_validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.cross_validate.md)
   for this workflow.
 

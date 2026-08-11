@@ -72,11 +72,20 @@
     stop("Atomic holdout is implemented only for neural and native-tree models; ",
          "this backend is not advertised as supported.", call. = FALSE)
   }
-  if (!identical(data_kind, "tabular")) {
-    stop("Atomic holdout supports tabular data only.",
-         call. = FALSE)
+  if (identical(data_kind, "tabular")) return(invisible(TRUE))
+  if (identical(data_kind, "image") && identical(track, "neural")) {
+    params <- sub$params %||% list()
+    backbone <- params$backbone %||% ""
+    profile <- params$vision_extractor_profile %||% ""
+    expected <- unname(.VISION_EXTRACTOR_PROFILES[[backbone]]) %||% ""
+    if (is.character(backbone) && length(backbone) == 1L && !is.na(backbone) &&
+        is.character(profile) && length(profile) == 1L && !is.na(profile) &&
+        nzchar(expected) && identical(profile, expected)) {
+      return(invisible(TRUE))
+    }
   }
-  invisible(TRUE)
+  stop("Atomic holdout supports tabular data and native dsFlower neural vision ",
+       "with its exact extractor profile only.", call. = FALSE)
 }
 
 .normalize_cross_validation <- function(value) {
@@ -135,12 +144,14 @@
 }
 
 .assert_cross_validation_supported <- function(sub, data_kind) {
-  if (!is.list(sub) || !identical(sub$track %||% NULL, "neural")) {
-    stop("Cross-validation is currently implemented only for neural models; ",
+  track <- if (is.list(sub)) sub$track %||% NULL else NULL
+  if (!is.character(track) || length(track) != 1L || is.na(track) ||
+      !track %in% c("neural", "native_tree")) {
+    stop("Cross-validation is implemented only for neural and native-tree models; ",
          "this backend is not advertised as supported.", call. = FALSE)
   }
   if (!identical(data_kind, "tabular")) {
-    stop("Neural cross-validation currently supports tabular data only.",
+    stop("Cross-validation currently supports tabular data only.",
          call. = FALSE)
   }
   invisible(TRUE)
@@ -452,12 +463,9 @@
   rounds <- .cv_job_scalar(
     run_config[["num-server-rounds"]], "num-server-rounds",
     "integer", 1, 500)
-  model_spec <- .cv_job_scalar(
-    run_config[["model-spec-b64"]], "model-spec-b64", "character")
-  loss <- tolower(.cv_job_scalar(
-    run_config[["loss-name"]], "loss-name", "character"))
-  payload <- list(
-    version = "dsflower-cv-job-v1",
+  track <- tolower(.cv_job_scalar(
+    run_config[["dp-track"]], "dp-track", "character"))
+  common <- list(
     runner = list(
       abi = .cv_job_scalar(runner_abi, "runner ABI", "integer", 1, 65536),
       sha256 = .cv_job_sha(runner_sha256, "runner SHA-256")),
@@ -481,7 +489,84 @@
         "cv-unit-canonicalization", "character"),
       contract_sha256 = .cv_job_sha(
         run_config[["cv-contract-sha256"]], "CV contract SHA-256"),
-      validation_bins = bins),
+      validation_bins = bins))
+  if (identical(track, "native_tree")) {
+    if (!identical(rounds, 1L)) {
+      stop("Native-tree cross-validation requires one round per fold.",
+           call. = FALSE)
+    }
+    request <- .validate_native_tree_request_wire(
+      run_config[["native-tree-request-b64"]],
+      run_config[["native-tree-request-sha256"]])
+    schema <- request$value$public_schema
+    expected_task <- if (identical(request$value$task, "binary")) {
+      "classification"
+    } else {
+      "regression"
+    }
+    request_level_type <- if (identical(request$value$task, "binary")) {
+      switch(schema$target$levels[[1L]]$type,
+        string = "character", boolean = "logical", number = "numeric", "")
+    } else NULL
+    request_levels <- if (identical(request$value$task, "binary")) {
+      unlist(lapply(schema$target$levels, `[[`, "value"), use.names = FALSE)
+    } else NULL
+    if (!identical(features, enc2utf8(as.character(schema$features))) ||
+        !identical(targets, enc2utf8(as.character(schema$target$name))) ||
+        !identical(feature_lower, as.numeric(schema$lower)) ||
+        !identical(feature_upper, as.numeric(schema$upper)) ||
+        !identical(task, expected_task) ||
+        !identical(level_type, request_level_type) ||
+        !identical(level_values, request_levels) ||
+        !identical(target_lower,
+                   if (identical(request$value$task, "regression"))
+                     as.numeric(schema$target$lower) else NULL) ||
+        !identical(target_upper,
+                   if (identical(request$value$task, "regression"))
+                     as.numeric(schema$target$upper) else NULL)) {
+      stop("Native-tree CV schema differs from its canonical request.",
+           call. = FALSE)
+    }
+    payload <- c(list(version = "dsflower-native-tree-cv-job-v1"), common,
+      list(
+        execution = list(rounds = rounds, n_nodes = n_nodes),
+        schema = list(
+          features = features, target = targets[[1L]],
+          sha256 = .cv_job_sha(
+            schema$sha256, "native-tree public schema SHA-256")),
+        native_tree = list(
+          contract = .cv_job_scalar(
+            request$value$contract, "native-tree contract", "character"),
+          engine = .cv_job_scalar(
+            request$value$engine, "native-tree engine", "character"),
+          mode = .cv_job_scalar(
+            request$value$mode, "native-tree mode", "character"),
+          request_sha256 = .cv_job_sha(
+            request$sha256, "native-tree request SHA-256"),
+          task = .cv_job_scalar(
+            request$value$task, "native-tree task", "character"))))
+    if (payload$privacy$clipping_norm <= 0) {
+      stop("privacy clipping norm is outside its public contract.",
+           call. = FALSE)
+    }
+    canonical <- as.character(jsonlite::toJSON(
+      payload, auto_unbox = TRUE, null = "null", na = "null", digits = NA,
+      always_decimal = TRUE, pretty = FALSE))
+    return(digest::digest(
+      charToRaw(enc2utf8(canonical)), algo = "sha256", serialize = FALSE))
+  }
+  if (!identical(track, "neural")) {
+    stop("Cross-validation track is unsupported.", call. = FALSE)
+  }
+  model_spec <- .cv_job_scalar(
+    run_config[["model-spec-b64"]], "model-spec-b64", "character")
+  loss <- tolower(.cv_job_scalar(
+    run_config[["loss-name"]], "loss-name", "character"))
+  payload <- list(
+    version = "dsflower-cv-job-v1",
+    runner = common$runner,
+    privacy = common$privacy,
+    cross_validation = common$cross_validation,
     execution = list(
       rounds = rounds, n_nodes = n_nodes,
       strategy = .cv_job_strategy(run_config)),

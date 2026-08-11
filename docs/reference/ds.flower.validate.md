@@ -18,20 +18,20 @@ profile bump. During federated validation, image paths and pixels remain
 node-private. Local researcher-side image prediction is separately
 available through
 [`ds.flower.predict()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.predict.md);
-image holdout and cross-validation are not supported. Reusing the
-training dataset is resubstitution validation; assigning an independent
-dataset is external validation. Each protected row/patient contributes
-one bounded sufficient-statistic vector, the node releases it once
-through the server-owned Gaussian mechanism, and only pooled
-post-processed metrics are returned. Exact predictions, labels, counts
-and per-node metrics never leave the node. All nodes must declare the
-same row- or patient-level estimand. Privacy is guaranteed per node; if
-one person occurs in multiple nodes, those node releases compose for
-that person and deployments should account for the overlap or ensure
-cohorts are disjoint. If not every expected node returns the fixed
-private release, the result has `available=FALSE` and no metrics rather
-than exact, per-node or zero-filled substitutes. This is an operational
-availability result, not a historical query denial.
+native dsFlower image holdout is supported, while image cross-validation
+is not. Reusing the training dataset is resubstitution validation;
+assigning an independent dataset is external validation. Each protected
+row/patient contributes one bounded sufficient-statistic vector, the
+node releases it once through the server-owned Gaussian mechanism, and
+only pooled post-processed metrics are returned. Exact predictions,
+labels, counts and per-node metrics never leave the node. All nodes must
+declare the same row- or patient-level estimand. Privacy is guaranteed
+per node; if one person occurs in multiple nodes, those node releases
+compose for that person and deployments should account for the overlap
+or ensure cohorts are disjoint. If not every expected node returns the
+fixed private release, the result has `available=FALSE` and no metrics
+rather than exact, per-node or zero-filled substitutes. This is an
+operational availability result, not a historical query denial.
 
 ## Usage
 

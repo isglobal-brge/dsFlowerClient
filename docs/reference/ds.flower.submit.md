@@ -132,14 +132,16 @@ ds.flower.submit(
 
 - holdout:
 
-  Optional numeric test fraction for atomic tabular neural or
-  native-tree holdout validation. Unsupported tracks fail before private
-  preparation.
+  Optional numeric test fraction for atomic tabular neural, native-tree
+  or native dsFlower vision holdout validation. Unsupported tracks fail
+  before private preparation.
 
 - cross_validation:
 
-  Optional integer in `[2, 10]` selecting a dedicated federated
-  cross-validation job. Prefer the user-facing
+  Optional integer in `[2, 10]` selecting a dedicated metrics-only
+  tabular cross-validation job for neural models or binary/regression
+  native-tree models. It returns one pooled DP OOF result and never
+  saves fold models or predictions. Prefer the user-facing
   [`ds.flower.cross_validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.cross_validate.md)
   wrapper.
 

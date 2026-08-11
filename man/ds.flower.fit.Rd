@@ -109,11 +109,14 @@ registered for both require an explicit choice.}
 with at most six decimal places. The node assigns complete privacy units
 before training, trains only on the complement, and returns the final model
 together with one pooled differentially-private test metric release. This
-supports tabular neural and native-tree models.}
+supports tabular neural/native-tree models and native dsFlower vision.}
 
 \item{cross_validation}{Optional integer in \code{[2, 10]}. This runs a
-dedicated metrics-only federated CV job; prefer
-\code{ds.flower.cross_validate()} for this workflow.}
+dedicated metrics-only tabular CV job for neural or binary/regression
+native-tree models. It releases one pooled DP OOF result and saves no fold
+model or prediction. When \code{rounds} is omitted, native-tree CV uses its
+required single round per fold; an explicit value is never overwritten.
+Prefer \code{ds.flower.cross_validate()} for this workflow.}
 }
 \value{
 A \code{dsflower_run} object, or a \code{dsflower_cv} when

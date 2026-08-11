@@ -2,7 +2,7 @@
 % Please edit documentation in R/cross_validate.R
 \name{ds.flower.cross_validate}
 \alias{ds.flower.cross_validate}
-\title{Cross-validate a neural model across federated data}
+\title{Cross-validate a tabular neural or native-tree model across federated data}
 \usage{
 ds.flower.cross_validate(
   conns,
@@ -105,6 +105,11 @@ fold only on the complement, and keeps held-out sufficient statistics in
 namespaced Flower runtime memory. Only one pooled differentially-private OOF metric vector is
 released after all folds finish; no fold model, prediction, site metric, or
 fold metric is saved.
+Native-tree cross-validation supports binary classification and bounded
+regression for the five registered engines. It reuses each engine's
+canonical ensemble contract; XGBoost additionally requires the verified
+node-owned native bundle. Native engines run exactly one Flower round per
+fold, while neural models use the requested rounds per fold.
 }
 \details{
 The node-owned per-job privacy contract reserves 80 percent for training and

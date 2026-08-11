@@ -1052,8 +1052,8 @@
 #' and semantic implementation/dependency changes require a profile bump. During
 #' federated validation, image paths and pixels remain node-private. Local
 #' researcher-side image prediction is separately available through
-#' \code{ds.flower.predict()}; image holdout and cross-validation are not
-#' supported. Reusing the training dataset is resubstitution
+#' \code{ds.flower.predict()}; native dsFlower image holdout is supported, while
+#' image cross-validation is not. Reusing the training dataset is resubstitution
 #' validation; assigning an independent dataset is external
 #' validation. Each protected row/patient contributes one bounded sufficient-statistic
 #' vector, the node releases it once through the server-owned Gaussian mechanism,

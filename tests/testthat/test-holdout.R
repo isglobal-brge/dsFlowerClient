@@ -45,7 +45,7 @@ test_that("holdout fraction has one canonical seed-free contract", {
   expect_false(any(grepl("seed|salt|nonce", names(contract), ignore.case = TRUE)))
 })
 
-test_that("fit forwards holdout for exact tabular model tracks", {
+test_that("fit forwards holdout for exact supported model tracks", {
   seen <- NULL
   local_mocked_bindings(
     ds.flower.submit = function(...) {
@@ -63,10 +63,14 @@ test_that("fit forwards holdout for exact tabular model tracks", {
     list(track = "native_tree"), "tabular"))
   expect_error(dsFlowerClient:::.assert_holdout_supported(
     list(track = "egress"), "tabular"), "neural and native-tree")
-  expect_error(
-    dsFlowerClient:::.assert_holdout_supported(list(track = "neural"), "image"),
-    "tabular"
-  )
+  vision <- dsFlowerClient:::.emit_submission(
+    ds.flower.model("pytorch_resnet18"))
+  expect_no_error(dsFlowerClient:::.assert_holdout_supported(vision, "image"))
+  expect_error(dsFlowerClient:::.assert_holdout_supported(
+    list(track = "native_tree"), "image"), "vision|image", ignore.case = TRUE)
+  vision$params$vision_extractor_profile <- "untrusted-profile"
+  expect_error(dsFlowerClient:::.assert_holdout_supported(vision, "image"),
+               "native dsFlower|profile", ignore.case = TRUE)
 })
 
 test_that("pooled holdout output is strict and contains no node transcript", {

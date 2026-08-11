@@ -173,7 +173,8 @@ Catch-all index for exported helpers not listed above.
 - [`ds.flower.copy_code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.copy_code.md)
   : Copy reproducible R code to clipboard
 - [`ds.flower.cross_validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.cross_validate.md)
-  : Cross-validate a neural model across federated data
+  : Cross-validate a tabular neural or native-tree model across
+  federated data
 - [`ds.flower.delete_model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.delete_model.md)
   : Delete a saved model
 - [`ds.flower.describe()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.describe.md)

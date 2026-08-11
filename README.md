@@ -216,7 +216,9 @@ The image contracts cover private federated training of their frozen-backbone
 heads, private validation, and local researcher-side prediction for saved
 native dsFlower ResNet-18/DenseNet-121 binary or multiclass releases, including
 the volumetric variants. Local prediction takes explicit image or volume paths
-and does not contact DSI; image holdout/cross-validation are not implemented.
+and does not contact DSI. Atomic holdout for native dsFlower vision uses the
+same row/patient split, fixed 80/20 privacy allocation and single pooled DP test
+release as neural tabular holdout; image cross-validation is not implemented.
 These boundaries are explicit rather than silently treating images as a numeric
 table. Each image release carries a
 `vision-extractor-profile`: a versioned public semantic ABI for its frozen
@@ -396,7 +398,8 @@ probabilities <- ds.flower.predict(
 )
 ```
 
-Holdout and cross-validation do not claim image support.
+Native dsFlower vision supports atomic holdout; image cross-validation remains
+unsupported.
 
 Binary validation provides threshold metrics, ROC/PR AUC, Brier score,
 calibration and decision-curve summaries; multiclass/ordinal/multilabel use
@@ -439,13 +442,20 @@ cv <- ds.flower.cross_validate(
 cv$metrics
 ```
 
-This runs `K` clean-initialized federated trainings, excludes each held-out fold
+This supports tabular neural models and native-tree binary classification or
+bounded regression with XGBoost, Extra Trees, Random Forest, LightGBM, and
+CatBoost. XGBoost uses the same verified node-owned native bundle required for
+ordinary native training. Native engines run their complete public schedule in
+one Flower round per fold and reuse their canonical exact ensemble contract.
+
+The workflow runs `K` clean federated trainings, excludes each held-out fold
 before its first training read, and retains raw OOF sufficient statistics only
 in namespaced Flower `Context.state` backed by the pinned in-memory node
 runtime—never a file or database. If every fold succeeds, the nodes make one final DP
 release and the client accepts only `cv.json`, pinned to the submitted
-CV-job and resampling-contract hashes. No fold model, prediction, fold/site metric or history
-is returned or saved. A failed or restarted job publishes nothing and recomputes
+CV-job and resampling-contract hashes. No fold model, prediction, fold/site
+metric, profile, or history is returned or saved. A failed or restarted job
+publishes nothing and recomputes
 the whole deterministic job.
 
 Metric selection is local post-processing of that one release. Inspect the

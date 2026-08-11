@@ -84,9 +84,6 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   # separate dependency-light entrypoint and must not install or import torch.
   native_tree <- identical(recipe$model$track %||% NULL, "native_tree")
   cv_job <- !is.null(recipe$cross_validation_contract)
-  if (cv_job && native_tree) {
-    stop("Cross-validation requires a neural recipe.", call. = FALSE)
-  }
   if (cv_job &&
       (!is.character(recipe$cross_validation_job_sha256) ||
        length(recipe$cross_validation_job_sha256) != 1L ||

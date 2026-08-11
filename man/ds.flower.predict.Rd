@@ -20,7 +20,7 @@ models. \code{"prob"} returns probabilities for classification models.}
 }
 \value{
 A response vector or probability matrix. Saved vision and native-tree
-classifiers return response values from their ordered public target levels.
+  classifiers return response values from their ordered public target levels.
 }
 \description{
 Uses a saved declarative PyTorch state dictionary or a sanitized native-tree

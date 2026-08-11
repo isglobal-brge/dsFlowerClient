@@ -1,6 +1,6 @@
 # Module: Federated cross-validation
 
-#' Cross-validate a neural model across federated data
+#' Cross-validate a tabular neural or native-tree model across federated data
 #'
 #' Runs \code{folds} complete, clean-initialized federated trainings. Each node
 #' assigns whole privacy units to folds with its custodial HMAC, trains every
@@ -8,6 +8,11 @@
 #' namespaced Flower runtime memory. Only one pooled differentially-private OOF metric vector is
 #' released after all folds finish; no fold model, prediction, site metric, or
 #' fold metric is saved.
+#' Native-tree cross-validation supports binary classification and bounded
+#' regression for the five registered engines. It reuses each engine's
+#' canonical ensemble contract; XGBoost additionally requires the verified
+#' node-owned native bundle. Native engines run exactly one Flower round per
+#' fold, while neural models use the requested rounds per fold.
 #'
 #' The node-owned per-job privacy contract reserves 80 percent for training and
 #' divides it evenly across folds, with the remaining 20 percent used once for
@@ -44,6 +49,14 @@ ds.flower.cross_validate <- function(
     allow_insecure_http = getOption(
       "dsflower.dsi_allow_insecure_http", character())) {
   folds <- .normalize_cross_validation(folds)$folds
+  if (missing(rounds)) {
+    registered <- if (inherits(model, "dsflower_model")) {
+      model
+    } else {
+      .dsflower_get_model(model)
+    }
+    if (identical(registered$track %||% NULL, "native_tree")) rounds <- 1L
+  }
   ds.flower.fit(
     conns = conns, data = data, resource = resource, symbol = symbol,
     target = target, features = features, model = model,
