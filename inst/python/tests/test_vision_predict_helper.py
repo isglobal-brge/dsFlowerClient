@@ -32,7 +32,9 @@ class VisionPredictionTests(unittest.TestCase):
             config = Path(tmpdir) / "config.json"
             paths = Path(tmpdir) / "paths.json"
             config.write_text("{}", encoding="utf-8")
-            paths.write_text('["private-image"]', encoding="utf-8")
+            # Reject the private-input shape before importing the optional
+            # PyTorch vision runtime; this CI job intentionally lacks it.
+            paths.write_text("{}", encoding="utf-8")
             result = subprocess.run(
                 [sys.executable, str(HELPER_PATH), "--model", "unused.pt",
                  "--data", str(paths), "--framework", "pytorch_vision",
