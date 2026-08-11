@@ -417,6 +417,17 @@ test_that(".flwr_run_timeout_secs accepts environment override", {
   expect_equal(dsFlowerClient:::.flwr_run_timeout_secs(), 7)
 })
 
-test_that(".require_flwr_cli accepts provisioned client environment", {
+test_that(".require_flwr_cli provisions a missing client environment", {
+  provisioned <- FALSE
+  local_mocked_bindings(
+    .client_venv_is_healthy = function() FALSE,
+    .ensure_client_venv = function(...) {
+      provisioned <<- TRUE
+      TRUE
+    },
+    .package = "dsFlowerClient"
+  )
+
   expect_true(isTRUE(dsFlowerClient:::.require_flwr_cli()))
+  expect_true(provisioned)
 })

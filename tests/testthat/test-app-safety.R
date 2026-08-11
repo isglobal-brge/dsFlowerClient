@@ -398,6 +398,26 @@ test_that("architecture geometry fails before any Flower side effect", {
 
 test_that("declarative resource caps fail before DSI or staging", {
   reached_dsi <- FALSE
+  reached_preflight <- FALSE
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .ensure_client_framework = function(framework) {
+      expect_identical(framework, "pytorch")
+      TRUE
+    },
+    .package = "dsFlowerClient"
+  )
+  local_mocked_bindings(
+    run = function(...) {
+      reached_preflight <<- TRUE
+      list(
+        status = 2L,
+        stderr = "invalid declarative model: parameter budget exceeded",
+        stdout = ""
+      )
+    },
+    .package = "processx"
+  )
   local_mocked_bindings(
     datashield.aggregate = function(...) {
       reached_dsi <<- TRUE
@@ -413,6 +433,7 @@ test_that("declarative resource caps fail before DSI or staging", {
       target = "y", features = paste0("x", seq_len(1024L))),
     "Declarative model preflight failed"
   )
+  expect_true(reached_preflight)
   expect_false(reached_dsi)
 })
 

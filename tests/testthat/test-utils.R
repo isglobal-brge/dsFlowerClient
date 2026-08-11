@@ -58,5 +58,16 @@ test_that(".build_code skips NULL arguments", {
 })
 
 test_that(".require_flwr_cli accepts provisioned client environment", {
+  attempted_provision <- FALSE
+  local_mocked_bindings(
+    .client_venv_is_healthy = function() TRUE,
+    .ensure_client_venv = function(...) {
+      attempted_provision <<- TRUE
+      stop("healthy environments must not be reprovisioned")
+    },
+    .package = "dsFlowerClient"
+  )
+
   expect_true(isTRUE(dsFlowerClient:::.require_flwr_cli()))
+  expect_false(attempted_provision)
 })

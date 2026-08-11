@@ -344,6 +344,7 @@ test_that("high-level runs reject plaintext before their first DSI side effect",
   connected <- FALSE
   local_mocked_bindings(
     .require_flwr_cli = function() TRUE,
+    .validate_declarative_model_preflight = function(...) TRUE,
     ds.flower.connect = function(...) {
       connected <<- TRUE
       stop("connect reached")
