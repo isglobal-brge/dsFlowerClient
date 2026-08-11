@@ -97,6 +97,14 @@
 }
 
 .dsflower_client_runtime <- new.env(parent = emptyenv())
+# Positive availability only; this environment is never written to disk.
+.client_framework_cache <- new.env(parent = emptyenv())
+
+.clear_client_framework_cache <- function() {
+  cached <- ls(.client_framework_cache, all.names = TRUE)
+  if (length(cached)) rm(list = cached, envir = .client_framework_cache)
+  invisible(NULL)
+}
 
 #' Get the client venv root directory
 #' @keywords internal
@@ -238,6 +246,76 @@
   identical(rc, 0L)
 }
 
+.client_framework_venv_fingerprint <- function(python) {
+  venv_path <- .client_venv_path()
+  expected_python <- file.path(
+    .venv_bindir(venv_path), .venv_exe("python"))
+  if (!file.exists(python) || !file.exists(expected_python)) return(NULL)
+
+  normalize <- function(path) {
+    value <- normalizePath(path, winslash = "/", mustWork = FALSE)
+    if (.Platform$OS.type == "windows") tolower(value) else value
+  }
+  python_path <- normalize(python)
+  if (!identical(python_path, normalize(expected_python)) ||
+      !.client_venv_is_healthy()) {
+    return(NULL)
+  }
+
+  marker <- file.path(venv_path, ".dsflower_client_ready")
+  marker_value <- tryCatch(
+    paste(readLines(marker, warn = FALSE), collapse = "\n"),
+    error = function(e) NULL)
+  if (is.null(marker_value) ||
+      !identical(marker_value, .client_venv_marker())) {
+    return(NULL)
+  }
+
+  site_packages <- if (.Platform$OS.type == "windows") {
+    file.path(venv_path, "Lib", "site-packages")
+  } else {
+    c(Sys.glob(file.path(venv_path, "lib", "python*", "site-packages")),
+      Sys.glob(file.path(venv_path, "lib64", "python*", "site-packages")))
+  }
+  site_packages <- sort(unique(site_packages[dir.exists(site_packages)]),
+                        method = "radix")
+  if (!length(site_packages)) return(NULL)
+  # Track managed installs, removals and top-level package replacements. Manual
+  # in-place edits below an installed package directory are outside the managed
+  # venv lifecycle; the actual Python helper/runtime remains the execution check.
+  inventory <- tryCatch(
+    unlist(lapply(site_packages, function(path) {
+      suppressWarnings(list.files(
+        path, all.files = TRUE, no.. = TRUE, full.names = TRUE))
+    }), use.names = FALSE),
+    error = function(e) NULL)
+  if (is.null(inventory) || !length(inventory)) return(NULL)
+  observed <- sort(unique(c(expected_python, marker, site_packages, inventory)),
+                   method = "radix")
+  info <- file.info(observed)
+  if (anyNA(info$isdir) || anyNA(info$size) || anyNA(info$mtime) ||
+      anyNA(info$ctime)) return(NULL)
+  observed <- gsub("\\", "/", observed, fixed = TRUE)
+  if (.Platform$OS.type == "windows") observed <- tolower(observed)
+  python_sha256 <- tryCatch(
+    digest::digest(file = expected_python, algo = "sha256"),
+    error = function(e) NULL)
+  if (is.null(python_sha256)) return(NULL)
+
+  digest::digest(list(
+    python = python_path,
+    python_sha256 = python_sha256,
+    marker = marker_value,
+    inventory = data.frame(
+      path = observed,
+      isdir = unname(info$isdir),
+      size = unname(info$size),
+      mtime = as.numeric(info$mtime),
+      ctime = as.numeric(info$ctime),
+      stringsAsFactors = FALSE)
+  ), algo = "sha256")
+}
+
 #' Ensure ML framework dependencies are installed in the client venv
 #'
 #' Checks if the framework's Python packages are available.
@@ -253,15 +331,39 @@
     stop("Unsupported client framework: ", framework, ".", call. = FALSE)
   }
 
-  python <- .client_python_cmd()
-  if (.framework_modules_available(python, check_mod)) return(invisible(TRUE))
-
   deps <- .FRAMEWORK_CLIENT_DEPS[[framework]]
   if (is.null(deps)) {
     stop("No dependency contract for client framework: ", framework, ".",
          call. = FALSE)
   }
 
+  python <- .client_python_cmd()
+  python_path <- normalizePath(python, winslash = "/", mustWork = FALSE)
+  if (.Platform$OS.type == "windows") python_path <- tolower(python_path)
+  cache_key <- function(fingerprint) digest::digest(list(
+    framework = framework,
+    python = python_path,
+    modules = check_mod,
+    dependencies = deps,
+    venv = fingerprint
+  ), algo = "sha256")
+  fingerprint <- .client_framework_venv_fingerprint(python)
+  if (!is.null(fingerprint) &&
+      exists(cache_key(fingerprint), envir = .client_framework_cache,
+             inherits = FALSE)) {
+    return(invisible(TRUE))
+  }
+
+  if (.framework_modules_available(python, check_mod)) {
+    fingerprint <- .client_framework_venv_fingerprint(python)
+    if (!is.null(fingerprint)) {
+      assign(cache_key(fingerprint), TRUE, envir = .client_framework_cache)
+    }
+    return(invisible(TRUE))
+  }
+
+  # Installing into the shared venv can alter either framework contract.
+  .clear_client_framework_cache()
   message("dsFlowerClient: installing ", framework, " dependencies...")
   uv <- .ensure_client_uv()
   lock <- .client_python_lock_path(must_exist = TRUE)
@@ -280,6 +382,10 @@
     stop("Python requirements did not provide all required modules: ",
          paste(check_mod, collapse = ", "), ".", call. = FALSE)
   }
+  fingerprint <- .client_framework_venv_fingerprint(python)
+  if (!is.null(fingerprint)) {
+    assign(cache_key(fingerprint), TRUE, envir = .client_framework_cache)
+  }
   message("  ", framework, " ready.")
   invisible(TRUE)
 }
@@ -294,6 +400,8 @@
 #' @keywords internal
 .ensure_client_venv <- function(timeout_secs = 600) {
   if (.client_venv_is_healthy()) return(invisible(TRUE))
+
+  .clear_client_framework_cache()
 
   root <- .client_venv_root()
   dir.create(root, recursive = TRUE, showWarnings = FALSE)
