@@ -20,16 +20,20 @@ ds.flower.hpo.categorical(values)
 
 - lower, upper:
 
-  Integer endpoints with \`lower \< upper\`.
+  Finite endpoints with \`lower \< upper\`. Float dimensions accept
+  numeric endpoints; integer dimensions require integer endpoints.
 
 - log:
 
-  Whether Optuna samples on a logarithmic scale. This requires a
-  positive lower endpoint and \`step = 1\`.
+  Whether Optuna samples on a logarithmic scale. Logarithmic bounds must
+  be positive. Float dimensions cannot combine \`log\` with \`step\`;
+  integer dimensions require \`step = 1\`.
 
 - step:
 
-  Positive integer step that divides the range exactly.
+  Discretization step that must be positive and divide the range
+  exactly. Float dimensions accept a finite numeric step or \`NULL\`;
+  integer dimensions require a positive integer step.
 
 - values:
 

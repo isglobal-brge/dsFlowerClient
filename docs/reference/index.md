@@ -162,6 +162,8 @@ Catch-all index for exported helpers not listed above.
 
 - [`ds.flower.app.upload()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.app.upload.md)
   : Upload and hash-verify a HookApp candidate archive
+- [`ds.flower.associate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.associate.md)
+  : Differentially-private pooled binary association
 - [`ds.flower.code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.code.md)
   : Get the R code that produced a result
 - [`ds.flower.compare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.compare.md)
@@ -190,6 +192,8 @@ Catch-all index for exported helpers not listed above.
   [`ds.flower.hpo.integer()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.md)
   [`ds.flower.hpo.categorical()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.md)
   : Define a bounded floating-point HPO dimension
+- [`ds.flower.import_xgboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.import_xgboost.md)
+  : Import a Bounded External XGBoost JSON Model
 - [`ds.flower.labels()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.labels.md)
   : List available label sets for an imaging dataset
 - [`ds.flower.link.down()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.down.md)
@@ -202,6 +206,10 @@ Catch-all index for exported helpers not listed above.
   : Load a saved model
 - [`ds.flower.masks()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.masks.md)
   : List available segmentation masks
+- [`ds.flower.metrics()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.metrics.md)
+  [`ds.flower.score()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.metrics.md)
+  [`ds.flower.metric_direction()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.metrics.md)
+  : Inspect and select private validation metrics
 - [`ds.flower.model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.md)
   : Create a model spec by name
 - [`ds.flower.model.catboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.catboost.md)
@@ -296,6 +304,8 @@ Catch-all index for exported helpers not listed above.
   : Differentially-private federated model validation
 - [`print(`*`<dsflower_app>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_app.md)
   : Print a dsflower_app
+- [`print(`*`<dsflower_association>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_association.md)
+  : Print a pooled private association
 - [`print(`*`<dsflower_cv>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_cv.md)
   : Print a federated cross-validation result
 - [`print(`*`<dsflower_hpo>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_hpo.md)

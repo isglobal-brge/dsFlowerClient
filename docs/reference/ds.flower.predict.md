@@ -1,8 +1,9 @@
 # Predict with a federated model
 
 Uses a saved declarative PyTorch state dictionary or a sanitized
-native-tree ensemble to generate tabular predictions. Native trees run
-through the bundled standard-library-only predictor: the artifact,
+native-tree ensemble, including an explicitly external-unverified
+imported XGBoost bundle, to generate tabular predictions. Native trees
+run through the bundled standard-library-only predictor: the artifact,
 canonical request and public sidecar are revalidated before execution,
 and no upstream tree library, pickle or executable model payload is
 loaded. Vision artifacts are not accepted by this tabular predictor.

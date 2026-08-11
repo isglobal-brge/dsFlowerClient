@@ -397,14 +397,17 @@ the API returns no exact, per-node or zero-filled substitute and does not create
 a query-count lockout.
 
 Assigning an independent dataset gives external validation; reusing training
-data gives resubstitution validation. For tabular declarative neural training,
+data gives resubstitution validation. For tabular declarative neural or
+native-tree training,
 `ds.flower.fit(..., holdout = 0.2)` instead assigns complete node-owned privacy
 units before training, trains only on the complement, and evaluates the final
 aggregate on the held-out side in the same all-or-nothing job. The fraction is
 canonical, has no analyst seed, and retries recreate the same secret-keyed split.
 The returned `fit$holdout` contains only pooled DP metrics; no predictions,
-unit assignments or site metrics leave the nodes. Other backends fail explicitly
-instead of pretending to support this protocol.
+unit assignments or site metrics leave the nodes. Native-tree releases are
+accepted only when the holdout provenance exactly binds the resampling contract,
+tree request, public schema, sanitized artifact and node count. Image and
+non-training tracks fail explicitly instead of pretending to support this protocol.
 
 For honest K-fold validation, use the dedicated metrics-only workflow:
 

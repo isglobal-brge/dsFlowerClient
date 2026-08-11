@@ -158,7 +158,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     weights <- .read_model_weights(results_dir)
   }
   history <- .read_training_history(results_dir)
-  holdout_release <- .read_holdout_result(results_dir)
+  holdout_release <- .read_holdout_result(
+    results_dir, native_tree = native_tree)
   cv_release <- .read_cross_validation_result(results_dir)
   if (cv_job) {
     unexpected <- setdiff(
@@ -258,8 +259,25 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     stop("Atomic holdout produced no pooled test metric release; no model was ",
          "accepted or saved.", call. = FALSE)
   }
+  if (expects_holdout && native_tree &&
+      (!is.list(native_release) ||
+       !identical(holdout_release$provenance$resampling_contract_sha256,
+                  recipe$holdout_contract$sha256) ||
+       !identical(holdout_release$provenance$native_tree_request_sha256,
+                  recipe$native_tree_request_sha256) ||
+       !identical(holdout_release$provenance$public_schema_sha256,
+                  recipe$public_schema_sha256) ||
+       !identical(holdout_release$provenance$artifact_sha256,
+                  native_release$artifact$sha256) ||
+       !identical(holdout_release$task, recipe$model$task) ||
+       !identical(as.integer(holdout_release$n_nodes),
+                  as.integer(n_clients)))) {
+    stop("Native-tree holdout output does not match its submitted public ",
+         "provenance.", call. = FALSE)
+  }
   if (expects_holdout && !.atomic_holdout_commit_complete(
-      history, eff_rounds, results_dir)) {
+      history, eff_rounds, results_dir,
+      native_tree = native_tree, native_release = native_release)) {
     stop("Atomic holdout has no complete commit marker; no model was accepted ",
          "or saved.", call. = FALSE)
   }
@@ -311,9 +329,46 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   if (!is.null(weights) || !is.null(history)) {
     parent    <- if (is.null(output_dir)) file.path(".", "dsflower_output") else output_dir
     save_name <- if (is.null(output_name)) model_id else output_name
-    output_dir <- file.path(parent, save_name)
-    dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
-    output_dir <- normalizePath(output_dir, winslash = "/", mustWork = FALSE)
+    atomic_native_holdout <- isTRUE(native_tree) && isTRUE(expects_holdout)
+    final_output_dir <- file.path(parent, save_name)
+    if (atomic_native_holdout) {
+      final_parent <- dirname(final_output_dir)
+      if (!dir.exists(final_parent) &&
+          !dir.create(final_parent, recursive = TRUE, showWarnings = FALSE)) {
+        stop("Could not create the native-tree holdout output parent.",
+             call. = FALSE)
+      }
+      final_parent <- normalizePath(
+        final_parent, winslash = "/", mustWork = TRUE)
+      final_output_dir <- file.path(final_parent, basename(final_output_dir))
+      if (file.exists(final_output_dir) || dir.exists(final_output_dir)) {
+        stop("Native-tree holdout output directory must not already exist.",
+             call. = FALSE)
+      }
+      output_dir <- tempfile(
+        pattern = ".native-holdout-", tmpdir = final_parent)
+      if (!dir.create(output_dir, showWarnings = FALSE)) {
+        stop("Could not create a temporary native-tree holdout output ",
+             "directory.", call. = FALSE)
+      }
+      temporary_output_dir <- output_dir
+      on.exit(unlink(
+        temporary_output_dir, recursive = TRUE, force = TRUE), add = TRUE)
+      output_dir <- normalizePath(output_dir, winslash = "/", mustWork = TRUE)
+    } else {
+      output_dir <- final_output_dir
+      dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+      output_dir <- normalizePath(output_dir, winslash = "/", mustWork = FALSE)
+    }
+    if (atomic_native_holdout) {
+      output_files <- .native_holdout_result_files(
+        results_dir, native_release$artifact)
+      if (is.null(output_files) || !.copy_native_holdout_result_files(
+          results_dir, output_dir, output_files)) {
+        stop("Could not persist the exact native-tree holdout result set.",
+             call. = FALSE)
+      }
+    }
 
     model_data <- list(
       model_id   = model_id,
@@ -347,13 +402,20 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       created_at = Sys.time(),
       n_clients  = length(conns)
     )
-    saved_path <- file.path(output_dir, paste0(save_name, ".rds"))
+    saved_file_name <- if (atomic_native_holdout) {
+      basename(save_name)
+    } else {
+      save_name
+    }
+    saved_path <- file.path(output_dir, paste0(saved_file_name, ".rds"))
     saveRDS(model_data, saved_path)
 
-    # Copy all output files (JSON, native format, history)
-    output_files <- list.files(results_dir, full.names = TRUE)
-    for (f in output_files) {
-      file.copy(f, file.path(output_dir, basename(f)), overwrite = TRUE)
+    if (!atomic_native_holdout) {
+      # Copy all output files (JSON, native format, history)
+      output_files <- list.files(results_dir, full.names = TRUE)
+      for (f in output_files) {
+        file.copy(f, file.path(output_dir, basename(f)), overwrite = TRUE)
+      }
     }
 
     # Write metadata for listing/identification
@@ -408,6 +470,20 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                          auto_unbox = TRUE, pretty = TRUE,
                          null = if (native_tree && available) "null" else "list")
 
+    if (atomic_native_holdout) {
+      destination_exists <- file.exists(final_output_dir) ||
+        dir.exists(final_output_dir)
+      renamed <- !destination_exists &&
+        isTRUE(file.rename(output_dir, final_output_dir))
+      if (!renamed) {
+        stop("Could not atomically publish the native-tree holdout output.",
+             call. = FALSE)
+      }
+      output_dir <- normalizePath(
+        final_output_dir, winslash = "/", mustWork = TRUE)
+      saved_path <- file.path(output_dir, basename(saved_path))
+    }
+
     .dsf_msg("Model saved to ", output_dir)
   }
 
@@ -440,7 +516,74 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   )
 }
 
-.read_holdout_result <- function(results_dir) {
+.native_holdout_metrics_valid <- function(metrics, task) {
+  exact_object <- function(value, fields) {
+    is.list(value) && !is.null(names(value)) &&
+      !anyNA(names(value)) && !anyDuplicated(names(value)) &&
+      setequal(names(value), fields)
+  }
+  finite_scalar <- function(
+      value, lower = -Inf, upper = Inf, nullable = FALSE) {
+    if (is.null(value)) return(isTRUE(nullable))
+    is.numeric(value) && length(value) == 1L && !is.na(value) &&
+      is.finite(value) && value >= lower && value <= upper
+  }
+  finite_array <- function(
+      value, expected_length, lower = -Inf, upper = Inf) {
+    is.list(value) && is.null(names(value)) &&
+      length(value) == expected_length &&
+      all(vapply(value, finite_scalar, logical(1),
+                 lower = lower, upper = upper))
+  }
+
+  if (identical(task, "regression")) {
+    fields <- c("n", "mae", "mse", "rmse", "r_squared")
+    return(exact_object(metrics, fields) &&
+      finite_scalar(metrics$n, lower = 0) &&
+      finite_scalar(metrics$mae, lower = 0) &&
+      finite_scalar(metrics$mse, lower = 0) &&
+      finite_scalar(metrics$rmse, lower = 0) &&
+      finite_scalar(metrics$r_squared, upper = 1, nullable = TRUE))
+  }
+  if (!identical(task, "binary")) return(FALSE)
+
+  scalar_fields <- c(
+    "n", "accuracy", "sensitivity", "specificity", "precision",
+    "negative_predictive_value", "f1", "balanced_accuracy", "roc_auc",
+    "pr_auc", "brier", "expected_calibration_error")
+  object_fields <- c("roc", "precision_recall", "calibration", "decision_curve")
+  if (!exact_object(metrics, c(scalar_fields, object_fields)) ||
+      !exact_object(metrics$roc, c("fpr", "tpr")) ||
+      !exact_object(metrics$precision_recall, c("recall", "precision")) ||
+      !exact_object(metrics$calibration, c("predicted", "observed", "weight")) ||
+      !exact_object(metrics$decision_curve, c(
+        "threshold", "net_benefit", "treat_all", "treat_none"))) {
+    return(FALSE)
+  }
+  bins <- length(metrics$calibration$predicted)
+  if (bins < 4L || bins > 512L ||
+      !finite_scalar(metrics$n, lower = 0) ||
+      !finite_scalar(metrics$accuracy, lower = 0, upper = 1) ||
+      !all(vapply(scalar_fields[-(1:2)], function(field) {
+        finite_scalar(
+          metrics[[field]], lower = 0, upper = 1, nullable = TRUE)
+      }, logical(1)))) {
+    return(FALSE)
+  }
+  finite_array(metrics$roc$fpr, bins + 2L, 0, 1) &&
+    finite_array(metrics$roc$tpr, bins + 2L, 0, 1) &&
+    finite_array(metrics$precision_recall$recall, bins + 1L, 0, 1) &&
+    finite_array(metrics$precision_recall$precision, bins + 1L, 0, 1) &&
+    finite_array(metrics$calibration$predicted, bins, 0, 1) &&
+    finite_array(metrics$calibration$observed, bins, 0, 1) &&
+    finite_array(metrics$calibration$weight, bins, 0) &&
+    finite_array(metrics$decision_curve$threshold, bins, 0, 1) &&
+    finite_array(metrics$decision_curve$net_benefit, bins) &&
+    finite_array(metrics$decision_curve$treat_all, bins) &&
+    finite_array(metrics$decision_curve$treat_none, bins)
+}
+
+.read_holdout_result <- function(results_dir, native_tree = FALSE) {
   path <- file.path(results_dir, "holdout.json")
   if (!file.exists(path)) return(NULL)
   info <- file.info(path)
@@ -451,8 +594,11 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
   value <- tryCatch(
     jsonlite::fromJSON(path, simplifyVector = FALSE),
     error = function(e) NULL)
+  provenance_fields <- c(
+    "resampling_contract_sha256", "native_tree_request_sha256",
+    "public_schema_sha256", "artifact_sha256")
   allowed <- c("pooled_only", "privacy", "method", "task", "n_nodes",
-               "metrics")
+               "metrics", if (isTRUE(native_tree)) "provenance")
   required_metric <- if (is.list(value) && length(value$task) == 1L) {
     switch(as.character(value$task),
            binary = "accuracy", multiclass = "accuracy",
@@ -476,6 +622,29 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     length(primary_metric) == 1L && is.finite(primary_metric) &&
     primary_metric >= 0 &&
     (primary_task %in% c("regression", "count") || primary_metric <= 1)
+  valid_sha <- function(item) {
+    is.character(item) && length(item) == 1L && !is.na(item) &&
+      grepl("^[0-9a-f]{64}$", item)
+  }
+  valid_provenance <- !isTRUE(native_tree) ||
+    (is.list(value) && is.list(value$provenance) &&
+     !is.null(names(value$provenance)) &&
+     !anyDuplicated(names(value$provenance)) &&
+     identical(sort(names(value$provenance)), sort(provenance_fields)) &&
+     all(vapply(provenance_fields, function(name) {
+       valid_sha(value$provenance[[name]])
+     }, logical(1))))
+  valid_native_metrics <- !isTRUE(native_tree) ||
+    (primary_task %in% c("binary", "regression") &&
+     .native_holdout_metrics_valid(value$metrics, primary_task))
+  contains_forbidden <- function(item) {
+    if (!is.list(item)) return(FALSE)
+    keys <- tolower(names(item) %||% character())
+    any(keys %in% c(
+      "transcript", "per_node", "per_site", "per_client", "predictions",
+      "models", "fold", "folds", "per_fold", "fold_metrics")) ||
+      any(vapply(unname(item), contains_forbidden, logical(1)))
+  }
   if (!is.list(value) || is.null(names(value)) || anyDuplicated(names(value)) ||
       !setequal(names(value), allowed) ||
       !identical(value$pooled_only, TRUE) ||
@@ -489,8 +658,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       value$n_nodes != floor(value$n_nodes) || !is.list(value$metrics) ||
       is.null(names(value$metrics)) || anyDuplicated(names(value$metrics)) ||
       is.na(required_metric) || !required_metric %in% names(value$metrics) ||
-      !plausible_primary ||
-      any(c("per_node", "predictions", "folds") %in% names(value$metrics))) {
+      !plausible_primary || !valid_provenance || !valid_native_metrics ||
+      contains_forbidden(value)) {
     stop("Holdout output failed the pooled-only privacy contract.",
          call. = FALSE)
   }
@@ -618,17 +787,120 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     !is.na(info$size) && info$size > 0
 }
 
-.atomic_holdout_commit_complete <- function(history, num_rounds, results_dir) {
-  expected <- seq_len(as.integer(num_rounds))
-  if (!is.data.frame(history) || nrow(history) != length(expected) ||
-      !all(c("round", "available") %in% names(history))) {
+.atomic_native_tree_model_exists <- function(results_dir, artifact) {
+  if (!is.list(artifact) || !identical(
+      sort(names(artifact)), c("file", "format", "sha256", "size_bytes")) ||
+      !is.character(artifact$file) || length(artifact$file) != 1L ||
+      is.na(artifact$file) || basename(artifact$file) != artifact$file ||
+      !is.character(artifact$format) || length(artifact$format) != 1L ||
+      is.na(artifact$format) ||
+      !is.character(artifact$sha256) || length(artifact$sha256) != 1L ||
+      is.na(artifact$sha256) ||
+      !grepl("^[0-9a-f]{64}$", artifact$sha256)) {
     return(FALSE)
   }
-  rounds <- suppressWarnings(as.integer(history$round))
-  available <- suppressWarnings(as.logical(history$available))
-  identical(rounds, expected) &&
-    all(!is.na(available) & available) &&
+  matches <- vapply(.NATIVE_TREE_RELEASE_SPECS, function(spec) {
+    identical(artifact$file, spec$artifact_file) &&
+      identical(artifact$format, spec$artifact_format)
+  }, logical(1))
+  expected_size <- suppressWarnings(as.numeric(artifact$size_bytes))
+  if (sum(matches) != 1L || length(expected_size) != 1L ||
+      is.na(expected_size) || !is.finite(expected_size) ||
+      expected_size != floor(expected_size) || expected_size < 1 ||
+      expected_size > .NATIVE_TREE_ENSEMBLE_MAX_BYTES) {
+    return(FALSE)
+  }
+  path <- file.path(results_dir, artifact$file)
+  info <- file.info(path)
+  link <- Sys.readlink(path)
+  if (!file.exists(path) || length(link) != 1L || is.na(link) || nzchar(link) ||
+      is.na(info$isdir) || isTRUE(info$isdir) || is.na(info$size) ||
+      info$size != expected_size) {
+    return(FALSE)
+  }
+  actual <- tryCatch(
+    digest::digest(file = path, algo = "sha256", serialize = FALSE),
+    error = function(e) "")
+  identical(actual, artifact$sha256)
+}
+
+.native_holdout_result_files <- function(results_dir, artifact) {
+  if (!.atomic_native_tree_model_exists(results_dir, artifact)) return(NULL)
+  matches <- vapply(.NATIVE_TREE_RELEASE_SPECS, function(spec) {
+    identical(artifact$file, spec$artifact_file) &&
+      identical(artifact$format, spec$artifact_format)
+  }, logical(1))
+  if (sum(matches) != 1L) return(NULL)
+  spec <- .NATIVE_TREE_RELEASE_SPECS[[which(matches)]]
+  expected <- c(
+    artifact$file, spec$profile_file, "holdout.json", "history.json")
+  present <- list.files(results_dir, all.files = TRUE, no.. = TRUE)
+  if (!identical(sort(present), sort(expected))) return(NULL)
+  paths <- file.path(results_dir, expected)
+  info <- file.info(paths)
+  links <- Sys.readlink(paths)
+  if (any(!file.exists(paths)) || any(is.na(info$isdir)) ||
+      any(info$isdir) || any(is.na(info$size)) || any(info$size < 1) ||
+      length(links) != length(paths) || any(is.na(links)) ||
+      any(nzchar(links))) {
+    return(NULL)
+  }
+  expected
+}
+
+.copy_native_holdout_result_files <- function(results_dir, output_dir, files) {
+  copied <- file.copy(
+    file.path(results_dir, files), file.path(output_dir, files),
+    overwrite = FALSE)
+  length(copied) == length(files) && all(!is.na(copied) & copied)
+}
+
+.atomic_native_holdout_history_complete <- function(results_dir) {
+  path <- file.path(results_dir, "history.json")
+  info <- file.info(path)
+  if (!file.exists(path) || is.na(info$isdir) || isTRUE(info$isdir) ||
+      is.na(info$size) || info$size < 1 || info$size > 8 * 1024^2) {
+    return(FALSE)
+  }
+  value <- tryCatch(
+    jsonlite::fromJSON(path, simplifyVector = FALSE),
+    error = function(e) NULL)
+  if (!is.list(value) || !is.null(names(value)) || length(value) != 1L) {
+    return(FALSE)
+  }
+  entry <- value[[1L]]
+  is.list(entry) && !is.null(names(entry)) &&
+    !anyNA(names(entry)) && !anyDuplicated(names(entry)) &&
+    setequal(names(entry), c("round", "available")) &&
+    is.numeric(entry$round) && length(entry$round) == 1L &&
+    !is.na(entry$round) && is.finite(entry$round) && entry$round == 1 &&
+    identical(entry$available, TRUE)
+}
+
+.atomic_holdout_commit_complete <- function(
+    history, num_rounds, results_dir, native_tree = FALSE,
+    native_release = NULL) {
+  history_complete <- if (isTRUE(native_tree)) {
+    identical(as.integer(num_rounds), 1L) &&
+      .atomic_native_holdout_history_complete(results_dir)
+  } else {
+    expected <- seq_len(as.integer(num_rounds))
+    if (!is.data.frame(history) || nrow(history) != length(expected) ||
+        !all(c("round", "available") %in% names(history))) {
+      return(FALSE)
+    }
+    rounds <- suppressWarnings(as.integer(history$round))
+    available <- suppressWarnings(as.logical(history$available))
+    identical(rounds, expected) && all(!is.na(available) & available)
+  }
+  artifact_complete <- if (isTRUE(native_tree)) {
+    is.list(native_release) &&
+      !is.null(.native_holdout_result_files(
+        results_dir, native_release$artifact))
+  } else {
     .atomic_neural_model_exists(results_dir)
+  }
+  history_complete && artifact_complete
 }
 
 .native_tree_release_metadata <- function(recipe, results_dir) {

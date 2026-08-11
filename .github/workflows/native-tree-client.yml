@@ -19,6 +19,8 @@ on:
       - "inst/flower_app/dsflower_runner/association_*.py"
       - "inst/flower_app/dsflower_runner/epi_association.py"
       - "inst/flower_app/dsflower_runner/tree_release.py"
+      - "inst/flower_app/dsflower_runner/release_guard.py"
+      - "inst/flower_app/dsflower_runner/resampling.py"
       - "inst/flower_app/dsflower_runner/seeding.py"
       - "inst/flower_app/dsflower_runner/task.py"
       - "inst/flower_app/dsflower_runner/validation.py"
@@ -42,6 +44,8 @@ on:
       - "inst/flower_app/dsflower_runner/association_*.py"
       - "inst/flower_app/dsflower_runner/epi_association.py"
       - "inst/flower_app/dsflower_runner/tree_release.py"
+      - "inst/flower_app/dsflower_runner/release_guard.py"
+      - "inst/flower_app/dsflower_runner/resampling.py"
       - "inst/flower_app/dsflower_runner/seeding.py"
       - "inst/flower_app/dsflower_runner/task.py"
       - "inst/flower_app/dsflower_runner/validation.py"
@@ -86,3 +90,5 @@ jobs:
             inst/python/tests/test_boosting_artifacts.py
           "$contract_python" -I -c \
             'import sys; sys.path.insert(0, "inst/flower_app"); from dsflower_runner import association_runtime_probe as probe; from dsflower_runner import association_client_app as client_app; from dsflower_runner import association_server_app as server_app; from flwr.clientapp import ClientApp; from flwr.serverapp import ServerApp; assert isinstance(client_app.app, ClientApp) and isinstance(server_app.app, ServerApp) and probe.probe_association_runtime()'
+          "$contract_python" -I -c \
+            'import sys; sys.path.insert(0, "inst/flower_app"); from dsflower_runner import native_tree_client_app as client_app; from dsflower_runner import native_tree_server_app as server_app; from flwr.clientapp import ClientApp; from flwr.serverapp import ServerApp; assert isinstance(client_app.app, ClientApp) and isinstance(server_app.app, ServerApp)'

@@ -232,11 +232,17 @@ optimizer/loss, outside a resource cap, or not implemented fail before
 staging; accepted first-party parameters are pinned in the manifest and
 actually consumed by the trusted runner.
 
-The image contracts currently cover private federated training of their
-frozen- backbone heads. The packaged local predictor and private
-validation API are tabular; they do not yet reconstruct image
-loaders/backbones for inference or validation. This boundary is explicit
-rather than silently treating images as a numeric table.
+The image contracts cover private federated training of their
+frozen-backbone heads and private validation of saved first-party
+ResNet-18/DenseNet-121 binary or multiclass releases, including the
+volumetric variants. The packaged local predictor remains tabular, and
+image holdout/cross-validation are not implemented. These boundaries are
+explicit rather than silently treating images as a numeric table. Each
+image release carries a `vision-extractor-profile`: a versioned public
+semantic ABI for its frozen extractor, not a cryptographic signature of
+extractor state. Releases without that profile fail closed;
+implementation or dependency changes that alter features require a
+profile bump.
 
 The first-party native-tree constructors are `xgboost`, `extra_trees`,
 `random_forest`, `lightgbm` and `catboost`. They run only in the
@@ -256,6 +262,41 @@ Forest and the two dsFlower-style boosters use the small runtime
 provisioned by the server package. XGBoost remains unavailable on a
 clean install until the custodian supplies its separately built and
 verified platform bundle.
+
+An already-trained XGBoost 3.4.0 JSON model can instead be admitted
+locally as a data-only prediction/validation bundle without installing
+or executing the XGBoost runtime:
+
+``` r
+
+imported <- ds.flower.import_xgboost(
+  artifact = "external-model.json",
+  model = ds.flower.model.xgboost(
+    task = "binary", n_estimators = 1L, max_depth = 1L),
+  features = c("age", "marker"),
+  feature_bounds = list(lower = c(0, -5), upper = c(100, 5)),
+  feature_cuts = list(c(18, 40, 65), c(-1, 0, 1)),
+  target = "outcome",
+  target_levels = c("control", "case"),
+  output_dir = "external-model.dsflower"
+)
+ds.flower.predict(imported, newdata)
+ds.flower.validate(conns, imported, target = "outcome", symbol = "D_test")
+```
+
+This is deliberately not a general upstream-model loader: only bounded
+single-output `gbtree` JSON matching the supplied public cuts, topology
+caps, objective and leaf bounds is accepted. Pickle, joblib, callbacks,
+feature names, training history and executable payloads are rejected.
+The importer emits the saved provenance as `external-unverified`; only
+metrics released by the later private validation job carry dsFlower’s
+node-DP guarantee. The external origin is also encoded in the hashed
+ensemble contract, so editing only metadata cannot reclassify it as an
+internal release. This is local format provenance, not a cryptographic
+signature against the model-directory owner. The structural flags
+describe channels present in the sanitized JSON; because external leaf
+values may be ordinary non-private statistics, the bundle records
+`contains_unnoised_statistics = true` and never attributes DP training.
 
 Classification strings/factors require an ordered public
 `target_levels`; numeric labels already coded in `[0, K-1]` remain
@@ -347,12 +388,20 @@ locked and enabled by the node administrator. HookApps use the same
 ## Private model validation
 
 [`ds.flower.validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.validate.md)
-evaluates a saved declarative neural or sanitized native-tree model
-inside the nodes and releases one fixed, Gaussian-noised vector of
-bounded sufficient statistics per node. The current validator accepts
-those tabular artifacts; vision artifacts fail explicitly. Exact labels,
-predictions, counts and site metrics remain local; the researcher
-receives only pooled post-processing:
+evaluates a saved declarative neural, first-party vision, or sanitized
+native-tree model inside the nodes and releases one fixed,
+Gaussian-noised vector of bounded sufficient statistics per node. Vision
+is limited to saved `pytorch_resnet18` and `pytorch_densenet121`
+binary/multiclass releases (2D or `volumetric = TRUE`). The client pins
+the canonical backbone, image size, frozen feature dimension, exact
+public class levels, declarative head, and bounded `model.pt` digest
+before any DSI call; the server verifies the same public contract before
+private staging. The researcher-side ServerApp preflight rehashes the
+artifact before loading it, and each node revalidates the received
+arrays, pins and extractor profile before opening private pixels. No
+tabular feature columns or bounds are accepted for this path. Exact
+paths, pixels, labels, predictions, counts and site metrics remain
+local; the researcher receives only pooled post-processing:
 
 ``` r
 
@@ -365,6 +414,12 @@ validation <- ds.flower.validate(
 )
 print(validation)
 ```
+
+For vision, assign an image bundle or a samples table routed as image
+data on each node, then pass the saved vision run and its target column
+to the same API. This is validation only:
+[`ds.flower.predict()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.predict.md),
+holdout and cross-validation do not claim image support.
 
 Binary validation provides threshold metrics, ROC/PR AUC, Brier score,
 calibration and decision-curve summaries; multiclass/ordinal/multilabel
@@ -381,13 +436,16 @@ zero-filled substitute and does not create a query-count lockout.
 
 Assigning an independent dataset gives external validation; reusing
 training data gives resubstitution validation. For tabular declarative
-neural training, `ds.flower.fit(..., holdout = 0.2)` instead assigns
-complete node-owned privacy units before training, trains only on the
-complement, and evaluates the final aggregate on the held-out side in
-the same all-or-nothing job. The fraction is canonical, has no analyst
-seed, and retries recreate the same secret-keyed split. The returned
-`fit$holdout` contains only pooled DP metrics; no predictions, unit
-assignments or site metrics leave the nodes. Other backends fail
+neural or native-tree training, `ds.flower.fit(..., holdout = 0.2)`
+instead assigns complete node-owned privacy units before training,
+trains only on the complement, and evaluates the final aggregate on the
+held-out side in the same all-or-nothing job. The fraction is canonical,
+has no analyst seed, and retries recreate the same secret-keyed split.
+The returned `fit$holdout` contains only pooled DP metrics; no
+predictions, unit assignments or site metrics leave the nodes.
+Native-tree releases are accepted only when the holdout provenance
+exactly binds the resampling contract, tree request, public schema,
+sanitized artifact and node count. Image and non-training tracks fail
 explicitly instead of pretending to support this protocol.
 
 For honest K-fold validation, use the dedicated metrics-only workflow:
@@ -416,6 +474,78 @@ accepts only `cv.json`, pinned to the submitted CV-job and
 resampling-contract hashes. No fold model, prediction, fold/site metric
 or history is returned or saved. A failed or restarted job publishes
 nothing and recomputes the whole deterministic job.
+
+Metric selection is local post-processing of that one release. Inspect
+the scoreable metrics for the task, including their optimization
+direction, with `ds.flower.metrics(cv)`. Curves, calibration bins and
+confusion matrices remain in `cv$metrics`, but are deliberately not
+accepted as scalar HPO objectives.
+
+Local HPO can then use the pooled OOF result directly:
+
+``` r
+
+metric <- "roc_auc"
+hpo <- ds.flower.hpo(
+  objective = function(params) {
+    cv <- ds.flower.cross_validate(
+      conns,
+      symbol = "D",
+      target = "outcome",
+      features = c("age", "biomarker"),
+      model = "pytorch_logreg",
+      model_params = list(learning_rate = params$learning_rate),
+      feature_bounds = list(lower = c(18, 0), upper = c(100, 250)),
+      target_levels = c("control", "case"),
+      folds = 3L
+    )
+    ds.flower.score(cv, metric)
+  },
+  space = list(
+    learning_rate = ds.flower.hpo.float(1e-4, 0.1, log = TRUE)
+  ),
+  n_trials = 10L,
+  direction = ds.flower.metric_direction(metric, task = "binary"),
+  seed = 1L
+)
+hpo$best_params
+```
+
+The objective function and Optuna study stay local to the researcher.
+Each trial above starts an independent cross-validation job with its own
+server-enforced DP contract; HPO does not pool privacy budgets or relax
+node policy across trials. Select the objective metric for the task
+rather than using one universal score—for example, maximize accuracy or
+ROC AUC for binary classification, maximize macro F1 for multilabel
+classification, or minimize MAE for bounded regression/count outcomes.
+
+## Pooled binary association
+
+For a bounded descriptive 2x2 association with an explicit unknown row
+and column, use the dedicated one-release API:
+
+``` r
+
+association <- ds.flower.associate(
+  conns,
+  symbol = "D",
+  outcome = "disease",
+  exposure = "smoking",
+  outcome_levels = c("no", "yes"),
+  exposure_levels = c("never", "ever")
+)
+association$table_dp
+association$measures
+```
+
+The ordered public levels mean `reference, positive`; every other,
+missing or malformed private value is retained as `unknown`. Only the
+complete pooled DP table and descriptive prevalence difference,
+prevalence ratio and odds ratio are returned. This is not a causal or
+adjusted estimate. In patient mode each axis means ever-positive across
+that patient’s rows, not same-visit or temporal association. Privacy is
+per job and node; overlapping people across nodes compose and must be
+handled by deployment design.
 
 ## Public feature bounds
 
@@ -642,6 +772,8 @@ Catch-all index for exported helpers not listed above.
 
 - [`ds.flower.app.upload()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.app.upload.md)
   : Upload and hash-verify a HookApp candidate archive
+- [`ds.flower.associate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.associate.md)
+  : Differentially-private pooled binary association
 - [`ds.flower.code()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.code.md)
   : Get the R code that produced a result
 - [`ds.flower.compare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.compare.md)
@@ -670,6 +802,8 @@ Catch-all index for exported helpers not listed above.
   [`ds.flower.hpo.integer()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.md)
   [`ds.flower.hpo.categorical()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.md)
   : Define a bounded floating-point HPO dimension
+- [`ds.flower.import_xgboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.import_xgboost.md)
+  : Import a Bounded External XGBoost JSON Model
 - [`ds.flower.labels()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.labels.md)
   : List available label sets for an imaging dataset
 - [`ds.flower.link.down()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.down.md)
@@ -682,6 +816,10 @@ Catch-all index for exported helpers not listed above.
   : Load a saved model
 - [`ds.flower.masks()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.masks.md)
   : List available segmentation masks
+- [`ds.flower.metrics()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.metrics.md)
+  [`ds.flower.score()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.metrics.md)
+  [`ds.flower.metric_direction()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.metrics.md)
+  : Inspect and select private validation metrics
 - [`ds.flower.model()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.md)
   : Create a model spec by name
 - [`ds.flower.model.catboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.catboost.md)
@@ -776,6 +914,8 @@ Catch-all index for exported helpers not listed above.
   : Differentially-private federated model validation
 - [`print(`*`<dsflower_app>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_app.md)
   : Print a dsflower_app
+- [`print(`*`<dsflower_association>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_association.md)
+  : Print a pooled private association
 - [`print(`*`<dsflower_cv>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_cv.md)
   : Print a federated cross-validation result
 - [`print(`*`<dsflower_hpo>`*`)`](https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_hpo.md)

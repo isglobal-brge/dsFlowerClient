@@ -66,12 +66,14 @@
 }
 
 .assert_holdout_supported <- function(sub, data_kind) {
-  if (!is.list(sub) || !identical(sub$track %||% NULL, "neural")) {
-    stop("Atomic holdout is currently implemented only for neural models; ",
+  track <- if (is.list(sub)) sub$track %||% "" else ""
+  if (!is.character(track) || length(track) != 1L || is.na(track) ||
+      !track %in% c("neural", "native_tree")) {
+    stop("Atomic holdout is implemented only for neural and native-tree models; ",
          "this backend is not advertised as supported.", call. = FALSE)
   }
   if (!identical(data_kind, "tabular")) {
-    stop("Atomic neural holdout currently supports tabular data only.",
+    stop("Atomic holdout supports tabular data only.",
          call. = FALSE)
   }
   invisible(TRUE)

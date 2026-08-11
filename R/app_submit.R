@@ -391,8 +391,9 @@
 #' @param torch_backend Character; node torch backend selection.
 #' @param verbose Logical.
 #' @param silent Logical; suppress progress feedback.
-#' @param holdout Optional numeric test fraction for atomic tabular neural
-#'   holdout validation. Unsupported tracks fail before private preparation.
+#' @param holdout Optional numeric test fraction for atomic tabular neural or
+#'   native-tree holdout validation. Unsupported tracks fail before private
+#'   preparation.
 #' @param cross_validation Optional integer in \code{[2, 10]} selecting a
 #'   dedicated federated cross-validation job. Prefer the user-facing
 #'   \code{ds.flower.cross_validate()} wrapper.

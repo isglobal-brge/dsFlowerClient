@@ -166,7 +166,7 @@ ds.flower.fit(
   most six decimal places. The node assigns complete privacy units
   before training, trains only on the complement, and returns the final
   model together with one pooled differentially-private test metric
-  release.
+  release. This supports tabular neural and native-tree models.
 
 - cross_validation:
 

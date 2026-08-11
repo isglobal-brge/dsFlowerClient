@@ -84,8 +84,9 @@ saved validation contract retains identical label semantics.}
 \item{target_bounds}{Required public \code{list(lower=..., upper=...)} for
 regression/count targets. The node clips each target to these constants.}
 
-\item{holdout}{Optional numeric test fraction for atomic tabular neural
-holdout validation. Unsupported tracks fail before private preparation.}
+\item{holdout}{Optional numeric test fraction for atomic tabular neural or
+native-tree holdout validation. Unsupported tracks fail before private
+preparation.}
 
 \item{cross_validation}{Optional integer in \code{[2, 10]} selecting a
 dedicated federated cross-validation job. Prefer the user-facing

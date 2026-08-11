@@ -108,7 +108,8 @@ registered for both require an explicit choice.}
 \item{holdout}{Optional numeric test fraction strictly between zero and one,
 with at most six decimal places. The node assigns complete privacy units
 before training, trains only on the complement, and returns the final model
-together with one pooled differentially-private test metric release.}
+together with one pooled differentially-private test metric release. This
+supports tabular neural and native-tree models.}
 
 \item{cross_validation}{Optional integer in \code{[2, 10]}. This runs a
 dedicated metrics-only federated CV job; prefer

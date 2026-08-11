@@ -131,6 +131,7 @@
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-wait_supernodes_ready.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-write_superlink_pid.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.app.upload.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.associate.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.code.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.compare.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.connect.html</loc></url>
@@ -144,12 +145,14 @@
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hook.run.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.dimensions.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.hpo.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.import_xgboost.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.labels.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.down.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.up.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.list_models.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.load_model.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.masks.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.metrics.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.catboost.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.extra_trees.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model.html</loc></url>
@@ -199,6 +202,7 @@
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dsflower_result.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/index.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_app.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_association.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_cv.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_hpo.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_model.html</loc></url>

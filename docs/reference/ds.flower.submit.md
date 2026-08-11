@@ -132,8 +132,9 @@ ds.flower.submit(
 
 - holdout:
 
-  Optional numeric test fraction for atomic tabular neural holdout
-  validation. Unsupported tracks fail before private preparation.
+  Optional numeric test fraction for atomic tabular neural or
+  native-tree holdout validation. Unsupported tracks fail before private
+  preparation.
 
 - cross_validation:
 
