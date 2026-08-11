@@ -74,6 +74,20 @@ test_that("native-tree builder emits the canonical cross-package wire", {
   expect_identical(reordered$sha256, manifest$sha256)
 })
 
+test_that("native-tree wire preserves valid closing-tag labels", {
+  manifest <- .build_native_tree_fixture(c("</control>", "case"))
+
+  expect_match(manifest$json, '"value":"</control>"', fixed = TRUE)
+  expect_false(grepl("<\\/control>", manifest$json, fixed = TRUE))
+
+  literal <- "<\\/control>"
+  literal_manifest <- .build_native_tree_fixture(c(literal, "case"))
+  decoded <- jsonlite::fromJSON(
+    literal_manifest$json, simplifyVector = FALSE)
+  expect_identical(
+    decoded$public_schema$target$levels[[1L]]$value, literal)
+})
+
 test_that("native-tree wire preserves one-element arrays", {
   manifest <- dsFlowerClient:::.build_native_tree_manifest(
     "catboost", "native-tight", "binary", "x",
