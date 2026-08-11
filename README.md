@@ -21,7 +21,7 @@ remotes::install_github("isglobal-brge/dsFlowerClient")
 The workstation also needs the Flower CLI:
 
 ```sh
-python -m pip install "flwr[app]>=1.31.0,<1.32.0"
+python -m pip install "flwr==1.31.0"
 ```
 
 If `uv` is absent, package provisioning refuses mutable `latest`/`curl|sh`
@@ -31,11 +31,11 @@ release tag and platform-archive digest in `DSFLOWER_UV_VERSION` and
 `DSFLOWER_CLIENT_PYTHON_LOCK` to a complete requirements file containing hashes
 for all transitive artifacts; installs then use `uv pip install
 --require-hashes`. Set `DSFLOWER_CLIENT_REQUIRE_PYTHON_LOCK=true` to reject a
-missing lock instead of falling back to ranges. Also set
+missing lock instead of falling back to the tested direct requirements. Also set
 `DSFLOWER_PYTHON_VERSION` to an exact
 `major.minor.patch`; the default `3.11` permits compatible patch updates. Without
-an exact interpreter and lock, the compatibility ranges remain intentionally
-flexible and the resolved environment is not reproducible.
+an exact interpreter and lock, transitive dependencies can still vary and the
+resolved environment is not fully reproducible.
 
 Each Opal/Rock server must have a compatible `dsFlower` installation. Tunnel and
 runner ABI mismatches fail before stream bytes or a run are submitted; upgrades

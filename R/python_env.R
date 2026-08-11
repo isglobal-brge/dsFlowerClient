@@ -1,6 +1,7 @@
 # Module: Client-Side Python Environment Management
 #
-# Uses uv to create a single venv with flwr[app] on the researcher's machine.
+# Uses uv to create a single venv with the tested Flower CLI on the
+# researcher's machine.
 # Same pattern as server-side packages (dsFlower, dsImaging):
 #   1. Ensure uv is available (download if needed)
 #   2. uv creates Python venv (downloads Python if needed)
@@ -9,7 +10,7 @@
 # Zero system dependencies. No pre-existing Python installation required.
 
 .DSFLOWER_CLIENT_PYTHON_DEPS <- c(
-  "flwr[app]>=1.31.0,<1.32.0",
+  "flwr==1.31.0",
   "optuna==4.8.0"
 )
 
@@ -160,7 +161,7 @@
   path_flwr <- Sys.which("flwr")
   if (nzchar(path_flwr)) return(path_flwr)
   stop("flwr CLI not found. Install dsFlowerClient with configure support ",
-       "or run: pip install 'flwr[app]>=1.31.0,<1.32.0'", call. = FALSE)
+       "or run: pip install 'flwr==1.31.0'", call. = FALSE)
 }
 
 #' Resolve the flower-superlink binary
@@ -173,7 +174,7 @@
   path_sl <- Sys.which("flower-superlink")
   if (nzchar(path_sl)) return(path_sl)
   stop("flower-superlink not found. Install dsFlowerClient with configure ",
-       "support or run: pip install 'flwr[app]>=1.31.0,<1.32.0'", call. = FALSE)
+       "support or run: pip install 'flwr==1.31.0'", call. = FALSE)
 }
 
 #' Resolve the Python binary from the client venv

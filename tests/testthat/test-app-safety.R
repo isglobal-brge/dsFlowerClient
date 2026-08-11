@@ -1,6 +1,11 @@
 # Focused tests for public preprocessing and Hook/Tier-2 client hardening.
 
 test_that("harness dependencies include the secure RNG backend", {
+  expect_identical(
+    grep("^flwr", dsFlowerClient:::.DSFLOWER_CLIENT_PYTHON_DEPS,
+         value = TRUE),
+    "flwr==1.31.0"
+  )
   expect_true("cryptography>=42.0.0" %in%
                 dsFlowerClient:::.harness_dependencies())
   expect_true("flwr[app]>=1.31.0,<1.32.0" %in%
