@@ -6,25 +6,47 @@
 .NATIVE_TREE_LOCAL_MAX_ROWS <- 5000000L
 .NATIVE_TREE_LOCAL_MAX_INPUT_BYTES <- 256 * 1024^2
 .NATIVE_TREE_LOCAL_MAX_OUTPUT_BYTES <- 128 * 1024^2
+.VISION_LOCAL_MAX_PATHS <- 1000000L
+.VISION_LOCAL_MAX_PATH_LIST_BYTES <- 64 * 1024^2
+.VISION_LOCAL_MAX_PREDICTION_CELLS <- 2000000L
+.VISION_LOCAL_MAX_PATH_BYTES <- 32768L
+
+.vision_path_json_fits <- function(paths, max_bytes) {
+  total <- 1
+  short_escapes <- c(8L, 9L, 10L, 12L, 13L)
+  for (index in seq_along(paths)) {
+    bytes <- as.integer(charToRaw(paths[[index]]))
+    short <- bytes %in% short_escapes
+    total <- total + if (index == 1L) 2 else 3
+    total <- total + length(bytes) + sum(short) +
+      sum(bytes %in% c(34L, 92L)) + 5 * sum(bytes < 32L & !short)
+    if (total + 1 > max_bytes) return(FALSE)
+  }
+  TRUE
+}
 
 #' Predict with a federated model
 #'
 #' Uses a saved declarative PyTorch state dictionary or a sanitized native-tree
 #' ensemble, including an explicitly external-unverified imported XGBoost
-#' bundle, to generate tabular predictions. Native trees run
+#' bundle, to generate local predictions. For a saved native dsFlower vision
+#' classifier, \code{newdata} is a character vector of image or volume paths;
+#' the exact checkpoint and frozen extractor are validated before any image is
+#' opened, and inference uses bounded batches. Native trees run
 #' through the bundled standard-library-only predictor: the artifact, canonical
 #' request and public sidecar are revalidated before execution, and no upstream
-#' tree library, pickle or executable model payload is loaded. Vision artifacts are not
-#' accepted by this tabular predictor.
+#' tree library, pickle or executable model payload is loaded.
 #'
 #' @param model A \code{dsflower_run} object, a saved model list (from
 #'   \code{ds.flower.load_model}), or a path to a model directory.
-#' @param newdata A data.frame or matrix with feature columns.
+#' @param newdata A data.frame or matrix with feature columns, or, for a saved
+#'   native dsFlower vision classifier, a non-empty character vector of local image
+#'   or volume paths.
 #' @param type Character; \code{"response"} returns a predicted class for
 #'   classification models and a continuous response for regression/count
 #'   models. \code{"prob"} returns probabilities for classification models.
-#' @return A numeric vector, integer class vector, or probability matrix for
-#'   multiclass, ordinal, and multilabel models.
+#' @return A response vector or probability matrix. Saved vision and native-tree
+#'   classifiers return response values from their ordered public target levels.
 #' @export
 ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   type <- match.arg(type)
@@ -41,8 +63,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
          call. = FALSE)
   }
   if (identical(contract$data_kind, "image")) {
-    stop("ds.flower.predict() accepts tabular artifacts only; image models ",
-         "require an image/backbone inference pipeline.", call. = FALSE)
+    return(.predict_vision_local(info, newdata, type))
   }
   if (identical(framework, "native_tree")) {
     return(.predict_native_tree_local(info, newdata, type))
@@ -108,6 +129,150 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   }
 
   jsonlite::fromJSON(result$stdout)
+}
+
+.format_vision_local_predictions <- function(
+    value, expected_rows, target_levels, type) {
+  if (!is.atomic(target_levels) || length(target_levels) < 2L ||
+      anyNA(target_levels) || anyDuplicated(target_levels)) {
+    stop("Saved vision target levels are invalid.", call. = FALSE)
+  }
+  n_classes <- length(target_levels)
+  if (identical(type, "response")) {
+    indices <- unlist(value, use.names = FALSE)
+    if (!is.numeric(indices) || length(indices) != expected_rows ||
+        any(!is.finite(indices)) || any(indices != floor(indices)) ||
+        any(indices < 0L | indices >= n_classes)) {
+      stop("Local vision predictor returned invalid class indices.",
+           call. = FALSE)
+    }
+    return(unname(target_levels[as.integer(indices) + 1L]))
+  }
+  probabilities <- tryCatch(as.matrix(value), error = function(e) NULL)
+  if (is.null(probabilities) || !is.numeric(probabilities) ||
+      !identical(dim(probabilities), c(expected_rows, n_classes)) ||
+      any(!is.finite(probabilities)) ||
+      any(probabilities < 0 | probabilities > 1) ||
+      any(abs(rowSums(probabilities) - 1) > 1e-5)) {
+    stop("Local vision predictor returned invalid probabilities.",
+         call. = FALSE)
+  }
+  colnames(probabilities) <- as.character(target_levels)
+  probabilities
+}
+
+.predict_vision_local <- function(info, newdata, type) {
+  contract <- .resolve_validation_contract(dirname(info$model_file), 32L)
+  if (!identical(contract$data_kind, "image") ||
+      !identical(contract$track, "neural")) {
+    stop("Saved vision prediction contract is unavailable.", call. = FALSE)
+  }
+  if (!is.character(newdata) || !length(newdata) ||
+      length(newdata) > .VISION_LOCAL_MAX_PATHS || anyNA(newdata) ||
+      any(!nzchar(newdata)) || any(!validEnc(newdata))) {
+    stop("Vision newdata must be a non-empty character vector of bounded paths.",
+         call. = FALSE)
+  }
+  newdata <- enc2utf8(newdata)
+  if (any(nchar(newdata, type = "bytes") > .VISION_LOCAL_MAX_PATH_BYTES)) {
+    stop("Vision newdata must be a non-empty character vector of bounded paths.",
+         call. = FALSE)
+  }
+  output_width <- if (identical(type, "prob")) {
+    length(contract$target_levels)
+  } else {
+    1L
+  }
+  if (length(newdata) * output_width >
+      .VISION_LOCAL_MAX_PREDICTION_CELLS) {
+    stop("Vision prediction output exceeds the local cell ceiling.",
+         call. = FALSE)
+  }
+  if (!.vision_path_json_fits(
+      newdata, .VISION_LOCAL_MAX_PATH_LIST_BYTES)) {
+    stop("Vision newdata exceeds the local path transport byte ceiling.",
+         call. = FALSE)
+  }
+
+  .ensure_client_framework("pytorch_vision")
+  helper <- system.file(
+    "python", "predict_helper.py", package = "dsFlowerClient")
+  if (!nzchar(helper)) {
+    stop("predict_helper.py not found in dsFlowerClient.", call. = FALSE)
+  }
+
+  config <- list(
+    "validation-model-track" = contract$track,
+    "validation-model-path-b64" =
+      .validation_model_path_b64(contract$artifact),
+    "num-features" = contract$feature_dim,
+    "num-classes" = contract$n_classes,
+    "num-labels" = contract$n_labels,
+    "loss-name" = contract$loss_name,
+    "model-spec-b64" = .spec_to_b64(contract$model_spec),
+    "data-kind" = "image",
+    "validation-task" = contract$task,
+    "backbone" = contract$backbone,
+    "image-size" = contract$image_size,
+    "vision-extractor-profile" = contract$vision_extractor_profile,
+    "validation-artifact-format" = contract$artifact_format,
+    "validation-artifact-sha256" = contract$artifact_sha256,
+    "validation-artifact-size-bytes" = contract$artifact_size_bytes)
+  transport_dir <- tempfile(pattern = "vision_predict_")
+  if (!dir.create(transport_dir, mode = "0700", showWarnings = FALSE)) {
+    stop("Could not create private vision prediction inputs.", call. = FALSE)
+  }
+  on.exit(unlink(transport_dir, recursive = TRUE, force = TRUE), add = TRUE)
+  if (.Platform$OS.type != "windows") {
+    Sys.chmod(transport_dir, "0700")
+    if (!identical(as.character(file.info(transport_dir)$mode), "700")) {
+      stop("Could not secure private vision prediction inputs.", call. = FALSE)
+    }
+  }
+  paths_file <- file.path(transport_dir, "paths.json")
+  config_file <- file.path(transport_dir, "config.json")
+  if (!all(file.create(c(paths_file, config_file)))) {
+    stop("Could not create private vision prediction inputs.", call. = FALSE)
+  }
+  if (.Platform$OS.type != "windows") {
+    Sys.chmod(c(paths_file, config_file), "0600")
+    if (!identical(
+        as.character(file.info(c(paths_file, config_file))$mode),
+        c("600", "600"))) {
+      stop("Could not secure private vision prediction inputs.", call. = FALSE)
+    }
+  }
+  tryCatch({
+    jsonlite::write_json(
+      unname(newdata), paths_file, auto_unbox = FALSE,
+      null = "null", digits = NA)
+    jsonlite::write_json(
+      config, config_file, auto_unbox = TRUE, null = "null", digits = NA)
+  }, error = function(e) {
+    stop("Could not write private vision prediction inputs.", call. = FALSE)
+  })
+  path_info <- file.info(paths_file)
+  if (is.na(path_info$size) ||
+      path_info$size > .VISION_LOCAL_MAX_PATH_LIST_BYTES) {
+    stop("Vision newdata exceeds the local path transport byte ceiling.",
+         call. = FALSE)
+  }
+
+  result <- processx::run(
+    command = .client_python_cmd(),
+    args = c(helper, "--model", contract$artifact,
+             "--data", paths_file, "--type", type,
+             "--framework", "pytorch_vision", "--config", config_file),
+    env = .client_venv_env(), error_on_status = FALSE)
+  if (result$status != 0L) {
+    stop("Vision prediction failed; the saved artifact, extractor, or local ",
+         "input was rejected.", call. = FALSE)
+  }
+  value <- tryCatch(
+    jsonlite::fromJSON(result$stdout, simplifyVector = TRUE),
+    error = function(e) NULL)
+  .format_vision_local_predictions(
+    value, length(newdata), contract$target_levels, type)
 }
 
 .native_tree_prediction_frame <- function(newdata, features) {

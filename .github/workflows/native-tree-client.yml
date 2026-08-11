@@ -7,9 +7,11 @@ on:
       - "inst/python/native_tree_predict_helper.py"
       - "inst/python/import_xgboost_model.py"
       - "inst/python/validate_model_artifact.py"
+      - "inst/python/predict_helper.py"
       - "inst/python/tests/test_native_tree_predict_helper.py"
       - "inst/python/tests/test_import_xgboost_model.py"
       - "inst/python/tests/test_validate_model_artifact.py"
+      - "inst/python/tests/test_vision_predict_helper.py"
       - "inst/flower_app/dsflower_runner/native_tree_*.py"
       - "inst/flower_app/dsflower_runner/boosting_*.py"
       - "inst/flower_app/dsflower_runner/*boost_artifact.py"
@@ -25,6 +27,8 @@ on:
       - "inst/flower_app/dsflower_runner/task.py"
       - "inst/flower_app/dsflower_runner/validation.py"
       - "inst/flower_app/dsflower_runner/vision.py"
+      - "inst/flower_app/dsflower_runner/model_spec.py"
+      - "inst/flower_app/dsflower_runner/params.py"
       - "inst/flower_app/dsflower_runner/xgboost_*.py"
   pull_request:
     paths:
@@ -32,9 +36,11 @@ on:
       - "inst/python/native_tree_predict_helper.py"
       - "inst/python/import_xgboost_model.py"
       - "inst/python/validate_model_artifact.py"
+      - "inst/python/predict_helper.py"
       - "inst/python/tests/test_native_tree_predict_helper.py"
       - "inst/python/tests/test_import_xgboost_model.py"
       - "inst/python/tests/test_validate_model_artifact.py"
+      - "inst/python/tests/test_vision_predict_helper.py"
       - "inst/flower_app/dsflower_runner/native_tree_*.py"
       - "inst/flower_app/dsflower_runner/boosting_*.py"
       - "inst/flower_app/dsflower_runner/*boost_artifact.py"
@@ -50,6 +56,8 @@ on:
       - "inst/flower_app/dsflower_runner/task.py"
       - "inst/flower_app/dsflower_runner/validation.py"
       - "inst/flower_app/dsflower_runner/vision.py"
+      - "inst/flower_app/dsflower_runner/model_spec.py"
+      - "inst/flower_app/dsflower_runner/params.py"
       - "inst/flower_app/dsflower_runner/xgboost_*.py"
 
 permissions:
@@ -86,6 +94,7 @@ jobs:
             inst/python/tests/test_import_xgboost_model.py \
             inst/python/tests/test_native_tree_predict_helper.py \
             inst/python/tests/test_validate_model_artifact.py \
+            inst/python/tests/test_vision_predict_helper.py \
             inst/python/tests/test_boosting_adapter.py \
             inst/python/tests/test_boosting_artifacts.py
           "$contract_python" -I -c \

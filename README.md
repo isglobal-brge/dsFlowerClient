@@ -213,11 +213,12 @@ accepted first-party parameters are pinned in the manifest and actually consumed
 by the trusted runner.
 
 The image contracts cover private federated training of their frozen-backbone
-heads and private validation of saved first-party ResNet-18/DenseNet-121
-binary or multiclass releases, including the volumetric variants. The packaged
-local predictor remains tabular, and image holdout/cross-validation are not
-implemented. These boundaries are explicit rather than silently treating
-images as a numeric table. Each image release carries a
+heads, private validation, and local researcher-side prediction for saved
+native dsFlower ResNet-18/DenseNet-121 binary or multiclass releases, including
+the volumetric variants. Local prediction takes explicit image or volume paths
+and does not contact DSI; image holdout/cross-validation are not implemented.
+These boundaries are explicit rather than silently treating images as a numeric
+table. Each image release carries a
 `vision-extractor-profile`: a versioned public semantic ABI for its frozen
 extractor, not a cryptographic signature of extractor state. Releases without
 that profile fail closed; implementation or dependency changes that alter
@@ -354,7 +355,7 @@ HookApps use the same `target_levels`/`target_bounds` contract and must declare
 
 ## Private model validation
 
-`ds.flower.validate()` evaluates a saved declarative neural, first-party vision,
+`ds.flower.validate()` evaluates a saved declarative neural, native dsFlower vision,
 or sanitized native-tree model inside the nodes and releases one fixed,
 Gaussian-noised vector of bounded sufficient statistics per node. Vision is
 limited to saved `pytorch_resnet18` and `pytorch_densenet121` binary/multiclass
@@ -381,8 +382,21 @@ print(validation)
 
 For vision, assign an image bundle or a samples table routed as image data on
 each node, then pass the saved vision run and its target column to the same API.
-This is validation only: `ds.flower.predict()`, holdout and cross-validation do
-not claim image support.
+Saved native dsFlower vision releases also support local, researcher-side
+prediction from an explicit vector of image or volume paths. This does not
+contact DSI or create a DP release: the pinned state dictionary and canonical
+extractor are validated before the first path is opened, and both feature
+extraction and head inference run in bounded batches.
+
+```r
+probabilities <- ds.flower.predict(
+  fit,
+  c("scan-001.nii.gz", "scan-002.nii.gz"),
+  type = "prob"
+)
+```
+
+Holdout and cross-validation do not claim image support.
 
 Binary validation provides threshold metrics, ROC/PR AUC, Brier score,
 calibration and decision-curve summaries; multiclass/ordinal/multilabel use

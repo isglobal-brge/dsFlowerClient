@@ -52,7 +52,7 @@ A \code{dsflower_validation}. Its \code{available} field is false
   the node-DP metric release.
 }
 \description{
-Evaluates a released tabular declarative neural model, saved first-party
+Evaluates a released tabular declarative neural model, saved native dsFlower
 ResNet-18 or DenseNet-121 vision classifier, sanitized native-tree ensemble,
 or explicitly external-unverified imported XGBoost bundle on the dataset
 assigned for this call inside each data node.
@@ -65,9 +65,11 @@ frozen feature dimension, class vocabulary, declarative head and bounded
 \code{model.pt} digest are pinned before DSI. The
 \code{vision-extractor-profile} is a versioned semantic ABI, not a
 cryptographic signature of extractor state; releases without it fail closed,
-and semantic implementation/dependency changes require a profile bump. Image
-paths and pixels remain node-private. It does not add local image prediction, holdout, or
-cross-validation support. Reusing the training dataset is resubstitution
+and semantic implementation/dependency changes require a profile bump. During
+federated validation, image paths and pixels remain node-private. Local
+researcher-side image prediction is separately available through
+\code{ds.flower.predict()}; image holdout and cross-validation are not
+supported. Reusing the training dataset is resubstitution
 validation; assigning an independent dataset is external
 validation. Each protected row/patient contributes one bounded sufficient-statistic
 vector, the node releases it once through the server-owned Gaussian mechanism,

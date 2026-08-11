@@ -1,12 +1,12 @@
 # Differentially-private federated model validation
 
-Evaluates a released tabular declarative neural model, saved first-party
-ResNet-18 or DenseNet-121 vision classifier, sanitized native-tree
-ensemble, or explicitly external-unverified imported XGBoost bundle on
-the dataset assigned for this call inside each data node. The native
-request, ensemble and prediction-profile sidecar are pinned into the
-ephemeral execution contract and every node re-sanitizes the ensemble
-before opening its data. Vision validation accepts only
+Evaluates a released tabular declarative neural model, saved native
+dsFlower ResNet-18 or DenseNet-121 vision classifier, sanitized
+native-tree ensemble, or explicitly external-unverified imported XGBoost
+bundle on the dataset assigned for this call inside each data node. The
+native request, ensemble and prediction-profile sidecar are pinned into
+the ephemeral execution contract and every node re-sanitizes the
+ensemble before opening its data. Vision validation accepts only
 binary/multiclass releases made by `pytorch_resnet18` or
 `pytorch_densenet121`, including their volumetric variants. Its
 canonical backbone, image size, frozen feature dimension, class
@@ -14,12 +14,15 @@ vocabulary, declarative head and bounded `model.pt` digest are pinned
 before DSI. The `vision-extractor-profile` is a versioned semantic ABI,
 not a cryptographic signature of extractor state; releases without it
 fail closed, and semantic implementation/dependency changes require a
-profile bump. Image paths and pixels remain node-private. It does not
-add local image prediction, holdout, or cross-validation support.
-Reusing the training dataset is resubstitution validation; assigning an
-independent dataset is external validation. Each protected row/patient
-contributes one bounded sufficient-statistic vector, the node releases
-it once through the server-owned Gaussian mechanism, and only pooled
+profile bump. During federated validation, image paths and pixels remain
+node-private. Local researcher-side image prediction is separately
+available through
+[`ds.flower.predict()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.predict.md);
+image holdout and cross-validation are not supported. Reusing the
+training dataset is resubstitution validation; assigning an independent
+dataset is external validation. Each protected row/patient contributes
+one bounded sufficient-statistic vector, the node releases it once
+through the server-owned Gaussian mechanism, and only pooled
 post-processed metrics are returned. Exact predictions, labels, counts
 and per-node metrics never leave the node. All nodes must declare the
 same row- or patient-level estimand. Privacy is guaranteed per node; if

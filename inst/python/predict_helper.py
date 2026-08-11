@@ -5,7 +5,7 @@ Outputs JSON predictions to stdout for R to consume via processx.
 
 Usage:
   python predict_helper.py --model <path> --data <csv> --type response|prob
-                           [--framework pytorch]
+                           [--framework pytorch|pytorch_vision]
                            --spec-b64 <model_spec> --loss-name <loss_name>
                            [--bounds-b64 <public_bounds>]
 """
@@ -14,7 +14,9 @@ import argparse
 import base64
 import importlib.util
 import json
+import os
 from pathlib import Path
+import stat
 import sys
 
 import numpy as np
@@ -23,6 +25,12 @@ import pandas as pd
 
 _MAX_INPUT_ABS = 1.0e6
 _MAX_ACTIVATION_ABS = 1.0e6
+_VISION_PREDICT_BATCH_ROWS = 1024
+_MAX_VISION_CONFIG_BYTES = 256 * 1024
+_MAX_VISION_PATH_LIST_BYTES = 64 * 1024 * 1024
+_MAX_VISION_PATHS = 1_000_000
+_MAX_VISION_PATH_BYTES = 32_768
+_MAX_VISION_PREDICTION_CELLS = 2_000_000
 
 
 def _finite_torch(value, limit):
@@ -141,6 +149,78 @@ def predict_pytorch_spec(model_path, X, pred_type, spec_b64, loss_name,
     return _apply_loss_semantics(logits, loss_name, pred_type)
 
 
+def _load_vision_runner_modules():
+    """Import the trusted artifact and frozen-extractor implementation."""
+    flower_app = Path(__file__).resolve().parents[1] / "flower_app"
+    if not flower_app.is_dir():
+        raise RuntimeError("bundled vision runner is unavailable")
+    sys.path.insert(0, str(flower_app))
+    from dsflower_runner import model_spec, params, validation, vision
+    return validation, vision, model_spec, params
+
+
+def predict_pytorch_vision(config, paths, pred_type):
+    """Validate a native dsFlower vision release, then infer in bounded batches."""
+    if not isinstance(config, dict):
+        raise ValueError("vision prediction config must be an object")
+    if (not isinstance(paths, list) or not paths
+            or len(paths) > _MAX_VISION_PATHS
+            or any(type(path) is not str or not path or "\x00" in path
+                   or len(path.encode("utf-8")) > _MAX_VISION_PATH_BYTES
+                   for path in paths)):
+        raise ValueError("vision prediction paths must be non-empty strings")
+    if pred_type not in ("response", "prob"):
+        raise ValueError("vision prediction type is invalid")
+
+    validation, vision, model_spec, params = _load_vision_runner_modules()
+
+    # Both public preflights happen before paths reach an image reader.
+    arrays = validation.public_model_arrays(config)
+    encoder, image_size, is_3d, device = vision.prepare_backbone(
+        config.get("backbone"), config.get("vision-extractor-profile"),
+        config.get("num-features"), config.get("image-size"))
+
+    loss_name = config.get("loss-name")
+    public_spec = model_spec.read_spec(config)
+    out_dim = model_spec.output_width(loss_name, config)
+    head = model_spec.build_from_spec(
+        public_spec, in_dim=int(config["num-features"]),
+        out_dim=int(out_dim), num_labels=int(config.get("num-labels", 2)),
+        output_limit=model_spec.output_limit_for_loss(loss_name))
+    params.set_torch_params(head, arrays)
+
+    n_classes = int(config.get("num-classes"))
+    output_width = n_classes if pred_type == "prob" else 1
+    if len(paths) * output_width > _MAX_VISION_PREDICTION_CELLS:
+        raise ValueError("vision prediction output exceeds the local cell ceiling")
+    predictions = []
+    for start in range(0, len(paths), _VISION_PREDICT_BATCH_ROWS):
+        chunk = paths[start:start + _VISION_PREDICT_BATCH_ROWS]
+        features = vision.extract_features_from_paths(
+            encoder, chunk, image_size, is_3d, device)
+        probabilities = np.asarray(
+            validation.neural_predictions(head, features, loss_name))
+        if (probabilities.shape != (len(chunk), n_classes)
+                or not bool(np.all(np.isfinite(probabilities)))
+                or bool(np.any(probabilities < 0.0))
+                or bool(np.any(probabilities > 1.0))):
+            raise RuntimeError("vision prediction output is invalid")
+        if pred_type == "response":
+            predictions.extend(np.argmax(probabilities, axis=1).tolist())
+        else:
+            predictions.extend(probabilities.tolist())
+    return predictions
+
+
+def _read_bounded_json(path, max_bytes):
+    info = os.lstat(path)
+    if (not stat.S_ISREG(info.st_mode) or info.st_size < 1
+            or info.st_size > max_bytes):
+        raise ValueError("local prediction input is not a bounded regular file")
+    with open(path, "r", encoding="utf-8") as handle:
+        return json.load(handle)
+
+
 def _decode_b64_json(raw):
     import base64
     return json.loads(base64.b64decode(str(raw), validate=True).decode("utf-8"))
@@ -183,7 +263,9 @@ def main():
     parser.add_argument("--model", required=True)
     parser.add_argument("--data", required=True)
     parser.add_argument("--type", default="response", choices=["response", "prob"])
-    parser.add_argument("--framework", choices=["pytorch"], default=None)
+    parser.add_argument("--framework", choices=["pytorch", "pytorch_vision"],
+                        default=None)
+    parser.add_argument("--config", default=None)
     parser.add_argument("--spec-b64", dest="spec_b64", default=None)
     parser.add_argument("--loss-name", dest="loss_name", default=None)
     parser.add_argument("--num-classes", dest="num_classes", type=int, default=2)
@@ -200,6 +282,22 @@ def main():
             print(json.dumps({"error": "Cannot detect framework from model file"}),
                   file=sys.stderr)
             sys.exit(1)
+
+    if framework == "pytorch_vision":
+        if not args.config:
+            print(json.dumps({"error": "Vision prediction requires config"}),
+                  file=sys.stderr)
+            sys.exit(2)
+        try:
+            config = _read_bounded_json(args.config, _MAX_VISION_CONFIG_BYTES)
+            paths = _read_bounded_json(args.data, _MAX_VISION_PATH_LIST_BYTES)
+            preds = predict_pytorch_vision(config, paths, args.type)
+        except (KeyError, OSError, TypeError, UnicodeError, ValueError,
+                RuntimeError) as exc:
+            print(json.dumps({"error": str(exc)}), file=sys.stderr)
+            sys.exit(1)
+        json.dump(preds, sys.stdout)
+        return
 
     # Read data
     df = pd.read_csv(args.data)

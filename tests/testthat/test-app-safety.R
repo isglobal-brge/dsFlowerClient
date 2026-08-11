@@ -221,7 +221,7 @@ test_that("malformed metadata cannot expand prediction dimensions", {
   expect_null(contract$data_kind)
 })
 
-test_that("saved data kind prevents tabular prediction of vision artifacts", {
+test_that("vision prediction requires a complete first-party release", {
   model_dir <- withr::local_tempdir()
   jsonlite::write_json(
     list(data_kind = "image", model_spec = list(kind = "linear")),
@@ -232,7 +232,7 @@ test_that("saved data kind prevents tabular prediction of vision artifacts", {
   expect_identical(contract$data_kind, "image")
   expect_error(
     ds.flower.predict(model_dir, data.frame(x = 1)),
-    "accepts tabular artifacts only")
+    "declarative neural artifacts")
 
   jsonlite::write_json(
     list(model = "pytorch_resnet18", framework = "pytorch_vision"),
@@ -242,6 +242,27 @@ test_that("saved data kind prevents tabular prediction of vision artifacts", {
     ds.flower.predict(model_dir, data.frame(x = 1)),
     "metadata must declare data_kind"
   )
+})
+
+test_that("local vision prediction preserves ordered public target types", {
+  format_predictions <-
+    dsFlowerClient:::.format_vision_local_predictions
+
+  expect_identical(
+    format_predictions(c(1L, 0L), 2L, c(FALSE, TRUE), "response"),
+    c(TRUE, FALSE)
+  )
+  expect_identical(
+    format_predictions(c(0L, 1L), 2L, c(10, 20), "response"),
+    c(10, 20)
+  )
+
+  probabilities <- matrix(c(0.75, 0.25, 0.1, 0.9), nrow = 2L,
+                          byrow = TRUE)
+  got <- format_predictions(
+    probabilities, 2L, c("control", "case"), "prob")
+  expect_equal(unname(got), probabilities)
+  expect_identical(colnames(got), c("control", "case"))
 })
 
 test_that("local prediction rejects Tier-2 and other no-spec artifacts", {

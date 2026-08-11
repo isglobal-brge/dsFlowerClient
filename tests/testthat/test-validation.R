@@ -610,6 +610,35 @@ test_that("vision validation rejects unsupported, incomplete and tabular metadat
     "must not contain tabular columns or bounds")
 })
 
+test_that("vision target levels are homogeneous, non-empty and type-preserving", {
+  with_levels <- function(levels) {
+    path <- vision_validation_model_fixture(.local_envir = parent.frame())
+    metadata_path <- file.path(path, "metadata.json")
+    meta <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
+    meta$target_levels <- levels
+    jsonlite::write_json(
+      meta, metadata_path, auto_unbox = TRUE, null = "list")
+    path
+  }
+
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(
+      with_levels(list("control", 1L)), 32L),
+    "homogeneous public target levels")
+  expect_error(
+    dsFlowerClient:::.resolve_validation_contract(
+      with_levels(list("", "case")), 32L),
+    "homogeneous public target levels")
+  expect_identical(
+    dsFlowerClient:::.resolve_validation_contract(
+      with_levels(list(FALSE, TRUE)), 32L)$target_levels,
+    c(FALSE, TRUE))
+  expect_identical(
+    dsFlowerClient:::.resolve_validation_contract(
+      with_levels(list(1L, 2.5)), 32L)$target_levels,
+    c(1, 2.5))
+})
+
 test_that("vision artifact bytes are bound into the validation contract", {
   path <- vision_validation_model_fixture()
   first <- dsFlowerClient:::.resolve_validation_contract(path, 32L)
@@ -692,6 +721,109 @@ test_that("vision preflight has a bounded cold-start window", {
   expect_no_error(
     dsFlowerClient:::.validate_validation_artifact_preflight(tabular))
   expect_identical(timeouts, c(300, 60))
+})
+
+test_that("local vision prediction sends only the strict public contract and paths", {
+  path <- vision_validation_model_fixture(n_classes = 2L, volumetric = TRUE)
+  ensured <- character()
+  seen <- NULL
+  local_mocked_bindings(
+    .ensure_client_framework = function(framework) {
+      ensured <<- c(ensured, framework)
+      TRUE
+    },
+    .client_python_cmd = function() "python",
+    .client_venv_env = function(...) character(),
+    .package = "dsFlowerClient")
+  local_mocked_bindings(
+    run = function(command, args, ...) {
+      data_path <- args[match("--data", args) + 1L]
+      config_path <- args[match("--config", args) + 1L]
+      seen <<- list(
+        paths = jsonlite::fromJSON(data_path),
+        config = jsonlite::fromJSON(config_path, simplifyVector = FALSE),
+        directory_mode = as.character(file.info(dirname(data_path))$mode),
+        modes = as.character(file.info(c(data_path, config_path))$mode),
+        args = args)
+      list(status = 0L, stderr = "", stdout = "[[0.8,0.2],[0.1,0.9]]")
+    },
+    .package = "processx")
+
+  got <- ds.flower.predict(
+    path, c("first-volume.nii.gz", "second-volume.nii.gz"), type = "prob")
+
+  expect_equal(unname(got), matrix(c(0.8, 0.2, 0.1, 0.9), nrow = 2L,
+                                   byrow = TRUE))
+  expect_identical(colnames(got), c("class-1", "class-2"))
+  expect_identical(ensured, "pytorch_vision")
+  expect_identical(seen$paths, c("first-volume.nii.gz", "second-volume.nii.gz"))
+  expect_identical(seen$config[["data-kind"]], "image")
+  expect_identical(seen$config[["backbone"]], "resnet18_3d")
+  expect_identical(
+    seen$config[["vision-extractor-profile"]],
+    dsFlowerClient:::.vision_extractor_profile("resnet18_3d"))
+  expect_true(all(c("--framework", "pytorch_vision") %in% seen$args))
+  if (.Platform$OS.type != "windows") {
+    expect_identical(seen$directory_mode, "700")
+    expect_identical(seen$modes, c("600", "600"))
+  }
+})
+
+test_that("local vision prediction never reflects private paths in errors", {
+  path <- vision_validation_model_fixture()
+  private_path <- "/private/participant-42/secret-scan.png"
+  local_mocked_bindings(
+    .ensure_client_framework = function(...) TRUE,
+    .client_python_cmd = function() "python",
+    .client_venv_env = function(...) character(),
+    .package = "dsFlowerClient")
+  local_mocked_bindings(
+    run = function(...) list(
+      status = 1L, stdout = "",
+      stderr = paste("decoder rejected", private_path)),
+    .package = "processx")
+
+  error <- expect_error(ds.flower.predict(path, private_path))
+  expect_false(grepl(private_path, conditionMessage(error), fixed = TRUE))
+})
+
+test_that("oversized vision path JSON is rejected before serialization", {
+  path <- vision_validation_model_fixture()
+  reached <- character()
+  local_mocked_bindings(
+    .VISION_LOCAL_MAX_PATH_LIST_BYTES = 16L,
+    .ensure_client_framework = function(...) reached <<- c(reached, "setup"),
+    .package = "dsFlowerClient")
+  local_mocked_bindings(
+    write_json = function(...) reached <<- c(reached, "write"),
+    .package = "jsonlite")
+  local_mocked_bindings(
+    run = function(...) reached <<- c(reached, "process"),
+    .package = "processx")
+
+  expect_error(
+    ds.flower.predict(path, c("long-private-path", "second")),
+    "path transport byte ceiling")
+  expect_length(reached, 0L)
+})
+
+test_that("vision transport write failure cannot reach the predictor", {
+  path <- vision_validation_model_fixture()
+  reached_process <- FALSE
+  local_mocked_bindings(
+    .ensure_client_framework = function(...) TRUE,
+    .package = "dsFlowerClient")
+  local_mocked_bindings(
+    write_json = function(...) stop("fixture write failure"),
+    .package = "jsonlite")
+  local_mocked_bindings(
+    run = function(...) reached_process <<- TRUE,
+    .package = "processx")
+
+  expect_error(
+    ds.flower.predict(path, "private-image"),
+    "Could not write private vision prediction inputs")
+  expect_false(reached_process)
 })
 
 test_that("validation metadata supports up to 1024 classes and labels", {

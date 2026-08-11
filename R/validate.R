@@ -465,9 +465,33 @@
     }
   }
   feature_dim <- .vision_extractor_feature_dim(backbone)
-  public_levels <- .validation_atomic(meta$target_levels)
-  if (length(public_levels) != n_classes || anyNA(public_levels) ||
-      anyDuplicated(public_levels)) {
+  raw_levels <- meta$target_levels
+  if (!is.list(raw_levels) || !is.null(names(raw_levels)) ||
+      length(raw_levels) != n_classes) {
+    stop("Vision validation requires exactly one public target level per class.",
+         call. = FALSE)
+  }
+  scalar_character <- function(value) {
+    is.character(value) && length(value) == 1L && !is.na(value) &&
+      nzchar(value) && validEnc(value)
+  }
+  scalar_logical <- function(value) {
+    is.logical(value) && length(value) == 1L && !is.na(value)
+  }
+  scalar_numeric <- function(value) {
+    is.numeric(value) && !is.logical(value) && length(value) == 1L &&
+      !is.na(value) && is.finite(value)
+  }
+  homogeneous <- any(vapply(
+    list(scalar_character, scalar_logical, scalar_numeric),
+    function(predicate) all(vapply(raw_levels, predicate, logical(1))),
+    logical(1)))
+  if (!homogeneous) {
+    stop("Vision validation requires homogeneous public target levels ",
+         "(non-empty character, logical, or finite numeric).", call. = FALSE)
+  }
+  public_levels <- unlist(raw_levels, use.names = FALSE)
+  if (anyDuplicated(public_levels)) {
     stop("Vision validation requires exactly one public target level per class.",
          call. = FALSE)
   }
@@ -1012,7 +1036,7 @@
 
 #' Differentially-private federated model validation
 #'
-#' Evaluates a released tabular declarative neural model, saved first-party
+#' Evaluates a released tabular declarative neural model, saved native dsFlower
 #' ResNet-18 or DenseNet-121 vision classifier, sanitized native-tree ensemble,
 #' or explicitly external-unverified imported XGBoost bundle on the dataset
 #' assigned for this call inside each data node.
@@ -1025,9 +1049,11 @@
 #' \code{model.pt} digest are pinned before DSI. The
 #' \code{vision-extractor-profile} is a versioned semantic ABI, not a
 #' cryptographic signature of extractor state; releases without it fail closed,
-#' and semantic implementation/dependency changes require a profile bump. Image
-#' paths and pixels remain node-private. It does not add local image prediction, holdout, or
-#' cross-validation support. Reusing the training dataset is resubstitution
+#' and semantic implementation/dependency changes require a profile bump. During
+#' federated validation, image paths and pixels remain node-private. Local
+#' researcher-side image prediction is separately available through
+#' \code{ds.flower.predict()}; image holdout and cross-validation are not
+#' supported. Reusing the training dataset is resubstitution
 #' validation; assigning an independent dataset is external
 #' validation. Each protected row/patient contributes one bounded sufficient-statistic
 #' vector, the node releases it once through the server-owned Gaussian mechanism,
