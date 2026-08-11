@@ -83,7 +83,16 @@ jobs:
           python3 -m venv "$DSFLOWER_CLIENT_VENV_ROOT/venv"
           client_python="$DSFLOWER_CLIENT_VENV_ROOT/venv/bin/python"
           "$client_python" -m pip install --disable-pip-version-check \
-            'flwr==1.31.0' 'optuna==4.8.0'
+            --index-url https://download.pytorch.org/whl/cpu \
+            'torch==2.10.0'
+          "$client_python" -m pip install --disable-pip-version-check \
+            'flwr==1.31.0' \
+            'optuna==4.8.0' \
+            'numpy==2.4.6' \
+            'pandas==3.0.3' \
+            'pyarrow==23.0.1' \
+            'cryptography==46.0.7' \
+            'opacus==1.6.0'
 
       - name: Install current R sources
         shell: bash
