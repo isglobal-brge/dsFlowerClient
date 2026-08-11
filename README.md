@@ -423,6 +423,32 @@ using one universal score—for example, maximize accuracy or ROC AUC
 for binary classification, maximize macro F1 for multilabel classification, or
 minimize MAE for bounded regression/count outcomes.
 
+## Pooled binary association
+
+For a bounded descriptive 2x2 association with an explicit unknown row and
+column, use the dedicated one-release API:
+
+```r
+association <- ds.flower.associate(
+  conns,
+  symbol = "D",
+  outcome = "disease",
+  exposure = "smoking",
+  outcome_levels = c("no", "yes"),
+  exposure_levels = c("never", "ever")
+)
+association$table_dp
+association$measures
+```
+
+The ordered public levels mean `reference, positive`; every other, missing or
+malformed private value is retained as `unknown`. Only the complete pooled DP
+table and descriptive prevalence difference, prevalence ratio and odds ratio
+are returned. This is not a causal or adjusted estimate. In patient mode each
+axis means ever-positive across that patient's rows, not same-visit or temporal
+association. Privacy is per job and node; overlapping people across nodes
+compose and must be handled by deployment design.
+
 ## Public feature bounds
 
 Exact node-side `count`, `sum`, `sumsq`, means, variances and quantiles are not
