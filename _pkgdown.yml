@@ -22,6 +22,8 @@ navbar:
           href: articles/api-quickstart.html
         - text: "Server Method Registration"
           href: articles/method-registration-live-federation.html
+        - text: "Utility Campaign"
+          href: articles/utility-campaign.html
 
 articles:
   - title: Current guides
@@ -29,6 +31,7 @@ articles:
     contents:
       - api-quickstart
       - method-registration-live-federation
+      - utility-campaign
 
 reference:
   - title: "High-level submission"
