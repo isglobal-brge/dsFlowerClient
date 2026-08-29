@@ -1,0 +1,189 @@
+{
+  "schema": "dsflower-campaign-v1",
+  "generated_at": "2026-08-19T20:21:06+0200",
+  "host": {
+    "nodename": "Davids-MacBook-Air.local",
+    "sysname": "Darwin",
+    "release": "24.4.0",
+    "machine": "arm64",
+    "r_version": "R version 4.5.2 (2025-10-31)"
+  },
+  "versions": {
+    "dsflower": "0.4.1",
+    "dsflowerclient": "0.4.1",
+    "flwr": "1.31.0",
+    "torch": "2.13.0",
+    "opacus": "1.6.0"
+  },
+  "contract": "pytorch_logreg",
+  "dataset": {
+    "name": "breast",
+    "n_total": 683,
+    "n_train": 546,
+    "n_test": 137,
+    "n_per_site": [181, 183, 182],
+    "features": ["clump_thickness", "cell_size_uniformity", "cell_shape_uniformity", "marginal_adhesion", "epithelial_cell_size", "bare_nuclei", "bland_chromatin", "normal_nucleoli", "mitoses"],
+    "source_url": "https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data",
+    "sha_of_prepared": "73464282fed0596ec31fd5d59f2867aed49f895f119d1a3be2ab11282202f805"
+  },
+  "split": {
+    "type": "uniform-stratified",
+    "test_fraction": 0.2,
+    "seeds": [20260820, 20260821, 20260822]
+  },
+  "privacy": {
+    "epsilon": 8,
+    "delta": 1e-06,
+    "unit": "row (default dp_unit policy)",
+    "clipping": "dsFlower 0.4.1 defaults",
+    "bounds_policy": "feature_bounds declared from the pooled TRAIN side of each replicate: observed min/max widened by 10% of the range"
+  },
+  "rounds": 5,
+  "model_params": {
+    "learning_rate": 0.1,
+    "batch_size": 32,
+    "local_epochs": 2
+  },
+  "per_replicate": [
+    {
+      "seed": 20260820,
+      "central": {
+        "auc": 1,
+        "acc": 0.985401,
+        "brier": 0.01424,
+        "logloss": 0.052347
+      },
+      "federated_dp": {
+        "auc": 0.999532,
+        "acc": 0.912409,
+        "brier": 0.060008,
+        "logloss": 0.216162
+      },
+      "trivial": {
+        "acc": 0.649635,
+        "prevalence": 0.349817,
+        "brier": 0.22761,
+        "auc": 0.5
+      },
+      "feature_bounds": {
+        "lower": [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+        "upper": [10.9, 10.9, 10.9, 10.9, 10.9, 10.9, 10.9, 10.9, 10.9]
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5
+      },
+      "model_sha256": "057f7df5d5c25ec0726e8badc878e5eabf9e325b0c9b4726978c6d8b10c5eaa2",
+      "elapsed_s": 111.7
+    },
+    {
+      "seed": 20260821,
+      "central": {
+        "auc": 0.996957,
+        "acc": 0.963504,
+        "brier": 0.025373,
+        "logloss": 0.077121
+      },
+      "federated_dp": {
+        "auc": 0.995318,
+        "acc": 0.941606,
+        "brier": 0.049552,
+        "logloss": 0.195961
+      },
+      "trivial": {
+        "acc": 0.649635,
+        "prevalence": 0.349817,
+        "brier": 0.22761,
+        "auc": 0.5
+      },
+      "feature_bounds": {
+        "lower": [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+        "upper": [10.9, 10.9, 10.9, 10.9, 10.9, 10.9, 10.9, 10.9, 10.9]
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5
+      },
+      "model_sha256": "89bece2a35c309d34cb8d67298323e6e4fb495c19ff8eae3f4343841a8b2e09b",
+      "elapsed_s": 70.9
+    },
+    {
+      "seed": 20260822,
+      "central": {
+        "auc": 0.998127,
+        "acc": 0.970803,
+        "brier": 0.018569,
+        "logloss": 0.062022
+      },
+      "federated_dp": {
+        "auc": 0.995084,
+        "acc": 0.927007,
+        "brier": 0.056918,
+        "logloss": 0.216489
+      },
+      "trivial": {
+        "acc": 0.649635,
+        "prevalence": 0.349817,
+        "brier": 0.22761,
+        "auc": 0.5
+      },
+      "feature_bounds": {
+        "lower": [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1],
+        "upper": [10.9, 10.9, 10.9, 10.9, 10.9, 10.9, 10.9, 10.9, 10.9]
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5
+      },
+      "model_sha256": "23d551dcddc618021596620839a644e36867d9ec2e2cb6d8d4fab4080f53bbff",
+      "elapsed_s": 68.4
+    }
+  ],
+  "summary": {
+    "central_mean_sd": {
+      "auc": {
+        "mean": 0.998361,
+        "sd": 0.001535
+      },
+      "acc": {
+        "mean": 0.973236,
+        "sd": 0.01115
+      },
+      "brier": {
+        "mean": 0.019394,
+        "sd": 0.005612
+      },
+      "logloss": {
+        "mean": 0.06383,
+        "sd": 0.012486
+      }
+    },
+    "federated_mean_sd": {
+      "auc": {
+        "mean": 0.996645,
+        "sd": 0.002503
+      },
+      "acc": {
+        "mean": 0.927007,
+        "sd": 0.014599
+      },
+      "brier": {
+        "mean": 0.055493,
+        "sd": 0.005372
+      },
+      "logloss": {
+        "mean": 0.209537,
+        "sd": 0.011759
+      }
+    },
+    "delta_mean_sd": {
+      "auc": {
+        "mean": -0.001717,
+        "sd": 0.001289
+      }
+    }
+  }
+}
