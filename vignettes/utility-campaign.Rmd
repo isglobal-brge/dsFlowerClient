@@ -10,9 +10,9 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(collapse = TRUE, comment = "#>", echo = FALSE,
                       fig.width = 7, fig.height = 4.2)
-campaign_dir <- system.file("extdata", "campaign", package = "dsFlowerClient")
-if (!nzchar(campaign_dir) || !length(list.files(campaign_dir, pattern = "\\.json$"))) {
-  campaign_dir <- file.path("..", "inst", "extdata", "campaign")
+campaign_dir <- file.path("..", "inst", "extdata", "campaign")
+if (!dir.exists(campaign_dir) || !length(list.files(campaign_dir, pattern = "\\.json$"))) {
+  campaign_dir <- system.file("extdata", "campaign", package = "dsFlowerClient")
 }
 files <- list.files(campaign_dir, pattern = "\\.json$", full.names = TRUE)
 cells <- lapply(files, jsonlite::read_json, simplifyVector = TRUE)

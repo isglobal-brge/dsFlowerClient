@@ -109,7 +109,7 @@ are stored alongside. The headline quantity is the utility gap
 <h2 id="executed-cells">Executed cells<a class="anchor" aria-label="anchor" href="#executed-cells"></a>
 </h2>
 <table class="table">
-<caption>All executed campaign cells (6), three seeded replicates each,
+<caption>All executed campaign cells (10), three seeded replicates each,
 five federated rounds, three sites, delta = 1e-6, package-default
 clipping.</caption>
 <colgroup>
@@ -143,11 +143,29 @@ clipping.</caption>
 <tr class="even">
 <td align="left">Breast cancer (Wisconsin) (n = 683)</td>
 <td align="left">pytorch_logreg</td>
+<td align="right">4</td>
+<td align="right">0.9984</td>
+<td align="right">0.9970</td>
+<td align="right">-0.0014</td>
+<td align="right">0.0004</td>
+</tr>
+<tr class="odd">
+<td align="left">Breast cancer (Wisconsin) (n = 683)</td>
+<td align="left">pytorch_logreg</td>
 <td align="right">8</td>
 <td align="right">0.9984</td>
 <td align="right">0.9966</td>
 <td align="right">-0.0017</td>
 <td align="right">0.0013</td>
+</tr>
+<tr class="even">
+<td align="left">CDC diabetes (stratified subsample) (n = 2,000)</td>
+<td align="left">pytorch_logreg</td>
+<td align="right">1</td>
+<td align="right">0.8395</td>
+<td align="right">0.7901</td>
+<td align="right">-0.0493</td>
+<td align="right">0.0376</td>
 </tr>
 <tr class="odd">
 <td align="left">CDC diabetes (stratified subsample) (n = 9,000)</td>
@@ -161,13 +179,22 @@ clipping.</caption>
 <tr class="even">
 <td align="left">CDC diabetes (stratified subsample) (n = 9,000)</td>
 <td align="left">pytorch_logreg</td>
+<td align="right">4</td>
+<td align="right">0.8265</td>
+<td align="right">0.7840</td>
+<td align="right">-0.0425</td>
+<td align="right">0.0065</td>
+</tr>
+<tr class="odd">
+<td align="left">CDC diabetes (stratified subsample) (n = 9,000)</td>
+<td align="left">pytorch_logreg</td>
 <td align="right">8</td>
 <td align="right">0.8265</td>
 <td align="right">0.7847</td>
 <td align="right">-0.0418</td>
 <td align="right">0.0054</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Heart disease (Cleveland) (n = 297)</td>
 <td align="left">pytorch_logreg</td>
 <td align="right">1</td>
@@ -175,6 +202,15 @@ clipping.</caption>
 <td align="right">0.8241</td>
 <td align="right">-0.0992</td>
 <td align="right">0.0616</td>
+</tr>
+<tr class="odd">
+<td align="left">Heart disease (Cleveland) (n = 297)</td>
+<td align="left">pytorch_logreg</td>
+<td align="right">4</td>
+<td align="right">0.9232</td>
+<td align="right">0.8742</td>
+<td align="right">-0.0490</td>
+<td align="right">0.0469</td>
 </tr>
 <tr class="even">
 <td align="left">Heart disease (Cleveland) (n = 297)</td>
@@ -222,7 +258,7 @@ free.</li>
 <p>DP-SGD theory says per-sample noise impact shrinks roughly like
 <code>1/(n \* eps)</code>: at fixed epsilon, growing the cohort should
 shrink the privacy part of the gap toward the federation residual.</p>
-<pre><code><span><span class="co">#&gt; n-scaling cells beyond n = 9000 are executing; this figure extends automatically when their evidence lands.</span></span></code></pre>
+<p><img src="utility-campaign_files/figure-html/n-scaling-1.png" class="r-plt" alt="Utility gap versus cohort size at epsilon = 1" width="672"></p>
 </div>
 <div class="section level2">
 <h2 id="validation-checks">Validation checks<a class="anchor" aria-label="anchor" href="#validation-checks"></a>
