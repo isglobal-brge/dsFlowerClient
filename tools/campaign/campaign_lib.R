@@ -118,16 +118,19 @@ campaign_load_cohort <- function(name, cache_dir) {
     source_url <- paste0("https://archive.ics.uci.edu/ml/",
                          "machine-learning-databases/heart-disease/",
                          "processed.cleveland.data")
-  } else if (identical(name, "cdc9k")) {
+  } else if (grepl("^cdc[0-9]+k$", name)) {
     path <- file.path(cache_dir, "cdc_diabetes_health_indicators.csv")
     full <- utils::read.csv(path)
     full$target <- as.integer(full$Diabetes_binary)
     full <- full[, c(setdiff(names(full), c("ID", "Diabetes_binary", "target")),
                      "target")]
-    # Fixed-seed stratified subsample of 9,000 rows (same cohort for every
+    # Fixed-seed stratified subsample of N thousand rows (same cohort for every
     # replicate; per-replicate variation comes from the train/test split seed).
+    # `cdc9k` is the pilot cohort; other sizes (cdc2k, cdc45k, cdc90k, ...)
+    # support the n-scaling curve of the DP validation contract.
     set.seed(CAMPAIGN_COHORT_SEED)
-    n_target <- 9000L
+    n_target <- as.numeric(sub("^cdc([0-9]+)k$", "\\1", name)) * 1000
+    if (n_target > nrow(full)) stop("Requested CDC sample exceeds source rows.")
     idx <- unlist(lapply(split(seq_len(nrow(full)), full$target), function(ix) {
       take <- round(n_target * length(ix) / nrow(full))
       sample(ix, take)
