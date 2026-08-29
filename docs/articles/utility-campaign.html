@@ -109,11 +109,11 @@ are stored alongside. The headline quantity is the utility gap
 <h2 id="executed-cells">Executed cells<a class="anchor" aria-label="anchor" href="#executed-cells"></a>
 </h2>
 <table class="table">
-<caption>All executed campaign cells (10), three seeded replicates each,
+<caption>All executed campaign cells (12), three seeded replicates each,
 five federated rounds, three sites, delta = 1e-6, package-default
 clipping.</caption>
 <colgroup>
-<col width="37%">
+<col width="38%">
 <col width="11%">
 <col width="6%">
 <col width="9%">
@@ -166,6 +166,24 @@ clipping.</caption>
 <td align="right">0.7901</td>
 <td align="right">-0.0493</td>
 <td align="right">0.0376</td>
+</tr>
+<tr class="odd">
+<td align="left">CDC diabetes (stratified subsample) (n = 45,000)</td>
+<td align="left">pytorch_logreg</td>
+<td align="right">1</td>
+<td align="right">0.8199</td>
+<td align="right">0.8043</td>
+<td align="right">-0.0156</td>
+<td align="right">0.0016</td>
+</tr>
+<tr class="even">
+<td align="left">CDC diabetes (stratified subsample) (n = 90,000)</td>
+<td align="left">pytorch_logreg</td>
+<td align="right">1</td>
+<td align="right">0.8159</td>
+<td align="right">0.8077</td>
+<td align="right">-0.0082</td>
+<td align="right">0.0017</td>
 </tr>
 <tr class="odd">
 <td align="left">CDC diabetes (stratified subsample) (n = 9,000)</td>
@@ -259,6 +277,13 @@ free.</li>
 <code>1/(n \* eps)</code>: at fixed epsilon, growing the cohort should
 shrink the privacy part of the gap toward the federation residual.</p>
 <p><img src="utility-campaign_files/figure-html/n-scaling-1.png" class="r-plt" alt="Utility gap versus cohort size at epsilon = 1" width="672"></p>
+<p>With the full arm executed, the curve is unambiguous: at epsilon = 1
+the AUC gap shrinks from about -0.05 at n = 2,000-9,000 to about -0.016
+at n = 45,000 and -0.008 at n = 90,000. Two error sources shrink
+together: the per-sample DP noise (the <code>1/(n eps)</code> term) and
+the federation residual itself, since local-epoch training tracks
+centralised training better as per-site data grows. At population scale,
+the default budget’s cost on this contract is under one AUC point.</p>
 </div>
 <div class="section level2">
 <h2 id="validation-checks">Validation checks<a class="anchor" aria-label="anchor" href="#validation-checks"></a>

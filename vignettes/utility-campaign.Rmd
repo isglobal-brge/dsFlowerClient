@@ -165,6 +165,14 @@ if (nrow(ns) > 1) {
 }
 ```
 
+With the full arm executed, the curve is unambiguous: at epsilon = 1 the AUC
+gap shrinks from about -0.05 at n = 2,000-9,000 to about -0.016 at n = 45,000
+and -0.008 at n = 90,000. Two error sources shrink together: the per-sample
+DP noise (the `1/(n eps)` term) and the federation residual itself, since
+local-epoch training tracks centralised training better as per-site data
+grows. At population scale, the default budget's cost on this contract is
+under one AUC point.
+
 ## Validation checks
 
 The campaign treats the privacy gap as something to validate against its
