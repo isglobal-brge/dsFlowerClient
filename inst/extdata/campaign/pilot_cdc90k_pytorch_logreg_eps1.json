@@ -1,0 +1,189 @@
+{
+  "schema": "dsflower-campaign-v1",
+  "generated_at": "2026-08-30T00:31:20+0200",
+  "host": {
+    "nodename": "Davids-MacBook-Air.local",
+    "sysname": "Darwin",
+    "release": "24.4.0",
+    "machine": "arm64",
+    "r_version": "R version 4.5.2 (2025-10-31)"
+  },
+  "versions": {
+    "dsflower": "0.4.1",
+    "dsflowerclient": "0.4.1",
+    "flwr": "1.31.0",
+    "torch": "2.13.0",
+    "opacus": "1.6.0"
+  },
+  "contract": "pytorch_logreg",
+  "dataset": {
+    "name": "cdc90k",
+    "n_total": 90000,
+    "n_train": 72000,
+    "n_test": 18000,
+    "n_per_site": [24000, 24000, 24000],
+    "features": ["HighBP", "HighChol", "CholCheck", "BMI", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+    "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+    "sha_of_prepared": "b64a96072dbbdceae59fa77ed3c7d1bc56fce38a66774fcb087077d710a6c25e"
+  },
+  "split": {
+    "type": "uniform-stratified",
+    "test_fraction": 0.2,
+    "seeds": [20260820, 20260821, 20260822]
+  },
+  "privacy": {
+    "epsilon": 1,
+    "delta": 1e-06,
+    "unit": "row (default dp_unit policy)",
+    "clipping": "dsFlower 0.4.1 defaults",
+    "bounds_policy": "feature_bounds declared from the pooled TRAIN side of each replicate: observed min/max widened by 10% of the range"
+  },
+  "rounds": 5,
+  "model_params": {
+    "learning_rate": 0.1,
+    "batch_size": 32,
+    "local_epochs": 2
+  },
+  "per_replicate": [
+    {
+      "seed": 20260820,
+      "central": {
+        "auc": 0.814582,
+        "acc": 0.863833,
+        "brier": 0.10091,
+        "logloss": 0.324712
+      },
+      "federated_dp": {
+        "auc": 0.804394,
+        "acc": 0.862611,
+        "brier": 0.112155,
+        "logloss": 0.384128
+      },
+      "trivial": {
+        "acc": 0.860667,
+        "prevalence": 0.139333,
+        "brier": 0.11992,
+        "auc": 0.5
+      },
+      "feature_bounds": {
+        "lower": [-0.1, -0.1, -0.1, 3.4, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, 0.6, -3, -3, -0.1, -0.1, -0.2, 0.5, 0.3],
+        "upper": [1.1, 1.1, 1.1, 106.6, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 5.4, 33, 33, 1.1, 1.1, 14.2, 6.5, 8.7]
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5
+      },
+      "model_sha256": "ce1f523dfe2ee58158a2a6fbc764b17d4c93309066fbbcdcb47aaf187c014a36",
+      "elapsed_s": 188.3
+    },
+    {
+      "seed": 20260821,
+      "central": {
+        "auc": 0.817703,
+        "acc": 0.863778,
+        "brier": 0.099729,
+        "logloss": 0.322337
+      },
+      "federated_dp": {
+        "auc": 0.810618,
+        "acc": 0.862056,
+        "brier": 0.110592,
+        "logloss": 0.375664
+      },
+      "trivial": {
+        "acc": 0.860667,
+        "prevalence": 0.139333,
+        "brier": 0.11992,
+        "auc": 0.5
+      },
+      "feature_bounds": {
+        "lower": [-0.1, -0.1, -0.1, 3.4, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, 0.6, -3, -3, -0.1, -0.1, -0.2, 0.5, 0.3],
+        "upper": [1.1, 1.1, 1.1, 106.6, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 5.4, 33, 33, 1.1, 1.1, 14.2, 6.5, 8.7]
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5
+      },
+      "model_sha256": "58a3648d508024502ae146e591ce43e75d2f8ac69626c2265a6be78144149d7f",
+      "elapsed_s": 202.2
+    },
+    {
+      "seed": 20260822,
+      "central": {
+        "auc": 0.815396,
+        "acc": 0.862278,
+        "brier": 0.100163,
+        "logloss": 0.323488
+      },
+      "federated_dp": {
+        "auc": 0.808009,
+        "acc": 0.862611,
+        "brier": 0.110238,
+        "logloss": 0.375554
+      },
+      "trivial": {
+        "acc": 0.860667,
+        "prevalence": 0.139333,
+        "brier": 0.11992,
+        "auc": 0.5
+      },
+      "feature_bounds": {
+        "lower": [-0.1, -0.1, -0.1, 3.7, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, -0.1, 0.6, -3, -3, -0.1, -0.1, -0.2, 0.5, 0.3],
+        "upper": [1.1, 1.1, 1.1, 103.3, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 1.1, 5.4, 33, 33, 1.1, 1.1, 14.2, 6.5, 8.7]
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5
+      },
+      "model_sha256": "d8da24861f77ff47b4850109e447ee0d129abd42fffa2dde04f6df406b802c79",
+      "elapsed_s": 113.1
+    }
+  ],
+  "summary": {
+    "central_mean_sd": {
+      "auc": {
+        "mean": 0.815894,
+        "sd": 0.001619
+      },
+      "acc": {
+        "mean": 0.863296,
+        "sd": 0.000883
+      },
+      "brier": {
+        "mean": 0.100267,
+        "sd": 0.000598
+      },
+      "logloss": {
+        "mean": 0.323512,
+        "sd": 0.001188
+      }
+    },
+    "federated_mean_sd": {
+      "auc": {
+        "mean": 0.807674,
+        "sd": 0.003125
+      },
+      "acc": {
+        "mean": 0.862426,
+        "sd": 0.000321
+      },
+      "brier": {
+        "mean": 0.110995,
+        "sd": 0.00102
+      },
+      "logloss": {
+        "mean": 0.378449,
+        "sd": 0.004918
+      }
+    },
+    "delta_mean_sd": {
+      "auc": {
+        "mean": -0.00822,
+        "sd": 0.001711
+      }
+    }
+  }
+}
