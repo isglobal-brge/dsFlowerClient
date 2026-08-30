@@ -1,0 +1,162 @@
+# dsFlower / dsFlowerClient v0.4.2 worked example -- verbatim recorded execution
+# Three-site DSLite federation over the Wisconsin breast-cancer cohort;
+# node-pinned default privacy contracts (epsilon = 1, delta = 1e-6);
+# exported analyst API only. Chapter-7 listings reproduce outputs from
+# this execution. Companion script: we_flower_driver.R (+ scaffold).
+> # =========================================================================
+> # dsFlower / dsFlowerClient v0.4.2 -- chapter-7 worked example
+> # Heart-disease cohort split across three DSLite sites; exported analyst
+> # API only. Custodian provisioning in we_flower_scaffold.R (each node pins
+> # its own privacy contract: epsilon = 1 default, delta = 1e-6).
+> # =========================================================================
+> 
+> SP <- Sys.getenv("WE_SP")
+> source(file.path(SP, "dsflower_we", "we_flower_scaffold.R"))
+> suppressPackageStartupMessages(library(dsFlowerClient))
+> packageVersion("dsFlower")
+[1] ‘0.4.2’
+> packageVersion("dsFlowerClient")
+[1] ‘0.4.2’
+> 
+> ## ---- Custodian side: cohort, vertical of sites, node contracts ----------
+> cohort <- campaign_load_cohort("breast", file.path(SP, "dsflower_p0", "data_cache"))
+> split <- campaign_split(cohort$df, 20260830L, n_sites = 3L)
+> bounds <- campaign_bounds(split$train, cohort$meta$features)
+> we <- we_setup(split$sites,
++                work_dir = file.path(SP, "dsflower_we", "run"),
++                venv_root = file.path(SP, "dsflower_p0", "venvs"),
++                epsilon = 1, delta = 1e-6)
+starting worker pid=91868 on localhost:11593 at 21:30:27.902
+starting worker pid=91866 on localhost:11593 at 21:30:27.902
+starting worker pid=91867 on localhost:11593 at 21:30:27.902
+SuperLink started (PID: 91914)
+  Fleet API (SuperNodes): 127.0.0.1:25334
+  Control API (flwr run): 127.0.0.1:41145
+> conns <- we$conns
+> 
+> ## ---- [ANALYST API] 1. inspect the vetted model-contract registry --------
+> models <- ds.flower.list_models()
+> nrow(models)
+[1] 28
+> head(models, 8)
+                 name       track data_kinds available          loss vetted
+1            catboost native_tree    tabular      TRUE          <NA>   TRUE
+2         extra_trees native_tree    tabular      TRUE          <NA>   TRUE
+3            lightgbm native_tree    tabular      TRUE          <NA>   TRUE
+4         pytorch_cnn      neural    tabular      TRUE cross_entropy   TRUE
+5 pytorch_densenet121      neural      image      TRUE cross_entropy   TRUE
+6  pytorch_elasticnet      neural    tabular      TRUE           mse   TRUE
+7       pytorch_gamma      neural    tabular      TRUE     gamma_nll   TRUE
+8         pytorch_gru      neural    tabular      TRUE cross_entropy   TRUE
+                                                                                                                           description
+1                dsFlower CatBoost-style numeric oblivious boosting; this is a safe projection, not the upstream CatBoost CBM/runtime.
+2     Data-independent ExtraTrees topology with one joint private leaf release (operational training availability is probed per node).
+3 dsFlower LightGBM-style asymmetric public-bin boosting; this is a safe numeric projection, not the upstream LightGBM binary runtime.
+4                                                                                         2D CNN (reshape -> conv/pool stack -> head).
+5                                                                     Vision classifier head on a frozen pytorch_densenet121 backbone.
+6                                                                                 Elastic-net regression (linear + L1 + L2 penalties).
+7                                                         Gamma regression (positive continuous: cost, length-of-stay, concentration).
+8                                                                        GRU sequence model (sanitized Opacus DPGRU, typed-graph DAG).
+> str(ds.flower.model("pytorch_logreg"), max.level = 2)
+List of 5
+ $ name     : chr "pytorch_logreg"
+ $ track    : chr "neural"
+ $ framework: chr "pytorch"
+ $ loss     : chr "bce_logits"
+ $ params   :List of 9
+  ..$ momentum     : num 0
+  ..$ nesterov     : logi FALSE
+  ..$ learning_rate: num 0.1
+  ..$ batch_size   : int 32
+  ..$ local_epochs : int 1
+  ..$ weight_decay : num 0
+  ..$ l1_penalty   : num 0
+  ..$ optimizer    : chr "sgd"
+  ..$ scheduler    : chr "none"
+ - attr(*, "class")= chr "dsflower_model"
+> 
+> ## ---- [ANALYST API] 2. one federated training request --------------------
+> result <- ds.flower.fit(
++   conns          = conns,
++   symbol         = "D",
++   target         = "target",
++   features       = cohort$meta$features,
++   model          = "pytorch_logreg",
++   strategy       = "fedavg",
++   rounds         = 5L,
++   feature_bounds = bounds,
++   target_levels  = c("0", "1"),
++   holdout        = 0.2,
++   torch_backend  = "cpu",
++   output_dir     = file.path(SP, "dsflower_we", "artifact"),
++   silent         = TRUE,
++   verbose        = FALSE)
+> 
+> ## ---- [ANALYST API] 3. the structured, release-only result ---------------
+> result$available
+[1] TRUE
+> result$run_id
+[1] "16766424996406036943"
+> result$history
+  round n_failures available
+1     1          0      TRUE
+2     2          0      TRUE
+3     3          0      TRUE
+4     4          0      TRUE
+5     5          0      TRUE
+> str(result$holdout, max.level = 2)
+List of 16
+ $ accuracy                  : num 0.423
+ $ balanced_accuracy         : num 0.436
+ $ brier                     : num 0.346
+ $ calibration               :List of 3
+  ..$ observed :List of 32
+  ..$ predicted:List of 32
+  ..$ weight   :List of 32
+ $ decision_curve            :List of 4
+  ..$ net_benefit:List of 32
+  ..$ threshold  :List of 32
+  ..$ treat_all  :List of 32
+  ..$ treat_none :List of 32
+ $ expected_calibration_error: num 0.432
+ $ f1                        : num 0.406
+ $ n                         : num 1759
+ $ negative_predictive_value : num 0.377
+ $ pr_auc                    : num 0.61
+ $ precision                 : num 0.493
+ $ precision_recall          :List of 2
+  ..$ precision:List of 33
+  ..$ recall   :List of 33
+ $ roc                       :List of 2
+  ..$ fpr:List of 34
+  ..$ tpr:List of 34
+ $ roc_auc                   : num 0.479
+ $ sensitivity               : num 0.345
+ $ specificity               : num 0.528
+> names(result)
+ [1] "model_id"             "run_id"               "status"              
+ [4] "cli_status"           "num_rounds"           "requested_num_rounds"
+ [7] "model"                "data_kind"            "available"           
+[10] "available_rounds"     "strategy"             "weights"             
+[13] "history"              "output_dir"           "saved_path"          
+[16] "results_dir"          "app_dir"              "stdout"              
+[19] "stderr"               "holdout"              "holdout_task"        
+[22] "holdout_contract"    
+> 
+> ## Channel B: the released model scored locally on the public test split.
+> prob <- ds.flower.predict(result, split$test[, cohort$meta$features],
++                           type = "prob")
+> str(prob)
+ num [1:137] 0.174 0.185 0.139 0.154 0.143 ...
+> m <- campaign_metrics(split$test$target,
++                       if (is.matrix(prob)) prob[, ncol(prob)] else as.numeric(prob))
+> round(unlist(m), 4)
+    auc     acc   brier logloss 
+ 0.9941  0.9197  0.0744  0.2889 
+> 
+> we_teardown(we)
+No SuperLink is running.
+No SuperLink is running.
+> sessionInfo()$otherPkgs$dsFlowerClient$Version
+[1] "0.4.2"
+> 
