@@ -1,0 +1,326 @@
+"file","test","nb","passed","failed","skipped","error","real"
+"test-app-safety.R","harness dependencies include the secure RNG backend",5,5,0,FALSE,FALSE,0.017
+"test-app-safety.R","client venv marker invalidates an incompatible Flower runtime",2,2,0,FALSE,FALSE,0.013
+"test-app-safety.R","local runner hash matches the server canonical algorithm",1,1,0,FALSE,FALSE,0.006
+"test-app-safety.R","runner preflight requires ABI 3 and the exact local hash",4,4,0,FALSE,FALSE,0.005
+"test-app-safety.R","runner preflight reports incompatible nodes",1,1,0,FALSE,FALSE,0.022
+"test-app-safety.R","runner preflight rejects DSI 1.8 NULL and misassociated results",2,2,0,FALSE,FALSE,0.006
+"test-app-safety.R","public feature bounds are validated in feature order",8,8,0,FALSE,FALSE,0.0239999999999999
+"test-app-safety.R","saved public bounds are read back for prediction",2,2,0,FALSE,FALSE,0.012
+"test-app-safety.R","saved declarative model contract is read without guessing architecture",6,6,0,FALSE,FALSE,0.00900000000000001
+"test-app-safety.R","malformed metadata cannot expand prediction dimensions",5,5,0,FALSE,FALSE,0.0190000000000001
+"test-app-safety.R","vision prediction requires a complete first-party release",4,4,0,FALSE,FALSE,0.0389999999999999
+"test-app-safety.R","local vision prediction preserves ordered public target types",4,4,0,FALSE,FALSE,0.0149999999999999
+"test-app-safety.R","local prediction rejects Tier-2 and other no-spec artifacts",1,1,0,FALSE,FALSE,0.004
+"test-app-safety.R","fit forwards public feature bounds through its stable argument contract",2,2,0,FALSE,FALSE,0.004
+"test-app-safety.R","submit exposes public target semantics in canonical order",1,1,0,FALSE,FALSE,0.002
+"test-app-safety.R","public target semantics are strict and data-independent",6,6,0,FALSE,FALSE,0.0290000000000001
+"test-app-safety.R","submission target shape matches the node-owned loss",4,4,0,FALSE,FALSE,0.106
+"test-app-safety.R","low-level submit validates model parameters before any side effect",2,2,0,FALSE,FALSE,0.00500000000000012
+"test-app-safety.R","low-level submit enforces model input kind before any side effect",3,3,0,FALSE,FALSE,0.138
+"test-app-safety.R","architecture geometry fails before any Flower side effect",2,2,0,FALSE,FALSE,0.0209999999999999
+"test-app-safety.R","declarative resource caps fail before DSI or staging",4,4,0,FALSE,FALSE,0.0279999999999998
+"test-app-safety.R","learning-rate schedules must affect the pinned training horizon",3,3,0,FALSE,FALSE,0.014
+"test-app-safety.R","bce_logits cannot silently request a multiclass head",1,1,0,FALSE,FALSE,0.002
+"test-app-safety.R","unknown model names fail before any side effect",2,2,0,FALSE,FALSE,0.004
+"test-app-safety.R","adaptive strategy is fully serialized before any side effect",2,2,0,FALSE,FALSE,0.00500000000000012
+"test-app-safety.R","classified strategy objects are revalidated exactly",2,2,0,FALSE,FALSE,0.00700000000000012
+"test-app-safety.R","round horizons fail before any Flower side effect",6,6,0,FALSE,FALSE,0.0569999999999999
+"test-app-safety.R","torch backend choices fail before any Flower side effect",8,8,0,FALSE,FALSE,0.018
+"test-app-safety.R","Hook feature geometry fails before any Flower side effect",4,4,0,FALSE,FALSE,0.0089999999999999
+"test-app-safety.R","framework parameters never use R partial matching",2,2,0,FALSE,FALSE,0.00499999999999989
+"test-app-safety.R","submit checks runner compatibility immediately after connect",2,2,0,FALSE,FALSE,0.006
+"test-app-safety.R","hook upload rejects unsafe chunk sizes and module names",4,4,0,FALSE,FALSE,0.018
+"test-app-safety.R","public app upload rejects unsafe chunk sizes before building",2,2,0,FALSE,FALSE,0.01
+"test-app-safety.R","app archives stream in bounded chunks with exact acknowledgements",4,4,0,FALSE,FALSE,0.145
+"test-app-safety.R","app archive streaming rejects a node offset mismatch",1,1,0,FALSE,FALSE,0.0169999999999999
+"test-app-safety.R","a DSI-dropped node result retries the exact same app chunk",3,3,0,FALSE,FALSE,0.0110000000000001
+"test-app-safety.R","failed hook upload removes its partial node spool",2,2,0,FALSE,FALSE,0.0759999999999998
+"test-app-safety.R","failed public app upload removes its partial node spool",2,2,0,FALSE,FALSE,0.0429999999999999
+"test-app-safety.R","hook run cleans client state when upload fails",3,3,0,FALSE,FALSE,0.034
+"test-app-safety.R","hook readiness fails before upload instead of silently no-oping",1,1,0,FALSE,FALSE,0.012
+"test-app-safety.R","HookApp parameters are recursively canonical and hash pinned",7,7,0,FALSE,FALSE,0.014
+"test-app-safety.R","HookApp parameter validation is bounded and fail closed",19,19,0,FALSE,FALSE,0.0650000000000002
+"test-app-safety.R","invalid HookApp parameters fail before any connection side effect",2,2,0,FALSE,FALSE,0.004
+"test-association.R","association request and job hashes mirror the server fixtures",5,5,0,FALSE,FALSE,0.0270000000000001
+"test-association.R","association capability uses only the targeted dependency-light probe",8,8,0,FALSE,FALSE,0.0299999999999998
+"test-association.R","association FAB uses exact dedicated refs without neural dependencies",6,6,0,FALSE,FALSE,0.024
+"test-association.R","association result reader accepts only an atomic pooled commit",5,5,0,FALSE,FALSE,0.056
+"test-association.R","association result reader rejects swaps, partial output, and domains",6,6,0,FALSE,FALSE,0.0310000000000001
+"test-association.R","association public API exposes no privacy or modelling knobs",2,2,0,FALSE,FALSE,0.004
+"test-association.R","association API sends only the frozen prepare and FAB pins",10,10,0,FALSE,FALSE,0.0129999999999999
+"test-configure-contract.R","configure skip gate is validated before host Python setup",6,6,0,FALSE,FALSE,0.0220000000000002
+"test-configure-contract.R","a required client Python lock fails closed",6,6,0,FALSE,FALSE,0.0420000000000003
+"test-configure-contract.R","required client locks propagate uv venv and pip failures",10,10,0,FALSE,FALSE,0.706
+"test-configure-contract.R","configure provisions the Windows venv layout from one contract",4,4,0,FALSE,FALSE,0.00500000000000034
+"test-convenience.R","generic strategy constructor resolves aliases",8,8,0,FALSE,FALSE,0.0150000000000001
+"test-convenience.R","generic task constructor resolves aliases",4,4,0,FALSE,FALSE,0.00800000000000001
+"test-convenience.R","fit exposes only its executable argument contract",1,1,0,FALSE,FALSE,0.00199999999999978
+"test-convenience.R","fit resolves strategy_params into the executable strategy",4,4,0,FALSE,FALSE,0.0340000000000003
+"test-convenience.R","fit forwards registry parameters not present in model defaults",2,2,0,FALSE,FALSE,0.004
+"test-convenience.R","fit canonicalizes model aliases before submission",2,2,0,FALSE,FALSE,0.004
+"test-convenience.R","fit rejects unknown model parameters before submission",2,2,0,FALSE,FALSE,0.004
+"test-convenience.R","fit derives or requires the registered input kind",4,4,0,FALSE,FALSE,0.012
+"test-convenience.R","fit validates required arguments before connecting",3,3,0,FALSE,FALSE,0.00700000000000012
+"test-cross-validation.R","client CV contract is canonical, bounded, and seed-free",9,9,0,FALSE,FALSE,0.0170000000000003
+"test-cross-validation.R","CV job provenance has a mirrored golden and binds every public group",7,7,0,FALSE,FALSE,0.176
+"test-cross-validation.R","native-tree CV provenance binds its request without neural fields",11,11,0,FALSE,FALSE,0.32
+"test-cross-validation.R","CV requires one common public runner and node privacy contract",3,3,0,FALSE,FALSE,0.0310000000000001
+"test-cross-validation.R","cross_validate defaults to three real folds and forwards one job",4,4,0,FALSE,FALSE,0.00600000000000023
+"test-cross-validation.R","cross_validate defaults native-tree folds to one Flower round",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-cross-validation.R","fit defaults direct native-tree CV without overriding rounds",2,2,0,FALSE,FALSE,0.00800000000000001
+"test-cross-validation.R","CV accepts native-tree tabular models and rejects unsupported shapes",6,6,0,FALSE,FALSE,0.0170000000000003
+"test-cross-validation.R","pooled CV output is finite, provenance-pinned, and transcript-free",6,6,0,FALSE,FALSE,0.165
+"test-cross-validation.R","run accepts exactly cv.json and verifies the submitted contract",12,12,0,FALSE,FALSE,14.196
+"test-cross-validation.R","native-tree CV persists only the pooled cv.json",4,4,0,FALSE,FALSE,2.035
+"test-dsi-security.R","recognized Opal and Armadillo HTTPS connections are plug-and-play",10,10,0,FALSE,FALSE,0.0370000000000026
+"test-dsi-security.R","DSOpal S4 connection metadata is inspected",2,2,0,FALSE,FALSE,0.143000000000001
+"test-dsi-security.R","DSMolgenisArmadillo S4 endpoint metadata is inspected",2,2,0,FALSE,FALSE,0.471999999999998
+"test-dsi-security.R","global httr TLS downgrades are detected with request precedence",5,5,0,FALSE,FALSE,0.0130000000000017
+"test-dsi-security.R","plaintext DSI needs an exact explicit site exception",7,7,0,FALSE,FALSE,0.0210000000000008
+"test-dsi-security.R","unknown DSI connectors require an exact per-site attestation",3,3,0,FALSE,FALSE,0.00600000000000023
+"test-dsi-security.R","DSLite is in-process and loopback exceptions are explicit",5,5,0,FALSE,FALSE,0.00700000000000145
+"test-dsi-security.R","DSI security options are validated fail closed",12,12,0,FALSE,FALSE,0.0279999999999987
+"test-dsi-security.R","link-up checks DSI security before starting local services",2,2,0,FALSE,FALSE,0.004999999999999
+"test-dsi-security.R","high-level runs reject plaintext before their first DSI side effect",6,6,0,FALSE,FALSE,0.0129999999999981
+"test-extdata-evidence.R","committed public benchmark evidence matches thesis constants",17,17,0,FALSE,FALSE,0.0279999999999987
+"test-holdout.R","holdout fraction has one canonical seed-free contract",10,10,0,FALSE,FALSE,0.0159999999999982
+"test-holdout.R","fit forwards holdout for exact supported model tracks",6,6,0,FALSE,FALSE,0.0180000000000007
+"test-holdout.R","pooled holdout output is strict and contains no node transcript",5,5,0,FALSE,FALSE,0.0399999999999991
+"test-holdout.R","native-tree holdout requires exact recursive-safe provenance",15,15,0,FALSE,FALSE,0.0560000000000009
+"test-holdout.R","native-tree holdout requires exact validation metric schemas",23,23,0,FALSE,FALSE,0.0719999999999992
+"test-holdout.R","atomic native holdout commits the pinned ensemble, not model.pt",8,8,0,FALSE,FALSE,0.0489999999999995
+"test-holdout.R","native run accepts only holdout provenance bound to its artifact",17,17,0,FALSE,FALSE,22.252
+"test-holdout.R","run accepts model and metrics together and rejects a missing release",7,7,0,FALSE,FALSE,0.036999999999999
+"test-imaging-integration.R","resource connect resolves generically before dsFlower discovery",5,5,0,FALSE,FALSE,0.0180000000000007
+"test-imaging-integration.R","connect requires exactly one data source",2,2,0,FALSE,FALSE,0.0129999999999981
+"test-imaging-integration.R","image helpers call dsFlower endpoints with Flower handle signatures",7,7,0,FALSE,FALSE,0.0140000000000029
+"test-imaging-integration.R","image helper fallbacks keep canonical public schemas",4,4,0,FALSE,FALSE,0.00600000000000023
+"test-import-xgboost.R","external XGBoost JSON imports, predicts, and preserves provenance",17,17,0,FALSE,FALSE,0.995000000000005
+"test-import-xgboost.R","external import preserves canonical Unicode public schema",3,3,0,FALSE,FALSE,0.216999999999999
+"test-import-xgboost.R","local prediction validates the bundle before touching newdata",2,2,0,FALSE,FALSE,0.177
+"test-import-xgboost.R","private validation reports external model provenance separately",3,3,0,FALSE,FALSE,0.183
+"test-import-xgboost.R","external import metadata cannot claim direct DP training",4,4,0,FALSE,FALSE,0.170999999999999
+"test-import-xgboost.R","external ensemble cannot be relabeled as an internal DP release",1,1,0,FALSE,FALSE,0.156000000000006
+"test-import-xgboost.R","external metadata scalar types and spellings are exact",3,3,0,FALSE,FALSE,0.494
+"test-import-xgboost.R","external metadata requires recursively sorted object keys",1,1,0,FALSE,FALSE,0.168999999999997
+"test-import-xgboost.R","validation bounds metadata before parsing it",1,1,0,FALSE,FALSE,0.00500000000000256
+"test-import-xgboost.R","external contract and profile bindings fail closed",3,3,0,FALSE,FALSE,0.494
+"test-import-xgboost.R","rejected artifacts and preflight failures never publish a bundle",7,7,0,FALSE,FALSE,0.135999999999996
+"test-import-xgboost.R","external import rejects the wrong profile and existing output",2,2,0,FALSE,FALSE,0.0169999999999959
+"test-local-hpo.R","local HPO dimensions are typed and bounded",11,11,0,FALSE,FALSE,0.0279999999999987
+"test-local-hpo.R","local HPO request is canonical and has no storage field",7,7,0,FALSE,FALSE,0.0219999999999985
+"test-local-hpo.R","local HPO backend is provisioned at the tested exact version",1,1,0,FALSE,FALSE,0.00199999999999534
+"test-local-hpo.R","Optuna HPO is reproducible and leaves no local study files",11,11,0,FALSE,FALSE,0.811999999999998
+"test-local-hpo.R","objective failures are bounded and terminate the helper",4,4,0,FALSE,FALSE,0.424
+"test-local-hpo.R","packaged HPO helper has no persistence or code transport",4,4,0,FALSE,FALSE,0.0069999999999979
+"test-metrics.R","ds.flower.compare combines runs",3,3,0,FALSE,FALSE,0.00500000000000256
+"test-metrics.R","ds.flower.compare errors with no arguments",1,1,0,FALSE,FALSE,0.0120000000000005
+"test-metrics.R","private metric catalog exposes only task-compatible scalar scores",9,9,0,FALSE,FALSE,0.0300000000000011
+"test-metrics.R","score extracts one finite metric and rejects unsuitable objectives",9,9,0,FALSE,FALSE,0.0420000000000016
+"test-metrics.R","metric helpers cover CV, atomic holdout, and unavailable releases",15,15,0,FALSE,FALSE,0.0279999999999987
+"test-metrics.R","all validation tasks have an explicit score direction",41,41,0,FALSE,FALSE,0.0679999999999978
+"test-metrics.R","private metric schemas reject impossible values and extra trees",15,15,0,FALSE,FALSE,0.0409999999999968
+"test-metrics.R","private metric schemas pin shapes, ranges, and task nullability",16,16,0,FALSE,FALSE,0.0249999999999986
+"test-metrics.R","JSON-list metric arrays retain their exact scalar contract",9,9,0,FALSE,FALSE,0.0150000000000006
+"test-metrics.R","noise-only nullable primary metrics remain valid",6,6,0,FALSE,FALSE,0.0129999999999981
+"test-metrics.R","all private readers accept task-valid noise-only primary NULL",9,9,0,FALSE,FALSE,0.0470000000000041
+"test-metrics.R","all private readers reject impossible and extra metric payloads",3,3,0,FALSE,FALSE,0.0109999999999957
+"test-metrics.R","private result readers require a scalar task string",6,6,0,FALSE,FALSE,0.0240000000000009
+"test-metrics.R","private result readers enforce the public 160 MiB wire cap",5,5,0,FALSE,FALSE,0.0110000000000028
+"test-model.R","pytorch_mlp creates correct model",8,8,0,FALSE,FALSE,0.0159999999999982
+"test-model.R","pytorch_mlp accepts overrides",3,3,0,FALSE,FALSE,0.00600000000000023
+"test-model.R","MLP widths remain typed integer vectors through submission",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-model.R","pytorch_logreg creates correct model",6,6,0,FALSE,FALSE,0.00800000000000267
+"test-model.R","pytorch_linear_regression creates correct model",4,4,0,FALSE,FALSE,0.00600000000000023
+"test-model.R","pytorch_multiclass creates correct model",5,5,0,FALSE,FALSE,0.00600000000000023
+"test-model.R","pytorch_multiclass accepts overrides",2,2,0,FALSE,FALSE,0.00399999999999778
+"test-model.R","the exact native XGBoost request surface is exposed",3,3,0,FALSE,FALSE,0.0139999999999958
+"test-model.R","exported model constructors never truncate public parameters",3,3,0,FALSE,FALSE,0.00800000000000267
+"test-model.R","first-party models declare typed parameter schemas",56,56,0,FALSE,FALSE,0.0240000000000009
+"test-model.R","extension models must declare their complete parameter schema",7,7,0,FALSE,FALSE,0.0189999999999984
+"test-model.R","extension optimizer and scheduler schemas may expose safe subsets",4,4,0,FALSE,FALSE,0.0100000000000051
+"test-model.R","model parameter contracts are discoverable",9,9,0,FALSE,FALSE,0.0189999999999984
+"test-model.R","generic model parameters are canonicalized and validated",13,13,0,FALSE,FALSE,0.0220000000000056
+"test-model.R","extension schemas cannot impersonate node privacy controls",2,2,0,FALSE,FALSE,0.00600000000000023
+"test-model.R","first-party parameter caps fail before execution",19,19,0,FALSE,FALSE,0.0489999999999995
+"test-model.R","robust regression exposes and validates its applied loss parameter",4,4,0,FALSE,FALSE,0.0330000000000013
+"test-model.R","quantile regression exposes one bounded applied quantile",5,5,0,FALSE,FALSE,0.0240000000000009
+"test-model.R","only the selected loss parameter is serialized",5,5,0,FALSE,FALSE,0.00800000000000267
+"test-model.R","pytorch_resnet18 creates correct model",7,7,0,FALSE,FALSE,0.0160000000000053
+"test-model.R","pytorch_densenet121 creates correct model",9,9,0,FALSE,FALSE,0.0120000000000005
+"test-model.R","vision codegen enforces backbone-specific image geometry",4,4,0,FALSE,FALSE,0.00999999999999801
+"test-model.R","pytorch_tcn creates correct model",8,8,0,FALSE,FALSE,0.0120000000000005
+"test-model.R","pytorch_lstm creates correct model",8,8,0,FALSE,FALSE,0.0129999999999981
+"test-model.R","multilabel constructor emits the registry target-width contract",4,4,0,FALSE,FALSE,0.0069999999999979
+"test-native-tree-contract.R","native-tree builder emits the canonical cross-package wire",7,7,0,FALSE,FALSE,0.0360000000000014
+"test-native-tree-contract.R","native-tree wire preserves valid closing-tag labels",3,3,0,FALSE,FALSE,0.0249999999999986
+"test-native-tree-contract.R","native-tree wire preserves one-element arrays",5,5,0,FALSE,FALSE,0.00899999999999324
+"test-native-tree-contract.R","native-tight requires public cuts and blocks adaptive code paths",12,12,0,FALSE,FALSE,0.0510000000000019
+"test-native-tree-contract.R","native-tree schema hashes and resource ceilings fail closed",5,5,0,FALSE,FALSE,0.029999999999994
+"test-native-tree-contract.R","client enforces exact LightGBM-style and CatBoost-style profiles",7,7,0,FALSE,FALSE,0.0579999999999998
+"test-native-tree-contract.R","native-tree target schema is task-bound",5,5,0,FALSE,FALSE,0.0320000000000036
+"test-native-tree-contract.R","XGBoost request v1 uses an exact typed allowlist",17,17,0,FALSE,FALSE,0.0700000000000003
+"test-native-tree-contract.R","ExtraTrees request uses the data-independent exact profile",11,11,0,FALSE,FALSE,0.044000000000004
+"test-native-tree-contract.R","Random Forest resolves task-aware defaults and public mtry exactly",10,10,0,FALSE,FALSE,0.080999999999996
+"test-native-tree-contract.R","XGBoost defaults are task-aware and explicit values win",10,10,0,FALSE,FALSE,0.0259999999999962
+"test-native-tree-contract.R","XGBoost target levels preserve their ordered public scalar type",8,8,0,FALSE,FALSE,0.0500000000000043
+"test-native-tree-contract.R","XGBoost submission validates its one-round public request pre-DSI",8,8,0,FALSE,FALSE,0.0459999999999994
+"test-native-tree-contract.R","native-tree submission reuses its targeted capability response",3,3,0,FALSE,FALSE,0.017000000000003
+"test-native-tree-contract.R","native-tree FAB uses isolated entrypoints and no torch dependency",15,15,0,FALSE,FALSE,0.027000000000001
+"test-native-tree-contract.R","native-tree admission uses the selected engine's fresh probe",9,9,0,FALSE,FALSE,0.0260000000000034
+"test-native-tree-contract.R","native-tree request has bounded cuts and canonical bytes",2,2,0,FALSE,FALSE,0.179000000000002
+"test-nodes.R",".detect_local_ip returns a valid IPv4 address",2,2,0,FALSE,FALSE,0.0420000000000016
+"test-nodes.R",".verify_federation passes when all IDs match",1,1,0,FALSE,FALSE,0.000999999999997669
+"test-nodes.R",".verify_federation warns on mismatch",1,1,0,FALSE,FALSE,0.00800000000000267
+"test-nodes.R",".verify_federation warns on missing IDs (mixed versions)",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-nodes.R","nodes.ensure passes ca_cert_pem when TLS is enabled",2,2,0,FALSE,FALSE,0.00399999999999778
+"test-nodes.R",".verify_federation is silent when expected ID is NULL",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-nodes.R","nodes.prepare preserves multilabel target vectors in its DSI argument",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-nodes.R","a normalized per-node ASSIGN error is never treated as success",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-nodes.R","safe aggregate records a named NULL as a node error",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-nodes.R","DSI results must be associated with the exact requested nodes",4,4,0,FALSE,FALSE,0.00900000000000034
+"test-nodes.R","nodes.ensure sends torch_backend in the current server ABI slot",3,3,0,FALSE,FALSE,0.0140000000000029
+"test-nodes.R","describe queries capabilities without a handle argument",3,3,0,FALSE,FALSE,0.00300000000000011
+"test-plot.R","ds.flower.plot creates plotly for result",1,1,0,FALSE,FALSE,0.893999999999998
+"test-plot.R","ds.flower.plot handles per_server mode",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-plot.R","ds.flower.plot handles comparison data.frame",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-plot.R","ds.flower.plot handles empty result",1,1,0,FALSE,FALSE,0.00800000000000267
+"test-plot.R","ds.flower.plot errors without plotly",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-python-env-crossplatform.R","venv layout helpers resolve Unix paths on this platform",3,3,0,FALSE,FALSE,0.00399999999999778
+"test-python-env-crossplatform.R","venv layout helpers branch on .Platform$OS.type (not hardcoded)",3,3,0,FALSE,FALSE,0.00199999999999534
+"test-python-env-crossplatform.R",".ensure_client_uv knows how to fetch uv on Windows",4,4,0,FALSE,FALSE,0.00499999999999545
+"test-python-env-crossplatform.R","uv bootstrap requires an immutable release and archive digest",3,3,0,FALSE,FALSE,0.0069999999999979
+"test-python-env-crossplatform.R","hash-locked requirements bind the client venv marker",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-python-env-crossplatform.R","strict client provisioning fails closed without a lock",2,2,0,FALSE,FALSE,0.00500000000000256
+"test-python-env-crossplatform.R",".client_venv_env uses the platform PATH separator",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-python-framework-deps.R","framework health checks cover every required import",6,6,0,FALSE,FALSE,0.0309999999999988
+"test-python-framework-deps.R","framework readiness caches one managed runtime snapshot",26,26,0,FALSE,FALSE,0.0330000000000013
+"test-python-framework-deps.R","unmanaged Python framework health is never cached",4,4,0,FALSE,FALSE,0.00500000000000256
+"test-python-framework-deps.R","framework probe failures retry and installation clears cached health",6,6,0,FALSE,FALSE,0.007000000000005
+"test-python-framework-deps.R","managed venv recreation invalidates framework health first",2,2,0,FALSE,FALSE,0.00399999999999778
+"test-python-framework-deps.R","managed venv fingerprint changes with its package inventory",7,7,0,FALSE,FALSE,0.0120000000000005
+"test-python-framework-deps.R","client dependency contracts remain limited to PyTorch runtimes",4,4,0,FALSE,FALSE,0.00499999999999545
+"test-python-framework-deps.R","prediction routing accepts only declarative PyTorch artifacts",7,7,0,FALSE,FALSE,0.0159999999999982
+"test-recipe.R","recipe builds (DP is server-enforced; no client privacy knob)",3,3,0,FALSE,FALSE,0.00499999999999545
+"test-recipe.R","recipe validates model type",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-recipe.R","recipe rejects handcrafted unsupported task specs",1,1,0,FALSE,FALSE,0.00399999999999778
+"test-recipe.R","recipe infers and enforces the registered model task",7,7,0,FALSE,FALSE,0.0180000000000007
+"test-result.R","dsflower_result creates correct structure",3,3,0,FALSE,FALSE,0.00399999999999778
+"test-result.R","dsflower_result defaults",3,3,0,FALSE,FALSE,0.00499999999999545
+"test-result.R","print.dsflower_result works",2,2,0,FALSE,FALSE,0.00800000000000267
+"test-result.R","$ operator accesses per_site elements",3,3,0,FALSE,FALSE,0.00500000000000256
+"test-result.R","as.data.frame returns pooled if available",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-result.R","as.data.frame returns first per_site if no pooled",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-result.R","ds.flower.code extracts code",1,1,0,FALSE,FALSE,0.00199999999999534
+"test-result.R","ds.flower.code errors for non-result",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-run.R",".parse_run_id extracts run ID",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-run.R",".parse_run_id extracts UUID",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-run.R",".parse_run_id returns NULL for empty input",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-run.R",".parse_run_id returns NULL for no match",1,1,0,FALSE,FALSE,0.00199999999999534
+"test-run.R",".flower_runtime_status detects ServerApp failures masked by CLI status",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-run.R",".flower_runtime_status rejects partial federation despite artifacts",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-run.R",".flower_runtime_status requires training artifacts for successful runs",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-run.R","run.start never persists a model from a failed federation",2,2,0,FALSE,FALSE,0.00600000000000023
+"test-run.R","run.start persists the exact public model reconstruction contract",8,8,0,FALSE,FALSE,0.0139999999999958
+"test-run.R","load_model retains the relocated bundle directory for prediction",2,2,0,FALSE,FALSE,0.0169999999999959
+"test-run.R","save_model creates portable RDS and JSON native-artifact bundles",10,10,0,FALSE,FALSE,0.0360000000000014
+"test-run.R","load_model rejects missing or unsafe companion bundle paths",2,2,0,FALSE,FALSE,0.00499999999999545
+"test-run.R","run.start rejects stale caller-supplied result artifacts",1,1,0,FALSE,FALSE,0.00399999999999778
+"test-run.R",".training_artifacts_complete waits for final round",2,2,0,FALSE,FALSE,0.0129999999999981
+"test-run.R","watchdog recognizes the named XGBoost ensemble",2,2,0,FALSE,FALSE,0.00399999999999778
+"test-run.R","unavailable history completes without inventing a model artifact",2,2,0,FALSE,FALSE,0.00400000000000489
+"test-run.R","run.start reports an unavailable round as not trained",7,7,0,FALSE,FALSE,2.022
+"test-run.R",".training_artifacts_complete accepts skipped JSON marker",1,1,0,FALSE,FALSE,0.00499999999999545
+"test-run.R","retired tree artifacts are not accepted as model releases",3,3,0,FALSE,FALSE,0.0069999999999979
+"test-run.R",".read_model_weights reconstructs portable neural arrays",4,4,0,FALSE,FALSE,0.0120000000000005
+"test-run.R",".read_model_weights gives arbitrary modules stable parameter names",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-run.R",".flwr_run_timeout_secs accepts environment override",1,1,0,FALSE,FALSE,0.00199999999999534
+"test-run.R",".require_flwr_cli provisions a missing client environment",2,2,0,FALSE,FALSE,0.00399999999999778
+"test-strategy.R","fedavg creates correct strategy with defaults",3,3,0,FALSE,FALSE,0.00300000000000011
+"test-strategy.R","unsupported local-training strategies fail at construction",2,2,0,FALSE,FALSE,0.00600000000000023
+"test-strategy.R","fedadam creates correct strategy with defaults",6,6,0,FALSE,FALSE,0.0069999999999979
+"test-strategy.R","fedadam accepts overrides",2,2,0,FALSE,FALSE,0.00200000000000244
+"test-strategy.R","fedadagrad creates correct strategy with defaults",4,4,0,FALSE,FALSE,0.00500000000000256
+"test-strategy.R","fedadagrad accepts overrides",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-strategy.R","FedYogi and FedAvgM expose all runtime hyperparameters",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-strategy.R","strategy config serializes only server-side post-processing knobs",5,5,0,FALSE,FALSE,0.0069999999999979
+"test-strategy.R","client learning rate cannot be overridden inside a strategy object",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-strategy.R","strategy prints correctly",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-superlink-reap.R",".port_is_listening detects a listening socket (no subprocess)",1,1,0,FALSE,FALSE,0.00399999999999778
+"test-superlink-reap.R",".port_is_listening is FALSE for a free port",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-superlink-reap.R","PID file round-trips, and a non-SuperLink PID is never killed",5,5,0,FALSE,FALSE,0.345000000000006
+"test-superlink-reap.R",".reap_orphan_superlink kills a confirmed SuperLink PID (kill path)",2,2,0,FALSE,FALSE,1.567
+"test-superlink-reap.R",".pid_is_alive_local is correct and never kills the probed process",6,6,0,FALSE,FALSE,0.0259999999999962
+"test-superlink-reap.R",".is_superlink_pid is FALSE for non-Flower processes (no false kills)",2,2,0,FALSE,FALSE,0.0150000000000006
+"test-superlink-reap.R",".reap_orphan_superlink is a quiet no-op when there is no live orphan",4,4,0,FALSE,FALSE,0.0339999999999989
+"test-superlink-reap.R",".discover_superlink_orphans never matches an unrelated process",1,1,0,FALSE,FALSE,0.0250000000000057
+"test-superlink-reap.R","the reaper never shells out to a forking subprocess",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-superlink.R","superlink status returns not running when nothing started",5,5,0,FALSE,FALSE,0.007000000000005
+"test-superlink.R","superlink stop is safe when nothing running",1,1,0,FALSE,FALSE,0.00799999999999557
+"test-superlink.R","superlink status reports ports correctly",3,3,0,FALSE,FALSE,0.00399999999999778
+"test-superlink.R",".run_openssl errors on bad command",1,1,0,FALSE,FALSE,0.017000000000003
+"test-superlink.R",".generate_tls_certs creates certificate files",7,7,0,FALSE,FALSE,0.122999999999998
+"test-superlink.R",".generate_tls_certs errors when openssl is missing",1,1,0,FALSE,FALSE,0.0190000000000055
+"test-superlink.R","superlink status includes TLS fields",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-superlink.R","superlink status returns NULL ca_cert_pem when not running",1,1,0,FALSE,FALSE,0.00199999999999534
+"test-task.R","classification task has correct type",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-task.R","regression task has correct type",2,2,0,FALSE,FALSE,0.00199999999999534
+"test-task.R","survival task fails early while no enforced-DP runtime exists",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-task.R","segmentation task fails early while no enforced-DP runtime exists",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-task.R","task prints correctly",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-tunnel-api.R","the client uses only the production tunnel API",4,4,0,FALSE,FALSE,0.00500000000000256
+"test-tunnel-api.R","tunnel session ids use 128 bits from Python secrets",3,3,0,FALSE,FALSE,0.0629999999999953
+"test-tunnel-api.R","the client rejects invalid tunnel ports before link side effects",11,11,0,FALSE,FALSE,0.0529999999999973
+"test-tunnel-api.R","tunnel ports can be scalar, positional, or named per node",5,5,0,FALSE,FALSE,0.00899999999999324
+"test-tunnel-api.R","link-up aborts and rolls back every attempted node on mixed tunnel ABI",8,8,0,FALSE,FALSE,0.0159999999999982
+"test-tunnel-api.R","the relay sends at most the node-negotiated chunk",6,6,0,FALSE,FALSE,0.00800000000000267
+"test-tunnel-api.R","a transient DSI exchange preserves initialized relay state",5,5,0,FALSE,FALSE,0.0620000000000047
+"test-tunnel-api.R","a DSI-dropped node retries the identical tunnel chunk and offset",13,13,0,FALSE,FALSE,0.0230000000000032
+"test-tunnel-api.R","late multi-node failures preserve every irreversible relay change",6,6,0,FALSE,FALSE,0.00999999999999801
+"test-tunnel-api.R","large tunnel and outer request payloads are not truncated",4,4,0,FALSE,FALSE,0.539000000000001
+"test-tunnel-api.R","one async fan-out sends only each node's local request",11,11,0,FALSE,FALSE,0.0140000000000029
+"test-tunnel-api.R","a generation change discards every stale acknowledgment and payload",8,8,0,FALSE,FALSE,0.0930000000000035
+"test-tunnel-api.R","partial non-blocking writes advance only the accepted prefix",5,5,0,FALSE,FALSE,0.0069999999999979
+"test-tunnel-api.R","socket read and write failures are never treated as backpressure",3,3,0,FALSE,FALSE,0.00600000000000023
+"test-tunnel-api.R","native socket writes report partial progress without byte loss",5,5,0,FALSE,FALSE,0.466000000000001
+"test-utils.R",".generate_symbol produces valid symbols",3,3,0,FALSE,FALSE,0.00500000000000256
+"test-utils.R",".generate_symbol uses custom prefix",1,1,0,FALSE,FALSE,0.00199999999999534
+"test-utils.R","transient capabilities use 128 bits from an OS CSPRNG",5,5,0,FALSE,FALSE,0.0910000000000011
+"test-utils.R",".ds_encode encodes lists as B64 JSON",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-utils.R",".ds_encode passes scalars through",3,3,0,FALSE,FALSE,0.00499999999999545
+"test-utils.R",".ds_encode encodes vectors",1,1,0,FALSE,FALSE,0.00299999999999301
+"test-utils.R",".format_r_value handles all types",5,5,0,FALSE,FALSE,0.00799999999999557
+"test-utils.R",".build_code generates valid function calls",1,1,0,FALSE,FALSE,0.00199999999999534
+"test-utils.R",".build_code skips NULL arguments",1,1,0,FALSE,FALSE,0.00199999999999534
+"test-utils.R",".require_flwr_cli accepts provisioned client environment",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-validation.R","validation contract resolves a declarative neural artifact",6,6,0,FALSE,FALSE,0.0110000000000028
+"test-validation.R","validation treats quantile output as bounded regression",3,3,0,FALSE,FALSE,0.00900000000000034
+"test-validation.R","validation resolves only a sanitized XGBoost ensemble contract",15,15,0,FALSE,FALSE,0.0719999999999956
+"test-validation.R","pure native-tree bundles save and reopen with engine-specific assets",28,28,0,FALSE,FALSE,0.262999999999998
+"test-validation.R","prediction uses the exact XGBoost contract without provisioning torch",8,8,0,FALSE,FALSE,0.0450000000000017
+"test-validation.R","XGBoost local prediction validates columns, task and output",5,5,0,FALSE,FALSE,0.0290000000000035
+"test-validation.R","native release requires the exact bounded canonical profile sidecar",6,6,0,FALSE,FALSE,0.0629999999999953
+"test-validation.R","portable save revalidates and copies only the exact XGBoost sidecar",5,5,0,FALSE,FALSE,0.0470000000000041
+"test-validation.R","XGBoost validation rejects public bundle tampering before private IO",9,9,0,FALSE,FALSE,0.121000000000002
+"test-validation.R","validation rejects unsupported artifacts and public config early",7,7,0,FALSE,FALSE,0.0579999999999998
+"test-validation.R","validation accepts only pinned saved vision classifiers",21,21,0,FALSE,FALSE,0.0790000000000006
+"test-validation.R","vision validation rejects unsupported, incomplete and tabular metadata",3,3,0,FALSE,FALSE,0.0110000000000028
+"test-validation.R","vision target levels are homogeneous, non-empty and type-preserving",4,4,0,FALSE,FALSE,0.0150000000000006
+"test-validation.R","vision artifact bytes are bound into the validation contract",2,2,0,FALSE,FALSE,0.0200000000000031
+"test-validation.R","validation requires an explicit data kind contract",1,1,0,FALSE,FALSE,0.00399999999999778
+"test-validation.R","validation rejects corrupt public artifacts before DSI or staging",2,2,0,FALSE,FALSE,1.19
+"test-validation.R","vision preflight has a bounded cold-start window",3,3,0,FALSE,FALSE,0.0100000000000051
+"test-validation.R","local vision prediction sends only the strict public contract and paths",10,10,0,FALSE,FALSE,0.0450000000000017
+"test-validation.R","local vision prediction never reflects private paths in errors",2,2,0,FALSE,FALSE,0.0140000000000029
+"test-validation.R","oversized vision path JSON is rejected before serialization",2,2,0,FALSE,FALSE,0.0069999999999979
+"test-validation.R","vision transport write failure cannot reach the predictor",2,2,0,FALSE,FALSE,0.00800000000000267
+"test-validation.R","validation metadata supports up to 1024 classes and labels",3,3,0,FALSE,FALSE,0.0069999999999979
+"test-validation.R","validation refuses mixed row/patient estimands",1,1,0,FALSE,FALSE,0.0069999999999979
+"test-validation.R","validation contract SHA-256 has a cross-package canonical wire",2,2,0,FALSE,FALSE,0.00400000000000489
+"test-validation.R","vision validation contract has a cross-package schema-2 wire",2,2,0,FALSE,FALSE,0.00499999999999545
+"test-validation.R","ds.flower.validate stages one validation release and returns pooled metrics",18,18,0,FALSE,FALSE,0.0330000000000013
+"test-validation.R","vision validation carries only canonical image and artifact pins",15,15,0,FALSE,FALSE,0.0210000000000008
+"test-validation.R","XGBoost validation uses the native app with exact ephemeral pins",19,19,0,FALSE,FALSE,0.0579999999999998
+"test-validation.R","pooled validation reader refuses a per-node result",2,2,0,FALSE,FALSE,0.00600000000000023
+"test-validation.R","unavailable validation is explicit and never contains fake metrics",3,3,0,FALSE,FALSE,0.00500000000000256

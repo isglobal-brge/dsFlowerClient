@@ -1,0 +1,215 @@
+"file","test","nb","passed","failed","skipped","error","real"
+"test-app-store.R","chunked push + install verifies a FAB by sha256 and unpacks it",13,13,0,FALSE,FALSE,0.301
+"test-app-store.R","install rejects a hash mismatch and destroys the spool",2,2,0,FALSE,FALSE,0.0409999999999999
+"test-app-store.R","install rejects an app that fails the exfiltration scan",1,1,0,FALSE,FALSE,0.151
+"test-app-store.R","install enforces the max_fab_bytes cap",1,1,0,FALSE,FALSE,0.014
+"test-app-store.R","app tokens are validated exactly and never sanitized into aliases",12,12,0,FALSE,FALSE,0.0309999999999999
+"test-app-store.R","app spool root is absolute, persistent, private, and not a symlink",5,5,0,FALSE,FALSE,0.00999999999999979
+"test-app-store.R","app spool rejects root, token, and nested symbolic links",6,6,0,FALSE,FALSE,0.016
+"test-app-store.R","global byte cap is enforced without a catalogue-count quota",4,4,0,FALSE,FALSE,0.0190000000000001
+"test-app-store.R","concurrent uploads have no catalogue-count quota",3,3,0,FALSE,FALSE,0.343
+"test-app-store.R","TTL GC removes stale spools but skips a locked active upload",9,9,0,FALSE,FALSE,1.539
+"test-app-store.R","TTL GC retains a pinned app until its staging run is cleaned",6,6,0,FALSE,FALSE,0.102
+"test-app-store.R","TTL garbage collection never expires installed catalogue apps",3,3,0,FALSE,FALSE,0.00699999999999967
+"test-app-store.R","a live run lease makes verified app bytes immutable",4,4,0,FALSE,FALSE,0.0540000000000003
+"test-app-store.R","push enforces max_fab_bytes before appending",2,2,0,FALSE,FALSE,0.0129999999999999
+"test-app-store.R","install rejects traversal, absolute paths, and ZIP symlinks",7,7,0,FALSE,FALSE,0.323
+"test-app-store.R","package pins recognize only regular packages with __init__.py",1,1,0,FALSE,FALSE,0.00700000000000056
+"test-app-store.R","Tier-2 pinning derives one authoritative module without returning paths",5,5,0,FALSE,FALSE,0.0659999999999998
+"test-app-store.R","Tier-2 pinning rejects ambiguous and reserved package sets",2,2,0,FALSE,FALSE,0.04
+"test-association.R","association request and job provenance have fixed canonical hashes",7,7,0,FALSE,FALSE,0.0309999999999997
+"test-association.R","association config is isolated and binds columns, runner, and roster",9,9,0,FALSE,FALSE,0.186999999999999
+"test-association.R","association in-memory staging preserves every row and unknown cell",7,7,0,FALSE,FALSE,0.0780000000000003
+"test-association.R","association patient staging keeps the protected identifier only for grouping",7,7,0,FALSE,FALSE,0.0800000000000001
+"test-association.R","association staged_parquet descriptor selects and totalizes only required columns",6,6,0,FALSE,FALSE,0.0709999999999997
+"test-association.R","association Parquet projection wrapper is isolated and bounded",8,8,0,FALSE,FALSE,0.0110000000000001
+"test-association.R","association capability probe is targeted and explicit",9,9,0,FALSE,FALSE,2.462
+"test-cross-validation.R","native-tree CV job KAT matches the client fixture without neural pins",2,2,0,FALSE,FALSE,0.182
+"test-cross-validation.R","CV job provenance has a mirrored golden and binds every public group",7,7,0,FALSE,FALSE,0.0819999999999999
+"test-cross-validation.R","CV job mismatch is rejected before private staging",2,2,0,FALSE,FALSE,0.182
+"test-cross-validation.R","cross-validation contract is canonical, bounded, and seed-free",9,9,0,FALSE,FALSE,0.0140000000000002
+"test-cross-validation.R","one server-owned job budget is split 80 percent over K folds",10,10,0,FALSE,FALSE,0.0199999999999996
+"test-cross-validation.R","holdout and cross-validation cannot share one job",1,1,0,FALSE,FALSE,0.00899999999999945
+"test-cross-validation.R","prepared manifest pins only the per-job CV allocation",5,5,0,FALSE,FALSE,0.0210000000000008
+"test-descriptor.R","flower_dataset_descriptor creates valid object",3,3,0,FALSE,FALSE,0.00900000000000034
+"test-descriptor.R","flower_dataset_descriptor rejects invalid source_kind",1,1,0,FALSE,FALSE,0.00500000000000078
+"test-descriptor.R","flower_dataset_descriptor stores extra fields",1,1,0,FALSE,FALSE,0.00200000000000067
+"test-descriptor.R","as_flower_dataset.data.frame creates descriptor",4,4,0,FALSE,FALSE,0.00600000000000023
+"test-descriptor.R","as_flower_dataset.FlowerDatasetDescriptor is pass-through",1,1,0,FALSE,FALSE,0.00199999999999889
+"test-descriptor.R","as_flower_dataset.default errors with helpful message",2,2,0,FALSE,FALSE,0.00599999999999845
+"test-descriptor.R","print.FlowerDatasetDescriptor works",4,4,0,FALSE,FALSE,0.004999999999999
+"test-descriptor.R",".createHandleFromDescriptor produces correct handle",5,5,0,FALSE,FALSE,0.0119999999999987
+"test-descriptor.R","flowerInitDS accepts FlowerDatasetDescriptor",4,4,0,FALSE,FALSE,0.0309999999999988
+"test-docker-privacy-bootstrap.R","Rock image noise root is runtime-only",14,14,0,FALSE,FALSE,0.0289999999999999
+"test-imaging-metadata.R","imaging discovery returns only public structural manifest fields",12,12,0,FALSE,FALSE,0.0439999999999987
+"test-imaging-metadata.R","imaging discovery is type-stable for non-imaging handles",6,6,0,FALSE,FALSE,0.0179999999999989
+"test-imaging-metadata.R","public imaging discovery methods are registered aggregates",1,1,0,FALSE,FALSE,0.00200000000000067
+"test-interface.R","flowerPingDS returns correct structure",5,5,0,FALSE,FALSE,0.00600000000000023
+"test-interface.R",".getHandle errors for missing symbol",1,1,0,FALSE,FALSE,0.00400000000000134
+"test-interface.R","Handle CRUD operations work",5,5,0,FALSE,FALSE,0.0109999999999992
+"test-interface.R","forged handle fields never become authoritative",6,6,0,FALSE,FALSE,0.0169999999999995
+"test-interface.R","handle capabilities are stale after destroy and bound to one session",3,3,0,FALSE,FALSE,0.00999999999999979
+"test-interface.R","opaque handles preserve the legitimate DSLite assign flow",4,4,0,FALSE,FALSE,0.673
+"test-interface.R",".ds_arg handles JSON strings",2,2,0,FALSE,FALSE,0.00199999999999889
+"test-interface.R",".ds_arg handles B64 encoded strings",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-interface.R",".ds_arg passes through non-JSON values",3,3,0,FALSE,FALSE,0.0080000000000009
+"test-interface.R",".dsf_option follows option chain",3,3,0,FALSE,FALSE,0.004999999999999
+"test-interface.R","run rounds and data routing are pinned before staging",6,6,0,FALSE,FALSE,0.0119999999999987
+"test-interface.R","HookApp resource policy is finite, bounded, and unambiguous",18,18,0,FALSE,FALSE,0.0460000000000012
+"test-interface.R","HookApp public parameters are canonical and server hash pinned",5,5,0,FALSE,FALSE,0.0310000000000006
+"test-interface.R","HookApp manifest rejects aliases, tampering, and unsafe JSON",13,13,0,FALSE,FALSE,0.0350000000000001
+"test-interface.R","validation config is pinned to one well-typed release",15,15,0,FALSE,FALSE,0.032
+"test-interface.R","vision validation accepts only its exact public pin set",15,15,0,FALSE,FALSE,0.0449999999999999
+"test-interface.R","vision training requires its canonical extractor profile",5,5,0,FALSE,FALSE,0.0119999999999987
+"test-interface.R","validation preparation persists the public contract before execution",9,9,0,FALSE,FALSE,0.0739999999999998
+"test-interface.R","validation never stages a patient identifier as model data",2,2,0,FALSE,FALSE,0.00799999999999912
+"test-interface.R","validation contract SHA-256 has a cross-package canonical wire",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-interface.R","vision validation contract has a cross-package schema-2 wire",3,3,0,FALSE,FALSE,0.00699999999999967
+"test-interface.R","vision validation preflights pins before empty private staging",14,14,0,FALSE,FALSE,0.0429999999999993
+"test-interface.R","flowerPrepareRunDS stages data correctly",13,13,0,FALSE,FALSE,0.0360000000000014
+"test-interface.R","flowerPrepareRunDS does not expose a minimum-size admission bit",4,4,0,FALSE,FALSE,0.0309999999999988
+"test-interface.R","failed preparation does not alter a later training contract",5,5,0,FALSE,FALSE,0.036999999999999
+"test-interface.R","run admission is independent of a rare target class",3,3,0,FALSE,FALSE,0.020999999999999
+"test-interface.R","run admission fails closed without one exact privacy-unit count",2,2,0,FALSE,FALSE,0.0080000000000009
+"test-interface.R","flowerEnsureSuperNodeDS writes ca.pem when ca_cert_pem provided",6,6,0,FALSE,FALSE,0.0960000000000001
+"test-interface.R","flowerEnsureSuperNodeDS works without ca_cert_pem",2,2,0,FALSE,FALSE,0.0790000000000006
+"test-interface.R","a client-supplied hostname is not mistaken for a trusted coordinator",2,2,0,FALSE,FALSE,0.0190000000000001
+"test-interface.R","flowerCleanupRunDS resets handle state",5,5,0,FALSE,FALSE,0.0220000000000002
+"test-interface.R","flowerCleanupRunDS stops associated SuperNode before reset",1,1,0,FALSE,FALSE,0.00900000000000034
+"test-interface.R","flowerGetCapabilitiesDS returns expected structure",39,39,0,FALSE,FALSE,1.883
+"test-interface.R","unsupported run configuration fails before private preparation",3,3,0,FALSE,FALSE,0.00699999999999967
+"test-interface.R","Hook readiness capability reflects every public admin gate",3,3,0,FALSE,FALSE,0.935
+"test-interface.R","Hook sample-and-aggregate timing covers every sequential block",2,2,0,FALSE,FALSE,0.954000000000001
+"test-interface.R","flowerGetCapabilitiesDS omits infrastructure and session state",2,2,0,FALSE,FALSE,0.931000000000001
+"test-interface.R","flowerCheckConnectivityDS detects unreachable address",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-interface.R","flowerCheckConnectivityDS rejects bad format",2,2,0,FALSE,FALSE,0.011000000000001
+"test-interface.R","connectivity checks reject every non-global IPv4 class",4,4,0,FALSE,FALSE,0.0280000000000005
+"test-interface.R","flowerStatusDS returns status info",4,4,0,FALSE,FALSE,0.00600000000000023
+"test-interface.R","flowerDestroyDS removes handle",1,1,0,FALSE,FALSE,0.00400000000000134
+"test-native-tree-contract.R","server validates the exact client native-tree wire",3,3,0,FALSE,FALSE,0.0080000000000009
+"test-native-tree-contract.R","server preserves one-feature arrays in the canonical wire",5,5,0,FALSE,FALSE,0.00999999999999979
+"test-native-tree-contract.R","server canonical JSON preserves valid closing-tag text",2,2,0,FALSE,FALSE,0.00400000000000134
+"test-native-tree-contract.R","server pins the exact data-independent ExtraTrees profile",4,4,0,FALSE,FALSE,0.0489999999999995
+"test-native-tree-contract.R","server rejects native-tree manifest and schema tampering",8,8,0,FALSE,FALSE,0.0429999999999993
+"test-native-tree-contract.R","server enforces tight-mode and resource constraints",13,13,0,FALSE,FALSE,0.0519999999999996
+"test-native-tree-contract.R","server enforces the exact typed XGBoost profile",7,7,0,FALSE,FALSE,0.0359999999999996
+"test-native-tree-contract.R","server bounds public cuts and canonical manifest bytes",2,2,0,FALSE,FALSE,0.116999999999999
+"test-native-tree-contract.R","server enforces exact LightGBM-style and CatBoost-style profiles",7,7,0,FALSE,FALSE,0.0559999999999992
+"test-native-tree-contract.R","native-tree request wire re-pins exact bytes and digest",4,4,0,FALSE,FALSE,0.0180000000000007
+"test-native-tree-contract.R","native-tree run config preserves and binds the exact request",6,6,0,FALSE,FALSE,0.0340000000000007
+"test-native-tree-contract.R","native XGBoost capability is an operational fail-closed probe",9,9,0,FALSE,FALSE,0.0219999999999985
+"test-native-tree-contract.R","XGBoost capability fails closed when its real trainer probe fails",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-native-tree-contract.R","pure native-tree capabilities execute the exact trusted pipeline",8,8,0,FALSE,FALSE,0.0310000000000006
+"test-native-tree-contract.R","native-tree validation capability parses and predicts a real release",5,5,0,FALSE,FALSE,0.0229999999999997
+"test-native-tree-contract.R","native-tree capabilities run only their explicitly requested probe",30,30,0,FALSE,FALSE,0.0329999999999995
+"test-native-tree-contract.R","native-tree prepare rejects an unavailable runtime before private IO",3,3,0,FALSE,FALSE,0.0420000000000016
+"test-native-tree-validation.R","native XGBoost validation requires and canonicalizes every public pin",8,8,0,FALSE,FALSE,0.0540000000000003
+"test-native-tree-validation.R","native validation pins participate in the ephemeral execution contract",2,2,0,FALSE,FALSE,0.00799999999999912
+"test-native-tree-validation.R","native validation preparation stages only the bounded public pins",7,7,0,FALSE,FALSE,0.0510000000000002
+"test-native-tree-validation.R","native validation rejects image routing before private staging",1,1,0,FALSE,FALSE,0.00900000000000034
+"test-native-tree-validation.R","native validation selects the dependency-light runtime without a training probe",3,3,0,FALSE,FALSE,0.0250000000000004
+"test-policy.R","disclosure thresholds inherit DataSHIELD options",4,4,0,FALSE,FALSE,0.004999999999999
+"test-policy.R","dsflower.* options can raise (never lower) the floors",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-policy.R",".bucket_count suppresses small counts and buckets the rest",3,3,0,FALSE,FALSE,0.0220000000000002
+"test-policy.R",".assertMinSamples blocks tiny datasets generically",2,2,0,FALSE,FALSE,0.0120000000000005
+"test-policy.R",".validateMaxRounds honours the option ceiling",2,2,0,FALSE,FALSE,0.004999999999999
+"test-policy.R","DP unit is server-owned, explicit, and has no auto fallback",5,5,0,FALSE,FALSE,0.00799999999999912
+"test-policy.R","patient ID canonicalization matches the runner UTF-8 byte cap",4,4,0,FALSE,FALSE,0.00599999999999845
+"test-privacy-state.R","OS entropy is exact and the Windows CSPRNG parser fails closed",5,5,0,FALSE,FALSE,0.00799999999999912
+"test-privacy-state.R","PowerShell encoded commands are a single exact argument",2,2,0,FALSE,FALSE,0.00299999999999834
+"test-privacy-state.R","Windows PowerShell output is captured as one complete line",1,0,0,TRUE,FALSE,0.000999999999999446
+"test-privacy-state.R","Windows private ACL and atomic replacement round-trip",1,0,0,TRUE,FALSE,0.0080000000000009
+"test-privacy-state.R","Windows path and ACL command boundaries are strict and injectable",22,22,0,FALSE,FALSE,0.0180000000000007
+"test-privacy-state.R","privacy policy is fixed per training and creates no call state",7,7,0,FALSE,FALSE,0.122
+"test-privacy-state.R","training horizon is validated from public inputs alone",4,4,0,FALSE,FALSE,0.0080000000000009
+"test-privacy-state.R","bootstrap persists only one custodial noise root",9,9,0,FALSE,FALSE,0.0429999999999993
+"test-privacy-state.R","the default node-secret path is platform-aware",2,2,0,FALSE,FALSE,0.00699999999999967
+"test-privacy-state.R","unsafe secret paths fail closed",2,2,0,FALSE,FALSE,0.00500000000000078
+"test-privacy-state.R","public privacy status reports only the per-training contract",5,5,0,FALSE,FALSE,0.00600000000000023
+"test-python-dependency-contract.R","server Python contract matches the FAB cryptography floor",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-python-dependency-contract.R","native-tree has one exact dependency-light provisioned runtime",12,12,0,FALSE,FALSE,0.0120000000000005
+"test-python-dependency-contract.R","venv and pinned uv paths are portable to Windows",11,11,0,FALSE,FALSE,0.0229999999999997
+"test-python-dependency-contract.R","runtime venv root honors the documented environment precedence",1,1,0,FALSE,FALSE,0.00200000000000067
+"test-python-dependency-contract.R","venv metadata discovery accepts Unix and Windows layouts",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-python-dependency-contract.R","configure skip gate is validated before host Python setup",6,6,0,FALSE,FALSE,0.0220000000000002
+"test-python-dependency-contract.R","required Python locks fail closed before host provisioning",8,8,0,FALSE,FALSE,0.0649999999999995
+"test-python-dependency-contract.R","required server locks propagate uv venv and pip failures",24,24,0,FALSE,FALSE,1.645
+"test-python-dependency-contract.R","server venv health check covers all direct runtime imports",2,2,0,FALSE,FALSE,0.00100000000000122
+"test-resampling.R","holdout contract is canonical and has no analyst seed axis",11,11,0,FALSE,FALSE,0.0139999999999993
+"test-resampling.R","holdout normalization is track-exact and hash pinned",13,13,0,FALSE,FALSE,0.027000000000001
+"test-resampling.R","prepared manifest pins the complete job allocation and contract",4,4,0,FALSE,FALSE,0.0169999999999995
+"test-runtime.R","torch backend selection rejects unknown or malformed values",5,5,0,FALSE,FALSE,0.0210000000000008
+"test-runtime.R","the final Python boundary creates and repairs only the noise root",9,9,0,FALSE,FALSE,0.0410000000000004
+"test-runtime.R","the mandatory Python integrity bootstrap installs or fails closed",3,3,0,FALSE,FALSE,0.0199999999999996
+"test-runtime.R","the trusted Python environment does not inherit injection variables",15,15,0,FALSE,FALSE,0.0650000000000013
+"test-runtime.R",".supernode_lookup returns NULL for unknown manifest_dir",1,1,0,FALSE,FALSE,0.00199999999999889
+"test-runtime.R",".supernode_list returns empty data.frame when no supernodes",7,7,0,FALSE,FALSE,0.00799999999999912
+"test-runtime.R",".supernode_stop is safe for unknown manifest_dir",1,1,0,FALSE,FALSE,0.004999999999999
+"test-runtime.R","Registry behavior works with mock process",6,6,0,FALSE,FALSE,0.0120000000000005
+"test-runtime.R","Registry removes dead processes on lookup",2,2,0,FALSE,FALSE,0.00300000000000011
+"test-runtime.R",".random_available_port returns port in valid range",1,1,0,FALSE,FALSE,0.213999999999999
+"test-runtime.R",".random_available_port avoids ports used by live SuperNodes",1,1,0,FALSE,FALSE,0.0139999999999993
+"test-runtime.R",".supernode_ensure blocks when policy disables spawning",1,1,0,FALSE,FALSE,0.046999999999997
+"test-runtime.R",".supernode_ensure uses --root-certificates when ca_cert_path provided",3,3,0,FALSE,FALSE,2.045
+"test-runtime.R",".supernode_ensure errors when no ca_cert_path",1,1,0,FALSE,FALSE,0.0069999999999979
+"test-runtime.R","resolved Python dependency versions are recorded deterministically",2,2,0,FALSE,FALSE,0.00700000000000145
+"test-runtime.R","uv bootstrap requires an immutable release and archive digest",4,4,0,FALSE,FALSE,0.0110000000000028
+"test-runtime.R","hash-locked Python requirements bind the venv marker",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-runtime.R","native-tree and PyTorch locks are independent",3,3,0,FALSE,FALSE,0.00600000000000023
+"test-runtime.R","strict Python provisioning fails closed without a lock",2,2,0,FALSE,FALSE,0.00900000000000034
+"test-staging.R",".generate_run_token produces expected format",2,2,0,FALSE,FALSE,0.00199999999999889
+"test-staging.R",".generate_run_token produces unique tokens",1,1,0,FALSE,FALSE,0.014999999999997
+"test-staging.R","run tokens and staging paths fail closed before recursive deletion",10,10,0,FALSE,FALSE,0.0249999999999986
+"test-staging.R",".loadTrainingData reads CSV correctly",4,4,0,FALSE,FALSE,0.00600000000000023
+"test-staging.R",".loadTrainingData errors on missing file",1,1,0,FALSE,FALSE,0.00600000000000023
+"test-staging.R",".loadTrainingData errors on unsupported format",1,1,0,FALSE,FALSE,0.00400000000000134
+"test-staging.R",".validateDataSchema passes for valid data",1,1,0,FALSE,FALSE,0.00199999999999889
+"test-staging.R",".validateDataSchema accepts an empty frame with public schema",1,1,0,FALSE,FALSE,0.00199999999999889
+"test-staging.R",".validateDataSchema errors on missing target",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-staging.R",".validateDataSchema errors on missing features",1,1,0,FALSE,FALSE,0.00200000000000244
+"test-staging.R",".stageData creates directory, data file, and manifest",11,11,0,FALSE,FALSE,0.0260000000000034
+"test-staging.R",".stageData writes privacy settings from extra_config",4,4,0,FALSE,FALSE,0.0190000000000019
+"test-staging.R","run_config cannot provide structural or duplicate manifest fields",7,7,0,FALSE,FALSE,0.0150000000000006
+"test-staging.R","stale staging cleanup covers configured roots",2,2,0,FALSE,FALSE,0.0189999999999984
+"test-staging.R","tabular staging preserves the explicit server patient DP unit",6,6,0,FALSE,FALSE,0.0189999999999984
+"test-staging.R","Parquet descriptor staging preserves patient ID outside features",4,4,0,FALSE,FALSE,0.0519999999999996
+"test-staging.R","image staging counts the server-selected patient privacy units",4,4,0,FALSE,FALSE,0.0210000000000008
+"test-staging.R","stateless privacy contract update is atomic",7,7,0,FALSE,FALSE,0.0240000000000009
+"test-staging.R","public target levels give cohort-independent codes",6,6,0,FALSE,FALSE,0.0179999999999971
+"test-staging.R","multilabel staging applies one public binary contract per target",6,6,0,FALSE,FALSE,0.0249999999999986
+"test-staging.R","public target bounds are mandatory and clip numeric targets",3,3,0,FALSE,FALSE,0.00600000000000023
+"test-staging.R","public feature totalisation cannot overflow float32",4,4,0,FALSE,FALSE,0.00600000000000023
+"test-staging.R",".stageData totalises incomplete rows without a count oracle",7,7,0,FALSE,FALSE,0.0259999999999998
+"test-staging.R","patient staging applies the exact v2 identifier contract",7,7,0,FALSE,FALSE,0.0200000000000031
+"test-staging.R","patient identifier v2 totalizes invalid encodings per value",1,1,0,FALSE,FALSE,0.00199999999999889
+"test-staging.R","client config cannot preserve non-finite private rows",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-staging.R",".ensureStagingDir honors configured staging root",2,2,0,FALSE,FALSE,0.00900000000000034
+"test-staging.R",".ensureImagePathColumn derives paths from dsImaging manifests",1,1,0,FALSE,FALSE,0.0209999999999972
+"test-staging.R","image path failures are record-local and preserve row order",4,4,0,FALSE,FALSE,0.032
+"test-staging.R","malformed sample-manifest cells totalize independently",2,2,0,FALSE,FALSE,0.0120000000000005
+"test-staging.R","image descriptor and root failures remain global preconditions",2,2,0,FALSE,FALSE,0.00600000000000023
+"test-staging.R","image label joins are stable one-to-one and totalizable",4,4,0,FALSE,FALSE,0.00799999999999912
+"test-staging.R","image metadata paths cannot escape their configured root",12,12,0,FALSE,FALSE,0.0279999999999987
+"test-staging.R","image path failures become one fixed non-identifying marker",3,3,0,FALSE,FALSE,0.00700000000000145
+"test-staging.R","image descriptor staging totalizes private rows end to end",4,4,0,FALSE,FALSE,0.0159999999999982
+"test-staging.R","image descriptor asset names cannot traverse staging",1,1,0,FALSE,FALSE,0.0519999999999996
+"test-staging.R",".cleanupStaging removes the directory",2,2,0,FALSE,FALSE,0.0069999999999979
+"test-staging.R",".cleanupStaging is safe for NULL token",1,1,0,FALSE,FALSE,0.00300000000000011
+"test-staging.R",".getDataSummary returns correct structure",4,4,0,FALSE,FALSE,0.00800000000000267
+"test-tunnel-api.R","only the production tunnel API is exported and registered",5,5,0,FALSE,FALSE,0.00700000000000145
+"test-tunnel-api.R","raw base constructors are never registered as aggregate methods",1,1,0,FALSE,FALSE,0.00199999999999889
+"test-tunnel-api.R","tunnel connection ids are strict, collision-free capabilities",4,4,0,FALSE,FALSE,0.00700000000000145
+"test-tunnel-api.R","exchange rejects a nonce that was not opened by Up",2,2,0,FALSE,FALSE,0.00799999999999912
+"test-tunnel-api.R","tunnel ports are finite integers in the TCP range",9,9,0,FALSE,FALSE,0.0169999999999995
+"test-tunnel-api.R","a tunnel authorizes loopback only while its capability is ready and alive",4,4,0,FALSE,FALSE,0.00600000000000023
+"test-tunnel-api.R","failed forwarder startup kills its process and clears all state",6,6,0,FALSE,FALSE,0.123999999999999
+"test-tunnel-api.R","tunnel startup rejects a mismatched ABI before side effects",5,5,0,FALSE,FALSE,0.0360000000000014
+"test-tunnel-api.R","tunnel I/O is chunked and spool growth is capped",6,6,0,FALSE,FALSE,0.0229999999999997
+"test-tunnel-api.R","absolute offsets remain idempotent across spool compaction",13,13,0,FALSE,FALSE,0.0519999999999996
+"test-tunnel-api.R","the maximum DSI-safe tunnel chunk round-trips without truncation",6,6,0,FALSE,FALSE,0.177
+"test-tunnel-api.R","tunnel chunks cannot exceed the DSI expression-safe maximum",2,2,0,FALSE,FALSE,0.0069999999999979
+"test-tunnel-api.R","512 KiB tunnel chunks traverse real DSI and DSLite",5,5,0,FALSE,FALSE,1.382
+"test-tunnel-api.R","generation fencing rejects stale reconnect traffic",5,5,0,FALSE,FALSE,0.0169999999999995
+"test-tunnel-api.R","tunnel exchange accepts only direct transport arguments",1,1,0,FALSE,FALSE,0.0129999999999981
+"test-tunnel-api.R","downstream backpressure still drains the upstream stream",4,4,0,FALSE,FALSE,0.0949999999999989
+"test-tunnel-api.R","the forwarder compacts both streams and fences a concurrent reconnect",22,22,0,FALSE,FALSE,0.734999999999999

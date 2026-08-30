@@ -1,0 +1,19 @@
+{
+  "campaign": "dsFlower run-at-pin test execution, version 0.4.1",
+  "date": "2026-08-30",
+  "host": {"machine": "Davids-MacBook-Air.local", "os": "macOS Darwin 24.4.0 arm64", "R": "4.5.2"},
+  "pins": {
+    "dsFlower": {"version": "0.4.1", "commit": "6a9da05"},
+    "dsFlowerClient": {"version": "0.4.1", "commit": "f5e776a"}
+  },
+  "method": "Both packages' committed testthat suites executed with devtools::test on clean git checkouts at the pinned commits (isolating the run from any uncommitted working-tree changes), against the campaign's isolated R library and pinned Python virtual environments (torch 2.10.0, opacus 1.6.0, flwr 1.31.0).",
+  "results": {
+    "dsFlower":        {"blocks": 214, "expectations_passed": 1103, "failed": 0, "errored": 0, "results_csv": "suite_dsFlower_results.csv"},
+    "dsFlowerClient":  {"blocks": 325, "expectations_passed": 1663, "failed": 0, "errored": 0, "results_csv": "suite_dsFlowerClient_results.csv"}
+  },
+  "related_evidence": {
+    "dslite_multinode_smoke": "two-node SuperLink/SuperNode federation with one DP-SGD round, executed 2026-08-19 in the same isolated environment (61 s, PASS)",
+    "utility_campaign_cells": "../../extdata/campaign/ (12 committed cells; see the pkgdown Utility Campaign article)"
+  },
+  "note": "No continuous-integration run is claimed for this execution; it was performed for the thesis revision and is attributable to this campaign. The packages' own CI workflows exist independently in the repositories."
+}
