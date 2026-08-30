@@ -228,6 +228,39 @@ campaign_central <- function(train, test, features) {
   campaign_metrics(test$target, p)
 }
 
+# Central baseline for the torch MLP contract: the same model class fitted
+# centrally without DP or federation, through the campaign venv's torch.
+# Mirrors the logreg precedent (central = the model class fitted well on the
+# pooled data), so the gap column isolates the DP-federation cost.
+campaign_central_torch_mlp <- function(train, test, features, model_params) {
+  client_root <- Sys.getenv("DSFLOWER_CLIENT_VENV_ROOT")
+  stopifnot(nzchar(client_root))
+  python <- file.path(client_root, "venv", "bin", "python")
+  stopifnot(file.exists(python))
+  tmp <- tempfile("central-mlp-")
+  dir.create(tmp, mode = "0700")
+  on.exit(unlink(tmp, recursive = TRUE, force = TRUE), add = TRUE)
+  utils::write.csv(train[, c(features, "target")],
+                   file.path(tmp, "train.csv"), row.names = FALSE)
+  utils::write.csv(test[, features, drop = FALSE],
+                   file.path(tmp, "test.csv"), row.names = FALSE)
+  hidden <- model_params$hidden_layers %||% c(64L, 32L)
+  script <- file.path(
+    Sys.getenv("CAMPAIGN_TOOLS_DIR", file.path("tools", "campaign")),
+    "central_train.py")
+  stopifnot(file.exists(script))
+  status <- system2(python, c(
+    shQuote(script), "--train", shQuote(file.path(tmp, "train.csv")),
+    "--test", shQuote(file.path(tmp, "test.csv")),
+    "--out", shQuote(file.path(tmp, "probs.csv")),
+    "--hidden", paste(hidden, collapse = ","), "--seed", "20260830"))
+  stopifnot(identical(status, 0L))
+  p <- utils::read.csv(file.path(tmp, "probs.csv"))$prob
+  campaign_metrics(test$target, p)
+}
+
+`%||%` <- function(a, b) if (is.null(a)) b else a
+
 campaign_trivial <- function(train, test) {
   prevalence <- mean(train$target)
   majority <- as.integer(prevalence >= 0.5)
@@ -256,7 +289,8 @@ campaign_trivial <- function(train, test) {
 # process stay isolated.
 campaign_run_federated <- function(site_data, test, features, feature_bounds,
                                    epsilon, delta = 1e-6, rounds,
-                                   model_params, work_dir, venv_root) {
+                                   model_params, work_dir, venv_root,
+                                   contract = "pytorch_logreg") {
   n_sites <- length(site_data)
   dir.create(work_dir, recursive = TRUE, showWarnings = FALSE, mode = "0700")
   output_dir <- file.path(work_dir, "artifact")
@@ -383,7 +417,7 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
     symbol = "D",
     target = "target",
     features = features,
-    model = "pytorch_logreg",
+    model = contract,
     model_params = model_params,
     strategy = "fedavg",
     rounds = as.integer(rounds),

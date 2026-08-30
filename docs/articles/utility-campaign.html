@@ -90,8 +90,14 @@ Opal deployment, minus the transport stack). Per replicate the harness
 records three fits on identical splits:</p>
 <ul>
 <li>
-<strong>central</strong>: the same architecture trained on the
-pooled data with no DP and no federation – the utility ceiling;</li>
+<strong>central</strong>: the same model class trained on the pooled
+data with no DP and no federation – the utility ceiling. For
+<code>pytorch_logreg</code> this is the classical IRLS fit
+(<code>glm</code>); for <code>pytorch_mlp</code> it is the same torch
+architecture trained centrally with early stopping on an internal
+validation split (<code>tools/campaign/central_train.py</code>), so the
+ceiling reflects a well-trained rather than overfitted central
+model;</li>
 <li>
 <strong>federated_dp</strong>: the released <code>dsFlower</code>
 model under the server-owned DP contract, evaluated <em>after</em>
@@ -109,7 +115,7 @@ are stored alongside. The headline quantity is the utility gap
 <h2 id="executed-cells">Executed cells<a class="anchor" aria-label="anchor" href="#executed-cells"></a>
 </h2>
 <table class="table">
-<caption>All executed campaign cells (12), three seeded replicates each,
+<caption>All executed campaign cells (17), three seeded replicates each,
 five federated rounds, three sites, delta = 1e-6, package-default
 clipping.</caption>
 <colgroup>
@@ -142,6 +148,15 @@ clipping.</caption>
 </tr>
 <tr class="even">
 <td align="left">Breast cancer (Wisconsin) (n = 683)</td>
+<td align="left">pytorch_mlp</td>
+<td align="right">1</td>
+<td align="right">0.9973</td>
+<td align="right">0.9967</td>
+<td align="right">-0.0006</td>
+<td align="right">0.0005</td>
+</tr>
+<tr class="odd">
+<td align="left">Breast cancer (Wisconsin) (n = 683)</td>
 <td align="left">pytorch_logreg</td>
 <td align="right">4</td>
 <td align="right">0.9984</td>
@@ -149,7 +164,7 @@ clipping.</caption>
 <td align="right">-0.0014</td>
 <td align="right">0.0004</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">Breast cancer (Wisconsin) (n = 683)</td>
 <td align="left">pytorch_logreg</td>
 <td align="right">8</td>
@@ -158,7 +173,7 @@ clipping.</caption>
 <td align="right">-0.0017</td>
 <td align="right">0.0013</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">CDC diabetes (stratified subsample) (n = 2,000)</td>
 <td align="left">pytorch_logreg</td>
 <td align="right">1</td>
@@ -167,7 +182,7 @@ clipping.</caption>
 <td align="right">-0.0493</td>
 <td align="right">0.0376</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">CDC diabetes (stratified subsample) (n = 45,000)</td>
 <td align="left">pytorch_logreg</td>
 <td align="right">1</td>
@@ -176,7 +191,7 @@ clipping.</caption>
 <td align="right">-0.0156</td>
 <td align="right">0.0016</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">CDC diabetes (stratified subsample) (n = 90,000)</td>
 <td align="left">pytorch_logreg</td>
 <td align="right">1</td>
@@ -185,7 +200,7 @@ clipping.</caption>
 <td align="right">-0.0082</td>
 <td align="right">0.0017</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">CDC diabetes (stratified subsample) (n = 9,000)</td>
 <td align="left">pytorch_logreg</td>
 <td align="right">1</td>
@@ -193,6 +208,15 @@ clipping.</caption>
 <td align="right">0.7745</td>
 <td align="right">-0.0520</td>
 <td align="right">0.0063</td>
+</tr>
+<tr class="odd">
+<td align="left">CDC diabetes (stratified subsample) (n = 9,000)</td>
+<td align="left">pytorch_mlp</td>
+<td align="right">1</td>
+<td align="right">0.8237</td>
+<td align="right">0.7780</td>
+<td align="right">-0.0457</td>
+<td align="right">0.0133</td>
 </tr>
 <tr class="even">
 <td align="left">CDC diabetes (stratified subsample) (n = 9,000)</td>
@@ -223,12 +247,30 @@ clipping.</caption>
 </tr>
 <tr class="odd">
 <td align="left">Heart disease (Cleveland) (n = 297)</td>
+<td align="left">pytorch_mlp</td>
+<td align="right">1</td>
+<td align="right">0.9132</td>
+<td align="right">0.8040</td>
+<td align="right">-0.1092</td>
+<td align="right">0.1000</td>
+</tr>
+<tr class="even">
+<td align="left">Heart disease (Cleveland) (n = 297)</td>
 <td align="left">pytorch_logreg</td>
 <td align="right">4</td>
 <td align="right">0.9232</td>
 <td align="right">0.8742</td>
 <td align="right">-0.0490</td>
 <td align="right">0.0469</td>
+</tr>
+<tr class="odd">
+<td align="left">Heart disease (Cleveland) (n = 297)</td>
+<td align="left">pytorch_mlp</td>
+<td align="right">4</td>
+<td align="right">0.9132</td>
+<td align="right">0.8873</td>
+<td align="right">-0.0258</td>
+<td align="right">0.0505</td>
 </tr>
 <tr class="even">
 <td align="left">Heart disease (Cleveland) (n = 297)</td>
@@ -239,6 +281,15 @@ clipping.</caption>
 <td align="right">-0.0367</td>
 <td align="right">0.0158</td>
 </tr>
+<tr class="odd">
+<td align="left">Heart disease (Cleveland) (n = 297)</td>
+<td align="left">pytorch_mlp</td>
+<td align="right">8</td>
+<td align="right">0.9132</td>
+<td align="right">0.9032</td>
+<td align="right">-0.0100</td>
+<td align="right">0.0313</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -248,7 +299,7 @@ clipping.</caption>
 <p>If the released models actually carry calibrated noise, the utility
 gap must shrink (or stay flat once another error source dominates) as
 epsilon grows.</p>
-<p><img src="utility-campaign_files/figure-html/eps-curve-1.png" class="r-plt" alt="Utility gap versus epsilon per dataset" width="672"></p>
+<p><img src="utility-campaign_files/figure-html/eps-curve-1.png" class="r-plt" alt="Utility gap versus epsilon per dataset and contract" width="672"></p>
 <p>Three regimes are visible, and each is the theoretically expected
 one:</p>
 <ul>
@@ -323,12 +374,20 @@ cost of private federated logistic regression on this cohort.</p>
 <h2 id="scope-and-honesty">Scope and honesty<a class="anchor" aria-label="anchor" href="#scope-and-honesty"></a>
 </h2>
 <ul>
-<li>These cells cover the <code>pytorch_logreg</code> contract; they
-establish the campaign harness and the validation methodology. Extending
-the same matrix across the remaining vetted contracts (structured,
-sequence, vision frozen-backbone, native trees) is queued on dedicated
-compute; every future cell lands as another committed JSON that this
-page ingests automatically.</li>
+<li>These cells cover the <code>pytorch_logreg</code> and
+<code>pytorch_mlp</code> contracts; they establish the campaign harness
+and the validation methodology across a convex and a non-convex neural
+contract. The <code>pytorch_mlp</code> cells reproduce the logreg
+regimes (ceiling on breast; a comparable moderate-n gap on cdc9k; a
+larger, higher-dispersion noise-dominated gap on heart, with the
+additional observation that DP training degrades threshold calibration
+before it degrades ranking). Extending the matrix across the remaining
+vetted contracts is queued: the native-tree track requires its
+separately verified XGBoost bundle, the vision and sequence tracks await
+dedicated compute and dataset decisions, and the remaining
+regression/multiclass contracts need per-family metric design; every
+future cell lands as another committed JSON that this page ingests
+automatically.</li>
 <li>The <code>federated_dp</code> column is the <em>released</em> model
 evaluated on a public held-out split; no evaluation touches protected
 data and none costs privacy budget.</li>

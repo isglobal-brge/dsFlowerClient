@@ -40,8 +40,12 @@ over DSLite (SuperLink, one SuperNode per site, the canonical byte-verified
 runner -- the same code path as a live Opal deployment, minus the transport
 stack). Per replicate the harness records three fits on identical splits:
 
-- **central**: the same architecture trained on the pooled data with no DP and
-  no federation -- the utility ceiling;
+- **central**: the same model class trained on the pooled data with no DP and
+  no federation -- the utility ceiling. For `pytorch_logreg` this is the
+  classical IRLS fit (`glm`); for `pytorch_mlp` it is the same torch
+  architecture trained centrally with early stopping on an internal validation
+  split (`tools/campaign/central_train.py`), so the ceiling reflects a
+  well-trained rather than overfitted central model;
 - **federated_dp**: the released `dsFlower` model under the server-owned DP
   contract, evaluated *after* release on the public held-out test split
   (a zero-privacy-cost, client-side evaluation of an already-released model);
@@ -107,26 +111,28 @@ knitr::kable(
 If the released models actually carry calibrated noise, the utility gap must
 shrink (or stay flat once another error source dominates) as epsilon grows.
 
-```{r eps-curve, fig.alt="Utility gap versus epsilon per dataset"}
-eps_tab <- tab[ave(tab$dataset, tab$dataset, FUN = length) > 1 &
+```{r eps-curve, fig.alt="Utility gap versus epsilon per dataset and contract"}
+tab$series <- paste(tab$dataset, sub("^pytorch_", "", tab$contract), sep = ":")
+eps_tab <- tab[ave(tab$series, tab$series, FUN = length) > 1 &
                tab$dataset %in% c("breast", "heart", "cdc9k"), ]
 if (nrow(eps_tab)) {
-  dsets <- split(eps_tab, eps_tab$dataset)
-  cols <- c(breast = "#1b9e77", heart = "#d95f02", cdc9k = "#7570b3")
+  series <- split(eps_tab, eps_tab$series)
+  pal <- c("#1b9e77", "#d95f02", "#7570b3", "#e7298a", "#66a61e", "#e6ab02")
+  cols <- stats::setNames(pal[seq_along(series)], names(series))
   plot(NULL, xlim = range(eps_tab$epsilon), ylim = range(c(eps_tab$delta - eps_tab$delta_sd,
        eps_tab$delta + eps_tab$delta_sd, 0)),
        xlab = expression(epsilon), ylab = "AUC gap (federated DP - central)",
        main = "Utility gap vs privacy budget", las = 1)
   abline(h = 0, col = "grey60", lty = 2)
-  for (d in names(dsets)) {
-    o <- dsets[[d]][order(dsets[[d]]$epsilon), ]
+  for (d in names(series)) {
+    o <- series[[d]][order(series[[d]]$epsilon), ]
     lines(o$epsilon, o$delta, col = cols[[d]], lwd = 2)
     points(o$epsilon, o$delta, col = cols[[d]], pch = 19)
     arrows(o$epsilon, o$delta - o$delta_sd, o$epsilon, o$delta + o$delta_sd,
            angle = 90, code = 3, length = 0.03, col = cols[[d]])
   }
-  legend("bottomright", legend = names(dsets), col = cols[names(dsets)],
-         lwd = 2, pch = 19, bty = "n")
+  legend("bottomright", legend = names(series), col = cols[names(series)],
+         lwd = 2, pch = 19, bty = "n", cex = 0.85)
 }
 ```
 
@@ -150,7 +156,8 @@ at fixed epsilon, growing the cohort should shrink the privacy part of the gap
 toward the federation residual.
 
 ```{r n-scaling, fig.alt="Utility gap versus cohort size at epsilon = 1"}
-ns <- tab[tab$epsilon == 1 & grepl("^cdc", tab$dataset), ]
+ns <- tab[tab$epsilon == 1 & grepl("^cdc", tab$dataset) &
+          tab$contract == "pytorch_logreg", ]
 ns <- ns[order(ns$n), ]
 if (nrow(ns) > 1) {
   plot(ns$n, ns$delta, log = "x", type = "b", pch = 19, lwd = 2, las = 1,
@@ -181,10 +188,11 @@ committed evidence:
 
 ```{r checks, results="asis"}
 checks <- list()
-# 1. Monotonicity in epsilon (allowing plateau within 1 seed SD).
+# 1. Monotonicity in epsilon (allowing plateau within 1 seed SD), per
+#    dataset-and-contract series.
 mono_ok <- TRUE
-for (d in unique(tab$dataset)) {
-  o <- tab[tab$dataset == d, ]; o <- o[order(o$epsilon), ]
+for (d in unique(tab$series)) {
+  o <- tab[tab$series == d, ]; o <- o[order(o$epsilon), ]
   if (nrow(o) > 1) {
     worsening <- diff(o$delta) < -pmax(o$delta_sd[-1], o$delta_sd[-nrow(o)])
     if (any(worsening)) mono_ok <- FALSE
@@ -198,9 +206,13 @@ floor_ok <- all(tab$fed_acc >= tab$trivial_acc - 0.02 | tab$federated > 0.6)
 checks[["Utility floor"]] <- list(
   pass = floor_ok,
   note = "Every released model clears (or matches) the majority-class baseline; AUC well above 0.5 throughout.")
-# 3. Seed dispersion: replicate SD must be finite and shrink or stay stable with epsilon at small n.
-h <- tab[tab$dataset == "heart", ]; h <- h[order(h$epsilon), ]
-disp_ok <- if (nrow(h) > 1) h$delta_sd[nrow(h)] <= h$delta_sd[1] else TRUE
+# 3. Seed dispersion: replicate SD must shrink or stay stable with epsilon at
+#    the noise-dominated small-n cells, per contract.
+disp_ok <- TRUE
+for (d in unique(tab$series[tab$dataset == "heart"])) {
+  h <- tab[tab$series == d, ]; h <- h[order(h$epsilon), ]
+  if (nrow(h) > 1 && h$delta_sd[nrow(h)] > h$delta_sd[1]) disp_ok <- FALSE
+}
 checks[["Seed dispersion"]] <- list(
   pass = disp_ok,
   note = "At the noise-dominated small-n cell, dispersion shrinks as epsilon grows.")
@@ -227,11 +239,18 @@ this cohort.
 
 ## Scope and honesty
 
-- These cells cover the `pytorch_logreg` contract; they establish the
-  campaign harness and the validation methodology. Extending the same matrix
-  across the remaining vetted contracts (structured, sequence, vision
-  frozen-backbone, native trees) is queued on dedicated compute; every future
-  cell lands as another committed JSON that this page ingests automatically.
+- These cells cover the `pytorch_logreg` and `pytorch_mlp` contracts; they
+  establish the campaign harness and the validation methodology across a
+  convex and a non-convex neural contract. The `pytorch_mlp` cells reproduce
+  the logreg regimes (ceiling on breast; a comparable moderate-n gap on
+  cdc9k; a larger, higher-dispersion noise-dominated gap on heart, with the
+  additional observation that DP training degrades threshold calibration
+  before it degrades ranking). Extending the matrix across the remaining
+  vetted contracts is queued: the native-tree track requires its separately
+  verified XGBoost bundle, the vision and sequence tracks await dedicated
+  compute and dataset decisions, and the remaining regression/multiclass
+  contracts need per-family metric design; every future cell lands as
+  another committed JSON that this page ingests automatically.
 - The `federated_dp` column is the *released* model evaluated on a public
   held-out split; no evaluation touches protected data and none costs privacy
   budget.

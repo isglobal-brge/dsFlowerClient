@@ -28,8 +28,9 @@ opt$epsilon <- as.numeric(opt$epsilon)
 opt$replicates <- as.integer(opt$replicates)
 opt$rounds <- as.integer(opt$rounds)
 opt$sites <- as.integer(opt$sites)
-if (!identical(opt$contract, "pytorch_logreg")) {
-  stop("Only the pytorch_logreg contract is wired for the pilot.",
+wired_contracts <- c("pytorch_logreg", "pytorch_mlp")
+if (!opt$contract %in% wired_contracts) {
+  stop("Wired contracts: ", paste(wired_contracts, collapse = ", "),
        call. = FALSE)
 }
 
@@ -44,7 +45,12 @@ dir.create(runs_dir, recursive = TRUE, showWarnings = FALSE)
 dir.create(opt$out, recursive = TRUE, showWarnings = FALSE)
 
 # Frozen after a one-off sanity tuning on breast at epsilon = 8 (see README).
+# The MLP reuses the same optimiser settings for comparability and the
+# contract-default hidden stack.
 model_params <- list(learning_rate = 0.1, batch_size = 32L, local_epochs = 2L)
+if (identical(opt$contract, "pytorch_mlp")) {
+  model_params$hidden_layers <- c(64L, 32L)
+}
 delta <- 1e-6
 base_seed <- 20260819L
 
@@ -74,7 +80,11 @@ for (r in seq_len(opt$replicates)) {
     )
   }
 
-  central <- campaign_central(split$train, split$test, features)
+  central <- if (identical(opt$contract, "pytorch_mlp")) {
+    campaign_central_torch_mlp(split$train, split$test, features, model_params)
+  } else {
+    campaign_central(split$train, split$test, features)
+  }
   trivial <- campaign_trivial(split$train, split$test)
 
   work_dir <- file.path(runs_dir, cell_id, sprintf("rep%d", r))
@@ -88,7 +98,8 @@ for (r in seq_len(opt$replicates)) {
     rounds = opt$rounds,
     model_params = model_params,
     work_dir = work_dir,
-    venv_root = venv_root
+    venv_root = venv_root,
+    contract = opt$contract
   )
 
   cat(sprintf(
