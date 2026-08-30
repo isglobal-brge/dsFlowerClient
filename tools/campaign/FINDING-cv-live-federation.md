@@ -1,8 +1,25 @@
 # Campaign finding: live-federation cross-validation fails closed at 0.4.1
 
-**Date:** 2026-08-30 · **Status:** OPEN (documented for the next release) ·
+**Date:** 2026-08-30 · **Status:** FIXED in v0.4.2 (same day) ·
 **Severity:** capability unavailable in live federation; fail-closed, no
 disclosure impact.
+
+> **Resolution.** Root cause: `dsFlower:::.write_manifest_atomic` serialized
+> manifest doubles with 15 significant digits (`jsonlite` `digits = NA`),
+> losing the low bits of the computed CV budget allocation
+> (`epsilon * 0.8 / folds`); the trusted runner's release guard recomputes
+> that fixed split in IEEE doubles at `rel_tol = 1e-15`, so every `cv-train`
+> claim raised "manifest cross-validation budget differs from its fixed job
+> allocation" *before any private read*, was swallowed by the privacy
+> boundary as `public-preflight-unavailable`, and the all-rounds gate then
+> correctly refused the job. Fix (dsFlower 0.4.2): manifests are written with
+> `digits = I(17)` (lossless double round-trip; worst case one ulp, inside
+> the guard tolerance), plus a release-guard-strength regression test. The
+> runner is byte-identical to 0.4.1, so DP noise streams are unchanged.
+> Validated: both suites green, `run_cv_demo.R` green on heart and cdc9k
+> (3/3 replicates each, evidence committed under `inst/extdata/campaign/`),
+> fit regression cell inside replicate dispersion. The replay-cache suspect
+> below was exonerated (the cache is never populated for `cv-*` claims).
 
 ## Summary
 

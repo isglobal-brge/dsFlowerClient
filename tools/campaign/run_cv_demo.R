@@ -97,10 +97,14 @@ for (r in seq_len(opt$replicates)) {
     cv_folds = opt$folds
   )
 
+  # Print only the scalar metrics; the released tree also carries nested
+  # pooled curves (roc / precision_recall / calibration / decision_curve).
+  scalar_metrics <- Filter(function(v) is.numeric(v) && length(v) == 1L,
+                           fed$cv$metrics)
   cat(sprintf("rep %d (seed %d): central OOF AUC %.4f | released DP OOF: %s | %.0fs\n",
               r, seed, central$auc,
-              paste(names(fed$cv$metrics),
-                    vapply(fed$cv$metrics, function(v)
+              paste(names(scalar_metrics),
+                    vapply(scalar_metrics, function(v)
                       sprintf("%.4f", as.numeric(v)[1]), character(1)),
                     sep = "=", collapse = " "),
               fed$elapsed_s))
