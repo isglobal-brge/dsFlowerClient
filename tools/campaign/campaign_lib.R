@@ -290,7 +290,8 @@ campaign_trivial <- function(train, test) {
 campaign_run_federated <- function(site_data, test, features, feature_bounds,
                                    epsilon, delta = 1e-6, rounds,
                                    model_params, work_dir, venv_root,
-                                   contract = "pytorch_logreg") {
+                                   contract = "pytorch_logreg",
+                                   cv_folds = NULL) {
   n_sites <- length(site_data)
   dir.create(work_dir, recursive = TRUE, showWarnings = FALSE, mode = "0700")
   output_dir <- file.path(work_dir, "artifact")
@@ -411,6 +412,56 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
     serverappio_port = ports[["serverappio"]],
     insecure = TRUE
   )
+
+  if (!is.null(cv_folds)) {
+    # Capability demonstration path: k clean-initialised federated trainings
+    # under ONE node-owned per-job privacy contract (80% split across folds,
+    # 20% for the single pooled differentially private OOF release).
+    cv <- tryCatch(
+      ds.flower.cross_validate(
+        conns,
+        symbol = "D",
+        target = "target",
+        features = features,
+        model = contract,
+        model_params = model_params,
+        strategy = "fedavg",
+        rounds = as.integer(rounds),
+        folds = as.integer(cv_folds),
+        feature_bounds = feature_bounds,
+        target_levels = c("0", "1"),
+        torch_backend = "cpu",
+        output_dir = output_dir,
+        silent = TRUE,
+        verbose = isTRUE(nzchar(Sys.getenv("CAMPAIGN_CV_VERBOSE")))
+      ),
+      error = function(e) e)
+    if (inherits(cv, "error")) {
+      node_logs <- try(parallel::clusterCall(cluster, function() {
+        paths <- list.files(
+          file.path(tempdir(), "dsflower", "supernodes"),
+          pattern = "\\.log$", full.names = TRUE)
+        stats::setNames(lapply(paths, function(path) {
+          utils::tail(readLines(path, warn = FALSE), 120L)
+        }), basename(paths))
+      }), silent = TRUE)
+      if (!inherits(node_logs, "try-error")) {
+        for (i in seq_along(node_logs)) {
+          cat("\n--- site", i, "SuperNode log ---\n", file = stderr())
+          cat(unlist(node_logs[[i]], use.names = FALSE), sep = "\n",
+              file = stderr())
+        }
+      }
+      stop(conditionMessage(cv), call. = FALSE)
+    }
+    stopifnot(inherits(cv, "dsflower_cv"))
+    elapsed <- as.numeric(difftime(Sys.time(), started, units = "secs"))
+    cleanup()
+    return(list(
+      cv = list(model = cv$model, folds = cv$folds, n_nodes = cv$n_nodes,
+                task = cv$task, metrics = as.list(cv$metrics)),
+      elapsed_s = elapsed, cleanup_ok = cleanup_ok))
+  }
 
   fit <- ds.flower.fit(
     conns,
