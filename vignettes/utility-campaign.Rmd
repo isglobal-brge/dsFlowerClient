@@ -14,9 +14,14 @@ campaign_dir <- file.path("..", "inst", "extdata", "campaign")
 if (!dir.exists(campaign_dir) || !length(list.files(campaign_dir, pattern = "\\.json$"))) {
   campaign_dir <- system.file("extdata", "campaign", package = "dsFlowerClient")
 }
-files <- list.files(campaign_dir, pattern = "\\.json$", full.names = TRUE)
+files <- list.files(campaign_dir, pattern = "^pilot_.*\\.json$",
+                    full.names = TRUE)
 cells <- lapply(files, jsonlite::read_json, simplifyVector = TRUE)
 names(cells) <- sub("\\.json$", "", basename(files))
+cv_files <- list.files(campaign_dir, pattern = "^cvdemo_.*\\.json$",
+                       full.names = TRUE)
+cv_cells <- lapply(cv_files, jsonlite::read_json, simplifyVector = TRUE)
+names(cv_cells) <- sub("\\.json$", "", basename(cv_files))
 ```
 
 Every training run in `dsFlower` releases only a differentially private
@@ -226,6 +231,51 @@ for (nm in names(checks)) {
       " -- ", checks[[nm]]$note, "\n", sep = "")
 }
 ```
+
+## The cross-validation capability, live
+
+Beyond single trainings, the campaign exercises the federated
+cross-validation capability over the same live federation: `folds` clean
+federated trainings under **one** node-owned privacy contract (80% of the
+per-job budget split across the fold trainings, 20% spent once on the single
+pooled differentially private out-of-fold release; no fold model, fold metric
+or site metric ever leaves the nodes). The central twin is the pooled
+out-of-fold `glm` over the same fold count on the pooled data.
+
+The first execution of these cells did what run-at-pin validation is for: it
+surfaced a deterministic defect (manifest doubles serialized at 15
+significant digits failed the trusted runner's `rel_tol = 1e-15` budget
+recomputation, so every CV round failed closed as unavailable), which was
+fixed in dsFlower 0.4.2 with lossless 17-digit manifests -- the runner is
+byte-identical, so no noise stream changed. See
+`tools/campaign/FINDING-cv-live-federation.md` for the full record.
+
+```{r cv-cells}
+if (length(cv_cells)) {
+  rows <- lapply(cv_cells, function(j) {
+    reps <- j$per_replicate
+    dp_auc <- as.numeric(reps$federated_dp_oof$roc_auc)
+    c_auc <- as.numeric(reps$central_oof$auc)
+    data.frame(
+      Dataset = j$dataset$name, n = j$dataset$n_total,
+      Contract = j$contract, Folds = j$folds, Epsilon = j$privacy$epsilon,
+      `Central OOF AUC` = sprintf("%.3f ± %.3f", mean(c_auc), sd(c_auc)),
+      `Released DP OOF AUC` = sprintf("%.3f ± %.3f", mean(dp_auc),
+                                      sd(dp_auc)),
+      check.names = FALSE)
+  })
+  knitr::kable(do.call(rbind, rows), row.names = FALSE,
+    caption = paste("Cross-validation capability cells: one node-owned",
+                    "per-job budget (80% across folds / 20% for the single",
+                    "pooled DP OOF release), three seeded replicates."))
+}
+```
+
+At n = 9,000 the released pooled OOF AUC sits a plausible DP-gap below the
+central OOF twin (per-fold training budget ≈ epsilon x 0.8 / folds), while
+the small heart cohort shows the expected noise-dominated dispersion; the
+released tree also carries pooled ROC, precision-recall, calibration and
+decision curves under the same single release.
 
 ## Cross-generation anchor
 

@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -358,6 +358,75 @@ small-n cell, dispersion shrinks as epsilon grows.</li>
 epsilon)</strong>: PASS – No hard-task low-budget cell shows an
 implausibly absent privacy cost.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="the-cross-validation-capability-live">The cross-validation capability, live<a class="anchor" aria-label="anchor" href="#the-cross-validation-capability-live"></a>
+</h2>
+<p>Beyond single trainings, the campaign exercises the federated
+cross-validation capability over the same live federation:
+<code>folds</code> clean federated trainings under <strong>one</strong>
+node-owned privacy contract (80% of the per-job budget split across the
+fold trainings, 20% spent once on the single pooled differentially
+private out-of-fold release; no fold model, fold metric or site metric
+ever leaves the nodes). The central twin is the pooled out-of-fold
+<code>glm</code> over the same fold count on the pooled data.</p>
+<p>The first execution of these cells did what run-at-pin validation is
+for: it surfaced a deterministic defect (manifest doubles serialized at
+15 significant digits failed the trusted runner’s
+<code>rel_tol = 1e-15</code> budget recomputation, so every CV round
+failed closed as unavailable), which was fixed in dsFlower 0.4.2 with
+lossless 17-digit manifests – the runner is byte-identical, so no noise
+stream changed. See
+<code>tools/campaign/FINDING-cv-live-federation.md</code> for the full
+record.</p>
+<table class="table">
+<caption>Cross-validation capability cells: one node-owned per-job
+budget (80% across folds / 20% for the single pooled DP OOF release),
+three seeded replicates.</caption>
+<colgroup>
+<col width="10%">
+<col width="6%">
+<col width="19%">
+<col width="7%">
+<col width="10%">
+<col width="20%">
+<col width="25%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Dataset</th>
+<th align="right">n</th>
+<th align="left">Contract</th>
+<th align="right">Folds</th>
+<th align="right">Epsilon</th>
+<th align="left">Central OOF AUC</th>
+<th align="left">Released DP OOF AUC</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">cdc9k</td>
+<td align="right">9000</td>
+<td align="left">pytorch_logreg</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="left">0.819 ± 0.001</td>
+<td align="left">0.768 ± 0.005</td>
+</tr>
+<tr class="even">
+<td align="left">heart</td>
+<td align="right">297</td>
+<td align="left">pytorch_logreg</td>
+<td align="right">3</td>
+<td align="right">4</td>
+<td align="left">0.877 ± 0.008</td>
+<td align="left">0.508 ± 0.101</td>
+</tr>
+</tbody>
+</table>
+<p>At n = 9,000 the released pooled OOF AUC sits a plausible DP-gap
+below the central OOF twin (per-fold training budget ≈ epsilon x 0.8 /
+folds), while the small heart cohort shows the expected noise-dominated
+dispersion; the released tree also carries pooled ROC, precision-recall,
+calibration and decision curves under the same single release.</p>
 </div>
 <div class="section level2">
 <h2 id="cross-generation-anchor">Cross-generation anchor<a class="anchor" aria-label="anchor" href="#cross-generation-anchor"></a>
