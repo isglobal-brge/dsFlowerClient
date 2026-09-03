@@ -214,6 +214,27 @@ test_that("cross_validate defaults native-tree folds to one Flower round", {
   expect_identical(seen$cross_validation, 3L)
 })
 
+test_that("public cross_validate forwards native-tree feature cuts", {
+  captured <- NULL
+  local_mocked_bindings(
+    ds.flower.fit = function(...) {
+      captured <<- list(...)
+      structure(list(), class = "dsflower_cv")
+    },
+    .package = "dsFlowerClient"
+  )
+
+  cuts <- list(c(-1, 0, 1), c(2, 4, 6))
+  dsFlowerClient::ds.flower.cross_validate(
+    conns = list(), data = "D", target = "y", features = c("x1", "x2"),
+    model = "extra_trees", feature_bounds = list(
+      lower = c(-2, 0), upper = c(2, 8)), feature_cuts = cuts,
+    target_levels = c("control", "case")
+  )
+
+  expect_identical(captured$feature_cuts, cuts)
+})
+
 test_that("fit defaults direct native-tree CV without overriding rounds", {
   seen <- NULL
   local_mocked_bindings(

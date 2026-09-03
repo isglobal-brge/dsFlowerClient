@@ -44,6 +44,7 @@ ds.flower.cross_validate <- function(
     silent = FALSE,
     verbose = FALSE,
     feature_bounds = NULL,
+    feature_cuts = NULL,
     target_levels = NULL,
     target_bounds = NULL,
     allow_insecure_http = getOption(
@@ -64,6 +65,7 @@ ds.flower.cross_validate <- function(
     strategy = strategy, strategy_params = strategy_params, rounds = rounds,
     task = task, output_dir = output_dir, output_name = output_name,
     silent = silent, verbose = verbose, feature_bounds = feature_bounds,
+    feature_cuts = feature_cuts,
     target_levels = target_levels, target_bounds = target_bounds,
     allow_insecure_http = allow_insecure_http, data_kind = "tabular",
     cross_validation = folds)
