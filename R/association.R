@@ -239,11 +239,11 @@
   n_nodes <- .association_node_count(length(conns))
   expected_hash <- .compute_local_runner_hash()
   raw_caps <- tryCatch(
-    DSI::datashield.aggregate(
+    .dsi_private_aggregate(
       conns, expr = call("flowerGetCapabilitiesDS", "none", "runtime")),
     error = function(e) {
-      stop("Could not verify the trusted association runtime: ",
-           conditionMessage(e), call. = FALSE)
+      stop("Could not verify the trusted association runtime on the remote ",
+           "nodes.", call. = FALSE)
     })
   capabilities <- .validate_runner_compatibility(
     raw_caps, conns, expected_hash)
@@ -511,7 +511,7 @@ ds.flower.associate <- function(
     tryCatch(ds.flower.link.down(conns), error = function(e) NULL)
     tryCatch(ds.flower.nodes.cleanup(conns, handle_symbol),
              error = function(e) NULL)
-    tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
+    .dsflower_disconnect_on_exit(flower)
   }, add = TRUE)
 
   prepare <- list(

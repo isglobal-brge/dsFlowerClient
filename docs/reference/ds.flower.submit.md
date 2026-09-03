@@ -63,7 +63,9 @@ ds.flower.submit(
 
 - symbol:
 
-  Character; server-side data handle symbol.
+  Character; server-side data handle symbol, including an imaging handle
+  created by
+  [`dsImagingClient::ds.imaging.init()`](https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.init.html).
 
 - num_rounds:
 

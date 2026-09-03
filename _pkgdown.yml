@@ -46,6 +46,7 @@ reference:
     desc: "Connect, prepare, and manage federated nodes on Opal servers."
     contents:
       - ds.flower.nodes.init
+      - ds.flower.nodes.destroy
       - ds.flower.nodes.prepare
       - ds.flower.nodes.ensure
       - ds.flower.nodes.cleanup

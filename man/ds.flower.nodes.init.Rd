@@ -14,8 +14,9 @@ assigned in the DataSHIELD session. Mutually exclusive with
 \code{resource}.}
 
 \item{resource}{Character or NULL; name of an Opal resource to assign
-before init. When provided, DataSHIELD assigns and resolves the resource,
-which is then passed to \code{flowerInitDS}.}
+before init. When provided, DataSHIELD assigns the resource, calls
+\code{imagingInitDS}, and passes the authorized handle to
+\code{flowerInitDS}.}
 
 \item{symbol}{Character; symbol name for the Flower handle (default
 \code{"flower"}).}
@@ -26,8 +27,9 @@ A \code{dsflower_result} with per-site init results.
 \description{
 Creates a Flower handle on each server from a symbol already assigned
 in the DataSHIELD session (data.frame, matrix, or any object loaded
-via \code{datashield.assign.table}, \code{datashield.assign.resource},
-or DataSHIELD operations).
+via \code{datashield.assign.table} or DataSHIELD operations). Imaging
+resources are first admitted by \code{imagingInitDS} and only its opaque
+handle is passed to dsFlower.
 }
 \details{
 Accepts a single string (same symbol on all servers) or a named list

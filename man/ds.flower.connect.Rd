@@ -12,7 +12,9 @@ ds.flower.connect(conns, data = NULL, resource = NULL, symbol = NULL)
 \item{data}{Character; auto-detected data source. Use explicit params
 if ambiguous.}
 
-\item{resource}{Character; explicit Opal resource name (e.g. "RSRC.brain_mri").}
+\item{resource}{Character; explicit Opal dsImaging resource name (e.g.
+"RSRC.brain_mri"). It is admitted with \code{imagingInitDS} before
+dsFlower initialization. For an assigned tabular object, use \code{symbol}.}
 
 \item{symbol}{Character; explicit DS symbol already assigned (e.g. "D"),
 including an imaging handle created by
@@ -23,10 +25,12 @@ A \code{dsflower_connection} object.
 }
 \description{
 Single entry point that handles the full init chain: detects data type,
-resolves generic ResourceClient objects, initializes dsFlower handles, and
-returns a connection handle with metadata.
+admits imaging resources through dsImaging, initializes dsFlower handles,
+and returns a connection handle with metadata.
 }
 \details{
-Uses unique hidden symbols per connection to avoid collisions when
-multiple connections are active.
+Uses unique capability-named symbols per connection to avoid collisions
+when multiple connections are active. The names remain visible to the DSI
+symbol API so exact per-node teardown can distinguish absent from retained
+handles.
 }

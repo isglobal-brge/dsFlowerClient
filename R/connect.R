@@ -4,16 +4,20 @@
 #' Connect to a data source for federated learning
 #'
 #' Single entry point that handles the full init chain: detects data type,
-#' resolves generic ResourceClient objects, initializes dsFlower handles, and
-#' returns a connection handle with metadata.
+#' admits imaging resources through dsImaging, initializes dsFlower handles,
+#' and returns a connection handle with metadata.
 #'
-#' Uses unique hidden symbols per connection to avoid collisions when
-#' multiple connections are active.
+#' Uses unique capability-named symbols per connection to avoid collisions
+#' when multiple connections are active. The names remain visible to the DSI
+#' symbol API so exact per-node teardown can distinguish absent from retained
+#' handles.
 #'
 #' @param conns DSI connections object.
 #' @param data Character; auto-detected data source. Use explicit params
 #'   if ambiguous.
-#' @param resource Character; explicit Opal resource name (e.g. "RSRC.brain_mri").
+#' @param resource Character; explicit Opal dsImaging resource name (e.g.
+#'   "RSRC.brain_mri"). It is admitted with \code{imagingInitDS} before
+#'   dsFlower initialization. For an assigned tabular object, use \code{symbol}.
 #' @param symbol Character; explicit DS symbol already assigned (e.g. "D"),
 #'   including an imaging handle created by
 #'   \code{dsImagingClient::ds.imaging.init()}.
@@ -35,20 +39,62 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
               call. = FALSE)
   }
 
-  # Generate unique hidden symbols (avoid collisions between connections)
-  uid <- paste0(sample(c(letters, 0:9), 8, replace = TRUE), collapse = "")
-  fl_sym <- paste0(".dsfl_", uid)
-
+  # DSI implementations commonly enumerate symbols with `ls()` and therefore
+  # omit dot-prefixed names. Use an OS-entropy name that remains observable so
+  # exact teardown can identify successful nodes on a later retry.
+  fl_sym <- .new_capability_token("dsf")
   data_kind <- if (!is.null(resource)) "resource" else "symbol"
+  res_sym <- if (identical(data_kind, "resource")) {
+    .dsi_init_resource_symbol(fl_sym)
+  } else {
+    NULL
+  }
+  img_sym <- if (identical(data_kind, "resource")) paste0(fl_sym, "_img") else NULL
+  .dsi_require_symbols_absent(
+    conns, c(fl_sym, if (!is.null(res_sym)) c(res_sym, img_sym)))
+  connected <- FALSE
+  on.exit({
+    if (!connected) {
+      cleanup_failures <- character()
+      rollback <- tryCatch(
+        .dsi_destroy_session_exact(conns, fl_sym, img_sym),
+        error = function(e) list(
+          failures = paste0("rollback-state[", conditionMessage(e), "]")))
+      cleanup_failures <- c(cleanup_failures, rollback$failures)
+      if (!is.null(res_sym)) {
+        resource_cleanup <- tryCatch(
+          .dsi_remove_workspace_symbol_exact(conns, res_sym),
+          error = function(e) list(
+            failures = paste0("resource-state[", conditionMessage(e), "]")))
+        cleanup_failures <- c(cleanup_failures, resource_cleanup$failures)
+      }
+      if (length(cleanup_failures)) {
+        tryCatch(warning(
+          "Connection initialization failed and rollback was incomplete on: ",
+          paste(unique(cleanup_failures), collapse = ", "),
+          ". Retry retained handle ",
+          "targets with ds.flower.nodes.destroy(conns, symbol = ",
+          deparse(fl_sym), ", imaging_symbol = ", deparse(img_sym), ").",
+          call. = FALSE), error = function(e) NULL)
+      }
+    }
+  }, add = TRUE)
 
   if (data_kind == "resource") {
-    res_sym <- paste0(fl_sym, "_res")
     resource_map <- stats::setNames(rep(resource, length(conns)), names(conns))
 
     .dsi_assign_resource_exact(
       conns, res_sym, as.list(resource_map), "Resource assignment")
     .dsi_assign_expr_exact(
-      conns, fl_sym, call("flowerInitDS", res_sym),
+      conns, img_sym, call("imagingInitDS", res_sym),
+      "dsImaging privacy admission")
+    resource_cleanup <- .dsi_remove_workspace_symbol_exact(conns, res_sym)
+    if (length(resource_cleanup$failures)) {
+      stop("Temporary imaging resource cleanup failed on: ",
+        paste(resource_cleanup$failures, collapse = ", "), ".", call. = FALSE)
+    }
+    .dsi_assign_expr_exact(
+      conns, fl_sym, call("flowerInitDS", img_sym),
       "Flower handle initialization")
   } else {
     .dsi_assign_expr_exact(
@@ -58,7 +104,7 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
 
   # Gather metadata
   labels <- tryCatch({
-    res <- DSI::datashield.aggregate(conns,
+    res <- .dsi_private_aggregate(conns,
       expr = call("flowerImageLabelsDS", fl_sym))
     res[[1]]
   }, error = function(e) {
@@ -78,6 +124,7 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
 
   .dsflower_client_env$.conns <- conns
 
+  connected <- TRUE
   conn
 }
 
@@ -91,14 +138,32 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
 ds.flower.disconnect <- function(flower) {
   if (missing(flower) || !inherits(flower, "dsflower_connection"))
     stop("'flower' must be a dsflower_connection.", call. = FALSE)
-  tryCatch({
-    syms <- paste0(flower$symbol, c("", "_img", "_res"))
-    for (s in syms) {
-      tryCatch(
-        DSI::datashield.rm(flower$conns, s),
-        error = function(e) NULL)
-    }
-  }, error = function(e) NULL)
+  imaging_symbol <- if (identical(flower$data_kind, "resource")) {
+    paste0(flower$symbol, "_img")
+  } else {
+    NULL
+  }
+  ds.flower.nodes.destroy(
+    flower$conns, symbol = flower$symbol,
+    imaging_symbol = imaging_symbol)
+  invisible(TRUE)
+}
+
+# Preserve the original error from high-level workflows while still making a
+# partial, retryable session-destruction failure visible to the caller.
+.dsflower_disconnect_on_exit <- function(flower) {
+  disconnected <- tryCatch({
+    ds.flower.disconnect(flower)
+    TRUE
+  }, error = identity)
+  if (inherits(disconnected, "error")) {
+    tryCatch(
+      message(
+        "Automatic dsFlower session cleanup was incomplete. ",
+        conditionMessage(disconnected)),
+      error = function(e) NULL)
+    return(invisible(FALSE))
+  }
   invisible(TRUE)
 }
 

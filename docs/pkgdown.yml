@@ -4,7 +4,8 @@ pkgdown_sha: ~
 articles:
   api-quickstart: api-quickstart.html
   method-registration-live-federation: method-registration-live-federation.html
-last_built: 2026-08-11T16:33Z
+  utility-campaign: utility-campaign.html
+last_built: 2026-09-03T18:59Z
 urls:
   reference: https://isglobal-brge.github.io/dsFlowerClient/reference
   article: https://isglobal-brge.github.io/dsFlowerClient/articles

@@ -1,13 +1,13 @@
 # Module: Node Orchestration via DSI
 # Calls server-side DataSHIELD methods to manage nodes.
 
-#' List available label sets for an imaging dataset
+#' Show the admitted imaging label
 #'
-#' Queries the server for label sets defined in the dataset's manifest.
+#' Returns only the single \code{metadata.label_col} admitted by dsImaging.
 #'
 #' @param flower A \code{dsflower_connection} from \code{ds.flower.connect()},
 #'   or NULL to use the last connection.
-#' @return Per-server list of data.frames with columns: name, type, columns, description.
+#' @return Per-server list of data.frames describing the admitted label.
 #' @export
 ds.flower.labels <- function(flower) {
   if (missing(flower) || is.null(flower))
@@ -16,16 +16,17 @@ ds.flower.labels <- function(flower) {
   if (!inherits(flower, "dsflower_connection"))
     stop("'flower' must be a dsflower_connection from ds.flower.connect().",
          call. = FALSE)
-  DSI::datashield.aggregate(flower$conns,
-    expr = call("flowerImageLabelsDS", flower$symbol))
+  .ds_safe_aggregate(
+    flower$conns, expr = call("flowerImageLabelsDS", flower$symbol))
 }
 
 #' Initialize Flower handles on all servers
 #'
 #' Creates a Flower handle on each server from a symbol already assigned
 #' in the DataSHIELD session (data.frame, matrix, or any object loaded
-#' via \code{datashield.assign.table}, \code{datashield.assign.resource},
-#' or DataSHIELD operations).
+#' via \code{datashield.assign.table} or DataSHIELD operations). Imaging
+#' resources are first admitted by \code{imagingInitDS} and only its opaque
+#' handle is passed to dsFlower.
 #'
 #' Accepts a single string (same symbol on all servers) or a named list
 #' (one entry per server):
@@ -50,25 +51,76 @@ ds.flower.labels <- function(flower) {
 #'   assigned in the DataSHIELD session. Mutually exclusive with
 #'   \code{resource}.
 #' @param resource Character or NULL; name of an Opal resource to assign
-#'   before init. When provided, DataSHIELD assigns and resolves the resource,
-#'   which is then passed to \code{flowerInitDS}.
+#'   before init. When provided, DataSHIELD assigns the resource, calls
+#'   \code{imagingInitDS}, and passes the authorized handle to
+#'   \code{flowerInitDS}.
 #' @param symbol Character; symbol name for the Flower handle (default
 #'   \code{"flower"}).
 #' @return A \code{dsflower_result} with per-site init results.
 #' @export
 ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
                                   symbol = "flower") {
-  # Resource path: assign resource, resolve to client, then init
+  imaging_symbol <- if (!is.null(resource)) paste0(symbol, "_img") else NULL
+  resource_symbol <- if (!is.null(resource)) {
+    .dsi_init_resource_symbol(symbol)
+  } else {
+    NULL
+  }
+  .dsi_require_symbols_absent(
+    conns, c(symbol, imaging_symbol, resource_symbol))
+  initialized <- FALSE
+  on.exit({
+    if (!is.null(resource_symbol)) {
+      resource_cleanup <- tryCatch(
+        .dsi_remove_workspace_symbol_exact(conns, resource_symbol),
+        error = function(e) list(
+          failures = paste0("resource-state[", conditionMessage(e), "]")))
+      if (length(resource_cleanup$failures)) {
+        tryCatch(warning(
+          "Temporary resource cleanup was incomplete on: ",
+          paste(resource_cleanup$failures, collapse = ", "), ". Retry ",
+          "ds.flower.nodes.destroy(conns, symbol = ", deparse(symbol),
+          ", imaging_symbol = ", deparse(imaging_symbol), ").",
+          call. = FALSE), error = function(e) NULL)
+      }
+    }
+    if (!initialized) {
+      rollback <- tryCatch(
+        .dsi_destroy_session_exact(
+          conns, symbol, imaging_symbol = imaging_symbol),
+        error = function(e) list(
+          failures = paste0("rollback-state[", conditionMessage(e), "]")))
+      if (length(rollback$failures)) {
+        tryCatch(warning(
+          "Node initialization failed and rollback was incomplete on: ",
+          paste(rollback$failures, collapse = ", "), ". Retry retained ",
+          "targets with ds.flower.nodes.destroy(conns, symbol = ",
+          deparse(symbol), ", imaging_symbol = ",
+          deparse(imaging_symbol), ").",
+          call. = FALSE), error = function(e) NULL)
+      }
+    }
+  }, add = TRUE)
+
+  # Resource path: assign resource, admit it in dsImaging, then initialize
+  # dsFlower from the session-bound opaque imaging handle.
   if (!is.null(resource)) {
     if (!is.null(data)) {
       stop("Specify either 'data' or 'resource', not both.", call. = FALSE)
     }
-    res_symbol <- paste0(symbol, "_res")
-
     # Assign the resource on each server
     .dsi_assign_resource_exact(
-      conns, res_symbol, resource, "Resource assignment")
-    data <- res_symbol
+      conns, resource_symbol, resource, "Resource assignment")
+    .dsi_assign_expr_exact(
+      conns, imaging_symbol, call("imagingInitDS", resource_symbol),
+      "dsImaging privacy admission")
+    resource_cleanup <- .dsi_remove_workspace_symbol_exact(
+      conns, resource_symbol)
+    if (length(resource_cleanup$failures)) {
+      stop("Temporary imaging resource cleanup failed on: ",
+        paste(resource_cleanup$failures, collapse = ", "), ".", call. = FALSE)
+    }
+    data <- imaging_symbol
   }
 
   if (is.null(data)) {
@@ -95,6 +147,7 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
 
   code <- .build_code("ds.flower.nodes.init", data = data, symbol = symbol)
   results <- .ds_safe_aggregate(conns, expr = call("flowerPingDS"))
+  initialized <- TRUE
 
   dsflower_result(
     per_site = results,
@@ -111,29 +164,42 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
 #' @param target_column Character; name of the target column.
 #' @param feature_columns Character vector or NULL; feature column names.
 #' @param run_config Named list; additional run configuration.
-#' @param label_set Optional imaging label-set name for imaging-backed runs.
 #' @return A \code{dsflower_result} with per-site status.
 #' @export
 ds.flower.nodes.prepare <- function(conns, symbol = "flower",
                                      target_column, feature_columns = NULL,
-                                     run_config = list(),
-                                     label_set = NULL) {
+                                     run_config = list()) {
   # The per-training DP contract and mechanism pins are set entirely by the
   # node before private staging. The client never injects privacy parameters.
-
-  if (!is.null(label_set)) {
-    run_config[["label_set"]] <- label_set
-  }
 
   feat_enc <- .ds_encode(feature_columns)
   config_enc <- .ds_encode(run_config)
   target_enc <- .ds_encode(target_column)   # multilabel target vectors must remain one
                                             # typed argument across DSI expression parsing
 
-  .dsi_assign_expr_exact(
-    conns, symbol,
-    call("flowerPrepareRunDS", symbol, target_enc, feat_enc, config_enc),
-    "Run preparation")
+  tryCatch(
+    .dsi_assign_expr_exact(
+      conns, symbol,
+      call("flowerPrepareRunDS", symbol, target_enc, feat_enc, config_enc),
+      "Run preparation"),
+    error = function(e) {
+      # A DSI ASSIGN can succeed on some nodes before another node rejects the
+      # same preparation. Return the federation to one coherent, unprepared
+      # state instead of leaving a subset with private staging on disk.
+      rollback <- .dsi_cleanup_run_exact(conns, symbol)
+      rollback_failures <- names(rollback)[!vapply(
+        rollback, function(result) isTRUE(result$cleanup_ok), logical(1))]
+      message <- conditionMessage(e)
+      if (length(rollback_failures)) {
+        retry_nodes <- .format_r_value(rollback_failures)
+        message <- paste0(
+          message, " Rollback failed or returned no ACK on: ",
+          paste(rollback_failures, collapse = ", "),
+          ". Retry ds.flower.nodes.cleanup(conns[", retry_nodes,
+          "], symbol = ", .format_r_value(symbol), ").")
+      }
+      stop(message, call. = FALSE)
+    })
 
   code <- .build_code("ds.flower.nodes.prepare",
     symbol = symbol,
@@ -331,6 +397,62 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
   invisible(NULL)
 }
 
+#' Destroy Flower and session-owned imaging handles
+#'
+#' Destroys each handle on each node and removes its DataSHIELD workspace
+#' symbol only after that same node returns an explicit success acknowledgement.
+#' Nodes where a requested symbol is already absent are skipped, so calling the
+#' function again retries only targets retained by a previous partial failure.
+#' When \code{imaging_symbol} is supplied, the deterministic temporary resource
+#' used by \code{ds.flower.nodes.init(resource=)} is also removed. This is the
+#' documented retry path if both automatic resource-removal attempts failed.
+#'
+#' @param conns DSI connections object.
+#' @param symbol Character; symbol name of the Flower handle.
+#' @param imaging_symbol Character or NULL; symbol of the imaging handle created
+#'   by \code{ds.flower.nodes.init(resource=)}. Leave NULL when the Flower handle
+#'   consumes caller-owned data, including a caller-owned dsImaging handle.
+#' @return A \code{dsflower_result} with per-site destruction status.
+#' @export
+ds.flower.nodes.destroy <- function(conns, symbol = "flower",
+                                    imaging_symbol = NULL) {
+  report <- .dsi_destroy_session_exact(
+    conns, symbol = symbol, imaging_symbol = imaging_symbol)
+  if (!is.null(imaging_symbol)) {
+    resource_symbol <- .dsi_init_resource_symbol(symbol)
+    resource_report <- .dsi_remove_workspace_symbol_exact(
+      conns, resource_symbol)
+    for (host in names(conns)) {
+      report$per_site[[host]]$resource <- c(
+        list(symbol = resource_symbol), resource_report$per_site[[host]])
+    }
+    resource_failures <- sub(
+      "^([^:]+):(.+)$", "\\1:resource[\\2]", resource_report$failures)
+    report$failures <- unique(c(report$failures, resource_failures))
+  }
+  if (length(report$failures)) {
+    retry_code <- .build_code(
+      "ds.flower.nodes.destroy", conns = quote(conns), symbol = symbol,
+      imaging_symbol = imaging_symbol)
+    stop(
+      "Node session or temporary-resource destruction failed on: ",
+      paste(report$failures, collapse = ", "), ". Successful targets were ",
+      "removed; targets without a destroy ACK were retained for retry. Retry ",
+      retry_code, ".",
+      call. = FALSE)
+  }
+
+  dsflower_result(
+    per_site = report$per_site,
+    meta = list(
+      call_code = .build_code(
+        "ds.flower.nodes.destroy", symbol = symbol,
+        imaging_symbol = imaging_symbol),
+      scope = "per_site"
+    )
+  )
+}
+
 #' Clean up training run on all servers
 #'
 #' Calls \code{flowerCleanupRunDS} on each server.
@@ -365,10 +487,14 @@ ds.flower.nodes.cleanup <- function(conns, symbol = "flower") {
       Sys.sleep(1)
     }
 
-    status <- tryCatch(
-      DSI::datashield.aggregate(conns[srv], expr = call("flowerStatusDS", symbol))[[srv]],
-      error = function(e) list(status_error = conditionMessage(e))
-    )
+    status_result <- .ds_safe_aggregate(
+      conns[srv], expr = call("flowerStatusDS", symbol))
+    status <- status_result[[srv]]
+    if (is.null(status)) {
+      status_error <- attr(status_result, "ds_errors")[[srv]] %||%
+        "remote aggregate call failed"
+      status <- list(status_error = status_error)
+    }
     status$cleanup_ok <- cleaned
     if (!isTRUE(cleaned)) status$cleanup_error <- error %||% "unknown cleanup error"
     results[[srv]] <- status

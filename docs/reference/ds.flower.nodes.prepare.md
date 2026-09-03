@@ -10,8 +10,7 @@ ds.flower.nodes.prepare(
   symbol = "flower",
   target_column,
   feature_columns = NULL,
-  run_config = list(),
-  label_set = NULL
+  run_config = list()
 )
 ```
 
@@ -36,10 +35,6 @@ ds.flower.nodes.prepare(
 - run_config:
 
   Named list; additional run configuration.
-
-- label_set:
-
-  Optional imaging label-set name for imaging-backed runs.
 
 ## Value
 

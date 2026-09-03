@@ -1,7 +1,7 @@
 Package: dsFlowerClient
 Type: Package
 Title: DataSHIELD Client for Flower Federated Learning
-Version: 0.4.2
+Version: 0.4.3
 Authors@R: c(
     person("David", "Sarrat González", role = c("aut", "cre"), email = "david.sarrat@isglobal.org"),
     person("Juan R", "González", role = "aut", email = "juanr.gonzalez@isglobal.org"))
@@ -12,7 +12,9 @@ Description: Client-side DataSHIELD package for orchestrating Flower federated
     learning under privacy policy enforced by each data node. Builds declarative
     model specifications, verifies the node-installed runner, manages the
     SuperLink and run lifecycle, and supports data-independent public feature
-    bounds. Each training uses node-owned privacy parameters; arbitrary hook
+    bounds. Imaging resources are admitted by dsImaging into the DataSHIELD
+    session before their opaque handle is passed to dsFlower. Each training
+    uses node-owned privacy parameters; arbitrary hook
     code is executed only behind the node's fail-closed sandbox and egress
     policy.
 License: MIT + file LICENSE

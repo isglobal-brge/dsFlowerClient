@@ -131,6 +131,10 @@ test_that("nodes.prepare preserves multilabel target vectors in its DSI argument
   expect_identical(decoded, c("label_a", "label_b"))
 })
 
+test_that("nodes.prepare no longer exposes an external label-set argument", {
+  expect_false("label_set" %in% names(formals(ds.flower.nodes.prepare)))
+})
+
 test_that("a normalized per-node ASSIGN error is never treated as success", {
   conns <- list(site1 = TRUE, site2 = TRUE)
   local_mocked_bindings(
@@ -149,6 +153,228 @@ test_that("a normalized per-node ASSIGN error is never treated as success", {
   )
 })
 
+test_that("nodes.prepare rolls every node back after partial preparation", {
+  methods <- character()
+  local_mocked_bindings(
+    datashield.assign.expr = function(conns, symbol, expr, success, error, ...) {
+      method <- as.character(expr[[1L]])
+      methods <<- c(methods, paste(names(conns), method, sep = ":"))
+      if (identical(method, "flowerPrepareRunDS")) {
+        success("site1")
+        error("site2", "private preparation failure")
+      } else {
+        success(names(conns)[[1L]])
+      }
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  expect_error(
+    ds.flower.nodes.prepare(
+      list(site1 = NULL, site2 = NULL), symbol = "flower",
+      target_column = "diagnosis"),
+    "site2")
+  expect_setequal(
+    methods[grepl("flowerCleanupRunDS$", methods)],
+    c("site1:flowerCleanupRunDS", "site2:flowerCleanupRunDS"))
+})
+
+test_that("nodes.prepare reports rollback failures after the original error", {
+  cleanup_attempts <- c(site1 = 0L, site2 = 0L)
+  local_mocked_bindings(
+    datashield.assign.expr = function(conns, symbol, expr, success, error, ...) {
+      method <- as.character(expr[[1L]])
+      if (identical(method, "flowerPrepareRunDS")) {
+        success("site1")
+        error("site2", "private preparation failure")
+      } else {
+        host <- names(conns)[[1L]]
+        cleanup_attempts[[host]] <<- cleanup_attempts[[host]] + 1L
+        if (identical(host, "site1")) success(host)
+      }
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  expect_error(
+    ds.flower.nodes.prepare(
+      list(site1 = NULL, site2 = NULL), symbol = "flower",
+      target_column = "diagnosis"),
+    "Run preparation.*site2.*Rollback failed.*site2"
+  )
+  expect_identical(cleanup_attempts, c(site1 = 1L, site2 = 3L))
+})
+
+test_that("nodes.destroy retains no-ACK targets and retries only those nodes", {
+  state <- list(
+    site1 = c("flower", "flower_img"),
+    site2 = c("flower", "flower_img")
+  )
+  fail_site2_flower <- TRUE
+  assignments <- character()
+  removed <- character()
+  local_mocked_bindings(
+    datashield.symbols = function(conns, ...) state[names(conns)],
+    datashield.assign.expr = function(conns, symbol, expr, success, error, ...) {
+      host <- names(conns)[[1L]]
+      method <- as.character(expr[[1L]])
+      assignments <<- c(assignments, paste(host, method, sep = ":"))
+      if (identical(host, "site2") && identical(method, "flowerDestroyDS") &&
+          isTRUE(fail_site2_flower)) {
+        error(host, "temporary destroy failure")
+      } else {
+        success(host)
+      }
+      invisible(NULL)
+    },
+    datashield.rm = function(conns, symbol, ...) {
+      host <- names(conns)[[1L]]
+      state[[host]] <<- setdiff(state[[host]], symbol)
+      removed <<- c(removed, paste(host, symbol, sep = ":"))
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  expect_error(
+    ds.flower.nodes.destroy(
+      list(site1 = NULL, site2 = NULL), symbol = "flower",
+      imaging_symbol = "flower_img"),
+    "site2:flower\\[destroy\\].*retained for retry"
+  )
+  expect_setequal(
+    removed,
+    c("site1:flower", "site1:flower_img"))
+  expect_identical(state$site2, c("flower", "flower_img"))
+
+  fail_site2_flower <- FALSE
+  result <- ds.flower.nodes.destroy(
+    list(site1 = NULL, site2 = NULL), symbol = "flower",
+    imaging_symbol = "flower_img")
+
+  expect_s3_class(result, "dsflower_result")
+  expect_identical(result$per_site$site1$flower$state, "absent")
+  expect_identical(result$per_site$site2$flower$state, "destroyed")
+  expect_length(state$site1, 0L)
+  expect_length(state$site2, 0L)
+  expect_identical(
+    assignments,
+    c(
+      "site1:flowerDestroyDS", "site1:imagingDestroyDS",
+      "site2:flowerDestroyDS", "site2:flowerDestroyDS",
+      "site2:imagingDestroyDS"
+    )
+  )
+})
+
+test_that("nodes.destroy never removes a handle without a destroy ACK", {
+  removed <- character()
+  local_mocked_bindings(
+    datashield.symbols = function(conns, ...) list(site = "flower"),
+    datashield.assign.expr = function(conns, symbol, expr, success, error, ...) {
+      error("site", "destroy rejected")
+      invisible(NULL)
+    },
+    datashield.rm = function(conns, symbol, ...) {
+      removed <<- c(removed, symbol)
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  failure <- tryCatch(
+    ds.flower.nodes.destroy(list(site = NULL), symbol = "flower"),
+    error = identity)
+  expect_s3_class(failure, "error")
+  expect_match(conditionMessage(failure), "retained for retry")
+  expect_match(
+    conditionMessage(failure),
+    'ds\\.flower\\.nodes\\.destroy\\(conns = conns, symbol = "flower"\\)')
+  expect_length(removed, 0L)
+})
+
+test_that("nodes.destroy preserves a retryable handle when removal fails", {
+  state <- list(site = "flower")
+  output_symbols <- character()
+  fail_first_handle_removal <- TRUE
+  local_mocked_bindings(
+    datashield.symbols = function(conns, ...) state[names(conns)],
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      expect_identical(as.character(expr[[1L]]), "flowerDestroyDS")
+      expect_false(identical(symbol, "flower"))
+      output_symbols <<- c(output_symbols, symbol)
+      state$site <<- unique(c(state$site, symbol))
+      success("site")
+      invisible(NULL)
+    },
+    datashield.rm = function(conns, symbol, ...) {
+      if (identical(symbol, "flower") &&
+          isTRUE(fail_first_handle_removal)) {
+        fail_first_handle_removal <<- FALSE
+        stop("temporary workspace removal failure")
+      }
+      state$site <<- setdiff(state$site, symbol)
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  expect_error(
+    ds.flower.nodes.destroy(list(site = NULL), symbol = "flower"),
+    "site:flower\\[remove\\].*retained for retry"
+  )
+  expect_identical(state$site, "flower")
+
+  result <- ds.flower.nodes.destroy(
+    list(site = NULL), symbol = "flower")
+
+  expect_identical(result$per_site$site$flower$state, "destroyed")
+  expect_length(state$site, 0L)
+  expect_length(output_symbols, 2L)
+  expect_true(all(grepl("^dsf_ack_[0-9a-f]{32}$", output_symbols)))
+  expect_identical(output_symbols[[1L]], output_symbols[[2L]])
+})
+
+test_that("nodes.destroy retries deterministic orphan ACK cleanup", {
+  state <- list(site = "flower")
+  assignments <- 0L
+  fail_ack_removal <- TRUE
+  ack_symbol <- dsFlowerClient:::.dsi_destroy_ack_symbol(
+    "flower", "flowerDestroyDS")
+  local_mocked_bindings(
+    datashield.symbols = function(conns, ...) state[names(conns)],
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      expect_identical(symbol, ack_symbol)
+      state$site <<- unique(c(state$site, symbol))
+      assignments <<- assignments + 1L
+      success("site")
+      invisible(NULL)
+    },
+    datashield.rm = function(conns, symbol, ...) {
+      if (identical(symbol, ack_symbol) && isTRUE(fail_ack_removal)) {
+        stop("simulated ACK removal failure")
+      }
+      state$site <<- setdiff(state$site, symbol)
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  expect_error(
+    ds.flower.nodes.destroy(list(site = NULL), symbol = "flower"),
+    "site:flower\\[ack-cleanup\\].*retained for retry")
+  expect_identical(state$site, ack_symbol)
+  expect_identical(assignments, 1L)
+
+  fail_ack_removal <- FALSE
+  result <- ds.flower.nodes.destroy(list(site = NULL), symbol = "flower")
+  expect_identical(result$per_site$site$flower$state, "absent")
+  expect_identical(state$site, character())
+  expect_identical(assignments, 1L)
+})
+
 test_that("safe aggregate records a named NULL as a node error", {
   conns <- list(site1 = TRUE, site2 = TRUE)
   local_mocked_bindings(
@@ -162,6 +388,79 @@ test_that("safe aggregate records a named NULL as a node error", {
   result <- dsFlowerClient:::.ds_safe_aggregate(conns, call("flowerStatusDS"))
   expect_named(result, "site1")
   expect_named(attr(result, "ds_errors"), "site2")
+})
+
+test_that("private aggregate transport suppresses DSI expression progress", {
+  secret <- "B64:PRIVATE_TUNNEL_PAYLOAD_ABC123"
+  observed <- NULL
+  withr::local_options(
+    datashield.progress = TRUE,
+    datashield.errors.print = TRUE,
+    progress_enabled = TRUE
+  )
+  local_mocked_bindings(
+    datashield.aggregate = function(conns, expr) {
+      observed <<- c(
+        progress = getOption("datashield.progress"),
+        errors = getOption("datashield.errors.print"),
+        progress_enabled = getOption("progress_enabled"))
+      if (isTRUE(getOption("datashield.progress"))) cat(deparse(expr))
+      list(site = list(ok = TRUE))
+    },
+    .package = "DSI"
+  )
+
+  output <- capture.output(result <- dsFlowerClient:::.dsi_private_aggregate(
+    list(site = NULL), call("flowerTunnelExchangeDS", secret)))
+  expect_identical(observed,
+    c(progress = FALSE, errors = FALSE, progress_enabled = FALSE))
+  expect_identical(result, list(site = list(ok = TRUE)))
+  expect_false(grepl(secret, paste(output, collapse = ""), fixed = TRUE))
+  expect_true(getOption("datashield.progress"))
+  expect_true(getOption("datashield.errors.print"))
+  expect_true(getOption("progress_enabled"))
+})
+
+test_that("safe aggregate never returns raw remote error details", {
+  conns <- list(site1 = TRUE, site2 = TRUE)
+  private_details <- paste(
+    "/srv/private/patient-42/scan.nii.gz",
+    "s3://private-bucket/patient-42/scan.nii.gz")
+  local_mocked_bindings(
+    datashield.aggregate = function(conns, expr) {
+      node <- names(conns)
+      if (identical(node, "site2")) stop(private_details)
+      stats::setNames(list(list(ok = TRUE)), node)
+    },
+    .package = "DSI"
+  )
+
+  result <- dsFlowerClient:::.ds_safe_aggregate(conns, call("flowerStatusDS"))
+  errors <- attr(result, "ds_errors")
+  expect_named(result, "site1")
+  expect_identical(errors, list(site2 = "remote aggregate call failed"))
+  expect_false(grepl("patient-42|private-bucket|/srv/private",
+                     paste(errors, collapse = " ")))
+})
+
+test_that("nodes.cleanup returns only generic aggregate diagnostics", {
+  private_details <- paste(
+    "/srv/private/patient-42/staging",
+    "s3://private-bucket/patient-42/staging")
+  local_mocked_bindings(
+    .dsi_assign_expr_exact = function(...) invisible(TRUE),
+    .package = "dsFlowerClient"
+  )
+  local_mocked_bindings(
+    datashield.aggregate = function(...) stop(private_details),
+    .package = "DSI"
+  )
+
+  result <- ds.flower.nodes.cleanup(list(site = NULL), symbol = "flower")
+  expect_identical(result$per_site$site$status_error,
+                   "remote aggregate call failed")
+  expect_false(grepl("patient-42|private-bucket|/srv/private",
+                     paste(result$per_site$site, collapse = " ")))
 })
 
 test_that("DSI results must be associated with the exact requested nodes", {

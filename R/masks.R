@@ -21,7 +21,7 @@ ds.flower.masks <- function(flower) {
 
   # Query only public structural mask declarations through dsFlower.
   tryCatch({
-    res <- DSI::datashield.aggregate(flower$conns,
+    res <- .dsi_private_aggregate(flower$conns,
       expr = call("flowerImageMasksDS", flower$symbol))
     res[[1]]
   }, error = function(e) {

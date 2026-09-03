@@ -16,7 +16,7 @@ ds.flower.describe <- function(flower) {
 
   # Get data-independent public protocol/runtime capabilities.
   caps <- tryCatch(
-    DSI::datashield.aggregate(flower$conns,
+    .dsi_private_aggregate(flower$conns,
       expr = call("flowerGetCapabilitiesDS")),
     error = function(e) list()
   )
@@ -91,7 +91,7 @@ ds.flower.features <- function(flower) {
 
   # Query public manifest assets and filter locally to feature tables.
   tryCatch({
-    res <- DSI::datashield.aggregate(flower$conns,
+    res <- .dsi_private_aggregate(flower$conns,
       expr = call("flowerImageAssetsDS", flower$symbol))
     assets <- res[[1]]
     assets[tolower(assets$kind) == "feature_table", , drop = FALSE]

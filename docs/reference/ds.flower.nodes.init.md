@@ -2,8 +2,9 @@
 
 Creates a Flower handle on each server from a symbol already assigned in
 the DataSHIELD session (data.frame, matrix, or any object loaded via
-`datashield.assign.table`, `datashield.assign.resource`, or DataSHIELD
-operations).
+`datashield.assign.table` or DataSHIELD operations). Imaging resources
+are first admitted by `imagingInitDS` and only its opaque handle is
+passed to dsFlower.
 
 ## Usage
 
@@ -24,9 +25,9 @@ ds.flower.nodes.init(conns, data = NULL, resource = NULL, symbol = "flower")
 
 - resource:
 
-  Character or NULL; name of an Opal resource to assign and resolve
-  before init. When provided, the resource is assigned, resolved to a
-  ResourceClient, and passed to `flowerInitDS`.
+  Character or NULL; name of an Opal resource to assign before init.
+  When provided, DataSHIELD assigns the resource, calls `imagingInitDS`,
+  and passes the authorized handle to `flowerInitDS`.
 
 - symbol:
 

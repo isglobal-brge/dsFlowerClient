@@ -55,8 +55,10 @@ ds.flower.fit(
 
 - symbol:
 
-  Optional assigned DataSHIELD symbol. Defaults to `"D"` when `data`,
-  `resource`, and `symbol` are all NULL.
+  Optional assigned DataSHIELD symbol, including an imaging handle
+  created by
+  [`dsImagingClient::ds.imaging.init()`](https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.init.html).
+  Defaults to `"D"` when `data`, `resource`, and `symbol` are all NULL.
 
 - target:
 

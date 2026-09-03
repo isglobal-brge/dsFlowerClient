@@ -1,3 +1,37 @@
+# dsFlowerClient 0.4.3
+
+### dsImaging session integration
+
+* `ds.flower.connect(resource=)` and `ds.flower.nodes.init(resource=)` now
+  perform the explicit resource assignment -> `imagingInitDS()` ->
+  `flowerInitDS()` chain. An already initialized `img` handle can be supplied
+  with `symbol=` without reinitializing it.
+* Every assignment requires an explicit acknowledgement from every node before
+  the next stage starts. The high-level connection helper removes its partial
+  resource/imaging/Flower symbols when initialization fails.
+* Resource initialization uses a deterministic protocol-owned temporary symbol,
+  and `ds.flower.nodes.destroy()` removes it when given the session-owned
+  imaging symbol. This keeps cleanup reachable after both automatic removal
+  attempts fail.
+* `ds.flower.nodes.destroy()` removes Flower and session-owned imaging handles
+  per node only after an exact destroy acknowledgement written to a
+  deterministic protocol-owned symbol. A retry removes an orphaned ACK before
+  continuing. Partial failures therefore preserve the opaque handle for a
+  targeted retry instead of replacing it with `NULL`; preparation rollback also
+  reports any node that did not acknowledge cleanup without hiding the original
+  failure.
+* Documentation and tests make the package boundary explicit: dsImaging owns
+  storage and full-cohort admission; dsFlower consumes only the opaque object
+  already present in the same DataSHIELD session.
+* Sensitive DSI aggregate calls now suppress and restore DSI progress/error
+  printing, so capability tokens, uploaded chunks, and tunneled model traffic
+  are never deparsed into consoles or notebooks. Remote aggregate failures are
+  reported with node-scoped generic diagnostics rather than raw server text.
+* The low-level `ds.flower.nodes.prepare()` no longer accepts the deprecated
+  `label_set` shortcut. Public target levels belong in the validated run
+  configuration and, for dsImaging resources, must agree with the collection's
+  manifest-declared public label vocabulary.
+
 # dsFlowerClient 0.4.2
 
 ### Fixes

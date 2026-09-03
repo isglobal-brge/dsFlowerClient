@@ -2,7 +2,7 @@
 % Please edit documentation in R/nodes.R
 \name{ds.flower.labels}
 \alias{ds.flower.labels}
-\title{List available label sets for an imaging dataset}
+\title{Show the admitted imaging label}
 \usage{
 ds.flower.labels(flower)
 }
@@ -11,8 +11,8 @@ ds.flower.labels(flower)
 or NULL to use the last connection.}
 }
 \value{
-Per-server list of data.frames with columns: name, type, columns, description.
+Per-server list of data.frames describing the admitted label.
 }
 \description{
-Queries the server for label sets defined in the dataset's manifest.
+Returns only the single \code{metadata.label_col} admitted by dsImaging.
 }

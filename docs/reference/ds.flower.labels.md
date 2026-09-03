@@ -1,6 +1,6 @@
-# List available label sets for an imaging dataset
+# Show the admitted imaging label
 
-Queries the server for label sets defined in the dataset's manifest.
+Returns only the single `metadata.label_col` admitted by dsImaging.
 
 ## Usage
 
@@ -18,5 +18,4 @@ ds.flower.labels(flower)
 
 ## Value
 
-Per-server list of data.frames with columns: name, type, columns,
-description.
+Per-server list of data.frames describing the admitted label.

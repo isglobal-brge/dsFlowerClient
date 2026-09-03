@@ -125,7 +125,7 @@ ds.flower.app.upload <- function(conns, app_dir, chunk_bytes = 262144L,
   installed <- FALSE
   on.exit({
     if (!installed) {
-      tryCatch(DSI::datashield.aggregate(
+      tryCatch(.dsi_private_aggregate(
         conns, call("flowerAppDeleteDS", token)), error = function(e) NULL)
     }
   }, add = TRUE)
@@ -155,7 +155,7 @@ ds.flower.app.upload <- function(conns, app_dir, chunk_bytes = 262144L,
 #' @export
 print.dsflower_app <- function(x, ...) {
   cat("dsflower_app (HookApp candidate verified; execution not authorized)\n")
-  cat("  token:  ", x$token, "\n")
+  cat("  token:   <redacted>\n")
   cat("  sha256: ", x$sha256, "\n")
   cat("  size:   ", x$size, "bytes\n")
   invisible(x)

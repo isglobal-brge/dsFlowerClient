@@ -220,7 +220,7 @@
   installed <- FALSE
   on.exit({
     if (!installed) {
-      tryCatch(DSI::datashield.aggregate(
+      tryCatch(.dsi_private_aggregate(
         conns, call("flowerAppDeleteDS", token)), error = function(e) NULL)
     }
   }, add = TRUE)
@@ -423,10 +423,10 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
     tryCatch(ds.flower.link.down(conns), error = function(e) NULL)
     tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
     if (!is.null(up)) {
-      tryCatch(DSI::datashield.aggregate(
+      tryCatch(.dsi_private_aggregate(
         conns, call("flowerAppDeleteDS", up$token)), error = function(e) NULL)
     }
-    tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
+    .dsflower_disconnect_on_exit(flower)
   }, add = TRUE)
   capabilities <- .assert_runner_compatibility(conns)
   .assert_hook_execution_configured(capabilities, conns)

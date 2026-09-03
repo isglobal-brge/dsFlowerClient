@@ -35,6 +35,7 @@ ds.flower.cross_validate(
   silent = FALSE,
   verbose = FALSE,
   feature_bounds = NULL,
+  feature_cuts = NULL,
   target_levels = NULL,
   target_bounds = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
@@ -58,8 +59,10 @@ ds.flower.cross_validate(
 
 - symbol:
 
-  Optional assigned DataSHIELD symbol. Defaults to `"D"` when `data`,
-  `resource`, and `symbol` are all NULL.
+  Optional assigned DataSHIELD symbol, including an imaging handle
+  created by
+  [`dsImagingClient::ds.imaging.init()`](https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.init.html).
+  Defaults to `"D"` when `data`, `resource`, and `symbol` are all NULL.
 
 - target:
 
@@ -133,6 +136,14 @@ ds.flower.cross_validate(
 
   Optional public feature bounds as `list(lower=..., upper=...)` in
   feature order.
+
+- feature_cuts:
+
+  Required for native-tight tree models: a list containing one strictly
+  increasing vector of public cut points per feature, each strictly
+  inside `feature_bounds`. Seven data-independent cuts per feature are a
+  practical benchmark-backed starting point; they are never inferred
+  from private node data.
 
 - target_levels:
 

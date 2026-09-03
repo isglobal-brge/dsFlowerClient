@@ -128,6 +128,37 @@ test_that("runner preflight rejects DSI 1.8 NULL and misassociated results", {
   )
 })
 
+test_that("runner preflight does not reflect remote diagnostic details", {
+  private_details <- paste(
+    "/srv/private/patient-42/model.bin",
+    "s3://private-bucket/patient-42/model.bin")
+  withr::local_options(datashield.errors.print = TRUE)
+  local_mocked_bindings(
+    datashield.aggregate = function(...) stop(private_details),
+    .package = "DSI"
+  )
+
+  error <- expect_error(
+    dsFlowerClient:::.assert_runner_compatibility(list(site = list())),
+    "remote nodes")
+  expect_false(grepl("patient-42|private-bucket|/srv/private",
+                     conditionMessage(error)))
+  expect_true(getOption("datashield.errors.print"))
+})
+
+test_that("printing an uploaded app never emits its capability token", {
+  token <- "app_0123456789abcdef0123456789abcdef"
+  app <- structure(
+    list(token = token, sha256 = strrep("a", 64L), size = 123L),
+    class = "dsflower_app")
+
+  output <- capture.output(returned <- print(app))
+
+  expect_identical(returned, app)
+  expect_false(grepl(token, paste(output, collapse = "\n"), fixed = TRUE))
+  expect_true(any(grepl("<redacted>", output, fixed = TRUE)))
+})
+
 test_that("public feature bounds are validated in feature order", {
   bounds <- dsFlowerClient:::.validate_public_feature_bounds(
     list(lower = c(0, 10), upper = c(2, 14)), c("a", "b"))

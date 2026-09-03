@@ -19,6 +19,8 @@ Connect, prepare, and manage federated nodes on Opal servers.
 
 - [`ds.flower.nodes.init()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.init.md)
   : Initialize Flower handles on all servers
+- [`ds.flower.nodes.destroy()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.destroy.md)
+  : Destroy Flower and session-owned imaging handles
 - [`ds.flower.nodes.prepare()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.prepare.md)
   : Prepare a training run on all servers
 - [`ds.flower.nodes.ensure()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.ensure.md)
@@ -196,7 +198,7 @@ Catch-all index for exported helpers not listed above.
 - [`ds.flower.import_xgboost()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.import_xgboost.md)
   : Import a Bounded External XGBoost JSON Model
 - [`ds.flower.labels()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.labels.md)
-  : List available label sets for an imaging dataset
+  : Show the admitted imaging label
 - [`ds.flower.link.down()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.down.md)
   : Close the federation link
 - [`ds.flower.link.up()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.link.up.md)
@@ -249,6 +251,8 @@ Catch-all index for exported helpers not listed above.
   : List saved models
 - [`ds.flower.nodes.cleanup()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.cleanup.md)
   : Clean up training run on all servers
+- [`ds.flower.nodes.destroy()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.destroy.md)
+  : Destroy Flower and session-owned imaging handles
 - [`ds.flower.nodes.ensure()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.ensure.md)
   : Ensure SuperNodes are running on all servers
 - [`ds.flower.nodes.init()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.init.md)

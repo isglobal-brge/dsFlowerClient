@@ -9,8 +9,7 @@ ds.flower.nodes.prepare(
   symbol = "flower",
   target_column,
   feature_columns = NULL,
-  run_config = list(),
-  label_set = NULL
+  run_config = list()
 )
 }
 \arguments{
@@ -23,8 +22,6 @@ ds.flower.nodes.prepare(
 \item{feature_columns}{Character vector or NULL; feature column names.}
 
 \item{run_config}{Named list; additional run configuration.}
-
-\item{label_set}{Optional imaging label-set name for imaging-backed runs.}
 }
 \value{
 A \code{dsflower_result} with per-site status.

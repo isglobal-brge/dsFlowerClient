@@ -15,3 +15,5 @@ __pycache__/
 # Native objects generated while testing the package locally
 src/*.o
 src/*.so
+tests/testthat/_problems/
+tests/testthat/testthat-problems.rds

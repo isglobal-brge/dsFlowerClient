@@ -133,7 +133,7 @@ ds.flower.link.up <- function(conns, symbol = "flower",
     if (!committed) {
       for (srv in attempted) {
         tryCatch(
-          DSI::datashield.aggregate(
+          .dsi_private_aggregate(
             conns[srv], call("flowerTunnelDownDS", cid)
           ),
           error = function(e) NULL
@@ -237,7 +237,8 @@ ds.flower.link.down <- function(conns, symbol = "flower") {
   }
   cid <- if (!is.null(st)) st$conn_id else NULL
   if (!is.null(cid)) {
-    tryCatch(DSI::datashield.aggregate(conns, call("flowerTunnelDownDS", cid)),
+    tryCatch(.dsi_private_aggregate(
+               conns, call("flowerTunnelDownDS", cid)),
              error = function(e) NULL)
   }
   .dsflower_client_env$.tunnel <- NULL

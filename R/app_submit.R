@@ -89,11 +89,11 @@
 .assert_runner_compatibility <- function(conns) {
   expected_hash <- .compute_local_runner_hash()
   raw_caps <- tryCatch(
-    DSI::datashield.aggregate(
+    .dsi_private_aggregate(
       conns, expr = call("flowerGetCapabilitiesDS", "none")),
     error = function(e) {
-      stop("Could not verify the dsFlower runner compatibility: ",
-           conditionMessage(e), call. = FALSE)
+      stop("Could not verify the dsFlower runner compatibility on the remote ",
+           "nodes.", call. = FALSE)
     }
   )
   .validate_runner_compatibility(raw_caps, conns, expected_hash)
@@ -109,11 +109,11 @@
   }
   expected_hash <- .compute_local_runner_hash()
   raw_caps <- tryCatch(
-    DSI::datashield.aggregate(
+    .dsi_private_aggregate(
       conns, expr = call("flowerGetCapabilitiesDS", engine)),
     error = function(e) {
-      stop("Could not verify native-tree capability for '", engine, "': ",
-           conditionMessage(e), call. = FALSE)
+      stop("Could not verify native-tree capability for '", engine,
+           "' on the remote nodes.", call. = FALSE)
     })
   caps <- .validate_runner_compatibility(raw_caps, conns, expected_hash)
   unavailable <- character()
@@ -588,7 +588,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   # derive their feature dim node-side; symbol-less (data/resource) advanced calls must pass
   # features explicitly.
   if (is.null(features) && !is.null(symbol) && !identical(data_kind, "image")) {
-    cols <- tryCatch(DSI::datashield.aggregate(conns, call("colnamesDS", symbol)),
+    cols <- tryCatch(.dsi_private_aggregate(
+      conns, call("colnamesDS", symbol)),
                      error = function(e) NULL)
     if (!is.null(cols) && length(cols) && length(cols[[1L]])) {
       features <- setdiff(as.character(cols[[1L]]), as.character(target))
@@ -648,10 +649,11 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     tryCatch(ds.flower.link.down(conns), error = function(e) NULL)
     tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
     if (!is.null(up)) {
-      tryCatch(DSI::datashield.aggregate(conns, call("flowerAppDeleteDS", up$token)),
+      tryCatch(.dsi_private_aggregate(
+                 conns, call("flowerAppDeleteDS", up$token)),
                error = function(e) NULL)
     }
-    tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
+    .dsflower_disconnect_on_exit(flower)
   }, add = TRUE)
   capabilities <- if (is.null(preflight_capabilities)) {
     .assert_runner_compatibility(conns)

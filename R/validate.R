@@ -1120,7 +1120,7 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
   on.exit({
     tryCatch(ds.flower.link.down(conns), error = function(e) NULL)
     tryCatch(ds.flower.nodes.cleanup(conns, hsym), error = function(e) NULL)
-    tryCatch(ds.flower.disconnect(flower), error = function(e) NULL)
+    .dsflower_disconnect_on_exit(flower)
   }, add = TRUE)
   capabilities <- .assert_runner_compatibility(conns)
   privacy_unit <- .validation_common_privacy_unit(capabilities)

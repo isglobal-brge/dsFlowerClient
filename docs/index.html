@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="DataSHIELD Client for Flower Federated Learning">
-<meta name="description" content="Client-side DataSHIELD package for orchestrating Flower federated learning under privacy policy enforced by each data node. Builds declarative model specifications, verifies the node-installed runner, manages the SuperLink and run lifecycle, and supports data-independent public feature bounds. Each training uses node-owned privacy parameters; arbitrary hook code is executed only behind the node's fail-closed sandbox and egress policy.">
-<meta property="og:description" content="Client-side DataSHIELD package for orchestrating Flower federated learning under privacy policy enforced by each data node. Builds declarative model specifications, verifies the node-installed runner, manages the SuperLink and run lifecycle, and supports data-independent public feature bounds. Each training uses node-owned privacy parameters; arbitrary hook code is executed only behind the node's fail-closed sandbox and egress policy.">
+<meta name="description" content="Client-side DataSHIELD package for orchestrating Flower federated learning under privacy policy enforced by each data node. Builds declarative model specifications, verifies the node-installed runner, manages the SuperLink and run lifecycle, and supports data-independent public feature bounds. Imaging resources are admitted by dsImaging into the DataSHIELD session before their opaque handle is passed to dsFlower. Each training uses node-owned privacy parameters; arbitrary hook code is executed only behind the node's fail-closed sandbox and egress policy.">
+<meta property="og:description" content="Client-side DataSHIELD package for orchestrating Flower federated learning under privacy policy enforced by each data node. Builds declarative model specifications, verifies the node-installed runner, manages the SuperLink and run lifecycle, and supports data-independent public feature bounds. Imaging resources are admitted by dsImaging into the DataSHIELD session before their opaque handle is passed to dsFlower. Each training uses node-owned privacy parameters; arbitrary hook code is executed only behind the node's fail-closed sandbox and egress policy.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="articles/api-quickstart.html">API Quickstart</a></li>
     <li><a class="dropdown-item" href="articles/method-registration-live-federation.html">Server Method Registration</a></li>
+    <li><a class="dropdown-item" href="articles/utility-campaign.html">Utility Campaign</a></li>
   </ul>
 </li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
@@ -100,6 +101,40 @@
 <span></span>
 <span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
 <p><code>features</code> can be omitted for an assigned tabular <code>symbol</code>, in which case only column names are queried and the target is excluded. Feature values, exact feature statistics, node logs and node metrics are never requested by this workflow.</p>
+<div class="section level3">
+<h3 id="train-from-a-dsimaging-collection">Train from a dsImaging collection<a class="anchor" aria-label="anchor" href="#train-from-a-dsimaging-collection"></a>
+</h3>
+<p>dsImaging owns image discovery and initialization; dsFlower consumes the resulting server-side object by symbol. Neither pixels nor storage credentials are returned to the client:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsImagingClient/" class="external-link">dsImagingClient</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://isglobal-brge.github.io/dsFlowerClient/">dsFlowerClient</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://isglobal-brge.github.io/dsImagingClient/reference/ds.imaging.init.html" class="external-link">ds.imaging.init</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>,</span>
+<span>  resource <span class="op">=</span> <span class="st">"PROJECT.images"</span>,</span>
+<span>  symbol <span class="op">=</span> <span class="st">"img"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>,</span>
+<span>  symbol <span class="op">=</span> <span class="st">"img"</span>,</span>
+<span>  target <span class="op">=</span> <span class="st">"label"</span>,</span>
+<span>  target_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"negative"</span>, <span class="st">"positive"</span><span class="op">)</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"pytorch_resnet18"</span>,</span>
+<span>  rounds <span class="op">=</span> <span class="fl">2L</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>For a one-call shortcut, dsFlowerClient can also assign the configured Opal dsImaging resource itself. It still calls <code>imagingInitDS()</code> first, so the same complete patient-level collection admission is enforced before dsFlower sees the opaque handle:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
+<span>  <span class="va">conns</span>,</span>
+<span>  resource <span class="op">=</span> <span class="st">"PROJECT.images"</span>,</span>
+<span>  target <span class="op">=</span> <span class="st">"label"</span>,</span>
+<span>  target_levels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"negative"</span>, <span class="st">"positive"</span><span class="op">)</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"pytorch_resnet18"</span>,</span>
+<span>  rounds <span class="op">=</span> <span class="fl">2L</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>In both forms, dsFlower adapts dsImaging’s independent descriptor and stages S3/MinIO objects only inside each data node. The ordered <code>target_levels</code> vocabulary is public; it can be omitted when labels are already encoded as integers from <code>0</code> to <code>n_classes - 1</code>.</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="privacy-is-server-authoritative">Privacy is server-authoritative<a class="anchor" aria-label="anchor" href="#privacy-is-server-authoritative"></a>
@@ -134,7 +169,7 @@
 </ul>
 <p>This is the path that reaches <code>nn.Module</code>-level granularity because the trusted runner owns the training loop and sees per-sample gradients. The client never sends an analyst-controlled training loop for declarative models.</p>
 <p>Available registered training contracts can be inspected with <code><a href="reference/ds.flower.list_models.html">ds.flower.list_models()</a></code>. <code>ds.flower.model_parameters("pytorch_mlp")</code> returns the accepted names, types, aliases, effective defaults and finite choices for one contract. Hyperparameters are supplied through <code>model_params</code>:</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span>, target <span class="op">=</span> <span class="st">"y"</span>, features <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"x1"</span>, <span class="st">"x2"</span><span class="op">)</span>,</span>
 <span>  model <span class="op">=</span> <span class="st">"pytorch_mlp"</span>,</span>
@@ -150,7 +185,7 @@
 <p>The image contracts cover private federated training of their frozen-backbone heads, private validation, and local researcher-side prediction for saved native dsFlower ResNet-18/DenseNet-121 binary or multiclass releases, including the volumetric variants. Local prediction takes explicit image or volume paths and does not contact DSI. Atomic holdout for native dsFlower vision uses the same row/patient split, fixed 80/20 privacy allocation and single pooled DP test release as neural tabular holdout; image cross-validation is not implemented. These boundaries are explicit rather than silently treating images as a numeric table. Each image release carries a <code>vision-extractor-profile</code>: a versioned public semantic ABI for its frozen extractor, not a cryptographic signature of extractor state. Releases without that profile fail closed; implementation or dependency changes that alter features require a profile bump.</p>
 <p>The first-party native-tree constructors are <code>xgboost</code>, <code>extra_trees</code>, <code>random_forest</code>, <code>lightgbm</code> and <code>catboost</code>. They run only in the dedicated trusted node runtime, require public bounds and complete public cuts, and emit sanitized data-only ensembles that can be saved, reopened, predicted locally with the bundled standard-library predictor, or validated privately. Random Forest resolves <code>max_features = "auto"</code> from the public feature count when the request is built. It is a disjoint-partition DP forest in which each effective privacy unit belongs to one tree, not upstream bootstrap/bagging Random Forest; small cohorts can therefore have fewer effective units per tree. LightGBM and CatBoost are dsFlower-style safe numeric engines, not the upstream binaries or their model formats. A node advertises an engine only after a fresh executable end-to-end probe; this is operational readiness, not a model catalogue used as a privacy permission list. ExtraTrees, Random Forest and the two dsFlower-style boosters use the small runtime provisioned by the server package. XGBoost remains unavailable on a clean install until the custodian supplies its separately built and verified platform bundle.</p>
 <p>An already-trained XGBoost 3.4.0 JSON model can instead be admitted locally as a data-only prediction/validation bundle without installing or executing the XGBoost runtime:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">imported</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.import_xgboost.html">ds.flower.import_xgboost</a></span><span class="op">(</span></span>
 <span>  artifact <span class="op">=</span> <span class="st">"external-model.json"</span>,</span>
 <span>  model <span class="op">=</span> <span class="fu"><a href="reference/ds.flower.model.xgboost.html">ds.flower.model.xgboost</a></span><span class="op">(</span></span>
@@ -193,7 +228,7 @@ local_update(global_arrays, X, y, config) -&gt; numeric arrays</code></pre>
 <h2 id="private-model-validation">Private model validation<a class="anchor" aria-label="anchor" href="#private-model-validation"></a>
 </h2>
 <p><code><a href="reference/ds.flower.validate.html">ds.flower.validate()</a></code> evaluates a saved declarative neural, native dsFlower vision, or sanitized native-tree model inside the nodes and releases one fixed, Gaussian-noised vector of bounded sufficient statistics per node. Vision is limited to saved <code>pytorch_resnet18</code> and <code>pytorch_densenet121</code> binary/multiclass releases (2D or <code>volumetric = TRUE</code>). The client pins the canonical backbone, image size, frozen feature dimension, exact public class levels, declarative head, and bounded <code>model.pt</code> digest before any DSI call; the server verifies the same public contract before private staging. The researcher-side ServerApp preflight rehashes the artifact before loading it, and each node revalidates the received arrays, pins and extractor profile before opening private pixels. No tabular feature columns or bounds are accepted for this path. Exact paths, pixels, labels, predictions, counts and site metrics remain local; the researcher receives only pooled post-processing:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">validation</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.validate.html">ds.flower.validate</a></span><span class="op">(</span></span>
 <span>  <span class="va">conns</span>,</span>
 <span>  model <span class="op">=</span> <span class="va">fit</span>,</span>
@@ -203,7 +238,7 @@ local_update(global_arrays, X, y, config) -&gt; numeric arrays</code></pre>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">validation</span><span class="op">)</span></span></code></pre></div>
 <p>For vision, assign an image bundle or a samples table routed as image data on each node, then pass the saved vision run and its target column to the same API. Saved native dsFlower vision releases also support local, researcher-side prediction from an explicit vector of image or volume paths. This does not contact DSI or create a DP release: the pinned state dictionary and canonical extractor are validated before the first path is opened, and both feature extraction and head inference run in bounded batches.</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">probabilities</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.predict.html">ds.flower.predict</a></span><span class="op">(</span></span>
 <span>  <span class="va">fit</span>,</span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"scan-001.nii.gz"</span>, <span class="st">"scan-002.nii.gz"</span><span class="op">)</span>,</span>
@@ -214,7 +249,7 @@ local_update(global_arrays, X, y, config) -&gt; numeric arrays</code></pre>
 <p><code>validation$available</code> is <code>FALSE</code> if the complete fixed-layout release was not available from every expected node. In that case <code>validation$metrics</code> is <code>NULL</code>: the API returns no exact, per-node or zero-filled substitute and does not create a query-count lockout.</p>
 <p>Assigning an independent dataset gives external validation; reusing training data gives resubstitution validation. For tabular declarative neural or native-tree training, <code>ds.flower.fit(..., holdout = 0.2)</code> instead assigns complete node-owned privacy units before training, trains only on the complement, and evaluates the final aggregate on the held-out side in the same all-or-nothing job. The fraction is canonical, has no analyst seed, and retries recreate the same secret-keyed split. The returned <code>fit$holdout</code> contains only pooled DP metrics; no predictions, unit assignments or site metrics leave the nodes. Native-tree releases are accepted only when the holdout provenance exactly binds the resampling contract, tree request, public schema, sanitized artifact and node count. Image and non-training tracks fail explicitly instead of pretending to support this protocol.</p>
 <p>For honest K-fold validation, use the dedicated metrics-only workflow:</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cv</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.cross_validate.html">ds.flower.cross_validate</a></span><span class="op">(</span></span>
 <span>  <span class="va">conns</span>,</span>
 <span>  symbol <span class="op">=</span> <span class="st">"D"</span>,</span>
@@ -230,7 +265,7 @@ local_update(global_arrays, X, y, config) -&gt; numeric arrays</code></pre>
 <p>The workflow runs <code>K</code> clean federated trainings, excludes each held-out fold before its first training read, and retains raw OOF sufficient statistics only in namespaced Flower <code>Context.state</code> backed by the pinned in-memory node runtime—never a file or database. If every fold succeeds, the nodes make one final DP release and the client accepts only <code>cv.json</code>, pinned to the submitted CV-job and resampling-contract hashes. No fold model, prediction, fold/site metric, profile, or history is returned or saved. A failed or restarted job publishes nothing and recomputes the whole deterministic job.</p>
 <p>Metric selection is local post-processing of that one release. Inspect the scoreable metrics for the task, including their optimization direction, with <code>ds.flower.metrics(cv)</code>. Curves, calibration bins and confusion matrices remain in <code>cv$metrics</code>, but are deliberately not accepted as scalar HPO objectives.</p>
 <p>Local HPO can then use the pooled OOF result directly:</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">metric</span> <span class="op">&lt;-</span> <span class="st">"roc_auc"</span></span>
 <span><span class="va">hpo</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.hpo.html">ds.flower.hpo</a></span><span class="op">(</span></span>
 <span>  objective <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">params</span><span class="op">)</span> <span class="op">{</span></span>
@@ -261,7 +296,7 @@ local_update(global_arrays, X, y, config) -&gt; numeric arrays</code></pre>
 <h2 id="pooled-binary-association">Pooled binary association<a class="anchor" aria-label="anchor" href="#pooled-binary-association"></a>
 </h2>
 <p>For a bounded descriptive 2x2 association with an explicit unknown row and column, use the dedicated one-release API:</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">association</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.associate.html">ds.flower.associate</a></span><span class="op">(</span></span>
 <span>  <span class="va">conns</span>,</span>
 <span>  symbol <span class="op">=</span> <span class="st">"D"</span>,</span>
@@ -278,7 +313,7 @@ local_update(global_arrays, X, y, config) -&gt; numeric arrays</code></pre>
 <h2 id="public-feature-bounds">Public feature bounds<a class="anchor" aria-label="anchor" href="#public-feature-bounds"></a>
 </h2>
 <p>Exact node-side <code>count</code>, <code>sum</code>, <code>sumsq</code>, means, variances and quantiles are not released for preprocessing. If scale information is useful, pass public bounds:</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">feature_bounds</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fl">18</span>, biomarker <span class="op">=</span> <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fl">100</span>, biomarker <span class="op">=</span> <span class="fl">250</span><span class="op">)</span></span>
@@ -289,7 +324,7 @@ local_update(global_arrays, X, y, config) -&gt; numeric arrays</code></pre>
 <h2 id="lower-level-api">Lower-level API<a class="anchor" aria-label="anchor" href="#lower-level-api"></a>
 </h2>
 <p><code><a href="reference/ds.flower.fit.html">ds.flower.fit()</a></code> is the preferred end-to-end API. Power users can call the submission pipeline directly:</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/ds.flower.submit.html">ds.flower.submit</a></span><span class="op">(</span></span>
 <span>  <span class="va">conns</span>,</span>
 <span>  model <span class="op">=</span> <span class="fu"><a href="reference/ds.flower.model.html">ds.flower.model</a></span><span class="op">(</span><span class="st">"pytorch_mlp"</span>, hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">64</span>, <span class="fl">32</span><span class="op">)</span><span class="op">)</span>,</span>

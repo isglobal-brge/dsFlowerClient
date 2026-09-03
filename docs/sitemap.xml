@@ -5,8 +5,10 @@
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/articles/api-quickstart.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/articles/index.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/articles/method-registration-live-federation.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/articles/utility-campaign.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/authors.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/index.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/news/index.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/as.data.frame.dsflower_result.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/cash-.dsflower_result.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-assert_hook_execution_configured.html</loc></url>
@@ -46,8 +48,14 @@
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_assign_exact.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_assign_expr_exact.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_assign_resource_exact.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_cleanup_run_exact.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_destroy_session_exact.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_exact_node_results.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_node_symbols_exact.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_private_aggregate.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_raw_chunk_bytes.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_remove_workspace_symbol_exact.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_require_symbols_absent.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-dsi_retry_exact_aggregate.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-emit_submission.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-ensure_client_framework.html</loc></url>
@@ -172,6 +180,7 @@
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.model_parameters.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.models.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.cleanup.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.destroy.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.ensure.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.init.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.nodes.prepare.html</loc></url>

@@ -74,6 +74,28 @@
                collapse = ""))
 }
 
+# Deterministic so the documented destroy API can recover a temporary resource
+# after both initialization cleanup attempts fail. The digest also keeps long
+# caller-selected handle names within DataSHIELD's symbol limit.
+.dsi_init_resource_symbol <- function(symbol) {
+  if (!is.character(symbol) || length(symbol) != 1L || is.na(symbol) ||
+      !grepl("^[A-Za-z][A-Za-z0-9._]{0,127}$", symbol)) {
+    stop("A visible DataSHIELD handle symbol is required.", call. = FALSE)
+  }
+  paste0("dsFres.", substr(digest::digest(
+    paste0("dsFlowerClient:init-resource:", symbol),
+    algo = "sha256", serialize = FALSE), 1L, 32L))
+}
+
+# A destroy result must remain discoverable after a lost client-side removal.
+# This protocol-owned name is stable for one target/method and is not an access
+# capability; the opaque server handle remains the authority for destruction.
+.dsi_destroy_ack_symbol <- function(symbol, method) {
+  paste0("dsf_ack_", substr(digest::digest(
+    paste("dsFlowerClient:destroy-ack", method, symbol, sep = ":"),
+    algo = "sha256", serialize = FALSE), 1L, 32L))
+}
+
 #' Encode a complex R object as JSON for DataSHIELD transport
 #'
 #' @param x An R object to encode.
@@ -115,6 +137,23 @@
   result[hosts]
 }
 
+#' Run a DataSHIELD aggregate without deparsing private transport arguments
+#'
+#' DSI's progress display includes the complete call expression. Capability
+#' tokens and tunnel payloads therefore require progress and raw remote-error
+#' printing to be disabled for the duration of the call.
+#' @keywords internal
+.dsi_private_aggregate <- function(conns, expr) {
+  previous <- options(
+    "datashield.progress", "datashield.errors.print", "progress_enabled")
+  on.exit(options(previous), add = TRUE)
+  options(
+    datashield.progress = FALSE,
+    datashield.errors.print = FALSE,
+    progress_enabled = FALSE)
+  DSI::datashield.aggregate(conns, expr)
+}
+
 #' Retry one idempotent aggregate until every node returns an explicit ACK
 #'
 #' The exact same call object is reused on every attempt. A named NULL (DSI's
@@ -131,7 +170,7 @@
   last_missing <- hosts
   for (attempt in seq_len(attempts)) {
     raw_result <- tryCatch(
-      DSI::datashield.aggregate(conns, expr),
+      .dsi_private_aggregate(conns, expr),
       error = function(e) NULL)
     result <- .dsi_exact_node_results(raw_result, conns)
     if (is.null(result)) {
@@ -212,6 +251,277 @@
   })
 }
 
+#' Refuse to overwrite session symbols during transactional initialization
+#' @keywords internal
+.dsi_require_symbols_absent <- function(conns, symbols) {
+  symbols <- unique(as.character(symbols))
+  if (!length(symbols) || anyNA(symbols) ||
+      any(!grepl("^[A-Za-z][A-Za-z0-9._]{0,127}$", symbols))) {
+    stop("Visible DataSHIELD symbols beginning with a letter are required.",
+      call. = FALSE)
+  }
+  observed <- tryCatch(DSI::datashield.symbols(conns), error = function(e) NULL)
+  hosts <- names(conns)
+  observed <- .dsi_exact_node_results(observed, conns)
+  if (is.null(observed) || any(vapply(observed, is.null, logical(1)))) {
+    stop("Could not verify that target DataSHIELD symbols are unused.",
+      call. = FALSE)
+  }
+  occupied <- hosts[vapply(hosts, function(host) {
+    any(symbols %in% as.character(observed[[host]]))
+  }, logical(1))]
+  if (length(occupied)) {
+    stop("Target DataSHIELD symbol already exists on: ",
+      paste(occupied, collapse = ", "), ". Remove it or choose another symbol.",
+      call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
+#' Read one node's symbol table without accepting a misassociated response
+#' @keywords internal
+.dsi_node_symbols_exact <- function(conns, host) {
+  raw <- tryCatch(
+    DSI::datashield.symbols(conns[host]),
+    error = identity)
+  if (inherits(raw, "error")) {
+    return(list(ok = FALSE, error = conditionMessage(raw)))
+  }
+  mapped <- .dsi_exact_node_results(raw, conns[host])
+  if (is.null(mapped) || is.null(mapped[[host]])) {
+    return(list(ok = FALSE, error = "node returned no exact symbol table"))
+  }
+  symbols <- as.character(mapped[[host]])
+  if (anyNA(symbols)) {
+    return(list(ok = FALSE, error = "node returned an invalid symbol table"))
+  }
+  list(ok = TRUE, symbols = symbols)
+}
+
+#' Remove a plain workspace symbol and verify the per-node postcondition
+#' @keywords internal
+.dsi_remove_workspace_symbol_exact <- function(conns, symbol) {
+  hosts <- names(conns)
+  if (!length(hosts) || anyNA(hosts) || any(!nzchar(hosts)) ||
+      anyDuplicated(hosts)) {
+    stop("DSI operations require non-empty, unique node names.", call. = FALSE)
+  }
+  if (!is.character(symbol) || length(symbol) != 1L || is.na(symbol) ||
+      !nzchar(symbol)) {
+    stop("Workspace symbol must be a non-empty character scalar.",
+      call. = FALSE)
+  }
+
+  results <- stats::setNames(vector("list", length(hosts)), hosts)
+  failures <- character()
+  for (host in hosts) {
+    before <- .dsi_node_symbols_exact(conns, host)
+    if (!isTRUE(before$ok)) {
+      results[[host]] <- list(state = "uncertain")
+      failures <- c(failures, paste0(host, ":symbol-state"))
+      next
+    }
+    if (!symbol %in% before$symbols) {
+      results[[host]] <- list(state = "absent")
+      next
+    }
+    remove_error <- tryCatch({
+      DSI::datashield.rm(conns[host], symbol)
+      NULL
+    }, error = identity)
+    after <- .dsi_node_symbols_exact(conns, host)
+    if (is.null(remove_error) && isTRUE(after$ok) &&
+        !symbol %in% after$symbols) {
+      results[[host]] <- list(state = "removed")
+    } else {
+      results[[host]] <- list(state = "retained")
+      failures <- c(failures, paste0(host, ":remove"))
+    }
+  }
+  list(per_site = results, failures = unique(failures))
+}
+
+#' Destroy session handles only after exact, per-node acknowledgement
+#'
+#' Nodes where a target is already absent are successful no-ops. This makes a
+#' repeated call retry only the targets retained after an earlier partial
+#' failure. Destroy results are assigned to a separate temporary symbol so a
+#' failed workspace removal cannot replace the opaque handle with \code{NULL}.
+#' A handle symbol is never removed unless its destroy method has returned an
+#' exact success callback for that same node. The acknowledgement symbol is
+#' deterministic for each target, allowing the same API call to remove an
+#' orphan left by a previously lost workspace-removal response.
+#' @keywords internal
+.dsi_destroy_session_exact <- function(conns, symbol,
+                                       imaging_symbol = NULL) {
+  hosts <- names(conns)
+  if (!length(hosts) || anyNA(hosts) || any(!nzchar(hosts)) ||
+      anyDuplicated(hosts)) {
+    stop("DSI operations require non-empty, unique node names.", call. = FALSE)
+  }
+  valid_symbol <- function(value) {
+    is.character(value) && length(value) == 1L && !is.na(value) &&
+      grepl("^[A-Za-z][A-Za-z0-9._]{0,127}$", value)
+  }
+  if (!valid_symbol(symbol) ||
+      (!is.null(imaging_symbol) && !valid_symbol(imaging_symbol))) {
+    stop("Handle symbols must be visible DataSHIELD symbols beginning with a ",
+      "letter.", call. = FALSE)
+  }
+  if (!is.null(imaging_symbol) && identical(symbol, imaging_symbol)) {
+    stop("'symbol' and 'imaging_symbol' must be different.", call. = FALSE)
+  }
+
+  targets <- list(
+    flower = list(symbol = symbol, method = "flowerDestroyDS")
+  )
+  if (!is.null(imaging_symbol)) {
+    targets$imaging <- list(
+      symbol = imaging_symbol, method = "imagingDestroyDS")
+  }
+
+  results <- stats::setNames(vector("list", length(hosts)), hosts)
+  failures <- character()
+  for (host in hosts) {
+    snapshot <- .dsi_node_symbols_exact(conns, host)
+    if (!isTRUE(snapshot$ok)) {
+      results[[host]] <- list(
+        ok = FALSE,
+        symbol_state = list(state = "failed", error = snapshot$error)
+      )
+      failures <- c(failures, paste0(host, ":symbol-state"))
+      next
+    }
+
+    node_result <- list()
+    blocked <- FALSE
+    for (target_name in names(targets)) {
+      target <- targets[[target_name]]
+      if (isTRUE(blocked)) {
+        node_result[[target_name]] <- list(
+          symbol = target$symbol, state = "retained", destroy_ack = NA,
+          error = "an earlier handle target failed on this node")
+        next
+      }
+      ack_symbol <- .dsi_destroy_ack_symbol(target$symbol, target$method)
+      if (ack_symbol %in% snapshot$symbols) {
+        # The previous destroy reached the server but its ACK symbol could not
+        # be removed. Clean the protocol-owned tombstone before deciding
+        # whether the handle itself still needs destruction.
+        stale_ack <- .dsi_remove_workspace_symbol_exact(
+          conns[host], ack_symbol)
+        if (length(stale_ack$failures)) {
+          target_present <- target$symbol %in% snapshot$symbols
+          state <- if (isTRUE(target_present)) "retained" else "absent"
+          node_result[[target_name]] <- list(
+            symbol = target$symbol, state = state, destroy_ack = NA,
+            error = "temporary ACK cleanup failed")
+          failures <- c(
+            failures, paste0(host, ":", target_name, "[ack-cleanup]"))
+          blocked <- isTRUE(target_present)
+          next
+        }
+        snapshot$symbols <- setdiff(snapshot$symbols, ack_symbol)
+      }
+
+      if (!target$symbol %in% snapshot$symbols) {
+        node_result[[target_name]] <- list(
+          symbol = target$symbol, state = "absent", destroy_ack = NA)
+        next
+      }
+
+      destroy_error <- NULL
+      acknowledged <- tryCatch({
+        .dsi_assign_expr_exact(
+          conns[host], ack_symbol,
+          call(target$method, target$symbol),
+          paste0(target_name, " handle destruction"))
+        TRUE
+      }, error = function(e) {
+        destroy_error <<- conditionMessage(e)
+        FALSE
+      })
+      if (!isTRUE(acknowledged)) {
+        # A failed callback may still have left its protocol-owned output
+        # symbol behind. It is safe to remove that symbol, but never the handle.
+        ack_cleanup <- .dsi_remove_workspace_symbol_exact(
+          conns[host], ack_symbol)
+        if (length(ack_cleanup$failures)) {
+          failures <- c(
+            failures, paste0(host, ":", target_name, "[ack-cleanup]"))
+        }
+        node_result[[target_name]] <- list(
+          symbol = target$symbol, state = "retained", destroy_ack = FALSE,
+          error = destroy_error %||% "node returned no destroy ACK")
+        failures <- c(failures, paste0(host, ":", target_name, "[destroy]"))
+        blocked <- TRUE
+        next
+      }
+
+      handle_removal <- .dsi_remove_workspace_symbol_exact(
+        conns[host], target$symbol)
+      ack_removal <- .dsi_remove_workspace_symbol_exact(
+        conns[host], ack_symbol)
+      handle_removed <- !length(handle_removal$failures)
+      ack_removed <- !length(ack_removal$failures)
+      if (isTRUE(handle_removed) && isTRUE(ack_removed)) {
+        node_result[[target_name]] <- list(
+          symbol = target$symbol, state = "destroyed", destroy_ack = TRUE)
+      } else {
+        details <- character()
+        if (!isTRUE(handle_removed)) {
+          details <- c(details, "workspace handle removal failed")
+          failures <- c(
+            failures, paste0(host, ":", target_name, "[remove]"))
+        }
+        if (!isTRUE(ack_removed)) {
+          details <- c(details, "temporary ACK cleanup failed")
+          failures <- c(
+            failures, paste0(host, ":", target_name, "[ack-cleanup]"))
+        }
+        node_result[[target_name]] <- list(
+          symbol = target$symbol,
+          state = if (isTRUE(handle_removed)) "destroyed" else "remove_failed",
+          destroy_ack = TRUE, error = paste(details, collapse = "; "))
+        blocked <- TRUE
+      }
+    }
+    node_result$ok <- !any(startsWith(failures, paste0(host, ":")))
+    results[[host]] <- node_result
+  }
+
+  list(per_site = results, failures = unique(failures))
+}
+
+#' Exact per-node rollback of partial multi-node run preparation
+#' @keywords internal
+.dsi_cleanup_run_exact <- function(conns, symbol, attempts = 3L) {
+  hosts <- names(conns)
+  results <- stats::setNames(vector("list", length(hosts)), hosts)
+  for (host in hosts) {
+    cleanup_error <- NULL
+    cleaned <- FALSE
+    for (attempt in seq_len(attempts)) {
+      cleaned <- tryCatch({
+        .dsi_assign_expr_exact(
+          conns[host], symbol, call("flowerCleanupRunDS", symbol),
+          "Run cleanup")
+        TRUE
+      }, error = function(e) {
+        cleanup_error <<- conditionMessage(e)
+        FALSE
+      })
+      if (isTRUE(cleaned)) break
+    }
+    results[[host]] <- list(
+      cleanup_ok = isTRUE(cleaned),
+      cleanup_error = if (isTRUE(cleaned)) NULL else
+        cleanup_error %||% "node returned no cleanup ACK"
+    )
+  }
+  results
+}
+
 #' Resilient datashield.aggregate that tolerates per-server failures
 #'
 #' @param conns DSI connections object.
@@ -224,7 +534,7 @@
   errors <- list()
   for (srv in server_names) {
     tryCatch({
-      res <- DSI::datashield.aggregate(conns[srv], expr = expr)
+      res <- .dsi_private_aggregate(conns[srv], expr)
       mapped <- .dsi_exact_node_results(res, conns[srv])
       if (is.null(mapped) || is.null(mapped[[srv]])) {
         errors[[srv]] <- "node returned no aggregate result"
@@ -232,7 +542,7 @@
         results[srv] <- list(mapped[[srv]])
       }
     }, error = function(e) {
-      errors[[srv]] <<- e$message
+      errors[[srv]] <<- "remote aggregate call failed"
     })
   }
   if (length(errors) > 0) {

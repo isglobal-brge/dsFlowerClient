@@ -107,7 +107,9 @@ fit <- ds.flower.fit(
 ```
 
 For a one-call shortcut, dsFlowerClient can also assign the configured Opal
-resource itself:
+dsImaging resource itself. It still calls `imagingInitDS()` first, so the same
+complete patient-level collection admission is enforced before dsFlower sees
+the opaque handle:
 
 ```r
 fit <- ds.flower.fit(

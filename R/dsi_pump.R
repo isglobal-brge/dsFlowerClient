@@ -150,7 +150,7 @@ NULL
     )
   }
   raw_res <- tryCatch(
-    DSI::datashield.aggregate(conns, exprs),
+    .dsi_private_aggregate(conns, exprs),
     error = function(e) NULL
   )
   res <- .dsi_exact_node_results(raw_res, conns)

@@ -122,6 +122,21 @@ test_that("association capability uses only the targeted dependency-light probe"
     "unavailable on: site2")
 })
 
+test_that("association capability does not reflect remote diagnostics", {
+  private_details <- paste(
+    "/srv/private/patient-42/association.csv",
+    "s3://private-bucket/patient-42/association.csv")
+  local_mocked_bindings(
+    datashield.aggregate = function(...) stop(private_details),
+    .package = "DSI")
+
+  error <- expect_error(
+    dsFlowerClient:::.assert_association_capability(list(site = list())),
+    "remote nodes")
+  expect_false(grepl("patient-42|private-bucket|/srv/private",
+                     conditionMessage(error)))
+})
+
 test_that("association FAB uses exact dedicated refs without neural dependencies", {
   app <- dsFlowerClient:::.build_submission_app(
     list(pkg_dir = NULL, track = "association"),
