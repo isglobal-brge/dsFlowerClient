@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -36,6 +36,17 @@
 
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.4" id="dsflowerclient-044">dsFlowerClient 0.4.4<a class="anchor" aria-label="anchor" href="#dsflowerclient-044"></a></h2>
+<div class="section level4">
+<h4 id="explicit-resource-routing-and-lifecycle-0-4-4">Explicit resource routing and lifecycle<a class="anchor" aria-label="anchor" href="#explicit-resource-routing-and-lifecycle-0-4-4"></a></h4>
+<ul><li>Resource initialization now routes through a validated <code>resource_kind</code> of <code>"imaging"</code> or <code>"tabular"</code>; the selector defaults to <code>"imaging"</code> for backward compatibility, and a failed imaging admission is never retried as another resource type. Existing tabular ResourceClient workflows use the explicit tabular route.</li>
+<li>High- and low-level lifecycle helpers remember only imaging handles they created and destroy that exact handle, including partial-failure retries.</li>
+<li>Client validation consistently forwards the server-pinned label vocabulary and sanitizes remaining application, association, convenience, validation, and cross-validation transport calls.</li>
+<li>Association setup reads the effective privacy unit from the initialized server handle before hashing or preparing a job, rather than trusting a site-wide default that may not describe an imaging collection.</li>
+<li>A tunnel socket timeout that reports zero progress now closes the ambiguous stream and aborts instead of retrying bytes that R may already have written.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.3" id="dsflowerclient-043">dsFlowerClient 0.4.3<a class="anchor" aria-label="anchor" href="#dsflowerclient-043"></a></h2>
 <div class="section level4">

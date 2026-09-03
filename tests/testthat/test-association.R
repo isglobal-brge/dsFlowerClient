@@ -122,6 +122,45 @@ test_that("association capability uses only the targeted dependency-light probe"
     "unavailable on: site2")
 })
 
+test_that("association capability uses the initialized handle privacy unit", {
+  hash <- paste(rep("a", 64L), collapse = "")
+  conns <- list(site1 = list(), site2 = list())
+  captured <- list()
+  status_ok <- TRUE
+  local_mocked_bindings(
+    .compute_local_runner_hash = function(...) hash,
+    .package = "dsFlowerClient")
+  local_mocked_bindings(
+    datashield.aggregate = function(conns, expr) {
+      captured[[length(captured) + 1L]] <<- expr
+      method <- as.character(expr[[1L]])
+      if (identical(method, "flowerGetCapabilitiesDS")) {
+        return(list(
+          site1 = .association_capability_fixture(hash, privacy_unit = "row"),
+          site2 = .association_capability_fixture(
+            hash, privacy_unit = "patient")))
+      }
+      expect_identical(method, "flowerStatusDS")
+      list(
+        site1 = list(privacy_unit = "patient"),
+        site2 = if (isTRUE(status_ok)) {
+          list(privacy_unit = "patient")
+        } else NULL)
+    },
+    .package = "DSI")
+
+  capability <- dsFlowerClient:::.assert_association_capability(
+    conns, "flower_handle")
+  expect_identical(capability$privacy_unit, "patient")
+  expect_identical(as.character(captured[[2L]][[1L]]), "flowerStatusDS")
+  expect_identical(as.character(captured[[2L]][[2L]]), "flower_handle")
+
+  status_ok <- FALSE
+  expect_error(
+    dsFlowerClient:::.assert_association_capability(conns, "flower_handle"),
+    "could not verify the handle privacy unit")
+})
+
 test_that("association capability does not reflect remote diagnostics", {
   private_details <- paste(
     "/srv/private/patient-42/association.csv",
@@ -249,6 +288,7 @@ test_that("association API sends only the frozen prepare and FAB pins", {
   captured_app <- NULL
   captured_ensure <- "unset"
   captured_watch <- NULL
+  captured_capability_handle <- NULL
   client_env <- get(".dsflower_client_env",
                     envir = asNamespace("dsFlowerClient"))
   old_superlink <- client_env$.superlink
@@ -259,11 +299,15 @@ test_that("association API sends only the frozen prepare and FAB pins", {
 
   local_mocked_bindings(
     .validate_dsi_transport_security = function(...) TRUE,
-    .assert_association_capability = function(...) list(
-      privacy_unit = "row", runner_abi = 3L, runner_sha256 = hash,
-      n_nodes = 2L, capabilities = list()),
+    .assert_association_capability = function(conns, handle_symbol = NULL) {
+      captured_capability_handle <<- handle_symbol
+      list(
+        privacy_unit = "patient", runner_abi = 3L, runner_sha256 = hash,
+        n_nodes = 2L, capabilities = list())
+    },
     .require_flwr_cli = function(...) TRUE,
-    ds.flower.connect = function(conns, data, resource, symbol) {
+    ds.flower.connect = function(
+        conns, data, resource, symbol, resource_kind) {
       structure(list(conns = conns, symbol = "flower"),
                 class = "dsflower_connection")
     },
@@ -308,6 +352,7 @@ test_that("association API sends only the frozen prepare and FAB pins", {
     outcome_levels = c("no", "yes"), exposure_levels = c(0, 1),
     symbol = "D")
   expect_s3_class(result, "dsflower_association")
+  expect_identical(captured_capability_handle, "flower")
   expect_identical(captured_prepare$target, "outcome")
   expect_identical(captured_prepare$feature, "exposure")
   expect_setequal(names(captured_prepare$config), c(
@@ -317,11 +362,20 @@ test_that("association API sends only the frozen prepare and FAB pins", {
     "association-job-sha256"))
   expect_false(any(c("task-type", "loss-name", "epsilon", "delta") %in%
                      names(captured_prepare$config)))
+  patient_contract <- dsFlowerClient:::.association_contract_sha256(
+    "outcome", "exposure", c("no", "yes"), c(0, 1), "patient")
+  expect_identical(
+    captured_prepare$config[["association-contract-sha256"]],
+    patient_contract)
   expect_identical(captured_app$sub$track, "association")
   expect_true(any(grepl("association-contract-sha256", captured_app$config,
                         fixed = TRUE)))
   expect_true(any(grepl("association-job-sha256", captured_app$config,
                         fixed = TRUE)))
+  expect_true(any(grepl(
+    'association-privacy-unit = "patient"', captured_app$config,
+    fixed = TRUE)))
+  expect_identical(result$recipe$privacy_unit, "patient")
   expect_null(captured_ensure)
   expect_false(captured_watch)
 })

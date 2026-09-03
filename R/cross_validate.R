@@ -48,7 +48,8 @@ ds.flower.cross_validate <- function(
     target_levels = NULL,
     target_bounds = NULL,
     allow_insecure_http = getOption(
-      "dsflower.dsi_allow_insecure_http", character())) {
+      "dsflower.dsi_allow_insecure_http", character()),
+    resource_kind = "imaging") {
   folds <- .normalize_cross_validation(folds)$folds
   if (missing(rounds)) {
     registered <- if (inherits(model, "dsflower_model")) {
@@ -60,6 +61,7 @@ ds.flower.cross_validate <- function(
   }
   ds.flower.fit(
     conns = conns, data = data, resource = resource, symbol = symbol,
+    resource_kind = resource_kind,
     target = target, features = features, model = model,
     model_params = model_params, torch_backend = torch_backend,
     strategy = strategy, strategy_params = strategy_params, rounds = rounds,

@@ -9,13 +9,13 @@
 ## Citation
 
 Sarrat González D, González J (2026). *dsFlowerClient: DataSHIELD Client
-for Flower Federated Learning*. R package version 0.4.3,
+for Flower Federated Learning*. R package version 0.4.4,
 <https://isglobal-brge.github.io/dsFlowerClient/>.
 
     @Manual{,
       title = {dsFlowerClient: DataSHIELD Client for Flower Federated Learning},
       author = {David {Sarrat González} and Juan R González},
       year = {2026},
-      note = {R package version 0.4.3},
+      note = {R package version 0.4.4},
       url = {https://isglobal-brge.github.io/dsFlowerClient/},
     }

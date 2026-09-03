@@ -362,6 +362,8 @@
 #' @param features Character vector; feature columns.
 #' @param data Optional character data source resolved during connection.
 #' @param resource Optional Opal resource name.
+#' @param resource_kind Explicit Opal resource route, exactly
+#'   \code{"imaging"} or \code{"tabular"}.
 #' @param symbol Character; server-side data handle symbol, including an
 #'   imaging handle created by \code{dsImagingClient::ds.imaging.init()}.
 #' @param num_rounds Integer; federated rounds.
@@ -416,7 +418,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              holdout = NULL,
                              cross_validation = NULL,
                              allow_insecure_http = getOption(
-                               "dsflower.dsi_allow_insecure_http", character())) {
+                               "dsflower.dsi_allow_insecure_http", character()),
+                             resource_kind = "imaging") {
   holdout_spec <- .normalize_holdout(holdout)
   cv_spec <- .normalize_cross_validation(cross_validation)
   if (!is.null(holdout_spec) && !is.null(cv_spec)) {
@@ -638,7 +641,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   public_target <- .validate_public_target_spec(
     target_levels, target_bounds, task_type = task_type,
     loss_name = sub$loss %||% "", n_classes = n_target_classes)
-  flower <- ds.flower.connect(conns, data = data, resource = resource, symbol = symbol)
+  flower <- ds.flower.connect(
+    conns, data = data, resource = resource, symbol = symbol,
+    resource_kind = resource_kind)
   conns <- flower$conns; hsym <- flower$symbol
   n_clients <- length(conns)
   # GUARANTEED cleanup of server-side state on ANY exit (success OR a pre-run error in

@@ -1,11 +1,12 @@
-# Write once to a non-blocking socket and return the bytes accepted by R
+# Write a tunnel payload and return the bytes confirmed by R
 
-Base R's writeBin() intentionally does not report whether a non-blocking
-output write succeeded. The small native shim exposes
-R_WriteConnection's byte count so the relay never acknowledges bytes
-that remain unwritten. It is compile-time pinned to R's connection ABI
-version 1 and fails installation explicitly if a future R release
-changes that private ABI.
+The native shim exposes R_WriteConnection's byte count. R's socket
+writer may wait even for a connection opened with `blocking = FALSE`,
+and its timeout path can report zero after already writing an unknown
+prefix. A zero count for a nonempty payload is therefore indeterminate:
+this helper closes the socket and aborts so those bytes cannot be
+retried on the same TCP stream. The shim is compile-time pinned to R's
+connection ABI version 1.
 
 ## Usage
 

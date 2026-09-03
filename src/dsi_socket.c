@@ -3,9 +3,10 @@
 #include <R_ext/Connections.h>
 
 /*
- * R has no public API exposing a non-blocking connection's partial-write count.
- * Lossless relay acknowledgements require that count, so fail at compile time
- * on an ABI change instead of silently assuming that a write was complete.
+ * R's connection API is versioned and may change incompatibly.  Keep the ABI
+ * pin even though R >= 4.6 classifies this header as experimental API.
+ * R's socket timeout path can report zero after writing a prefix; the R caller
+ * treats zero for a nonempty payload as indeterminate and closes the socket.
  */
 #if R_CONNECTIONS_VERSION != 1
 #error "Unsupported R connection API version"

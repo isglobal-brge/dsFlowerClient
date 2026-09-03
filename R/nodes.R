@@ -51,16 +51,24 @@ ds.flower.labels <- function(flower) {
 #'   assigned in the DataSHIELD session. Mutually exclusive with
 #'   \code{resource}.
 #' @param resource Character or NULL; name of an Opal resource to assign
-#'   before init. When provided, DataSHIELD assigns the resource, calls
-#'   \code{imagingInitDS}, and passes the authorized handle to
-#'   \code{flowerInitDS}.
+#'   before init.
+#' @param resource_kind Character; exactly \code{"imaging"} or
+#'   \code{"tabular"}. This public routing choice is not inferred from a
+#'   failed server call.
 #' @param symbol Character; symbol name for the Flower handle (default
 #'   \code{"flower"}).
 #' @return A \code{dsflower_result} with per-site init results.
 #' @export
 ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
-                                  symbol = "flower") {
-  imaging_symbol <- if (!is.null(resource)) paste0(symbol, "_img") else NULL
+                                  symbol = "flower",
+                                  resource_kind = "imaging") {
+  resource_kind <- .resource_kind(resource_kind)
+  imaging_symbol <- if (!is.null(resource) &&
+                        identical(resource_kind, "imaging")) {
+    paste0(symbol, "_img")
+  } else {
+    NULL
+  }
   resource_symbol <- if (!is.null(resource)) {
     .dsi_init_resource_symbol(symbol)
   } else {
@@ -68,6 +76,8 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
   }
   .dsi_require_symbols_absent(
     conns, c(symbol, imaging_symbol, resource_symbol))
+  # A verified-absent target cannot still own a live handle in this session.
+  .forget_owned_imaging_handle(conns, symbol)
   initialized <- FALSE
   on.exit({
     if (!is.null(resource_symbol)) {
@@ -102,8 +112,8 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
     }
   }, add = TRUE)
 
-  # Resource path: assign resource, admit it in dsImaging, then initialize
-  # dsFlower from the session-bound opaque imaging handle.
+  # Resource routing is explicit. A failed imaging admission is never retried
+  # as a tabular resolution (or vice versa).
   if (!is.null(resource)) {
     if (!is.null(data)) {
       stop("Specify either 'data' or 'resource', not both.", call. = FALSE)
@@ -111,16 +121,18 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
     # Assign the resource on each server
     .dsi_assign_resource_exact(
       conns, resource_symbol, resource, "Resource assignment")
-    .dsi_assign_expr_exact(
-      conns, imaging_symbol, call("imagingInitDS", resource_symbol),
-      "dsImaging privacy admission")
-    resource_cleanup <- .dsi_remove_workspace_symbol_exact(
-      conns, resource_symbol)
-    if (length(resource_cleanup$failures)) {
-      stop("Temporary imaging resource cleanup failed on: ",
-        paste(resource_cleanup$failures, collapse = ", "), ".", call. = FALSE)
+    if (identical(resource_kind, "imaging")) {
+      .dsi_assign_expr_exact(
+        conns, imaging_symbol, call("imagingInitDS", resource_symbol),
+        "dsImaging privacy admission")
+      data <- imaging_symbol
+    } else {
+      .dsi_assign_expr_exact(
+        conns, resource_symbol,
+        call("as.resource.client", as.name(resource_symbol)),
+        "Tabular resource resolution")
+      data <- resource_symbol
     }
-    data <- imaging_symbol
   }
 
   if (is.null(data)) {
@@ -142,17 +154,37 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
       "Flower handle initialization")
   }
 
+  if (!is.null(resource_symbol)) {
+    resource_cleanup <- .dsi_remove_workspace_symbol_exact(
+      conns, resource_symbol)
+    if (length(resource_cleanup$failures)) {
+      cleanup_label <- if (identical(resource_kind, "imaging")) {
+        "Temporary imaging resource cleanup failed on: "
+      } else {
+        "Temporary tabular resource cleanup failed on: "
+      }
+      stop(cleanup_label,
+        paste(resource_cleanup$failures, collapse = ", "), ".", call. = FALSE)
+    }
+  }
+
   # Store connections for later run lifecycle operations.
   .dsflower_client_env$.conns <- conns
 
   code <- .build_code("ds.flower.nodes.init", data = data, symbol = symbol)
   results <- .ds_safe_aggregate(conns, expr = call("flowerPingDS"))
+  if (!is.null(imaging_symbol)) {
+    .remember_owned_imaging_handle(conns, symbol, imaging_symbol)
+  }
   initialized <- TRUE
 
-  dsflower_result(
+  result <- dsflower_result(
     per_site = results,
     meta = list(call_code = code, scope = "per_site")
   )
+  result$meta$resource_kind <- if (is.null(resource)) NULL else resource_kind
+  result$meta$imaging_symbol <- imaging_symbol
+  result
 }
 
 #' Prepare a training run on all servers
@@ -410,12 +442,17 @@ ds.flower.nodes.ensure <- function(conns, symbol = "flower",
 #' @param conns DSI connections object.
 #' @param symbol Character; symbol name of the Flower handle.
 #' @param imaging_symbol Character or NULL; symbol of the imaging handle created
-#'   by \code{ds.flower.nodes.init(resource=)}. Leave NULL when the Flower handle
-#'   consumes caller-owned data, including a caller-owned dsImaging handle.
+#'   by \code{ds.flower.nodes.init(resource=)}. When omitted, the exact handle
+#'   owned by a successful low-level init is used. Pass NULL explicitly when the
+#'   Flower handle consumes caller-owned data, including a caller-owned
+#'   dsImaging handle.
 #' @return A \code{dsflower_result} with per-site destruction status.
 #' @export
 ds.flower.nodes.destroy <- function(conns, symbol = "flower",
                                     imaging_symbol = NULL) {
+  if (missing(imaging_symbol)) {
+    imaging_symbol <- .owned_imaging_handle(conns, symbol)
+  }
   report <- .dsi_destroy_session_exact(
     conns, symbol = symbol, imaging_symbol = imaging_symbol)
   if (!is.null(imaging_symbol)) {
@@ -441,6 +478,8 @@ ds.flower.nodes.destroy <- function(conns, symbol = "flower",
       retry_code, ".",
       call. = FALSE)
   }
+
+  .forget_owned_imaging_handle(conns, symbol)
 
   dsflower_result(
     per_site = report$per_site,

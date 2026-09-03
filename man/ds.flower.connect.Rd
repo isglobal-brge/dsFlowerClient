@@ -4,7 +4,13 @@
 \alias{ds.flower.connect}
 \title{Connect to a data source for federated learning}
 \usage{
-ds.flower.connect(conns, data = NULL, resource = NULL, symbol = NULL)
+ds.flower.connect(
+  conns,
+  data = NULL,
+  resource = NULL,
+  symbol = NULL,
+  resource_kind = "imaging"
+)
 }
 \arguments{
 \item{conns}{DSI connections object.}
@@ -12,21 +18,23 @@ ds.flower.connect(conns, data = NULL, resource = NULL, symbol = NULL)
 \item{data}{Character; auto-detected data source. Use explicit params
 if ambiguous.}
 
-\item{resource}{Character; explicit Opal dsImaging resource name (e.g.
-"RSRC.brain_mri"). It is admitted with \code{imagingInitDS} before
-dsFlower initialization. For an assigned tabular object, use \code{symbol}.}
+\item{resource}{Character; explicit Opal resource name (e.g.
+"RSRC.brain_mri"). For an assigned object, use \code{symbol}.}
 
 \item{symbol}{Character; explicit DS symbol already assigned (e.g. "D"),
 including an imaging handle created by
 \code{dsImagingClient::ds.imaging.init()}.}
+
+\item{resource_kind}{Character; exactly \code{"imaging"} or
+\code{"tabular"}. This is never inferred by retrying a failed admission.}
 }
 \value{
 A \code{dsflower_connection} object.
 }
 \description{
-Single entry point that handles the full init chain: detects data type,
-admits imaging resources through dsImaging, initializes dsFlower handles,
-and returns a connection handle with metadata.
+Single entry point that handles the full init chain. Resource type is an
+explicit public choice: imaging resources are admitted through dsImaging,
+while tabular resources are resolved with \code{as.resource.client()}.
 }
 \details{
 Uses unique capability-named symbols per connection to avoid collisions

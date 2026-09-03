@@ -38,7 +38,8 @@ ds.flower.cross_validate(
   feature_cuts = NULL,
   target_levels = NULL,
   target_bounds = NULL,
-  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
+  resource_kind = "imaging"
 )
 ```
 
@@ -163,6 +164,10 @@ ds.flower.cross_validate(
   Character vector of exact connection names allowed to use plaintext
   HTTP. Empty by default. This exception does not provide transport
   security; use it only behind an independently trusted network.
+
+- resource_kind:
+
+  Explicit Opal resource route, exactly `"imaging"` or `"tabular"`.
 
 ## Value
 

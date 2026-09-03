@@ -584,7 +584,22 @@ test_that("socket read and write failures are never treated as backpressure", {
   expect_identical(client_env$.tunnel$up_off, 0)
 })
 
-test_that("native socket writes report partial progress without byte loss", {
+test_that("an indeterminate zero write closes the socket and aborts", {
+  socket <- rawConnection(raw(0), open = "w+b")
+  withr::defer(tryCatch(close(socket), error = function(e) NULL))
+  local_mocked_bindings(
+    .tunnel_socket_write_native = function(socket, payload) 0,
+    .package = "dsFlowerClient"
+  )
+
+  expect_error(
+    dsFlowerClient:::.tunnel_socket_write_some(socket, charToRaw("payload")),
+    "progress is indeterminate; connection closed"
+  )
+  expect_error(isOpen(socket), "invalid connection")
+})
+
+test_that("native socket writes complete when the reader resumes before timeout", {
   python <- Sys.which("python3")
   if (!nzchar(python)) python <- Sys.which("python")
   skip_if(!nzchar(python), "Python is required for the socket integration test")
@@ -628,19 +643,15 @@ test_that("native socket writes report partial progress without byte loss", {
 
   payload <- as.raw((seq_len(8 * 1024^2) - 1L) %% 256L)
   offset <- 0L
-  short_write <- FALSE
   deadline <- Sys.time() + 10
   while (offset < length(payload) && Sys.time() < deadline) {
     remaining <- payload[(offset + 1L):length(payload)]
     written <- dsFlowerClient:::.tunnel_socket_write_some(socket, remaining)
-    short_write <- short_write || written < length(remaining)
     offset <- offset + as.integer(written)
-    if (written == 0) Sys.sleep(0.005)
   }
   expect_identical(offset, length(payload))
-  # Some kernels accept all 8 MiB in one call; the mocked pump regression above
-  # deterministically covers a short write. This integration proves that the
-  # native byte counts compose to an exact stream in either case.
+  # R's socket writer may wait until the peer drains its receive buffer. This
+  # covers the successful path where it finishes before the socket timeout.
   close(socket)
   proc$wait(timeout = 5000)
   lines <- c(lines, proc$read_all_output_lines())
@@ -650,4 +661,76 @@ test_that("native socket writes report partial progress without byte loss", {
   expect_identical(
     received[[2]], digest::digest(payload, algo = "sha256", serialize = FALSE)
   )
+})
+
+test_that("a stalled native socket write closes on indeterminate timeout", {
+  python <- Sys.which("python3")
+  if (!nzchar(python)) python <- Sys.which("python")
+  skip_if(!nzchar(python), "Python is required for the socket integration test")
+  server_code <- paste(
+    "import socket,time",
+    "s=socket.socket()",
+    "s.setsockopt(socket.SOL_SOCKET,socket.SO_RCVBUF,4096)",
+    "s.bind(('127.0.0.1',0))",
+    "s.listen(1)",
+    "print(s.getsockname()[1],flush=True)",
+    "c,_=s.accept()",
+    "time.sleep(4)",
+    "n=0",
+    "while True:",
+    " d=c.recv(65536)",
+    " if not d: break",
+    " n+=len(d)",
+    "print(n,flush=True)",
+    "c.close()",
+    "s.close()",
+    sep = "\n"
+  )
+  proc <- processx::process$new(
+    python, c("-u", "-c", server_code), stdout = "|", stderr = "|",
+    cleanup = TRUE, cleanup_tree = TRUE
+  )
+  withr::defer(if (proc$is_alive()) proc$kill())
+  deadline <- Sys.time() + 5
+  lines <- character()
+  while (length(lines) == 0L && Sys.time() < deadline) {
+    lines <- c(lines, proc$read_output_lines())
+    if (length(lines) == 0L) Sys.sleep(0.02)
+  }
+  expect_length(lines, 1L)
+  socket <- socketConnection(
+    "127.0.0.1", as.integer(lines[[1]]), open = "r+b",
+    blocking = FALSE, timeout = 1
+  )
+  withr::defer(tryCatch(close(socket), error = function(e) NULL))
+
+  payload <- as.raw((seq_len(512 * 1024L) - 1L) %% 256L)
+  confirmed <- 0
+  failure <- NULL
+  for (attempt in seq_len(128L)) {
+    result <- tryCatch(
+      dsFlowerClient:::.tunnel_socket_write_some(socket, payload),
+      error = identity
+    )
+    if (inherits(result, "error")) {
+      failure <- result
+      break
+    }
+    confirmed <- confirmed + result
+  }
+  expect_s3_class(failure, "error")
+  expect_match(
+    conditionMessage(failure),
+    "progress is indeterminate; connection closed"
+  )
+  expect_error(isOpen(socket), "invalid connection")
+
+  proc$wait(timeout = 10000)
+  lines <- c(lines, proc$read_all_output_lines())
+  expect_length(lines, 2L)
+  received <- as.numeric(lines[[2]])
+  # R may have delivered none or a prefix of the timed-out call. Either way,
+  # closing the connection prevents that indeterminate payload from being retried.
+  expect_true(received >= confirmed)
+  expect_true(received <= confirmed + length(payload))
 })

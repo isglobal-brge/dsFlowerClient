@@ -111,6 +111,7 @@
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-require_flwr_cli.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-resolve_data_source.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-resolve_model_for_predict.html</loc></url>
+<url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-resource_kind.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-run_openssl.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-save_superlink_state.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/dot-spec_to_b64.html</loc></url>
@@ -222,4 +223,3 @@
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_task.html</loc></url>
 <url><loc>https://isglobal-brge.github.io/dsFlowerClient/reference/print.dsflower_validation.html</loc></url>
 </urlset>
-

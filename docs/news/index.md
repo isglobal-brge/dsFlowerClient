@@ -1,5 +1,28 @@
 # Changelog
 
+## dsFlowerClient 0.4.4
+
+#### Explicit resource routing and lifecycle
+
+- Resource initialization now routes through a validated `resource_kind`
+  of `"imaging"` or `"tabular"`; the selector defaults to `"imaging"`
+  for backward compatibility, and a failed imaging admission is never
+  retried as another resource type. Existing tabular ResourceClient
+  workflows use the explicit tabular route.
+- High- and low-level lifecycle helpers remember only imaging handles
+  they created and destroy that exact handle, including partial-failure
+  retries.
+- Client validation consistently forwards the server-pinned label
+  vocabulary and sanitizes remaining application, association,
+  convenience, validation, and cross-validation transport calls.
+- Association setup reads the effective privacy unit from the
+  initialized server handle before hashing or preparing a job, rather
+  than trusting a site-wide default that may not describe an imaging
+  collection.
+- A tunnel socket timeout that reports zero progress now closes the
+  ambiguous stream and aborts instead of retrying bytes that R may
+  already have written.
+
 ## dsFlowerClient 0.4.3
 
 #### dsImaging session integration

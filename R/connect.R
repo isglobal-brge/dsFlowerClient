@@ -3,9 +3,9 @@
 
 #' Connect to a data source for federated learning
 #'
-#' Single entry point that handles the full init chain: detects data type,
-#' admits imaging resources through dsImaging, initializes dsFlower handles,
-#' and returns a connection handle with metadata.
+#' Single entry point that handles the full init chain. Resource type is an
+#' explicit public choice: imaging resources are admitted through dsImaging,
+#' while tabular resources are resolved with \code{as.resource.client()}.
 #'
 #' Uses unique capability-named symbols per connection to avoid collisions
 #' when multiple connections are active. The names remain visible to the DSI
@@ -15,16 +15,18 @@
 #' @param conns DSI connections object.
 #' @param data Character; auto-detected data source. Use explicit params
 #'   if ambiguous.
-#' @param resource Character; explicit Opal dsImaging resource name (e.g.
-#'   "RSRC.brain_mri"). It is admitted with \code{imagingInitDS} before
-#'   dsFlower initialization. For an assigned tabular object, use \code{symbol}.
+#' @param resource Character; explicit Opal resource name (e.g.
+#'   "RSRC.brain_mri"). For an assigned object, use \code{symbol}.
+#' @param resource_kind Character; exactly \code{"imaging"} or
+#'   \code{"tabular"}. This is never inferred by retrying a failed admission.
 #' @param symbol Character; explicit DS symbol already assigned (e.g. "D"),
 #'   including an imaging handle created by
 #'   \code{dsImagingClient::ds.imaging.init()}.
 #' @return A \code{dsflower_connection} object.
 #' @export
 ds.flower.connect <- function(conns, data = NULL, resource = NULL,
-                               symbol = NULL) {
+                               symbol = NULL, resource_kind = "imaging") {
+  resource_kind <- .resource_kind(resource_kind)
   # Exactly one of data/resource/symbol must be provided
   n_args <- sum(!is.null(data), !is.null(resource), !is.null(symbol))
   if (n_args != 1L)
@@ -49,7 +51,12 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
   } else {
     NULL
   }
-  img_sym <- if (identical(data_kind, "resource")) paste0(fl_sym, "_img") else NULL
+  img_sym <- if (identical(data_kind, "resource") &&
+                 identical(resource_kind, "imaging")) {
+    paste0(fl_sym, "_img")
+  } else {
+    NULL
+  }
   .dsi_require_symbols_absent(
     conns, c(fl_sym, if (!is.null(res_sym)) c(res_sym, img_sym)))
   connected <- FALSE
@@ -85,17 +92,30 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
 
     .dsi_assign_resource_exact(
       conns, res_sym, as.list(resource_map), "Resource assignment")
-    .dsi_assign_expr_exact(
-      conns, img_sym, call("imagingInitDS", res_sym),
-      "dsImaging privacy admission")
-    resource_cleanup <- .dsi_remove_workspace_symbol_exact(conns, res_sym)
-    if (length(resource_cleanup$failures)) {
-      stop("Temporary imaging resource cleanup failed on: ",
-        paste(resource_cleanup$failures, collapse = ", "), ".", call. = FALSE)
+    if (identical(resource_kind, "imaging")) {
+      .dsi_assign_expr_exact(
+        conns, img_sym, call("imagingInitDS", res_sym),
+        "dsImaging privacy admission")
+      flower_data_symbol <- img_sym
+    } else {
+      .dsi_assign_expr_exact(
+        conns, res_sym, call("as.resource.client", as.name(res_sym)),
+        "Tabular resource resolution")
+      flower_data_symbol <- res_sym
     }
     .dsi_assign_expr_exact(
-      conns, fl_sym, call("flowerInitDS", img_sym),
+      conns, fl_sym, call("flowerInitDS", flower_data_symbol),
       "Flower handle initialization")
+    resource_cleanup <- .dsi_remove_workspace_symbol_exact(conns, res_sym)
+    if (length(resource_cleanup$failures)) {
+      cleanup_label <- if (identical(resource_kind, "imaging")) {
+        "Temporary imaging resource cleanup failed on: "
+      } else {
+        "Temporary tabular resource cleanup failed on: "
+      }
+      stop(cleanup_label,
+        paste(resource_cleanup$failures, collapse = ", "), ".", call. = FALSE)
+    }
   } else {
     .dsi_assign_expr_exact(
       conns, fl_sym, call("flowerInitDS", symbol),
@@ -117,6 +137,8 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
     symbol    = fl_sym,
     data      = resource %||% symbol,
     data_kind = data_kind,
+    resource_kind = if (identical(data_kind, "resource")) resource_kind else NULL,
+    imaging_symbol = img_sym,
     labels    = labels,
     prepare_hash = NULL
   )
@@ -138,11 +160,9 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
 ds.flower.disconnect <- function(flower) {
   if (missing(flower) || !inherits(flower, "dsflower_connection"))
     stop("'flower' must be a dsflower_connection.", call. = FALSE)
-  imaging_symbol <- if (identical(flower$data_kind, "resource")) {
-    paste0(flower$symbol, "_img")
-  } else {
-    NULL
-  }
+  imaging_symbol <- flower$imaging_symbol %||%
+    if (identical(flower$data_kind, "resource") &&
+        is.null(flower$resource_kind)) paste0(flower$symbol, "_img") else NULL
   ds.flower.nodes.destroy(
     flower$conns, symbol = flower$symbol,
     imaging_symbol = imaging_symbol)

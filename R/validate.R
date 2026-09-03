@@ -1075,6 +1075,8 @@
 #'   saved label. Vision validation requires the saved public class vocabulary.
 #' @param data Optional server-side data symbol.
 #' @param resource Optional Opal resource name.
+#' @param resource_kind Explicit Opal resource route, exactly
+#'   \code{"imaging"} or \code{"tabular"}.
 #' @param symbol Optional server-side handle symbol.
 #' @param bins Public number of probability bins in \code{[4,512]}.
 #' @param torch_backend Node torch backend selection for neural artifacts,
@@ -1093,7 +1095,8 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
                                torch_backend = "auto", verbose = FALSE,
                                silent = FALSE,
                                allow_insecure_http = getOption(
-                                 "dsflower.dsi_allow_insecure_http", character())) {
+                                 "dsflower.dsi_allow_insecure_http", character()),
+                               resource_kind = "imaging") {
   torch_backend <- .validate_torch_backend(torch_backend)
   contract <- .resolve_validation_contract(model, bins)
   .validate_validation_artifact_preflight(contract)
@@ -1114,7 +1117,8 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
   old_opt <- options(dsflower.silent = isTRUE(silent))
   on.exit(options(old_opt), add = TRUE)
   flower <- ds.flower.connect(
-    conns, data = data, resource = resource, symbol = symbol)
+    conns, data = data, resource = resource, symbol = symbol,
+    resource_kind = resource_kind)
   conns <- flower$conns
   hsym <- flower$symbol
   on.exit({

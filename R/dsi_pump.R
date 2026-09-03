@@ -34,24 +34,36 @@ NULL
   value
 }
 
-#' Write once to a non-blocking socket and return the bytes accepted by R
+.tunnel_socket_write_native <- function(socket, payload) {
+  .Call(C_dsf_socket_write, socket, payload)
+}
+
+#' Write a tunnel payload and return the bytes confirmed by R
 #'
-#' Base R's writeBin() intentionally does not report whether a non-blocking
-#' output write succeeded. The small native shim exposes R_WriteConnection's
-#' byte count so the relay never acknowledges bytes that remain unwritten. It
-#' is compile-time pinned to R's connection ABI version 1 and fails installation
-#' explicitly if a future R release changes that private ABI.
+#' The native shim exposes R_WriteConnection's byte count. R's socket writer
+#' may wait even for a connection opened with \code{blocking = FALSE}, and its
+#' timeout path can report zero after already writing an unknown prefix. A zero
+#' count for a nonempty payload is therefore indeterminate: this helper closes
+#' the socket and aborts so those bytes cannot be retried on the same TCP stream.
+#' The shim is compile-time pinned to R's connection ABI version 1.
 #' @keywords internal
 .tunnel_socket_write_some <- function(socket, payload) {
   if (!is.raw(payload)) {
     stop("Tunnel socket payload must be raw bytes.", call. = FALSE)
   }
   if (length(payload) == 0L) return(0)
-  written <- .Call(C_dsf_socket_write, socket, payload)
+  written <- .tunnel_socket_write_native(socket, payload)
   written <- suppressWarnings(as.numeric(written))
   if (length(written) != 1L || is.na(written) || !is.finite(written) ||
       written < 0 || written > length(payload) || written != floor(written)) {
     stop("Invalid tunnel socket write count.", call. = FALSE)
+  }
+  if (written == 0) {
+    tryCatch(close(socket), error = function(e) NULL)
+    stop(
+      "Tunnel socket write progress is indeterminate; connection closed.",
+      call. = FALSE
+    )
   }
   written
 }
@@ -231,8 +243,8 @@ NULL
       s <- st$socks[[i]]
       if (!is.null(s)) {
         written <- .tunnel_socket_write_some(s, payload)
-        # A short non-blocking write is normal under backpressure. Ask the node
-        # for the unwritten suffix on the next exchange; never infer a full ACK.
+        # Advance only by a positive count confirmed by R. A zero count aborts
+        # above because R may have written an unknown prefix before timing out.
         if (written > 0) st$up_off[i] <- st$up_off[i] + written
       }
     } else {

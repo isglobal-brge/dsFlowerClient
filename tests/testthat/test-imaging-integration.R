@@ -58,6 +58,66 @@ test_that("resource connect admits dsImaging before dsFlower", {
   expect_equal(flower$labels, labels)
 })
 
+test_that("resource connect routes tabular resources explicitly", {
+  assigned <- list()
+  state <- list(site = character())
+  local_mocked_bindings(
+    datashield.symbols = function(conns, ...) state[names(conns)],
+    datashield.assign.resource = function(conns, symbol, resource, success, ...) {
+      state$site <<- c(state$site, symbol)
+      success("site")
+      invisible(NULL)
+    },
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      assigned[[length(assigned) + 1L]] <<- list(symbol = symbol, expr = expr)
+      state$site <<- unique(c(state$site, symbol))
+      success("site")
+      invisible(NULL)
+    },
+    datashield.aggregate = function(conns, expr) list(site = data.frame()),
+    datashield.rm = function(conns, symbol, ...) {
+      state$site <<- setdiff(state$site, symbol)
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  flower <- ds.flower.connect(
+    list(site = NULL), resource = "PROJECT.table",
+    resource_kind = "tabular")
+
+  expect_identical(
+    vapply(assigned, function(item) as.character(item$expr[[1L]]), character(1)),
+    c("as.resource.client", "flowerInitDS"))
+  expect_identical(assigned[[1L]]$symbol,
+    dsFlowerClient:::.dsi_init_resource_symbol(flower$symbol))
+  expect_identical(as.character(assigned[[1L]]$expr[[2L]]),
+    assigned[[1L]]$symbol)
+  expect_identical(assigned[[2L]]$expr[[2L]], assigned[[1L]]$symbol)
+  expect_identical(flower$resource_kind, "tabular")
+  expect_null(flower$imaging_symbol)
+  expect_false(any(vapply(assigned, function(item) {
+    identical(as.character(item$expr[[1L]]), "imagingInitDS")
+  }, logical(1))))
+})
+
+test_that("resource routing is validated before any DSI call", {
+  calls <- 0L
+  local_mocked_bindings(
+    datashield.symbols = function(...) {
+      calls <<- calls + 1L
+      list(site = character())
+    },
+    .package = "DSI"
+  )
+  expect_error(
+    ds.flower.connect(
+      list(site = NULL), resource = "PROJECT.table",
+      resource_kind = "auto"),
+    "exactly 'imaging' or 'tabular'")
+  expect_identical(calls, 0L)
+})
+
 test_that("resource connect removes partial session state when admission fails", {
   removed <- character(0)
   state <- list(site_1 = character(), site_2 = character())
@@ -301,6 +361,79 @@ test_that("low-level resource initialization uses dsImaging admission", {
   expect_identical(as.character(assigned[[2L]]$expr[[1L]]), "flowerInitDS")
   expect_identical(assigned[[2L]]$expr[[2L]], "flower_img")
   expect_true(assigned[[1L]]$expr[[2L]] %in% removed)
+})
+
+test_that("low-level init resolves an explicitly tabular resource", {
+  assigned <- list()
+  state <- list(site = character())
+  local_mocked_bindings(
+    datashield.symbols = function(conns, ...) state[names(conns)],
+    datashield.assign.resource = function(conns, symbol, resource, success, ...) {
+      state$site <<- c(state$site, symbol)
+      success("site")
+      invisible(NULL)
+    },
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      assigned[[length(assigned) + 1L]] <<- list(symbol = symbol, expr = expr)
+      state$site <<- unique(c(state$site, symbol))
+      success("site")
+      invisible(NULL)
+    },
+    datashield.aggregate = function(conns, expr) list(site = list(status = "ok")),
+    datashield.rm = function(conns, symbol, ...) {
+      state$site <<- setdiff(state$site, symbol)
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  result <- ds.flower.nodes.init(
+    list(site = NULL), resource = "PROJECT.table", symbol = "flower",
+    resource_kind = "tabular")
+
+  expect_identical(
+    vapply(assigned, function(item) as.character(item$expr[[1L]]), character(1)),
+    c("as.resource.client", "flowerInitDS"))
+  expect_null(result$meta$imaging_symbol)
+  expect_identical(result$meta$resource_kind, "tabular")
+})
+
+test_that("low-level destroy remembers the imaging handle it owns", {
+  conns <- list(site = NULL)
+  state <- list(site = character())
+  destroyed <- character()
+  local_mocked_bindings(
+    datashield.symbols = function(conns, ...) state[names(conns)],
+    datashield.assign.resource = function(conns, symbol, resource, success, ...) {
+      state$site <<- unique(c(state$site, symbol))
+      success("site")
+      invisible(NULL)
+    },
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      method <- as.character(expr[[1L]])
+      if (method %in% c("flowerDestroyDS", "imagingDestroyDS")) {
+        destroyed <<- c(destroyed, method)
+      }
+      state$site <<- unique(c(state$site, symbol))
+      success("site")
+      invisible(NULL)
+    },
+    datashield.aggregate = function(conns, expr) list(site = list(status = "ok")),
+    datashield.rm = function(conns, symbol, ...) {
+      state$site <<- setdiff(state$site, symbol)
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  init <- ds.flower.nodes.init(
+    conns, resource = "PROJECT.images", symbol = "flower")
+  expect_identical(init$meta$imaging_symbol, "flower_img")
+  result <- ds.flower.nodes.destroy(conns, symbol = "flower")
+
+  expect_identical(destroyed, c("flowerDestroyDS", "imagingDestroyDS"))
+  expect_identical(result$per_site$site$imaging$symbol, "flower_img")
+  expect_null(dsFlowerClient:::.owned_imaging_handle(conns, "flower"))
 })
 
 test_that("a doubly failed dsFres removal remains API-retryable", {

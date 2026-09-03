@@ -29,8 +29,10 @@ ds.flower.nodes.destroy(conns, symbol = "flower", imaging_symbol = NULL)
 - imaging_symbol:
 
   Character or NULL; symbol of the imaging handle created by
-  `ds.flower.nodes.init(resource=)`. Leave NULL when the Flower handle
-  consumes caller-owned data, including a caller-owned dsImaging handle.
+  `ds.flower.nodes.init(resource=)`. When omitted, the exact handle
+  owned by a successful low-level init is used. Pass NULL explicitly
+  when the Flower handle consumes caller-owned data, including a
+  caller-owned dsImaging handle.
 
 ## Value
 

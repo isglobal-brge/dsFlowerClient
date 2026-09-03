@@ -9,7 +9,13 @@ passed to dsFlower.
 ## Usage
 
 ``` r
-ds.flower.nodes.init(conns, data = NULL, resource = NULL, symbol = "flower")
+ds.flower.nodes.init(
+  conns,
+  data = NULL,
+  resource = NULL,
+  symbol = "flower",
+  resource_kind = "imaging"
+)
 ```
 
 ## Arguments
@@ -26,12 +32,15 @@ ds.flower.nodes.init(conns, data = NULL, resource = NULL, symbol = "flower")
 - resource:
 
   Character or NULL; name of an Opal resource to assign before init.
-  When provided, DataSHIELD assigns the resource, calls `imagingInitDS`,
-  and passes the authorized handle to `flowerInitDS`.
 
 - symbol:
 
   Character; symbol name for the Flower handle (default `"flower"`).
+
+- resource_kind:
+
+  Character; exactly `"imaging"` or `"tabular"`. This public routing
+  choice is not inferred from a failed server call.
 
 ## Value
 

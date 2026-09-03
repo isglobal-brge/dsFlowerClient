@@ -47,7 +47,8 @@ ds.flower.validate(
   torch_backend = "auto",
   verbose = FALSE,
   silent = FALSE,
-  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
+  resource_kind = "imaging"
 )
 ```
 
@@ -100,6 +101,10 @@ ds.flower.validate(
 - allow_insecure_http:
 
   Exact connection names allowed to use HTTP.
+
+- resource_kind:
+
+  Explicit Opal resource route, exactly `"imaging"` or `"tabular"`.
 
 ## Value
 

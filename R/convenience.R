@@ -185,6 +185,8 @@ ds.flower.task <- function(name = "classification") {
 #' @param conns DSI connections object.
 #' @param data Optional character data source resolved by \code{ds.flower.connect()}.
 #' @param resource Optional Opal resource name.
+#' @param resource_kind Explicit Opal resource route, exactly
+#'   \code{"imaging"} or \code{"tabular"}.
 #' @param symbol Optional assigned DataSHIELD symbol, including an imaging
 #'   handle created by \code{dsImagingClient::ds.imaging.init()}. Defaults to
 #'   \code{"D"} when \code{data}, \code{resource}, and \code{symbol} are all NULL.
@@ -271,7 +273,8 @@ ds.flower.fit <- function(conns,
                             "dsflower.dsi_allow_insecure_http", character()),
                           data_kind = NULL,
                           holdout = NULL,
-                          cross_validation = NULL) {
+                          cross_validation = NULL,
+                          resource_kind = "imaging") {
   # Set the progress-verbosity option at the outermost entry point so it stays
   # active through every nested step, including the connection teardown that runs
   # in the submission pipeline's on.exit cleanup.
@@ -392,6 +395,7 @@ ds.flower.fit <- function(conns,
     allow_insecure_http = allow_insecure_http,
     holdout = holdout,
     cross_validation = cross_validation,
+    resource_kind = resource_kind,
     output_dir = output_dir, output_name = output_name,
     verbose = verbose, silent = silent)
 }

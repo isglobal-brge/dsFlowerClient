@@ -23,6 +23,51 @@
 #' @keywords internal
 .dsflower_client_env <- new.env(parent = emptyenv())
 
+#' Validate the explicit Opal resource route
+#' @keywords internal
+.resource_kind <- function(resource_kind) {
+  if (!is.character(resource_kind) || length(resource_kind) != 1L ||
+      is.na(resource_kind) ||
+      !resource_kind %in% c("imaging", "tabular")) {
+    stop("'resource_kind' must be exactly 'imaging' or 'tabular'.",
+         call. = FALSE)
+  }
+  resource_kind
+}
+
+# Low-level init/destroy does not return a durable connection object. Retain
+# only handles that this client invocation created, keyed by the exact DSI
+# connection object and Flower symbol, so destroy() can safely infer ownership.
+.remember_owned_imaging_handle <- function(conns, symbol, imaging_symbol) {
+  entries <- .dsflower_client_env$.owned_imaging_handles %||% list()
+  keep <- !vapply(entries, function(entry) {
+    identical(entry$conns, conns) && identical(entry$symbol, symbol)
+  }, logical(1))
+  entries <- entries[keep]
+  entries[[length(entries) + 1L]] <- list(
+    conns = conns, symbol = symbol, imaging_symbol = imaging_symbol)
+  .dsflower_client_env$.owned_imaging_handles <- entries
+  invisible(TRUE)
+}
+
+.owned_imaging_handle <- function(conns, symbol) {
+  entries <- .dsflower_client_env$.owned_imaging_handles %||% list()
+  matches <- vapply(entries, function(entry) {
+    identical(entry$conns, conns) && identical(entry$symbol, symbol)
+  }, logical(1))
+  if (sum(matches) != 1L) return(NULL)
+  entries[[which(matches)]]$imaging_symbol
+}
+
+.forget_owned_imaging_handle <- function(conns, symbol) {
+  entries <- .dsflower_client_env$.owned_imaging_handles %||% list()
+  keep <- !vapply(entries, function(entry) {
+    identical(entry$conns, conns) && identical(entry$symbol, symbol)
+  }, logical(1))
+  .dsflower_client_env$.owned_imaging_handles <- entries[keep]
+  invisible(TRUE)
+}
+
 #' Generate a 128-bit capability token with a protocol-specific prefix
 #'
 #' Uses Python's operating-system-backed \code{secrets} generator. These tokens

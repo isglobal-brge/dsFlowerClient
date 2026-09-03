@@ -15,7 +15,8 @@ ds.flower.associate(
   symbol = NULL,
   verbose = FALSE,
   silent = FALSE,
-  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
+  resource_kind = "imaging"
 )
 }
 \arguments{
@@ -40,6 +41,9 @@ ds.flower.associate(
 \item{silent}{Suppress progress messages.}
 
 \item{allow_insecure_http}{Exact connection names allowed to use HTTP.}
+
+\item{resource_kind}{Explicit Opal resource route, exactly
+\code{"imaging"} or \code{"tabular"}.}
 }
 \value{
 A \code{dsflower_association}. If a complete release is unavailable,

@@ -30,7 +30,8 @@ ds.flower.submit(
   target_bounds = NULL,
   holdout = NULL,
   cross_validation = NULL,
-  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character())
+  allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
+  resource_kind = "imaging"
 )
 ```
 
@@ -152,6 +153,10 @@ ds.flower.submit(
   Character vector of exact connection names allowed to use plaintext
   HTTP. Empty by default. This exception does not provide transport
   security; use it only behind an independently trusted network.
+
+- resource_kind:
+
+  Explicit Opal resource route, exactly `"imaging"` or `"tabular"`.
 
 ## Value
 

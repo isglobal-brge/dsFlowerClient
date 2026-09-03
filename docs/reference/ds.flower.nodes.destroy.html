@@ -19,7 +19,7 @@ documented retry path if both automatic resource-removal attempts failed."></hea
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -78,8 +78,10 @@ documented retry path if both automatic resource-removal attempts failed.</p>
 
 <dt id="arg-imaging-symbol">imaging_symbol<a class="anchor" aria-label="anchor" href="#arg-imaging-symbol"></a></dt>
 <dd><p>Character or NULL; symbol of the imaging handle created
-by <code>ds.flower.nodes.init(resource=)</code>. Leave NULL when the Flower handle
-consumes caller-owned data, including a caller-owned dsImaging handle.</p></dd>
+by <code>ds.flower.nodes.init(resource=)</code>. When omitted, the exact handle
+owned by a successful low-level init is used. Pass NULL explicitly when the
+Flower handle consumes caller-owned data, including a caller-owned
+dsImaging handle.</p></dd>
 
 </dl></div>
     <div class="section level2">

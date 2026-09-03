@@ -4,7 +4,13 @@
 \alias{ds.flower.nodes.init}
 \title{Initialize Flower handles on all servers}
 \usage{
-ds.flower.nodes.init(conns, data = NULL, resource = NULL, symbol = "flower")
+ds.flower.nodes.init(
+  conns,
+  data = NULL,
+  resource = NULL,
+  symbol = "flower",
+  resource_kind = "imaging"
+)
 }
 \arguments{
 \item{conns}{DSI connections object.}
@@ -14,12 +20,14 @@ assigned in the DataSHIELD session. Mutually exclusive with
 \code{resource}.}
 
 \item{resource}{Character or NULL; name of an Opal resource to assign
-before init. When provided, DataSHIELD assigns the resource, calls
-\code{imagingInitDS}, and passes the authorized handle to
-\code{flowerInitDS}.}
+before init.}
 
 \item{symbol}{Character; symbol name for the Flower handle (default
 \code{"flower"}).}
+
+\item{resource_kind}{Character; exactly \code{"imaging"} or
+\code{"tabular"}. This public routing choice is not inferred from a
+failed server call.}
 }
 \value{
 A \code{dsflower_result} with per-site init results.

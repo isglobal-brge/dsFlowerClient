@@ -29,7 +29,8 @@ ds.flower.fit(
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
   data_kind = NULL,
   holdout = NULL,
-  cross_validation = NULL
+  cross_validation = NULL,
+  resource_kind = "imaging"
 )
 }
 \arguments{
@@ -118,6 +119,9 @@ native-tree models. It releases one pooled DP OOF result and saves no fold
 model or prediction. When \code{rounds} is omitted, native-tree CV uses its
 required single round per fold; an explicit value is never overwritten.
 Prefer \code{ds.flower.cross_validate()} for this workflow.}
+
+\item{resource_kind}{Explicit Opal resource route, exactly
+\code{"imaging"} or \code{"tabular"}.}
 }
 \value{
 A \code{dsflower_run} object, or a \code{dsflower_cv} when

@@ -27,7 +27,7 @@ fold, while neural models use the requested rounds per fold."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,7 +96,8 @@ fold, while neural models use the requested rounds per fold.</p>
 <span>  feature_cuts <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  target_levels <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  target_bounds <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  allow_insecure_http <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"dsflower.dsi_allow_insecure_http"</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>  allow_insecure_http <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"dsflower.dsi_allow_insecure_http"</span>, <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  resource_kind <span class="op">=</span> <span class="st">"imaging"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -219,6 +220,11 @@ regression/count models.</p></dd>
 <dd><p>Character vector of exact connection names allowed
 to use plaintext HTTP. Empty by default. This exception does not provide
 transport security; use it only behind an independently trusted network.</p></dd>
+
+
+<dt id="arg-resource-kind">resource_kind<a class="anchor" aria-label="anchor" href="#arg-resource-kind"></a></dt>
+<dd><p>Explicit Opal resource route, exactly
+<code>"imaging"</code> or <code>"tabular"</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">

@@ -235,7 +235,25 @@
   units[[1L]]
 }
 
-.assert_association_capability <- function(conns) {
+.association_handle_privacy_unit <- function(conns, handle_symbol) {
+  if (!is.character(handle_symbol) || length(handle_symbol) != 1L ||
+      is.na(handle_symbol) ||
+      !grepl("^[A-Za-z][A-Za-z0-9._]{0,127}$", handle_symbol)) {
+    stop("Association requires one valid Flower handle symbol.", call. = FALSE)
+  }
+  raw_status <- tryCatch(
+    .dsi_private_aggregate(
+      conns, expr = call("flowerStatusDS", handle_symbol)),
+    error = function(e) NULL)
+  status <- .dsi_exact_node_results(raw_status, conns)
+  if (is.null(status) || any(vapply(status, is.null, logical(1)))) {
+    stop("Association could not verify the handle privacy unit on every node.",
+         call. = FALSE)
+  }
+  .association_common_privacy_unit(status)
+}
+
+.assert_association_capability <- function(conns, handle_symbol = NULL) {
   n_nodes <- .association_node_count(length(conns))
   expected_hash <- .compute_local_runner_hash()
   raw_caps <- tryCatch(
@@ -283,9 +301,14 @@
     stop("Verified trusted association runtime is unavailable on: ",
          paste(unavailable, collapse = ", "), ".", call. = FALSE)
   }
+  privacy_unit <- if (is.null(handle_symbol)) {
+    .association_common_privacy_unit(capabilities)
+  } else {
+    .association_handle_privacy_unit(conns, handle_symbol)
+  }
   list(
     capabilities = capabilities,
-    privacy_unit = .association_common_privacy_unit(capabilities),
+    privacy_unit = privacy_unit,
     runner_abi = 3L,
     runner_sha256 = expected_hash,
     n_nodes = n_nodes)
@@ -467,6 +490,8 @@
 #' @param exposure_levels Ordered public \code{c(reference, positive)} levels.
 #' @param data Optional server-side data source.
 #' @param resource Optional Opal resource name.
+#' @param resource_kind Explicit Opal resource route, exactly
+#'   \code{"imaging"} or \code{"tabular"}.
 #' @param symbol Optional assigned server-side symbol.
 #' @param verbose Show Flower output.
 #' @param silent Suppress progress messages.
@@ -479,7 +504,8 @@ ds.flower.associate <- function(
     data = NULL, resource = NULL, symbol = NULL,
     verbose = FALSE, silent = FALSE,
     allow_insecure_http = getOption(
-      "dsflower.dsi_allow_insecure_http", character())) {
+      "dsflower.dsi_allow_insecure_http", character()),
+    resource_kind = "imaging") {
   outcome <- .association_column(outcome, "outcome")
   exposure <- .association_column(exposure, "exposure")
   if (identical(outcome, exposure)) {
@@ -491,20 +517,14 @@ ds.flower.associate <- function(
     exposure_levels, "exposure_levels")
   suppressWarnings(.validate_dsi_transport_security(
     conns, allow_insecure_http = allow_insecure_http))
-  capability <- .assert_association_capability(conns)
-  privacy_unit <- capability$privacy_unit
-  contract_sha <- .association_contract_sha256(
-    outcome, exposure, outcome_spec, exposure_spec, privacy_unit)
-  job_sha <- .association_job_sha256(
-    contract_sha, capability$runner_abi, capability$runner_sha256,
-    capability$n_nodes)
   .require_flwr_cli()
   if (is.null(data) && is.null(resource) && is.null(symbol)) symbol <- "D"
 
   old_opt <- options(dsflower.silent = isTRUE(silent))
   on.exit(options(old_opt), add = TRUE)
   flower <- ds.flower.connect(
-    conns, data = data, resource = resource, symbol = symbol)
+    conns, data = data, resource = resource, symbol = symbol,
+    resource_kind = resource_kind)
   conns <- flower$conns
   handle_symbol <- flower$symbol
   on.exit({
@@ -513,6 +533,14 @@ ds.flower.associate <- function(
              error = function(e) NULL)
     .dsflower_disconnect_on_exit(flower)
   }, add = TRUE)
+
+  capability <- .assert_association_capability(conns, handle_symbol)
+  privacy_unit <- capability$privacy_unit
+  contract_sha <- .association_contract_sha256(
+    outcome, exposure, outcome_spec, exposure_spec, privacy_unit)
+  job_sha <- .association_job_sha256(
+    contract_sha, capability$runner_abi, capability$runner_sha256,
+    capability$n_nodes)
 
   prepare <- list(
     "dp-track" = "association",

@@ -34,7 +34,8 @@ ds.flower.fit(
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
   data_kind = NULL,
   holdout = NULL,
-  cross_validation = NULL
+  cross_validation = NULL,
+  resource_kind = "imaging"
 )
 ```
 
@@ -180,6 +181,10 @@ ds.flower.fit(
   single round per fold; an explicit value is never overwritten. Prefer
   [`ds.flower.cross_validate()`](https://isglobal-brge.github.io/dsFlowerClient/reference/ds.flower.cross_validate.md)
   for this workflow.
+
+- resource_kind:
+
+  Explicit Opal resource route, exactly `"imaging"` or `"tabular"`.
 
 ## Value
 
