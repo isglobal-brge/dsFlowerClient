@@ -55,7 +55,7 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="dsflowerclient">dsFlowerClient<a class="anchor" aria-label="anchor" href="#dsflowerclient"></a>
 </h1></div>
-<p><code>dsFlowerClient</code> is the researcher-side R package for coordinating <a href="https://flower.ai/" class="external-link">Flower</a> federated learning through <a href="https://www.datashield.org/" class="external-link">DataSHIELD</a>. It pairs with the node-side <a href="https://github.com/isglobal-brge/dsFlower" class="external-link"><code>dsFlower</code></a> package installed by each data custodian.</p>
+<p><code>dsFlowerClient</code> is the researcher-side R package for coordinating <a href="https://flower.ai/" class="external-link">Flower</a> federated learning through <a href="https://datashield.org/" class="external-link">DataSHIELD</a>. It pairs with the node-side <a href="https://github.com/isglobal-brge/dsFlower" class="external-link"><code>dsFlower</code></a> package installed by each data custodian.</p>
 <p>The client starts a Flower SuperLink, submits a declarative request, checks that every node has the byte-identical canonical runner, and coordinates staging, training and cleanup. It cannot choose epsilon, delta, clipping, the accountant domain or whether arbitrary code is allowed. Those decisions belong to each data node.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>

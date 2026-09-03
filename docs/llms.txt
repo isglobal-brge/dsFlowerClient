@@ -2,7 +2,7 @@
 
 `dsFlowerClient` is the researcher-side R package for coordinating
 [Flower](https://flower.ai/) federated learning through
-[DataSHIELD](https://www.datashield.org/). It pairs with the node-side
+[DataSHIELD](https://datashield.org/). It pairs with the node-side
 [`dsFlower`](https://github.com/isglobal-brge/dsFlower) package
 installed by each data custodian.
 
