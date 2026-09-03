@@ -210,8 +210,12 @@ test_that("a transient DSI exchange preserves initialized relay state", {
     chunk_bytes = 16 * 1024L,
     socks = list(NULL)
   )
+  captured <- NULL
   local_mocked_bindings(
-    datashield.aggregate = function(conns, call) stop("transient"),
+    datashield.aggregate = function(conns, call) {
+      captured <<- call
+      stop("transient")
+    },
     .package = "DSI"
   )
 
@@ -220,6 +224,7 @@ test_that("a transient DSI exchange preserves initialized relay state", {
   expect_identical(client_env$.tunnel$down_sent, 0)
   expect_identical(client_env$.tunnel$down_buf, list(NULL))
   expect_identical(client_env$.tunnel$gen, 0)
+  expect_null(captured$site1$pd)
 })
 
 test_that("a DSI-dropped node retries the identical tunnel chunk and offset", {

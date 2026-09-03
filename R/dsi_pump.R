@@ -142,7 +142,9 @@ NULL
       "flowerTunnelExchangeDS",
       conn_id = cid,
       pa = st$down_sent[i],
-      pd = if (length(send)) .tunnel_enc_client(send) else "",
+      # Opal's expression parser rejects an explicit empty string in this slot;
+      # NULL is parser-safe and the server normalizes it to an empty payload.
+      pd = if (length(send)) .tunnel_enc_client(send) else NULL,
       pf = st$up_off[i],
       g = st$gen[i]
     )
