@@ -50,8 +50,8 @@ ds.flower.labels <- function(flower) {
 #'   assigned in the DataSHIELD session. Mutually exclusive with
 #'   \code{resource}.
 #' @param resource Character or NULL; name of an Opal resource to assign
-#'   and resolve before init. When provided, the resource is assigned,
-#'   resolved to a ResourceClient, and passed to \code{flowerInitDS}.
+#'   before init. When provided, DataSHIELD assigns and resolves the resource,
+#'   which is then passed to \code{flowerInitDS}.
 #' @param symbol Character; symbol name for the Flower handle (default
 #'   \code{"flower"}).
 #' @return A \code{dsflower_result} with per-site init results.
@@ -68,10 +68,6 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
     # Assign the resource on each server
     .dsi_assign_resource_exact(
       conns, res_symbol, resource, "Resource assignment")
-    # Resolve to ResourceClient
-    .dsi_assign_expr_exact(
-      conns, res_symbol, call("as.resource.client", as.name(res_symbol)),
-      "Resource resolution")
     data <- res_symbol
   }
 

@@ -39,8 +39,9 @@ ds.flower.fit(
 
 \item{resource}{Optional Opal resource name.}
 
-\item{symbol}{Optional assigned DataSHIELD symbol. Defaults to \code{"D"}
-when \code{data}, \code{resource}, and \code{symbol} are all NULL.}
+\item{symbol}{Optional assigned DataSHIELD symbol, including an imaging
+handle created by \code{dsImagingClient::ds.imaging.init()}. Defaults to
+\code{"D"} when \code{data}, \code{resource}, and \code{symbol} are all NULL.}
 
 \item{target}{One target-column name, or exactly \code{num_labels} distinct
 target-column names for \code{pytorch_multilabel}.}

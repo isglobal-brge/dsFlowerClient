@@ -80,6 +80,51 @@ column names are queried and the target is excluded. Feature values, exact
 feature statistics, node logs and node metrics are never requested by this
 workflow.
 
+### Train from a dsImaging collection
+
+dsImaging owns image discovery and initialization; dsFlower consumes the
+resulting server-side object by symbol. Neither pixels nor storage credentials
+are returned to the client:
+
+```r
+library(dsImagingClient)
+library(dsFlowerClient)
+
+ds.imaging.init(
+  conns,
+  resource = "PROJECT.images",
+  symbol = "img"
+)
+
+fit <- ds.flower.fit(
+  conns,
+  symbol = "img",
+  target = "label",
+  target_levels = c("negative", "positive"),
+  model = "pytorch_resnet18",
+  rounds = 2L
+)
+```
+
+For a one-call shortcut, dsFlowerClient can also assign the configured Opal
+resource itself:
+
+```r
+fit <- ds.flower.fit(
+  conns,
+  resource = "PROJECT.images",
+  target = "label",
+  target_levels = c("negative", "positive"),
+  model = "pytorch_resnet18",
+  rounds = 2L
+)
+```
+
+In both forms, dsFlower adapts dsImaging's independent descriptor and stages
+S3/MinIO objects only inside each data node. The ordered
+`target_levels` vocabulary is public; it can be omitted when labels are already
+encoded as integers from `0` to `n_classes - 1`.
+
 ## Privacy is server-authoritative
 
 Each node applies one administrator-pinned epsilon/delta contract to every

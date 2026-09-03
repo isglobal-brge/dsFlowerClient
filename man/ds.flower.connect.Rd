@@ -14,7 +14,9 @@ if ambiguous.}
 
 \item{resource}{Character; explicit Opal resource name (e.g. "RSRC.brain_mri").}
 
-\item{symbol}{Character; explicit DS symbol already assigned (e.g. "D").}
+\item{symbol}{Character; explicit DS symbol already assigned (e.g. "D"),
+including an imaging handle created by
+\code{dsImagingClient::ds.imaging.init()}.}
 }
 \value{
 A \code{dsflower_connection} object.

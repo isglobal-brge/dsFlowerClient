@@ -44,7 +44,8 @@ distinct columns for a multilabel model.}
 
 \item{resource}{Optional Opal resource name.}
 
-\item{symbol}{Character; server-side data handle symbol.}
+\item{symbol}{Character; server-side data handle symbol, including an
+imaging handle created by \code{dsImagingClient::ds.imaging.init()}.}
 
 \item{num_rounds}{Integer; federated rounds.}
 

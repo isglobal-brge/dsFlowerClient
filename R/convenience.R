@@ -185,8 +185,9 @@ ds.flower.task <- function(name = "classification") {
 #' @param conns DSI connections object.
 #' @param data Optional character data source resolved by \code{ds.flower.connect()}.
 #' @param resource Optional Opal resource name.
-#' @param symbol Optional assigned DataSHIELD symbol. Defaults to \code{"D"}
-#'   when \code{data}, \code{resource}, and \code{symbol} are all NULL.
+#' @param symbol Optional assigned DataSHIELD symbol, including an imaging
+#'   handle created by \code{dsImagingClient::ds.imaging.init()}. Defaults to
+#'   \code{"D"} when \code{data}, \code{resource}, and \code{symbol} are all NULL.
 #' @param target One target-column name, or exactly \code{num_labels} distinct
 #'   target-column names for \code{pytorch_multilabel}.
 #' @param features Character vector of feature column names, or NULL for

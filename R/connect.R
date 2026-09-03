@@ -14,7 +14,9 @@
 #' @param data Character; auto-detected data source. Use explicit params
 #'   if ambiguous.
 #' @param resource Character; explicit Opal resource name (e.g. "RSRC.brain_mri").
-#' @param symbol Character; explicit DS symbol already assigned (e.g. "D").
+#' @param symbol Character; explicit DS symbol already assigned (e.g. "D"),
+#'   including an imaging handle created by
+#'   \code{dsImagingClient::ds.imaging.init()}.
 #' @return A \code{dsflower_connection} object.
 #' @export
 ds.flower.connect <- function(conns, data = NULL, resource = NULL,
@@ -46,9 +48,6 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
     .dsi_assign_resource_exact(
       conns, res_sym, as.list(resource_map), "Resource assignment")
     .dsi_assign_expr_exact(
-      conns, res_sym, call("as.resource.client", as.name(res_sym)),
-      "Resource resolution")
-    .dsi_assign_expr_exact(
       conns, fl_sym, call("flowerInitDS", res_sym),
       "Flower handle initialization")
   } else {
@@ -59,14 +58,9 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
 
   # Gather metadata
   labels <- tryCatch({
-    if (data_kind == "resource") {
-      res <- DSI::datashield.aggregate(conns,
-        expr = call("flowerImageLabelsDS", fl_sym))
-      res[[1]]
-    } else {
-      data.frame(name = character(0), type = character(0),
-                 columns = character(0), stringsAsFactors = FALSE)
-    }
+    res <- DSI::datashield.aggregate(conns,
+      expr = call("flowerImageLabelsDS", fl_sym))
+    res[[1]]
   }, error = function(e) {
     data.frame(name = character(0), type = character(0),
                columns = character(0), stringsAsFactors = FALSE)

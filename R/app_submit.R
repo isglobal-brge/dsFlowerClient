@@ -362,7 +362,8 @@
 #' @param features Character vector; feature columns.
 #' @param data Optional character data source resolved during connection.
 #' @param resource Optional Opal resource name.
-#' @param symbol Character; server-side data handle symbol.
+#' @param symbol Character; server-side data handle symbol, including an
+#'   imaging handle created by \code{dsImagingClient::ds.imaging.init()}.
 #' @param num_rounds Integer; federated rounds.
 #' @param feature_bounds Optional public feature bounds as
 #'   \code{list(lower=..., upper=...)} in feature order. These constants are

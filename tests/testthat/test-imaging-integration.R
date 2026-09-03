@@ -5,7 +5,7 @@ image_test_connection <- function() {
   ), class = "dsflower_connection")
 }
 
-test_that("resource connect resolves generically before dsFlower discovery", {
+test_that("resource connect consumes the ResourceClient assigned by DataSHIELD", {
   assigned <- list()
   aggregated <- list()
   labels <- data.frame(
@@ -33,11 +33,88 @@ test_that("resource connect resolves generically before dsFlower discovery", {
   flower <- ds.flower.connect(
     conns = list(site = NULL), resource = "PROJECT.images")
 
-  expect_identical(as.character(assigned[[1L]]$expr[[1L]]), "as.resource.client")
-  expect_identical(as.character(assigned[[2L]]$expr[[1L]]), "flowerInitDS")
+  expect_length(assigned, 1L)
+  expect_identical(as.character(assigned[[1L]]$expr[[1L]]), "flowerInitDS")
   expect_identical(as.character(aggregated[[1L]][[1L]]), "flowerImageLabelsDS")
   expect_identical(aggregated[[1L]][[2L]], flower$symbol)
   expect_equal(flower$labels, labels)
+})
+
+test_that("an initialized dsImaging symbol is consumed without reinitialization", {
+  assigned <- list()
+  resources <- 0L
+  labels <- data.frame(
+    name = "diagnosis", type = "categorical", columns = "diagnosis",
+    description = "Public schema", stringsAsFactors = FALSE
+  )
+
+  local_mocked_bindings(
+    datashield.assign.resource = function(...) {
+      resources <<- resources + 1L
+      invisible(NULL)
+    },
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      assigned[[length(assigned) + 1L]] <<- list(symbol = symbol, expr = expr)
+      for (node in names(conns)) success(node)
+      invisible(NULL)
+    },
+    datashield.aggregate = function(conns, expr) list(site = labels),
+    .package = "DSI"
+  )
+
+  flower <- ds.flower.connect(list(site = NULL), symbol = "img")
+
+  expect_equal(resources, 0L)
+  expect_length(assigned, 1L)
+  expect_identical(as.character(assigned[[1L]]$expr[[1L]]), "flowerInitDS")
+  expect_identical(assigned[[1L]]$expr[[2L]], "img")
+  expect_equal(flower$labels, labels)
+})
+
+test_that("low-level resource initialization uses the assigned ResourceClient", {
+  assigned <- list()
+  resources <- 0L
+  local_mocked_bindings(
+    datashield.assign.resource = function(conns, symbol, resource, success, ...) {
+      resources <<- resources + 1L
+      for (node in names(conns)) success(node)
+      invisible(NULL)
+    },
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      assigned[[length(assigned) + 1L]] <<- list(symbol = symbol, expr = expr)
+      for (node in names(conns)) success(node)
+      invisible(NULL)
+    },
+    datashield.aggregate = function(conns, expr) list(site = list(status = "ok")),
+    .package = "DSI"
+  )
+
+  ds.flower.nodes.init(
+    list(site = NULL), resource = "PROJECT.images", symbol = "flower")
+
+  expect_equal(resources, 1L)
+  expect_length(assigned, 1L)
+  expect_identical(as.character(assigned[[1L]]$expr[[1L]]), "flowerInitDS")
+  expect_identical(assigned[[1L]]$expr[[2L]], "flower_res")
+})
+
+test_that("fit forwards an imaging symbol through the vision path", {
+  submitted <- NULL
+  local_mocked_bindings(
+    ds.flower.submit = function(...) {
+      submitted <<- list(...)
+      structure(list(), class = "dsflower_run")
+    },
+    .package = "dsFlowerClient"
+  )
+
+  ds.flower.fit(
+    conns = list(site = NULL), symbol = "img", target = "label",
+    model = "pytorch_resnet18", rounds = 1L)
+
+  expect_identical(submitted$symbol, "img")
+  expect_identical(submitted$data_kind, "image")
+  expect_null(submitted$features)
 })
 
 test_that("connect requires exactly one data source", {
