@@ -36,7 +36,7 @@ ds.flower.cross_validate(
 
 \item{data}{Optional character data source resolved by \code{ds.flower.connect()}.}
 
-\item{resource}{Optional Opal resource name.}
+\item{resource}{Optional Opal or Armadillo Resource name.}
 
 \item{symbol}{Optional assigned DataSHIELD symbol, including an imaging
 handle created by \code{dsImagingClient::ds.imaging.init()}. Defaults to
@@ -103,7 +103,7 @@ regression/count models.}
 to use plaintext HTTP. Empty by default. This exception does not provide
 transport security; use it only behind an independently trusted network.}
 
-\item{resource_kind}{Explicit Opal resource route, exactly
+\item{resource_kind}{Explicit Resource route, exactly
 \code{"imaging"} or \code{"tabular"}.}
 }
 \value{

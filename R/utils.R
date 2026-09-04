@@ -23,7 +23,7 @@
 #' @keywords internal
 .dsflower_client_env <- new.env(parent = emptyenv())
 
-#' Validate the explicit Opal resource route
+#' Validate the explicit Resource route
 #' @keywords internal
 .resource_kind <- function(resource_kind) {
   if (!is.character(resource_kind) || length(resource_kind) != 1L ||

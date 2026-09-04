@@ -58,13 +58,136 @@ test_that("resource connect admits dsImaging before dsFlower", {
   expect_equal(flower$labels, labels)
 })
 
+test_that("resource connect cleans provider transients across backends", {
+  provider <- "opal"
+  state <- list(site = character())
+  local_mocked_bindings(
+    datashield.symbols = function(conns, ...) state[names(conns)],
+    datashield.assign.resource = function(conns, symbol, resource, success, ...) {
+      for (node in names(conns)) {
+        transients <- if (identical(provider, "armadillo")) {
+          c("R", "rds")
+        } else {
+          NULL
+        }
+        state[[node]] <<- unique(c(state[[node]], symbol, transients))
+        success(node)
+      }
+      invisible(NULL)
+    },
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      for (node in names(conns)) {
+        state[[node]] <<- unique(c(state[[node]], symbol))
+        success(node)
+      }
+      invisible(NULL)
+    },
+    datashield.aggregate = function(conns, expr) list(site = data.frame()),
+    datashield.rm = function(conns, symbol, ...) {
+      node <- names(conns)[[1L]]
+      state[[node]] <<- setdiff(state[[node]], symbol)
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  for (backend in c("opal", "armadillo")) {
+    provider <- backend
+    state$site <- character()
+    flower <- ds.flower.connect(
+      list(site = NULL), resource = "project/folder/images")
+
+    expect_false(any(c("R", "rds") %in% state$site), info = backend)
+    expect_setequal(state$site, c(flower$symbol, flower$imaging_symbol))
+    expect_true(ds.flower.disconnect(flower))
+    expect_identical(state$site, character(), info = backend)
+  }
+})
+
+test_that("resource paths refuse to overwrite provider transient symbols", {
+  state <- list(site = character())
+  assignments <- 0L
+  local_mocked_bindings(
+    datashield.symbols = function(conns, ...) state[names(conns)],
+    datashield.assign.resource = function(...) {
+      assignments <<- assignments + 1L
+    },
+    .package = "DSI"
+  )
+
+  for (transient in c("R", "rds")) {
+    state$site <- transient
+    expect_error(
+      ds.flower.connect(
+        list(site = NULL), resource = "project/folder/images"),
+      "already exists", info = transient)
+    expect_error(
+      ds.flower.nodes.init(
+        list(site = NULL), resource = "project/folder/images"),
+      "already exists", info = transient)
+  }
+  expect_identical(assignments, 0L)
+})
+
+test_that("resource paths retry provider transient cleanup transactionally", {
+  state <- list(site = character())
+  remove_r_attempts <- 0L
+  local_mocked_bindings(
+    datashield.symbols = function(conns, ...) state[names(conns)],
+    datashield.assign.resource = function(conns, symbol, resource, success, ...) {
+      for (node in names(conns)) {
+        state[[node]] <<- unique(c(state[[node]], symbol, "R", "rds"))
+        success(node)
+      }
+      invisible(NULL)
+    },
+    datashield.assign.expr = function(conns, symbol, expr, success, ...) {
+      for (node in names(conns)) {
+        state[[node]] <<- unique(c(state[[node]], symbol))
+        success(node)
+      }
+      invisible(NULL)
+    },
+    datashield.aggregate = function(conns, expr) list(site = list(status = "ok")),
+    datashield.rm = function(conns, symbol, ...) {
+      node <- names(conns)[[1L]]
+      if (identical(symbol, "R")) {
+        remove_r_attempts <<- remove_r_attempts + 1L
+        if (remove_r_attempts == 1L) {
+          stop("simulated transient removal failure")
+        }
+      }
+      state[[node]] <<- setdiff(state[[node]], symbol)
+      invisible(NULL)
+    },
+    .package = "DSI"
+  )
+
+  for (path in c("connect", "nodes.init")) {
+    state$site <- character()
+    remove_r_attempts <- 0L
+    call <- if (identical(path, "connect")) {
+      quote(ds.flower.connect(
+        list(site = NULL), resource = "project/folder/images"))
+    } else {
+      quote(ds.flower.nodes.init(
+        list(site = NULL), resource = "project/folder/images"))
+    }
+
+    expect_error(eval(call), "Temporary imaging resource cleanup failed",
+                 info = path)
+    expect_identical(remove_r_attempts, 2L, info = path)
+    expect_identical(state$site, character(), info = path)
+  }
+})
+
 test_that("resource connect routes tabular resources explicitly", {
   assigned <- list()
   state <- list(site = character())
   local_mocked_bindings(
     datashield.symbols = function(conns, ...) state[names(conns)],
     datashield.assign.resource = function(conns, symbol, resource, success, ...) {
-      state$site <<- c(state$site, symbol)
+      state$site <<- c(state$site, symbol, "R", "rds")
       success("site")
       invisible(NULL)
     },
@@ -96,6 +219,7 @@ test_that("resource connect routes tabular resources explicitly", {
   expect_identical(assigned[[2L]]$expr[[2L]], assigned[[1L]]$symbol)
   expect_identical(flower$resource_kind, "tabular")
   expect_null(flower$imaging_symbol)
+  expect_false(any(c("R", "rds") %in% state$site))
   expect_false(any(vapply(assigned, function(item) {
     identical(as.character(item$expr[[1L]]), "imagingInitDS")
   }, logical(1))))
@@ -369,7 +493,7 @@ test_that("low-level init resolves an explicitly tabular resource", {
   local_mocked_bindings(
     datashield.symbols = function(conns, ...) state[names(conns)],
     datashield.assign.resource = function(conns, symbol, resource, success, ...) {
-      state$site <<- c(state$site, symbol)
+      state$site <<- c(state$site, symbol, "R", "rds")
       success("site")
       invisible(NULL)
     },
@@ -396,6 +520,7 @@ test_that("low-level init resolves an explicitly tabular resource", {
     c("as.resource.client", "flowerInitDS"))
   expect_null(result$meta$imaging_symbol)
   expect_identical(result$meta$resource_kind, "tabular")
+  expect_false(any(c("R", "rds") %in% state$site))
 })
 
 test_that("low-level destroy remembers the imaging handle it owns", {

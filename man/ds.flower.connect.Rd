@@ -18,15 +18,16 @@ ds.flower.connect(
 \item{data}{Character; auto-detected data source. Use explicit params
 if ambiguous.}
 
-\item{resource}{Character; explicit Opal resource name (e.g.
+\item{resource}{Character; explicit Opal or Armadillo Resource name (e.g.
 "RSRC.brain_mri"). For an assigned object, use \code{symbol}.}
 
 \item{symbol}{Character; explicit DS symbol already assigned (e.g. "D"),
 including an imaging handle created by
 \code{dsImagingClient::ds.imaging.init()}.}
 
-\item{resource_kind}{Character; exactly \code{"imaging"} or
-\code{"tabular"}. This is never inferred by retrying a failed admission.}
+\item{resource_kind}{Character; explicit Resource route, exactly
+\code{"imaging"} or \code{"tabular"}. This is never inferred by retrying a
+failed admission.}
 }
 \value{
 A \code{dsflower_connection} object.

@@ -15,10 +15,11 @@
 #' @param conns DSI connections object.
 #' @param data Character; auto-detected data source. Use explicit params
 #'   if ambiguous.
-#' @param resource Character; explicit Opal resource name (e.g.
+#' @param resource Character; explicit Opal or Armadillo Resource name (e.g.
 #'   "RSRC.brain_mri"). For an assigned object, use \code{symbol}.
-#' @param resource_kind Character; exactly \code{"imaging"} or
-#'   \code{"tabular"}. This is never inferred by retrying a failed admission.
+#' @param resource_kind Character; explicit Resource route, exactly
+#'   \code{"imaging"} or \code{"tabular"}. This is never inferred by retrying a
+#'   failed admission.
 #' @param symbol Character; explicit DS symbol already assigned (e.g. "D"),
 #'   including an imaging handle created by
 #'   \code{dsImagingClient::ds.imaging.init()}.
@@ -57,8 +58,14 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
   } else {
     NULL
   }
+  provider_transients <- if (identical(data_kind, "resource")) {
+    c("R", "rds")
+  } else {
+    character()
+  }
+  temporary_symbols <- c(provider_transients, res_sym)
   .dsi_require_symbols_absent(
-    conns, c(fl_sym, if (!is.null(res_sym)) c(res_sym, img_sym)))
+    conns, c(fl_sym, img_sym, temporary_symbols))
   connected <- FALSE
   on.exit({
     if (!connected) {
@@ -68,12 +75,12 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
         error = function(e) list(
           failures = paste0("rollback-state[", conditionMessage(e), "]")))
       cleanup_failures <- c(cleanup_failures, rollback$failures)
-      if (!is.null(res_sym)) {
-        resource_cleanup <- tryCatch(
-          .dsi_remove_workspace_symbol_exact(conns, res_sym),
+      for (temporary in temporary_symbols) {
+        temporary_cleanup <- tryCatch(
+          .dsi_remove_workspace_symbol_exact(conns, temporary),
           error = function(e) list(
             failures = paste0("resource-state[", conditionMessage(e), "]")))
-        cleanup_failures <- c(cleanup_failures, resource_cleanup$failures)
+        cleanup_failures <- c(cleanup_failures, temporary_cleanup$failures)
       }
       if (length(cleanup_failures)) {
         tryCatch(warning(
@@ -82,6 +89,8 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
           ". Retry retained handle ",
           "targets with ds.flower.nodes.destroy(conns, symbol = ",
           deparse(fl_sym), ", imaging_symbol = ", deparse(img_sym), ").",
+          " Close the failed DataSHIELD session before reuse if Resource-loader ",
+          "cleanup is still unconfirmed.",
           call. = FALSE), error = function(e) NULL)
       }
     }
@@ -106,15 +115,17 @@ ds.flower.connect <- function(conns, data = NULL, resource = NULL,
     .dsi_assign_expr_exact(
       conns, fl_sym, call("flowerInitDS", flower_data_symbol),
       "Flower handle initialization")
-    resource_cleanup <- .dsi_remove_workspace_symbol_exact(conns, res_sym)
-    if (length(resource_cleanup$failures)) {
+    cleanup_failures <- unlist(lapply(temporary_symbols, function(temporary) {
+      .dsi_remove_workspace_symbol_exact(conns, temporary)$failures
+    }), use.names = FALSE)
+    if (length(cleanup_failures)) {
       cleanup_label <- if (identical(resource_kind, "imaging")) {
         "Temporary imaging resource cleanup failed on: "
       } else {
         "Temporary tabular resource cleanup failed on: "
       }
       stop(cleanup_label,
-        paste(resource_cleanup$failures, collapse = ", "), ".", call. = FALSE)
+        paste(unique(cleanup_failures), collapse = ", "), ".", call. = FALSE)
     }
   } else {
     .dsi_assign_expr_exact(

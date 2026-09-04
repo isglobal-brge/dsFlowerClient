@@ -32,7 +32,7 @@ ds.flower.associate(
 
 \item{data}{Optional server-side data source.}
 
-\item{resource}{Optional Opal resource name.}
+\item{resource}{Optional Opal or Armadillo Resource name.}
 
 \item{symbol}{Optional assigned server-side symbol.}
 
@@ -42,7 +42,7 @@ ds.flower.associate(
 
 \item{allow_insecure_http}{Exact connection names allowed to use HTTP.}
 
-\item{resource_kind}{Explicit Opal resource route, exactly
+\item{resource_kind}{Explicit Resource route, exactly
 \code{"imaging"} or \code{"tabular"}.}
 }
 \value{

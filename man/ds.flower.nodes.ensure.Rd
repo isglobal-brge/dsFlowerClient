@@ -31,5 +31,5 @@ A \code{dsflower_result} with per-site status.
 \description{
 Calls \code{flowerEnsureSuperNodeDS} on each server. If
 \code{superlink_address} is \code{NULL}, auto-detects the correct address
-per node by querying each Opal's environment (Docker vs bare metal).
+per node by querying each DataSHIELD server environment (Docker vs bare metal).
 }

@@ -37,9 +37,10 @@ missing lock instead of falling back to the tested direct requirements. Also set
 an exact interpreter and lock, transitive dependencies can still vary and the
 resolved environment is not fully reproducible.
 
-Each Opal/Rock server must have a compatible `dsFlower` installation. Tunnel and
-runner ABI mismatches fail before stream bytes or a run are submitted; upgrades
-that change either ABI require coordinated server/client deployment.
+Each DataSHIELD server (Opal/Rock or Armadillo) must have a compatible
+`dsFlower` installation. Tunnel and runner ABI mismatches fail before stream
+bytes or a run are submitted; upgrades that change either ABI require
+coordinated server/client deployment.
 
 ## Quick start
 
@@ -106,10 +107,10 @@ fit <- ds.flower.fit(
 )
 ```
 
-For a one-call shortcut, dsFlowerClient can also assign the configured Opal
-dsImaging resource itself. It still calls `imagingInitDS()` first, so the same
-complete patient-level collection admission is enforced before dsFlower sees
-the opaque handle:
+For a one-call shortcut, dsFlowerClient can also assign the configured Opal or
+Armadillo dsImaging Resource itself. It still calls `imagingInitDS()` first, so
+the same complete patient-level collection admission is enforced before
+dsFlower sees the opaque handle:
 
 ```r
 fit <- ds.flower.fit(

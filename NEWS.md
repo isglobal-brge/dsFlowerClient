@@ -7,6 +7,9 @@
   compatibility, and a failed imaging admission is never retried as another
   resource type. Existing tabular ResourceClient workflows use the explicit
   tabular route.
+* Resource initialization is backend-neutral across Opal and Armadillo. Both
+  high- and low-level entry points reserve and transactionally remove the
+  Armadillo loader's `R` and `rds` transient symbols before returning.
 * High- and low-level lifecycle helpers remember only imaging handles they
   created and destroy that exact handle, including partial-failure retries.
 * Client validation consistently forwards the server-pinned label vocabulary

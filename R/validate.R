@@ -1074,8 +1074,8 @@
 #' @param target Target column name(s); multilabel validation requires one per
 #'   saved label. Vision validation requires the saved public class vocabulary.
 #' @param data Optional server-side data symbol.
-#' @param resource Optional Opal resource name.
-#' @param resource_kind Explicit Opal resource route, exactly
+#' @param resource Optional Opal or Armadillo Resource name.
+#' @param resource_kind Explicit Resource route, exactly
 #'   \code{"imaging"} or \code{"tabular"}.
 #' @param symbol Optional server-side handle symbol.
 #' @param bins Public number of probability bins in \code{[4,512]}.

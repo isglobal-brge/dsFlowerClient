@@ -30,7 +30,7 @@ saved label. Vision validation requires the saved public class vocabulary.}
 
 \item{data}{Optional server-side data symbol.}
 
-\item{resource}{Optional Opal resource name.}
+\item{resource}{Optional Opal or Armadillo Resource name.}
 
 \item{symbol}{Optional server-side handle symbol.}
 
@@ -45,7 +45,7 @@ including vision. Native-tree validation does not provision Torch.}
 
 \item{allow_insecure_http}{Exact connection names allowed to use HTTP.}
 
-\item{resource_kind}{Explicit Opal resource route, exactly
+\item{resource_kind}{Explicit Resource route, exactly
 \code{"imaging"} or \code{"tabular"}.}
 }
 \value{

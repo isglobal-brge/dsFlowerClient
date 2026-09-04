@@ -184,8 +184,8 @@ ds.flower.task <- function(name = "classification") {
 #'
 #' @param conns DSI connections object.
 #' @param data Optional character data source resolved by \code{ds.flower.connect()}.
-#' @param resource Optional Opal resource name.
-#' @param resource_kind Explicit Opal resource route, exactly
+#' @param resource Optional Opal or Armadillo Resource name.
+#' @param resource_kind Explicit Resource route, exactly
 #'   \code{"imaging"} or \code{"tabular"}.
 #' @param symbol Optional assigned DataSHIELD symbol, including an imaging
 #'   handle created by \code{dsImagingClient::ds.imaging.init()}. Defaults to

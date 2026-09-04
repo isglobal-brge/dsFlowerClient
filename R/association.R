@@ -489,8 +489,8 @@
 #' @param outcome_levels Ordered public \code{c(reference, positive)} levels.
 #' @param exposure_levels Ordered public \code{c(reference, positive)} levels.
 #' @param data Optional server-side data source.
-#' @param resource Optional Opal resource name.
-#' @param resource_kind Explicit Opal resource route, exactly
+#' @param resource Optional Opal or Armadillo Resource name.
+#' @param resource_kind Explicit Resource route, exactly
 #'   \code{"imaging"} or \code{"tabular"}.
 #' @param symbol Optional assigned server-side symbol.
 #' @param verbose Show Flower output.

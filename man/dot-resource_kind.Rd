@@ -2,11 +2,11 @@
 % Please edit documentation in R/utils.R
 \name{.resource_kind}
 \alias{.resource_kind}
-\title{Validate the explicit Opal resource route}
+\title{Validate the explicit Resource route}
 \usage{
 .resource_kind(resource_kind)
 }
 \description{
-Validate the explicit Opal resource route
+Validate the explicit Resource route
 }
 \keyword{internal}

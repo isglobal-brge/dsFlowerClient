@@ -38,7 +38,7 @@ ds.flower.fit(
 
 \item{data}{Optional character data source resolved by \code{ds.flower.connect()}.}
 
-\item{resource}{Optional Opal resource name.}
+\item{resource}{Optional Opal or Armadillo Resource name.}
 
 \item{symbol}{Optional assigned DataSHIELD symbol, including an imaging
 handle created by \code{dsImagingClient::ds.imaging.init()}. Defaults to
@@ -120,7 +120,7 @@ model or prediction. When \code{rounds} is omitted, native-tree CV uses its
 required single round per fold; an explicit value is never overwritten.
 Prefer \code{ds.flower.cross_validate()} for this workflow.}
 
-\item{resource_kind}{Explicit Opal resource route, exactly
+\item{resource_kind}{Explicit Resource route, exactly
 \code{"imaging"} or \code{"tabular"}.}
 }
 \value{

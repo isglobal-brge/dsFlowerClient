@@ -42,7 +42,7 @@ ds.flower.labels <- function(flower) {
 #'   hospital_c = "D"
 #' ))
 #'
-#' # From an Opal resource (e.g. imaging+dataset://)
+#' # From an Opal or Armadillo Resource (e.g. imaging+dataset://)
 #' ds.flower.nodes.init(conns, resource = "chest_xray")
 #' }
 #'
@@ -50,8 +50,8 @@ ds.flower.labels <- function(flower) {
 #' @param data Character or named list; symbol name(s) of data already
 #'   assigned in the DataSHIELD session. Mutually exclusive with
 #'   \code{resource}.
-#' @param resource Character or NULL; name of an Opal resource to assign
-#'   before init.
+#' @param resource Character or NULL; name of an Opal or Armadillo Resource to
+#'   assign before init.
 #' @param resource_kind Character; exactly \code{"imaging"} or
 #'   \code{"tabular"}. This public routing choice is not inferred from a
 #'   failed server call.
@@ -74,23 +74,31 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
   } else {
     NULL
   }
+  provider_transients <- if (!is.null(resource)) {
+    c("R", "rds")
+  } else {
+    character()
+  }
+  temporary_symbols <- c(provider_transients, resource_symbol)
   .dsi_require_symbols_absent(
-    conns, c(symbol, imaging_symbol, resource_symbol))
+    conns, c(symbol, imaging_symbol, temporary_symbols))
   # A verified-absent target cannot still own a live handle in this session.
   .forget_owned_imaging_handle(conns, symbol)
   initialized <- FALSE
   on.exit({
-    if (!is.null(resource_symbol)) {
-      resource_cleanup <- tryCatch(
-        .dsi_remove_workspace_symbol_exact(conns, resource_symbol),
+    for (temporary in temporary_symbols) {
+      temporary_cleanup <- tryCatch(
+        .dsi_remove_workspace_symbol_exact(conns, temporary),
         error = function(e) list(
           failures = paste0("resource-state[", conditionMessage(e), "]")))
-      if (length(resource_cleanup$failures)) {
+      if (length(temporary_cleanup$failures)) {
         tryCatch(warning(
           "Temporary resource cleanup was incomplete on: ",
-          paste(resource_cleanup$failures, collapse = ", "), ". Retry ",
+          paste(temporary_cleanup$failures, collapse = ", "), ". Retry ",
           "ds.flower.nodes.destroy(conns, symbol = ", deparse(symbol),
           ", imaging_symbol = ", deparse(imaging_symbol), ").",
+          " Close the failed DataSHIELD session before reuse if Resource-loader ",
+          "cleanup is still unconfirmed.",
           call. = FALSE), error = function(e) NULL)
       }
     }
@@ -154,17 +162,18 @@ ds.flower.nodes.init <- function(conns, data = NULL, resource = NULL,
       "Flower handle initialization")
   }
 
-  if (!is.null(resource_symbol)) {
-    resource_cleanup <- .dsi_remove_workspace_symbol_exact(
-      conns, resource_symbol)
-    if (length(resource_cleanup$failures)) {
+  if (length(temporary_symbols)) {
+    cleanup_failures <- unlist(lapply(temporary_symbols, function(temporary) {
+      .dsi_remove_workspace_symbol_exact(conns, temporary)$failures
+    }), use.names = FALSE)
+    if (length(cleanup_failures)) {
       cleanup_label <- if (identical(resource_kind, "imaging")) {
         "Temporary imaging resource cleanup failed on: "
       } else {
         "Temporary tabular resource cleanup failed on: "
       }
       stop(cleanup_label,
-        paste(resource_cleanup$failures, collapse = ", "), ".", call. = FALSE)
+        paste(unique(cleanup_failures), collapse = ", "), ".", call. = FALSE)
     }
   }
 
@@ -251,7 +260,7 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
 #'
 #' Calls \code{flowerEnsureSuperNodeDS} on each server. If
 #' \code{superlink_address} is \code{NULL}, auto-detects the correct address
-#' per node by querying each Opal's environment (Docker vs bare metal).
+#' per node by querying each DataSHIELD server environment (Docker vs bare metal).
 #'
 #' @param conns DSI connections object.
 #' @param symbol Character; symbol name of the handle.

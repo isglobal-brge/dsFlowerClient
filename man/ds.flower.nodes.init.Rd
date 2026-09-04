@@ -19,8 +19,8 @@ ds.flower.nodes.init(
 assigned in the DataSHIELD session. Mutually exclusive with
 \code{resource}.}
 
-\item{resource}{Character or NULL; name of an Opal resource to assign
-before init.}
+\item{resource}{Character or NULL; name of an Opal or Armadillo Resource to
+assign before init.}
 
 \item{symbol}{Character; symbol name for the Flower handle (default
 \code{"flower"}).}
@@ -54,7 +54,7 @@ ds.flower.nodes.init(conns, data = list(
   hospital_c = "D"
 ))
 
-# From an Opal resource (e.g. imaging+dataset://)
+# From an Opal or Armadillo Resource (e.g. imaging+dataset://)
 ds.flower.nodes.init(conns, resource = "chest_xray")
 }
 }
