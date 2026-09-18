@@ -19,6 +19,13 @@ tools_dir <- file.path(workspace,'dsFlowerClient','tools','campaign')
 source(file.path(tools_dir,'campaign_lib.R'))
 python <- file.path(workspace,'runtime','venv','bin','python')
 meta <- jsonlite::read_json(file.path(split_dir,'split.json'), simplifyVector=TRUE)
+sha <- function(path) digest::digest(file=path,algo='sha256')
+stopifnot(identical(sha(file.path(split_dir,'train.csv')),meta$train_sha256),
+          identical(sha(file.path(split_dir,'test.csv')),meta$test_sha256),
+          identical(sha(file.path(tools_dir,'survival','PROTOCOL_F_SURVIVAL.md')),meta$protocol_sha256))
+for (i in 1:3) stopifnot(identical(
+  sha(file.path(split_dir,paste0('site',i,'.csv'))),
+  meta$sites$split_sha256[meta$sites$site==i]))
 features <- meta$features
 sites <- lapply(1:3,function(i) read.csv(file.path(split_dir,paste0('site',i,'.csv'))))
 test <- read.csv(file.path(split_dir,'test.csv'))
@@ -46,7 +53,6 @@ dir.create(out,recursive=TRUE,showWarnings=FALSE)
 config_file <- file.path(out,'config.json')
 jsonlite::write_json(cfg,config_file,auto_unbox=TRUE,pretty=TRUE,digits=NA)
 started <- Sys.time()
-sha <- function(path) digest::digest(file=path,algo='sha256')
 commit <- function(repo) trimws(system2('git',c('-C',shQuote(file.path(workspace,repo)),'rev-parse','HEAD'),stdout=TRUE))
 build <- jsonlite::read_json(file.path(workspace,'runtime','build.json'),simplifyVector=FALSE)
 runner_hash <- dsFlowerClient:::.compute_local_runner_hash()
