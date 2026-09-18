@@ -743,6 +743,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         "vision-extractor-profile" = p[["vision_extractor_profile"]]))
     }
     if (identical(sub$loss, "segmentation_bce_dice")) {
+      prepare_config[["num-labels"]] <- NULL
       prepare_config <- c(prepare_config, .segmentation_public_config(p), list(
         image_asset = p[["image_asset"]], mask_asset = p[["mask_asset"]],
         image_path_col = p[["image_path_col"]], mask_path_col = target,
@@ -842,7 +843,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       .toml_kv("loss-name", sub$loss %||% "bce_logits"),
       paste0("num-classes = ", as.integer(
         p[["n_classes"]] %||% p[["num_classes"]] %||% 2L)),
-      paste0("num-labels = ", as.integer(p[["num_labels"]] %||% 2L)),
+      if (!identical(sub$loss, "segmentation_bce_dice"))
+        paste0("num-labels = ", as.integer(p[["num_labels"]] %||% 2L)),
       paste0("local-epochs = ", as.integer(p[["local_epochs"]] %||% 1L)),
       paste0("batch-size = ", as.integer(p[["batch_size"]] %||% 32L)),
       unname(vapply(names(training_config), function(key) {

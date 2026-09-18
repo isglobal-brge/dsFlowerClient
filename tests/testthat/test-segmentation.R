@@ -149,6 +149,7 @@ test_that("segmentation submit stages only the pinned public image and mask role
   expect_identical(prepared$config[["mask_empty_col"]], "normal")
   expect_identical(prepared$config[["subject_id_col"]], "subject")
   expect_identical(prepared$config[["mask-vocabulary"]], "0,1")
+  expect_false("num-labels" %in% names(prepared$config))
   expect_false(any(c("epsilon", "delta", "noise-multiplier", "max-grad-norm") %in%
                      names(prepared$config)))
 })

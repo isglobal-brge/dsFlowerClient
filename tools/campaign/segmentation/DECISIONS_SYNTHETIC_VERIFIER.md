@@ -24,3 +24,11 @@ PYTHONPATH=/workspace/segmentation/runtime /workspace/segmentation/venv/bin/pyth
 The local tests exercise verifier acceptance and rejection paths. They are not a real three-node federation result. The actual pod verifier must pass before its integration evidence is promoted into the combined blocking-gate record.
 
 Final local result:6 tests passed in120.260 seconds on Python3.11.14/Opacus1.6.0; log`checks/resume-synthetic-verifier-tests.log` in the workspace. A first invocation from the nested tools directory selected an unprovisioned Python3.14; the final workspace-root command above selected the existing provisioned Python3.11. An intermediate development run was stopped after the final tests were expanded; its partial log is retained and is not counted as a pass.
+
+## Actual synthetic03 failure and client preflight correction
+
+Synthetic03 failed before training on all three actual sites: the client unconditionally supplied the multilabel field`num-labels=2`, while the segmentation server correctly rejects scalar target declarations. Cleanup succeeded. The transient worker FUSE wait was not the terminal cause. No verifier or combined passing-gate record was produced for this attempt.
+
+Keep the server contract unchanged. Remove`num-labels` only from segmentation preparation and segmentation TOML; other neural contracts retain their existing field. Add an explicit absence assertion to the client submit test and a paired public preflight integration test using both loaded package sources. The paired test exercises the actual client submission config through the actual server normalizer, then captures the generated TOML without starting federation.
+
+Reproduction: `DSFLOWER_SKIP_PYTHON_SETUP=true Rscript dsFlowerClient/tools/integration/segmentation-paired-preflight.R dsFlower dsFlowerClient` from the workspace. Before the correction:3 failed/2 passed expectations with the actual server rejection. After:5 passed. Logs are`checks/resume-paired-preflight-before.log` and`checks/resume-paired-preflight-after.log`. Synthetic attempts01–03 remain archived as failed with successful cleanup; gate7 remains pending the next actual execution and strict verifier.
