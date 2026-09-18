@@ -10,7 +10,7 @@ import subprocess
 import sys
 import time
 
-from assemble_evidence import planned_cells
+from assemble_evidence import load_replicate, planned_cells
 
 
 def main():
@@ -26,6 +26,17 @@ def main():
     gates = json.loads(Path(os.environ["F_SEG_GATES_JSON"]).read_text())
     if any(gates.get(f"segmentation_6_1_{i}") is not True for i in range(1, 8)):
         raise ValueError("all seven mechanism gates must pass before matrix execution")
+    pending, results = [], []
+    for cell in planned_cells():
+        dataset, variant, epsilon, seed = cell
+        work = runs / f"{dataset}-{variant}-eps{epsilon}-seed{seed}"
+        if work.exists():
+            # Resume completed cells only after checking their actual artifacts.
+            load_replicate(work, *cell)
+            results.append({"dataset": dataset, "variant": variant, "epsilon": epsilon,
+                            "seed": seed, "status": "executed", "previously_completed": True})
+        else:
+            pending.append(cell)
 
     def execute(cell):
         dataset, variant, epsilon, seed = cell
@@ -65,9 +76,8 @@ def main():
         print(json.dumps(result), flush=True)
         return result
 
-    results = []
     with ThreadPoolExecutor(max_workers=args.workers) as pool:
-        futures = [pool.submit(execute, cell) for cell in planned_cells()]
+        futures = [pool.submit(execute, cell) for cell in pending]
         for future in as_completed(futures):
             results.append(future.result())
             (root / "matrix-status.json").write_text(json.dumps(results, indent=2) + "\n")

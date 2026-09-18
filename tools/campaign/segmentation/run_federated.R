@@ -95,8 +95,12 @@ cleanup <- function() {
 result <- tryCatch({
   parallel::clusterMap(cluster, function(index, data, libpaths, venv, work_dir, epsilon, audit) {
     .libPaths(libpaths)
+    # RunPod's /workspace FUSE volume ignores chmod; OS temp storage enforces it.
+    # These are isolated public-fixture node identities, stable across all rounds.
+    secret_dir <- file.path(tempdir(), "segmentation-node-state")
+    dir.create(secret_dir, mode = "0700", showWarnings = FALSE)
     Sys.setenv(DSFLOWER_VENV_ROOT = venv,
-               DSFLOWER_NODE_SECRET_FILE = file.path(work_dir, paste0("secret-site", index)),
+               DSFLOWER_NODE_SECRET_FILE = file.path(secret_dir, paste0("secret-site", index)),
                DSFLOWER_TEST_ALLOW_EPHEMERAL_SECRET = "1")
     options(dsflower.venv_root = venv,
             dsflower.dp_unit = "patient", dsflower.patient_column = "subject_id",
