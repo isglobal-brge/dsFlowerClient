@@ -77,11 +77,13 @@ def train(cfg, x, y, epsilon, seed, private):
             model = build(cfg)
             params.set_torch_params(model, arrays)
         return model, effective
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = model.to(device)
     criterion = dp_harness.loss_from_allowlist(cfg['loss-name'], cfg)
     count = int(math.ceil(len(x)/batch))
     expected = max(1, int(len(x)/count))
     rng = np.random.default_rng(seed)
-    xt, yt = torch.from_numpy(x), torch.from_numpy(y)
+    xt, yt = torch.from_numpy(x).to(device), torch.from_numpy(y).to(device)
     for _ in range(rounds):
         optimizer = client_app._build_optimizer(model, pins)
         for _ in range(epochs):
@@ -107,11 +109,14 @@ def main():
     ap.add_argument('--score-only', action='store_true')
     args = ap.parse_args()
     torch.set_num_threads(1)
-    torch.use_deterministic_algorithms(True)
+    # Apply the trusted runner's deterministic policy before any CUDA work.
+    seeding.seed_torch(bytes(32))
     started = time.monotonic()
     cfg = json.loads(args.config.read_text())
     meta = json.loads((args.split/'split.json').read_text())
     conf = survival.config_from_run(cfg, cfg['loss-name'])
+    assert sha(args.split/'train.csv') == meta['train_sha256'], 'training split hash differs'
+    assert sha(args.split/'test.csv') == meta['test_sha256'], 'held-out split hash differs'
     train_frame, test_frame = (pd.read_csv(args.split/f'{part}.csv', float_precision='round_trip') for part in ('train','test'))
     features = meta['features']
     cfg['feature-bounds'] = meta['feature_bounds']
@@ -125,6 +130,7 @@ def main():
     result = {'seed':meta['seed'],'n_train':meta['n_train'],
               'minimum_site_n':min(s['n_subjects'] for s in meta['sites'])}
     def evaluate(model):
+        model.cpu()
         model.eval()
         with torch.no_grad():
             output = model(torch.from_numpy(xt)).cpu().numpy()
@@ -136,6 +142,7 @@ def main():
         result['model_sha256']=sha(args.federated_model)
     if not args.score_only:
         central,_=train(cfg,x,y,args.epsilon,meta['seed'],False)
+        central_device = str(next(central.parameters()).device)
         result['central']=evaluate(central)
         private, effective=train(cfg,x,y,args.epsilon,meta['seed'],True)
         result['central_dp']=evaluate(private)
@@ -143,6 +150,8 @@ def main():
         # The null is covariate free; a scalar intercept for AFT or one intercept
         # per public period. Retain held-out NLL as well as constant-risk C-index.
         null,_=train(cfg,np.zeros_like(x),y,args.epsilon,meta['seed'],False)
+        null_device = str(next(null.parameters()).device)
+        null.cpu()
         with torch.no_grad():
             result['null']=score(null(torch.zeros_like(torch.from_numpy(xt))).numpy(),test_frame,conf)
         result['site_mechanisms']=[dict(site=s['site'],**mechanism(s['n_subjects'],cfg,args.epsilon)) for s in meta['sites']]
@@ -151,10 +160,20 @@ def main():
         'opacus':opacus.__version__,'flwr':flwr.__version__,'numpy':np.__version__,
         'scipy':scipy.__version__,'pandas':pd.__version__,
         'cuda_available':torch.cuda.is_available(),
-        'nonprivate_twin_device':'cpu',
+        'nonprivate_twin_device':central_device if not args.score_only else None,
+        'null_twin_device':null_device if not args.score_only else None,
         'dp_twin_device':result.get('pooled_mechanism',{}).get('execution_device'),
+        'heldout_evaluation_device':'cpu',
+        'cuda_device':torch.cuda.get_device_name(0) if torch.cuda.is_available() else None,
+        'cuda_toolkit':torch.version.cuda,
+        'cublas_workspace_config':os.environ.get('CUBLAS_WORKSPACE_CONFIG'),
+        'cudnn_version':torch.backends.cudnn.version(),
+        'cudnn_benchmark':torch.backends.cudnn.benchmark,
+        'cudnn_deterministic':torch.backends.cudnn.deterministic,
+        'cuda_matmul_allow_tf32':torch.backends.cuda.matmul.allow_tf32,
+        'cudnn_allow_tf32':torch.backends.cudnn.allow_tf32,
         'federation_device_rule':'_dp_fit chooses cuda when available, otherwise cpu; shared verified runtime',
-        'platform':platform.platform(),'deterministic_algorithms':True}
+        'platform':platform.platform(),'deterministic_algorithms':torch.are_deterministic_algorithms_enabled()}
     result['twin_matching']={
         'architecture_loss_preprocessing_initialization_optimizer_schedule':'exact',
         'initialization_seed':0,'pooled_epochs':cfg['num-server-rounds']*cfg['local-epochs'],
