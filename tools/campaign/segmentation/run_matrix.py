@@ -58,7 +58,8 @@ def main():
         if work.exists():
             raise ValueError("Refusing to overwrite an existing cell: " + name)
         work.mkdir()
-        env = dict(os.environ, F_SEG_VARIANT=variant, F_SEG_BATCH_SIZE=str(args.batch_size))
+        env = dict(os.environ, F_SEG_VARIANT=variant, F_SEG_BATCH_SIZE=str(args.batch_size),
+                   OMP_NUM_THREADS="2", MKL_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2", NUMEXPR_NUM_THREADS="2")
         env.pop("F_SEG_SYNTHETIC", None)
         prepared = root / "prepared" / dataset
         split = work / "effective-split.json"

@@ -25,7 +25,9 @@ class AnalystBenchmarkHookTests(unittest.TestCase):
 
     def test_python_startup_imports_no_torch_numpy_or_runner(self):
         result, captures = self.run_python(["-c", '''import sys
+import os
 assert "sitecustomize" in sys.modules
+assert all(os.environ[name] == "2" for name in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS"))
 assert not any(name.split(".")[0] in {"torch", "numpy", "dsflower_runner"} for name in sys.modules)
 print("LAZY_STARTUP_PASS")
 '''])

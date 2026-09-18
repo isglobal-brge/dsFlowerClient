@@ -50,6 +50,7 @@ Sys.setenv(F_SEG_PUBLIC_BENCHMARK = "1", F_SEG_INIT_SEED = seed,
            F_SEG_CAPTURE_DIR = capture_dir,
            CUBLAS_WORKSPACE_CONFIG = ":4096:8",
            OMP_NUM_THREADS = "2", MKL_NUM_THREADS = "2",
+           OPENBLAS_NUM_THREADS = "2", NUMEXPR_NUM_THREADS = "2",
            PYTHONPATH = paste(file.path(tools_dir, "benchmark_hooks"),
                               Sys.getenv("F_SEG_RUNNER_PARENT"), sep = .Platform$path.sep))
 audit <- jsonlite::fromJSON(file.path(prepared, "audit.json"), simplifyVector = FALSE)
