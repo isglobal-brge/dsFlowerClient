@@ -14,6 +14,7 @@ def main():
     ap=argparse.ArgumentParser()
     ap.add_argument('workspace',type=Path)
     ap.add_argument('--jobs',type=int,default=2)
+    ap.add_argument('--datasets',nargs='+',choices=['support2','lung1'],default=['support2','lung1'])
     args=ap.parse_args()
     root=args.workspace.resolve()
     archive=root/'dsFlowerClient/inst/extdata/campaign/survival'
@@ -24,6 +25,8 @@ def main():
     script=root/'dsFlowerClient/tools/campaign/survival/run_cell.R'
     matrix=[]
     for dataset,subsets in [('support2',['full','small600','heterogeneous']),('lung1',['full'])]:
+        if dataset not in args.datasets:
+            continue
         for subset in subsets:
             for variant in ['weibull','lognormal','hazard']:
                 for epsilon in ([8] if subset=='heterogeneous' else [1,4,8]):
