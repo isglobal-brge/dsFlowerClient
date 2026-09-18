@@ -6,6 +6,8 @@ introduced. Public tensors stay on the benchmark pod and never enter extdata.
 """
 import argparse
 import base64
+from collections import Counter
+import csv
 import hashlib
 import hmac
 import json
@@ -27,6 +29,14 @@ BENCHMARK_KEY_ROOT = Path("/tmp") / ("dsflower-segmentation-benchmark-%d" % os.g
 
 def array_hash(values):
     return hashlib.sha256(b"".join(np.asarray(a).tobytes() for a in values)).hexdigest()
+
+
+def source_row_counts(samples_path, sites):
+    with samples_path.open(newline="") as handle:
+        counts = Counter(row["subject_id"] for row in csv.DictReader(handle))
+    if any(subject not in counts for ids in sites for subject in ids):
+        raise ValueError("public split contains a subject absent from cached source rows")
+    return [sum(counts[subject] for subject in ids) for ids in sites]
 
 
 def private_key(directory):
@@ -209,13 +219,17 @@ def main():
     # Match effective tensors from actual node rounds, not only nominal transforms.
     lookup = {str(subject): i for i, subject in enumerate(data["subjects"])}
     expected_site_hashes = {}
-    for ids in split["sites"]:
+    expected_source_rows = {}
+    site_source_rows = source_row_counts(args.features / "samples.csv", split["sites"])
+    for ids, source_rows in zip(split["sites"], site_source_rows):
         rows = [lookup[s] for s in sorted(ids)]
-        expected_site_hashes[(hashlib.sha256(data["X"][rows].tobytes()).hexdigest(),
-                              hashlib.sha256(data["y"][rows].tobytes()).hexdigest())] = len(rows)
+        hashes = (hashlib.sha256(data["X"][rows].tobytes()).hexdigest(),
+                  hashlib.sha256(data["y"][rows].tobytes()).hexdigest())
+        expected_site_hashes[hashes] = len(rows)
+        expected_source_rows[hashes] = source_rows
     captures = [json.loads(p.read_text()) for p in args.capture.glob("accountant-*.json")]
     site_accounting = validate_captures(captures, list(map(len, split["sites"])),
-                                        args.epsilon, expected_site_hashes)
+                                        args.epsilon, expected_site_hashes, expected_source_rows)
     pins = task.load_run_pins(SimpleNamespace(node_config={"manifest-dir": str(args.features)}))
     feature_manifest = json.loads((args.features / "manifest.json").read_text())
     validate_twin_pins(cfg, feature_manifest, pins)

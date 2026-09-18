@@ -27,6 +27,7 @@ def captures(populations=(69, 68, 68)):
         m = mechanism(n)
         for round_index in range(1, 6):
             result.append({"public_fixture_only": True, "round": round_index,
+                           "source_rows": n + site + 1,
                            "features_sha256": str(site) * 64, "targets_sha256": str(site + 3) * 64,
                            "mechanism": copy.deepcopy(m), "accountant_type": "PRVAccountant",
                            "accountant_history": [[2., m["sample_rate"], m["steps_per_epoch"] * 2]],
@@ -97,6 +98,20 @@ class EvidenceTests(unittest.TestCase):
         self.assertEqual(len(got), 3)
         self.assertTrue(all(m["observed_round_steps"] == [10] * 5 for m in got))
         self.assertTrue(all("independent_accounting" in m for m in got))
+        self.assertEqual([m["source_rows"] for m in got], [70, 70, 71])
+
+    def test_source_row_census_is_strict_stable_and_matches_public_fixture(self):
+        rows = captures()
+        expected = {(r["features_sha256"], r["targets_sha256"]): r["source_rows"] for r in rows}
+        evidence.validate_captures(rows, [69, 68, 68], 8, expected_source_rows=expected)
+        for value in (None, True, 68, 70., 71):
+            changed = copy.deepcopy(rows)
+            changed[0]["source_rows"] = value
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "source row census"):
+                evidence.validate_captures(changed, [69, 68, 68], 8)
+        expected[next(iter(expected))] += 1
+        with self.assertRaisesRegex(ValueError, "cached public source rows"):
+            evidence.validate_captures(rows, [69, 68, 68], 8, expected_source_rows=expected)
 
     def test_reject_duplicate_round_even_with_fifteen_captures(self):
         rows = captures()

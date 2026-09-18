@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "inst/flower_app"))
 from dsflower_runner import segmentation, task
-from central_twins import validate_twin_pins, private_key
+from central_twins import validate_twin_pins, private_key, source_row_counts
 
 
 def fixture_config():
@@ -40,6 +40,14 @@ class TwinPinTests(unittest.TestCase):
         validate_twin_pins(self.cfg, self.cfg, self.pins)
         bce = dict(self.cfg, **{"segmentation-alpha": 1.})
         validate_twin_pins(bce, self.cfg, self.pins)
+
+    def test_source_census_counts_all_images_and_duplicate_mask_rows(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            path = Path(temporary) / "samples.csv"
+            path.write_text("subject_id,image_id,mask_path\na,i1,m1\na,i1,m2\na,i2,m3\nb,i3,m4\nc,i4,m5\n")
+            self.assertEqual(source_row_counts(path, [["a"], ["c", "b"]]), [3, 2])
+            with self.assertRaisesRegex(ValueError, "absent from cached source rows"):
+                source_row_counts(path, [["missing"]])
 
     def test_rejects_captured_or_cached_optimizer_and_scheduler_drift(self):
         for key, value in (("optimizer-momentum", .1), ("weight-decay", .1),

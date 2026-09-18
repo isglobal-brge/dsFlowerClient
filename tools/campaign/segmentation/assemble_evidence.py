@@ -40,10 +40,12 @@ def independent_accounting(sigma, q, steps, epsilon):
             "epsilon_replace_one": value, "delta_replace_one": delta_replace_one}
 
 
-def validate_captures(captures, populations, epsilon, expected_hashes=None):
+def validate_captures(captures, populations, epsilon, expected_hashes=None,
+                      expected_source_rows=None):
     """Require one observation for every site/round, not merely 15 sidecars.
 
     expected_hashes optionally maps (feature SHA256, target SHA256) to site N.
+    expected_source_rows optionally maps the same hash pairs to source row M.
     No source data or secret is returned.
     """
     groups = defaultdict(list)
@@ -61,6 +63,11 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None):
             raise ValueError("each site must have exactly one capture for rounds 1 through 5")
         mechanism = rows[0]["mechanism"]
         n = mechanism["accounting_population"]
+        source_rows = rows[0].get("source_rows")
+        if type(source_rows) is not int or source_rows < n:
+            raise ValueError("public source row census must be an integer at least accounting N")
+        if expected_source_rows is not None and expected_source_rows.get(hashes) != source_rows:
+            raise ValueError("captured source row census differs from cached public source rows")
         steps = math.ceil(n / 16)
         expected = {"adjacency": "replace_one", "clipping_norm": 1.,
                     "steps_per_epoch": steps, "sample_rate": 1 / steps,
@@ -75,6 +82,8 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None):
             raise ValueError("positive finite noise is mandatory")
         for row in rows:
             history = row["accountant_history"]
+            if type(row.get("source_rows")) is not int or row["source_rows"] != source_rows:
+                raise ValueError("public source row census changed between rounds")
             if row["mechanism"] != mechanism or row["accountant_type"] != "PRVAccountant":
                 raise ValueError("site accountant or mechanism changed between rounds")
             if row["observed_round_steps"] != 2 * steps or sum(h[2] for h in history) != 2 * steps:
@@ -82,6 +91,7 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None):
             if any(h[0] != sigma or h[1] != 1 / steps or h[2] <= 0 for h in history):
                 raise ValueError("observed accountant history differs from calibrated sigma/q")
         mechanisms.append(dict(mechanism,
+            source_rows=source_rows,
             independent_accounting=independent_accounting(sigma, 1 / steps, 10 * steps, epsilon),
             features_sha256=hashes[0], targets_sha256=hashes[1],
             observed_round_steps=[r["observed_round_steps"] for r in sorted(rows, key=lambda r: r["round"])]))
