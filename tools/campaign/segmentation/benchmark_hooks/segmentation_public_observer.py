@@ -67,6 +67,30 @@ def verified_guard(observer):
     return guard
 
 
+def observe_fallback(original, config, observer):
+    def fallback(*args, **kwargs):
+        verified_guard(observer)
+        kind, _error, trace = sys.exc_info()
+        if kind is not None:
+            frames = []
+            while trace is not None:
+                code = trace.tb_frame.f_code
+                frames.append({"file": Path(code.co_filename).name,
+                               "function": code.co_name, "line": trace.tb_lineno})
+                trace = trace.tb_next
+            payload = {"public_fixture_only": True, "exception_type": kind.__name__,
+                       "frames": frames}
+            path = Path(config["capture_dir"]) / ("failure-%d-%d.json" % (os.getpid(), time.time_ns()))
+            try:
+                with path.open("x", encoding="utf-8") as stream:
+                    json.dump(payload, stream, indent=2)
+                    stream.write("\n")
+            except OSError:
+                pass  # A diagnostic write must not replace the unchanged fallback reply.
+        return original(*args, **kwargs)
+    return fallback
+
+
 def attach(client_app, config, observer):
     verified_guard(observer)
     import torch
@@ -125,6 +149,7 @@ def attach(client_app, config, observer):
     fit._segmentation_public_observer = True
     harness.make_private_dpsgd = make_private
     client_app._dp_fit = fit
+    client_app._safe_fallback_reply = observe_fallback(client_app._safe_fallback_reply, config, observer)
 
 
 class ObservedLoader:

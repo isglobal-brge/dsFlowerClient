@@ -17,11 +17,15 @@ def install():
         raise RuntimeError("campaign site-packages is outside the isolated environment")
     source = Path(__file__).parent / "benchmark_hooks/segmentation_public_observer.py"
     target = destination / source.name
-    shutil.copyfile(source, target)
-    target.chmod(0o644)
+    temporary = target.with_suffix(".py.tmp")
+    shutil.copyfile(source, temporary)
+    temporary.chmod(0o644)
+    temporary.replace(target)
     pth = destination / "segmentation_public_observer.pth"
-    pth.write_text("import segmentation_public_observer; segmentation_public_observer.install()\n")
-    pth.chmod(0o644)
+    temporary = pth.with_suffix(".pth.tmp")
+    temporary.write_text("import segmentation_public_observer; segmentation_public_observer.install()\n")
+    temporary.chmod(0o644)
+    temporary.replace(pth)
     assert target.read_bytes() == source.read_bytes()
     print(json.dumps({"observer_sha256": hashlib.sha256(target.read_bytes()).hexdigest(),
                       "observer": str(target), "pth": str(pth),

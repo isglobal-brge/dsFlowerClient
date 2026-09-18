@@ -101,6 +101,24 @@ class PublicObserverTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 observer.verified_guard(item)
 
+    def test_failure_observer_preserves_reply_and_omits_message_and_locals(self):
+        observer.load_config(self.root)
+        original = mock.Mock(return_value="unchanged")
+        sentinel = "DO_NOT_RECORD_MESSAGE_OR_LOCAL"
+        with mock.patch.object(observer, "verified_guard"):
+            wrapped = observer.observe_fallback(original, self.config, object())
+            try:
+                raise ValueError(sentinel)
+            except ValueError:
+                self.assertEqual(wrapped("public-request", flag=True), "unchanged")
+        original.assert_called_once_with("public-request", flag=True)
+        files = list(Path(self.config["capture_dir"]).glob("failure-*.json"))
+        self.assertEqual(len(files), 1)
+        self.assertNotIn(sentinel, files[0].read_text())
+        record = json.loads(files[0].read_text())
+        self.assertEqual(record["exception_type"], "ValueError")
+        self.assertEqual(set(record), {"public_fixture_only", "exception_type", "frames"})
+
     def run_guarded_import(self, *, corrupt=False, wrong_steps=False):
         package = self.root / "dsflower_runner"
         package.mkdir()
@@ -118,6 +136,8 @@ def effective_dpsgd_mechanism(epsilon, delta, clip, n, batch, epochs, rounds):
 ''')
         (package / "client_app.py").write_text('''from . import dp_harness
 app = object()
+def _safe_fallback_reply(*args, **kwargs):
+    return {"unchanged_fallback": True}
 def _dp_fit(model, X, y, pcfg, pins, n_staged, cfg, master, noise_multiplier, **kwargs):
     assert master == b"untouched-secret" and noise_multiplier == 9.
     result = dp_harness.make_private_dpsgd(**kwargs)
