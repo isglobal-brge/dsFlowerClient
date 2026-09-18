@@ -4,6 +4,7 @@
 Run with benchmark_hooks and the runner parent on PYTHONPATH plus
 F_SEG_PUBLIC_BENCHMARK=1, F_SEG_INIT_SEED=20260919 and a fresh F_SEG_CAPTURE_DIR.
 """
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -34,7 +35,7 @@ def main():
     y[:, 1] = 1
     arrays, n = client_app._dp_fit(model, x, y,
         {"epsilon": 8, "delta": 1e-5, "clipping_norm": 1, "n_samples": 4},
-        pins, 4, cfg, b"synthetic-public-fixture-seed-001", mechanism["noise_multiplier"])
+        pins, 4, cfg, hashlib.sha256(b"synthetic-public-fixture-seed-001").digest(), mechanism["noise_multiplier"])
     files = list(directory.glob("accountant-*.json"))
     assert len(files) == 1
     record = json.loads(files[0].read_text())

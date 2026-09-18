@@ -2,17 +2,22 @@
 
 Place this directory and the byte-identical runner parent on PYTHONPATH only
 for the public campaign. No private tensors, labels or secrets are captured.
+Defer heavy imports until Flower actually loads the ServerApp, so generic
+SuperLink/CLI startup does not initialize the training runtime.
 """
+import importlib.machinery
 import os
+import sys
 
-if os.environ.get("F_SEG_PUBLIC_BENCHMARK") == "1":
+
+def _attach(server_app):
     import hashlib
     import json
     from pathlib import Path
     import time
     import numpy as np
     import torch
-    from dsflower_runner import client_app, dp_harness, server_app
+    from dsflower_runner import client_app, dp_harness
     from dsflower_runner.params import get_torch_params
 
     directory = Path(os.environ["F_SEG_CAPTURE_DIR"])
@@ -78,3 +83,34 @@ if os.environ.get("F_SEG_PUBLIC_BENCHMARK") == "1":
         return result
 
     client_app._dp_fit = fit
+
+
+class _ObservedLoader:
+    def __init__(self, wrapped):
+        self.wrapped = wrapped
+
+    def create_module(self, spec):
+        create = getattr(self.wrapped, "create_module", None)
+        return create(spec) if create is not None else None
+
+    def exec_module(self, module):
+        self.wrapped.exec_module(module)
+        _attach(module)
+
+    def __getattr__(self, name):
+        return getattr(self.wrapped, name)
+
+
+class _ServerAppObserver:
+    def find_spec(self, fullname, path=None, target=None):
+        if fullname != "dsflower_runner.server_app":
+            return None
+        spec = importlib.machinery.PathFinder.find_spec(fullname, path)
+        if spec is None or spec.loader is None or not hasattr(spec.loader, "exec_module"):
+            raise RuntimeError("public benchmark cannot resolve the ServerApp")
+        spec.loader = _ObservedLoader(spec.loader)
+        return spec
+
+
+if os.environ.get("F_SEG_PUBLIC_BENCHMARK") == "1":
+    sys.meta_path.insert(0, _ServerAppObserver())
