@@ -86,3 +86,12 @@ environment link: `run_cell.R` resolves this root before passing it to custodian
 workers. Resolve the root, not only its child symlink; an observed R directory
 walk took 82.1 seconds through the FUSE alias and 0.13 seconds directly.
 Change runtime placement only between cells and rerun readiness checks.
+The pod also relocated 37 generated launcher shebangs to that canonical Python
+interpreter after the first cohort cell: trusted ClientApp/Opacus imports took
+27.6 seconds through the FUSE prefix and 4.36 seconds directly. Package modules
+were unchanged. Later cells embed the relocation timestamp and every launcher's
+before/after hash in `installed_build.runtime_placement`; the original build and
+environment are retained. After readiness and 30 focused tests passed, the pod
+used `--jobs 2` under its measured 7.65-CPU/50-GB container limits, with one
+BLAS/OMP thread per process. The first cohort cell retains its earlier placement
+provenance. These operational changes do not change the frozen v1 protocol.
