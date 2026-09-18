@@ -39,7 +39,7 @@ def mechanism(n, cfg, epsilon):
     accountant.history = [(value['noise_multiplier'], value['sample_rate'], value['total_steps'])]
     delta0 = 1e-5/(1+math.exp(epsilon/2))
     eps0 = accountant.get_epsilon(delta0)
-    value.update(accountant='PRV', add_remove_delta=delta0,
+    value.update(calibration='trusted PRV with RDP fallback', verification_accountant='PRV', add_remove_delta=delta0,
                  independently_recomputed_replace_one_epsilon=2*eps0,
                  independently_recomputed_replace_one_delta=delta0*(1+math.exp(eps0)))
     assert 2*eps0 <= epsilon + 1e-8, 'independent full-horizon epsilon gate'

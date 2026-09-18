@@ -48,14 +48,18 @@ jsonlite::write_json(cfg,config_file,auto_unbox=TRUE,pretty=TRUE,digits=NA)
 started <- Sys.time()
 sha <- function(path) digest::digest(file=path,algo='sha256')
 commit <- function(repo) trimws(system2('git',c('-C',shQuote(file.path(workspace,repo)),'rev-parse','HEAD'),stdout=TRUE))
+build <- jsonlite::read_json(file.path(workspace,'runtime','build.json'),simplifyVector=FALSE)
 runner_hash <- dsFlowerClient:::.compute_local_runner_hash()
-evidence <- list(schema_version=1L,task='survival',status='running',
+stopifnot(identical(runner_hash,build$runner_sha256))
+evidence <- list(schema_version=1L,record_type='cell',task='survival',status='running',
   started_utc=format(started,'%Y-%m-%dT%H:%M:%SZ',tz='UTC'),
   dataset=meta,variant=variant,contract=contract,epsilon=epsilon,delta=1e-5,clip=1,
   adjacency='replace_one',privacy_unit='patient',site_count=3L,
-  package_commits=list(dsFlower=commit('dsFlower'),dsFlowerClient=commit('dsFlowerClient')),
+  package_commits=build$commits,installed_build=build,
+  campaign_tools_commit=commit('dsFlowerClient'),
   package_versions=list(dsFlower=as.character(packageVersion('dsFlower')),dsFlowerClient=as.character(packageVersion('dsFlowerClient')),R=R.version.string),
   runner_sha256=runner_hash,public_config=cfg,
+  mechanism_provenance='Effective sigma/q/steps recomputed from public fixture subject census using audited unchanged runtime; independent PRV verification. No new private endpoint.',
   evaluation='channel B, public held-out subjects only',
   score_conventions=list(time_ties='excluded',risk_ties=.5,hazard_risk='negative left-endpoint restricted mean',gap='central minus federated (historic sign reversed)'))
 # No transient running record is put in the archived evidence directory.

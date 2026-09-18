@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "task": "survival",
+  "status": "failed",
+  "started_utc": "2026-09-18T10:50:41Z",
+  "dataset": {
+    "schema_version": 1,
+    "dataset": "synthetic-public",
+    "source": {
+      "release": "prepare_synthetic.py, numpy default_rng1101",
+      "licence": "CC0-1.0",
+      "sha256": "f7052b368c81690e51b923775f77070b8e24b0f2f21c1b6d4be06a70fcc35585"
+    },
+    "public_fixture": true,
+    "seed": 1101,
+    "subset": "synthetic",
+    "n_original_rows": 90,
+    "n_train": 72,
+    "n_test": 18,
+    "sites": [
+      {
+        "site": 1,
+        "source_rows": 24,
+        "n_subjects": 24,
+        "split_sha256": "ade67b8ca7adb859054c5c752a5f9c6646505e7005663770dbb0e7a180595b7b"
+      },
+      {
+        "site": 2,
+        "source_rows": 24,
+        "n_subjects": 24,
+        "split_sha256": "583ea78118b3f7dcba1787a342d20f58dbcb244caee3963330e0a7f0cf5844d5"
+      },
+      {
+        "site": 3,
+        "source_rows": 24,
+        "n_subjects": 24,
+        "split_sha256": "1006315018d24c0ede665bd0446b2fabdf27b9e60ca984e19c11cff7a13667de"
+      }
+    ],
+    "features": "x",
+    "feature_bounds": {
+      "lower": -1,
+      "upper": 1
+    },
+    "train_sha256": "f7052b368c81690e51b923775f77070b8e24b0f2f21c1b6d4be06a70fcc35585",
+    "test_sha256": "19bd3c89fe2d252e7d18eadbbb92c5f99d8a64667daecc36f30ff7cd3b55e7f8",
+    "protocol_sha256": "f05e0eeddbb2da4ec039d2a43ca8f8b56737f1b4ceb5aee33d1f5600271c9f70"
+  },
+  "variant": "weibull",
+  "contract": "pytorch_aft",
+  "epsilon": 8,
+  "delta": 1e-05,
+  "clip": 1,
+  "adjacency": "replace_one",
+  "privacy_unit": "patient",
+  "site_count": 3,
+  "package_commits": {
+    "dsFlower": "1ce9dc30710029261d1cc1f2dea3520b5cae3947",
+    "dsFlowerClient": "36447c71ed495f92014a918806d1e67f40158623"
+  },
+  "package_versions": {
+    "dsFlower": "0.4.5",
+    "dsFlowerClient": "0.4.4",
+    "R": "R version 4.5.2 (2025-10-31)"
+  },
+  "runner_sha256": "a0f21cee004e7db42fec40115096ade15c04a9e2821b5ed8d895d3622fd5d7fb",
+  "public_config": {
+    "learning-rate": 0.05,
+    "weight-decay": 0,
+    "l1-penalty": 0,
+    "optimizer-name": "sgd",
+    "scheduler-name": "none",
+    "survival-config-b64": "eyJzY2hlbWFfdmVyc2lvbiI6MSwidGltZV91bml0IjoiZGF5cyIsInRpbWVfb3JpZ2luIjoiYmFzZWxpbmUiLCJ0X21pbiI6MSwiaG9yaXpvbiI6MTgyNSwidGltZV9zY2FsZSI6MzY1LCJkaXN0cmlidXRpb24iOiJ3ZWlidWxsIiwiZGlzcGVyc2lvbiI6MX0=",
+    "optimizer-momentum": 0,
+    "optimizer-nesterov": false,
+    "model-spec-b64": "eyJraW5kIjoic2VxdWVudGlhbCIsImxheWVycyI6W3sib3AiOiJsaW5lYXIiLCJvdXQiOiJAb3V0In1dfQ==",
+    "loss-name": "aft_weibull_nll",
+    "num-features": 1,
+    "num-classes": 2,
+    "num-labels": 2,
+    "num-server-rounds": 2,
+    "batch-size": 128,
+    "local-epochs": 1
+  },
+  "evaluation": "channel B, public held-out subjects only",
+  "score_conventions": {
+    "time_ties": "excluded",
+    "risk_ties": 0.5,
+    "hazard_risk": "negative left-endpoint restricted mean",
+    "gap": "central minus federated (historic sign reversed)"
+  },
+  "error": "Could not verify that target DataSHIELD symbols are unused.",
+  "cleanup_ok": true,
+  "finished_utc": "2026-09-18T10:53:04Z",
+  "elapsed_s": 142.763114213943,
+  "investigation": "Infrastructure preflight failed: campaign proxy inherited dsListSymbols against empty dummy server. Added explicit worker forwarding; package admission guard preserved. No model training or score occurred.",
+  "package_commit_provenance": "Source HEADs captured at attempt time; prototype installed build predates final F3. Not a validated utility cell.",
+  "phase": "infrastructure_preflight"
+}
