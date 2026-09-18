@@ -189,6 +189,10 @@ def install():
     config = load_config()
     if config is None:
         return
+    # Limit native pools before numerical imports; the trusted clean environment
+    # intentionally strips inherited analyst thread controls. Public fixture only.
+    for name in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
+        os.environ[name] = "2"
     if "dsflower_runner" in sys.modules:
         raise RuntimeError("public observer must precede any runner import")
     # sitecustomize runs after .pth processing and inserts its mandatory finder

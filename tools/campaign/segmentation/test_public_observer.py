@@ -101,6 +101,12 @@ class PublicObserverTests(unittest.TestCase):
             with self.assertRaises(RuntimeError):
                 observer.verified_guard(item)
 
+    def test_public_bootstrap_limits_native_pools_before_numerical_imports(self):
+        with mock.patch.object(observer, "load_config", return_value=self.config), mock.patch.object(sys, "meta_path", list(sys.meta_path)), mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(sys, "modules", {k: v for k, v in sys.modules.items() if k != "dsflower_runner"}):
+            observer.install()
+            for name in ("OMP_NUM_THREADS", "MKL_NUM_THREADS", "OPENBLAS_NUM_THREADS", "NUMEXPR_NUM_THREADS"):
+                self.assertEqual(os.environ[name], "2")
+
     def test_failure_observer_preserves_reply_and_omits_message_and_locals(self):
         observer.load_config(self.root)
         original = mock.Mock(return_value="unchanged")
