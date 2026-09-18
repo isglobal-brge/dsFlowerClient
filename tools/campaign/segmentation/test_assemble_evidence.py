@@ -49,12 +49,13 @@ def make_cell(root):
              "sites": [train[:69], train[69:137], train[137:]]}
     write_json(root / "effective-split.json", split)
     split_hash = evidence.sha256(root / "effective-split.json")
-    (root / "artifact").mkdir()
-    (root / "artifact" / "model.pt").write_bytes(b"synthetic-test-artifact")
-    artifact_hash = evidence.sha256(root / "artifact" / "model.pt")
+    artifact_dir = root / "artifact" / "generated-run"
+    artifact_dir.mkdir(parents=True)
+    (artifact_dir / "model.pt").write_bytes(b"synthetic-test-artifact")
+    artifact_hash = evidence.sha256(artifact_dir / "model.pt")
     write_json(root / "federation-status.json", {"status": "predicted_pending_public_metric_summary",
         "cleanup_ok": True, "dataset": "breast", "variant": "full", "epsilon": 8,
-        "seed": seed, "model_sha256": artifact_hash, "elapsed_s": 1.})
+        "seed": seed, "model_sha256": artifact_hash, "elapsed_s": 1., "output_dir": str(artifact_dir)})
     metric = {"all": {"dice": .2, "iou": .1}, "foreground_positive": {"dice": .2, "iou": .1},
               "empty_reference": None}
     trivial = {"strongest_dice": .3}
@@ -147,9 +148,21 @@ class EvidenceTests(unittest.TestCase):
             row = evidence.load_replicate(root, "breast", "full", 8, evidence.SEEDS[0])
             self.assertEqual(row["federated_dp"]["all"]["dice"], .2)
             self.assertEqual(row["elapsed_s"], 3.)
-            (root / "artifact" / "model.pt").write_bytes(b"other")
+            evidence.released_artifact(root).write_bytes(b"other")
             with self.assertRaisesRegex(ValueError, "artifact checksum"):
                 evidence.load_replicate(root, "breast", "full", 8, evidence.SEEDS[0])
+
+    def test_artifact_resolution_uses_recorded_child_and_rejects_other_cells(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_cell(root)
+            actual = (root / "artifact" / "generated-run" / "model.pt").resolve()
+            self.assertEqual(evidence.released_artifact(root), actual)
+            self.assertEqual(evidence.released_artifact(root, {"output_dir": "artifact/generated-run"}), actual)
+            with self.assertRaisesRegex(ValueError, "outside this campaign cell"):
+                evidence.released_artifact(root, {"output_dir": str(root.parent / "other-cell")})
+            with self.assertRaisesRegex(ValueError, "did not record"):
+                evidence.released_artifact(root, {})
 
     def test_load_rejects_mismatched_initialization(self):
         with tempfile.TemporaryDirectory() as temporary:

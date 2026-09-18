@@ -25,6 +25,24 @@ def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def released_artifact(directory, status=None):
+    """Resolve the actual fit output recorded by federation, including its run child."""
+    status = read_json(directory / "federation-status.json") if status is None else status
+    output = status.get("output_dir")
+    if not isinstance(output, str) or not output:
+        raise ValueError("federation did not record its released artifact directory")
+    output = Path(output)
+    if not output.is_absolute():
+        output = directory / output
+    output = output.resolve()
+    if not output.is_relative_to((directory / "artifact").resolve()):
+        raise ValueError("released artifact directory is outside this campaign cell")
+    artifact = output / "model.pt"
+    if not artifact.is_file():
+        raise FileNotFoundError("recorded federation model.pt is missing")
+    return artifact
+
+
 @lru_cache(maxsize=None)
 def independent_accounting(sigma, q, steps, epsilon):
     from opacus.accountants import PRVAccountant
@@ -136,7 +154,7 @@ def load_replicate(directory, dataset, variant, epsilon, seed):
         raise ValueError("twin epsilon or public populations differ from federation")
     if twins["trivial"] != channel["trivial"]:
         raise ValueError("twins and channel B scored different reference masks")
-    artifact = sha256(directory / "artifact" / "model.pt")
+    artifact = sha256(released_artifact(directory, status))
     if artifact != channel["artifact_sha256"] or artifact != status["model_sha256"]:
         raise ValueError("scored artifact checksum differs from released federation artifact")
     capture = directory / "public-capture"
