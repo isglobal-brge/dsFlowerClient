@@ -89,6 +89,40 @@ fit <- ds.flower.submit(
 Aggregation strategy is post-processing of already-private node updates and is
 not an analyst privacy knob.
 
+## Right-censored survival
+
+The custodian must configure patient privacy with a stable subject identifier.
+Use baseline covariates and two ordered outcome columns: time in days from
+baseline, then event (1 = event, 0 = right-censored). Public time bounds and
+fixed dispersion are chosen before inspecting private outcomes.
+
+```r
+survival_model <- ds.flower.model.pytorch_aft(
+  horizon = 3650, time_scale = 365,
+  distribution = "weibull", dispersion = 1
+)
+# Alternatively, ten public intervals and one K-output head per subject:
+# survival_model <- ds.flower.model.pytorch_discrete_hazard(
+#   edges = seq(0, 3650, by = 365))
+
+survival_fit <- ds.flower.fit(
+  conns, symbol = "D", model = survival_model,
+  target = c("followup_days", "event"),
+  features = c("age", "cholesterol", "heart_rate"),
+  feature_bounds = list(lower = c(18, 50, 30), upper = c(100, 400, 220)),
+  rounds = 5L
+)
+# public_test contains only public or independently authorized local data.
+risk <- ds.flower.predict(survival_fit, public_test, type = "risk")
+curves <- ds.flower.predict(
+  survival_fit, public_test, type = "survival", times = c(365, 730, 1825))
+```
+
+Private validation, holdout, CV and survival training inside HPO fail before
+node contact. Evaluate the released model on a disjoint public or authorized
+local test set. The [survival article](survival-segmentation.html) defines
+interval endpoints, invalid-record totalization and local prediction semantics.
+
 ## Outputs and diagnostics
 
 The intended output is the DP global-model artifact returned by the Flower run.
