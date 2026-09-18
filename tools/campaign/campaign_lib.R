@@ -291,7 +291,8 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
                                    epsilon, delta = 1e-6, rounds,
                                    model_params, work_dir, venv_root,
                                    contract = "pytorch_logreg",
-                                   cv_folds = NULL) {
+                                   cv_folds = NULL, target = "target",
+                                   patient_column = NULL, score_function = NULL) {
   n_sites <- length(site_data)
   dir.create(work_dir, recursive = TRUE, showWarnings = FALSE, mode = "0700")
   output_dir <- file.path(work_dir, "artifact")
@@ -347,7 +348,8 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
   worker_libpaths <- .libPaths()
   parallel::clusterMap(
     cluster,
-    function(index, data, work_dir, libpaths, venv_root, epsilon, delta) {
+    function(index, data, work_dir, libpaths, venv_root, epsilon, delta,
+             patient_column) {
       .libPaths(libpaths)
       Sys.setenv(
         DSFLOWER_VENV_ROOT = venv_root,
@@ -362,6 +364,11 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
         dsflower.dp_per_training_epsilon = epsilon,
         dsflower.dp_per_training_delta = delta
       )
+      if (!is.null(patient_column)) {
+        options(dsflower.dp_unit = "patient",
+                dsflower.patient_column = patient_column,
+                dsflower.dp_clipping_norm = 1)
+      }
       suppressPackageStartupMessages({
         library(DSI)
         library(DSLite)
@@ -385,7 +392,7 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
       libpaths = worker_libpaths,
       venv_root = venv_root,
       epsilon = epsilon,
-      delta = delta),
+      delta = delta, patient_column = patient_column),
     SIMPLIFY = FALSE
   )
 
@@ -466,14 +473,14 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
   fit <- ds.flower.fit(
     conns,
     symbol = "D",
-    target = "target",
+    target = target,
     features = features,
     model = contract,
     model_params = model_params,
     strategy = "fedavg",
     rounds = as.integer(rounds),
     feature_bounds = feature_bounds,
-    target_levels = c("0", "1"),
+    target_levels = if (is.null(patient_column)) c("0", "1") else NULL,
     torch_backend = "cpu",
     output_dir = output_dir,
     silent = TRUE,
@@ -512,6 +519,9 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
   history <- jsonlite::fromJSON(file.path(persisted_dir, "history.json"))
 
   # Channel B: consume the released artifact locally on the held-out test set.
+  if (!is.null(score_function)) {
+    metrics <- score_function(fit, test, features)
+  } else {
   prob <- ds.flower.predict(fit, test[, features, drop = FALSE], type = "prob")
   p1 <- if (is.matrix(prob) || is.data.frame(prob)) {
     prob <- as.matrix(prob)
@@ -524,6 +534,7 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
     as.numeric(prob)
   }
   metrics <- campaign_metrics(test$target, p1)
+  }
 
   cleanup()
   Sys.sleep(1)
@@ -535,6 +546,8 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
 
   list(
     metrics = metrics,
+    artifact_dir = persisted_dir,
+    cleanup_ok = cleanup_ok,
     n_clients = as.integer(metadata$n_clients),
     n_failures = as.integer(sum(history$n_failures)),
     n_rounds_run = nrow(history),
