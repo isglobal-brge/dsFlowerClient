@@ -10,8 +10,9 @@ out <- normalizePath(args[[5]], mustWork = FALSE)
 rounds <- as.integer(args[[6]])
 epochs <- as.integer(args[[7]])
 .libPaths(c(file.path(workspace, 'runtime', 'rlib'), .libPaths()))
+server_root <- normalizePath(file.path(workspace,'runtime','server'))
 Sys.setenv(DSFLOWER_CLIENT_VENV_ROOT=file.path(workspace,'runtime'),
-           DSFLOWER_VENV_ROOT=file.path(workspace,'runtime','server'),
+           DSFLOWER_VENV_ROOT=server_root,
            DSFLOWER_TEST_ALLOW_EPHEMERAL_SECRET='1',
            UV_CACHE_DIR=file.path(workspace,'runtime','uv-cache'),
            OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1', MKL_NUM_THREADS='1')
@@ -80,7 +81,7 @@ evidence <- list(schema_version=1L,record_type='cell',task='survival',status='ru
 result <- tryCatch({
   fed <- campaign_run_federated(sites,test,features,meta$feature_bounds,
      epsilon=epsilon,delta=1e-5,rounds=rounds,model_params=model_params,
-     work_dir=file.path(out,'federation'),venv_root=file.path(workspace,'runtime','server'),
+     work_dir=file.path(out,'federation'),venv_root=server_root,
      contract=contract,target=c('time','event'),patient_column='subject_id',
      score_function=function(fit,test,features) {
        # Exercise package channel-B inference before independent scoring.
