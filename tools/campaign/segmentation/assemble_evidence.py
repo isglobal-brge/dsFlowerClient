@@ -155,6 +155,7 @@ def planned_cells():
 
 
 def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None, batch_size=16):
+    execution = {}
     execution_path = directory / "execution-status.json"
     if execution_path.exists():
         execution = read_json(execution_path)
@@ -243,6 +244,8 @@ def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None, 
         site_mechanisms=mechanisms, pooled_mechanism=pooled,
         federated_dp=channel["metrics"], trivial=channel["trivial"],
         artifact_sha256=artifact, cleanup_ok=True,
+        execution_history=[{k: r[k] for k in ("status", "phase", "exit_code", "elapsed_s", "started_at", "recovery") if k in r}
+                           for r in (execution.get("previous_execution", {}), execution) if r],
         elapsed_s=elapsed + twins["elapsed_s"],
         timing={"federation_s": elapsed, "twins_s": twins["elapsed_s"]},
         peak_cuda_bytes=max(peaks + [twins["peak_cuda_bytes"]]),
@@ -309,6 +312,14 @@ def assemble(runs, provenance, runtime, protocol, batch_size=16):
             try:
                 directory, execution = directories[key]
                 if execution.get("status") == "failed":
+                    federation_path = directory / "federation-status.json"
+                    if federation_path.exists():
+                        federation = read_json(federation_path)
+                        cell["failure_detail"] = {k: federation[k] for k in ("status", "error", "cleanup_ok", "elapsed_s") if k in federation}
+                    diagnostic = directory / "public-stalled-control.json"
+                    if diagnostic.exists():
+                        cell["operational_cancellation"] = read_json(diagnostic)
+                    cell["accountant_records"] = len(list((directory / "public-capture").glob("accountant-*.json")))
                     raise ValueError(execution.get("error") or
                         "Execution failed in %s (exit code %s)" %
                         (execution.get("phase", "federation"), execution.get("exit_code", "unrecorded")))
