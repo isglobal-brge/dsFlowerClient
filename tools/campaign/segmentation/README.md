@@ -79,3 +79,11 @@ Runtime metadata records exact package commits, runner hash, dependencies, devic
 Protocol v2: run `run_matrix.py --root /workspace/segmentation --workers 2 --batch-size 16` and separately `--batch-size 64`. Each executes 33 cells into `runs-batch16` / `runs-batch64`; retain both arms (66 cells). Pass the same `--batch-size` to central_twins.py and assemble_evidence.py, and assemble each arm into a separate evidence directory. Direct federation selects the arm with `F_SEG_BATCH_SIZE=16` or `64`. All other frozen settings remain unchanged; see protocol.md amendment.
 
 For a recorded nonzero R exit **after** successful saved prediction and cleanup, `resume_postprocessing.py --root ROOT --work CELL --batch-size 16|64` validates the existing model, split, initialization and all accountant captures, preserves the original execution status, then runs only channel-B and twins. It never retrains federation and refuses previously attempted postprocessing. Upload tool changes to a temporary filename and atomically rename; never overwrite an Rscript inode that an active interpreter may still be reading. Startup-only retries must preserve the original directory and prove absence of initialization, training and score artifacts first; `run_matrix.py --cell EXACT_PLANNED_NAME` retains the same existing-directory rejection.
+
+After assembling both arms, place their public JSON archives under `inst/extdata/campaign/segmentation/batch16` and `batch64`, then run:
+
+```sh
+python combine_evidence.py --root /path/to/inst/extdata/campaign/segmentation
+```
+
+The combined v2 status validates all 66 planned cell identities, preserves failures, and references both arm archives by hash. It never pools scores or selects a winning arm. The pkgdown article shows successful observations from incomplete cohorts without presenting them as complete three-seed results.
