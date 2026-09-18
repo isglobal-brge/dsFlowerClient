@@ -92,6 +92,13 @@ def make_cell(root):
 
 
 class EvidenceTests(unittest.TestCase):
+    def test_invalidated_cell_rejected_before_scores(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "INVALIDATED.json").write_text('{}')
+            with self.assertRaisesRegex(ValueError, "pipeline defect"):
+                evidence.load_replicate(root, "busbra", "full", 8, 20260919)
+
     def setUp(self):
         self.accounting = patch.object(evidence, "independent_accounting",
             return_value={"accountant": "synthetic-unit-test", "epsilon_replace_one": 7.99})

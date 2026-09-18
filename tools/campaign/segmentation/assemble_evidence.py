@@ -155,6 +155,8 @@ def planned_cells():
 
 
 def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None, batch_size=16):
+    if (directory / "INVALIDATED.json").exists():
+        raise ValueError("invalid: pipeline defect under investigation")
     execution = {}
     execution_path = directory / "execution-status.json"
     if execution_path.exists():

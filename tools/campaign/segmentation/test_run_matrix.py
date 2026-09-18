@@ -11,6 +11,15 @@ import run_matrix
 
 
 class MatrixArtifactTests(unittest.TestCase):
+    def test_hold_rejects_launch_before_environment_or_training(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            (Path(temporary) / "CAMPAIGN_HOLD.json").write_text('{}')
+            with patch("sys.argv", ["run_matrix.py", "--root", temporary]), \
+                 patch("run_matrix.subprocess.run") as run:
+                with self.assertRaisesRegex(ValueError, "held"):
+                    run_matrix.main()
+                run.assert_not_called()
+
     def run_fixture(self, root, bad_output=False, single_cell=False):
         logs = root / "logs"
         logs.mkdir()

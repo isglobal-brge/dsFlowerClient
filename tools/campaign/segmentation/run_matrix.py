@@ -27,6 +27,8 @@ def main():
     parser.add_argument("--cell", help="Execute one exact planned cell name; existing attempts still refuse overwrite")
     args = parser.parse_args()
     root = args.root.resolve()
+    if (root / "CAMPAIGN_HOLD.json").exists():
+        raise ValueError("Campaign held for pipeline diagnosis")
     tools = Path(__file__).resolve().parent
     runs = root / ("runs-batch%d" % args.batch_size)
     runs.mkdir(exist_ok=True)
@@ -74,6 +76,8 @@ def main():
                 result["phase"] = phase
                 write_status(status_path, result)
                 try:
+                    if (root / "CAMPAIGN_HOLD.json").exists():
+                        raise ValueError("Campaign held for pipeline diagnosis")
                     if phase == "federation":
                         command = [str(tools / "run_federated.sh"), str(prepared),
                             str(prepared / f"split-{seed}.json"), str(epsilon), str(seed), str(work)]
