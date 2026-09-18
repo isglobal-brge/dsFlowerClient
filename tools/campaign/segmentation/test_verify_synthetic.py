@@ -78,9 +78,10 @@ class SyntheticVerificationTests(unittest.TestCase):
 
     def make_run(self):
         run = self.root / "run"
-        capture, artifact = run / "public-capture", run / "artifact"
+        capture, artifact = run / "public-capture", run / "artifact/saved-synthetic-model"
+        self.artifact = artifact
         capture.mkdir(parents=True)
-        artifact.mkdir()
+        artifact.mkdir(parents=True)
         cfg = dict(config(), **{"batch-size": 8, "local-epochs": 1, "num-server-rounds": 2})
         model = params.load_user_model(cfg, segmentation.FEATURE_DIM, "segmentation_bce_dice")
         for parameter in model.parameters():
@@ -107,6 +108,7 @@ class SyntheticVerificationTests(unittest.TestCase):
         (run / "federation-status.json").write_text(json.dumps(dict(
             status="predicted_pending_public_metric_summary", cleanup_ok=True,
             synthetic=True, dataset="synthetic", seed=self.split["seed"], epsilon=4,
+            output_dir=str(artifact),
             model_sha256=verifier.sha256(artifact / "model.pt"),
             split_sha256=verifier.sha256(self.prepared / "split-20260919.json"))))
         return run
@@ -132,7 +134,7 @@ class SyntheticVerificationTests(unittest.TestCase):
 
     def test_failed_history_and_extra_state_cannot_be_accepted(self):
         run = self.make_run()
-        history_path = run / "artifact/history.json"
+        history_path = self.artifact / "history.json"
         history = json.loads(history_path.read_text())
         history[1]["n_failures"] = 1
         history_path.write_text(json.dumps(history))
@@ -142,7 +144,7 @@ class SyntheticVerificationTests(unittest.TestCase):
                 verifier.verify(self.prepared, run)
             history[1]["n_failures"] = 0
             history_path.write_text(json.dumps(history))
-            model_path = run / "artifact/model.pt"
+            model_path = self.artifact / "model.pt"
             state = torch.load(model_path, weights_only=True)
             state["encoder.running_mean"] = torch.zeros(128)
             torch.save(state, model_path)
@@ -152,6 +154,15 @@ class SyntheticVerificationTests(unittest.TestCase):
             status_path.write_text(json.dumps(status))
             with self.assertRaisesRegex(ValueError, "six finite trained decoder parameters"):
                 verifier.verify(self.prepared, run)
+
+    def test_artifact_directory_must_belong_to_the_actual_run(self):
+        run = self.make_run()
+        status_path = run / "federation-status.json"
+        status = json.loads(status_path.read_text())
+        status["output_dir"] = str(self.root)
+        status_path.write_text(json.dumps(status))
+        with self.assertRaisesRegex(ValueError, "outside this run"):
+            verifier.verify(self.prepared, run)
 
 
 if __name__ == "__main__":

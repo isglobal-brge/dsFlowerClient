@@ -167,6 +167,12 @@ def verify(prepared, run):
     require(status.get("status") == "predicted_pending_public_metric_summary"
             and status.get("cleanup_ok") is True and status.get("synthetic") is True
             and status.get("dataset") == "synthetic", "actual synthetic federation did not complete cleanly")
+    require(isinstance(status.get("output_dir"), str), "artifact output directory missing")
+    artifact = Path(status["output_dir"])
+    artifact_root = (run / "artifact").resolve()
+    require(artifact.is_absolute() and artifact.is_dir()
+            and (artifact.resolve() == artifact_root or artifact_root in artifact.resolve().parents),
+            "artifact output directory is outside this run")
     require(status.get("epsilon") in (1, 4, 8), "synthetic budget changed")
     split_path = prepared / "split-20260919.json"
     require(status.get("split_sha256") == sha256(split_path), "source split digest changed")
@@ -190,7 +196,6 @@ def verify(prepared, run):
     X, _, expected_sites = fixture_tensors(prepared, split, encoder, device)
     records = [json.loads(path.read_text()) for path in sorted(capture.glob("accountant-*.json"))]
     accounting = verify_captures(records, expected_sites, status["epsilon"])
-    artifact = run / "artifact"
     metadata = json.loads((artifact / "metadata.json").read_text())
     require(metadata.get("status") == "success" and metadata.get("available") is True
             and metadata.get("n_clients") == 3 and metadata.get("model") == "pytorch_resnet18_segmentation"
