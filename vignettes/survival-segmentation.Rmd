@@ -40,7 +40,7 @@ Reported event density includes the original-time Jacobian.
 ```{r aft, eval=FALSE}
 model <- ds.flower.model.pytorch_aft(
   horizon = 1825, time_scale = 365,
-  distribution = "weibull", dispersion = 1,
+  distribution = "lognormal", dispersion = 1,
   hidden_layers = integer(0))
 fit <- ds.flower.fit(
   conns, symbol = "D", target = c("time", "event"),
@@ -145,6 +145,15 @@ diagnostics, not privacy proofs. Here shortfall is `G=central-federated`, the
 reverse sign of the older article's delta. Confidence intervals describe
 variation over matched public split replicates; overlapping splits and only
 three replicates limit their interpretation.
+
+Log-normal AFT is the introductory example because the reviewer's exploratory
+pooled probes found useful ranking and better held-out NLL than their
+covariate-free null. Those probes are not release evidence. Their Weibull arms
+(including nonprivate training) and hazard DP arms had worse NLL than their
+nulls under the fixed schedules. Concordance measures ranking, not probability
+calibration; inspect held-out NLL alongside concordance in the executed matrix.
+The campaign retains its preregistered v1 schedule and reports every family,
+including failed floors, without selecting models on its held-out results.
 
 ```{r evidence-census, echo=FALSE}
 cat(length(executed), "executed cells and", length(failed),
