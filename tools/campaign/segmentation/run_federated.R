@@ -121,10 +121,18 @@ result <- tryCatch({
                               capture_dir = capture_dir, seed = seed),
                          observer_config, auto_unbox = TRUE)
     Sys.chmod(observer_config, "0600")
-    Sys.setenv(DSFLOWER_VENV_ROOT = venv,
+    # Each DSLite worker represents a distinct custodian. Give its unchanged
+    # spawn lock/PID registry its own POSIX parent; share only verified binaries.
+    worker_venv <- file.path(secret_dir, "venvs")
+    dir.create(worker_venv, mode = "0700", showWarnings = FALSE)
+    for (framework in c("pytorch", "pytorch-gpu")) {
+      stopifnot(file.symlink(normalizePath(file.path(venv, framework)),
+                            file.path(worker_venv, framework)))
+    }
+    Sys.setenv(DSFLOWER_VENV_ROOT = worker_venv,
                DSFLOWER_NODE_SECRET_FILE = file.path(secret_dir, paste0("secret-site", index)),
                DSFLOWER_TEST_ALLOW_EPHEMERAL_SECRET = "1")
-    options(dsflower.venv_root = venv,
+    options(dsflower.venv_root = worker_venv,
             dsflower.dp_unit = "patient", dsflower.patient_column = "subject_id",
             dsflower.dp_per_training_epsilon = epsilon, dsflower.dp_per_training_delta = 1e-5,
             dsflower.dp_clipping_norm = 1,
