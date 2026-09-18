@@ -45,10 +45,17 @@
 #' @param type Character; \code{"response"} returns a predicted class for
 #'   classification models and a continuous response for regression/count
 #'   models. \code{"prob"} returns probabilities for classification models.
+#' @param times Optional public evaluation times in `[0, horizon]` for a survival
+#'   model. `type = "survival"` returns curves and times; `"risk"` returns
+#'   negative AFT location or negative grid restricted mean. `"median"` and
+#'   `"response"` return median time; a hazard median beyond the public horizon
+#'   is `NA`. The default curve grid is the public edges (hazard) or `[0, horizon]`.
 #' @return A response vector or probability matrix. Saved vision and native-tree
 #'   classifiers return response values from their ordered public target levels.
 #' @export
-ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
+ds.flower.predict <- function(
+    model, newdata, type = c("response", "prob", "survival", "risk", "median"),
+    times = NULL) {
   type <- match.arg(type)
 
   # Resolve model directory and framework
@@ -56,6 +63,21 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   model_file <- info$model_file
   framework <- info$framework
   contract <- info$contract %||% list()
+  survival <- .is_survival_loss(contract$loss_name)
+  if (survival) {
+    contract$survival_config <- .validate_survival_config(
+      contract$survival_config, contract$loss_name)
+    if (identical(type, "prob")) {
+      stop("Use type = 'survival' for survival curves.", call. = FALSE)
+    }
+    if (!is.null(times) && (!is.numeric(times) || !length(times) ||
+        anyNA(times) || any(!is.finite(times)) || any(times < 0) ||
+        any(times > contract$survival_config$horizon))) {
+      stop("Survival prediction times must lie in [0, horizon].", call. = FALSE)
+    }
+  } else if (!type %in% c("response", "prob") || !is.null(times)) {
+    stop("Survival prediction types/times require a survival model.", call. = FALSE)
+  }
   if (!is.character(contract$data_kind) || length(contract$data_kind) != 1L ||
       is.na(contract$data_kind) ||
       !contract$data_kind %in% c("tabular", "image")) {
@@ -117,6 +139,9 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
              "--loss-name", contract$loss_name,
              "--num-classes", as.character(contract$num_classes %||% 2L),
              "--num-labels", as.character(contract$num_labels %||% 2L),
+             if (survival) c("--survival-config-b64",
+               .spec_to_b64(contract$survival_config)),
+             if (!is.null(times)) c("--times-b64", .spec_to_b64(as.list(times))),
              # Repeat the node's public clip + affine transform when configured.
              if (identical(framework, "pytorch") && !is.null(info$bounds))
                c("--bounds-b64", .spec_to_b64(info$bounds))),
@@ -128,7 +153,11 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     stop("Prediction failed:\n", result$stderr, call. = FALSE)
   }
 
-  jsonlite::fromJSON(result$stdout)
+  value <- jsonlite::fromJSON(result$stdout)
+  if (survival && type %in% c("response", "median")) {
+    value <- vapply(value, function(x) if (is.null(x)) NA_real_ else x, numeric(1))
+  }
+  value
 }
 
 .format_vision_local_predictions <- function(
@@ -560,7 +589,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   }
   list(model_spec = if (is.list(meta$model_spec)) meta$model_spec else NULL,
        loss_name = loss, num_classes = n_classes, num_labels = n_labels,
-       data_kind = data_kind)
+       data_kind = data_kind, survival_config = meta$survival_config)
 }
 
 #' Read public feature bounds from a model directory's metadata.json

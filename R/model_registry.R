@@ -118,7 +118,8 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   if (!is.null(loss)) {
     allowed <- c("bce_logits", "cross_entropy", "mse", "poisson_nll",
                  "multilabel_bce", "hinge", "negbin_nll", "gamma_nll",
-                 "huber", "quantile", "ordinal")
+                 "huber", "quantile", "ordinal",
+                 "aft_weibull_nll", "aft_lognormal_nll")
     if (!is.character(loss) || length(loss) != 1L || !loss %in% allowed) {
       stop("'loss' must be one of the node allowlist: ",
            paste(allowed, collapse = ", "), ".", call. = FALSE)
@@ -530,6 +531,12 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
          paste(choices[[key]], collapse = ", "), ".", call. = FALSE)
   }
   .dsflower_validate_parameter_limits(resolved)
+  if (identical(model$name, "pytorch_aft")) {
+    if (!resolved$distribution %in% c("weibull", "lognormal")) {
+      stop("Survival distribution must be weibull or lognormal.", call. = FALSE)
+    }
+    .survival_config(resolved, .dsflower_model_loss(model, resolved))
+  }
   shape_dims <- switch(model$name,
     pytorch_cnn = 3L,
     pytorch_resnet = 3L,
@@ -647,6 +654,9 @@ ds.flower.model_parameters <- function(name) {
   if (identical(model$track, "native_tree")) {
     return(if (identical(params$task, "regression"))
       "squared_error" else "binary_logistic")
+  }
+  if (identical(model$name, "pytorch_aft")) {
+    return(paste0("aft_", params$distribution, "_nll"))
   }
   model$loss
 }
@@ -995,6 +1005,21 @@ ds.flower.model_parameters <- function(name) {
       parameter_aliases = class_aliases,
       required_parameters = c("n_tokens", "n_features"),
       description = "GRU sequence model (sanitized Opacus DPGRU, typed-graph DAG).")
+
+  # ---- neural: subject-level right-censored survival ----
+  neural_reg("pytorch_aft", "neural",
+      generate = function(p) .neural_mlp_spec(p$hidden_layers),
+      loss = "aft_weibull_nll",
+      defaults = list(hidden_layers = integer(0), distribution = "weibull",
+                      dispersion = 1, time_scale = 1, t_min = 1,
+                      time_unit = "days", time_origin = "baseline"),
+      parameter_types = with_common(
+        hidden_layers = "hidden_layers", distribution = "character",
+        dispersion = "positive_number", time_scale = "positive_number",
+        t_min = "positive_number", horizon = "positive_number",
+        time_unit = "character", time_origin = "character"),
+      required_parameters = "horizon",
+      description = "Subject-level AFT with fixed public Weibull shape or log-normal sigma.")
 
   # ---- neural: vision head (frozen backbone is node-resident; the spec is the
   #      trainable head, with @in injected node-side from the backbone feature dim).

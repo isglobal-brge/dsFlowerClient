@@ -4,7 +4,12 @@
 \alias{ds.flower.predict}
 \title{Predict with a federated model}
 \usage{
-ds.flower.predict(model, newdata, type = c("response", "prob"))
+ds.flower.predict(
+  model,
+  newdata,
+  type = c("response", "prob", "survival", "risk", "median"),
+  times = NULL
+)
 }
 \arguments{
 \item{model}{A \code{dsflower_run} object, a saved model list (from
@@ -17,6 +22,12 @@ or volume paths.}
 \item{type}{Character; \code{"response"} returns a predicted class for
 classification models and a continuous response for regression/count
 models. \code{"prob"} returns probabilities for classification models.}
+
+\item{times}{Optional public evaluation times in `[0, horizon]` for a survival
+model. `type = "survival"` returns curves and times; `"risk"` returns
+negative AFT location or negative grid restricted mean. `"median"` and
+`"response"` return median time; a hazard median beyond the public horizon
+is `NA`. The default curve grid is the public edges (hazard) or `[0, horizon]`.}
 }
 \value{
 A response vector or probability matrix. Saved vision and native-tree

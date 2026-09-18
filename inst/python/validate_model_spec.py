@@ -30,6 +30,8 @@ def main():
         "num-classes": int(payload["num_classes"]),
         "num-labels": int(payload["num_labels"]),
     }
+    if "survival_config" in payload:
+        cfg["survival-config"] = payload["survival_config"]
     out_dim = builder.output_width(loss, cfg)
     builder.build_from_spec(
         payload["spec"], int(payload["input_dim"]), int(out_dim),

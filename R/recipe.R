@@ -38,7 +38,9 @@ ds.flower.recipe <- function(model,
   } else {
     ds.flower.strategy(strategy)
   }
-  inferred_type <- if (model$loss %in% c("poisson_nll", "negbin_nll")) {
+  inferred_type <- if (.is_survival_loss(model$loss)) {
+    "survival"
+  } else if (model$loss %in% c("poisson_nll", "negbin_nll")) {
     "count"
   } else if (model$loss %in% c("mse", "huber", "quantile", "gamma_nll")) {
     "regression"
@@ -56,6 +58,12 @@ ds.flower.recipe <- function(model,
     }
   }
   .assert_supported_task(task)
+  if (identical(task$type, "survival")) {
+    target <- .validate_submission_target(.emit_submission(model), target)
+    if (length(intersect(features, target))) {
+      stop("Survival features and target roles must be distinct.", call. = FALSE)
+    }
+  }
 
   obj <- list(
     task       = task,

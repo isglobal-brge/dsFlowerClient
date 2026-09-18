@@ -129,12 +129,14 @@ def _load_state_dict_safely(model_path):
 
 
 def predict_pytorch_spec(model_path, X, pred_type, spec_b64, loss_name,
-                         num_classes=2, num_labels=2):
+                         num_classes=2, num_labels=2, survival_config=None, times=None):
     """Rebuild the exact declarative architecture, then load its state_dict."""
     import torch
     builder = _load_model_spec_module()
     public_spec = _decode_model_spec(spec_b64)
     cfg = {"num-classes": int(num_classes), "num-labels": int(num_labels)}
+    if survival_config is not None:
+        cfg["survival-config"] = survival_config
     out_dim = builder.output_width(str(loss_name), cfg)
     model = builder.build_from_spec(
         public_spec, in_dim=int(X.shape[1]), out_dim=int(out_dim),
@@ -146,6 +148,23 @@ def predict_pytorch_spec(model_path, X, pred_type, spec_b64, loss_name,
     with torch.no_grad():
         logits = model(torch.tensor(X, dtype=torch.float32))
         logits = _finite_torch(logits, builder.output_limit_for_loss(str(loss_name)))
+    if survival_config is not None:
+        flower_app = Path(__file__).resolve().parents[1] / "flower_app"
+        sys.path.insert(0, str(flower_app))
+        from dsflower_runner.survival import survival_predictions, validate_survival_config
+        config = validate_survival_config(survival_config, str(loss_name))
+        result = survival_predictions(logits, config, times)
+        if pred_type in ("response", "median"):
+            return [float(x) if np.isfinite(x) else None for x in result["median"]]
+        if pred_type == "risk":
+            return result["risk"].tolist()
+        if pred_type == "survival":
+            return {key: result[key].tolist() for key in ("times", "survival")}
+        raise ValueError("survival prediction type is invalid")
+    if str(loss_name) in ("aft_weibull_nll", "aft_lognormal_nll", "discrete_hazard_nll"):
+        raise ValueError("survival prediction requires its saved public configuration")
+    if pred_type not in ("response", "prob"):
+        raise ValueError("survival prediction types require a survival model")
     return _apply_loss_semantics(logits, loss_name, pred_type)
 
 
@@ -262,7 +281,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True)
     parser.add_argument("--data", required=True)
-    parser.add_argument("--type", default="response", choices=["response", "prob"])
+    parser.add_argument("--type", default="response", choices=["response", "prob", "survival", "risk", "median"])
     parser.add_argument("--framework", choices=["pytorch", "pytorch_vision"],
                         default=None)
     parser.add_argument("--config", default=None)
@@ -271,6 +290,8 @@ def main():
     parser.add_argument("--num-classes", dest="num_classes", type=int, default=2)
     parser.add_argument("--num-labels", dest="num_labels", type=int, default=2)
     parser.add_argument("--bounds-b64", dest="bounds_b64", default=None)
+    parser.add_argument("--survival-config-b64", default=None)
+    parser.add_argument("--times-b64", default=None)
     args = parser.parse_args()
 
     # Resolve the public artifact kind before selecting its preprocessing path.
@@ -319,7 +340,10 @@ def main():
             sys.exit(2)
         preds = predict_pytorch_spec(
             args.model, X, args.type, args.spec_b64, args.loss_name,
-            num_classes=args.num_classes, num_labels=args.num_labels)
+            num_classes=args.num_classes, num_labels=args.num_labels,
+            survival_config=(_decode_b64_json(args.survival_config_b64)
+                             if args.survival_config_b64 else None),
+            times=_decode_b64_json(args.times_b64) if args.times_b64 else None)
     else:
         print(json.dumps({"error": f"Unknown framework: {framework}"}),
               file=sys.stderr)
