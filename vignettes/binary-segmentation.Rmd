@@ -95,7 +95,33 @@ Prediction verifies the decoder artifact and the frozen encoder checkpoint
 before opening image paths. It shares the node's stored-pixel orientation, RGB
 conversion, bilinear 128 by 128 resize and ImageNet channel normalization.
 Invalid local images receive fixed zero features. Outputs use the canonical
-grid; native-resolution metrics require a separately declared inverse mapping.
+grid. To map a binary prediction back to the stored native image of height `H`
+and width `W`, threshold at 0.5 on the canonical grid first, then use nearest
+resampling with the following zero-based coordinate rule (exact ties choose
+the larger canonical index):
+
+```text
+native[r, c] = canonical[min(127, floor((r + 0.5) * 128 / H)),
+                         min(127, floor((c + 0.5) * 128 / W))]
+```
+
+This retains stored-pixel orientation, with no EXIF rotation, cropping or
+padding. It restores the coordinate grid, not detail discarded by resizing.
+For known dimensions from an authorized local image, the same rule in R is:
+
+```r
+canonical <- masks[1L, 1L, , ]
+native_rows <- pmin(128L, floor((2 * seq_len(native_height) - 1) *
+                                128 / (2 * native_height)) + 1L)
+native_cols <- pmin(128L, floor((2 * seq_len(native_width) - 1) *
+                                128 / (2 * native_width)) + 1L)
+native_mask <- canonical[native_rows, native_cols, drop = FALSE]
+```
+
+Use these indices explicitly: resize libraries may differ at exact tie pixels
+through floating-point coordinate accumulation. Declare and label any
+native-resolution secondary metric with this mapping.
+The primary benchmark metric remains on the canonical 128 by 128 grid.
 
 Channel-B evaluation uses public or independently authorized analyst-local
 held-out subjects. Report mean subject Dice and IoU at threshold 0.5, and report

@@ -156,8 +156,28 @@ profile.</p>
 checkpoint before opening image paths. It shares the node’s stored-pixel
 orientation, RGB conversion, bilinear 128 by 128 resize and ImageNet
 channel normalization. Invalid local images receive fixed zero features.
-Outputs use the canonical grid; native-resolution metrics require a
-separately declared inverse mapping.</p>
+Outputs use the canonical grid. To map a binary prediction back to the
+stored native image of height <code>H</code> and width <code>W</code>,
+threshold at 0.5 on the canonical grid first, then use nearest
+resampling with the following zero-based coordinate rule (exact ties
+choose the larger canonical index):</p>
+<pre class="text"><code><span><span class="va">native</span><span class="op">[</span><span class="va">r</span>, <span class="va">c</span><span class="op">]</span> <span class="op">=</span> <span class="va">canonical</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fl">127</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="op">(</span><span class="va">r</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">*</span> <span class="fl">128</span> <span class="op">/</span> <span class="va">H</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                         <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="fl">127</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="op">(</span><span class="va">c</span> <span class="op">+</span> <span class="fl">0.5</span><span class="op">)</span> <span class="op">*</span> <span class="fl">128</span> <span class="op">/</span> <span class="va">W</span><span class="op">)</span><span class="op">)</span><span class="op">]</span></span></code></pre>
+<p>This retains stored-pixel orientation, with no EXIF rotation,
+cropping or padding. It restores the coordinate grid, not detail
+discarded by resizing. For known dimensions from an authorized local
+image, the same rule in R is:</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">canonical</span> <span class="op">&lt;-</span> <span class="va">masks</span><span class="op">[</span><span class="fl">1L</span>, <span class="fl">1L</span>, , <span class="op">]</span></span>
+<span><span class="va">native_rows</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="fl">128L</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">native_height</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span></span>
+<span>                                <span class="fl">128</span> <span class="op">/</span> <span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">native_height</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1L</span><span class="op">)</span></span>
+<span><span class="va">native_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmin</a></span><span class="op">(</span><span class="fl">128L</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">floor</a></span><span class="op">(</span><span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">native_width</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span><span class="op">)</span> <span class="op">*</span></span>
+<span>                                <span class="fl">128</span> <span class="op">/</span> <span class="op">(</span><span class="fl">2</span> <span class="op">*</span> <span class="va">native_width</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> <span class="fl">1L</span><span class="op">)</span></span>
+<span><span class="va">native_mask</span> <span class="op">&lt;-</span> <span class="va">canonical</span><span class="op">[</span><span class="va">native_rows</span>, <span class="va">native_cols</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span></code></pre></div>
+<p>Use these indices explicitly: resize libraries may differ at exact
+tie pixels through floating-point coordinate accumulation. Declare and
+label any native-resolution secondary metric with this mapping. The
+primary benchmark metric remains on the canonical 128 by 128 grid.</p>
 <p>Channel-B evaluation uses public or independently authorized
 analyst-local held-out subjects. Report mean subject Dice and IoU at
 threshold 0.5, and report foreground-positive and empty-mask strata
