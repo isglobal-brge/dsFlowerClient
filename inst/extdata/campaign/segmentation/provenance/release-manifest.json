@@ -1,0 +1,66 @@
+{
+  "schema": "dsflower-segmentation-public-provenance-v1",
+  "sources": [
+    {
+      "filename": "BUSBRA.zip",
+      "url": "https://zenodo.org/api/records/8231412/files/BUSBRA.zip/content",
+      "bytes": 133917740,
+      "sha256": "ba3e6ed19cc37c682d8d39e25435bbf8a555a12cb7e641b5f2117685c95580ff",
+      "publisher_md5": "1f8b2be6476d58fc97bfb5e5a1ea9bab"
+    },
+    {
+      "filename": "busbra-record.json",
+      "url": "https://zenodo.org/api/records/8231412",
+      "bytes": 5497,
+      "sha256": "ae05948ea8cf28cff4c1d20800b73bec7db10196118fec685232f1dc64aecb3f"
+    },
+    {
+      "filename": "BrEaST.zip",
+      "url": "https://www.cancerimagingarchive.net/wp-content/uploads/BrEaST-Lesions_USG-images_and_masks-Dec-15-2023.zip",
+      "bytes": 69862076,
+      "sha256": "c32e49cdfa54042e065582d0cb35978b5fc5e5b5e461b33bf773fb50cfdad355"
+    },
+    {
+      "filename": "BrEaST-clinical.xlsx",
+      "url": "https://www.cancerimagingarchive.net/wp-content/uploads/BrEaST-Lesions-USG-clinical-data-Dec-15-2023.xlsx",
+      "bytes": 40173,
+      "sha256": "89a8874496a6f1f93960390b963f7369b90f7e72ee08a738f2d17e37f5eff8bf"
+    },
+    {
+      "filename": "BrEaST-source.html",
+      "url": "https://www.cancerimagingarchive.net/collection/breast-lesions-usg/",
+      "bytes": 290541,
+      "sha256": "77323ed4ba8d2128446582709a5129950f1de59e53a70133efdfc75ce12a97b9"
+    },
+    {
+      "filename": "CC-BY-4.0.txt",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.txt",
+      "bytes": 18657,
+      "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411"
+    },
+    {
+      "filename": "resnet18-f37072fd.pth",
+      "url": "https://download.pytorch.org/models/resnet18-f37072fd.pth",
+      "bytes": 46830571,
+      "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
+    },
+    {
+      "filename": "torchvision-LICENSE.txt",
+      "url": "https://raw.githubusercontent.com/pytorch/vision/v0.19.1/LICENSE",
+      "bytes": 1517,
+      "sha256": "6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d"
+    },
+    {
+      "filename": "torchvision-model-terms.html",
+      "url": "https://docs.pytorch.org/vision/0.19/models.html",
+      "bytes": 182336,
+      "sha256": "ec8e18c3d8b7a26e48a6f7374fb09989434fd75c46e7978ec90be6648f9886d0"
+    },
+    {
+      "filename": "BUS-BRA-README.md",
+      "url": "https://raw.githubusercontent.com/wgomezf/BUS-BRA/main/README.md",
+      "bytes": 1953,
+      "sha256": "5c3a175011ee81830e9e70e1775523c9a6c9fb6c1eff2ce41f917d811e455445"
+    }
+  ]
+}
