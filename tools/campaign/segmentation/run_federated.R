@@ -10,6 +10,13 @@ work_dir <- normalizePath(args[[5L]], mustWork = FALSE)
 tools_dir <- normalizePath(args[[6L]])
 stopifnot(epsilon %in% c(1, 4, 8), seed %in% c(20260919L, 20260920L, 20260921L))
 source(file.path(tools_dir, "..", "campaign_lib.R"))
+# main's transactional initialization queries/removes symbols on the real worker.
+methods::setMethod("dsListSymbols", "CampaignDSLiteConnection", function(conn) {
+  .campaign_remote_call(conn, function() DSI::dsListSymbols(.campaign_dslite_conn))
+})
+methods::setMethod("dsRmSymbol", "CampaignDSLiteConnection", function(conn, symbol) {
+  .campaign_remote_call(conn, function(symbol) DSI::dsRmSymbol(.campaign_dslite_conn, symbol), symbol)
+})
 started_at <- Sys.time()
 synthetic <- identical(Sys.getenv("F_SEG_SYNTHETIC"), "1")
 gate_path <- Sys.getenv("F_SEG_GATES_JSON")
