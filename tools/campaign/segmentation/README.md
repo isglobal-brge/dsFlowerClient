@@ -87,3 +87,5 @@ python combine_evidence.py --root /path/to/inst/extdata/campaign/segmentation
 ```
 
 The combined v2 status validates all 66 planned cell identities, preserves failures, and references both arm archives by hash. It never pools scores or selects a winning arm. The pkgdown article shows successful observations from incomplete cohorts without presenting them as complete three-seed results.
+
+The campaign pod's measured cgroup CPU quota is 7.65 cores despite 96 visible CPUs. `run_federated.sh` uses two POSIX public-federation slots on that pod; excess executor workers wait before invoking R. This bounds simultaneous federations without changing rounds, sampling, numerical thread settings or privacy controls. Scoped runtime console scripts use their verified POSIX interpreter directly to avoid repeated FUSE path resolution; their Python bodies and dependencies are unchanged.
