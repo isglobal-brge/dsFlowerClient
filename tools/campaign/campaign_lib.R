@@ -480,7 +480,7 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
       elapsed_s = elapsed, cleanup_ok = cleanup_ok))
   }
 
-  fit <- ds.flower.fit(
+  fit <- withCallingHandlers(ds.flower.fit(
     conns,
     symbol = "D",
     target = target,
@@ -495,7 +495,42 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
     output_dir = output_dir,
     silent = TRUE,
     verbose = FALSE
-  )
+  ), error = function(e) {
+    if (is.null(patient_column)) return(invisible(NULL))
+    # Public survival campaign diagnostics only; preserve the original failure
+    # and its cleanup while retaining traces that otherwise disappear with Rtmp.
+    try({
+    diagnostic <- character()
+    for (frame in sys.frames()) {
+      for (name in c("clean_stdout", "clean_stderr")) {
+        if (exists(name, envir = frame, inherits = FALSE)) {
+          value <- get(name, envir = frame, inherits = FALSE)
+          if (is.character(value)) diagnostic <- c(diagnostic, name, value)
+        }
+      }
+    }
+    link_log <- file.path(tempdir(), "dsflower_superlink", "superlink.log")
+    if (file.exists(link_log)) diagnostic <- c(
+      diagnostic, "SuperLink", readLines(link_log, warn = FALSE))
+    node_logs <- try(parallel::clusterCall(cluster, function() {
+      paths <- list.files(file.path(tempdir(), "dsflower", "supernodes"),
+                          pattern = "\\.log$", full.names = TRUE)
+      unlist(lapply(paths, function(path) {
+        utils::tail(readLines(path, warn = FALSE), 300L)
+      }), use.names = FALSE)
+    }), silent = TRUE)
+    if (!inherits(node_logs, "try-error")) {
+      diagnostic <- c(diagnostic, "SuperNodes", unlist(node_logs, use.names = FALSE))
+    }
+    diagnostic <- unlist(strsplit(diagnostic, "\n", fixed = TRUE), use.names = FALSE)
+    sensitive <- grepl("token|secret|authorization|bearer", diagnostic, ignore.case = TRUE)
+    diagnostic[sensitive] <- "[authentication-related diagnostic line redacted]"
+    diagnostic <- gsub("[A-Za-z0-9_-]{20,}\\.[A-Za-z0-9_-]{20,}\\.[A-Za-z0-9_-]{20,}",
+                       "[credential redacted]", diagnostic)
+    writeLines(diagnostic, file.path(work_dir, "failure-diagnostics.log"))
+    }, silent = TRUE)
+    invisible(NULL)
+  })
 
   if (!isTRUE(fit$available)) {
     node_logs <- try(parallel::clusterCall(cluster, function() {

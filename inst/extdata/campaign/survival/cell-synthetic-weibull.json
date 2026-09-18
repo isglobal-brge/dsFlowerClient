@@ -117,7 +117,8 @@
     "reason": "processx::run timeout expects seconds; corrected 3600000 to3600 after overflow",
     "federation_completed_by_utc": "2026-09-18T11:14:14Z",
     "postprocessing_script_sha256": "88e60a1a2cb331fb7d0645d9a89803bd410572c81873e3e133a6b34c6e715574",
-    "metadata_audit": "R package versions audited in unchanged frozen runtime after original export failure"
+    "metadata_audit": "R package versions audited in unchanged frozen runtime after original export failure",
+    "pilot_tooling_note": "Synthetic driver had uncommitted evidence-metadata edits when started; frozen installed package revisions are exact. Recovery script SHA256 pins actual postprocessing. Cohort tools are committed before scored execution."
   },
   "outcome_semantics": {
     "target_order": [
@@ -258,7 +259,12 @@
       "differences": "Pooled population changes q and steps; nonprivate twin has no clipping/noise; FedAvg averages sites equally; central DP secret is unrecorded and independent."
     },
     "elapsed_s": 8.453836000000592,
-    "max_rss_native_units": 347389952
+    "max_rss_native_units": 347389952,
+    "memory_measurement": {
+      "scope": "central/scoring process peak resident memory",
+      "native_unit": "bytes",
+      "federation_peak_memory_measured": false
+    }
   },
   "federation": {
     "n_clients": 3,
@@ -267,5 +273,6 @@
     "model_sha256": "9cb9d4176c2e7104bd834b55f3d7074cabc820ea46bd8ee82599c9b13930b6b2",
     "cleanup_ok": true
   },
-  "artifact_checksum": "9cb9d4176c2e7104bd834b55f3d7074cabc820ea46bd8ee82599c9b13930b6b2"
+  "artifact_checksum": "9cb9d4176c2e7104bd834b55f3d7074cabc820ea46bd8ee82599c9b13930b6b2",
+  "topology": "three isolated DSLite custodian workers and local Flower transport"
 }
