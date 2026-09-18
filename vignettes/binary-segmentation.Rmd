@@ -18,6 +18,11 @@ fits a binary mask on the canonical
 configure its image and mask roots. The analyst supplies schema column names
 and asset aliases, never filesystem roots or privacy parameters.
 
+The v2 campaign is **invalid: pipeline defect under investigation**, following
+the reviewer's 2026-09-18 hold. Its scores and prior floor verdicts are not release
+evidence. Mechanism checks remain separately recorded; diagnostic reruns do not
+constitute campaign acceptance.
+
 ## Paired image and mask schema
 
 A samples table declares a stable subject identifier, `image_id`, an image path
