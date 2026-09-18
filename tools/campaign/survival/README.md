@@ -33,9 +33,13 @@ privacy budgets as permission to repeat experiments on a private cohort.
    The two-round synthetic run includes released-artifact local prediction,
    pooled nonprivate/DP/null twins and independent accountant verification.
    Repeat using the matching variant in the output directory name.
+   Archive each successful `evidence.json` as
+   `inst/extdata/campaign/survival/cell-synthetic-<variant>.json` in the client
+   repository. Keep every failed attempt separately, and use a new runtime
+   directory for an investigated retry so the earlier attempt is preserved.
 5. Only after all mechanism/regression gates and all three synthetic cells pass:
    ```sh
-   python3 dsFlowerClient/tools/campaign/survival/run_matrix.py "$PWD" --jobs 2
+   python3 dsFlowerClient/tools/campaign/survival/run_matrix.py "$PWD" --jobs 1
    ```
    It executes the frozen 90-cell matrix, retains failures without scores, and
    summarizes matched replicate intervals and all four utility diagnostics.

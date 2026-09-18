@@ -16,11 +16,11 @@ def main():
     ap.add_argument('--jobs',type=int,default=2)
     args=ap.parse_args()
     root=args.workspace.resolve()
+    archive=root/'dsFlowerClient/inst/extdata/campaign/survival'
     for variant in ('weibull','lognormal','hazard'):
-        pilot=root/'runtime/runs'/f'final-synthetic-{variant}'/'evidence.json'
+        pilot=archive/f'cell-synthetic-{variant}.json'
         if not pilot.exists() or json.loads(pilot.read_text()).get('status')!='executed':
             raise SystemExit('All three final synthetic gates must execute before cohort scoring')
-    archive=root/'dsFlowerClient/inst/extdata/campaign/survival'
     script=root/'dsFlowerClient/tools/campaign/survival/run_cell.R'
     matrix=[]
     for dataset,subsets in [('support2',['full','small600','heterogeneous']),('lung1',['full'])]:
