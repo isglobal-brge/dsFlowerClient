@@ -135,3 +135,190 @@ callback API does not create a private segmentation scoring route. Any public
 benchmark utility claim must cite an executed subject-disjoint protocol, exact
 central twins and the recorded gate results; the constructor alone establishes
 no utility claim.
+
+## Public benchmark evidence
+
+The preregistered campaign uses BrEaST and BUS-BRA with three DSLite sites,
+subject-disjoint 80/20 splits, three seeds, epsilon 1, 4 and 8, delta `1e-5`,
+clipping 1 and separate nominal batch-size 16 and 64 arms. Protocol v2 fixes 128 by 128
+inputs, five rounds with two local epochs per round, learning rate 0.01,
+and no augmentation or mixed precision. BUS-BRA also has the nested
+192-subject, BCE-only and heterogeneous-site extensions. The released
+federated DP model is compared with pooled DP, pooled nonprivate and
+federated nonprivate twins using the same initial decoder, effective tensors,
+loss, optimizer and subject splits. Nonprivate twins are public benchmark
+diagnostics outside the released contract.
+The trivial comparison selects the strongest of four fixed masks: empty,
+full, a centered disk of radius 32, and a centered 64 by 64 square.
+
+The tables below read `campaign-status.json`, `breast-evidence.json` and
+`busbra-evidence.json` in each arm directory under
+`inst/extdata/campaign/segmentation/` at render time. Arms are reported separately;
+no result is selected or averaged across arms.
+The frozen protocol, dataset release hashes, licence texts, subject-mapping
+audits and split hashes are archived alongside the evidence. The
+archival assembler validates the complete JSON schemas, captured accountant
+steps, effective tensors, released artifacts and twin provenance. Rendering
+checks the schema identity, contract and protocol hash again. An incomplete
+cohort cannot produce a completed-matrix summary. Execution status is separate
+from utility acceptance and reviewer promotion.
+
+```{r segmentation-evidence, eval=TRUE, echo=FALSE, error=FALSE, results="asis"}
+evidence_dir <- file.path("..", "inst", "extdata", "campaign", "segmentation")
+if (!dir.exists(evidence_dir)) {
+  evidence_dir <- system.file("extdata", "campaign", "segmentation",
+                              package = "dsFlowerClient")
+}
+archive_dir <- evidence_dir
+render_arm <- function(evidence_dir) {
+  if (basename(evidence_dir) %in% c("batch16", "batch64")) {
+    cat("## Nominal ", basename(evidence_dir), " arm\n\n", sep = "")
+  }
+  protocol_hash <- digest::digest(file = file.path(archive_dir, "protocol.md"),
+                                  algo = "sha256")
+  read_evidence <- function(filename, schema_file) {
+    value <- jsonlite::read_json(file.path(evidence_dir, filename))
+    schema <- jsonlite::read_json(file.path(archive_dir, schema_file))
+    stopifnot(identical(value$schema, schema$`$id`),
+              all(unlist(schema$required) %in% names(value)),
+              identical(value$contract, "pytorch_resnet18_segmentation"),
+              identical(value$task, "segmentation"),
+              identical(value$protocol_sha256, protocol_hash),
+              value$status %in% c("not_executed", "failed", "executed"))
+    if (value$status != "executed") {
+      stopifnot(is.character(value$reason), is.null(value$replicates))
+    }
+    value
+  }
+  status_schema <- jsonlite::read_json(file.path(evidence_dir, "campaign-status.json"))$schema
+  status <- read_evidence("campaign-status.json",
+    if (status_schema == "dsflower-segmentation-campaign-summary-v1")
+      "campaign-summary-schema.json" else "evidence-schema.json")
+  cat("**Campaign status: ", status$status, ".** ", status$reason, "\n\n", sep = "")
+  cat("Protocol SHA256: `", protocol_hash, "`.\n\n", sep = "")
+  cohort_files <- intersect(c("breast-evidence.json", "busbra-evidence.json"),
+                            list.files(evidence_dir))
+  cohorts <- lapply(cohort_files, read_evidence, schema_file = "evidence-schema.json")
+  names(cohorts) <- sub("-evidence.json", "", cohort_files, fixed = TRUE)
+  labels <- c(breast = "BrEaST", busbra = "BUS-BRA")
+  variants <- c(full = "Primary", small192 = "192 subjects", bce = "BCE only",
+                heterogeneous = "Heterogeneous sites")
+  show_table <- function(rows, caption) {
+    print(knitr::kable(do.call(rbind, rows), row.names = FALSE, caption = caption))
+    cat("\n\n")
+  }
+  format_metric <- function(value) {
+    if (is.null(value)) return("Not applicable")
+    stopifnot(value$n_replicates >= 3L, length(value$ci95) == 2L,
+              all(is.finite(c(value$mean, value$sd, unlist(value$ci95)))))
+    sprintf("%.3f [%.3f, %.3f]", value$mean, value$ci95[[1L]], value$ci95[[2L]])
+  }
+  if (!length(cohorts)) {
+    cat("No completed cohort evidence is archived. Utility floors and envelopes remain **not evaluated**.\n\n")
+  }
+  for (dataset in names(cohorts)) {
+    cohort <- cohorts[[dataset]]
+    cat("### ", labels[[dataset]], "\n\n**Cohort status: ", cohort$status, ".**\n\n", sep = "")
+    failures <- Filter(function(cell) identical(cell$status, "failed"), cohort$cells)
+    if (length(failures)) {
+      show_table(lapply(failures, function(cell) data.frame(
+        Setting = variants[[cell$variant]], Epsilon = cell$epsilon,
+        Seed = cell$seed, Failure = cell$reason)), "Failed cells retained in the archive.")
+    }
+    if (cohort$status != "executed") {
+      cat(cohort$reason, ". Utility floors and envelopes remain **not evaluated**.\n\n", sep = "")
+      next
+    }
+    stopifnot(length(cohort$replicates) == 9L,
+              !is.null(cohort$envelopes), !is.null(cohort$provenance),
+              !is.null(cohort$runtime), identical(cohort$dataset, dataset))
+    rows <- strata <- list()
+    groups <- c(list(full = cohort$summaries), cohort$additional_summaries)
+    for (variant in names(groups)) {
+      for (epsilon in names(groups[[variant]])) {
+        metrics <- groups[[variant]][[epsilon]]
+        label <- paste(variants[[variant]], "epsilon", epsilon)
+        replicates <- Filter(function(value) value$variant == variant &&
+          value$epsilon == as.numeric(epsilon),
+          c(cohort$replicates, cohort$additional_replicates))
+        stopifnot(length(replicates) == 3L,
+          setequal(vapply(replicates, function(value) value$seed, integer(1)),
+                   c(20260919L, 20260920L, 20260921L)))
+        rows[[length(rows) + 1L]] <- data.frame(
+          Setting = label,
+          `Federated DP Dice` = format_metric(metrics$federated_dp$all$dice),
+          `Pooled DP Dice` = format_metric(metrics$pooled_dp$all$dice),
+          `Pooled nonprivate Dice` = format_metric(metrics$pooled_nonprivate$all$dice),
+          `Federated nonprivate Dice` = format_metric(metrics$federated_nonprivate$all$dice),
+          `Strongest trivial Dice` = sprintf("%.3f", mean(vapply(replicates,
+            function(value) value$trivial$strongest_dice, numeric(1)))),
+          check.names = FALSE)
+        for (stratum in c("all", "foreground_positive", "empty_reference")) {
+          values <- metrics$federated_dp[[stratum]]
+          strata[[length(strata) + 1L]] <- data.frame(
+            Setting = label, Stratum = gsub("_", " ", stratum),
+            Dice = format_metric(values$dice), IoU = format_metric(values$iou))
+        }
+      }
+    }
+    show_table(rows, "Mean subject Dice with 95% t intervals across three seeds.")
+    show_table(strata, "Released-model Dice and IoU at threshold 0.5; absent strata are not applicable.")
+    checks <- cohort$envelopes
+    floor <- checks$utility_floor
+    cat("**Epsilon 8 utility floor: ", if (isTRUE(floor$pass)) "PASS" else "FAILED", ".** ",
+        if (dataset == "busbra") "This is the preregistered primary floor. " else
+          "This is a descriptive application of the BUS-BRA floor. ",
+        sprintf("Mean Dice %.3f; strongest trivial mask %.3f; margin %.3f. ",
+                floor$federated_mean_dice, floor$strongest_trivial_mean_dice,
+                floor$federated_mean_dice - floor$strongest_trivial_mean_dice),
+        "Required: Dice >= 0.50 and margin >= 0.10.\n\n", sep = "")
+    envelope_rows <- lapply(checks$epsilon_envelope, function(check) data.frame(
+      Check = paste("Epsilon", check$previous, "to", check[["next"]]),
+      Result = if (isTRUE(check$flag)) "FLAGGED" else "Not flagged",
+      Detail = sprintf("Shortfall increase %.4f; seed-SD tolerance %.4f",
+                       check$gap_increase, check$tolerance)))
+    trend <- checks$small_n_noise_trend
+    envelope_rows[[length(envelope_rows) + 1L]] <- data.frame(
+      Check = "Small-cohort noise trend",
+      Result = if (trend$status != "executed") "Not evaluated" else
+        if (isTRUE(trend$flag)) "FLAGGED" else "Not flagged",
+      Detail = if (trend$status != "executed") "Complete matched small-cohort matrix unavailable" else
+        sprintf("Shortfall SD: epsilon 1 %.4f; epsilon 8 %.4f", trend$sd_epsilon1, trend$sd_epsilon8))
+    near_groups <- c(list(full = checks$near_central), cohort$additional_near_central)
+    if (!is.null(trend$near_central)) {
+      if (!is.null(near_groups$small192)) {
+        stopifnot(identical(near_groups$small192, trend$near_central))
+      }
+      near_groups$small192 <- trend$near_central
+    }
+    near_variants <- if (dataset == "busbra") names(variants) else "full"
+    for (variant in near_variants) {
+      near <- Filter(function(check) isTRUE(check$flag), near_groups[[variant]])
+      envelope_rows[[length(envelope_rows) + 1L]] <- data.frame(
+        Check = paste("Unexpected near-central agreement:", variants[[variant]]),
+        Result = if (is.null(near_groups[[variant]])) "Not evaluated" else
+          if (length(near)) "FLAGGED" else "Not flagged",
+        Detail = if (is.null(near_groups[[variant]])) "Complete matched setting unavailable" else
+          if (length(near)) paste(vapply(near, function(check)
+            paste("epsilon", check$epsilon, "seed", check$seed), character(1)), collapse = "; ") else
+            "No replicate met the preregistered investigation rule")
+    }
+    show_table(envelope_rows, "Envelope checks; flags require investigation and are retained.")
+  }
+}
+arm_dirs <- file.path(archive_dir, c("batch16", "batch64"))
+arm_dirs <- arm_dirs[file.exists(file.path(arm_dirs, "campaign-status.json"))]
+if (!length(arm_dirs)) arm_dirs <- archive_dir
+invisible(lapply(arm_dirs, render_arm))
+
+```
+
+The shortfall used by the envelope is **pooled nonprivate Dice minus
+federated DP Dice**. Positive values indicate lower utility for the released
+model. Epsilon-envelope flags compare changes against seed dispersion;
+near-central flags identify unexpectedly close agreement under the
+preregistered small-cohort rule. An unflagged envelope does not establish
+privacy by itself. Failed utility floors remain failed and do not trigger
+changes to epsilon, delta, clipping, subject retention or the preregistered
+protocol. Foreground-positive results remain visible even when empty-mask
+performance changes the overall mean.

@@ -192,6 +192,53 @@ an executed subject-disjoint protocol, exact central twins and the
 recorded gate results; the constructor alone establishes no utility
 claim.</p>
 </div>
+<div class="section level2">
+<h2 id="public-benchmark-evidence">Public benchmark evidence<a class="anchor" aria-label="anchor" href="#public-benchmark-evidence"></a>
+</h2>
+<p>The preregistered campaign uses BrEaST and BUS-BRA with three DSLite
+sites, subject-disjoint 80/20 splits, three seeds, epsilon 1, 4 and 8,
+delta <code>1e-5</code>, clipping 1 and separate nominal batch-size 16
+and 64 arms. Protocol v2 fixes 128 by 128 inputs, five rounds with two
+local epochs per round, learning rate 0.01, and no augmentation or mixed
+precision. BUS-BRA also has the nested 192-subject, BCE-only and
+heterogeneous-site extensions. The released federated DP model is
+compared with pooled DP, pooled nonprivate and federated nonprivate
+twins using the same initial decoder, effective tensors, loss, optimizer
+and subject splits. Nonprivate twins are public benchmark diagnostics
+outside the released contract. The trivial comparison selects the
+strongest of four fixed masks: empty, full, a centered disk of radius
+32, and a centered 64 by 64 square.</p>
+<p>The tables below read <code>campaign-status.json</code>,
+<code>breast-evidence.json</code> and <code>busbra-evidence.json</code>
+in each arm directory under
+<code>inst/extdata/campaign/segmentation/</code> at render time. Arms
+are reported separately; no result is selected or averaged across arms.
+The frozen protocol, dataset release hashes, licence texts,
+subject-mapping audits and split hashes are archived alongside the
+evidence. The archival assembler validates the complete JSON schemas,
+captured accountant steps, effective tensors, released artifacts and
+twin provenance. Rendering checks the schema identity, contract and
+protocol hash again. An incomplete cohort cannot produce a
+completed-matrix summary. Execution status is separate from utility
+acceptance and reviewer promotion.</p>
+<p><strong>Campaign status: not_executed.</strong> Protocol v2
+preregistered before scoring; seven mechanism gates passed. Both batch16
+and batch64 matrices pending.</p>
+<p>Protocol SHA256:
+<code>595e5c4e40a8ff8664f6d09c82546f6dcf7c02f5fea878b1da209027c77b3396</code>.</p>
+<p>No completed cohort evidence is archived. Utility floors and
+envelopes remain <strong>not evaluated</strong>.</p>
+<p>The shortfall used by the envelope is <strong>pooled nonprivate Dice
+minus federated DP Dice</strong>. Positive values indicate lower utility
+for the released model. Epsilon-envelope flags compare changes against
+seed dispersion; near-central flags identify unexpectedly close
+agreement under the preregistered small-cohort rule. An unflagged
+envelope does not establish privacy by itself. Failed utility floors
+remain failed and do not trigger changes to epsilon, delta, clipping,
+subject retention or the preregistered protocol. Foreground-positive
+results remain visible even when empty-mask performance changes the
+overall mean.</p>
+</div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>

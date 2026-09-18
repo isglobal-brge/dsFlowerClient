@@ -1,0 +1,21 @@
+[
+  {
+    "schema": "dsflower-segmentation-pretraining-attempts-v1",
+    "status": "failed_before_training",
+    "dataset": "breast",
+    "variant": "full",
+    "epsilon": 1,
+    "seed": 20260919,
+    "attempt": 1,
+    "stage": "superlink_startup",
+    "scoring_performed": false,
+    "accountant_captures": 0,
+    "cleanup_ok": true,
+    "archive": "/workspace/segmentation/pretraining-failures/breast-full-eps1-seed20260919-attempt01",
+    "error": "SuperLink did not become ready within 15 seconds.\nLog:\n",
+    "elapsed_s": 17.7039,
+    "status_sha256": "f771d622aa465ccbfd9f720ef724844517bf06132f5236a893513f73e377ec97",
+    "source_split_sha256": "02f49d2228be533659c3f774870f4cd926efca37eb05f4fa0ee67d48aa0404bf",
+    "retry_rule": "Only startup tooling may change; identical frozen protocol and privacy settings."
+  }
+]

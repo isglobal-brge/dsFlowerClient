@@ -1,0 +1,107 @@
+{
+  "schema": "dsflower-segmentation-mechanism-gates-v1",
+  "authority": "implementer verification; reviewer Claude promotion pending",
+  "verified_at_utc": "2026-09-18T12:30:25.137871+00:00",
+  "scope": "binary 2D segmentation only; mechanism/API gates, not scored utility floors",
+  "segmentation_6_1_1": true,
+  "segmentation_6_1_2": true,
+  "segmentation_6_1_3": true,
+  "segmentation_6_1_4": true,
+  "segmentation_6_1_5": true,
+  "segmentation_6_1_6": true,
+  "segmentation_6_1_7": true,
+  "installed_server_commit": "d6243e6e4ef1326e28693874af906b6f58214890",
+  "installed_client_commit": "909685b1a009e3f618bc1f14a9bc5b8a9af960b2",
+  "campaign_tooling_commit": "a39865531eaefc0635c6c0fa5831f61d723f6250",
+  "synthetic_run": "/workspace/segmentation/synthetic-run-05",
+  "synthetic_model_sha256": "42b179c5d566a3bfdc692b2b00997eed5b9ffb90abeec4f33aa4243ebc1d1aa7",
+  "evidence": {
+    "mechanism_audit": {
+      "path": "checks/resume-mechanism-audit.md",
+      "sha256": "debc80915a795a552d189a57bae0570a550174741bfb5121399178e7de1d4f94"
+    },
+    "mechanism_python": {
+      "path": "checks/resume-mechanism-python.log",
+      "sha256": "81483d730f10066402671d747eee6a2de3ec59d84b72833bb8366c38b9447180"
+    },
+    "mechanism_server_r": {
+      "path": "checks/resume-mechanism-server-r.log",
+      "sha256": "3ab7cc340ae4842eb862baf6f906740094f1cf2360ee1feda2c59f0673373d09"
+    },
+    "mechanism_client_r": {
+      "path": "checks/resume-mechanism-client-r.log",
+      "sha256": "77b999ada7213a3ad9d4c9decb662578440d04b0da9f835d7d272526efc19c04"
+    },
+    "runner_byte_sync": {
+      "path": "checks/resume-runner-sync.log",
+      "sha256": "c70e83ff965652295c905c1a76c80915c2b323973cf48e70b05a62b54281f664"
+    },
+    "original_28_contracts": {
+      "path": "checks/resume-original-contracts.log",
+      "sha256": "3d7d994e67139892df49f325150b0e113e83edf7dc5de19a8c2d33b6d2857cd7"
+    },
+    "direct_and_descriptor_staging": {
+      "path": "checks/resume-r-python.log",
+      "sha256": "1eaa23affe4468edf582668571e9bcdd04f9d537efc1d6c2a06fcd44ab8f3f57"
+    },
+    "local_prediction": {
+      "path": "checks/resume-segmentation-prediction.log",
+      "sha256": "f4238c759b5d32103269564019ca6f0a74f062a4db21019ae96cf7454c90c6c3"
+    },
+    "independent_accounting_local": {
+      "path": "checks/resume-accountant-audit.json",
+      "sha256": "816a5ac7bb92a67259c276ab760befe910e9b8e024c75416ac14b449c331faae"
+    },
+    "paired_preflight_regression": {
+      "path": "checks/resume-paired-preflight-after.log",
+      "sha256": "e82af3e611239959e7ff7d27478e7ff1e1e785bb965a8cbe0c7a10d374b656bb"
+    },
+    "post_fix_client_regressions": {
+      "path": "checks/resume-numlabels-regression.log",
+      "sha256": "ad3cefe759bd852b1f9060a5a0275ec1a873e38e690ab5a9fea2f0ab366ba66b"
+    },
+    "trusted_public_observer": {
+      "path": "checks/resume-public-observer-tests.log",
+      "sha256": "0641e228c94cca6ec0005557098747c2e0a4f664a99ee0de881cc69b948add78"
+    },
+    "actual_synthetic_summary": {
+      "path": "checks/resume-synthetic-gate.json",
+      "sha256": "e8e7de803bbc858e135fa3d56cb6b751793cd9f5396e76d20e4064f96a2bd473"
+    },
+    "actual_synthetic_verification": {
+      "path": "checks/resume-synthetic-verifier-05.log",
+      "sha256": "e713c1ffe6bbaa64776a466f038cf1acf6336c796c9dffd1af0130df230214de"
+    },
+    "actual_synthetic_status": {
+      "path": "checks/synthetic-run-05-federation-status.json",
+      "sha256": "dff75f265b61945e3801cd933da865ed5c3875abb0765fa450e71d66049740a8"
+    },
+    "actual_synthetic_history": {
+      "path": "checks/synthetic-run-05-history.json",
+      "sha256": "cd242c39ee59754a0be2a1f43648a0564405a3c65eb2554759c81a2ecf6e4666"
+    },
+    "actual_synthetic_metadata": {
+      "path": "checks/synthetic-run-05-metadata.json",
+      "sha256": "4bd3285fd97f32f493b1a5a7535d6ff5a6779888de89d202c90c237989f76407"
+    },
+    "pod_gpu_mechanism": {
+      "path": "checks/resume-segmentation-gpu.log",
+      "sha256": "c46b073e7ef4e74b8391d143caa694d9a8d40cde8040514c2fc83dc27375f8f2"
+    },
+    "pod_runtime": {
+      "path": "checks/resume-pod-runtime-versions.json",
+      "sha256": "6ff206572dc4947985d2f8745ac8a00152c19db177c6ae0e3027d2c52ad7c845"
+    },
+    "post_fix_original_28": {
+      "path": "checks/resume-original-contracts-after-boundary.log",
+      "sha256": "3d7d994e67139892df49f325150b0e113e83edf7dc5de19a8c2d33b6d2857cd7"
+    }
+  },
+  "prior_failed_attempts": [
+    "checks/synthetic-run-01-federation-status.json",
+    "checks/synthetic-run-02-federation-status.json",
+    "checks/synthetic-run-03-federation-status.json",
+    "checks/synthetic-run-04-federation-status.json"
+  ],
+  "scored_campaign_complete": false
+}
