@@ -22,6 +22,8 @@ on:
       - "R/app_submit.R"
       - "R/run.R"
       - "tools/check-runner-sync.py"
+      - "tools/campaign/survival/**"
+      - "tests/testthat/test-survival-evidence.R"
   pull_request:
     paths:
       - ".github/workflows/survival-python.yml"
@@ -37,6 +39,8 @@ on:
       - "R/app_submit.R"
       - "R/run.R"
       - "tools/check-runner-sync.py"
+      - "tools/campaign/survival/**"
+      - "tests/testthat/test-survival-evidence.R"
 
 permissions:
   contents: read
@@ -101,3 +105,6 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         working-directory: dsFlower
         run: python -m unittest -v inst/python/tests/test_survival_contracts.py
+      - name: Run public scoring and campaign completion gate tests
+        working-directory: dsFlowerClient/tools/campaign/survival
+        run: python -m unittest -v test_metrics.py test_validate_completion.py
