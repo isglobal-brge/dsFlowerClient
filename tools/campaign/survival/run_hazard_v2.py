@@ -108,7 +108,12 @@ def main():
                 [('development', 'survival_hazard_v2_development'), ('confirmation', 'survival_hazard_v2')]}
     for path in archives.values():
         path.mkdir()
-    for name in ('configs', 'logs', 'runs'):
+    # Reuse the permission-preserving runtime filesystem used by v1. On the
+    # pod, workspace FUSE ignores mode bits and cannot hold node secrets.
+    runs = (root/'runtime/runs').resolve()/'hazard_v2'
+    runs.mkdir(mode=0o700)
+    (base/'runs').symlink_to(runs, target_is_directory=True)
+    for name in ('configs', 'logs'):
         (base/name).mkdir()
     for cfg in GRID:
         write(base/'configs'/f'{cfg["id"]}.json', cfg)
@@ -130,7 +135,7 @@ def main():
     def run(item):
         phase, name, epsilon, cfg, split = item
         identity = f'{phase}-{cfg["id"]}-{name}-eps{epsilon}'
-        out = base/'runs'/identity
+        out = runs/identity
         env = os.environ.copy()
         env.update(R_LIBS_USER=str(root/'runtime/rlib'), TMPDIR=str(root/'runtime/tmp'),
                    OMP_NUM_THREADS='1', OPENBLAS_NUM_THREADS='1', MKL_NUM_THREADS='1')

@@ -57,6 +57,9 @@ class HazardV2Tests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root/'runtime').mkdir()
+            secure_runs = root/'secure-runs'
+            secure_runs.mkdir()
+            (root/'runtime/runs').symlink_to(secure_runs, target_is_directory=True)
             tools = root/'dsFlowerClient/tools/campaign/survival'
             tools.mkdir(parents=True)
             (tools/'PROTOCOL_F_SURVIVAL.md').write_text('frozen')
@@ -89,6 +92,9 @@ class HazardV2Tests(unittest.TestCase):
                 driver.main()
             training = [c for c in calls if c[0] == 'Rscript']
             self.assertEqual(len(training), 102)
+            self.assertTrue((root/'runtime/hazard_v2/runs').is_symlink())
+            self.assertTrue(all(Path(c[6]).parent == secure_runs.resolve()/'hazard_v2'
+                                for c in training))
             self.assertEqual(sum('/development/' in c[3] for c in training), 72)
             self.assertEqual(sum('/confirmation/' in c[3] for c in training), 30)
             self.assertEqual(calls[-1][-1], '--hazard-v2')
