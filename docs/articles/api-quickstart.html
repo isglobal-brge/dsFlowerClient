@@ -34,6 +34,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
     <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Server Method Registration</a></li>
+    <li><a class="dropdown-item" href="../articles/binary-segmentation.html">Binary 2D Segmentation</a></li>
     <li><a class="dropdown-item" href="../articles/utility-campaign.html">Utility Campaign</a></li>
   </ul>
 </li>
@@ -168,6 +169,17 @@ and app uploads on both success and error. End the DataSHIELD session
 when finished:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">DSI</span><span class="fu">::</span><span class="fu"><a href="https://datashield.github.io/DSI/reference/datashield.logout.html" class="external-link">datashield.logout</a></span><span class="op">(</span><span class="va">conns</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="binary-image-segmentation">Binary image segmentation<a class="anchor" aria-label="anchor" href="#binary-image-segmentation"></a>
+</h2>
+<p>Use <code><a href="../reference/ds.flower.model.pytorch_resnet18_segmentation.html">ds.flower.model.pytorch_resnet18_segmentation()</a></code> with
+<code>data_kind = "image"</code> and <code>target</code> naming a
+mask-path column. The custodian must configure patient privacy and
+paired image/mask roots. The <a href="binary-segmentation.html">binary
+segmentation guide</a> describes stable image IDs, explicit empty
+annotations, the pinned 128×128 profile and local mask prediction.
+Private validation, holdout and CV do not support this contract.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

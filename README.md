@@ -260,7 +260,7 @@ optimizer/loss, outside a resource cap, or not implemented fail before staging;
 accepted first-party parameters are pinned in the manifest and actually consumed
 by the trusted runner.
 
-The image contracts cover private federated training of their frozen-backbone
+The image classification contracts cover private federated training of their frozen-backbone
 heads, private validation, and local researcher-side prediction for saved
 native dsFlower ResNet-18/DenseNet-121 binary or multiclass releases, including
 the volumetric variants. Local prediction takes explicit image or volume paths
@@ -620,6 +620,21 @@ DP global-model artifact are separate from private node state.
 See the
 [`dsFlower` architecture specification](https://github.com/isglobal-brge/dsFlower/blob/main/ARCHITECTURE.md)
 for the complete trust boundary, deployment requirements and residual limits.
+
+## Binary 2D segmentation
+
+The experimental, unpromoted (`vetted=FALSE`)
+`ds.flower.model.pytorch_resnet18_segmentation()` adds a fixed 128×128 binary
+mask decoder over frozen, checkpoint-pinned ResNet18 layer2 features. Use
+`data_kind = "image"` and a mask-path column as `target`; the custodian must
+configure patient privacy and paired image/mask roots. One canonical image is
+selected per subject and invalid pairs remain in the privacy census with zero
+validity. Local prediction returns `[image, channel, row, column]` probabilities
+or masks. Private validation, holdout, CV and private-score HPO are unsupported.
+See the [binary segmentation guide](https://isglobal-brge.github.io/dsFlowerClient/articles/binary-segmentation.html)
+for schema roles, fixed preprocessing, loss and channel-B evaluation boundaries.
+Utility claims require the executed benchmark evidence; adding the contract does
+not establish a Dice floor.
 
 ## Authors
 

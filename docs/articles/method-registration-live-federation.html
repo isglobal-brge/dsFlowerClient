@@ -34,6 +34,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
     <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Server Method Registration</a></li>
+    <li><a class="dropdown-item" href="../articles/binary-segmentation.html">Binary 2D Segmentation</a></li>
     <li><a class="dropdown-item" href="../articles/utility-campaign.html">Utility Campaign</a></li>
   </ul>
 </li>
@@ -211,6 +212,17 @@ feature-statistic releases.</li>
 <li>Treat HookApp upload, execution and DP-SGD-level granularity as
 distinct concerns.</li>
 </ol>
+</div>
+<div class="section level2">
+<h2 id="segmentation-admission">Segmentation admission<a class="anchor" aria-label="anchor" href="#segmentation-admission"></a>
+</h2>
+<p>The <code>pytorch_resnet18_segmentation</code> registration maps to
+the trusted <code>segmentation_bce_dice</code> loss and exact
+<code>resnet18_layer2_128_v1</code> spatial profile. It requires the
+custodian patient policy, image/mask asset containment and a stable
+image ID. Adding a registry name cannot enable an alternate decoder,
+encoder checkpoint, batch-wide Dice or private validation. See the <a href="binary-segmentation.html">binary segmentation guide</a> for the
+public schema.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -23,6 +23,7 @@ ds.flower.model(&quot;&amp;lt;name&amp;gt;&quot;) / ds.flower.fit(..., model = &
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-guides" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Guides</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides"><li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
     <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Server Method Registration</a></li>
+    <li><a class="dropdown-item" href="../articles/binary-segmentation.html">Binary 2D Segmentation</a></li>
     <li><a class="dropdown-item" href="../articles/utility-campaign.html">Utility Campaign</a></li>
   </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
@@ -96,7 +97,8 @@ allowlist: stock losses <code>bce_logits</code>,
 <code>hinge</code> (linear SVM), <code>ordinal</code> (CORN); plus vetted custom per-sample
 losses <code>negbin_nll</code> (overdispersed counts), <code>gamma_nll</code>
 (positive continuous), <code>huber</code> (bounded robust regression), and
-<code>quantile</code> (bounded conditional-quantile regression).
+<code>quantile</code> (bounded conditional-quantile regression), and
+<code>segmentation_bce_dice</code> (the pinned per-image binary mask decoder).
 The node pins the actual loss; this is the client's request.</p></dd>
 
 

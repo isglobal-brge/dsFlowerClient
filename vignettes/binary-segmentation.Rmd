@@ -1,0 +1,111 @@
+---
+title: "Binary 2D Segmentation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Binary 2D Segmentation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>", eval = FALSE, purl = FALSE)
+```
+
+This experimental contract remains unpromoted (`vetted=FALSE`) pending reviewer
+acceptance of the executed evidence. The `pytorch_resnet18_segmentation` contract
+fits a binary mask on the canonical
+128 by 128 grid. Each custodian must select the **patient privacy unit** and
+configure its image and mask roots. The analyst supplies schema column names
+and asset aliases, never filesystem roots or privacy parameters.
+
+## Paired image and mask schema
+
+A samples table declares a stable subject identifier, `image_id`, an image path
+(default `relative_path`), and the mask path column passed as `target`. PNG/JPEG
+images and single-channel PNG masks are supported. Declare `mask_values` as
+`"0,255"` or `"0,1"`; masks are never intensity normalized. An optional
+`mask_empty_col` explicitly declares empty annotations. Without this declaration,
+a missing annotation is invalid, rather than a background example.
+
+For each subject, the node selects the lexicographically first canonical image
+ID (trimmed Unicode NFC). Masks for that image are unioned. Conflicting image
+paths for the same selected ID invalidate the subject instead of introducing an
+order-dependent tie. Invalid paths, images, masks or pairings become fixed safe
+tensors with zero loss validity. Those subjects remain in the sampling census;
+no completeness counts are released.
+
+Direct samples tables use custodian options `dsflower.image_data_root` and
+`dsflower.mask_data_root`. Imaging resources use admitted dsImaging image and
+`mask_root` descriptors. Both routes enforce the same asset containment checks.
+
+## Submit the fixed spatial contract
+
+```r
+model <- ds.flower.model.pytorch_resnet18_segmentation(
+  sample_id_col = "image_id",
+  image_path_col = "relative_path",
+  mask_empty_col = "mask_empty",
+  mask_values = "0,255",
+  batch_size = 8L,
+  local_epochs = 1L,
+  learning_rate = 0.001
+)
+
+fit <- ds.flower.fit(
+  conns, symbol = "samples", target = "mask_path",
+  model = model, task = "segmentation", data_kind = "image",
+  rounds = 5L, output_dir = "segmentation-model"
+)
+```
+
+`ds.flower.model("pytorch_resnet18_segmentation")`, `ds.flower.recipe()` and
+`ds.flower.submit()` use the same contract. The target is a **mask path role**,
+so do not supply class levels, target bounds or tabular feature columns.
+
+The resident encoder is ResNet18 through layer2, pinned to
+`ResNet18_Weights.IMAGENET1K_V1` and profile `resnet18_layer2_128_v1`. The full
+checkpoint SHA256 is
+`f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec`.
+Custodians provision these exact weights before training. Missing or mismatched
+weights fail preflight. The encoder is frozen, in evaluation mode, outside the
+released module; its BatchNorm statistics never learn from private images.
+
+The released decoder has three convolutions (128 to 32, 32 to 16, 16 to 1),
+ReLU activations and nearest upsampling by 2 then 4, producing `[1,128,128]`.
+The loss mixes per-image mean BCE and smoothed Dice with `alpha=0.5` and
+smoothing 1. `alpha=1` is the declared BCE ablation. There is no batch-wide Dice,
+trainable encoder, mixed precision, or image augmentation in this first profile.
+
+## Local prediction and public evaluation
+
+```r
+probabilities <- ds.flower.predict(
+  "segmentation-model", c("public/image-1.png", "public/image-2.png"),
+  type = "prob"
+)
+masks <- ds.flower.predict(
+  "segmentation-model", c("public/image-1.png", "public/image-2.png"),
+  type = "response"
+)
+# Both arrays use [image, channel, row, column] = [2, 1, 128, 128].
+# Responses threshold probabilities at >= 0.5.
+```
+
+Prediction verifies the decoder artifact and the frozen encoder checkpoint
+before opening image paths. It shares the node's stored-pixel orientation, RGB
+conversion, bilinear 128 by 128 resize and ImageNet channel normalization.
+Invalid local images receive fixed zero features. Outputs use the canonical
+grid; native-resolution metrics require a separately declared inverse mapping.
+
+Channel-B evaluation uses public or independently authorized analyst-local
+held-out subjects. Report mean subject Dice and IoU at threshold 0.5, and report
+foreground-positive and empty-mask strata separately. Both-empty Dice is 1;
+exactly one empty mask gives Dice 0. Neither images nor predictions are returned
+from a private node for evaluation.
+
+Private `ds.flower.validate()`, holdout, cross-validation and private-score HPO
+are unsupported for this contract and fail public preflight. The local HPO
+callback API does not create a private segmentation scoring route. Any public
+benchmark utility claim must cite an executed subject-disjoint protocol, exact
+central twins and the recorded gate results; the constructor alone establishes
+no utility claim.
