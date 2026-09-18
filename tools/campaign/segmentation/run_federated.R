@@ -53,7 +53,17 @@ Sys.setenv(F_SEG_PUBLIC_BENCHMARK = "1", F_SEG_INIT_SEED = seed,
 audit <- jsonlite::fromJSON(file.path(prepared, "audit.json"), simplifyVector = FALSE)
 if (synthetic && !identical(audit$dataset, "synthetic")) stop("Synthetic mode requires the synthetic fixture.")
 if (!synthetic && !audit$dataset %in% c("breast", "busbra")) stop("Unknown public cohort.")
-split <- jsonlite::fromJSON(split_path, simplifyVector = FALSE)
+source_split <- file.path(work_dir, "source-split.json")
+stopifnot(file.copy(split_path, source_split, overwrite = FALSE))
+source_split_sha256 <- digest::digest(file = source_split, algo = "sha256")
+if (!synthetic) {
+  frozen_audit <- jsonlite::fromJSON(file.path(tools_dir, "..", "..", "..", "inst", "extdata",
+      "campaign", "segmentation", "provenance", paste0(audit$dataset, "-audit.json")))
+  if (!identical(source_split_sha256, frozen_audit$split_hashes[[as.character(seed)]])) {
+    stop("Source split differs from the archived preregistration.")
+  }
+}
+split <- jsonlite::fromJSON(source_split, simplifyVector = FALSE)
 stopifnot(identical(as.integer(split$seed), seed))
 variant <- Sys.getenv("F_SEG_VARIANT", "full")
 if (!variant %in% c("full", "small192", "heterogeneous", "bce")) stop("Unknown preregistered variant.")
@@ -194,6 +204,6 @@ result$elapsed_s <- as.numeric(difftime(Sys.time(), started_at, units = "secs"))
 result$variant <- variant
 result$seed <- seed
 result$epsilon <- epsilon
-result$split_sha256 <- digest::digest(file = split_path, algo = "sha256")
+result$split_sha256 <- source_split_sha256
 jsonlite::write_json(result, file.path(work_dir, "federation-status.json"), pretty = TRUE, auto_unbox = TRUE)
 if (identical(result$status, "failed") || !cleanup_ok) stop("Federation failed; see federation-status.json.")
