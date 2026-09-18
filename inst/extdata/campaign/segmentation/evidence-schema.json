@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dsflower-segmentation-evidence-v1",
+  "type": "object",
+  "required": ["schema", "status", "contract", "task", "protocol_sha256"],
+  "properties": {
+    "schema": {"const": "dsflower-segmentation-evidence-v1"},
+    "status": {"enum": ["not_executed", "failed", "executed"]},
+    "contract": {"const": "pytorch_resnet18_segmentation"},
+    "task": {"const": "segmentation"},
+    "protocol_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "reason": {"type": "string", "minLength": 1},
+    "replicates": {"type": "array", "minItems": 3, "items": {"$ref": "#/$defs/replicate"}},
+    "envelopes": {"type": "object", "required": ["gap_sign", "epsilon_envelope", "utility_floor", "small_n_noise_trend", "near_central"]},
+    "provenance": {"type": "object", "required": ["release_sha256", "license_sha256", "checkpoint_sha256", "subject_mapping", "split_sha256"]},
+    "runtime": {"type": "object", "required": ["server_commit", "client_commit", "runner_sha256", "dependencies", "device", "determinism"]}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "executed"}}},
+     "then": {"required": ["replicates", "envelopes", "provenance", "runtime"]},
+     "else": {"required": ["reason"], "not": {"anyOf": [{"required": ["scores"]}, {"required": ["replicates"]}]}}}
+  ],
+  "$defs": {
+    "metric": {
+      "type": "object", "required": ["all", "foreground_positive", "empty_reference"],
+      "properties": {
+        "all": {"$ref": "#/$defs/stratum"},
+        "foreground_positive": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/stratum"}]},
+        "empty_reference": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/stratum"}]}
+      }
+    },
+    "stratum": {"type": "object", "required": ["dice", "iou"],
+      "properties": {"dice": {"type": "number", "minimum": 0, "maximum": 1}, "iou": {"type": "number", "minimum": 0, "maximum": 1}}},
+    "mechanism": {
+      "type": "object", "required": ["adjacency", "noise_multiplier", "clipping_norm", "accounting_population", "sample_rate", "expected_batch_size", "total_steps", "independent_accounting"],
+      "properties": {
+        "adjacency": {"const": "replace_one"}, "clipping_norm": {"const": 1},
+        "noise_multiplier": {"type": "number", "exclusiveMinimum": 0},
+        "accounting_population": {"type": "integer", "minimum": 1},
+        "sample_rate": {"type": "number", "exclusiveMinimum": 0, "maximum": 1},
+        "expected_batch_size": {"type": "integer", "minimum": 1},
+        "total_steps": {"type": "integer", "minimum": 1}
+      }
+    },
+    "replicate": {
+      "type": "object", "required": ["seed", "epsilon", "delta", "site_mechanisms", "federated_dp", "pooled_dp", "pooled_nonprivate", "federated_nonprivate", "trivial", "artifact_sha256", "cleanup_ok", "elapsed_s", "peak_cuda_bytes"],
+      "properties": {
+        "seed": {"type": "integer"}, "epsilon": {"enum": [1, 4, 8]}, "delta": {"const": 0.00001},
+        "site_mechanisms": {"type": "array", "minItems": 3, "maxItems": 3, "items": {"$ref": "#/$defs/mechanism"}},
+        "federated_dp": {"$ref": "#/$defs/metric"}, "pooled_dp": {"$ref": "#/$defs/metric"},
+        "pooled_nonprivate": {"$ref": "#/$defs/metric"}, "federated_nonprivate": {"$ref": "#/$defs/metric"},
+        "cleanup_ok": {"const": true}, "artifact_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    }
+  }
+}

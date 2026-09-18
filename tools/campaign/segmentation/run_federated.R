@@ -1,0 +1,132 @@
+#!/usr/bin/env Rscript
+# Public-only, three actual DSLite workers and Flower SuperNodes.
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) != 6L) stop("Usage: run_federated.R PREPARED_DIR SPLIT_JSON EPSILON SEED WORK_DIR TOOLS_DIR")
+prepared <- normalizePath(args[[1L]])
+split_path <- normalizePath(args[[2L]])
+epsilon <- as.numeric(args[[3L]])
+seed <- as.integer(args[[4L]])
+work_dir <- normalizePath(args[[5L]], mustWork = FALSE)
+tools_dir <- normalizePath(args[[6L]])
+stopifnot(epsilon %in% c(1, 4, 8), seed %in% c(20260919L, 20260920L, 20260921L))
+source(file.path(tools_dir, "..", "campaign_lib.R"))
+gate_path <- Sys.getenv("F_SEG_GATES_JSON")
+if (!file.exists(gate_path)) stop("F_SEG_GATES_JSON must identify reviewed blocking-gate evidence.")
+gates <- jsonlite::fromJSON(gate_path)
+if (!all(vapply(paste0("segmentation_6_1_", 1:7), function(name) isTRUE(gates[[name]]), logical(1)))) {
+  stop("All seven blocking mechanism/API gates must pass before public scored cells.")
+}
+if (startsWith(work_dir, "/workspace/")) {
+  marker <- readLines("/workspace/logs/install_r.log", warn = FALSE)
+  if (!any(grepl("R_STACK_DONE", marker, fixed = TRUE))) stop("Pod R stack completion gate missing.")
+}
+for (name in c("DSFLOWER_VENV_ROOT", "DSFLOWER_CLIENT_VENV_ROOT", "TORCH_HOME", "F_SEG_RUNNER_PARENT")) {
+  if (!nzchar(Sys.getenv(name))) stop("Missing environment: ", name)
+}
+dir.create(work_dir, recursive = TRUE, showWarnings = FALSE)
+Sys.setenv(F_SEG_PUBLIC_BENCHMARK = "1", F_SEG_INIT_SEED = seed,
+           F_SEG_CAPTURE_DIR = file.path(work_dir, "public-capture"),
+           CUBLAS_WORKSPACE_CONFIG = ":4096:8",
+           OMP_NUM_THREADS = "2", MKL_NUM_THREADS = "2",
+           PYTHONPATH = paste(file.path(tools_dir, "benchmark_hooks"),
+                              Sys.getenv("F_SEG_RUNNER_PARENT"), sep = .Platform$path.sep))
+audit <- jsonlite::fromJSON(file.path(prepared, "audit.json"), simplifyVector = FALSE)
+split <- jsonlite::fromJSON(split_path, simplifyVector = FALSE)
+stopifnot(identical(as.integer(split$seed), seed))
+variant <- Sys.getenv("F_SEG_VARIANT", "full")
+if (!variant %in% c("full", "small192", "heterogeneous", "bce")) stop("Unknown preregistered variant.")
+if (!identical(variant, "full") && !identical(audit$dataset, "busbra")) stop("Extensions are preregistered for BUS-BRA only.")
+if (variant %in% c("heterogeneous", "bce") && epsilon != 8) stop("This extension is preregistered at epsilon8 only.")
+if (identical(variant, "small192")) {
+  split$train <- split$small_train
+  split$sites <- split$small_sites
+}
+if (identical(variant, "heterogeneous")) split$sites <- split$heterogeneous_sites
+split$variant <- variant
+jsonlite::write_json(split, file.path(work_dir, "effective-split.json"), auto_unbox = TRUE, pretty = TRUE)
+frame <- utils::read.csv(file.path(prepared, "samples.csv"), stringsAsFactors = FALSE)
+site_data <- lapply(split$sites, function(ids) frame[frame$subject_id %in% unlist(ids), , drop = FALSE])
+stopifnot(length(site_data) == 3L,
+          sum(vapply(site_data, function(x) length(unique(x$subject_id)), integer(1))) == length(split$train))
+venv <- Sys.getenv("DSFLOWER_VENV_ROOT")
+ports <- .campaign_free_ports(6L)
+cluster <- parallel::makePSOCKcluster(3L, outfile = file.path(work_dir, "workers.log"))
+conns <- list()
+cleanup_ok <- FALSE
+cleanup <- function() {
+  if (length(conns)) try(ds.flower.link.down(conns), silent = TRUE)
+  if (!is.null(cluster)) {
+    drained <- try(parallel::clusterCall(cluster, function() {
+      cid <- dsFlower:::.dsflower_env$tunnel_conn_id
+      if (!is.null(cid)) try(dsFlower::flowerTunnelDownDS(cid), silent = TRUE)
+      nodes <- dsFlower:::.supernode_list()
+      for (manifest in nodes$manifest_dir) try(dsFlower:::.supernode_stop(manifest), silent = TRUE)
+      if (exists(".campaign_dslite_conn", .GlobalEnv, inherits = FALSE)) {
+        try(DSI::dsDisconnect(.campaign_dslite_conn), silent = TRUE)
+      }
+      is.null(dsFlower:::.dsflower_env$tunnel_conn_id) && nrow(dsFlower:::.supernode_list()) == 0L
+    }), silent = TRUE)
+    cleanup_ok <<- !inherits(drained, "try-error") && all(vapply(drained, isTRUE, logical(1)))
+    try(parallel::stopCluster(cluster), silent = TRUE)
+    cluster <<- NULL
+  }
+  try(ds.flower.superlink.stop(), silent = TRUE)
+}
+result <- tryCatch({
+  parallel::clusterMap(cluster, function(index, data, libpaths, venv, work_dir, epsilon, audit) {
+    .libPaths(libpaths)
+    Sys.setenv(DSFLOWER_VENV_ROOT = venv,
+               DSFLOWER_NODE_SECRET_FILE = file.path(work_dir, paste0("secret-site", index)),
+               DSFLOWER_TEST_ALLOW_EPHEMERAL_SECRET = "1")
+    options(dsflower.venv_root = venv,
+            dsflower.dp_unit = "patient", dsflower.patient_column = "subject_id",
+            dsflower.dp_per_training_epsilon = epsilon, dsflower.dp_per_training_delta = 1e-5,
+            dsflower.image_data_root = audit$image_root, dsflower.mask_data_root = audit$mask_root)
+    suppressPackageStartupMessages({library(DSI); library(DSLite); library(dsFlower)})
+    server <- DSLite::newDSLiteServer(tables = list(training = data),
+      config = DSLite::defaultDSConfiguration(include = c("dsBase", "dsFlower")),
+      home = file.path(work_dir, paste0("dslite", index)))
+    symbol <- paste0("segmentation_site", index, "_", Sys.getpid())
+    assign(symbol, server, .GlobalEnv)
+    .campaign_dslite_conn <<- DSLite::dsConnect(DSLite::DSLite(), name = paste0("site", index), url = symbol)
+    DSLite::dsAssignTable(.campaign_dslite_conn, "D", "training")
+    TRUE
+  }, index = seq_len(3L), data = site_data, MoreArgs = list(libpaths = .libPaths(),
+      venv = venv, work_dir = work_dir, epsilon = epsilon, audit = audit), SIMPLIFY = FALSE)
+  dummy <- DSLite::newDSLiteServer(tables = list())
+  conns <- stats::setNames(lapply(seq_len(3L), function(i) methods::new("CampaignDSLiteConnection",
+    name = paste0("site", i), sid = paste0("remote-site", i), server = dummy, worker = cluster[i])), paste0("site", 1:3))
+  options(dsflower.tunnel_port = ports[4:6], dsflower.superlink_insecure = TRUE,
+          dsflower.tunnel_loss_tolerance = 30, dsflower.supernode_term_grace = 10)
+  ds.flower.superlink.start(fleet_port = ports[1], control_port = ports[2], serverappio_port = ports[3], insecure = TRUE)
+  fit <- ds.flower.fit(conns, symbol = "D", target = "mask_path", task = "segmentation",
+      model = "pytorch_resnet18_segmentation", data_kind = "image", strategy = "fedavg",
+      model_params = list(alpha = if (identical(variant, "bce")) 1 else .5, mask_values = "0,255", sample_id_col = "image_id",
+          image_path_col = "relative_path", mask_empty_col = "mask_empty", subject_id_col = "subject_id",
+          learning_rate = .01, batch_size = 16L, local_epochs = 2L),
+      rounds = 5L, torch_backend = "cuda", output_dir = file.path(work_dir, "artifact"), silent = TRUE)
+  if (!isTRUE(fit$available)) stop("No available released segmentation model.")
+  stopifnot(file.exists(file.path(work_dir, "public-capture", "public-initial-arrays.npz")))
+  # Canonical subject/image ordering matches the independently cached public masks.
+  test <- frame[frame$subject_id %in% unlist(split$test), , drop = FALSE]
+  test <- test[order(test$subject_id, test$image_id), , drop = FALSE]
+  test <- test[!duplicated(test$subject_id), , drop = FALSE]
+  paths <- file.path(audit$image_root, test$relative_path)
+  blocks <- base::split(seq_along(paths), ceiling(seq_along(paths) / 16L))
+  probability <- do.call(rbind, lapply(blocks, function(ix) {
+    values <- ds.flower.predict(fit, paths[ix], type = "prob")
+    do.call(rbind, lapply(seq_along(ix), function(i) as.vector(t(values[i, 1, , ]))))
+  }))
+  utils::write.table(probability, file.path(work_dir, "public-probabilities.csv"),
+                     row.names = FALSE, col.names = FALSE, sep = ",")
+  list(status = "predicted_pending_public_metric_summary", output_dir = fit$output_dir,
+       model_sha256 = digest::digest(file = file.path(fit$output_dir, "model.pt"), algo = "sha256"))
+}, error = function(e) list(status = "failed", error = conditionMessage(e)))
+cleanup()
+result$cleanup_ok <- cleanup_ok
+result$variant <- variant
+result$seed <- seed
+result$epsilon <- epsilon
+result$split_sha256 <- digest::digest(file = split_path, algo = "sha256")
+jsonlite::write_json(result, file.path(work_dir, "federation-status.json"), pretty = TRUE, auto_unbox = TRUE)
+if (identical(result$status, "failed") || !cleanup_ok) stop("Federation failed; see federation-status.json.")

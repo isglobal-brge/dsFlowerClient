@@ -1,0 +1,29 @@
+{
+  "schema": "dsflower-segmentation-benchmark-hook-smoke-v1",
+  "status": "passed",
+  "synthetic_only": true,
+  "scoring_performed": false,
+  "deterministic_public_initialization": true,
+  "observed_round_steps": 2,
+  "accountant_type": "PRVAccountant",
+  "mechanism": {
+    "adjacency": "replace_one",
+    "noise_multiplier": 1.6943359375,
+    "clipping_norm": 1.0,
+    "accounting_population": 4,
+    "steps_per_epoch": 2,
+    "sample_rate": 0.5,
+    "expected_batch_size": 2,
+    "total_epochs": 2,
+    "total_steps": 4,
+    "policy_hash": "9bda963a6b412448c396ecdea8c7d2b1969ade45dc2d4cace2e473cf3bf67466"
+  },
+  "released_decoder_tensor_count": 6,
+  "runtime": {
+    "torch": "2.10.0",
+    "opacus": "1.6.0",
+    "flwr": "1.29.0",
+    "device": "cpu"
+  },
+  "reproduction": "Run tools/campaign/segmentation/smoke_benchmark_hooks.py with isolated benchmark_hooks and canonical runner in PYTHONPATH; README documents required environment."
+}
