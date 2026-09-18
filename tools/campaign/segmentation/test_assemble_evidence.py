@@ -168,6 +168,18 @@ class EvidenceTests(unittest.TestCase):
             self.assertNotIn("replicates", result["breast-evidence.json"])
             self.assertNotIn("envelopes", result["breast-evidence.json"])
 
+    def test_launcher_failure_before_federation_status_is_retained(self):
+        archive = Path(__file__).resolve().parents[3] / "inst/extdata/campaign/segmentation"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_json(root / "busbra-full-eps1" / "execution-status.json",
+                {"status": "failed", "dataset": "busbra", "variant": "full", "epsilon": 1,
+                 "seed": evidence.SEEDS[0], "phase": "federation", "exit_code": 2})
+            result = evidence.assemble(root, archive / "provenance", {}, archive / "protocol.md")
+            failed = [c for c in result["campaign-status.json"]["cells"] if c["status"] == "failed"]
+            self.assertEqual(len(failed), 1)
+            self.assertIn("federation (exit code 2)", failed[0]["reason"])
+
     def test_small_matrix_rejects_duplicate_seed_and_missing_middle_epsilon(self):
         rows = [{"epsilon": e, "seed": s, "n_train": 192, "n_per_site": [64] * 3,
                  "central_dice": .6, "federated_dice": .2, "trivial_dice": .3}
@@ -175,6 +187,29 @@ class EvidenceTests(unittest.TestCase):
         for small in (rows + [rows[0]], [r for r in rows if r["epsilon"] != 4]):
             with self.assertRaisesRegex(ValueError, "complete matched seed matrix"):
                 envelopes(rows, small)
+
+    def test_small_near_central_flags_use_the_small_population(self):
+        rows = [{"epsilon": e, "seed": s, "n_train": 852, "n_per_site": [284] * 3,
+                 "central_dice": .6, "federated_dice": .6, "trivial_dice": .3}
+                for e in evidence.EPSILONS for s in evidence.SEEDS]
+        small = [dict(r, n_train=192, n_per_site=[64] * 3) for r in rows]
+        result = envelopes(rows, small)
+        self.assertFalse(any(r["flag"] for r in result["near_central"] if r["epsilon"] == 8))
+        self.assertTrue(all(r["flag"] for r in result["small_n_noise_trend"]["near_central"]))
+
+
+class IndependentAccountingTests(unittest.TestCase):
+    def test_no_positive_budget_tolerance(self):
+        evidence.independent_accounting.cache_clear()
+        with patch("opacus.accountants.PRVAccountant") as cls:
+            cls.return_value.get_epsilon.return_value = .501
+            with self.assertRaisesRegex(ValueError, "exceeds budget"):
+                evidence.independent_accounting(2., .2, 50, 1)
+            cls.return_value.get_epsilon.return_value = .499
+            result = evidence.independent_accounting(2., .2, 50, 1)
+            self.assertEqual(result["epsilon_replace_one"], .998)
+            self.assertLess(result["delta_replace_one"], 1e-5)
+        evidence.independent_accounting.cache_clear()
 
 
 if __name__ == "__main__":

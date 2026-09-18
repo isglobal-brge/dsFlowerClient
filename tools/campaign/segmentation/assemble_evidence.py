@@ -11,7 +11,7 @@ from pathlib import Path
 
 import numpy as np
 
-from segmentation_metrics import envelopes, mean_interval
+from segmentation_metrics import envelopes, mean_interval, near_central_flags
 
 SEEDS = (20260919, 20260920, 20260921)
 EPSILONS = (1, 4, 8)
@@ -31,11 +31,13 @@ def independent_accounting(sigma, q, steps, epsilon):
     accountant = PRVAccountant()
     accountant.history = [(sigma, q, steps)]
     delta = 1e-5 / (1 + math.exp(epsilon / 2))
-    value = 2 * accountant.get_epsilon(delta=delta)
-    if not math.isfinite(value) or value > epsilon + .02:
+    epsilon_add_remove = accountant.get_epsilon(delta=delta)
+    value = 2 * epsilon_add_remove
+    delta_replace_one = delta * (1 + math.exp(epsilon_add_remove))
+    if not math.isfinite(value) or value > epsilon or delta_replace_one > 1e-5:
         raise ValueError("independent full-horizon accountant exceeds budget")
     return {"accountant": "PRVAccountant", "delta_add_remove": delta,
-            "epsilon_replace_one": value}
+            "epsilon_replace_one": value, "delta_replace_one": delta_replace_one}
 
 
 def validate_captures(captures, populations, epsilon, expected_hashes=None):
@@ -219,7 +221,11 @@ def summarize(replicates):
 def assemble(runs, provenance, runtime, protocol):
     planned = planned_cells()
     directories = {}
-    for path in sorted(runs.rglob("federation-status.json")):
+    paths = set(runs.rglob("federation-status.json")) | set(runs.rglob("execution-status.json"))
+    for directory in sorted({path.parent for path in paths}):
+        path = directory / "execution-status.json"
+        if not path.exists():
+            path = directory / "federation-status.json"
         status = read_json(path)
         if status.get("synthetic") is True:
             continue
@@ -229,15 +235,20 @@ def assemble(runs, provenance, runtime, protocol):
             raise ValueError("unexpected run outside preregistered matrix: " + str(path))
         if key in directories:
             raise ValueError("duplicate run for preregistered cell: " + str(key))
-        directories[key] = path.parent
+        directories[key] = (directory, status)
     cells, completed = [], []
     for key in planned:
         cell = dict(zip(("dataset", "variant", "epsilon", "seed"), key))
         if key not in directories:
-            cell.update(status="not_executed", reason="No federation status found")
+            cell.update(status="not_executed", reason="No execution or federation status found")
         else:
             try:
-                replicate = load_replicate(directories[key], *key)
+                directory, execution = directories[key]
+                if execution.get("status") == "failed":
+                    raise ValueError(execution.get("error") or
+                        "Execution failed in %s (exit code %s)" %
+                        (execution.get("phase", "federation"), execution.get("exit_code", "unrecorded")))
+                replicate = load_replicate(directory, *key)
                 completed.append(replicate)
                 cell["status"] = "executed"
             except (ValueError, KeyError, FileNotFoundError) as error:
@@ -278,8 +289,11 @@ def assemble(runs, provenance, runtime, protocol):
             document["completed_cells"] = rows
         document["additional_replicates"] = [r for r in completed if r["dataset"] == dataset and r["variant"] != "full"]
         document["additional_summaries"] = {}
+        document["additional_near_central"] = {}
         for variant, expected_count in (("small192", 9), ("bce", 3), ("heterogeneous", 3)):
             extra = [r for r in document["additional_replicates"] if r["variant"] == variant]
+            if extra:
+                document["additional_near_central"][variant] = near_central_flags([envelope_row(r) for r in extra])
             if len(extra) == expected_count:
                 document["additional_summaries"][variant] = summarize(extra)
         documents[dataset + "-evidence.json"] = document

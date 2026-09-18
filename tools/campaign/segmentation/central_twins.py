@@ -5,12 +5,14 @@ The nonprivate diagnostics are isolated here; no runtime privacy off switch is
 introduced. Public tensors stay on the benchmark pod and never enter extdata.
 """
 import argparse
+import base64
 import hashlib
 import hmac
 import json
 import math
 import os
 from pathlib import Path
+import stat
 import time
 from types import SimpleNamespace
 
@@ -18,7 +20,9 @@ import numpy as np
 import torch
 from dsflower_runner import client_app, dp_harness, params, segmentation, seeding, task
 from segmentation_metrics import metrics, trivial_masks
-from assemble_evidence import validate_captures
+from assemble_evidence import validate_captures, independent_accounting
+
+BENCHMARK_KEY_ROOT = Path("/tmp") / ("dsflower-segmentation-benchmark-%d" % os.getuid())
 
 
 def array_hash(values):
@@ -26,27 +30,66 @@ def array_hash(values):
 
 
 def private_key(directory):
-    path = directory / "benchmark-secret"
-    if not path.exists():
+    # Public benchmark only: /workspace may be FUSE and ignore chmod. OS /tmp
+    # supports owner-only files; this key persists across retries on this pod,
+    # but is not promised to survive pod recreation and is never archived.
+    key_directory = BENCHMARK_KEY_ROOT / hashlib.sha256(str(directory.resolve()).encode()).hexdigest()
+    for parent in (BENCHMARK_KEY_ROOT, key_directory):
+        parent.mkdir(mode=0o700, exist_ok=True)
+        info = parent.lstat()
+        if not stat.S_ISDIR(info.st_mode) or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o700:
+            raise ValueError("benchmark key directory must be owned by this user with mode 0700")
+    path = key_directory / "benchmark-secret"
+    try:
         descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    except FileExistsError:
+        pass
+    else:
         with os.fdopen(descriptor, "wb") as handle:
             handle.write(os.urandom(32))
-    value = path.read_bytes()
+    descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)
+    with os.fdopen(descriptor, "rb") as handle:
+        info = os.fstat(handle.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o600:
+            raise ValueError("benchmark key must be owned by this user with mode 0600")
+        value = handle.read(33)
     if len(value) != 32:
         raise ValueError("benchmark secret has invalid length")
     return value
 
 
-def independent_accounting(mechanism, epsilon, delta):
-    from opacus.accountants import PRVAccountant
-    accountant = PRVAccountant()
-    accountant.history = [(mechanism["noise_multiplier"], mechanism["sample_rate"], mechanism["total_steps"])]
-    delta_add_remove = delta / (1 + math.exp(epsilon / 2))
-    epsilon_replace_one = 2 * accountant.get_epsilon(delta=delta_add_remove)
-    if epsilon_replace_one > epsilon + .02:
-        raise ValueError("independent full-horizon accountant exceeds budget")
-    return {"accountant": "PRVAccountant", "delta_add_remove": delta_add_remove,
-            "epsilon_replace_one": epsilon_replace_one}
+def validate_twin_pins(cfg, manifest, pins):
+    """Bind cached feature semantics and all active optimizer pins to federation."""
+    segmentation.validate_config(cfg)
+    segmentation.validate_config(manifest)
+    for config in (cfg, manifest):
+        segmentation.validate_decoder_spec(json.loads(base64.b64decode(
+            config["model-spec-b64"], validate=True)))
+    for key in segmentation.PIN_KEYS:
+        # Alpha changes the loss only; the preregistered BCE branch shares features.
+        if key != "segmentation-alpha" and cfg[key] != manifest[key]:
+            raise ValueError("cached feature semantics differ from captured federation: " + key)
+    expected = {"batch-size": 16, "local-epochs": 2, "num-server-rounds": 5,
+                "learning-rate": .01, "optimizer-name": "sgd", "scheduler-name": "none"}
+    defaults = {"weight-decay": 0., "l1-penalty": 0., "optimizer-momentum": 0.,
+                "optimizer-nesterov": False}
+    for config in (cfg, manifest):
+        for key, value in expected.items():
+            if config.get(key) != value:
+                raise ValueError("captured/cached schedule differs from preregistration: " + key)
+        for key, value in defaults.items():
+            if config.get(key, value) != value:
+                raise ValueError("captured/cached optimizer differs from preregistration: " + key)
+        if any(key.startswith("scheduler-") and key != "scheduler-name" for key in config):
+            raise ValueError("preregistered schedule does not admit extra scheduler controls")
+    if (pins["batch_size"] != 16 or pins["local_epochs"] != 2 or pins["num_rounds"] != 5
+            or pins["learning_rate"] != .01 or pins["scheduler"]["name"] != "none"
+            or pins["loss_name"] != "segmentation_bce_dice" or pins["n_classes"] != 2):
+        raise ValueError("effective twin pins differ from captured federation")
+    optimizer = {"name": "sgd", "weight_decay": 0., "l1_penalty": 0.,
+                 "momentum": 0., "nesterov": False}
+    if any(pins["optimizer"].get(key) != value for key, value in optimizer.items()):
+        raise ValueError("effective twin optimizer differs from captured federation")
 
 
 def nonprivate_round(model, X, y, pins, cfg, master):
@@ -116,8 +159,8 @@ def run_twins(X, y, subjects, split, cfg, initial, pins, epsilon, secret, output
         params.set_torch_params(model, arrays)
         model.eval()
         with torch.no_grad():
-            probability = np.concatenate([model(torch.from_numpy(X[part])).sigmoid().numpy()
-                                         for part in np.array_split(test, max(1, math.ceil(len(test) / 16)))])
+            probability = np.concatenate([model(torch.from_numpy(X[test[start:start + 16]])).sigmoid().numpy()
+                                         for start in range(0, len(test), 16)])
         destination = output / (branch + ".npz")
         np.savez(destination, **{str(i): a for i, a in enumerate(arrays)})
         result[branch] = {"metrics": metrics(probability, y[test, :1]),
@@ -125,7 +168,8 @@ def run_twins(X, y, subjects, split, cfg, initial, pins, epsilon, secret, output
                           "initial_tensor_sha256": array_hash(initial)}
         if branch == "pooled_dp":
             result[branch]["mechanism"] = mechanism
-            result[branch]["independent_accounting"] = independent_accounting(mechanism, epsilon, 1e-5)
+            result[branch]["independent_accounting"] = independent_accounting(
+                mechanism["noise_multiplier"], mechanism["sample_rate"], mechanism["total_steps"], epsilon)
     result["trivial"] = trivial_masks(y[test, :1])
     result["elapsed_s"] = time.monotonic() - started
     result["peak_cuda_bytes"] = torch.cuda.max_memory_allocated() if device.type == "cuda" else 0
@@ -173,6 +217,8 @@ def main():
     site_accounting = validate_captures(captures, list(map(len, split["sites"])),
                                         args.epsilon, expected_site_hashes)
     pins = task.load_run_pins(SimpleNamespace(node_config={"manifest-dir": str(args.features)}))
+    feature_manifest = json.loads((args.features / "manifest.json").read_text())
+    validate_twin_pins(cfg, feature_manifest, pins)
     args.out.mkdir(parents=True, exist_ok=True)
     torch.set_num_threads(2)
     torch.backends.cuda.matmul.allow_tf32 = False

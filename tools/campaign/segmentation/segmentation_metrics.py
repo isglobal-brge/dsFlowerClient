@@ -53,6 +53,14 @@ def mean_interval(values):
     return {"mean": mean, "sd": sd, "ci95": [mean - margin, mean + margin], "n_replicates": len(values)}
 
 
+def near_central_flags(replicates):
+    return [{"epsilon": r["epsilon"], "seed": r["seed"], "n_train": r["n_train"],
+             "smallest_site_n": min(r["n_per_site"]),
+             "flag": r["n_train"] * r["epsilon"] < 2000 and r["central_dice"] < .95
+                     and abs(r["central_dice"] - r["federated_dice"]) < .005}
+            for r in replicates]
+
+
 def envelopes(replicates, small_replicates=None):
     """Rows: seed/epsilon/n_train/n_per_site/central_dice/federated_dice/trivial_dice.
 
@@ -81,11 +89,7 @@ def envelopes(replicates, small_replicates=None):
     floor = {"federated_mean_dice": float(fed), "strongest_trivial_mean_dice": float(trivial),
              "absolute_pass": bool(fed >= .50), "margin_pass": bool(fed >= trivial + .10)}
     floor["pass"] = floor["absolute_pass"] and floor["margin_pass"]
-    near = [{"epsilon": r["epsilon"], "seed": r["seed"], "n_train": r["n_train"],
-             "smallest_site_n": min(r["n_per_site"]),
-             "flag": r["n_train"] * r["epsilon"] < 2000 and r["central_dice"] < .95
-                     and abs(r["central_dice"] - r["federated_dice"]) < .005}
-            for r in replicates]
+    near = near_central_flags(replicates)
     trend = {"status": "not_executed"}
     if small_replicates is not None:
         for epsilon in (1, 4, 8):
@@ -99,7 +103,7 @@ def envelopes(replicates, small_replicates=None):
         sd_low = mean_interval([r["central_dice"] - r["federated_dice"] for r in low])["sd"]
         sd_high = mean_interval([r["central_dice"] - r["federated_dice"] for r in high])["sd"]
         trend = {"status": "executed", "sd_epsilon1": sd_low, "sd_epsilon8": sd_high,
-                 "flag": sd_high > sd_low}
+                 "flag": sd_high > sd_low, "near_central": near_central_flags(small_replicates)}
     return {"gap_sign": "pooled_nonprivate_minus_federated_dp", "gap_summary": gaps,
             "epsilon_envelope": adjacent, "utility_floor": floor,
             "small_n_noise_trend": trend, "near_central": near}
