@@ -11,7 +11,7 @@ import run_matrix
 
 
 class MatrixArtifactTests(unittest.TestCase):
-    def run_fixture(self, root, bad_output=False):
+    def run_fixture(self, root, bad_output=False, single_cell=False):
         logs = root / "logs"
         logs.mkdir()
         gates = root / "gates.json"
@@ -19,6 +19,7 @@ class MatrixArtifactTests(unittest.TestCase):
         cell = ("breast", "full", 8, 20260919)
         work = root / "runs-batch16" / "breast-full-eps8-seed20260919"
         calls = []
+        extra = ["--cell", "breast-full-eps8-seed20260919"] if single_cell else []
 
         def run(command, **kwargs):
             status = json.loads((work / "execution-status.json").read_text())
@@ -39,7 +40,7 @@ class MatrixArtifactTests(unittest.TestCase):
         with patch("run_matrix.Path", side_effect=path), patch("run_matrix.planned_cells", return_value=[cell]), \
              patch("run_matrix.subprocess.run", side_effect=run), \
              patch.dict("os.environ", {"F_SEG_GATES_JSON": str(gates)}), \
-             patch("sys.argv", ["run_matrix.py", "--root", str(root), "--workers", "1"]), \
+             patch("sys.argv", ["run_matrix.py", "--root", str(root), "--workers", "1"] + extra), \
              contextlib.redirect_stdout(io.StringIO()):
             if bad_output:
                 with self.assertRaisesRegex(SystemExit, "Matrix includes failures"):
@@ -55,6 +56,12 @@ class MatrixArtifactTests(unittest.TestCase):
             score = calls[1]
             self.assertEqual(score[score.index("--artifact") + 1],
                              str((work / "artifact" / "generated-run" / "model.pt").resolve()))
+            self.assertEqual(status["status"], "executed")
+
+    def test_exact_cell_filter_preserves_all_three_phases(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            calls, status, _ = self.run_fixture(Path(temporary), single_cell=True)
+            self.assertEqual(len(calls), 3)
             self.assertEqual(status["status"], "executed")
 
     def test_path_resolution_failure_is_preserved_before_scoring(self):

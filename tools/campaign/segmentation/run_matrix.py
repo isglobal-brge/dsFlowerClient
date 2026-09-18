@@ -24,6 +24,7 @@ def main():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--workers", type=int, choices=(1, 2), default=2)
     parser.add_argument("--batch-size", type=int, choices=(16, 64), default=16)
+    parser.add_argument("--cell", help="Execute one exact planned cell name; existing attempts still refuse overwrite")
     args = parser.parse_args()
     root = args.root.resolve()
     tools = Path(__file__).resolve().parent
@@ -34,7 +35,12 @@ def main():
     if any(gates.get(f"segmentation_6_1_{i}") is not True for i in range(1, 8)):
         raise ValueError("all seven mechanism gates must pass before matrix execution")
     pending, results = [], []
-    for cell in planned_cells():
+    planned = planned_cells()
+    if args.cell is not None:
+        planned = [c for c in planned if "%s-%s-eps%d-seed%d" % c == args.cell]
+        if not planned:
+            parser.error("--cell must name a preregistered cell")
+    for cell in planned:
         dataset, variant, epsilon, seed = cell
         work = runs / f"{dataset}-{variant}-eps{epsilon}-seed{seed}"
         if work.exists():
@@ -99,7 +105,7 @@ def main():
         futures = [pool.submit(execute, cell) for cell in pending]
         for future in as_completed(futures):
             results.append(future.result())
-            (root / ("matrix-status-batch%d.json" % args.batch_size)).write_text(json.dumps(results, indent=2) + "\n")
+            (root / ("matrix-status-batch%d%s.json" % (args.batch_size, "-" + args.cell if args.cell else ""))).write_text(json.dumps(results, indent=2) + "\n")
     if any(r["status"] != "executed" for r in results):
         raise SystemExit("Matrix includes failures; retain all evidence and inspect logs.")
 
