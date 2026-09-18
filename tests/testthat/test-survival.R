@@ -85,3 +85,43 @@ test_that("fit accepts survival task and preserves ordered target roles", {
   expect_identical(seen$model$loss, "aft_lognormal_nll")
   expect_identical(seen$target, c("time", "event"))
 })
+
+test_that("hazard public grids preserve subjects and exact target semantics", {
+  for (edges in list(c(0, 10), c(0, 5, 10), 0:64)) {
+    model <- ds.flower.model.pytorch_discrete_hazard(edges)
+    expect_identical(model, ds.flower.model("pytorch_discrete_hazard", edges = edges))
+    sub <- dsFlowerClient:::.emit_submission(model)
+    expect_identical(sub$loss, "discrete_hazard_nll")
+    config <- dsFlowerClient:::.survival_config(sub$params, sub$loss)
+    expect_identical(config$edges, edges)
+    expect_equal(config$horizon, tail(edges, 1))
+    expect_false(any(c("distribution", "dispersion", "time_scale") %in% names(config)))
+    expect_identical(ds.flower.recipe(model, target = c("t", "e"))$task$type,
+                     "survival")
+    expect_error(dsFlowerClient:::.assert_holdout_supported(sub, "tabular"),
+                 "Survival private")
+    expect_error(dsFlowerClient:::.assert_cross_validation_supported(sub, "tabular"),
+                 "Survival private")
+    expect_identical(dsFlowerClient:::.validate_submission_target(sub, c("t", "e")),
+                     c("t", "e"))
+  }
+  for (edges in list(0, c(1, 2), c(0, 1, 1), c(0, 3, 2), 0:65,
+                    c(0, Inf), c(0, 1e6 + 1))) {
+    expect_error(ds.flower.model.pytorch_discrete_hazard(edges),
+                 "edges|horizon")
+  }
+  expect_error(ds.flower.model.pytorch_discrete_hazard(c(0, 10), t_min = 11), "t_min")
+  expect_error(ds.flower.model.pytorch_discrete_hazard(c(0, 10), time_scale = 1),
+               "Unknown parameter")
+})
+
+test_that("survival wire pins preserve fractional public time boundaries", {
+  edges <- c(0, 1.000000123456789, 3.123456789012345)
+  model <- ds.flower.model.pytorch_discrete_hazard(edges)
+  sub <- dsFlowerClient:::.emit_submission(model)
+  config <- dsFlowerClient:::.neural_training_config(sub$params, sub$loss)
+  decoded <- jsonlite::fromJSON(rawToChar(jsonlite::base64_dec(
+    config[["survival-config-b64"]])))
+  expect_identical(decoded$edges, edges)
+  expect_identical(decoded$horizon, tail(edges, 1L))
+})

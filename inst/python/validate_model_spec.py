@@ -1,19 +1,15 @@
 """Validate one public dsFlower declarative model without touching node data."""
 
-import importlib.util
 import json
 from pathlib import Path
 import sys
 
 
 def _load_builder():
-    path = (Path(__file__).resolve().parents[1] / "flower_app" /
-            "dsflower_runner" / "model_spec.py")
-    spec = importlib.util.spec_from_file_location(
-        "_dsflower_client_model_spec", str(path))
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
+    flower_app = Path(__file__).resolve().parents[1] / "flower_app"
+    sys.path.insert(0, str(flower_app))
+    from dsflower_runner import model_spec
+    return model_spec
 
 
 def main():

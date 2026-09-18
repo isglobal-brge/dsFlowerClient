@@ -119,7 +119,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
     allowed <- c("bce_logits", "cross_entropy", "mse", "poisson_nll",
                  "multilabel_bce", "hinge", "negbin_nll", "gamma_nll",
                  "huber", "quantile", "ordinal",
-                 "aft_weibull_nll", "aft_lognormal_nll")
+                 "aft_weibull_nll", "aft_lognormal_nll", "discrete_hazard_nll")
     if (!is.character(loss) || length(loss) != 1L || !loss %in% allowed) {
       stop("'loss' must be one of the node allowlist: ",
            paste(allowed, collapse = ", "), ".", call. = FALSE)
@@ -153,7 +153,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
     }
     supported_types <- c(
       "number", "positive_number", "nonnegative_number",
-      "integer", "positive_integer", "positive_integer_vector",
+      "integer", "positive_integer", "positive_integer_vector", "numeric_vector",
       "positive_integer_or_auto",
       "hidden_layers", "logical", "character", "list",
       "numeric_interval", "numeric_intervals"
@@ -277,6 +277,8 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
     positive_integer_vector = is.numeric(value) && length(value) > 0L &&
       !anyNA(value) && all(is.finite(value)) &&
       all(value == floor(value)) && all(value > 0),
+    numeric_vector = is.numeric(value) && length(value) > 0L &&
+      !anyNA(value) && all(is.finite(value)),
     hidden_layers = is.numeric(value) && !is.logical(value) &&
       !anyNA(value) && all(is.finite(value)) &&
       all(value == floor(value)) && all(value > 0),
@@ -536,6 +538,9 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
       stop("Survival distribution must be weibull or lognormal.", call. = FALSE)
     }
     .survival_config(resolved, .dsflower_model_loss(model, resolved))
+  }
+  if (identical(model$name, "pytorch_discrete_hazard")) {
+    .survival_config(resolved, "discrete_hazard_nll")
   }
   shape_dims <- switch(model$name,
     pytorch_cnn = 3L,
@@ -820,10 +825,11 @@ ds.flower.model_parameters <- function(name) {
   neural_choices <- list(
     optimizer = c("sgd", "adam", "adamw", "rmsprop"),
     scheduler = c("none", "step", "exponential", "cosine"))
-  neural_reg <- function(name, track, generate, loss, defaults = list(), ...) {
+  neural_reg <- function(name, track, generate, loss, defaults = list(),
+                         parameter_choices = neural_choices, ...) {
     reg(name, track, generate = generate, loss = loss,
         defaults = utils::modifyList(neural_defaults, defaults),
-        parameter_choices = neural_choices, ...)
+        parameter_choices = parameter_choices, ...)
   }
   with_common <- function(...) c(neural_common, ...)
   class_aliases <- c(num_classes = "n_classes")
@@ -1019,7 +1025,21 @@ ds.flower.model_parameters <- function(name) {
         t_min = "positive_number", horizon = "positive_number",
         time_unit = "character", time_origin = "character"),
       required_parameters = "horizon",
+      parameter_choices = c(neural_choices, list(
+        distribution = c("weibull", "lognormal"), dispersion = c(0.5, 1, 2))),
       description = "Subject-level AFT with fixed public Weibull shape or log-normal sigma.")
+
+  neural_reg("pytorch_discrete_hazard", "neural",
+      generate = function(p) .neural_mlp_spec(p$hidden_layers),
+      loss = "discrete_hazard_nll",
+      defaults = list(hidden_layers = integer(0), t_min = 1,
+                      time_unit = "days", time_origin = "baseline"),
+      parameter_types = with_common(
+        hidden_layers = "hidden_layers", edges = "numeric_vector",
+        t_min = "positive_number", time_unit = "character",
+        time_origin = "character"),
+      required_parameters = "edges",
+      description = "Subject-level discrete hazard with a fixed public grid (K <= 64).")
 
   # ---- neural: vision head (frozen backbone is node-resident; the spec is the
   #      trainable head, with @in injected node-side from the backbone feature dim).

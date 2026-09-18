@@ -16,7 +16,7 @@
 #'   infer from model.
 #' @param num_rounds Integer; number of federated training rounds.
 #' @param target Character; target column name(s). Multiple targets are supported
-#'   only by the multilabel enforced-DP model.
+#'   by multilabel models or as the ordered survival pair `c(time, event)`.
 #' @param features Character vector; feature column names, or NULL for auto.
 #' @return A \code{dsflower_recipe} S3 object.
 #' @export

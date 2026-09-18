@@ -140,8 +140,8 @@ ds.flower.predict <- function(
              "--num-classes", as.character(contract$num_classes %||% 2L),
              "--num-labels", as.character(contract$num_labels %||% 2L),
              if (survival) c("--survival-config-b64",
-               .spec_to_b64(contract$survival_config)),
-             if (!is.null(times)) c("--times-b64", .spec_to_b64(as.list(times))),
+               .survival_json_b64(contract$survival_config)),
+             if (!is.null(times)) c("--times-b64", .survival_json_b64(as.list(times))),
              # Repeat the node's public clip + affine transform when configured.
              if (identical(framework, "pytorch") && !is.null(info$bounds))
                c("--bounds-b64", .spec_to_b64(info$bounds))),
@@ -586,6 +586,10 @@ ds.flower.predict <- function(
   if (!is.character(data_kind) || length(data_kind) != 1L ||
       is.na(data_kind) || !data_kind %in% c("tabular", "image")) {
     data_kind <- NULL
+  }
+  if (is.list(meta$survival_config) && !is.null(meta$survival_config$edges)) {
+    meta$survival_config$edges <- unlist(
+      meta$survival_config$edges, use.names = FALSE)
   }
   list(model_spec = if (is.list(meta$model_spec)) meta$model_spec else NULL,
        loss_name = loss, num_classes = n_classes, num_labels = n_labels,

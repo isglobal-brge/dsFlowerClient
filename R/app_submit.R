@@ -217,7 +217,7 @@
     "optimizer-name" = optimizer,
     "scheduler-name" = scheduler)
   if (.is_survival_loss(loss_name)) {
-    out[["survival-config-b64"]] <- .spec_to_b64(.survival_config(p, loss_name))
+    out[["survival-config-b64"]] <- .survival_json_b64(.survival_config(p, loss_name))
   }
   if (identical(loss_name, "negbin_nll")) {
     out[["nb-dispersion"]] <- as.numeric(p[["nb_dispersion"]] %||% 1)
@@ -363,7 +363,8 @@
 #'
 #' @param conns DSI connections.
 #' @param model A model name or \code{dsflower_model} (registry-resolved).
-#' @param target Character; one target column, or exactly \code{num_labels}
+#' @param target Character; ordered `c(time, event)` for survival, one target
+#'   column for scalar outcomes, or exactly \code{num_labels}
 #'   distinct columns for a multilabel model.
 #' @param features Character vector; feature columns.
 #' @param data Optional character data source resolved during connection.
@@ -650,6 +651,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                 quantile = "regression", poisson_nll = "count",
                 negbin_nll = "count", gamma_nll = "regression",
                 aft_weibull_nll = "survival", aft_lognormal_nll = "survival",
+                discrete_hazard_nll = "survival",
                 "classification")
   p <- sub[["params"]] %||% list()
   n_target_classes <- as.integer(

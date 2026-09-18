@@ -12,7 +12,6 @@ Usage:
 
 import argparse
 import base64
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -43,17 +42,12 @@ def _finite_torch(value, limit):
 
 def _load_model_spec_module():
     """Load the same data-only model builder bundled in the trusted runner."""
-    path = (Path(__file__).resolve().parents[1] / "flower_app" /
-            "dsflower_runner" / "model_spec.py")
-    if not path.is_file():
+    flower_app = Path(__file__).resolve().parents[1] / "flower_app"
+    if not flower_app.is_dir():
         raise RuntimeError("bundled declarative model builder is unavailable")
-    module_spec = importlib.util.spec_from_file_location(
-        "_dsflower_predict_model_spec", str(path))
-    if module_spec is None or module_spec.loader is None:
-        raise RuntimeError("could not load the declarative model builder")
-    module = importlib.util.module_from_spec(module_spec)
-    module_spec.loader.exec_module(module)
-    return module
+    sys.path.insert(0, str(flower_app))
+    from dsflower_runner import model_spec
+    return model_spec
 
 
 def _decode_model_spec(raw):

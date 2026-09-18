@@ -469,6 +469,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     }
     jsonlite::write_json(meta, file.path(output_dir, "metadata.json"),
                          auto_unbox = TRUE, pretty = TRUE,
+                         digits = if (!is.null(recipe$survival_config)) I(17) else 4,
                          null = if (native_tree && available) "null" else "list")
 
     if (atomic_native_holdout) {

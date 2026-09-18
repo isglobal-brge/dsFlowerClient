@@ -1,28 +1,43 @@
 # Module: Public survival contracts
 
-.SURVIVAL_LOSSES <- c("aft_weibull_nll", "aft_lognormal_nll")
+.SURVIVAL_LOSSES <- c("aft_weibull_nll", "aft_lognormal_nll",
+                      "discrete_hazard_nll")
 
 .is_survival_loss <- function(loss) {
   is.character(loss) && length(loss) == 1L && !is.na(loss) &&
     loss %in% .SURVIVAL_LOSSES
 }
 
+.survival_json_b64 <- function(value) {
+  json <- jsonlite::toJSON(value, auto_unbox = TRUE, null = "null",
+                          digits = I(17))
+  gsub("[\r\n]", "", jsonlite::base64_enc(charToRaw(enc2utf8(as.character(json)))))
+}
+
 .survival_config <- function(params, loss) {
   if (!.is_survival_loss(loss)) return(NULL)
   p <- params
   out <- list(schema_version = 1L, time_unit = p$time_unit,
-              time_origin = p$time_origin, t_min = p$t_min,
-              horizon = p$horizon, time_scale = p$time_scale,
-              distribution = p$distribution, dispersion = p$dispersion)
+              time_origin = p$time_origin, t_min = p$t_min)
+  if (identical(loss, "discrete_hazard_nll")) {
+    out$horizon <- tail(p$edges, 1L)
+    out$edges <- unname(p$edges)
+  } else {
+    out <- c(out, list(horizon = p$horizon, time_scale = p$time_scale,
+                      distribution = p$distribution, dispersion = p$dispersion))
+  }
   .validate_survival_config(out, loss)
 }
 
 .validate_survival_config <- function(config, loss) {
+  hazard <- identical(loss, "discrete_hazard_nll")
   expected <- c("schema_version", "time_unit", "time_origin", "t_min",
-                "horizon", "time_scale", "distribution", "dispersion")
+                "horizon", if (hazard) "edges" else
+                  c("time_scale", "distribution", "dispersion"))
   if (!is.list(config) || !setequal(names(config), expected) ||
       anyDuplicated(names(config)) ||
-      !identical(as.numeric(config$schema_version), 1)) {
+      !is.numeric(config$schema_version) || length(config$schema_version) != 1L ||
+      is.na(config$schema_version) || config$schema_version != 1) {
     stop("Invalid public survival configuration schema.", call. = FALSE)
   }
   if (!identical(config$time_unit, "days") ||
@@ -37,7 +52,7 @@
            call. = FALSE)
     }
   }
-  for (name in c("t_min", "horizon", "time_scale")) {
+  for (name in c("t_min", "horizon", if (!hazard) "time_scale")) {
     x <- config[[name]]
     if (!is.numeric(x) || length(x) != 1L || is.na(x) ||
         !is.finite(x) || x < 1e-6 || x > 1e6) {
@@ -46,6 +61,16 @@
   }
   if (config$t_min > config$horizon) {
     stop("Survival t_min must not exceed horizon.", call. = FALSE)
+  }
+  if (hazard) {
+    edges <- config$edges
+    if (!is.numeric(edges) || length(edges) < 2L || length(edges) > 65L ||
+        anyNA(edges) || any(!is.finite(edges)) || edges[[1L]] != 0 ||
+        any(diff(edges) <= 0) || tail(edges, 1L) != config$horizon) {
+      stop("Hazard edges require 1 <= K <= 64 and 0=b0<...<bK=horizon.",
+           call. = FALSE)
+    }
+    return(config)
   }
   distribution <- config$distribution
   if (!is.character(distribution) || length(distribution) != 1L ||
@@ -103,4 +128,30 @@ ds.flower.model.pytorch_aft <- function(
     distribution = distribution, dispersion = dispersion,
     time_scale = time_scale, t_min = t_min, time_unit = time_unit,
     time_origin = time_origin, hidden_layers = hidden_layers, ...)
+}
+
+#' Create a subject-level discrete hazard model
+#'
+#' Interval j is `(edges[j], edges[j+1]]`. Events contribute through the interval
+#' containing their time; censoring contributes only fully observed intervals.
+#' An event on an interval endpoint belongs to that interval. Source times above
+#' the public horizon are administratively censored at the horizon. The masked
+#' binary log likelihood is summed per subject and divided by public K; each
+#' subject is sampled and clipped once. Invalid subjects remain in the privacy
+#' census and have a zero loss contribution.
+#'
+#' @param edges Strictly increasing public interval endpoints starting at zero;
+#'   length between 2 and 65 (1 <= K <= 64). The final edge is the horizon.
+#' @param t_min Positive public minimum time resolution.
+#' @param time_unit,time_origin Public labels; schema v1 uses days/from-baseline.
+#' @param hidden_layers Integer vector of hidden widths; empty means linear.
+#' @param ... Additional public neural parameters accepted by `ds.flower.model()`.
+#' @return A `dsflower_model` specification.
+#' @export
+ds.flower.model.pytorch_discrete_hazard <- function(
+    edges, t_min = 1, time_unit = "days", time_origin = "baseline",
+    hidden_layers = integer(0), ...) {
+  ds.flower.model("pytorch_discrete_hazard", edges = edges,
+    t_min = t_min, time_unit = time_unit, time_origin = time_origin,
+    hidden_layers = hidden_layers, ...)
 }

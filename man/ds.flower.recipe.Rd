@@ -26,7 +26,7 @@ infer from model.}
 \item{num_rounds}{Integer; number of federated training rounds.}
 
 \item{target}{Character; target column name(s). Multiple targets are supported
-only by the multilabel enforced-DP model.}
+by multilabel models or as the ordered survival pair `c(time, event)`.}
 
 \item{features}{Character vector; feature column names, or NULL for auto.}
 }
