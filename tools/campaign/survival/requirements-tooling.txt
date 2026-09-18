@@ -1,0 +1,2 @@
+# Reporting dependency; install into the interpreter used to run the matrix.
+scipy==1.17.1

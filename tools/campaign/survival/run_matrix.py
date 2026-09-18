@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 
 
 def main():
@@ -69,7 +70,7 @@ def main():
         for future in as_completed([pool.submit(run,item) for item in matrix]):
             identity,status=future.result()
             print(identity,status,flush=True)
-    subprocess.run(['python3',str(script.with_name('summarize.py')),str(archive)],check=True)
+    subprocess.run([sys.executable,str(script.with_name('summarize.py')),str(archive)],check=True)
 
 
 if __name__=='__main__':
