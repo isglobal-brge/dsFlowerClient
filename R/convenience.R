@@ -336,6 +336,8 @@ ds.flower.fit <- function(conns,
     model_spec$loss <- .dsflower_model_loss(registered, model_spec$params)
   }
 
+  .assert_segmentation_hpo_supported(model_spec$loss)
+
   strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
     if (length(strategy_params)) {
       stop("'strategy_params' cannot be used when 'strategy' is already a ",

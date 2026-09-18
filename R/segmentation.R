@@ -81,3 +81,13 @@
   aperm(array(as.numeric(t(value)), dim = c(128L, 128L, 1L, expected_rows)),
         c(4L, 3L, 2L, 1L))
 }
+
+.assert_segmentation_hpo_supported <- function(loss) {
+  if (identical(loss, "segmentation_bce_dice") &&
+      isTRUE(.dsflower_hpo_context$active)) {
+    stop("Private segmentation HPO is unsupported; HPO callbacks may only ",
+         "score an already released segmentation model on local data.",
+         call. = FALSE)
+  }
+  invisible(TRUE)
+}

@@ -181,3 +181,47 @@ test_that("local segmentation transport emits canonical arrays and masks paths i
   expect_match(message, "saved artifact")
   expect_false(grepl("secret", message))
 })
+
+test_that("HPO objectives reject segmentation fit and submit before transport", {
+  touched <- FALSE
+  local_mocked_bindings(
+    .require_flwr_cli = function(...) { touched <<- TRUE; stop("CLI reached") },
+    .validate_dsi_transport_security = function(...) { touched <<- TRUE; stop("transport reached") },
+    .package = "dsFlowerClient")
+  run_objective <- dsFlowerClient:::.with_hpo_objective
+  for (method in list(ds.flower.fit, ds.flower.submit)) {
+    expect_error(run_objective(function(params) {
+      method(conns = list(site = TRUE), model = "pytorch_resnet18_segmentation",
+             symbol = "D", target = "mask", data_kind = "image")
+    }, list()), "Private segmentation HPO")
+    expect_false(dsFlowerClient:::.dsflower_hpo_context$active)
+    expect_false(touched)
+  }
+  expect_equal(run_objective(function(params) .75, list()), .75)
+  expect_false(dsFlowerClient:::.dsflower_hpo_context$active)
+  expect_error(run_objective(function(params) stop("objective failed"), list()), "objective failed")
+  expect_false(dsFlowerClient:::.dsflower_hpo_context$active)
+  run_objective(function(params) {
+    run_objective(function(inner) .5, list())
+    expect_true(dsFlowerClient:::.dsflower_hpo_context$active)
+  }, list())
+  expect_false(dsFlowerClient:::.dsflower_hpo_context$active)
+})
+
+test_that("the real local HPO callback cannot initiate private segmentation training", {
+  python <- tryCatch(dsFlowerClient:::.local_hpo_python_cmd(), error = function(e) "")
+  skip_if(!nzchar(python), "Optuna 4.8.0 is required")
+  touched <- FALSE
+  local_mocked_bindings(
+    .local_hpo_python_cmd = function() python,
+    .validate_dsi_transport_security = function(...) { touched <<- TRUE; stop("transport reached") },
+    .require_flwr_cli = function(...) { touched <<- TRUE; stop("CLI reached") },
+    .package = "dsFlowerClient")
+  expect_error(ds.flower.hpo(function(params) {
+    ds.flower.fit(conns = list(site = TRUE), model = "pytorch_resnet18_segmentation",
+      symbol = "D", target = "mask", data_kind = "image")
+  }, list(alpha = ds.flower.hpo.categorical(.5)), n_trials = 1L),
+  "Private segmentation HPO")
+  expect_false(touched)
+  expect_false(dsFlowerClient:::.dsflower_hpo_context$active)
+})

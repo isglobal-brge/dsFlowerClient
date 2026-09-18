@@ -479,6 +479,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   model$params <- .dsflower_resolve_model_params(
     registered_model, model_params)
   sub <- .emit_submission(model)
+  .assert_segmentation_hpo_supported(sub$loss)
   if (!is.null(holdout_spec)) {
     .assert_holdout_supported(sub, data_kind)
   }

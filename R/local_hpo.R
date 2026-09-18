@@ -3,6 +3,16 @@
 # evaluated as an R function and is never serialized or sent to data nodes.
 
 .DSFLOWER_LOCAL_HPO_PROTOCOL <- "dsflower-local-hpo-v1"
+.dsflower_hpo_context <- new.env(parent = emptyenv())
+.dsflower_hpo_context$active <- FALSE
+
+.with_hpo_objective <- function(objective, params) {
+  previous <- .dsflower_hpo_context$active
+  .dsflower_hpo_context$active <- TRUE
+  on.exit(.dsflower_hpo_context$active <- previous, add = TRUE)
+  objective(params)
+}
+
 
 .hpo_scalar_number <- function(value, name) {
   if (!is.numeric(value) || is.logical(value) || length(value) != 1L ||
@@ -338,7 +348,7 @@ ds.flower.hpo <- function(objective, space, n_trials = 20L,
     params[[index]] <- .hpo_trial_params(
       event, expected_number = index - 1, parameter_names = parameter_names)
     value <- tryCatch(
-      objective(params[[index]]),
+      .with_hpo_objective(objective, params[[index]]),
       error = function(e) {
         message <- .hpo_bounded_message(
           conditionMessage(e), "unspecified objective error")
