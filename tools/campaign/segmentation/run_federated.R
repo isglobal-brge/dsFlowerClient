@@ -36,6 +36,9 @@ if (startsWith(work_dir, "/workspace/")) {
 for (name in c("DSFLOWER_VENV_ROOT", "DSFLOWER_CLIENT_VENV_ROOT", "TORCH_HOME", "F_SEG_RUNNER_PARENT")) {
   if (!nzchar(Sys.getenv(name))) stop("Missing environment: ", name)
 }
+# The trusted node environment inherits XDG_CACHE_HOME, not TORCH_HOME.
+stopifnot(identical(basename(Sys.getenv("TORCH_HOME")), "torch"))
+Sys.setenv(XDG_CACHE_HOME = dirname(Sys.getenv("TORCH_HOME")))
 dir.create(work_dir, recursive = TRUE, showWarnings = FALSE)
 capture_dir <- file.path(work_dir, "public-capture")
 if (dir.exists(capture_dir) && length(list.files(capture_dir, all.files = TRUE, no.. = TRUE))) {
@@ -95,12 +98,17 @@ cleanup <- function() {
     !isTRUE(ds.flower.superlink.status()$running), error = function(e) FALSE)
 }
 result <- tryCatch({
-  parallel::clusterMap(cluster, function(index, data, libpaths, venv, work_dir, epsilon, audit) {
+  parallel::clusterMap(cluster, function(index, data, libpaths, venv, work_dir, epsilon, audit, capture_dir, seed) {
     .libPaths(libpaths)
     # RunPod's /workspace FUSE volume ignores chmod; OS temp storage enforces it.
     # These are isolated public-fixture node identities, stable across all rounds.
     secret_dir <- file.path(tempdir(), "segmentation-node-state")
     dir.create(secret_dir, mode = "0700", showWarnings = FALSE)
+    observer_config <- file.path(secret_dir, "segmentation-public-benchmark.json")
+    jsonlite::write_json(list(public_fixture_only = TRUE, dataset = audit$dataset,
+                              capture_dir = capture_dir, seed = seed),
+                         observer_config, auto_unbox = TRUE)
+    Sys.chmod(observer_config, "0600")
     Sys.setenv(DSFLOWER_VENV_ROOT = venv,
                DSFLOWER_NODE_SECRET_FILE = file.path(secret_dir, paste0("secret-site", index)),
                DSFLOWER_TEST_ALLOW_EPHEMERAL_SECRET = "1")
@@ -119,7 +127,8 @@ result <- tryCatch({
     DSLite::dsAssignTable(.campaign_dslite_conn, "D", "training")
     TRUE
   }, index = seq_len(3L), data = site_data, MoreArgs = list(libpaths = .libPaths(),
-      venv = venv, work_dir = work_dir, epsilon = epsilon, audit = audit), SIMPLIFY = FALSE)
+      venv = venv, work_dir = work_dir, epsilon = epsilon, audit = audit,
+      capture_dir = capture_dir, seed = seed), SIMPLIFY = FALSE)
   dummy <- DSLite::newDSLiteServer(tables = list())
   conns <- stats::setNames(lapply(seq_len(3L), function(i) methods::new("CampaignDSLiteConnection",
     name = paste0("site", i), sid = paste0("remote-site", i), server = dummy, worker = cluster[i])), paste0("site", 1:3))
@@ -133,6 +142,8 @@ result <- tryCatch({
           learning_rate = .01, batch_size = if (synthetic) 8L else 16L,
           local_epochs = if (synthetic) 1L else 2L),
       rounds = if (synthetic) 2L else 5L, torch_backend = "cuda", output_dir = file.path(work_dir, "artifact"), silent = TRUE)
+  writeLines(fit$stdout, file.path(work_dir, "flower-stdout.log"))
+  writeLines(fit$stderr, file.path(work_dir, "flower-stderr.log"))
   if (!isTRUE(fit$available)) stop("No available released segmentation model.")
   metadata <- jsonlite::fromJSON(file.path(fit$output_dir, "metadata.json"))
   history <- jsonlite::fromJSON(file.path(fit$output_dir, "history.json"))
@@ -145,7 +156,8 @@ result <- tryCatch({
   test <- test[order(test$subject_id, test$image_id), , drop = FALSE]
   test <- test[!duplicated(test$subject_id), , drop = FALSE]
   paths <- file.path(audit$image_root, test$relative_path)
-  blocks <- base::split(seq_along(paths), ceiling(seq_along(paths) / 16L))
+  # Seven internal batches16 fit beneath the predictor's 2M-cell request bound.
+  blocks <- base::split(seq_along(paths), ceiling(seq_along(paths) / 112L))
   probability <- do.call(rbind, lapply(blocks, function(ix) {
     values <- ds.flower.predict(fit, paths[ix], type = "prob")
     do.call(rbind, lapply(seq_along(ix), function(i) as.vector(t(values[i, 1, , ]))))
@@ -161,7 +173,19 @@ result <- tryCatch({
                      row.names = FALSE, col.names = FALSE, sep = ",")
   list(status = "predicted_pending_public_metric_summary", output_dir = fit$output_dir,
        model_sha256 = digest::digest(file = file.path(fit$output_dir, "model.pt"), algo = "sha256"))
-}, error = function(e) list(status = "failed", error = conditionMessage(e)))
+}, error = function(e) {
+  # Preserve public-fixture node diagnostics before worker temp directories vanish.
+  logs <- try(parallel::clusterCall(cluster, function() {
+    paths <- list.files(file.path(tempdir(), "dsflower", "supernodes"),
+                        pattern = "\\.log$", recursive = TRUE, full.names = TRUE)
+    stats::setNames(lapply(paths, function(path) tail(readLines(path, warn = FALSE), 200L)),
+                    basename(paths))
+  }), silent = TRUE)
+  if (!inherits(logs, "try-error")) {
+    jsonlite::write_json(logs, file.path(work_dir, "public-node-diagnostics.json"), pretty = TRUE)
+  }
+  list(status = "failed", error = conditionMessage(e))
+})
 cleanup()
 result$cleanup_ok <- cleanup_ok
 result$dataset <- audit$dataset
