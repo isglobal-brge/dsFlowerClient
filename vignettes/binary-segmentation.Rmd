@@ -294,14 +294,19 @@ render_arm <- function(evidence_dir) {
     near_variants <- if (dataset == "busbra") names(variants) else "full"
     for (variant in near_variants) {
       near <- Filter(function(check) isTRUE(check$flag), near_groups[[variant]])
+      expected_near <- if (variant %in% c("full", "small192")) 9L else 3L
+      observed_near <- length(near_groups[[variant]])
+      incomplete_near <- observed_near < expected_near
       envelope_rows[[length(envelope_rows) + 1L]] <- data.frame(
         Check = paste("Unexpected near-central agreement:", variants[[variant]]),
         Result = if (is.null(near_groups[[variant]])) "Not evaluated" else
-          if (length(near)) "FLAGGED" else "Not flagged",
+          if (incomplete_near) "Incomplete" else
+            if (length(near)) "FLAGGED" else "Not flagged",
         Detail = if (is.null(near_groups[[variant]])) "Complete matched setting unavailable" else
-          if (length(near)) paste(vapply(near, function(check)
-            paste("epsilon", check$epsilon, "seed", check$seed), character(1)), collapse = "; ") else
-            "No replicate met the preregistered investigation rule")
+          paste0("Observed ", observed_near, " of ", expected_near, "; ",
+            if (length(near)) paste(vapply(near, function(check)
+              paste("FLAGGED epsilon", check$epsilon, "seed", check$seed), character(1)), collapse = "; ") else
+              "no observed replicate met the investigation rule"))
     }
     show_table(envelope_rows, "Envelope checks; flags require investigation and are retained.")
   }
