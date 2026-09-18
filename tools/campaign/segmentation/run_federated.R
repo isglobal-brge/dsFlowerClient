@@ -91,6 +91,8 @@ cleanup <- function() {
     cluster <<- NULL
   }
   try(ds.flower.superlink.stop(), silent = TRUE)
+  cleanup_ok <<- isTRUE(cleanup_ok) && tryCatch(
+    !isTRUE(ds.flower.superlink.status()$running), error = function(e) FALSE)
 }
 result <- tryCatch({
   parallel::clusterMap(cluster, function(index, data, libpaths, venv, work_dir, epsilon, audit) {
@@ -105,6 +107,7 @@ result <- tryCatch({
     options(dsflower.venv_root = venv,
             dsflower.dp_unit = "patient", dsflower.patient_column = "subject_id",
             dsflower.dp_per_training_epsilon = epsilon, dsflower.dp_per_training_delta = 1e-5,
+            dsflower.dp_clipping_norm = 1,
             dsflower.image_data_root = audit$image_root, dsflower.mask_data_root = audit$mask_root)
     suppressPackageStartupMessages({library(DSI); library(DSLite); library(dsFlower)})
     server <- DSLite::newDSLiteServer(tables = list(training = data),
