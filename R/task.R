@@ -33,10 +33,10 @@ ds.flower.task.count <- function() {
 
 .assert_supported_task <- function(task) {
   if (!inherits(task, "dsflower_task") ||
-      !task$type %in% c("classification", "regression", "count")) {
+      !task$type %in% c("classification", "regression", "count", "segmentation")) {
     type <- if (inherits(task, "dsflower_task")) task$type else "invalid"
     stop("Task '", type, "' is not supported by the enforced-DP runtime. ",
-         "Supported tasks: classification, regression, count.", call. = FALSE)
+         "Supported tasks: classification, regression, count, segmentation.", call. = FALSE)
   }
   invisible(task)
 }
@@ -49,4 +49,14 @@ ds.flower.task.count <- function() {
 print.dsflower_task <- function(x, ...) {
   cat("dsflower_task:", x$type, "\n")
   invisible(x)
+}
+
+#' Create a binary image segmentation task specification
+#'
+#' Requires the custodian patient privacy unit and one selected image per subject.
+#' Private validation, holdout and cross-validation are unsupported.
+#' @return A \code{dsflower_task} object with type = "segmentation".
+#' @export
+ds.flower.task.segmentation <- function() {
+  structure(list(type = "segmentation"), class = "dsflower_task")
 }

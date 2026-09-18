@@ -9,6 +9,7 @@ import sys
 def _load_builder():
     path = (Path(__file__).resolve().parents[1] / "flower_app" /
             "dsflower_runner" / "model_spec.py")
+    sys.path.insert(0, str(path.parent))
     spec = importlib.util.spec_from_file_location(
         "_dsflower_client_model_spec", str(path))
     module = importlib.util.module_from_spec(spec)
@@ -31,10 +32,12 @@ def main():
         "num-labels": int(payload["num_labels"]),
     }
     out_dim = builder.output_width(loss, cfg)
+    kwargs = ({"output_shape": (1, 128, 128)}
+              if loss == "segmentation_bce_dice" else {})
     builder.build_from_spec(
         payload["spec"], int(payload["input_dim"]), int(out_dim),
         num_labels=int(payload["num_labels"]),
-        output_limit=builder.output_limit_for_loss(loss))
+        output_limit=builder.output_limit_for_loss(loss), **kwargs)
 
 
 if __name__ == "__main__":

@@ -37,7 +37,8 @@ ds.flower.submit(
 \item{model}{A model name or \code{dsflower_model} (registry-resolved).}
 
 \item{target}{Character; one target column, or exactly \code{num_labels}
-distinct columns for a multilabel model.}
+distinct columns for a multilabel model. Binary segmentation uses exactly
+one mask-path column, with its vocabulary declared by the model.}
 
 \item{features}{Character vector; feature columns.}
 

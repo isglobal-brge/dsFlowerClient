@@ -582,3 +582,24 @@ print.dsflower_model <- function(x, ...) {
   }
   invisible(x)
 }
+
+#' Create a binary 2D segmentation model
+#'
+#' Releases a small convolutional decoder on the pinned frozen ImageNet ResNet18
+#' layer2 extractor. Output is one 128 by 128 binary mask per selected subject.
+#' The custodian must configure patient privacy and image/mask roots. The target
+#' column supplies relative PNG mask paths; images may be PNG or JPEG.
+#'
+#' @param alpha Public BCE mixture weight: 0.5 (BCE/Dice) or 1 (BCE ablation).
+#' @param mask_values Declared binary PNG vocabulary: "0,255" or "0,1".
+#' @param ... Additional typed parameters accepted by
+#'   \code{ds.flower.model("pytorch_resnet18_segmentation")}, including
+#'   \code{sample_id_col}, \code{image_path_col}, optional
+#'   \code{mask_empty_col}, and public training parameters.
+#' @return A \code{dsflower_model} object.
+#' @export
+ds.flower.model.pytorch_resnet18_segmentation <- function(
+    alpha = 0.5, mask_values = "0,255", ...) {
+  ds.flower.model("pytorch_resnet18_segmentation",
+                  alpha = alpha, mask_values = mask_values, ...)
+}

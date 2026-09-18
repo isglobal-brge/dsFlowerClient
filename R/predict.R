@@ -45,7 +45,9 @@
 #' @param type Character; \code{"response"} returns a predicted class for
 #'   classification models and a continuous response for regression/count
 #'   models. \code{"prob"} returns probabilities for classification models.
-#' @return A response vector or probability matrix. Saved vision and native-tree
+#' @return A response vector or probability matrix. Binary segmentation returns
+#'   an array [image, channel, row, column] on the canonical 128 by 128 grid;
+#'   response masks use probability >= 0.5. Saved vision and native-tree
 #'   classifiers return response values from their ordered public target levels.
 #' @export
 ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
@@ -162,7 +164,12 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
 }
 
 .predict_vision_local <- function(info, newdata, type) {
-  contract <- .resolve_validation_contract(dirname(info$model_file), 32L)
+  segmentation <- identical(info$contract$loss_name, "segmentation_bce_dice")
+  contract <- if (segmentation) {
+    .resolve_segmentation_prediction_contract(dirname(info$model_file))
+  } else {
+    .resolve_validation_contract(dirname(info$model_file), 32L)
+  }
   if (!identical(contract$data_kind, "image") ||
       !identical(contract$track, "neural")) {
     stop("Saved vision prediction contract is unavailable.", call. = FALSE)
@@ -178,7 +185,9 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     stop("Vision newdata must be a non-empty character vector of bounded paths.",
          call. = FALSE)
   }
-  output_width <- if (identical(type, "prob")) {
+  output_width <- if (segmentation) {
+    16384L
+  } else if (identical(type, "prob")) {
     length(contract$target_levels)
   } else {
     1L
@@ -218,6 +227,7 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
     "validation-artifact-format" = contract$artifact_format,
     "validation-artifact-sha256" = contract$artifact_sha256,
     "validation-artifact-size-bytes" = contract$artifact_size_bytes)
+  if (segmentation) config <- c(config, contract$segmentation_config)
   transport_dir <- tempfile(pattern = "vision_predict_")
   if (!dir.create(transport_dir, mode = "0700", showWarnings = FALSE)) {
     stop("Could not create private vision prediction inputs.", call. = FALSE)
@@ -271,6 +281,9 @@ ds.flower.predict <- function(model, newdata, type = c("response", "prob")) {
   value <- tryCatch(
     jsonlite::fromJSON(result$stdout, simplifyVector = TRUE),
     error = function(e) NULL)
+  if (segmentation) {
+    return(.format_segmentation_predictions(value, length(newdata), type))
+  }
   .format_vision_local_predictions(
     value, length(newdata), contract$target_levels, type)
 }

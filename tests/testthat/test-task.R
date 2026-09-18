@@ -16,8 +16,8 @@ test_that("survival task fails early while no enforced-DP runtime exists", {
   expect_error(ds.flower.task("survival"), "not supported")
 })
 
-test_that("segmentation task fails early while no enforced-DP runtime exists", {
-  expect_error(ds.flower.task("segmentation"), "not supported")
+test_that("segmentation task has the declared type", {
+  expect_identical(ds.flower.task("segmentation")$type, "segmentation")
 })
 
 test_that("task prints correctly", {

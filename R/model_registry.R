@@ -67,7 +67,8 @@
 #'   \code{hinge} (linear SVM), \code{ordinal} (CORN); plus vetted custom per-sample
 #'   losses \code{negbin_nll} (overdispersed counts), \code{gamma_nll}
 #'   (positive continuous), \code{huber} (bounded robust regression), and
-#'   \code{quantile} (bounded conditional-quantile regression).
+#'   \code{quantile} (bounded conditional-quantile regression), and
+#'   \code{segmentation_bce_dice} (the pinned per-image binary mask decoder).
 #'   The node pins the actual loss; this is the client's request.
 #' @param defaults Named list of default params merged under user-supplied params.
 #' @param description Character or NULL; a one-line human description.
@@ -118,7 +119,7 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   if (!is.null(loss)) {
     allowed <- c("bce_logits", "cross_entropy", "mse", "poisson_nll",
                  "multilabel_bce", "hinge", "negbin_nll", "gamma_nll",
-                 "huber", "quantile", "ordinal")
+                 "huber", "quantile", "ordinal", "segmentation_bce_dice")
     if (!is.character(loss) || length(loss) != 1L || !loss %in% allowed) {
       stop("'loss' must be one of the node allowlist: ",
            paste(allowed, collapse = ", "), ".", call. = FALSE)
@@ -681,6 +682,20 @@ ds.flower.model_parameters <- function(name) {
   list(kind = "sequential", layers = layers)
 }
 
+# The released spatial decoder contains only trainable convolutions. The frozen
+# ResNet18 layer2 extractor lives outside this module on each node.
+.segmentation_decoder_spec <- function() {
+  list(kind = "sequential", layers = list(
+    list(op = "reshape", shape = list(128L, 16L, 16L)),
+    list(op = "conv2d", out_channels = 32L, kernel_size = 3L, padding = 1L),
+    list(op = "relu"),
+    list(op = "upsample", scale_factor = 2L),
+    list(op = "conv2d", out_channels = 16L, kernel_size = 3L, padding = 1L),
+    list(op = "relu"),
+    list(op = "upsample", scale_factor = 4L),
+    list(op = "conv2d", out_channels = 1L, kernel_size = 1L)))
+}
+
 # A small 2D-CNN as a SPEC (DATA, node-built): reshape the flat per-sample vector
 # into (C,H,W), then a conv/pool stack -> adaptive pool -> flatten -> linear head.
 # input_shape must multiply to the feature count (the node rejects a mismatch).
@@ -1014,6 +1029,24 @@ ds.flower.model_parameters <- function(name) {
         data_kinds = "image",
         description = paste0("Vision classifier head on a frozen ", nm, " backbone."))
   })
+
+  ds.flower.register_model("pytorch_resnet18_segmentation", "neural",
+      vetted = FALSE, overwrite = overwrite,
+      generate = function(p) .segmentation_decoder_spec(),
+      loss = "segmentation_bce_dice",
+      defaults = utils::modifyList(neural_defaults, list(
+        learning_rate = 0.001, batch_size = 8L, alpha = 0.5,
+        mask_values = "0,255", image_asset = "images", mask_asset = "masks",
+        image_path_col = "relative_path", sample_id_col = "image_id")),
+      parameter_types = with_common(
+        alpha = "number", mask_values = "character",
+        image_asset = "character", mask_asset = "character",
+        image_path_col = "character", sample_id_col = "character",
+        mask_empty_col = "character", subject_id_col = "character"),
+      parameter_choices = c(neural_choices, list(
+        alpha = c(0.5, 1), mask_values = c("0,1", "0,255"))),
+      data_kinds = "image",
+      description = "Binary 128x128 segmentation decoder on frozen ResNet18 layer2.")
 
   # Native engines are first-party node adapters, never extension generators.
   # This registry reports the implemented constructor; node runtime availability

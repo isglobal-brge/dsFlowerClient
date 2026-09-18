@@ -19,7 +19,9 @@ classification models and a continuous response for regression/count
 models. \code{"prob"} returns probabilities for classification models.}
 }
 \value{
-A response vector or probability matrix. Saved vision and native-tree
+A response vector or probability matrix. Binary segmentation returns
+  an array [image, channel, row, column] on the canonical 128 by 128 grid;
+  response masks use probability >= 0.5. Saved vision and native-tree
   classifiers return response values from their ordered public target levels.
 }
 \description{

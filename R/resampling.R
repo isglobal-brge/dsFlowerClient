@@ -66,6 +66,11 @@
 }
 
 .assert_holdout_supported <- function(sub, data_kind) {
+  if (identical(sub$loss, "segmentation_bce_dice")) {
+    stop("Private segmentation validation, holdout, cross-validation and HPO ",
+         "are unsupported; score public or authorized local data instead.",
+         call. = FALSE)
+  }
   track <- if (is.list(sub)) sub$track %||% "" else ""
   if (!is.character(track) || length(track) != 1L || is.na(track) ||
       !track %in% c("neural", "native_tree")) {
@@ -144,6 +149,11 @@
 }
 
 .assert_cross_validation_supported <- function(sub, data_kind) {
+  if (identical(sub$loss, "segmentation_bce_dice")) {
+    stop("Private segmentation validation, holdout, cross-validation and HPO ",
+         "are unsupported; score public or authorized local data instead.",
+         call. = FALSE)
+  }
   track <- if (is.list(sub)) sub$track %||% NULL else NULL
   if (!is.character(track) || length(track) != 1L || is.na(track) ||
       !track %in% c("neural", "native_tree")) {

@@ -38,7 +38,9 @@ ds.flower.recipe <- function(model,
   } else {
     ds.flower.strategy(strategy)
   }
-  inferred_type <- if (model$loss %in% c("poisson_nll", "negbin_nll")) {
+  inferred_type <- if (identical(model$loss, "segmentation_bce_dice")) {
+    "segmentation"
+  } else if (model$loss %in% c("poisson_nll", "negbin_nll")) {
     "count"
   } else if (model$loss %in% c("mse", "huber", "quantile", "gamma_nll")) {
     "regression"

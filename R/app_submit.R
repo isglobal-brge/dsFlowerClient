@@ -216,7 +216,10 @@
     "l1-penalty" = as.numeric(p[["l1_penalty"]] %||% 0),
     "optimizer-name" = optimizer,
     "scheduler-name" = scheduler)
-  if (identical(loss_name, "negbin_nll")) {
+  if (identical(loss_name, "segmentation_bce_dice")) {
+    out[["segmentation-alpha"]] <- as.numeric(p[["alpha"]] %||% 0.5)
+    out[["segmentation-smooth"]] <- 1
+  } else if (identical(loss_name, "negbin_nll")) {
     out[["nb-dispersion"]] <- as.numeric(p[["nb_dispersion"]] %||% 1)
   } else if (identical(loss_name, "gamma_nll")) {
     out[["gamma-shape"]] <- as.numeric(p[["gamma_shape"]] %||% 1)
@@ -307,7 +310,7 @@
   params <- sub$params %||% list()
   input_dim <- if (identical(data_kind, "image")) {
     switch(as.character(params[["backbone"]] %||% "resnet18"),
-      resnet18 = 512L, resnet18_3d = 512L,
+      resnet18 = 512L, resnet18_3d = 512L, resnet18_layer2 = 32768L,
       densenet121 = 1024L, densenet121_3d = 1024L,
       stop("Unsupported trusted image backbone.", call. = FALSE))
   } else {
@@ -358,7 +361,8 @@
 #' @param conns DSI connections.
 #' @param model A model name or \code{dsflower_model} (registry-resolved).
 #' @param target Character; one target column, or exactly \code{num_labels}
-#'   distinct columns for a multilabel model.
+#'   distinct columns for a multilabel model. Binary segmentation uses exactly
+#'   one mask-path column, with its vocabulary declared by the model.
 #' @param features Character vector; feature columns.
 #' @param data Optional character data source resolved during connection.
 #' @param resource Optional Opal or Armadillo Resource name.
@@ -482,6 +486,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     .assert_cross_validation_supported(sub, data_kind)
   }
   target <- .validate_submission_target(sub, target)
+  if (identical(sub$loss, "segmentation_bce_dice")) {
+    .validate_public_target_spec(target_levels, target_bounds, "segmentation")
+  }
   request <- NULL
   if (identical(sub$track, "native_tree")) {
     if (!identical(num_rounds, 1L)) {
@@ -634,6 +641,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                 mse = "regression", huber = "regression",
                 quantile = "regression", poisson_nll = "count",
                 negbin_nll = "count", gamma_nll = "regression",
+                segmentation_bce_dice = "segmentation",
                 "classification")
   p <- sub[["params"]] %||% list()
   n_target_classes <- as.integer(
@@ -673,7 +681,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
          "the `symbol=` data path).", call. = FALSE)
   }
   n_features <- if (identical(data_kind, "image")) {
-    .vision_extractor_feature_dim(p[["backbone"]])
+    if (identical(sub$loss, "segmentation_bce_dice")) 32768L else
+      .vision_extractor_feature_dim(p[["backbone"]])
   } else if (!is.null(features)) {
     length(features)
   } else {
@@ -731,6 +740,15 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         "backbone" = p[["backbone"]],
         "image-size" = as.integer(p[["image_size"]]),
         "vision-extractor-profile" = p[["vision_extractor_profile"]]))
+    }
+    if (identical(sub$loss, "segmentation_bce_dice")) {
+      prepare_config <- c(prepare_config, .segmentation_public_config(p), list(
+        image_asset = p[["image_asset"]], mask_asset = p[["mask_asset"]],
+        image_path_col = p[["image_path_col"]], mask_path_col = target,
+        sample_id_col = p[["sample_id_col"]]))
+      for (field in c("mask_empty_col", "subject_id_col")) {
+        if (!is.null(p[[field]])) prepare_config[[field]] <- p[[field]]
+      }
     }
   } else if (identical(sub$track, "native_tree")) {
     prepare_config <- c(prepare_config, list(
@@ -837,6 +855,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         paste0("image-size = ", as.integer(p[["image_size"]] %||% 224L)),
         .toml_kv("vision-extractor-profile",
                  p[["vision_extractor_profile"]]))
+    }
+    if (identical(sub$loss, "segmentation_bce_dice")) {
+      segmentation_config <- .segmentation_public_config(p)
+      cfg <- c(cfg, unname(vapply(names(segmentation_config), function(key) {
+        .toml_kv(key, segmentation_config[[key]])
+      }, character(1))))
     }
   } else if (identical(sub$track, "native_tree")) {
     cfg <- c(
@@ -1001,6 +1025,13 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
 #' @keywords internal
 .validate_public_target_spec <- function(levels, bounds, task_type,
                                          loss_name = "", n_classes = 2L) {
+  if (identical(task_type, "segmentation")) {
+    if (!is.null(levels) || !is.null(bounds)) {
+      stop("Segmentation uses a mask-path target and declared mask_values; ",
+           "target_levels and target_bounds are unsupported.", call. = FALSE)
+    }
+    return(list(levels = NULL, bounds = NULL))
+  }
   numeric_task <- task_type %in% c("regression", "count", "continuous")
   if (isTRUE(numeric_task)) {
     if (!is.null(levels)) {
