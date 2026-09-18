@@ -25,7 +25,7 @@
   out <- list(schema_version = 1L, time_unit = p$time_unit,
               time_origin = p$time_origin, t_min = p$t_min)
   if (identical(loss, "discrete_hazard_nll")) {
-    out$horizon <- tail(p$edges, 1L)
+    out$horizon <- utils::tail(p$edges, 1L)
     out$edges <- unname(p$edges)
   } else {
     out <- c(out, list(horizon = p$horizon, time_scale = p$time_scale,
@@ -71,7 +71,7 @@
     edges <- config$edges
     if (!is.numeric(edges) || length(edges) < 2L || length(edges) > 65L ||
         anyNA(edges) || any(!is.finite(edges)) || edges[[1L]] != 0 ||
-        any(diff(edges) <= 0) || tail(edges, 1L) != config$horizon) {
+        any(diff(edges) <= 0) || utils::tail(edges, 1L) != config$horizon) {
       stop("Hazard edges require 1 <= K <= 64 and 0=b0<...<bK=horizon.",
            call. = FALSE)
     }
