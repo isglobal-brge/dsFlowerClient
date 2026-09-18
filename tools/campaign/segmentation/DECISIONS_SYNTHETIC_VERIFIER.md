@@ -34,3 +34,47 @@ Keep the server contract unchanged. Remove`num-labels` only from segmentation pr
 Reproduction: `DSFLOWER_SKIP_PYTHON_SETUP=true Rscript dsFlowerClient/tools/integration/segmentation-paired-preflight.R dsFlower dsFlowerClient` from the workspace. Before the correction:3 failed/2 passed expectations with the actual server rejection. After:5 passed. Logs are`checks/resume-paired-preflight-before.log` and`checks/resume-paired-preflight-after.log`. Synthetic attempts01–03 remain archived as failed with successful cleanup; gate7 remains pending the next actual execution and strict verifier.
 
 Synthetic04 reached real Flower rounds but both were unavailable; it produced no node accountant captures. Its persisted metadata showed that the actual client output directory is a generated model directory below`run/artifact`, not that parent itself. Resolve the verifier artifact directory from the actual status`output_dir`, require it to exist beneath this run's artifact root, and test both the generated subdirectory and rejection of an unrelated directory. This is an evidence-loader correction, not a release or privacy change.
+## 2026-09-18: observe the actual trusted node after integrity admission
+
+Synthetic attempt 04 reached the real three-node/two-round path but returned an
+unavailable model; it is failed evidence, and gate 7 remains incomplete. The node
+environment intentionally removes inherited benchmark `PYTHONPATH` and `F_SEG_*`
+variables. Preserve that isolation and the mandatory integrity bootstrap.
+
+Install `segmentation_public_observer.py` and its one-line `.pth` only into the
+dedicated `/workspace/segmentation/venv`. The installer refuses any other Python
+prefix. At interpreter startup the observer imports only stdlib and registers a
+deferred finder; it never imports the runner. The unchanged mandatory integrity
+finder runs first and verifies the actual runner package bytes. The observer
+wraps only `dsflower_runner.client_app` after the original loader executes, and
+requires the active mandatory finder, its verified-package record, its package
+pin, and the canonical unified ClientApp reference. The same checks run before
+every observed fit. No production runner, environment allowlist, or integrity
+hook is edited.
+
+Custodian opt-in is the adjacent `segmentation-public-benchmark.json` beside the
+node secret file; no secret bytes are read or recorded. Its directory must be
+same-owner mode 0700 and the non-symlink regular file same-owner mode 0600. Exactly
+four fields are accepted: `public_fixture_only: true`, `dataset` in
+`synthetic/breast/busbra`, integer `seed`, and absolute `capture_dir` beneath
+`/workspace/segmentation/` ending in `public-capture`. Missing opt-in leaves the
+observer inactive. This instrumentation is exclusively for these public cohorts.
+
+The observer passes original fit/private-factory arguments and returns unchanged,
+captures the actual returned accountant history after successful fit, and refuses
+capture unless one engine and the expected logical-step count were observed. It
+records public fixture tensor hashes and accounting geometry, not raw tensors or
+secrets. Setting Torch CPU threads to two restores the campaign's operational CPU
+bound because the clean environment also omits inherited OMP/MKL variables;
+deterministic algorithms and disabled TF32/cuDNN benchmarking match the existing
+public campaign. Noise, sampling, clipping, secure RNG and privacy defaults are
+unchanged.
+
+Validation: seven focused tests passed, including a subprocess with the real
+mandatory hook: altered package pin exits 99 before observer attachment; correct
+pin permits actual history capture with unchanged package bytes and original
+return/secure-RNG argument; wrong logical steps create no capture. Permission,
+opt-in, absent config, unguarded/unpinned/finder-order and non-campaign installer
+negative controls also pass. The thread-setting follow-up reruns the guarded
+capture test on the final observer source. These tests do not establish gate 7;
+the next actual federation and strict verifier must do so.
