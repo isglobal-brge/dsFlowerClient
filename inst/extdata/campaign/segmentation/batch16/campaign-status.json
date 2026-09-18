@@ -1,0 +1,599 @@
+{
+  "schema": "dsflower-segmentation-campaign-summary-v1",
+  "contract": "pytorch_resnet18_segmentation",
+  "task": "segmentation",
+  "nominal_batch_size": 16,
+  "protocol_sha256": "5a157dd8bb6700386eb22e2c977d8f1773d09ff56c793fbbedac68113f220edd",
+  "executed_at": "2026-09-18T23:33:03.972409+00:00",
+  "runtime": {
+    "server_commit": "d6243e6e4ef1326e28693874af906b6f58214890",
+    "client_commit": "909685b1a009e3f618bc1f14a9bc5b8a9af960b2",
+    "runner_sha256": "f26a66fab1e556d4feb2f21fc04364ff969707dc7701c43fe48e8360eb251ce2",
+    "runner_files": {
+      "__init__.py": "4e353c1f2c2783f5445d1a4928eb1b4ef41ba4172b55b1187df7a7844bb2a35f",
+      "association_client_app.py": "5efc95c9ad30b69809e3c85d4c39becf622e6e2f3482fd84cc94032c9af38030",
+      "association_parquet.py": "0092932a53cc792518c0fcb166659453b5e3e351dceedacff2bcc04bd8dbbda7",
+      "association_runtime_probe.py": "856705fb4f66c521ced73e48796a81c04c07b3318bc89538887e221881b63eb6",
+      "association_server_app.py": "3cfa234dfae23a3afe1c517677a7ec61515aca5266c880cb39d4f41cf634489e",
+      "boosting_accounting.py": "59df94d43136ca1ac5e74e05a3dbf87f05c1f1443ba7d1572179bcf2c3b05724",
+      "boosting_adapter.py": "85bcadaea977ef4b14fa9f53f88ba86e29245c18bbe84a34b54ecc6637753263",
+      "boosting_artifact.py": "8486e09415dcc94baa8a1fa8919ed41279c8add2813b4926e3d6d7d19fa8fae5",
+      "boosting_profile.py": "39d0cf2bc7f17903005594ab33f4b7afebc44a5b547c6e566a10557b7b1b6e05",
+      "catboost_artifact.py": "9cac3a4943e3335b9c45b809868ed1ab1682289392c3797127ab8f3f3ec9e478",
+      "client_app.py": "cb2ee0238cd9902160e9b599eb248aaf32a16a0cbc380f666badf03f6f9cda21",
+      "dp_harness.py": "0d0c66a34452b050c200f80021453150ada273e69b3855ea83b6bcb19ac2cdde",
+      "egress_child.py": "054504bd69031a40a90bcc287d7e9cdf63d4630ba6ab90998931adefbaabca3c",
+      "epi_association.py": "e009e6234d4ca145d2eec513159ca12401b5bee858dfe5da62f100f93e02dd12",
+      "forest_accounting.py": "05fd864f905a1895a882c80cbbeefbb18f8c58b5d9e69bd6beb4c2222c706139",
+      "forest_adapter.py": "8572e1bbaf48f1585c377863d079abf4f03390c596e8b75dd94c49ed2953619d",
+      "forest_predictor.py": "375aaeee96e586b33fb92b8165b8f7699432ff68200914d7bf35c36c2e9499d7",
+      "forest_sanitizer.py": "3fa8e1aaa33fdfa0e41565ef9d0b0a9ef558b17a64c19cf915e1a7d566e38a63",
+      "lightgbm_artifact.py": "4421c67a6c5d7fb010abe84033b8a29f9c11c64c274984333479f6417b5a251c",
+      "model_spec.py": "3cc66ca04c36197e7ad4fe857b041d8fe2d4e7d468b2b150592bded545252203",
+      "native_tree_client_app.py": "11786c736a19db1b51e98125eb3d6399d99aad20a8580221534c0696a6e6e497",
+      "native_tree_contract.py": "db9ffbbd2ffb035b2b57d08e0905db7c2747d2a3321617e820b56330c5fcdc2f",
+      "native_tree_engine.py": "82d62fbfd1b139debeed44ef6daed9c0e889aad32154c3464620a8903e4665de",
+      "native_tree_request.py": "6149cb3567352ac435b4fac22e801b843de95cdf84ad67db7e3408fe7f0750ce",
+      "native_tree_runtime_probe.py": "82e8edff08558a350aa8a16b9a3c34944a7d763ba1f665b4b4c7355b34c993dd",
+      "native_tree_server_app.py": "ffca7641bcce1d0e6aa31a5dc4f4892df1e96642634125390de0eab47026b7da",
+      "native_tree_validation_client_app.py": "1f29532892a844fd4524089769b6b2a152d1084d4e031f3dc4c481108376d514",
+      "native_tree_validation_server_app.py": "a5975f249cc237885d4aed89a1dd2f3f9c43e6b7a0d771659aefb85d7f2e2d27",
+      "params.py": "0df1b52376e2006c77d4f7ffffe3f702fffd62b8391a477710cd30eaed4a5a5f",
+      "random_forest_adapter.py": "a071b70c652d2cd40008300aa55581c5f333bc0598648737d458a54cea8d57e7",
+      "release_guard.py": "cf4c97f4c5558f2a865622335cb00add8f80bfa7c2a637c5df94e0f9df1f23c6",
+      "resampling.py": "4d3371b17345c818bd80113fe3e915d47959fd0db2343957e5d4e9eab28dd817",
+      "seeding.py": "0e41156f9903bf531cb79e8b4ccf993c92c1d489c527c957eaa8ef9475d36afd",
+      "segmentation.py": "6ba2f55a0aa43cdf91ceb5dbddbee7305187b5e9703e68c256955b2b28cec4f3",
+      "server_app.py": "9b684381f0c1b7aabc0e901f61092a4fa9f23fd76b28d8a6bd952923e136fda9",
+      "task.py": "bc6492da75e88eff9bb114dd601929b1313d9f1c054cb489708b53b68789c089",
+      "tier2_lib.py": "fa88e0dd481abec7819a5a1ec54bd69bd935ecb481c928dc22df2f1e05f7da17",
+      "tree_release.py": "19c9ad02ea4ee14c225917c1a37e86a38488a307310be9f6fd6564e4c73e750e",
+      "validation.py": "607fddbc176aa514228050b4db495bbcf47e55e727daf927c8d1a6bf2456f9a0",
+      "vision.py": "bf3f38b6a52fdd53a07312eadb7dc3b28beb77ce452d07e5182ae1f39423655d",
+      "xgboost_accounting.py": "77da39e3e12732c4279b76d54ccad23e4a5f3415913ddd24d5fe48ebc1dcc87e",
+      "xgboost_adapter.py": "3289a9f2a54a695279de69350084e12159a431224f4eed895248e6f8d9fc1c8a",
+      "xgboost_bundle.py": "69c89ccd8f58cc1d5ea1be2d2be38a08d6585fdfab411de943146742272c601a",
+      "xgboost_native.py": "7492cbdbcbd4d9efd9f6f9e3f359423699dbd9b5f48e1b49c3d78e19eb7fd800",
+      "xgboost_predictor.py": "5efe904d1332d44708ba0c8a3827c470ed5e9917c2aff543eb059e24d1879abf",
+      "xgboost_sanitizer.py": "5c6f2521ac5cb8900c60aa2869c4768fe25c8a40e04254798f691a78a43e8914"
+    },
+    "dependencies": {
+      "torch": "2.4.1+cu124",
+      "torchvision": "0.19.1+cu124",
+      "opacus": "1.5.4",
+      "flwr": "1.31.0",
+      "numpy": "2.4.6",
+      "pandas": "3.0.6",
+      "scipy": "1.17.1",
+      "Pillow": "10.2.0",
+      "pyarrow": "25.0.1",
+      "cryptography": "46.0.7"
+    },
+    "python": "3.11.10",
+    "platform": "Linux-6.8.0-52-generic-x86_64-with-glibc2.35",
+    "device": "NVIDIA A40",
+    "cuda": "12.4",
+    "cudnn": 90100,
+    "determinism": {
+      "configured_by": "segmentation.configure_runtime and benchmark hook",
+      "tf32_matmul": false,
+      "tf32_cudnn": false,
+      "deterministic_algorithms": true,
+      "mixed_precision": false,
+      "augmentation": false,
+      "physical_batch_splitting": false,
+      "CUBLAS_WORKSPACE_CONFIG": ":4096:8"
+    },
+    "inference": {
+      "encoder": "cuda",
+      "decoder": "cpu"
+    },
+    "benchmark_cpu_threads": 2,
+    "R_runtime": {
+      "R": "4.6.1",
+      "packages": [
+        {
+          "name": "dsFlower",
+          "version": "0.4.5"
+        },
+        {
+          "name": "dsFlowerClient",
+          "version": "0.4.4"
+        },
+        {
+          "name": "dsBase",
+          "version": "6.3.0"
+        },
+        {
+          "name": "DSLite",
+          "version": "1.4.1"
+        },
+        {
+          "name": "DSI",
+          "version": "1.8.0"
+        },
+        {
+          "name": "resourcer",
+          "version": "1.5.1"
+        }
+      ]
+    },
+    "campaign_files": {
+      "DECISIONS_SYNTHETIC_VERIFIER.md": "8cc7ca2871461d6d222eeffe18826fafed3c64b47c7dd2b2bf56326758d82b2b",
+      "README.md": "ad1959054ecd7b6008ee990ec3fa179e8c606ede69d87165319b330eb9d57edd",
+      "assemble_evidence.py": "831503036737d9d2e26c7ac4207b294cbf8690dcb062f36055a2724f6d9a2c04",
+      "benchmark_hooks/segmentation_public_observer.py": "df0f40e2b38515afbb0e15716819b24d3df4b249b4a38c3b91984fa67487b3b2",
+      "benchmark_hooks/sitecustomize.py": "bf0f50dad077385837055f4db84033b5e54b83c27b254b6b51ab7694dab8808f",
+      "central_twins.py": "1dfe99c5e1c50a0bc977ea90622517f0a10fe87f7363e3be0b88352b81fd89ae",
+      "combine_evidence.py": "e81225b439603350f35a7a802b21d5c6316097775c898c95dfe9cac70edb31d1",
+      "feature_smoke.py": "ea9aac98e96cdc743f9f2f6ed0ea49f755034bff98578cfba514dd0f5b16e9ff",
+      "fetch_public_data.py": "3a0d63ed5072f90d7cd680361e94e89f2dce93b4fe9ba0fa654878b9eed492f7",
+      "install_public_observer.py": "7768e1619d132085f3509ebc783a94a2ef428acfb0b3c90f689995f523d6097c",
+      "launch_v3.sh": "1cd7644942d27fa3ce5bdc0c36fe81b6f685f29877307ee15086adae3b1c8ac3",
+      "prepare_public_data.py": "3a931580bdb0422c088ece74dad8a1b67b070fc1300b428cc0a517de23a2b8d7",
+      "prepare_synthetic.py": "4bab41274b18027fdb6cc14c5a40e940a369c1f75138eee9f01feba78e644be6",
+      "public_slots.py": "dbef91181fd62007c1921deee0b80adbc246a1c6266cef08a2a322206a3be7f2",
+      "resume_postprocessing.py": "d54d4c02f8718a14e850a473221e71b58013f0af3a0b25fd919727c55d906b8d",
+      "run_federated.R": "97c3cfc31f5b972cd687c5f8af73da60bb0edd29aca2e90a483f07026df20483",
+      "run_federated.sh": "2e0a77bddc38fd19425e539b4e340cc996446e7992ed26ca2ae989087d66ac7b",
+      "run_matrix.py": "7501421e0bbe81d232f3218fb7b6de3adb9bba025c98f075681de0a92a1d8bee",
+      "score_public.py": "7a95808ca0fc585394466e885858b468303eebe28bed09e62dd5df55501f8146",
+      "segmentation_metrics.py": "c5d681e4149e15df3e2d012349643b5b1cd21865ccad13df829302041a551b0e",
+      "smoke_benchmark_hooks.py": "e98e42ec686b261f3d761390dbd07a584ec474496c8498da30fdb828ccd69193",
+      "test_analyst_benchmark_hook.py": "8b23f0ff69469b44b60a200e754d58101c2ef071caa77e8aa7da022da5451367",
+      "test_assemble_evidence.py": "1a9425ea3aada483f84fa1e3aa8d42025eaeccd760d2ce698eef0d8b31aff42c",
+      "test_campaign.py": "b0b9b6f3025c12320989d83488c11832b82a80e5ad840e0ffa1dcffaca6690ca",
+      "test_central_twins.py": "d40cab92a4deabd9e31e299cb73c8df2dcfb37597ac28ce297a66491d34d6d46",
+      "test_combine_evidence.py": "cf4cd5ca65da46e836642bb48717808492d8117ac05e3e2d624b3d03ab29b4b1",
+      "test_protocol_v2.py": "4996fccf050714cca9488c18768dc79da271def889f46275a676d3791f80fed4",
+      "test_public_observer.py": "e24cc4caa3df146032efab0c98617f71720e1554ef68949c541de8e3fa5036fb",
+      "test_public_slots.py": "01667b5e8ed6c71a6437e1651284a5fb71b97c3e5b13bf3489bccca920dc38f1",
+      "test_resume_postprocessing.py": "45334c818b0980083420a69707bf1fe97e088604aca4421ce82afffad7ecdea1",
+      "test_run_matrix.py": "4e86cfb01c80c3b0178c309368fa1c99237af416f4a1f4b6bd40c78827abdadf",
+      "test_verify_synthetic.py": "4b7820a6bb8228c6cb3c091998b7220efa668baebda9231d75c8717dc4144039",
+      "verify_synthetic.py": "73d53a054376038a609bc5a16f3ff841b50aaa1a786941bd9060e3b3464d6e48"
+    },
+    "public_observer": {
+      "sha256": "df0f40e2b38515afbb0e15716819b24d3df4b249b4a38c3b91984fa67487b3b2",
+      "pth_sha256": "8fd761e0585120574fa39547d2f83ca2662dc14b5013021102c3d2a57d8be318",
+      "scope": "/workspace/segmentation/venv",
+      "mandatory_integrity_hook_unchanged": true
+    },
+    "campaign_commit": "71d870e982a82375a85e2fcf553874f812444d18",
+    "campaign_tooling_commit": "5dcd32818e9e71c65449c09de3928173b1d20c27",
+    "protocol_version": 3,
+    "protocol_sha256": "5a157dd8bb6700386eb22e2c977d8f1773d09ff56c793fbbedac68113f220edd",
+    "batch_arms": [
+      16,
+      64
+    ],
+    "installed_package_note": "Installed production server d6243e6 and client909685b; subsequent commits modify public campaign tooling/evidence/docs only.",
+    "initial_campaign_snapshot": {
+      "campaign_commit": "408606d156beaa3f909733b4b6ad0bd9fcc20862",
+      "campaign_tooling_commit": "a19474e",
+      "campaign_files": {
+        "._assemble_evidence.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._central_twins.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._feature_smoke.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._fetch_public_data.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._prepare_public_data.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._prepare_synthetic.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._run_federated.R": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._run_federated.sh": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._run_matrix.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._score_public.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._segmentation_metrics.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._smoke_benchmark_hooks.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._test_assemble_evidence.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._test_campaign.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "._verify_synthetic.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "assemble_evidence.py": "04219c467577174c785d1f24cc9212eb4bbc8937ddfe22a152714eb45cb420e5",
+        "benchmark_hooks/._sitecustomize.py": "d389bbf3f5c4dc60d5d8fcc381c3d19c9608501349a7694e73b5f871b5472087",
+        "benchmark_hooks/segmentation_public_observer.py": "b93b835d055b9ed9016629ce6f18793c95ccfd7c6e4ff1361f4d8d61c697ff37",
+        "benchmark_hooks/sitecustomize.py": "2a54271467deafa17030995d33e0bb860b2c5097f5b425e57e4458888fac63c6",
+        "central_twins.py": "ac689bb46c61b78cc493bb5c2eee8b99018b34db2d7cadfcde07f7c1d73f39bd",
+        "feature_smoke.py": "ea9aac98e96cdc743f9f2f6ed0ea49f755034bff98578cfba514dd0f5b16e9ff",
+        "fetch_public_data.py": "3a0d63ed5072f90d7cd680361e94e89f2dce93b4fe9ba0fa654878b9eed492f7",
+        "install_public_observer.py": "14616daa8ac6627309ce8725b4572c04dc05ef23f747e1cb8fee5795fdc3caec",
+        "prepare_public_data.py": "3a931580bdb0422c088ece74dad8a1b67b070fc1300b428cc0a517de23a2b8d7",
+        "prepare_synthetic.py": "4bab41274b18027fdb6cc14c5a40e940a369c1f75138eee9f01feba78e644be6",
+        "run_federated.R": "e084c5afbff219385c5e681ab40980ea472d0affcc46dc6bac87d9027e0614d4",
+        "run_federated.sh": "852a714d7354fac8ca428b05cb7c89d1c8733a9c4aa36cb75b5b9f4b7b8d32c8",
+        "run_matrix.py": "b30ab71e685d91d219d6e9d50e0feb9523dbca303bc9e0e467de742bbbcf8fa4",
+        "score_public.py": "7a95808ca0fc585394466e885858b468303eebe28bed09e62dd5df55501f8146",
+        "segmentation_metrics.py": "c5d681e4149e15df3e2d012349643b5b1cd21865ccad13df829302041a551b0e",
+        "smoke_benchmark_hooks.py": "8b86ffd5027f1acc1eba11c1a7801eec56443db2c217f52bed922ad7b0cfb3b0",
+        "test_assemble_evidence.py": "fd4cf8f5a787dc69d1a068dab8b141bb0bb21c2563dd89043b50e284f2bf3654",
+        "test_campaign.py": "747cb1bd68e19fd0d8bdbb9f13f133097302f78a3d388f2f09e7e55c97f90ace",
+        "test_central_twins.py": "6c13b6e88407811a59492a54a7c644607a3bd167ca7a53fe98b2e925aac8ce0f",
+        "test_public_observer.py": "a53108f2b9e84d4d0adb0e29ac6e1a78d33bc7a568d347e8efc352a14e2c38a5",
+        "test_run_matrix.py": "e46059f4f98647919a241dd22b603ce42d2f56bd174de73b85d12788ce3cd023",
+        "test_verify_synthetic.py": "4b7820a6bb8228c6cb3c091998b7220efa668baebda9231d75c8717dc4144039",
+        "verify_synthetic.py": "73d53a054376038a609bc5a16f3ff841b50aaa1a786941bd9060e3b3464d6e48"
+      },
+      "public_observer": {
+        "sha256": "df0f40e2b38515afbb0e15716819b24d3df4b249b4a38c3b91984fa67487b3b2",
+        "pth_sha256": "8fd761e0585120574fa39547d2f83ca2662dc14b5013021102c3d2a57d8be318",
+        "scope": "/workspace/segmentation/venv",
+        "mandatory_integrity_hook_unchanged": true
+      }
+    },
+    "rollout_commits": [
+      "a19474e27476e3b7162359d5eeae5d89144c01db",
+      "2c3a4d9fe68cc1a2ce807ec26a0e58afd8be5cf6",
+      "ac9624c4d796c9f55389bb4f5246ede6fb393d4f",
+      "de94c7be1a029a38f87ad8bfe3e1fbbed0395b65",
+      "074b18a42068a0e8b51b0347ef38632c56d51e0c",
+      "0c1314abe55c0ce18222923b9002afc15c82540d",
+      "3260fd8d8bb18e386a7e6edf8ee30bba10a44337",
+      "3dc52889c2b59cdd92ccb19aa937a923250b8756",
+      "8ccc0d1f90581a658d43c158792e8c2dd8f87511",
+      "2cec320f6a42aa3a9e19241f4404251e88667208",
+      "71d870e982a82375a85e2fcf553874f812444d18"
+    ],
+    "tooling_rollout_note": "Versioned tooling rolled out during execution; original in-memory controllers retained their loaded code. See execution histories, pretraining-attempts and STATUS_F. Installed production package commits remain unchanged.",
+    "operational_repairs": {
+      "native_thread_bounds": {
+        "OMP_NUM_THREADS": 2,
+        "MKL_NUM_THREADS": 2,
+        "OPENBLAS_NUM_THREADS": 2,
+        "NUMEXPR_NUM_THREADS": 2
+      },
+      "observed_thread_limit": 5120,
+      "thread_limit_hits_before_repair": 308,
+      "thread_limit_hits_current": "max 308",
+      "runtime_mirror": {
+        "started_utc": "2026-09-18T14:14:24.446344+00:00",
+        "controller_pids": [
+          85650,
+          85651
+        ],
+        "source": "/workspace/segmentation/venv",
+        "mirror": "/tmp/dsflower-segmentation-runtime-v2",
+        "numeric_dependencies_changed": false,
+        "verified_files": 13713,
+        "verified_bytes": 1463587817,
+        "tree_sha256": "44fdded0642ba2edce0039a95221363852f6a2dde3ed77bf8ef1725b9133745c",
+        "excluded_generated": [
+          "__pycache__",
+          "*.pyc"
+        ],
+        "status": "swapped",
+        "completed_utc": "2026-09-18T14:20:23.271295+00:00"
+      },
+      "runtime_verification": {
+        "dependencies_identical": true,
+        "cuda_device": "NVIDIA A40",
+        "superlink_help_seconds": 7.455053756013513,
+        "exit_code": 0
+      },
+      "diagnostic_only_dependency": {
+        "py-spy": "0.4.0",
+        "attachment": "denied; no capability changes"
+      },
+      "trained_failed_cells_retried": false,
+      "direct_entrypoints_and_cpu_slots": {
+        "scope": "Only public scoped runtime console-script interpreter paths; bodies and dependencies unchanged",
+        "changes": [
+          {
+            "entrypoint": "flower-superexec",
+            "before_sha256": "f2c76c6ef3ae71a25817a5e1958c9b4189fd1ec165c5488f3fc45e4af27386c0",
+            "after_sha256": "b34a39e8ab944ddc63a7b1ab41f9488e664c5c33d0c22c54b67c9a0e5f058b70",
+            "body_sha256": "58fe4d11b945fc0315ac2268722edb73d7c7861da7373b76e0946135ffb66851"
+          },
+          {
+            "entrypoint": "flower-superlink",
+            "before_sha256": "cb154c54fe53b71842cee89cf081083e66b4c47552806fae8b3b095cb863c07c",
+            "after_sha256": "4e30e5ef7f7809e6f0d0ffce125f76c8d22859eb5d7dd95d99ba5fd1fccea8bb",
+            "body_sha256": "c978afe036b764dfe128cb92c828d258c592a931b3ba5b33f76091f1640f65f5"
+          },
+          {
+            "entrypoint": "flower-supernode",
+            "before_sha256": "19f365bdcb0764550c0886cb1cd3f571679655f4fceb2570390ff3b5e1401027",
+            "after_sha256": "5d17e1178557baa8d250731b1a713503f7bc734bceee93d54673b366fbb6ab71",
+            "body_sha256": "c7d652dadbadb7f4946ac4257fcefa64b41341f5ec6733c4abe5efcec3f79179"
+          },
+          {
+            "entrypoint": "flwr",
+            "before_sha256": "e8d6e179a564cfa034fa82b58cab8d1f8cc57e7a6edc9028cde4d6099519d1ba",
+            "after_sha256": "335086acd3a6a85ee93335c210d838944f7841a312c13f523e8e8096cb640399",
+            "body_sha256": "cb58ef59045593977f85393f4a9e0e107ffc55b51ade4272f8b6482f6efa7b7b"
+          },
+          {
+            "entrypoint": "flwr-agentapp",
+            "before_sha256": "7ae97896945b7a1d649c2eccef8245dff2ff9f2ca650ac028a1851d7e7592a29",
+            "after_sha256": "72bf43e9ffca03d38413e2306c2bab22b0b18e09cc8846bb414ee2ca127ca10a",
+            "body_sha256": "ed472f46c2b074fe676dec26b92b35ae4a3fcb6d98e42cf3ca0079924aeaa781"
+          },
+          {
+            "entrypoint": "flwr-clientapp",
+            "before_sha256": "bc8f06de7526132610aabe900cc30acf8ad29cfde890c83f28fbfaa7de5fdbed",
+            "after_sha256": "3d1f3473c6d3a2cab9e2a6fc2ca5c7dc3e85093c72bff368c607f204c97179db",
+            "body_sha256": "20dc307ca9380035896f3eeb52693da429ecb109bfd1837fabeb2426e280863e"
+          },
+          {
+            "entrypoint": "flwr-model",
+            "before_sha256": "3601c0f505a2983ac9bba08e027c38741cef739aea94e1dfc99deab6edef1f29",
+            "after_sha256": "99e4c99faa9db4296428c2d9684472d90c1b8bae86e37bd381576ed292a77703",
+            "body_sha256": "568e1dd79618e83245860735de24aeea1979e0ecaa62d879b651352321276469"
+          },
+          {
+            "entrypoint": "flwr-serverapp",
+            "before_sha256": "4697222dad739da9e99dfcc0eab21a89b16e2af91c263c393cae6c7589ef822e",
+            "after_sha256": "d0cc51768002b8573562f42e12a13e646528f0fc756bbe37b811897d709c622b",
+            "body_sha256": "733222eb89dc14ab538fc6de4b7c146722c05deeeef90ac28f9663373557a7be"
+          },
+          {
+            "entrypoint": "flwr-simulation",
+            "before_sha256": "ca709ba61dcce8b282e4af112b8c39eb6bf0ba2cb1ccb276743ddd201b165254",
+            "after_sha256": "9c3a3358bf62d4113611ee555ae23fb23eca589df675711cd291bcf5bcadc0b9",
+            "body_sha256": "ae9c2b14b41a0838e7aca6e180db798f50dd15226b67376ef956634798e8e981"
+          }
+        ],
+        "cpu_quota_us": 765000,
+        "cpu_period_us": 100000,
+        "concurrent_public_federations": 2,
+        "profile": [
+          {
+            "route": "aliased",
+            "elapsed_seconds": 14.719766438007355,
+            "exit_code": 0
+          },
+          {
+            "route": "direct",
+            "elapsed_seconds": 1.550954608246684,
+            "exit_code": 0
+          },
+          {
+            "route": "aliased",
+            "elapsed_seconds": 6.662278916686773,
+            "exit_code": 0
+          },
+          {
+            "route": "direct",
+            "elapsed_seconds": 1.0176854692399502,
+            "exit_code": 0
+          }
+        ]
+      }
+    },
+    "metadata_updated_utc": "2026-09-18T16:58:15.587816+00:00",
+    "v3_launch_manifest_sha256": "78d80b6ed768d3be3c7aaf6e8bd0d381845558a0290e9936129014ce3d01e120"
+  },
+  "status": "executed",
+  "cells": [
+    {
+      "dataset": "breast",
+      "variant": "full",
+      "epsilon": 1,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "breast",
+      "variant": "full",
+      "epsilon": 1,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "breast",
+      "variant": "full",
+      "epsilon": 1,
+      "seed": 20260921,
+      "status": "executed"
+    },
+    {
+      "dataset": "breast",
+      "variant": "full",
+      "epsilon": 4,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "breast",
+      "variant": "full",
+      "epsilon": 4,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "breast",
+      "variant": "full",
+      "epsilon": 4,
+      "seed": 20260921,
+      "status": "executed"
+    },
+    {
+      "dataset": "breast",
+      "variant": "full",
+      "epsilon": 8,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "breast",
+      "variant": "full",
+      "epsilon": 8,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "breast",
+      "variant": "full",
+      "epsilon": 8,
+      "seed": 20260921,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "full",
+      "epsilon": 1,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "full",
+      "epsilon": 1,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "full",
+      "epsilon": 1,
+      "seed": 20260921,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "full",
+      "epsilon": 4,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "full",
+      "epsilon": 4,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "full",
+      "epsilon": 4,
+      "seed": 20260921,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "full",
+      "epsilon": 8,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "full",
+      "epsilon": 8,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "full",
+      "epsilon": 8,
+      "seed": 20260921,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "small192",
+      "epsilon": 1,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "small192",
+      "epsilon": 1,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "small192",
+      "epsilon": 1,
+      "seed": 20260921,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "small192",
+      "epsilon": 4,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "small192",
+      "epsilon": 4,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "small192",
+      "epsilon": 4,
+      "seed": 20260921,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "small192",
+      "epsilon": 8,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "small192",
+      "epsilon": 8,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "small192",
+      "epsilon": 8,
+      "seed": 20260921,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "bce",
+      "epsilon": 8,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "bce",
+      "epsilon": 8,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "bce",
+      "epsilon": 8,
+      "seed": 20260921,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "heterogeneous",
+      "epsilon": 8,
+      "seed": 20260919,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "heterogeneous",
+      "epsilon": 8,
+      "seed": 20260920,
+      "status": "executed"
+    },
+    {
+      "dataset": "busbra",
+      "variant": "heterogeneous",
+      "epsilon": 8,
+      "seed": 20260921,
+      "status": "executed"
+    }
+  ],
+  "reason": "All 33 preregistered cells executed",
+  "promotion": "Reviewer decision; execution status does not assert validated utility"
+}

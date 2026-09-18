@@ -73,6 +73,12 @@ binary mask on the canonical 128 by 128 grid. Each custodian must select
 the <strong>patient privacy unit</strong> and configure its image and
 mask roots. The analyst supplies schema column names and asset aliases,
 never filesystem roots or privacy parameters.</p>
+<p>The prior v2 campaign is <strong>invalid: pipeline defect under
+investigation</strong>; its scores and floor verdicts are not release
+evidence. The fresh v3 campaign uses the preregistered Adam schedule
+below and retains v2 separately as invalidated history. Mechanism checks
+remain separately recorded; execution does not constitute reviewer
+acceptance.</p>
 <div class="section level2">
 <h2 id="paired-image-and-mask-schema">Paired image and mask schema<a class="anchor" aria-label="anchor" href="#paired-image-and-mask-schema"></a>
 </h2>
@@ -198,16 +204,17 @@ claim.</p>
 <p>The preregistered campaign uses BrEaST and BUS-BRA with three DSLite
 sites, subject-disjoint 80/20 splits, three seeds, epsilon 1, 4 and 8,
 delta <code>1e-5</code>, clipping 1 and separate nominal batch-size 16
-and 64 arms. Protocol v2 fixes 128 by 128 inputs, five rounds with two
-local epochs per round, learning rate 0.01, and no augmentation or mixed
-precision. BUS-BRA also has the nested 192-subject, BCE-only and
-heterogeneous-site extensions. The released federated DP model is
-compared with pooled DP, pooled nonprivate and federated nonprivate
-twins using the same initial decoder, effective tensors, loss, optimizer
-and subject splits. Nonprivate twins are public benchmark diagnostics
-outside the released contract. The trivial comparison selects the
-strongest of four fixed masks: empty, full, a centered disk of radius
-32, and a centered 64 by 64 square.</p>
+and 64 arms. Protocol v3 fixes 128 by 128 inputs, ten rounds with three
+local epochs per round (30 total), round-local Adam at learning rate
+0.001, and no augmentation or mixed precision. BUS-BRA also has the
+nested 192-subject, BCE-only and heterogeneous-site extensions. The
+released federated DP model is compared with pooled DP, pooled
+nonprivate and federated nonprivate twins using the same initial
+decoder, effective tensors, loss, optimizer and subject splits.
+Nonprivate twins are public benchmark diagnostics outside the released
+contract. The trivial comparison selects the strongest of four fixed
+masks: empty, full, a centered disk of radius 32, and a centered 64 by
+64 square.</p>
 <p>The tables below read <code>campaign-status.json</code>,
 <code>breast-evidence.json</code> and <code>busbra-evidence.json</code>
 in each arm directory under
@@ -221,13 +228,983 @@ twin provenance. Rendering checks the schema identity, contract and
 protocol hash again. An incomplete cohort cannot produce a
 completed-matrix summary. Execution status is separate from utility
 acceptance and reviewer promotion.</p>
-<p><strong>Campaign status: not_executed.</strong> Protocol v2
-preregistered before scoring; seven mechanism gates passed. Both batch16
-and batch64 matrices pending.</p>
+</div>
+<div class="section level2">
+<h2 id="nominal-batch16-arm">Nominal batch16 arm<a class="anchor" aria-label="anchor" href="#nominal-batch16-arm"></a>
+</h2>
+<p><strong>Campaign status: executed.</strong> All 33 preregistered
+cells executed</p>
 <p>Protocol SHA256:
-<code>595e5c4e40a8ff8664f6d09c82546f6dcf7c02f5fea878b1da209027c77b3396</code>.</p>
-<p>No completed cohort evidence is archived. Utility floors and
-envelopes remain <strong>not evaluated</strong>.</p>
+<code>5a157dd8bb6700386eb22e2c977d8f1773d09ff56c793fbbedac68113f220edd</code>.</p>
+<div class="section level3">
+<h3 id="breast">BrEaST<a class="anchor" aria-label="anchor" href="#breast"></a>
+</h3>
+<p><strong>Cohort status: executed.</strong></p>
+<table class="table">
+<caption>Mean subject Dice with 95% t intervals across three
+seeds.</caption>
+<colgroup>
+<col width="13%">
+<col width="16%">
+<col width="16%">
+<col width="17%">
+<col width="19%">
+<col width="17%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Setting</th>
+<th align="left">Federated DP Dice</th>
+<th align="left">Pooled DP Dice</th>
+<th align="left">Pooled nonprivate Dice</th>
+<th align="left">Federated nonprivate Dice</th>
+<th align="left">Strongest trivial Dice</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">0.052 [-0.112, 0.215]</td>
+<td align="left">0.050 [-0.123, 0.223]</td>
+<td align="left">0.589 [0.526, 0.653]</td>
+<td align="left">0.542 [0.504, 0.580]</td>
+<td align="left">0.275</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">0.049 [-0.121, 0.220]</td>
+<td align="left">0.020 [-0.029, 0.068]</td>
+<td align="left">0.589 [0.547, 0.630]</td>
+<td align="left">0.554 [0.481, 0.628]</td>
+<td align="left">0.275</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">0.049 [-0.121, 0.220]</td>
+<td align="left">0.020 [-0.029, 0.068]</td>
+<td align="left">0.596 [0.529, 0.663]</td>
+<td align="left">0.557 [0.532, 0.581]</td>
+<td align="left">0.275</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<caption>Released-model Dice and IoU at threshold 0.5; absent strata are
+not applicable.</caption>
+<colgroup>
+<col width="21%">
+<col width="24%">
+<col width="26%">
+<col width="26%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Setting</th>
+<th align="left">Stratum</th>
+<th align="left">Dice</th>
+<th align="left">IoU</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">all</td>
+<td align="left">0.052 [-0.112, 0.215]</td>
+<td align="left">0.032 [-0.056, 0.119]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 1</td>
+<td align="left">foreground positive</td>
+<td align="left">0.047 [-0.138, 0.232]</td>
+<td align="left">0.026 [-0.077, 0.130]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">all</td>
+<td align="left">0.049 [-0.121, 0.220]</td>
+<td align="left">0.030 [-0.061, 0.122]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 4</td>
+<td align="left">foreground positive</td>
+<td align="left">0.044 [-0.146, 0.234]</td>
+<td align="left">0.025 [-0.082, 0.131]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">all</td>
+<td align="left">0.049 [-0.121, 0.220]</td>
+<td align="left">0.030 [-0.061, 0.122]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 8</td>
+<td align="left">foreground positive</td>
+<td align="left">0.044 [-0.146, 0.234]</td>
+<td align="left">0.025 [-0.082, 0.131]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Epsilon 8 utility floor: FAILED.</strong> This is a
+descriptive application of the BUS-BRA floor. Mean Dice 0.049; strongest
+trivial mask 0.275; margin -0.226. Required: Dice &gt;= 0.50 and margin
+&gt;= 0.10.</p>
+<table class="table">
+<caption>Envelope checks; flags require investigation and are
+retained.</caption>
+<colgroup>
+<col width="34%">
+<col width="11%">
+<col width="53%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Check</th>
+<th align="left">Result</th>
+<th align="left">Detail</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Epsilon 1 to 4</td>
+<td align="left">Not flagged</td>
+<td align="left">Shortfall increase 0.0019; seed-SD tolerance
+0.0647</td>
+</tr>
+<tr class="even">
+<td align="left">Epsilon 4 to 8</td>
+<td align="left">Not flagged</td>
+<td align="left">Shortfall increase 0.0071; seed-SD tolerance
+0.0647</td>
+</tr>
+<tr class="odd">
+<td align="left">Small-cohort noise trend</td>
+<td align="left">Not evaluated</td>
+<td align="left">Complete matched small-cohort matrix unavailable</td>
+</tr>
+<tr class="even">
+<td align="left">Unexpected near-central agreement: Primary</td>
+<td align="left">Not flagged</td>
+<td align="left">Observed 9 of 9; no observed replicate met the
+investigation rule</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="bus-bra">BUS-BRA<a class="anchor" aria-label="anchor" href="#bus-bra"></a>
+</h3>
+<p><strong>Cohort status: executed.</strong></p>
+<table class="table">
+<caption>Mean subject Dice with 95% t intervals across three
+seeds.</caption>
+<colgroup>
+<col width="20%">
+<col width="15%">
+<col width="15%">
+<col width="15%">
+<col width="17%">
+<col width="15%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Setting</th>
+<th align="left">Federated DP Dice</th>
+<th align="left">Pooled DP Dice</th>
+<th align="left">Pooled nonprivate Dice</th>
+<th align="left">Federated nonprivate Dice</th>
+<th align="left">Strongest trivial Dice</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">0.000 [-0.001, 0.002]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.719 [0.680, 0.758]</td>
+<td align="left">0.690 [0.663, 0.717]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.557 [0.502, 0.613]</td>
+<td align="left">0.720 [0.664, 0.777]</td>
+<td align="left">0.689 [0.664, 0.715]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.599 [0.580, 0.619]</td>
+<td align="left">0.719 [0.674, 0.764]</td>
+<td align="left">0.690 [0.651, 0.729]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 1</td>
+<td align="left">0.055 [-0.180, 0.290]</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.640 [0.580, 0.700]</td>
+<td align="left">0.589 [0.514, 0.665]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="odd">
+<td align="left">192 subjects epsilon 4</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.656 [0.616, 0.695]</td>
+<td align="left">0.585 [0.560, 0.611]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 8</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.642 [0.624, 0.661]</td>
+<td align="left">0.579 [0.550, 0.609]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="odd">
+<td align="left">BCE only epsilon 8</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.506 [0.384, 0.629]</td>
+<td align="left">0.711 [0.689, 0.734]</td>
+<td align="left">0.676 [0.658, 0.694]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="even">
+<td align="left">Heterogeneous sites epsilon 8</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.607 [0.587, 0.627]</td>
+<td align="left">0.723 [0.674, 0.772]</td>
+<td align="left">0.684 [0.642, 0.726]</td>
+<td align="left">0.296</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<caption>Released-model Dice and IoU at threshold 0.5; absent strata are
+not applicable.</caption>
+<colgroup>
+<col width="31%">
+<col width="21%">
+<col width="23%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Setting</th>
+<th align="left">Stratum</th>
+<th align="left">Dice</th>
+<th align="left">IoU</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">all</td>
+<td align="left">0.000 [-0.001, 0.002]</td>
+<td align="left">0.000 [-0.001, 0.001]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 1</td>
+<td align="left">foreground positive</td>
+<td align="left">0.000 [-0.001, 0.002]</td>
+<td align="left">0.000 [-0.001, 0.001]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">all</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 4</td>
+<td align="left">foreground positive</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">all</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 8</td>
+<td align="left">foreground positive</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 1</td>
+<td align="left">all</td>
+<td align="left">0.055 [-0.180, 0.290]</td>
+<td align="left">0.031 [-0.104, 0.166]</td>
+</tr>
+<tr class="odd">
+<td align="left">192 subjects epsilon 1</td>
+<td align="left">foreground positive</td>
+<td align="left">0.055 [-0.180, 0.290]</td>
+<td align="left">0.031 [-0.104, 0.166]</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 1</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="odd">
+<td align="left">192 subjects epsilon 4</td>
+<td align="left">all</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.031 [-0.104, 0.166]</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 4</td>
+<td align="left">foreground positive</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.031 [-0.104, 0.166]</td>
+</tr>
+<tr class="odd">
+<td align="left">192 subjects epsilon 4</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 8</td>
+<td align="left">all</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.031 [-0.104, 0.166]</td>
+</tr>
+<tr class="odd">
+<td align="left">192 subjects epsilon 8</td>
+<td align="left">foreground positive</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.031 [-0.104, 0.166]</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 8</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="odd">
+<td align="left">BCE only epsilon 8</td>
+<td align="left">all</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="even">
+<td align="left">BCE only epsilon 8</td>
+<td align="left">foreground positive</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="odd">
+<td align="left">BCE only epsilon 8</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="even">
+<td align="left">Heterogeneous sites epsilon 8</td>
+<td align="left">all</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="odd">
+<td align="left">Heterogeneous sites epsilon 8</td>
+<td align="left">foreground positive</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="even">
+<td align="left">Heterogeneous sites epsilon 8</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Epsilon 8 utility floor: FAILED.</strong> This is the
+preregistered primary floor. Mean Dice 0.000; strongest trivial mask
+0.296; margin -0.296. Required: Dice &gt;= 0.50 and margin &gt;=
+0.10.</p>
+<table style="width:100%;" class="table">
+<caption>Envelope checks; flags require investigation and are
+retained.</caption>
+<colgroup>
+<col width="41%">
+<col width="9%">
+<col width="49%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Check</th>
+<th align="left">Result</th>
+<th align="left">Detail</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Epsilon 1 to 4</td>
+<td align="left">Not flagged</td>
+<td align="left">Shortfall increase 0.0019; seed-SD tolerance
+0.0228</td>
+</tr>
+<tr class="even">
+<td align="left">Epsilon 4 to 8</td>
+<td align="left">Not flagged</td>
+<td align="left">Shortfall increase -0.0016; seed-SD tolerance
+0.0228</td>
+</tr>
+<tr class="odd">
+<td align="left">Small-cohort noise trend</td>
+<td align="left">FLAGGED</td>
+<td align="left">Shortfall SD: epsilon 1 0.0707; epsilon 8 0.1006</td>
+</tr>
+<tr class="even">
+<td align="left">Unexpected near-central agreement: Primary</td>
+<td align="left">Not flagged</td>
+<td align="left">Observed 9 of 9; no observed replicate met the
+investigation rule</td>
+</tr>
+<tr class="odd">
+<td align="left">Unexpected near-central agreement: 192 subjects</td>
+<td align="left">Not flagged</td>
+<td align="left">Observed 9 of 9; no observed replicate met the
+investigation rule</td>
+</tr>
+<tr class="even">
+<td align="left">Unexpected near-central agreement: BCE only</td>
+<td align="left">Not flagged</td>
+<td align="left">Observed 3 of 3; no observed replicate met the
+investigation rule</td>
+</tr>
+<tr class="odd">
+<td align="left">Unexpected near-central agreement: Heterogeneous
+sites</td>
+<td align="left">Not flagged</td>
+<td align="left">Observed 3 of 3; no observed replicate met the
+investigation rule</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section level2">
+<h2 id="nominal-batch64-arm">Nominal batch64 arm<a class="anchor" aria-label="anchor" href="#nominal-batch64-arm"></a>
+</h2>
+<p><strong>Campaign status: executed.</strong> All 33 preregistered
+cells executed</p>
+<p>Protocol SHA256:
+<code>5a157dd8bb6700386eb22e2c977d8f1773d09ff56c793fbbedac68113f220edd</code>.</p>
+<div class="section level3">
+<h3 id="breast-1">BrEaST<a class="anchor" aria-label="anchor" href="#breast-1"></a>
+</h3>
+<p><strong>Cohort status: executed.</strong></p>
+<table class="table">
+<caption>Mean subject Dice with 95% t intervals across three
+seeds.</caption>
+<colgroup>
+<col width="13%">
+<col width="16%">
+<col width="16%">
+<col width="17%">
+<col width="19%">
+<col width="17%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Setting</th>
+<th align="left">Federated DP Dice</th>
+<th align="left">Pooled DP Dice</th>
+<th align="left">Pooled nonprivate Dice</th>
+<th align="left">Federated nonprivate Dice</th>
+<th align="left">Strongest trivial Dice</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">0.051 [-0.114, 0.216]</td>
+<td align="left">0.049 [-0.121, 0.220]</td>
+<td align="left">0.553 [0.505, 0.600]</td>
+<td align="left">0.491 [0.315, 0.666]</td>
+<td align="left">0.275</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">0.049 [-0.121, 0.220]</td>
+<td align="left">0.027 [-0.051, 0.104]</td>
+<td align="left">0.554 [0.498, 0.609]</td>
+<td align="left">0.472 [0.277, 0.667]</td>
+<td align="left">0.275</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">0.049 [-0.121, 0.220]</td>
+<td align="left">0.020 [-0.029, 0.068]</td>
+<td align="left">0.525 [0.414, 0.637]</td>
+<td align="left">0.507 [0.394, 0.620]</td>
+<td align="left">0.275</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<caption>Released-model Dice and IoU at threshold 0.5; absent strata are
+not applicable.</caption>
+<colgroup>
+<col width="21%">
+<col width="24%">
+<col width="26%">
+<col width="26%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Setting</th>
+<th align="left">Stratum</th>
+<th align="left">Dice</th>
+<th align="left">IoU</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">all</td>
+<td align="left">0.051 [-0.114, 0.216]</td>
+<td align="left">0.031 [-0.057, 0.120]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 1</td>
+<td align="left">foreground positive</td>
+<td align="left">0.046 [-0.140, 0.232]</td>
+<td align="left">0.026 [-0.079, 0.130]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">all</td>
+<td align="left">0.049 [-0.121, 0.220]</td>
+<td align="left">0.030 [-0.061, 0.122]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 4</td>
+<td align="left">foreground positive</td>
+<td align="left">0.044 [-0.146, 0.234]</td>
+<td align="left">0.025 [-0.082, 0.131]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">all</td>
+<td align="left">0.049 [-0.121, 0.220]</td>
+<td align="left">0.030 [-0.061, 0.122]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 8</td>
+<td align="left">foreground positive</td>
+<td align="left">0.044 [-0.146, 0.234]</td>
+<td align="left">0.025 [-0.082, 0.131]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Epsilon 8 utility floor: FAILED.</strong> This is a
+descriptive application of the BUS-BRA floor. Mean Dice 0.049; strongest
+trivial mask 0.275; margin -0.226. Required: Dice &gt;= 0.50 and margin
+&gt;= 0.10.</p>
+<table class="table">
+<caption>Envelope checks; flags require investigation and are
+retained.</caption>
+<colgroup>
+<col width="34%">
+<col width="11%">
+<col width="53%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Check</th>
+<th align="left">Result</th>
+<th align="left">Detail</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Epsilon 1 to 4</td>
+<td align="left">Not flagged</td>
+<td align="left">Shortfall increase 0.0029; seed-SD tolerance
+0.0703</td>
+</tr>
+<tr class="even">
+<td align="left">Epsilon 4 to 8</td>
+<td align="left">Not flagged</td>
+<td align="left">Shortfall increase -0.0285; seed-SD tolerance
+0.0881</td>
+</tr>
+<tr class="odd">
+<td align="left">Small-cohort noise trend</td>
+<td align="left">Not evaluated</td>
+<td align="left">Complete matched small-cohort matrix unavailable</td>
+</tr>
+<tr class="even">
+<td align="left">Unexpected near-central agreement: Primary</td>
+<td align="left">Not flagged</td>
+<td align="left">Observed 9 of 9; no observed replicate met the
+investigation rule</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
+<h3 id="bus-bra-1">BUS-BRA<a class="anchor" aria-label="anchor" href="#bus-bra-1"></a>
+</h3>
+<p><strong>Cohort status: executed.</strong></p>
+<table class="table">
+<caption>Mean subject Dice with 95% t intervals across three
+seeds.</caption>
+<colgroup>
+<col width="20%">
+<col width="15%">
+<col width="15%">
+<col width="15%">
+<col width="17%">
+<col width="15%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Setting</th>
+<th align="left">Federated DP Dice</th>
+<th align="left">Pooled DP Dice</th>
+<th align="left">Pooled nonprivate Dice</th>
+<th align="left">Federated nonprivate Dice</th>
+<th align="left">Strongest trivial Dice</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.694 [0.655, 0.733]</td>
+<td align="left">0.638 [0.620, 0.657]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.691 [0.655, 0.726]</td>
+<td align="left">0.640 [0.627, 0.653]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.392 [0.311, 0.474]</td>
+<td align="left">0.691 [0.657, 0.724]</td>
+<td align="left">0.642 [0.620, 0.665]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 1</td>
+<td align="left">0.056 [-0.176, 0.288]</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.442 [-0.118, 1.001]</td>
+<td align="left">0.460 [0.311, 0.609]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="odd">
+<td align="left">192 subjects epsilon 4</td>
+<td align="left">0.055 [-0.180, 0.290]</td>
+<td align="left">0.059 [-0.196, 0.315]</td>
+<td align="left">0.482 [0.009, 0.956]</td>
+<td align="left">0.460 [0.311, 0.609]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 8</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.000 [-0.000, 0.000]</td>
+<td align="left">0.433 [-0.130, 0.995]</td>
+<td align="left">0.460 [0.311, 0.609]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="odd">
+<td align="left">BCE only epsilon 8</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [-0.001, 0.001]</td>
+<td align="left">0.678 [0.655, 0.701]</td>
+<td align="left">0.539 [0.382, 0.696]</td>
+<td align="left">0.296</td>
+</tr>
+<tr class="even">
+<td align="left">Heterogeneous sites epsilon 8</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.156 [-0.502, 0.814]</td>
+<td align="left">0.691 [0.666, 0.717]</td>
+<td align="left">0.642 [0.616, 0.668]</td>
+<td align="left">0.296</td>
+</tr>
+</tbody>
+</table>
+<table class="table">
+<caption>Released-model Dice and IoU at threshold 0.5; absent strata are
+not applicable.</caption>
+<colgroup>
+<col width="31%">
+<col width="21%">
+<col width="23%">
+<col width="23%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Setting</th>
+<th align="left">Stratum</th>
+<th align="left">Dice</th>
+<th align="left">IoU</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">all</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.031 [-0.104, 0.166]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 1</td>
+<td align="left">foreground positive</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.031 [-0.104, 0.166]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 1</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">all</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 4</td>
+<td align="left">foreground positive</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 4</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">all</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="even">
+<td align="left">Primary epsilon 8</td>
+<td align="left">foreground positive</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="odd">
+<td align="left">Primary epsilon 8</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 1</td>
+<td align="left">all</td>
+<td align="left">0.056 [-0.176, 0.288]</td>
+<td align="left">0.032 [-0.101, 0.165]</td>
+</tr>
+<tr class="odd">
+<td align="left">192 subjects epsilon 1</td>
+<td align="left">foreground positive</td>
+<td align="left">0.056 [-0.176, 0.288]</td>
+<td align="left">0.032 [-0.101, 0.165]</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 1</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="odd">
+<td align="left">192 subjects epsilon 4</td>
+<td align="left">all</td>
+<td align="left">0.055 [-0.180, 0.290]</td>
+<td align="left">0.031 [-0.103, 0.166]</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 4</td>
+<td align="left">foreground positive</td>
+<td align="left">0.055 [-0.180, 0.290]</td>
+<td align="left">0.031 [-0.103, 0.166]</td>
+</tr>
+<tr class="odd">
+<td align="left">192 subjects epsilon 4</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 8</td>
+<td align="left">all</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.031 [-0.104, 0.166]</td>
+</tr>
+<tr class="odd">
+<td align="left">192 subjects epsilon 8</td>
+<td align="left">foreground positive</td>
+<td align="left">0.055 [-0.181, 0.290]</td>
+<td align="left">0.031 [-0.104, 0.166]</td>
+</tr>
+<tr class="even">
+<td align="left">192 subjects epsilon 8</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="odd">
+<td align="left">BCE only epsilon 8</td>
+<td align="left">all</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="even">
+<td align="left">BCE only epsilon 8</td>
+<td align="left">foreground positive</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="odd">
+<td align="left">BCE only epsilon 8</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+<tr class="even">
+<td align="left">Heterogeneous sites epsilon 8</td>
+<td align="left">all</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="odd">
+<td align="left">Heterogeneous sites epsilon 8</td>
+<td align="left">foreground positive</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+<td align="left">0.000 [0.000, 0.000]</td>
+</tr>
+<tr class="even">
+<td align="left">Heterogeneous sites epsilon 8</td>
+<td align="left">empty reference</td>
+<td align="left">Not applicable</td>
+<td align="left">Not applicable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Epsilon 8 utility floor: FAILED.</strong> This is the
+preregistered primary floor. Mean Dice 0.000; strongest trivial mask
+0.296; margin -0.296. Required: Dice &gt;= 0.50 and margin &gt;=
+0.10.</p>
+<table style="width:100%;" class="table">
+<caption>Envelope checks; flags require investigation and are
+retained.</caption>
+<colgroup>
+<col width="41%">
+<col width="9%">
+<col width="49%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Check</th>
+<th align="left">Result</th>
+<th align="left">Detail</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">Epsilon 1 to 4</td>
+<td align="left">Not flagged</td>
+<td align="left">Shortfall increase 0.0519; seed-SD tolerance
+0.0791</td>
+</tr>
+<tr class="even">
+<td align="left">Epsilon 4 to 8</td>
+<td align="left">Not flagged</td>
+<td align="left">Shortfall increase -0.0003; seed-SD tolerance
+0.0143</td>
+</tr>
+<tr class="odd">
+<td align="left">Small-cohort noise trend</td>
+<td align="left">FLAGGED</td>
+<td align="left">Shortfall SD: epsilon 1 0.1938; epsilon 8 0.1944</td>
+</tr>
+<tr class="even">
+<td align="left">Unexpected near-central agreement: Primary</td>
+<td align="left">Not flagged</td>
+<td align="left">Observed 9 of 9; no observed replicate met the
+investigation rule</td>
+</tr>
+<tr class="odd">
+<td align="left">Unexpected near-central agreement: 192 subjects</td>
+<td align="left">Not flagged</td>
+<td align="left">Observed 9 of 9; no observed replicate met the
+investigation rule</td>
+</tr>
+<tr class="even">
+<td align="left">Unexpected near-central agreement: BCE only</td>
+<td align="left">Not flagged</td>
+<td align="left">Observed 3 of 3; no observed replicate met the
+investigation rule</td>
+</tr>
+<tr class="odd">
+<td align="left">Unexpected near-central agreement: Heterogeneous
+sites</td>
+<td align="left">Not flagged</td>
+<td align="left">Observed 3 of 3; no observed replicate met the
+investigation rule</td>
+</tr>
+</tbody>
+</table>
 <p>The shortfall used by the envelope is <strong>pooled nonprivate Dice
 minus federated DP Dice</strong>. Positive values indicate lower utility
 for the released model. Epsilon-envelope flags compare changes against
@@ -238,6 +1215,7 @@ remain failed and do not trigger changes to epsilon, delta, clipping,
 subject retention or the preregistered protocol. Foreground-positive
 results remain visible even when empty-mask performance changes the
 overall mean.</p>
+</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

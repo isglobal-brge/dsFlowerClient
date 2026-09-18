@@ -18,10 +18,11 @@ fits a binary mask on the canonical
 configure its image and mask roots. The analyst supplies schema column names
 and asset aliases, never filesystem roots or privacy parameters.
 
-The v2 campaign is **invalid: pipeline defect under investigation**, following
-the reviewer's 2026-09-18 hold. Its scores and prior floor verdicts are not release
-evidence. Mechanism checks remain separately recorded; diagnostic reruns do not
-constitute campaign acceptance.
+The prior v2 campaign is **invalid: pipeline defect under investigation**;
+its scores and floor verdicts are not release evidence. The fresh v3 campaign
+uses the preregistered Adam schedule below and retains v2 separately as
+invalidated history. Mechanism checks remain separately recorded; execution
+does not constitute reviewer acceptance.
 
 ## Paired image and mask schema
 
@@ -145,9 +146,9 @@ no utility claim.
 
 The preregistered campaign uses BrEaST and BUS-BRA with three DSLite sites,
 subject-disjoint 80/20 splits, three seeds, epsilon 1, 4 and 8, delta `1e-5`,
-clipping 1 and separate nominal batch-size 16 and 64 arms. Protocol v2 fixes 128 by 128
-inputs, five rounds with two local epochs per round, learning rate 0.01,
-and no augmentation or mixed precision. BUS-BRA also has the nested
+clipping 1 and separate nominal batch-size 16 and 64 arms. Protocol v3 fixes 128 by 128
+inputs, ten rounds with three local epochs per round (30 total), round-local
+Adam at learning rate 0.001, and no augmentation or mixed precision. BUS-BRA also has the nested
 192-subject, BCE-only and heterogeneous-site extensions. The released
 federated DP model is compared with pooled DP, pooled nonprivate and
 federated nonprivate twins using the same initial decoder, effective tensors,
