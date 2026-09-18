@@ -7,8 +7,12 @@ privacy budgets as permission to repeat experiments on a private cohort.
 1. Use paired survival revisions of dsFlower and dsFlowerClient in one workspace,
    with R 4.5, DSI/DSLite/dsBase/resourcer and normal package dependencies.
    Prepare `runtime/venv` with the coherent versions in
-   `requirements-macos-arm64.txt` (Mac ARM64 execution record). On Linux use
-   the appropriate Torch build and record the actual versions. Set
+   `requirements-macos-arm64.txt` (Mac ARM64 execution record). The pod execution profile is recorded in
+   `requirements-pod-linux-x86_64.txt`: Python 3.11.10, Torch 2.4.1+cu124,
+   Opacus 1.5.2 and Flower 1.31.0. It inherits the matching image Torch/CUDA
+   stack in an isolated venv; the freeze records the environment, rather than
+   promising a portable installer. The pod used R 4.6.1; the Mac used R 4.5.
+   Keep separate task-owned R libraries and record the actual versions. Set
    `UV_CACHE_DIR` within this workspace. Create `runtime/server/pytorch` as a
    link to `../venv`; package installs use only `runtime/rlib`.
 2. Download the two URLs in the protocol to `data/survival/support2.csv` and
@@ -66,3 +70,10 @@ Both differences are explicit in JSON, as are package commits and runner hashes.
 Failure JSONs from development are retained with their actual phase and known
 limitations. A failure or incomplete matrix must not be reported as validated
 utility. Claude decides promotion.
+
+The runtime requires owner-only POSIX permissions for node secrets. If the pod
+workspace is mounted on a filesystem that ignores chmod, use a task-owned
+mode-0700 OS temporary directory as backing for `runtime/tmp` and `runtime/runs`
+through workspace symlinks. Persistent sources, inputs, libraries and evidence
+remain in the task workspace. Preserve released artifacts before recycling the
+pod; never copy node-secret files into evidence.
