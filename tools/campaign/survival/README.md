@@ -95,3 +95,12 @@ environment are retained. After readiness and 30 focused tests passed, the pod
 used `--jobs 2` under its measured 7.65-CPU/50-GB container limits, with one
 BLAS/OMP thread per process. The first cohort cell retains its earlier placement
 provenance. These operational changes do not change the frozen v1 protocol.
+
+Dataset-scoped scheduling is available with `--datasets support2` or
+`--datasets lung1`; omitting it runs both. The campaign assigns all SUPPORT2
+cells to the CUDA pod and all LUNG1 cells to the Mac CPU profile, with matched
+twins on each host. The Mac uses one cell at a time. Merge the executed JSONs
+from these disjoint scopes before the final summary and completeness gate;
+a scoped run alone cannot pass the unchanged 90-cell completion requirement.
+Versions and device differences are recorded per cell, so cross-cohort
+differences must not be attributed solely to subject population size.
