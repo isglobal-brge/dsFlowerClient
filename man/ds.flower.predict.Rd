@@ -21,7 +21,9 @@ or volume paths.}
 
 \item{type}{Character; \code{"response"} returns a predicted class for
 classification models and a continuous response for regression/count
-models. \code{"prob"} returns probabilities for classification models.}
+models. \code{"prob"} returns probabilities for classification models.
+Survival models additionally support `"survival"`, `"risk"`, and
+`"median"`; their `"response"` is median time.}
 
 \item{times}{Optional public evaluation times in `[0, horizon]` for a survival
 model. `type = "survival"` returns curves and times; `"risk"` returns
@@ -30,7 +32,9 @@ negative AFT location or negative grid restricted mean. `"median"` and
 is `NA`. The default curve grid is the public edges (hazard) or `[0, horizon]`.}
 }
 \value{
-A response vector or probability matrix. Saved vision and native-tree
+A response vector, probability matrix, or (for `type = "survival"`)
+  a list with `times` and a subject-by-time `survival` matrix.
+  Saved vision and native-tree
   classifiers return response values from their ordered public target levels.
 }
 \description{

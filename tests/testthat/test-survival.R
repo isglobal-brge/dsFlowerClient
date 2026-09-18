@@ -125,3 +125,65 @@ test_that("survival wire pins preserve fractional public time boundaries", {
   expect_identical(decoded$edges, edges)
   expect_identical(decoded$horizon, tail(edges, 1L))
 })
+
+test_that("HPO objective context rejects survival before node contact and restores nesting", {
+  evaluate <- dsFlowerClient:::.hpo_evaluate_objective
+  context <- dsFlowerClient:::.DSFLOWER_HPO_CONTEXT
+  expect_false(context$active)
+  model <- ds.flower.model.pytorch_aft(10)
+  train <- function(params) ds.flower.submit(list(), model,
+    target = c("time", "event"), features = "x")
+  expect_error(evaluate(train, list()), "Survival training inside HPO")
+  expect_false(context$active)
+  value <- evaluate(function(params) {
+    expect_true(context$active)
+    expect_identical(evaluate(function(params) 7, list()), 7)
+    expect_true(context$active)
+    expect_error(evaluate(function(params) stop("nested"), list()), "nested")
+    expect_true(context$active)
+    3
+  }, list())
+  expect_identical(value, 3)
+  expect_false(context$active)
+})
+
+test_that("the public HPO API rejects a survival fit in its first trial", {
+  python <- tryCatch(dsFlowerClient:::.local_hpo_python_cmd(), error = function(e) "")
+  skip_if(!nzchar(python), "Optuna 4.8.0 is required")
+  local_mocked_bindings(.local_hpo_python_cmd = function() python,
+                       .package = "dsFlowerClient")
+  expect_error(ds.flower.hpo(function(params) {
+    ds.flower.fit(list(), model = "pytorch_aft",
+      model_params = list(horizon = 10), target = c("t", "e"), features = "x")
+  }, list(x = ds.flower.hpo.float(0, 1)), n_trials = 1),
+  "Survival training inside HPO")
+  expect_false(dsFlowerClient:::.DSFLOWER_HPO_CONTEXT$active)
+})
+
+test_that("portable survival bundles retain exact public grids after reload", {
+  directory <- withr::local_tempdir()
+  destination <- withr::local_tempdir()
+  edges <- c(0, 1.000000123456789, 3.123456789012345)
+  sub <- dsFlowerClient:::.emit_submission(ds.flower.model.pytorch_discrete_hazard(edges))
+  config <- dsFlowerClient:::.survival_config(sub$params, sub$loss)
+  metadata <- list(model = "pytorch_discrete_hazard", data_kind = "tabular",
+    model_spec = sub$spec, model_params = sub$params, loss_name = sub$loss,
+    survival_config = config, features = c("x", "z"))
+  jsonlite::write_json(metadata, file.path(directory, "metadata.json"),
+                      auto_unbox = TRUE, digits = I(17))
+  saveRDS(metadata, file.path(directory, "model.rds"))
+  writeBin(charToRaw("public test artifact"), file.path(directory, "model.pt"))
+  run <- structure(list(output_dir = directory, available = TRUE,
+                        model_file = file.path(directory, "model.rds")),
+                   class = "dsflower_run")
+  for (ext in c("json", "rds")) {
+    path <- file.path(destination, paste0("survival.", ext))
+    ds.flower.save_model(run, path)
+    loaded <- ds.flower.load_model(path)
+    contract <- dsFlowerClient:::.read_meta_model_contract(loaded$source_dir)
+    expect_identical(contract$survival_config$edges, edges)
+    expect_identical(dsFlowerClient:::.resolve_model_for_predict(loaded)$contract$survival_config$edges,
+                     edges)
+    expect_identical(contract$loss_name, "discrete_hazard_nll")
+  }
+})

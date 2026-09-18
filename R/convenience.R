@@ -161,7 +161,7 @@ ds.flower.task <- function(name = "classification") {
   key <- .dsflower_choice_key(name)
   if (key %in% c("segmentation")) {
     stop("Task '", name, "' is not supported by the enforced-DP runtime. ",
-         "Supported tasks: classification, regression, count.", call. = FALSE)
+         "Supported tasks: classification, regression, count, survival.", call. = FALSE)
   }
 
   choices <- c(

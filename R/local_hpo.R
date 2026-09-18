@@ -3,6 +3,15 @@
 # evaluated as an R function and is never serialized or sent to data nodes.
 
 .DSFLOWER_LOCAL_HPO_PROTOCOL <- "dsflower-local-hpo-v1"
+.DSFLOWER_HPO_CONTEXT <- new.env(parent = emptyenv())
+.DSFLOWER_HPO_CONTEXT$active <- FALSE
+
+.hpo_evaluate_objective <- function(objective, params) {
+  previous <- .DSFLOWER_HPO_CONTEXT$active
+  .DSFLOWER_HPO_CONTEXT$active <- TRUE
+  on.exit(.DSFLOWER_HPO_CONTEXT$active <- previous, add = TRUE)
+  objective(params)
+}
 
 .hpo_scalar_number <- function(value, name) {
   if (!is.numeric(value) || is.logical(value) || length(value) != 1L ||
@@ -291,6 +300,10 @@ ds.flower.hpo.categorical <- function(values) {
 #' exposing Python Trial semantics to R or serializing code, neither of which
 #' is part of this data-only local bridge.
 #'
+#' Survival training inside an HPO objective is rejected before node contact.
+#' Scoring an existing released survival model on public or independently
+#' authorized analyst-local data remains possible.
+#'
 #' @param objective Local R function accepting one named parameter list and
 #'   returning one finite numeric scalar.
 #' @param space Non-empty named list of dimensions created with
@@ -338,7 +351,7 @@ ds.flower.hpo <- function(objective, space, n_trials = 20L,
     params[[index]] <- .hpo_trial_params(
       event, expected_number = index - 1, parameter_names = parameter_names)
     value <- tryCatch(
-      objective(params[[index]]),
+      .hpo_evaluate_objective(objective, params[[index]]),
       error = function(e) {
         message <- .hpo_bounded_message(
           conditionMessage(e), "unspecified objective error")

@@ -54,4 +54,8 @@ the returned values additionally depends on the objective itself.
 Static typed spaces are intentional: conditional search logic would require
 exposing Python Trial semantics to R or serializing code, neither of which
 is part of this data-only local bridge.
+
+Survival training inside an HPO objective is rejected before node contact.
+Scoring an existing released survival model on public or independently
+authorized analyst-local data remains possible.
 }

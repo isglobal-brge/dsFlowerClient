@@ -482,6 +482,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   model$params <- .dsflower_resolve_model_params(
     registered_model, model_params)
   sub <- .emit_submission(model)
+  if (.is_survival_loss(sub$loss) && isTRUE(.DSFLOWER_HPO_CONTEXT$active)) {
+    stop("Survival training inside HPO is unsupported; use a preregistered ",
+         "public training schedule.", call. = FALSE)
+  }
   if (!is.null(holdout_spec)) {
     .assert_holdout_supported(sub, data_kind)
   }
