@@ -56,15 +56,24 @@ class CampaignTests(unittest.TestCase):
         self.assertFalse(got['utility_floor']['pass'])
         self.assertFalse(got['small_n_noise_trend']['flag'])
 
-    def test_archived_pending_evidence_has_protocol_and_no_scores(self):
+    def test_archived_evidence_has_protocol_and_explicit_execution_status(self):
         root = Path(__file__).resolve().parents[3] / "inst" / "extdata" / "campaign" / "segmentation"
         document = json.loads((root / "campaign-status.json").read_text())
-        self.assertEqual(document["status"], "not_executed")
+        self.assertIn(document["status"], ("not_executed", "failed", "executed"))
         self.assertNotIn("scores", document)
         self.assertNotIn("replicates", document)
         self.assertEqual(document["protocol_sha256"], hashlib.sha256((root / "protocol.md").read_bytes()).hexdigest())
         self.assertEqual({c["epsilon"] for c in document["cells"]}, {1, 4, 8})
-        self.assertTrue(all(len(c["seeds"]) >= 3 for c in document["cells"]))
+        if document["schema"] == "dsflower-segmentation-campaign-summary-v1":
+            from assemble_evidence import planned_cells
+            keys = [(c["dataset"], c["variant"], c["epsilon"], c["seed"]) for c in document["cells"]]
+            self.assertEqual(set(keys), set(planned_cells()))
+            self.assertEqual(len(keys), len(set(keys)))
+            if document["status"] == "executed":
+                self.assertTrue(all(c["status"] == "executed" for c in document["cells"]))
+        else:
+            self.assertEqual(document["status"], "not_executed")
+            self.assertTrue(all(len(c["seeds"]) >= 3 for c in document["cells"]))
 
     def test_missing_replicates_never_synthesize_scores(self):
         with self.assertRaises(ValueError):

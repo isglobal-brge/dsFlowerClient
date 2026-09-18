@@ -88,6 +88,10 @@ def envelopes(replicates, small_replicates=None):
             for r in replicates]
     trend = {"status": "not_executed"}
     if small_replicates is not None:
+        for epsilon in (1, 4, 8):
+            small_seeds = [r["seed"] for r in small_replicates if r["epsilon"] == epsilon]
+            if len(small_seeds) != len(set(small_seeds)) or set(small_seeds) != seeds[0]:
+                raise ValueError("small-N trend requires the complete matched seed matrix")
         low = sorted((r for r in small_replicates if r["epsilon"] == 1), key=lambda r: r["seed"])
         high = sorted((r for r in small_replicates if r["epsilon"] == 8), key=lambda r: r["seed"])
         if [r["seed"] for r in low] != [r["seed"] for r in high]:

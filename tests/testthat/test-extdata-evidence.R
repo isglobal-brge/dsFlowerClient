@@ -37,3 +37,27 @@ test_that("committed public benchmark evidence matches thesis constants", {
   expect_equal(medmnist$federated_metrics$auc, 0.7985, tolerance = 1e-6)
   expect_equal(sum(vapply(medmnist$history, `[[`, numeric(1), "n_failures")), 0)
 })
+
+test_that("segmentation evidence retains explicit execution status and protocol", {
+  path <- extdata_evidence("campaign/segmentation/campaign-status.json")
+  evidence <- jsonlite::fromJSON(path, simplifyVector = FALSE)
+  protocol <- extdata_evidence("campaign/segmentation/protocol.md")
+  expect_equal(evidence$protocol_sha256, digest::digest(file = protocol, algo = "sha256"))
+  expect_identical(evidence$contract, "pytorch_resnet18_segmentation")
+  expect_identical(evidence$task, "segmentation")
+  expect_true(evidence$status %in% c("not_executed", "failed", "executed"))
+  expect_null(evidence$scores)
+  expect_null(evidence$replicates)
+  if (identical(evidence$schema, "dsflower-segmentation-campaign-summary-v1")) {
+    expect_length(evidence$cells, 33L)
+    identities <- vapply(evidence$cells, function(cell) {
+      paste(cell$dataset, cell$variant, cell$epsilon, cell$seed, sep = ":")
+    }, character(1))
+    expect_equal(anyDuplicated(identities), 0L)
+    if (identical(evidence$status, "executed")) {
+      expect_true(all(vapply(evidence$cells, function(cell) identical(cell$status, "executed"), logical(1))))
+    }
+  } else {
+    expect_identical(evidence$status, "not_executed")
+  }
+})
