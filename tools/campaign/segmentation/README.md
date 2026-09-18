@@ -75,3 +75,5 @@ python assemble_evidence.py --runs /workspace/segmentation/runs --provenance /pa
 ```
 
 Runtime metadata records exact package commits, runner hash, dependencies, device and deterministic settings. The assembler checks every site's five distinct rounds, observed logical steps, independent full-horizon accounting, selected tensor hashes and scored artifact identity. Cohort evidence retains failed floors and envelope flags; campaign status separately lists every planned cell.
+
+Protocol v2: run `run_matrix.py --root /workspace/segmentation --workers 2 --batch-size 16` and separately `--batch-size 64`. Each executes 33 cells into `runs-batch16` / `runs-batch64`; retain both arms (66 cells). Pass the same `--batch-size` to central_twins.py and assemble_evidence.py, and assemble each arm into a separate evidence directory. Direct federation selects the arm with `F_SEG_BATCH_SIZE=16` or `64`. All other frozen settings remain unchanged; see protocol.md amendment.

@@ -3,9 +3,9 @@
   "status": "not_executed",
   "contract": "pytorch_resnet18_segmentation",
   "task": "segmentation",
-  "protocol_sha256": "a123f7c9022fc293d09247ed501e9cbb61eb3beffba4ea3a57de6d4d6a5ecc20",
+  "protocol_sha256": "595e5c4e40a8ff8664f6d09c82546f6dcf7c02f5fea878b1da209027c77b3396",
   "preregistered_at": "2026-09-18",
-  "reason": "No scored cell started. Await all seven blocking mechanism/API gates and pod R_STACK_DONE; provisioning ended with missing dsBase and no completion marker.",
+  "reason": "Protocol v2 preregistered before scoring; seven mechanism gates passed. Both batch16 and batch64 matrices pending.",
   "cells": [
     {
       "dataset": "breast",

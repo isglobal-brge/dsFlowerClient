@@ -41,6 +41,15 @@ class TwinPinTests(unittest.TestCase):
         bce = dict(self.cfg, **{"segmentation-alpha": 1.})
         validate_twin_pins(bce, self.cfg, self.pins)
 
+    def test_batch64_shares_features_but_requires_matching_effective_pins(self):
+        cfg = dict(self.cfg, **{"batch-size": 64})
+        pins = dict(self.pins, batch_size=64)
+        validate_twin_pins(cfg, self.cfg, pins, 64)
+        with self.assertRaises(ValueError):
+            validate_twin_pins(cfg, self.cfg, self.pins, 64)
+        with self.assertRaises(ValueError):
+            validate_twin_pins(cfg, self.cfg, pins, 16)
+
     def test_source_census_counts_all_images_and_duplicate_mask_rows(self):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "samples.csv"

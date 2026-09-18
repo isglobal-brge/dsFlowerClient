@@ -68,7 +68,7 @@ def private_key(directory):
     return value
 
 
-def validate_twin_pins(cfg, manifest, pins):
+def validate_twin_pins(cfg, manifest, pins, batch_size=16):
     """Bind cached feature semantics and all active optimizer pins to federation."""
     segmentation.validate_config(cfg)
     segmentation.validate_config(manifest)
@@ -79,20 +79,20 @@ def validate_twin_pins(cfg, manifest, pins):
         # Alpha changes the loss only; the preregistered BCE branch shares features.
         if key != "segmentation-alpha" and cfg[key] != manifest[key]:
             raise ValueError("cached feature semantics differ from captured federation: " + key)
-    expected = {"batch-size": 16, "local-epochs": 2, "num-server-rounds": 5,
+    expected = {"batch-size": batch_size, "local-epochs": 2, "num-server-rounds": 5,
                 "learning-rate": .01, "optimizer-name": "sgd", "scheduler-name": "none"}
     defaults = {"weight-decay": 0., "l1-penalty": 0., "optimizer-momentum": 0.,
                 "optimizer-nesterov": False}
     for config in (cfg, manifest):
         for key, value in expected.items():
-            if config.get(key) != value:
+            if config.get(key) != (16 if config is manifest and key == "batch-size" else value):
                 raise ValueError("captured/cached schedule differs from preregistration: " + key)
         for key, value in defaults.items():
             if config.get(key, value) != value:
                 raise ValueError("captured/cached optimizer differs from preregistration: " + key)
         if any(key.startswith("scheduler-") and key != "scheduler-name" for key in config):
             raise ValueError("preregistered schedule does not admit extra scheduler controls")
-    if (pins["batch_size"] != 16 or pins["local_epochs"] != 2 or pins["num_rounds"] != 5
+    if (pins["batch_size"] != batch_size or pins["local_epochs"] != 2 or pins["num_rounds"] != 5
             or pins["learning_rate"] != .01 or pins["scheduler"]["name"] != "none"
             or pins["loss_name"] != "segmentation_bce_dice" or pins["n_classes"] != 2):
         raise ValueError("effective twin pins differ from captured federation")
@@ -194,6 +194,7 @@ def main():
     parser.add_argument("--gates", type=Path, required=True)
     parser.add_argument("--epsilon", type=int, choices=(1, 4, 8), required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--batch-size", type=int, choices=(16, 64), default=16)
     args = parser.parse_args()
     gates = json.loads(args.gates.read_text())
     if any(gates.get(f"segmentation_6_1_{i}") is not True for i in range(1, 8)):
@@ -201,7 +202,7 @@ def main():
     initial_meta = json.loads((args.capture / "public-initial.json").read_text())
     cfg = initial_meta["config"]
     segmentation.validate_config(cfg)
-    for key, expected in {"batch-size": 16, "local-epochs": 2, "num-server-rounds": 5,
+    for key, expected in {"batch-size": args.batch_size, "local-epochs": 2, "num-server-rounds": 5,
                           "learning-rate": .01}.items():
         if cfg.get(key) != expected:
             raise ValueError("captured public initialization differs from primary preregistration: " + key)
@@ -229,10 +230,11 @@ def main():
         expected_source_rows[hashes] = source_rows
     captures = [json.loads(p.read_text()) for p in args.capture.glob("accountant-*.json")]
     site_accounting = validate_captures(captures, list(map(len, split["sites"])),
-                                        args.epsilon, expected_site_hashes, expected_source_rows)
+                                        args.epsilon, expected_site_hashes, expected_source_rows, batch_size=args.batch_size)
     pins = task.load_run_pins(SimpleNamespace(node_config={"manifest-dir": str(args.features)}))
     feature_manifest = json.loads((args.features / "manifest.json").read_text())
-    validate_twin_pins(cfg, feature_manifest, pins)
+    pins["batch_size"] = args.batch_size
+    validate_twin_pins(cfg, feature_manifest, pins, args.batch_size)
     args.out.mkdir(parents=True, exist_ok=True)
     torch.set_num_threads(2)
     torch.backends.cuda.matmul.allow_tf32 = False

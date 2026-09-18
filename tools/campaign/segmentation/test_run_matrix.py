@@ -17,7 +17,7 @@ class MatrixArtifactTests(unittest.TestCase):
         gates = root / "gates.json"
         gates.write_text(json.dumps({f"segmentation_6_1_{i}": True for i in range(1, 8)}))
         cell = ("breast", "full", 8, 20260919)
-        work = root / "runs" / "breast-full-eps8-seed20260919"
+        work = root / "runs-batch16" / "breast-full-eps8-seed20260919"
         calls = []
 
         def run(command, **kwargs):

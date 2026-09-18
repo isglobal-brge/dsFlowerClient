@@ -1,4 +1,4 @@
-# F segmentation preregistration — v2
+# F segmentation preregistration
 
 Status: preregistered 2026-09-18 before any segmentation benchmark score was computed. Changes after the first scored cell must create a separately named protocol and retain this file. This protocol implements the segmentation portion of approved DESIGN_F_CODEX.md against dsFlower main 4b8dcbf and dsFlowerClient main 01280c2. Promotion is the reviewer's decision.
 
@@ -61,9 +61,3 @@ Use `/workspace/segmentation/`, `R_LIBS_USER=/workspace/segmentation/rlib`, and 
 ## Preregistration implementation details, still before scoring
 
 The benchmark-only `benchmark_hooks/sitecustomize.py` seeds and captures the exact public server initialization, then observes the existing accountant after each completed node round. Activate it only with `F_SEG_PUBLIC_BENCHMARK=1`; it is outside the released runner tree. It stores no secret, feature tensor or mask. Recorded feature/target hashes are public-fixture checks for exact-twin parity. Nonprivate twins preserve the same Poisson geometry and expected-batch divisor, omitting clipping/noise only inside benchmark tooling. DP twins call the unchanged trusted `_dp_fit` loop. A persisted secret local to the public benchmark binds repeat twin runs to the same cryptographic streams; it must not be copied into evidence.
-
-## Protocol v2 amendment — 2026-09-18, before any scored cell
-
-Binding reviewer pooled-probe note adds nominal batch 64 alongside batch 16 at every epsilon. Execute the entire 33-cell design independently for each arm (66 cells total), including both cohorts, all three seeds, small192, BCE and heterogeneity extensions. Each arm has its own exact central twins, floors, confidence intervals and envelope checks; never pool arms or select the better arm after scoring. Batch64 uses L=ceil(N/64), q=1/L, expected divisor=max(1,floor(N/L)), ten local epochs and recalibrated noise for the same replace-one epsilon/delta/clip. All other v1 settings, notably five rounds × two local epochs of SGD0.01, remain fixed. Cached encoder features and subject splits are shared because batch size does not change preprocessing. No BatchMemoryManager or truncated draws.
-
-Pooled exploratory Adam/30-epoch results supplied by the reviewer are motivation only, not evidence for this SGD/federated schedule. Epsilon1 failures remain failures. A narrower decoder would require a separately preregistered v3 and is not authorized as an adaptive change to these cells. The original v1 text is archived in protocol-v1.md. All seven gates passed before this amendment; the sole public attempt failed during SuperLink startup, before initialization, training or scoring.

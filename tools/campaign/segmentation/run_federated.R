@@ -19,6 +19,8 @@ methods::setMethod("dsRmSymbol", "CampaignDSLiteConnection", function(conn, symb
 })
 started_at <- Sys.time()
 synthetic <- identical(Sys.getenv("F_SEG_SYNTHETIC"), "1")
+nominal_batch <- as.integer(Sys.getenv("F_SEG_BATCH_SIZE", "16"))
+stopifnot(nominal_batch %in% c(16L, 64L))
 gate_path <- Sys.getenv("F_SEG_GATES_JSON")
 if (!synthetic) {
   if (!file.exists(gate_path)) stop("F_SEG_GATES_JSON must identify blocking-gate evidence.")
@@ -149,7 +151,7 @@ result <- tryCatch({
       model = "pytorch_resnet18_segmentation", data_kind = "image", strategy = "fedavg",
       model_params = list(alpha = if (identical(variant, "bce")) 1 else .5, mask_values = "0,255", sample_id_col = "image_id",
           image_path_col = "relative_path", mask_empty_col = "mask_empty", subject_id_col = "subject_id",
-          learning_rate = .01, batch_size = if (synthetic) 8L else 16L,
+          learning_rate = .01, batch_size = if (synthetic) 8L else nominal_batch,
           local_epochs = if (synthetic) 1L else 2L),
       rounds = if (synthetic) 2L else 5L, torch_backend = "cuda", output_dir = file.path(work_dir, "artifact"), silent = TRUE)
   writeLines(fit$stdout, file.path(work_dir, "flower-stdout.log"))

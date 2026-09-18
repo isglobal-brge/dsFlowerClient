@@ -88,7 +88,7 @@ def independent_accounting(sigma, q, steps, epsilon):
 
 
 def validate_captures(captures, populations, epsilon, expected_hashes=None,
-                      expected_source_rows=None):
+                      expected_source_rows=None, batch_size=16):
     """Require one observation for every site/round, not merely 15 sidecars.
 
     expected_hashes optionally maps (feature SHA256, target SHA256) to site N.
@@ -115,7 +115,7 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None,
             raise ValueError("public source row census must be an integer at least accounting N")
         if expected_source_rows is not None and expected_source_rows.get(hashes) != source_rows:
             raise ValueError("captured source row census differs from cached public source rows")
-        steps = math.ceil(n / 16)
+        steps = math.ceil(n / batch_size)
         expected = {"adjacency": "replace_one", "clipping_norm": 1.,
                     "steps_per_epoch": steps, "sample_rate": 1 / steps,
                     "expected_batch_size": max(1, n // steps),
@@ -154,7 +154,7 @@ def planned_cells():
     return primary + small + extensions
 
 
-def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None):
+def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None, batch_size=16):
     execution_path = directory / "execution-status.json"
     if execution_path.exists():
         execution = read_json(execution_path)
@@ -202,19 +202,19 @@ def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None):
         raise ValueError("public initial arrays differ from their captured digest")
     initial_hash = hashlib.sha256(b"".join(a.tobytes() for a in tensors)).hexdigest()
     config = initial["config"]
-    expected = {"batch-size": 16, "local-epochs": 2, "num-server-rounds": 5,
+    expected = {"batch-size": batch_size, "local-epochs": 2, "num-server-rounds": 5,
                 "learning-rate": .01, "optimizer-name": "sgd", "scheduler-name": "none",
                 "segmentation-alpha": 1. if variant == "bce" else .5}
     if any(config.get(key) != value for key, value in expected.items()):
         raise ValueError("captured optimization differs from preregistration")
     captures = [read_json(p) for p in sorted(capture.glob("accountant-*.json"))]
-    mechanisms = validate_captures(captures, list(map(len, sites)), epsilon)
+    mechanisms = validate_captures(captures, list(map(len, sites)), epsilon, batch_size=batch_size)
     if [{k: v for k, v in m.items() if k != "independent_accounting"} for m in mechanisms] != [
             {k: v for k, v in m.items() if k != "independent_accounting"}
             for m in twins["federated_accounting"]]:
         raise ValueError("twins did not validate the same effective tensor/accountant captures")
     pooled = twins["pooled_dp"]["mechanism"]
-    pooled_steps = math.ceil(len(train) / 16)
+    pooled_steps = math.ceil(len(train) / batch_size)
     pooled_expected = {"accounting_population": len(train), "adjacency": "replace_one",
                        "clipping_norm": 1., "steps_per_epoch": pooled_steps,
                        "sample_rate": 1 / pooled_steps, "expected_batch_size": len(train) // pooled_steps,
@@ -282,7 +282,7 @@ def summarize(replicates):
     return summaries
 
 
-def assemble(runs, provenance, runtime, protocol):
+def assemble(runs, provenance, runtime, protocol, batch_size=16):
     planned = planned_cells()
     directories = {}
     paths = set(runs.rglob("federation-status.json")) | set(runs.rglob("execution-status.json"))
@@ -314,14 +314,14 @@ def assemble(runs, provenance, runtime, protocol):
                         (execution.get("phase", "federation"), execution.get("exit_code", "unrecorded")))
                 if execution.get("status") == "running":
                     raise ValueError("Execution incomplete or interrupted in " + execution.get("phase", "unrecorded phase"))
-                replicate = load_replicate(directory, *key, provenance=provenance)
+                replicate = load_replicate(directory, *key, provenance=provenance, batch_size=batch_size)
                 completed.append(replicate)
                 cell["status"] = "executed"
             except (ValueError, KeyError, FileNotFoundError) as error:
                 cell.update(status="failed", reason=str(error))
         cells.append(cell)
     base = {"schema": "dsflower-segmentation-evidence-v1", "contract": "pytorch_resnet18_segmentation",
-            "task": "segmentation", "protocol_sha256": sha256(protocol),
+            "task": "segmentation", "nominal_batch_size": batch_size, "protocol_sha256": sha256(protocol),
             "executed_at": datetime.now(timezone.utc).isoformat(), "runtime": runtime}
     documents = {}
     releases = {r["filename"]: r for r in read_json(provenance / "release-manifest.json")["sources"]}
@@ -376,12 +376,13 @@ def main():
     parser = argparse.ArgumentParser()
     for name in ("runs", "provenance", "runtime", "protocol", "out"):
         parser.add_argument("--" + name, type=Path, required=True)
+    parser.add_argument("--batch-size", type=int, choices=(16, 64), default=16)
     args = parser.parse_args()
     runtime = read_json(args.runtime)
     for key in ("server_commit", "client_commit", "runner_sha256", "dependencies", "device", "determinism"):
         if key not in runtime:
             raise ValueError("runtime metadata missing: " + key)
-    documents = assemble(args.runs, args.provenance, runtime, args.protocol)
+    documents = assemble(args.runs, args.provenance, runtime, args.protocol, args.batch_size)
     import jsonschema
     schema = read_json(args.protocol.parent / "evidence-schema.json")
     summary_schema = read_json(args.protocol.parent / "campaign-summary-schema.json")

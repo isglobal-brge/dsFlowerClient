@@ -23,10 +23,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--workers", type=int, choices=(1, 2), default=2)
+    parser.add_argument("--batch-size", type=int, choices=(16, 64), default=16)
     args = parser.parse_args()
     root = args.root.resolve()
     tools = Path(__file__).resolve().parent
-    runs = root / "runs"
+    runs = root / ("runs-batch%d" % args.batch_size)
     runs.mkdir(exist_ok=True)
     logs = Path("/workspace/logs")
     gates = json.loads(Path(os.environ["F_SEG_GATES_JSON"]).read_text())
@@ -38,7 +39,7 @@ def main():
         work = runs / f"{dataset}-{variant}-eps{epsilon}-seed{seed}"
         if work.exists():
             # Resume completed cells only after checking their actual artifacts.
-            load_replicate(work, *cell)
+            load_replicate(work, *cell, batch_size=args.batch_size)
             results.append({"dataset": dataset, "variant": variant, "epsilon": epsilon,
                             "seed": seed, "status": "executed", "previously_completed": True})
         else:
@@ -51,7 +52,7 @@ def main():
         if work.exists():
             raise ValueError("Refusing to overwrite an existing cell: " + name)
         work.mkdir()
-        env = dict(os.environ, F_SEG_VARIANT=variant)
+        env = dict(os.environ, F_SEG_VARIANT=variant, F_SEG_BATCH_SIZE=str(args.batch_size))
         env.pop("F_SEG_SYNTHETIC", None)
         prepared = root / "prepared" / dataset
         split = work / "effective-split.json"
@@ -61,7 +62,7 @@ def main():
         status_path = work / "execution-status.json"
         write_status(status_path, result)
         print(json.dumps(result), flush=True)
-        with (logs / ("segmentation-" + name + ".log")).open("w") as log:
+        with (logs / ("segmentation-batch%d-" % args.batch_size + name + ".log")).open("w") as log:
             for phase in ("federation", "channel_b", "twins"):
                 result["phase"] = phase
                 write_status(status_path, result)
@@ -78,7 +79,7 @@ def main():
                         command = [sys.executable, str(tools / "central_twins.py"),
                             "--features", str(root / "features" / dataset), "--split", str(split),
                             "--capture", str(work / "public-capture"), "--gates", env["F_SEG_GATES_JSON"],
-                            "--epsilon", str(epsilon), "--out", str(work / "twins")]
+                            "--epsilon", str(epsilon), "--batch-size", str(args.batch_size), "--out", str(work / "twins")]
                     process = subprocess.run(command, env=env, stdout=log, stderr=subprocess.STDOUT)
                 except (OSError, ValueError, KeyError) as error:
                     result.update(status="failed", phase=phase, error=str(error))
@@ -98,7 +99,7 @@ def main():
         futures = [pool.submit(execute, cell) for cell in pending]
         for future in as_completed(futures):
             results.append(future.result())
-            (root / "matrix-status.json").write_text(json.dumps(results, indent=2) + "\n")
+            (root / ("matrix-status-batch%d.json" % args.batch_size)).write_text(json.dumps(results, indent=2) + "\n")
     if any(r["status"] != "executed" for r in results):
         raise SystemExit("Matrix includes failures; retain all evidence and inspect logs.")
 
