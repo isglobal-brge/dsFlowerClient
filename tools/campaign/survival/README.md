@@ -77,3 +77,12 @@ mode-0700 OS temporary directory as backing for `runtime/tmp` and `runtime/runs`
 through workspace symlinks. Persistent sources, inputs, libraries and evidence
 remain in the task workspace. Preserve released artifacts before recycling the
 pod; never copy node-secret files into evidence.
+
+For a FUSE-mounted workspace, repeated Python package-directory discovery can
+also be slow. After verifying a task-owned environment copy byte-for-byte,
+the pod retains its original environment and uses POSIX backing for Python.
+Make `runtime/server` itself point to a POSIX directory containing the `pytorch`
+environment link: `run_cell.R` resolves this root before passing it to custodian
+workers. Resolve the root, not only its child symlink; an observed R directory
+walk took 82.1 seconds through the FUSE alias and 0.13 seconds directly.
+Change runtime placement only between cells and rerun readiness checks.
