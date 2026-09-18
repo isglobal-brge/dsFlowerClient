@@ -24,8 +24,8 @@ def fixture_config():
         "segmentation-output-shape": "1,128,128", "segmentation-alpha": .5,
         "segmentation-smooth": 1., "mask-vocabulary": "0,255", "dp-unit": "patient",
         "model-spec-b64": base64.b64encode(json.dumps(segmentation.decoder_spec()).encode()).decode(),
-        "batch-size": 16, "local-epochs": 2, "num-server-rounds": 5,
-        "learning-rate": .01, "optimizer-name": "sgd", "scheduler-name": "none"}
+        "batch-size": 16, "local-epochs": 3, "num-server-rounds": 10,
+        "learning-rate": .001, "optimizer-name": "adam", "scheduler-name": "none"}
 
 
 class TwinPinTests(unittest.TestCase):
@@ -50,6 +50,13 @@ class TwinPinTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_twin_pins(cfg, self.cfg, pins, 16)
 
+    def test_legacy_cache_schedule_is_not_used_for_v3_training(self):
+        legacy = dict(self.cfg, **{"local-epochs": 2, "num-server-rounds": 5,
+                                 "optimizer-name": "sgd", "learning-rate": .01})
+        validate_twin_pins(self.cfg, legacy, self.pins)
+        with self.assertRaisesRegex(ValueError, "captured schedule"):
+            validate_twin_pins(legacy, legacy, self.pins)
+
     def test_source_census_counts_all_images_and_duplicate_mask_rows(self):
         with tempfile.TemporaryDirectory() as temporary:
             path = Path(temporary) / "samples.csv"
@@ -61,9 +68,11 @@ class TwinPinTests(unittest.TestCase):
     def test_rejects_captured_or_cached_optimizer_and_scheduler_drift(self):
         for key, value in (("optimizer-momentum", .1), ("weight-decay", .1),
                            ("l1-penalty", .1), ("learning-rate", .02),
-                           ("scheduler-name", "step"), ("optimizer-nesterov", True)):
+                           ("scheduler-name", "step"), ("optimizer-nesterov", True), ("optimizer-beta1", .8),
+                           ("optimizer-beta2", .99), ("optimizer-eps", 1e-6),
+                           ("optimizer-amsgrad", True)):
             bad = dict(self.cfg, **{key: value})
-            for cfg, manifest in ((bad, self.cfg), (self.cfg, bad)):
+            for cfg, manifest in ((bad, self.cfg),):
                 with self.subTest(key=key), self.assertRaises(ValueError):
                     validate_twin_pins(cfg, manifest, self.pins)
         pins = copy.deepcopy(self.pins)

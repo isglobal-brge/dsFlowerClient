@@ -1,3 +1,13 @@
+# Protocol v3 execution (current)
+
+The binding reviewer authorized Adam 0.001, ten rounds × three local epochs (30 total), with round-local optimizer state and recalibrated noise at unchanged privacy settings. Both batch arms execute all 33 cells (66 fresh cells). The v2 SGD results remain invalid for the schedule defect; never use them for floors, envelopes or release evidence.
+
+Use the fresh root `/workspace/segmentation/v3`, sharing only the immutable `prepared` and `features` trees via symlinks. Use the v3 tooling snapshot under `/workspace/segmentation/campaign-v3`. Launch one worker per arm with `run_matrix.py --root /workspace/segmentation/v3 --workers 1 --batch-size 16` and `--batch-size 64`. These share the existing two public federation slots. Logs have the `segmentation-v3-` prefix. Keep the v2 parent hold intact. The deployment launcher records exact commit and protocol hashes before any scored cell.
+
+Twins derive active optimization pins from the captured v3 initialization, not the legacy feature-cache schedule. All 30 node-round captures must pass the unchanged tensor/source-census checks and the new three-local-epoch/30-total-epoch accounting checks. The prior synthetic smoke remains SGD with two one-epoch rounds, preserving its gate semantics.
+
+Run the matrix under nohup and stop the session after launch; the reviewer requests evidence assembly later. No automatic assembly, floor verdict or render is scheduled. The commands below describe the earlier operational workflow; substitute the v3 execution root/tooling and 30-capture schedule for new runs. The archived protocol-v2.md is historical only.
+
 # Segmentation public campaign
 
 This directory contains the preregistered public benchmark tooling; it is outside the released runner. The archived `campaign-status.json` is the execution authority: a pending matrix has no scores and establishes no utility claim. The frozen protocol is `inst/extdata/campaign/segmentation/protocol.md` (workspace original `PROTOCOL_F_SEGMENTATION.md`).

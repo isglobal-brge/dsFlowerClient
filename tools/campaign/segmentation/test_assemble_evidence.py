@@ -18,20 +18,20 @@ def mechanism(n):
     return {"adjacency": "replace_one", "clipping_norm": 1.,
             "accounting_population": n, "steps_per_epoch": steps,
             "sample_rate": 1 / steps, "expected_batch_size": max(1, n // steps),
-            "total_epochs": 10, "total_steps": 10 * steps, "noise_multiplier": 2.}
+            "total_epochs": 30, "total_steps": 30 * steps, "noise_multiplier": 2.}
 
 
 def captures(populations=(69, 68, 68)):
     result = []
     for site, n in enumerate(populations):
         m = mechanism(n)
-        for round_index in range(1, 6):
+        for round_index in range(1, 11):
             result.append({"public_fixture_only": True, "round": round_index,
                            "source_rows": n + site + 1,
                            "features_sha256": str(site) * 64, "targets_sha256": str(site + 3) * 64,
                            "mechanism": copy.deepcopy(m), "accountant_type": "PRVAccountant",
-                           "accountant_history": [[2., m["sample_rate"], m["steps_per_epoch"] * 2]],
-                           "observed_round_steps": m["steps_per_epoch"] * 2,
+                           "accountant_history": [[2., m["sample_rate"], m["steps_per_epoch"] * 3]],
+                           "observed_round_steps": m["steps_per_epoch"] * 3,
                            "peak_cuda_bytes": 123})
     return result
 
@@ -66,8 +66,8 @@ def make_cell(root):
     write_json(root / "channel-b.json", {"status": "executed", "seed": seed,
         "split_sha256": split_hash, "artifact_sha256": artifact_hash,
         "metrics": metric, "trivial": trivial})
-    config = {"batch-size": 16, "local-epochs": 2, "num-server-rounds": 5,
-              "learning-rate": .01, "optimizer-name": "sgd", "scheduler-name": "none",
+    config = {"batch-size": 16, "local-epochs": 3, "num-server-rounds": 10,
+              "learning-rate": .001, "optimizer-name": "adam", "scheduler-name": "none",
               "segmentation-alpha": .5}
     capture = root / "public-capture"
     capture.mkdir()
@@ -105,10 +105,18 @@ class EvidenceTests(unittest.TestCase):
         self.accounting.start()
         self.addCleanup(self.accounting.stop)
 
+    def test_v2_horizon_rejected_even_with_thirty_captures(self):
+        rows = captures()
+        for row in rows:
+            row["mechanism"]["total_epochs"] = 10
+            row["mechanism"]["total_steps"] = 10 * row["mechanism"]["steps_per_epoch"]
+        with self.assertRaisesRegex(ValueError, "subject schedule"):
+            evidence.validate_captures(rows, [69, 68, 68], 8)
+
     def test_complete_capture_geometry_and_independent_accounting(self):
         got = evidence.validate_captures(captures(), [69, 68, 68], 8)
         self.assertEqual(len(got), 3)
-        self.assertTrue(all(m["observed_round_steps"] == [10] * 5 for m in got))
+        self.assertTrue(all(m["observed_round_steps"] == [15] * 10 for m in got))
         self.assertTrue(all("independent_accounting" in m for m in got))
         self.assertEqual([m["source_rows"] for m in got], [70, 70, 71])
 
@@ -125,7 +133,7 @@ class EvidenceTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "cached public source rows"):
             evidence.validate_captures(rows, [69, 68, 68], 8, expected_source_rows=expected)
 
-    def test_reject_duplicate_round_even_with_fifteen_captures(self):
+    def test_reject_duplicate_round_even_with_thirty_captures(self):
         rows = captures()
         rows[4] = copy.deepcopy(rows[3])
         with self.assertRaisesRegex(ValueError, "exactly one capture"):

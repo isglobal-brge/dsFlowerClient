@@ -89,7 +89,7 @@ def independent_accounting(sigma, q, steps, epsilon):
 
 def validate_captures(captures, populations, epsilon, expected_hashes=None,
                       expected_source_rows=None, batch_size=16):
-    """Require one observation for every site/round, not merely 15 sidecars.
+    """Require one observation for every site/round, not merely 30 sidecars.
 
     expected_hashes optionally maps (feature SHA256, target SHA256) to site N.
     expected_source_rows optionally maps the same hash pairs to source row M.
@@ -100,14 +100,14 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None,
         if record.get("public_fixture_only") is not True:
             raise ValueError("accountant captures must identify public fixtures")
         groups[(record["features_sha256"], record["targets_sha256"])].append(record)
-    if len(groups) != 3 or len(captures) != 15:
-        raise ValueError("three distinct sites and fifteen node-round captures required")
+    if len(groups) != 3 or len(captures) != 30:
+        raise ValueError("three distinct sites and thirty node-round captures required")
     if expected_hashes is not None and set(groups) != set(expected_hashes):
         raise ValueError("captured effective tensors differ from exact twins")
     mechanisms = []
     for hashes, rows in sorted(groups.items()):
-        if sorted(row["round"] for row in rows) != [1, 2, 3, 4, 5]:
-            raise ValueError("each site must have exactly one capture for rounds 1 through 5")
+        if sorted(row["round"] for row in rows) != list(range(1, 11)):
+            raise ValueError("each site must have exactly one capture for rounds 1 through 10")
         mechanism = rows[0]["mechanism"]
         n = mechanism["accounting_population"]
         source_rows = rows[0].get("source_rows")
@@ -119,7 +119,7 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None,
         expected = {"adjacency": "replace_one", "clipping_norm": 1.,
                     "steps_per_epoch": steps, "sample_rate": 1 / steps,
                     "expected_batch_size": max(1, n // steps),
-                    "total_epochs": 10, "total_steps": 10 * steps}
+                    "total_epochs": 30, "total_steps": 30 * steps}
         if n < 1 or any(mechanism.get(key) != value for key, value in expected.items()):
             raise ValueError("captured mechanism differs from preregistered subject schedule")
         if expected_hashes is not None and expected_hashes[hashes] != n:
@@ -133,13 +133,13 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None,
                 raise ValueError("public source row census changed between rounds")
             if row["mechanism"] != mechanism or row["accountant_type"] != "PRVAccountant":
                 raise ValueError("site accountant or mechanism changed between rounds")
-            if row["observed_round_steps"] != 2 * steps or sum(h[2] for h in history) != 2 * steps:
+            if row["observed_round_steps"] != 3 * steps or sum(h[2] for h in history) != 3 * steps:
                 raise ValueError("observed accountant steps differ from logical Poisson batches")
             if any(h[0] != sigma or h[1] != 1 / steps or h[2] <= 0 for h in history):
                 raise ValueError("observed accountant history differs from calibrated sigma/q")
         mechanisms.append(dict(mechanism,
             source_rows=source_rows,
-            independent_accounting=independent_accounting(sigma, 1 / steps, 10 * steps, epsilon),
+            independent_accounting=independent_accounting(sigma, 1 / steps, 30 * steps, epsilon),
             features_sha256=hashes[0], targets_sha256=hashes[1],
             observed_round_steps=[r["observed_round_steps"] for r in sorted(rows, key=lambda r: r["round"])]))
     if Counter(m["accounting_population"] for m in mechanisms) != Counter(populations):
@@ -205,8 +205,8 @@ def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None, 
         raise ValueError("public initial arrays differ from their captured digest")
     initial_hash = hashlib.sha256(b"".join(a.tobytes() for a in tensors)).hexdigest()
     config = initial["config"]
-    expected = {"batch-size": batch_size, "local-epochs": 2, "num-server-rounds": 5,
-                "learning-rate": .01, "optimizer-name": "sgd", "scheduler-name": "none",
+    expected = {"batch-size": batch_size, "local-epochs": 3, "num-server-rounds": 10,
+                "learning-rate": .001, "optimizer-name": "adam", "scheduler-name": "none",
                 "segmentation-alpha": 1. if variant == "bce" else .5}
     if any(config.get(key) != value for key, value in expected.items()):
         raise ValueError("captured optimization differs from preregistration")
@@ -221,7 +221,7 @@ def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None, 
     pooled_expected = {"accounting_population": len(train), "adjacency": "replace_one",
                        "clipping_norm": 1., "steps_per_epoch": pooled_steps,
                        "sample_rate": 1 / pooled_steps, "expected_batch_size": len(train) // pooled_steps,
-                       "total_epochs": 10, "total_steps": pooled_steps * 10}
+                       "total_epochs": 30, "total_steps": pooled_steps * 30}
     if any(pooled.get(key) != value for key, value in pooled_expected.items()):
         raise ValueError("pooled DP mechanism differs from preregistered subject schedule")
     pooled = dict(pooled, independent_accounting=independent_accounting(

@@ -71,7 +71,7 @@ def main():
         status_path = work / "execution-status.json"
         write_status(status_path, result)
         print(json.dumps(result), flush=True)
-        with (logs / ("segmentation-batch%d-" % args.batch_size + name + ".log")).open("w") as log:
+        with (logs / ("segmentation-v3-batch%d-" % args.batch_size + name + ".log")).open("w") as log:
             for phase in ("federation", "channel_b", "twins"):
                 result["phase"] = phase
                 write_status(status_path, result)

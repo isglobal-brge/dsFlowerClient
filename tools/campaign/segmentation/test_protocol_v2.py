@@ -12,9 +12,9 @@ class Batch64AccountingTests(unittest.TestCase):
             n = m["accounting_population"]
             steps = math.ceil(n / 64)
             m.update(steps_per_epoch=steps, sample_rate=1/steps,
-                     expected_batch_size=n//steps, total_steps=10*steps)
-            row["accountant_history"] = [[2., 1/steps, 2*steps]]
-            row["observed_round_steps"] = 2*steps
+                     expected_batch_size=n//steps, total_steps=30*steps)
+            row["accountant_history"] = [[2., 1/steps, 3*steps]]
+            row["observed_round_steps"] = 3*steps
         with patch("assemble_evidence.independent_accounting", return_value={}):
             self.assertEqual(len(validate_captures(rows, [69,68,68], 8, batch_size=64)), 3)
             with self.assertRaisesRegex(ValueError, "subject schedule"):

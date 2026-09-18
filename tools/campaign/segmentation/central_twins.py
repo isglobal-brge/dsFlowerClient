@@ -15,6 +15,7 @@ import math
 import os
 from pathlib import Path
 import stat
+import tempfile
 import time
 from types import SimpleNamespace
 
@@ -79,25 +80,29 @@ def validate_twin_pins(cfg, manifest, pins, batch_size=16):
         # Alpha changes the loss only; the preregistered BCE branch shares features.
         if key != "segmentation-alpha" and cfg[key] != manifest[key]:
             raise ValueError("cached feature semantics differ from captured federation: " + key)
-    expected = {"batch-size": batch_size, "local-epochs": 2, "num-server-rounds": 5,
-                "learning-rate": .01, "optimizer-name": "sgd", "scheduler-name": "none"}
+    expected = {"batch-size": batch_size, "local-epochs": 3, "num-server-rounds": 10,
+                "learning-rate": .001, "optimizer-name": "adam", "scheduler-name": "none"}
     defaults = {"weight-decay": 0., "l1-penalty": 0., "optimizer-momentum": 0.,
                 "optimizer-nesterov": False}
-    for config in (cfg, manifest):
-        for key, value in expected.items():
-            if config.get(key) != (16 if config is manifest and key == "batch-size" else value):
-                raise ValueError("captured/cached schedule differs from preregistration: " + key)
-        for key, value in defaults.items():
-            if config.get(key, value) != value:
-                raise ValueError("captured/cached optimizer differs from preregistration: " + key)
-        if any(key.startswith("scheduler-") and key != "scheduler-name" for key in config):
-            raise ValueError("preregistered schedule does not admit extra scheduler controls")
-    if (pins["batch_size"] != batch_size or pins["local_epochs"] != 2 or pins["num_rounds"] != 5
-            or pins["learning_rate"] != .01 or pins["scheduler"]["name"] != "none"
+    # The immutable feature cache predates v3. Only its tensor semantics above
+    # apply to training; active optimization pins come from this federation.
+    for key, value in expected.items():
+        if cfg.get(key) != value:
+            raise ValueError("captured schedule differs from preregistration: " + key)
+    defaults.update({"optimizer-beta1": .9, "optimizer-beta2": .999,
+                     "optimizer-eps": 1e-8, "optimizer-amsgrad": False})
+    for key, value in defaults.items():
+        if cfg.get(key, value) != value:
+            raise ValueError("captured optimizer differs from preregistration: " + key)
+    if any(key.startswith("scheduler-") and key != "scheduler-name" for key in cfg):
+        raise ValueError("preregistered schedule does not admit extra scheduler controls")
+    if (pins["batch_size"] != batch_size or pins["local_epochs"] != 3 or pins["num_rounds"] != 10
+            or pins["learning_rate"] != .001 or pins["scheduler"]["name"] != "none"
             or pins["loss_name"] != "segmentation_bce_dice" or pins["n_classes"] != 2):
         raise ValueError("effective twin pins differ from captured federation")
-    optimizer = {"name": "sgd", "weight_decay": 0., "l1_penalty": 0.,
-                 "momentum": 0., "nesterov": False}
+    optimizer = {"name": "adam", "weight_decay": 0., "l1_penalty": 0.,
+                 "momentum": 0., "nesterov": False, "beta1": .9, "beta2": .999,
+                 "eps": 1e-8, "amsgrad": False}
     if any(pins["optimizer"].get(key) != value for key, value in optimizer.items()):
         raise ValueError("effective twin optimizer differs from captured federation")
 
@@ -202,8 +207,8 @@ def main():
     initial_meta = json.loads((args.capture / "public-initial.json").read_text())
     cfg = initial_meta["config"]
     segmentation.validate_config(cfg)
-    for key, expected in {"batch-size": args.batch_size, "local-epochs": 2, "num-server-rounds": 5,
-                          "learning-rate": .01}.items():
+    for key, expected in {"batch-size": args.batch_size, "local-epochs": 3, "num-server-rounds": 10,
+                          "learning-rate": .001}.items():
         if cfg.get(key) != expected:
             raise ValueError("captured public initialization differs from primary preregistration: " + key)
     data = np.load(args.features / "public-subject-tensors.npz", allow_pickle=False)
@@ -231,7 +236,9 @@ def main():
     captures = [json.loads(p.read_text()) for p in args.capture.glob("accountant-*.json")]
     site_accounting = validate_captures(captures, list(map(len, split["sites"])),
                                         args.epsilon, expected_site_hashes, expected_source_rows, batch_size=args.batch_size)
-    pins = task.load_run_pins(SimpleNamespace(node_config={"manifest-dir": str(args.features)}))
+    with tempfile.TemporaryDirectory() as temporary:
+        Path(temporary, "manifest.json").write_text(json.dumps(cfg))
+        pins = task.load_run_pins(SimpleNamespace(node_config={"manifest-dir": temporary}))
     feature_manifest = json.loads((args.features / "manifest.json").read_text())
     pins["batch_size"] = args.batch_size
     validate_twin_pins(cfg, feature_manifest, pins, args.batch_size)

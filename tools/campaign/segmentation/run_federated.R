@@ -160,16 +160,17 @@ result <- tryCatch({
       model = "pytorch_resnet18_segmentation", data_kind = "image", strategy = "fedavg",
       model_params = list(alpha = if (identical(variant, "bce")) 1 else .5, mask_values = "0,255", sample_id_col = "image_id",
           image_path_col = "relative_path", mask_empty_col = "mask_empty", subject_id_col = "subject_id",
-          learning_rate = .01, batch_size = if (synthetic) 8L else nominal_batch,
-          local_epochs = if (synthetic) 1L else 2L),
-      rounds = if (synthetic) 2L else 5L, torch_backend = "cuda", output_dir = file.path(work_dir, "artifact"), silent = TRUE)
+          optimizer = if (synthetic) "sgd" else "adam",
+          learning_rate = if (synthetic) .01 else .001, batch_size = if (synthetic) 8L else nominal_batch,
+          local_epochs = if (synthetic) 1L else 3L),
+      rounds = if (synthetic) 2L else 10L, torch_backend = "cuda", output_dir = file.path(work_dir, "artifact"), silent = TRUE)
   writeLines(fit$stdout, file.path(work_dir, "flower-stdout.log"))
   writeLines(fit$stderr, file.path(work_dir, "flower-stderr.log"))
   if (!isTRUE(fit$available)) stop("No available released segmentation model.")
   metadata <- jsonlite::fromJSON(file.path(fit$output_dir, "metadata.json"))
   history <- jsonlite::fromJSON(file.path(fit$output_dir, "history.json"))
   stopifnot(identical(metadata$status, "success"), as.integer(metadata$n_clients) == 3L,
-            nrow(history) == if (synthetic) 2L else 5L,
+            nrow(history) == if (synthetic) 2L else 10L,
             all(history$n_failures == 0L), inherits(fit, "dsflower_run"), fit$status == 0L)
   stopifnot(file.exists(file.path(work_dir, "public-capture", "public-initial-arrays.npz")))
   # Canonical subject/image ordering matches the independently cached public masks.
