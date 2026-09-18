@@ -86,7 +86,7 @@ includes the original-time Jacobian.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">model</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.model.pytorch_aft.html">ds.flower.model.pytorch_aft</a></span><span class="op">(</span></span>
 <span>  horizon <span class="op">=</span> <span class="fl">1825</span>, time_scale <span class="op">=</span> <span class="fl">365</span>,</span>
-<span>  distribution <span class="op">=</span> <span class="st">"weibull"</span>, dispersion <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  distribution <span class="op">=</span> <span class="st">"lognormal"</span>, dispersion <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  hidden_layers <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="fl">0</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ds.flower.fit.html">ds.flower.fit</a></span><span class="op">(</span></span>
 <span>  <span class="va">conns</span>, symbol <span class="op">=</span> <span class="st">"D"</span>, target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time"</span>, <span class="st">"event"</span><span class="op">)</span>,</span>
@@ -192,13 +192,22 @@ Here shortfall is <code>G=central-federated</code>, the reverse sign of
 the older article’s delta. Confidence intervals describe variation over
 matched public split replicates; overlapping splits and only three
 replicates limit their interpretation.</p>
-<pre><code><span><span class="co">#&gt; 1 executed cells and 4 failed attempts are archived.</span></span></code></pre>
+<p>Log-normal AFT is the introductory example because the reviewer’s
+exploratory pooled probes found useful ranking and better held-out NLL
+than their covariate-free null. Those probes are not release evidence.
+Their Weibull arms (including nonprivate training) and hazard DP arms
+had worse NLL than their nulls under the fixed schedules. Concordance
+measures ranking, not probability calibration; inspect held-out NLL
+alongside concordance in the executed matrix. The campaign retains its
+preregistered v1 schedule and reports every family, including failed
+floors, without selecting models on its held-out results.</p>
+<pre><code><span><span class="co">#&gt; 3 executed cells and 6 failed attempts are archived.</span></span></code></pre>
 <table class="table">
 <colgroup>
-<col width="18%">
-<col width="8%">
-<col width="7%">
-<col width="65%">
+<col width="16%">
+<col width="9%">
+<col width="6%">
+<col width="67%">
 </colgroup>
 <thead><tr class="header">
 <th align="left">cohort</th>
@@ -207,6 +216,20 @@ replicates limit their interpretation.</p>
 <th align="left">reason</th>
 </tr></thead>
 <tbody>
+<tr class="odd">
+<td align="left">synthetic-public</td>
+<td align="left">hazard</td>
+<td align="left">failed</td>
+<td align="left">Federated training failed (status 1); no model was
+accepted or saved.</td>
+</tr>
+<tr class="even">
+<td align="left">synthetic-public</td>
+<td align="left">lognormal</td>
+<td align="left">failed</td>
+<td align="left">Federated training failed (status 1); no model was
+accepted or saved.</td>
+</tr>
 <tr class="odd">
 <td align="left">synthetic-public</td>
 <td align="left">weibull</td>
