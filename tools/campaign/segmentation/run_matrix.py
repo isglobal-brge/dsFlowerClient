@@ -13,6 +13,12 @@ import time
 from assemble_evidence import load_replicate, planned_cells, released_artifact
 
 
+def write_status(path, result):
+    temporary = path.with_suffix(".tmp")
+    temporary.write_text(json.dumps(result, indent=2) + "\n")
+    temporary.replace(path)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--root", type=Path, required=True)
@@ -51,10 +57,14 @@ def main():
         split = work / "effective-split.json"
         started = time.monotonic()
         result = {"dataset": dataset, "variant": variant, "epsilon": epsilon, "seed": seed,
-                  "started_at": datetime.now(timezone.utc).isoformat(), "status": "running"}
+                  "started_at": datetime.now(timezone.utc).isoformat(), "status": "running", "phase": "federation"}
+        status_path = work / "execution-status.json"
+        write_status(status_path, result)
         print(json.dumps(result), flush=True)
         with (logs / ("segmentation-" + name + ".log")).open("w") as log:
             for phase in ("federation", "channel_b", "twins"):
+                result["phase"] = phase
+                write_status(status_path, result)
                 try:
                     if phase == "federation":
                         command = [str(tools / "run_federated.sh"), str(prepared),
@@ -80,7 +90,7 @@ def main():
             else:
                 result["status"] = "executed"
         result["elapsed_s"] = time.monotonic() - started
-        (work / "execution-status.json").write_text(json.dumps(result, indent=2) + "\n")
+        write_status(status_path, result)
         print(json.dumps(result), flush=True)
         return result
 

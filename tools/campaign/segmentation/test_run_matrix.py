@@ -21,6 +21,9 @@ class MatrixArtifactTests(unittest.TestCase):
         calls = []
 
         def run(command, **kwargs):
+            status = json.loads((work / "execution-status.json").read_text())
+            self.assertEqual(status["status"], "running")
+            self.assertEqual(status["phase"], ("federation", "channel_b", "twins")[len(calls)])
             calls.append(command)
             if len(calls) == 1:
                 output = work / "artifact" / "generated-run"

@@ -15,6 +15,7 @@ from segmentation_metrics import envelopes, mean_interval, near_central_flags
 
 SEEDS = (20260919, 20260920, 20260921)
 EPSILONS = (1, 4, 8)
+DEFAULT_PROVENANCE = Path(__file__).resolve().parents[3] / "inst/extdata/campaign/segmentation/provenance"
 
 
 def read_json(path):
@@ -23,6 +24,34 @@ def read_json(path):
 
 def sha256(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+
+
+def pinned_source_split(path, dataset, seed, provenance=None):
+    provenance = DEFAULT_PROVENANCE if provenance is None else provenance
+    audit = read_json(provenance / (dataset + "-audit.json"))
+    if sha256(path) != audit["split_hashes"][str(seed)]:
+        raise ValueError("source split differs from archived preregistered split hash")
+    split = read_json(path)
+    if split.get("seed") != seed:
+        raise ValueError("source split seed differs from requested cell")
+    return split
+
+
+def validate_split_provenance(directory, dataset, variant, seed, status, provenance=None):
+    source_path = directory / "source-split.json"
+    expected = pinned_source_split(source_path, dataset, seed, provenance)
+    if status.get("split_sha256") != sha256(source_path):
+        raise ValueError("federation source split differs from archived preregistration")
+    if variant == "small192":
+        expected["train"] = expected["small_train"]
+        expected["sites"] = expected["small_sites"]
+    elif variant == "heterogeneous":
+        expected["sites"] = expected["heterogeneous_sites"]
+    expected["variant"] = variant
+    split = read_json(directory / "effective-split.json")
+    if split != expected:
+        raise ValueError("effective split differs from preregistered variant content")
+    return split
 
 
 def released_artifact(directory, status=None):
@@ -125,12 +154,18 @@ def planned_cells():
     return primary + small + extensions
 
 
-def load_replicate(directory, dataset, variant, epsilon, seed):
+def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None):
+    execution_path = directory / "execution-status.json"
+    if execution_path.exists():
+        execution = read_json(execution_path)
+        if execution.get("status") != "executed":
+            raise ValueError("Execution incomplete or failed in " + execution.get("phase", "unrecorded phase"))
     status = read_json(directory / "federation-status.json")
     if status.get("status") == "failed" or status.get("cleanup_ok") is not True:
         raise ValueError(status.get("error", "federation or cleanup failed"))
     split_path = directory / "effective-split.json"
-    split = read_json(split_path)
+    source_path = directory / "source-split.json"
+    split = validate_split_provenance(directory, dataset, variant, seed, status, provenance)
     channel = read_json(directory / "channel-b.json")
     twins = read_json(directory / "twins" / "twins.json")
     digest = sha256(split_path)
@@ -204,6 +239,7 @@ def load_replicate(directory, dataset, variant, epsilon, seed):
     return dict(branch_metrics, seed=seed, epsilon=epsilon, delta=1e-5,
         dataset=dataset, variant=variant, n_train=len(train), n_test=len(test),
         n_per_site=list(map(len, sites)), split_sha256=digest,
+        source_split_sha256=sha256(source_path),
         site_mechanisms=mechanisms, pooled_mechanism=pooled,
         federated_dp=channel["metrics"], trivial=channel["trivial"],
         artifact_sha256=artifact, cleanup_ok=True,
@@ -276,7 +312,9 @@ def assemble(runs, provenance, runtime, protocol):
                     raise ValueError(execution.get("error") or
                         "Execution failed in %s (exit code %s)" %
                         (execution.get("phase", "federation"), execution.get("exit_code", "unrecorded")))
-                replicate = load_replicate(directory, *key)
+                if execution.get("status") == "running":
+                    raise ValueError("Execution incomplete or interrupted in " + execution.get("phase", "unrecorded phase"))
+                replicate = load_replicate(directory, *key, provenance=provenance)
                 completed.append(replicate)
                 cell["status"] = "executed"
             except (ValueError, KeyError, FileNotFoundError) as error:

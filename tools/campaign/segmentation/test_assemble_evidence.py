@@ -47,6 +47,9 @@ def make_cell(root):
     test = [f"t{i}" for i in range(51)]
     split = {"seed": seed, "variant": "full", "train": train, "test": test,
              "sites": [train[:69], train[69:137], train[137:]]}
+    write_json(root / "source-split.json", {k: v for k, v in split.items() if k != "variant"})
+    source_hash = evidence.sha256(root / "source-split.json")
+    write_json(root / "provenance" / "breast-audit.json", {"split_hashes": {str(seed): source_hash}})
     write_json(root / "effective-split.json", split)
     split_hash = evidence.sha256(root / "effective-split.json")
     artifact_dir = root / "artifact" / "generated-run"
@@ -55,7 +58,8 @@ def make_cell(root):
     artifact_hash = evidence.sha256(artifact_dir / "model.pt")
     write_json(root / "federation-status.json", {"status": "predicted_pending_public_metric_summary",
         "cleanup_ok": True, "dataset": "breast", "variant": "full", "epsilon": 8,
-        "seed": seed, "model_sha256": artifact_hash, "elapsed_s": 1., "output_dir": str(artifact_dir)})
+        "seed": seed, "model_sha256": artifact_hash, "elapsed_s": 1., "output_dir": str(artifact_dir),
+        "split_sha256": source_hash})
     metric = {"all": {"dice": .2, "iou": .1}, "foreground_positive": {"dice": .2, "iou": .1},
               "empty_reference": None}
     trivial = {"strongest_dice": .3}
@@ -145,12 +149,12 @@ class EvidenceTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             make_cell(root)
-            row = evidence.load_replicate(root, "breast", "full", 8, evidence.SEEDS[0])
+            row = evidence.load_replicate(root, "breast", "full", 8, evidence.SEEDS[0], root / "provenance")
             self.assertEqual(row["federated_dp"]["all"]["dice"], .2)
             self.assertEqual(row["elapsed_s"], 3.)
             evidence.released_artifact(root).write_bytes(b"other")
             with self.assertRaisesRegex(ValueError, "artifact checksum"):
-                evidence.load_replicate(root, "breast", "full", 8, evidence.SEEDS[0])
+                evidence.load_replicate(root, "breast", "full", 8, evidence.SEEDS[0], root / "provenance")
 
     def test_artifact_resolution_uses_recorded_child_and_rejects_other_cells(self):
         with tempfile.TemporaryDirectory() as temporary:
@@ -173,7 +177,51 @@ class EvidenceTests(unittest.TestCase):
             twins["pooled_nonprivate"]["initial_tensor_sha256"] = "0" * 64
             write_json(twins_path, twins)
             with self.assertRaisesRegex(ValueError, "initialization"):
-                evidence.load_replicate(root, "breast", "full", 8, evidence.SEEDS[0])
+                evidence.load_replicate(root, "breast", "full", 8, evidence.SEEDS[0], root / "provenance")
+
+    def test_split_pins_bind_source_and_every_effective_variant(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            seed = evidence.SEEDS[0]
+            source = {"seed": seed, "train": ["a", "b", "c"], "test": ["d"],
+                "sites": [["a"], ["b"], ["c"]], "small_train": ["a", "b"],
+                "small_sites": [["a"], ["b"], []], "heterogeneous_sites": [["b"], ["c"], ["a"]]}
+            write_json(root / "source-split.json", source)
+            source_hash = evidence.sha256(root / "source-split.json")
+            provenance = root / "provenance"
+            write_json(provenance / "busbra-audit.json", {"split_hashes": {str(seed): source_hash}})
+            status = {"split_sha256": source_hash}
+            for variant in ("full", "bce", "small192", "heterogeneous"):
+                expected = copy.deepcopy(source)
+                expected["variant"] = variant
+                if variant == "small192":
+                    expected.update(train=source["small_train"], sites=source["small_sites"])
+                elif variant == "heterogeneous":
+                    expected["sites"] = source["heterogeneous_sites"]
+                write_json(root / "effective-split.json", expected)
+                with self.subTest(variant=variant):
+                    self.assertEqual(evidence.validate_split_provenance(root, "busbra", variant, seed,
+                                                                       status, provenance), expected)
+                    expected["test"] = ["different-heldout-subject"]
+                    write_json(root / "effective-split.json", expected)
+                    with self.assertRaisesRegex(ValueError, "variant content"):
+                        evidence.validate_split_provenance(root, "busbra", variant, seed, status, provenance)
+            with self.assertRaisesRegex(ValueError, "federation source split"):
+                evidence.validate_split_provenance(root, "busbra", "full", seed,
+                                                   {"split_sha256": "0" * 64}, provenance)
+            source["test"] = ["changed-source-subject"]
+            write_json(root / "source-split.json", source)
+            with self.assertRaisesRegex(ValueError, "archived preregistered split hash"):
+                evidence.validate_split_provenance(root, "busbra", "full", seed, status, provenance)
+
+    def test_resume_rejects_interrupted_cell_even_when_artifacts_exist(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            make_cell(root)
+            for status in ("running", "failed"):
+                write_json(root / "execution-status.json", {"status": status, "phase": "twins"})
+                with self.subTest(status=status), self.assertRaisesRegex(ValueError, "incomplete or failed"):
+                    evidence.load_replicate(root, "breast", "full", 8, evidence.SEEDS[0], root / "provenance")
 
     def test_plan_contains_all_thirty_three_cells_without_duplicates(self):
         cells = evidence.planned_cells()
@@ -207,6 +255,20 @@ class EvidenceTests(unittest.TestCase):
             failed = [c for c in result["campaign-status.json"]["cells"] if c["status"] == "failed"]
             self.assertEqual(len(failed), 1)
             self.assertIn("federation (exit code 2)", failed[0]["reason"])
+
+    def test_interrupted_attempt_remains_incomplete_without_scores(self):
+        archive = Path(__file__).resolve().parents[3] / "inst/extdata/campaign/segmentation"
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            write_json(root / "busbra-full-eps1" / "execution-status.json",
+                {"status": "running", "dataset": "busbra", "variant": "full", "epsilon": 1,
+                 "seed": evidence.SEEDS[0], "phase": "twins"})
+            result = evidence.assemble(root, archive / "provenance", {}, archive / "protocol.md")
+            failed = [c for c in result["campaign-status.json"]["cells"] if c["status"] == "failed"]
+            self.assertEqual(len(failed), 1)
+            self.assertIn("incomplete or interrupted in twins", failed[0]["reason"])
+            self.assertEqual(result["busbra-evidence.json"]["completed_cells"], [])
+            self.assertNotIn("envelopes", result["busbra-evidence.json"])
 
     def test_small_matrix_rejects_duplicate_seed_and_missing_middle_epsilon(self):
         rows = [{"epsilon": e, "seed": s, "n_train": 192, "n_per_site": [64] * 3,
