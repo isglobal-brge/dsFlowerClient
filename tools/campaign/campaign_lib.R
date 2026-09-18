@@ -42,6 +42,16 @@ methods::setMethod("dsIsAsync", "CampaignDSLiteConnection", function(conn) {
        assignResource = FALSE)
 })
 methods::setMethod("dsKeepAlive", "CampaignDSLiteConnection", function(conn) NULL)
+methods::setMethod("dsListSymbols", "CampaignDSLiteConnection", function(conn) {
+  .campaign_remote_call(conn, function() {
+    DSI::dsListSymbols(.campaign_dslite_conn)
+  })
+})
+methods::setMethod("dsRmSymbol", "CampaignDSLiteConnection", function(conn, symbol) {
+  .campaign_remote_call(conn, function(symbol) {
+    DSI::dsRmSymbol(.campaign_dslite_conn, symbol)
+  }, symbol)
+})
 methods::setMethod(
   "dsAggregate", "CampaignDSLiteConnection",
   function(conn, expr, async = TRUE) {
