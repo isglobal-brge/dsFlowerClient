@@ -10,27 +10,39 @@ work_dir <- normalizePath(args[[5L]], mustWork = FALSE)
 tools_dir <- normalizePath(args[[6L]])
 stopifnot(epsilon %in% c(1, 4, 8), seed %in% c(20260919L, 20260920L, 20260921L))
 source(file.path(tools_dir, "..", "campaign_lib.R"))
+started_at <- Sys.time()
+synthetic <- identical(Sys.getenv("F_SEG_SYNTHETIC"), "1")
 gate_path <- Sys.getenv("F_SEG_GATES_JSON")
-if (!file.exists(gate_path)) stop("F_SEG_GATES_JSON must identify reviewed blocking-gate evidence.")
-gates <- jsonlite::fromJSON(gate_path)
-if (!all(vapply(paste0("segmentation_6_1_", 1:7), function(name) isTRUE(gates[[name]]), logical(1)))) {
-  stop("All seven blocking mechanism/API gates must pass before public scored cells.")
+if (!synthetic) {
+  if (!file.exists(gate_path)) stop("F_SEG_GATES_JSON must identify blocking-gate evidence.")
+  gates <- jsonlite::fromJSON(gate_path)
+  if (!all(vapply(paste0("segmentation_6_1_", 1:7), function(name) isTRUE(gates[[name]]), logical(1)))) {
+    stop("All seven blocking mechanism/API gates must pass before public scored cells.")
+  }
 }
 if (startsWith(work_dir, "/workspace/")) {
-  marker <- readLines("/workspace/logs/install_r.log", warn = FALSE)
-  if (!any(grepl("R_STACK_DONE", marker, fixed = TRUE))) stop("Pod R stack completion gate missing.")
+  markers <- c("/workspace/logs/install_r.log", "/workspace/segmentation/r-stack-ready.log")
+  ready <- any(vapply(markers, function(p) file.exists(p) &&
+    any(readLines(p, warn = FALSE) == "R_STACK_DONE"), logical(1)))
+  if (!ready) stop("Pod R stack completion gate missing.")
 }
 for (name in c("DSFLOWER_VENV_ROOT", "DSFLOWER_CLIENT_VENV_ROOT", "TORCH_HOME", "F_SEG_RUNNER_PARENT")) {
   if (!nzchar(Sys.getenv(name))) stop("Missing environment: ", name)
 }
 dir.create(work_dir, recursive = TRUE, showWarnings = FALSE)
+capture_dir <- file.path(work_dir, "public-capture")
+if (dir.exists(capture_dir) && length(list.files(capture_dir, all.files = TRUE, no.. = TRUE))) {
+  stop("A new cell requires an empty capture directory; retain previous attempts separately.")
+}
 Sys.setenv(F_SEG_PUBLIC_BENCHMARK = "1", F_SEG_INIT_SEED = seed,
-           F_SEG_CAPTURE_DIR = file.path(work_dir, "public-capture"),
+           F_SEG_CAPTURE_DIR = capture_dir,
            CUBLAS_WORKSPACE_CONFIG = ":4096:8",
            OMP_NUM_THREADS = "2", MKL_NUM_THREADS = "2",
            PYTHONPATH = paste(file.path(tools_dir, "benchmark_hooks"),
                               Sys.getenv("F_SEG_RUNNER_PARENT"), sep = .Platform$path.sep))
 audit <- jsonlite::fromJSON(file.path(prepared, "audit.json"), simplifyVector = FALSE)
+if (synthetic && !identical(audit$dataset, "synthetic")) stop("Synthetic mode requires the synthetic fixture.")
+if (!synthetic && !audit$dataset %in% c("breast", "busbra")) stop("Unknown public cohort.")
 split <- jsonlite::fromJSON(split_path, simplifyVector = FALSE)
 stopifnot(identical(as.integer(split$seed), seed))
 variant <- Sys.getenv("F_SEG_VARIANT", "full")
@@ -44,7 +56,8 @@ if (identical(variant, "small192")) {
 if (identical(variant, "heterogeneous")) split$sites <- split$heterogeneous_sites
 split$variant <- variant
 jsonlite::write_json(split, file.path(work_dir, "effective-split.json"), auto_unbox = TRUE, pretty = TRUE)
-frame <- utils::read.csv(file.path(prepared, "samples.csv"), stringsAsFactors = FALSE)
+frame <- utils::read.csv(file.path(prepared, "samples.csv"), stringsAsFactors = FALSE,
+                         colClasses = "character")
 site_data <- lapply(split$sites, function(ids) frame[frame$subject_id %in% unlist(ids), , drop = FALSE])
 stopifnot(length(site_data) == 3L,
           sum(vapply(site_data, function(x) length(unique(x$subject_id)), integer(1))) == length(split$train))
@@ -103,9 +116,15 @@ result <- tryCatch({
       model = "pytorch_resnet18_segmentation", data_kind = "image", strategy = "fedavg",
       model_params = list(alpha = if (identical(variant, "bce")) 1 else .5, mask_values = "0,255", sample_id_col = "image_id",
           image_path_col = "relative_path", mask_empty_col = "mask_empty", subject_id_col = "subject_id",
-          learning_rate = .01, batch_size = 16L, local_epochs = 2L),
-      rounds = 5L, torch_backend = "cuda", output_dir = file.path(work_dir, "artifact"), silent = TRUE)
+          learning_rate = .01, batch_size = if (synthetic) 8L else 16L,
+          local_epochs = if (synthetic) 1L else 2L),
+      rounds = if (synthetic) 2L else 5L, torch_backend = "cuda", output_dir = file.path(work_dir, "artifact"), silent = TRUE)
   if (!isTRUE(fit$available)) stop("No available released segmentation model.")
+  metadata <- jsonlite::fromJSON(file.path(fit$output_dir, "metadata.json"))
+  history <- jsonlite::fromJSON(file.path(fit$output_dir, "history.json"))
+  stopifnot(identical(metadata$status, "success"), as.integer(metadata$n_clients) == 3L,
+            nrow(history) == if (synthetic) 2L else 5L,
+            all(history$n_failures == 0L), inherits(fit, "dsflower_run"), fit$status == 0L)
   stopifnot(file.exists(file.path(work_dir, "public-capture", "public-initial-arrays.npz")))
   # Canonical subject/image ordering matches the independently cached public masks.
   test <- frame[frame$subject_id %in% unlist(split$test), , drop = FALSE]
@@ -117,6 +136,13 @@ result <- tryCatch({
     values <- ds.flower.predict(fit, paths[ix], type = "prob")
     do.call(rbind, lapply(seq_along(ix), function(i) as.vector(t(values[i, 1, , ]))))
   }))
+  stopifnot(identical(dim(probability), c(nrow(test), 16384L)),
+            all(is.finite(probability)), all(probability >= 0 & probability <= 1))
+  if (synthetic) {
+    repeated <- ds.flower.predict(fit$output_dir, paths, type = "prob")
+    repeated <- do.call(rbind, lapply(seq_along(paths), function(i) as.vector(t(repeated[i, 1, , ]))))
+    stopifnot(identical(probability, repeated))
+  }
   utils::write.table(probability, file.path(work_dir, "public-probabilities.csv"),
                      row.names = FALSE, col.names = FALSE, sep = ",")
   list(status = "predicted_pending_public_metric_summary", output_dir = fit$output_dir,
@@ -124,6 +150,9 @@ result <- tryCatch({
 }, error = function(e) list(status = "failed", error = conditionMessage(e)))
 cleanup()
 result$cleanup_ok <- cleanup_ok
+result$dataset <- audit$dataset
+result$synthetic <- synthetic
+result$elapsed_s <- as.numeric(difftime(Sys.time(), started_at, units = "secs"))
 result$variant <- variant
 result$seed <- seed
 result$epsilon <- epsilon

@@ -2,7 +2,7 @@
 
 This directory contains the preregistered public benchmark tooling; it is outside the released runner. The archived `campaign-status.json` is the execution authority: a pending matrix has no scores and establishes no utility claim. The frozen protocol is `inst/extdata/campaign/segmentation/protocol.md` (workspace original `PROTOCOL_F_SEGMENTATION.md`).
 
-Prerequisites: reviewed §6.1 segmentation gates 1–7, byte-identical paired runner trees, the public pretrained checkpoint, working three-node R/DSLite stack, and Python torch/torchvision/Opacus/Flower/numpy/pandas/Pillow/scipy/requests. On the pod use the isolated `/workspace/segmentation/venv`, `/workspace/segmentation/rlib`, and `/workspace/segmentation/` data/work paths. **Do not invoke R until `/workspace/logs/install_r.log` contains `R_STACK_DONE`.** The shell launcher enforces this before starting R. A failed provisioning run is not a completion marker.
+Prerequisites: recorded §6.1 segmentation gates 1–7, byte-identical paired runner trees, the public pretrained checkpoint, working three-node R/DSLite stack, and Python torch/torchvision/Opacus/Flower/numpy/pandas/Pillow/scipy/requests/jsonschema. On the pod use the isolated `/workspace/segmentation/venv`, `/workspace/segmentation/rlib`, and `/workspace/segmentation/` data/work paths. The shell launcher requires a genuine `R_STACK_DONE` line in `/workspace/logs/install_r.log` or `/workspace/segmentation/r-stack-ready.log`. The latter records the scoped repair authorized by Addendum 1, after actual required-package and CUDA loading succeeds. A failed provisioning run is not a completion marker. Implementer gate verification does not constitute reviewer promotion.
 
 Prepare unscored public fixtures:
 
@@ -19,7 +19,7 @@ python feature_smoke.py --prepared /workspace/segmentation/prepared --out /works
 
 The preparation audit writes source mask/converted-mask SHA256, explicit empty declarations, source/patient censuses and all subject split hashes. The feature smoke verifies unchanged frozen state and subject retention on public fixtures without scoring. It writes public subject tensor caches only on the pod, never to package extdata. This is not a training/integration claim.
 
-After all seven reviewed gate results exist in a JSON object with `segmentation_6_1_1` through `segmentation_6_1_7` set to `true`, run one full-size primary cell (repeat each cohort × epsilon 1,4,8 × seed 20260919,20260920,20260921). Package installs and environment paths must identify the reviewed paired commits.
+After all seven gate results and their evidence references exist in a JSON object with `segmentation_6_1_1` through `segmentation_6_1_7` set to `true`, run one full-size primary cell (repeat each cohort × epsilon 1,4,8 × seed 20260919,20260920,20260921). Package installs and environment paths must identify the paired commits.
 
 ```sh
 export F_SEG_GATES_JSON=/workspace/segmentation/reviewed-gates.json
@@ -52,3 +52,21 @@ F_SEG_PUBLIC_BENCHMARK=1 F_SEG_INIT_SEED=20260919 F_SEG_CAPTURE_DIR=/workspace/s
 ```
 
 This synthetic check does not score any dataset. It verifies that repeated captured public initialization matches and that the actual wrapped accountant observes exactly two logical Poisson steps in a four-subject/one-local-epoch fixture.
+
+The actual three-node gate uses the same federation driver, with a deterministic generated fixture, 16 subjects per site, batch8 and two one-epoch rounds. Run it before writing gate 7 as passed:
+
+```sh
+python prepare_synthetic.py --out /workspace/segmentation/prepared/synthetic
+F_SEG_SYNTHETIC=1 ./run_federated.sh /workspace/segmentation/prepared/synthetic /workspace/segmentation/prepared/synthetic/split-20260919.json 8 20260919 /workspace/segmentation/synthetic-run
+python verify_synthetic.py --prepared /workspace/segmentation/prepared/synthetic --run /workspace/segmentation/synthetic-run --out /workspace/segmentation/synthetic-gate.json
+```
+
+After all seven gates pass, `run_matrix.py --root /workspace/segmentation --workers 2` executes all 33 preregistered primary, small192, BCE and heterogeneous cells, followed by their exact twins. Run it under `nohup`; each cell logs under `/workspace/logs/`. It refuses existing cell directories and retains failed attempts. Twin training uses CUDA; twin channel-B evaluation matches the public local predictor's CPU decoder arithmetic with the same cached CUDA encoder features.
+
+Assemble the observed results without inventing missing scores:
+
+```sh
+python assemble_evidence.py --runs /workspace/segmentation/runs --provenance /path/to/inst/extdata/campaign/segmentation/provenance --runtime /workspace/segmentation/runtime-resume.json --protocol /path/to/inst/extdata/campaign/segmentation/protocol.md --out /workspace/segmentation/evidence
+```
+
+Runtime metadata records exact package commits, runner hash, dependencies, device and deterministic settings. The assembler checks every site's five distinct rounds, observed logical steps, independent full-horizon accounting, selected tensor hashes and scored artifact identity. Cohort evidence retains failed floors and envelope flags; campaign status separately lists every planned cell.

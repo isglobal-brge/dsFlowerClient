@@ -18,6 +18,7 @@ import numpy as np
 import torch
 from dsflower_runner import client_app, dp_harness, params, segmentation, seeding, task
 from segmentation_metrics import metrics, trivial_masks
+from assemble_evidence import validate_captures
 
 
 def array_hash(values):
@@ -110,11 +111,12 @@ def run_twins(X, y, subjects, split, cfg, initial, pins, epsilon, secret, output
                 local_arrays.append(local)
             arrays = [np.mean(np.stack(parts), axis=0).astype(np.float32)
                       for parts in zip(*local_arrays)]
-        model = params.load_user_model(cfg, segmentation.FEATURE_DIM, "segmentation_bce_dice").to(device)
+        # Match the released-artifact local predictor's CPU decoder arithmetic.
+        model = params.load_user_model(cfg, segmentation.FEATURE_DIM, "segmentation_bce_dice")
         params.set_torch_params(model, arrays)
         model.eval()
         with torch.no_grad():
-            probability = np.concatenate([model(torch.from_numpy(X[part]).to(device)).sigmoid().cpu().numpy()
+            probability = np.concatenate([model(torch.from_numpy(X[part])).sigmoid().numpy()
                                          for part in np.array_split(test, max(1, math.ceil(len(test) / 16)))])
         destination = output / (branch + ".npz")
         np.savez(destination, **{str(i): a for i, a in enumerate(arrays)})
@@ -162,15 +164,14 @@ def main():
         raise ValueError("public split and initialization seeds must match")
     # Match effective tensors from actual node rounds, not only nominal transforms.
     lookup = {str(subject): i for i, subject in enumerate(data["subjects"])}
-    expected_site_hashes = set()
+    expected_site_hashes = {}
     for ids in split["sites"]:
         rows = [lookup[s] for s in sorted(ids)]
-        expected_site_hashes.add((hashlib.sha256(data["X"][rows].tobytes()).hexdigest(),
-                                 hashlib.sha256(data["y"][rows].tobytes()).hexdigest()))
+        expected_site_hashes[(hashlib.sha256(data["X"][rows].tobytes()).hexdigest(),
+                              hashlib.sha256(data["y"][rows].tobytes()).hexdigest())] = len(rows)
     captures = [json.loads(p.read_text()) for p in args.capture.glob("accountant-*.json")]
-    observed_site_hashes = {(r["features_sha256"], r["targets_sha256"]) for r in captures}
-    if observed_site_hashes != expected_site_hashes or len(captures) != 15:
-        raise ValueError("actual three-node/five-round tensor captures do not match pooled twins")
+    site_accounting = validate_captures(captures, list(map(len, split["sites"])),
+                                        args.epsilon, expected_site_hashes)
     pins = task.load_run_pins(SimpleNamespace(node_config={"manifest-dir": str(args.features)}))
     args.out.mkdir(parents=True, exist_ok=True)
     torch.set_num_threads(2)
@@ -183,7 +184,9 @@ def main():
                    "seed": split["seed"], "epsilon": args.epsilon,
                    "split_sha256": hashlib.sha256(args.split.read_bytes()).hexdigest(),
                    "n_train": len(split["train"]), "n_per_site": list(map(len, split["sites"])),
+                   "federated_accounting": site_accounting,
                    "torch": torch.__version__})
+    result["prediction_device"] = "cpu"
     (args.out / "twins.json").write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
 
 

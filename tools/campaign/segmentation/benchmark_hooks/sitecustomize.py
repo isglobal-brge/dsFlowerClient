@@ -50,6 +50,7 @@ if os.environ.get("F_SEG_PUBLIC_BENCHMARK") == "1":
     original_fit = client_app._dp_fit
 
     def fit(model, X, y, pcfg, pins, n_staged, cfg, master, noise_multiplier, **kwargs):
+        started = time.monotonic()
         before = len(engines)
         result = original_fit(model, X, y, pcfg, pins, n_staged, cfg, master, noise_multiplier, **kwargs)
         if len(engines) != before + 1:
@@ -64,9 +65,12 @@ if os.environ.get("F_SEG_PUBLIC_BENCHMARK") == "1":
             raise RuntimeError("observed accountant steps do not match logical batches")
         payload = {"schema": "dsflower-segmentation-benchmark-accountant-v1",
                    "public_fixture_only": True, "round": pins["round_index"],
+                   "source_rows": n_staged,
                    "mechanism": mechanism, "observed_round_steps": observed,
                    "accountant_type": type(engine.accountant).__name__,
                    "accountant_history": history,
+                   "elapsed_s": time.monotonic() - started,
+                   "peak_cuda_bytes": torch.cuda.max_memory_allocated() if torch.cuda.is_available() else 0,
                    "features_sha256": hashlib.sha256(X.tobytes()).hexdigest(),
                    "targets_sha256": hashlib.sha256(y.tobytes()).hexdigest()}
         path = directory / ("accountant-%d-%d.json" % (os.getpid(), time.time_ns()))
