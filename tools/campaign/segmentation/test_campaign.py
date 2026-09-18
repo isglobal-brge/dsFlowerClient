@@ -64,7 +64,13 @@ class CampaignTests(unittest.TestCase):
         self.assertNotIn("replicates", document)
         self.assertEqual(document["protocol_sha256"], hashlib.sha256((root / "protocol.md").read_bytes()).hexdigest())
         self.assertEqual({c["epsilon"] for c in document["cells"]}, {1, 4, 8})
-        if document["schema"] == "dsflower-segmentation-campaign-summary-v1":
+        if document["schema"] == "dsflower-segmentation-campaign-combined-v2":
+            from assemble_evidence import planned_cells
+            keys = [(c["nominal_batch_size"], c["dataset"], c["variant"], c["epsilon"], c["seed"]) for c in document["cells"]]
+            self.assertEqual(set(keys), {(batch, *cell) for batch in (16,64) for cell in planned_cells()})
+            self.assertEqual(len(keys), len(set(keys)))
+            self.assertEqual(set(document["arms"]), {"16", "64"})
+        elif document["schema"] == "dsflower-segmentation-campaign-summary-v1":
             from assemble_evidence import planned_cells
             keys = [(c["dataset"], c["variant"], c["epsilon"], c["seed"]) for c in document["cells"]]
             self.assertEqual(set(keys), set(planned_cells()))

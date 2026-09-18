@@ -227,6 +227,24 @@ render_arm <- function(evidence_dir) {
     }
     if (cohort$status != "executed") {
       cat(cohort$reason, ". Utility floors and envelopes remain **not evaluated**.\n\n", sep = "")
+      observed <- list()
+      scalar_metric <- function(value) if (is.null(value)) "Not applicable" else sprintf("%.3f", value)
+      branches <- c(federated_dp = "Federated DP", pooled_dp = "Pooled DP",
+                    pooled_nonprivate = "Pooled nonprivate", federated_nonprivate = "Federated nonprivate")
+      for (replicate in cohort$completed_cells) {
+        for (branch in names(branches)) {
+          values <- replicate[[branch]]
+          observed[[length(observed) + 1L]] <- data.frame(
+            Epsilon = replicate$epsilon, Seed = replicate$seed, Branch = branches[[branch]],
+            Dice = scalar_metric(values$all$dice), IoU = scalar_metric(values$all$iou),
+            `Foreground Dice` = scalar_metric(values$foreground_positive$dice),
+            `Foreground IoU` = scalar_metric(values$foreground_positive$iou),
+            `Empty Dice` = scalar_metric(values$empty_reference$dice),
+            `Empty IoU` = scalar_metric(values$empty_reference$iou), check.names = FALSE)
+        }
+      }
+      if (length(observed)) show_table(observed,
+        "Observed successful cells from an incomplete matrix; these are not complete three-seed summaries or utility acceptance.")
       next
     }
     stopifnot(length(cohort$replicates) == 9L,

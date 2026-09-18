@@ -48,7 +48,14 @@ test_that("segmentation evidence retains explicit execution status and protocol"
   expect_true(evidence$status %in% c("not_executed", "failed", "executed"))
   expect_null(evidence$scores)
   expect_null(evidence$replicates)
-  if (identical(evidence$schema, "dsflower-segmentation-campaign-summary-v1")) {
+  if (identical(evidence$schema, "dsflower-segmentation-campaign-combined-v2")) {
+    expect_length(evidence$cells, 66L)
+    identities <- vapply(evidence$cells, function(cell) {
+      paste(cell$nominal_batch_size, cell$dataset, cell$variant, cell$epsilon, cell$seed, sep = ":")
+    }, character(1))
+    expect_equal(anyDuplicated(identities), 0L)
+    expect_setequal(names(evidence$arms), c("16", "64"))
+  } else if (identical(evidence$schema, "dsflower-segmentation-campaign-summary-v1")) {
     expect_length(evidence$cells, 33L)
     identities <- vapply(evidence$cells, function(cell) {
       paste(cell$dataset, cell$variant, cell$epsilon, cell$seed, sep = ":")
