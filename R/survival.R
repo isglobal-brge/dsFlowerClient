@@ -14,6 +14,11 @@
   gsub("[\r\n]", "", jsonlite::base64_enc(charToRaw(enc2utf8(as.character(json)))))
 }
 
+.survival_bounds_b64 <- function(bounds) {
+  .survival_json_b64(list(lower = as.list(bounds$lower),
+                          upper = as.list(bounds$upper)))
+}
+
 .survival_config <- function(params, loss) {
   if (!.is_survival_loss(loss)) return(NULL)
   p <- params

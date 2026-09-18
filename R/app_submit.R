@@ -852,7 +852,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         .toml_kv(key, training_config[[key]])
       }, character(1))))
     if (!is.null(public_bounds))
-      cfg <- c(cfg, .toml_kv("feature-bounds-b64", .spec_to_b64(public_bounds)))
+      cfg <- c(cfg, .toml_kv("feature-bounds-b64",
+        if (.is_survival_loss(sub$loss)) .survival_bounds_b64(public_bounds) else
+          .spec_to_b64(public_bounds)))
     if (identical(data_kind, "image")) {
       cfg <- c(cfg, .toml_kv(
         "backbone", as.character(p[["backbone"]] %||% "resnet18")),

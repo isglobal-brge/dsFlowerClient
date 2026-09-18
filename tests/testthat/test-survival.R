@@ -187,3 +187,13 @@ test_that("portable survival bundles retain exact public grids after reload", {
     expect_identical(contract$loss_name, "discrete_hazard_nll")
   }
 })
+
+test_that("single-feature survival bounds remain exact vectors on the wire", {
+  lower <- -1.000000123456789
+  upper <- 1.123456789012345
+  decoded <- jsonlite::fromJSON(rawToChar(jsonlite::base64_dec(
+    dsFlowerClient:::.survival_bounds_b64(list(lower = lower, upper = upper)))),
+    simplifyVector = FALSE)
+  expect_identical(decoded$lower, list(lower))
+  expect_identical(decoded$upper, list(upper))
+})

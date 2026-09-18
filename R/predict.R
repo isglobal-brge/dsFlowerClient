@@ -148,7 +148,8 @@ ds.flower.predict <- function(
              if (!is.null(times)) c("--times-b64", .survival_json_b64(as.list(times))),
              # Repeat the node's public clip + affine transform when configured.
              if (identical(framework, "pytorch") && !is.null(info$bounds))
-               c("--bounds-b64", .spec_to_b64(info$bounds))),
+               c("--bounds-b64", if (survival) .survival_bounds_b64(info$bounds) else
+                 .spec_to_b64(info$bounds))),
     env = .client_venv_env(),
     error_on_status = FALSE
   )
