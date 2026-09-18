@@ -12,9 +12,11 @@ python prepare_public_data.py --root /workspace/segmentation/data --out /workspa
 mkdir -p /workspace/segmentation/torch/hub/checkpoints
 cp /workspace/segmentation/data/resnet18-f37072fd.pth /workspace/segmentation/torch/hub/checkpoints/
 export TORCH_HOME=/workspace/segmentation/torch
+export XDG_CACHE_HOME=/workspace/segmentation
 export PYTHONPATH=/workspace/segmentation/runtime
 export CUBLAS_WORKSPACE_CONFIG=:4096:8
 python feature_smoke.py --prepared /workspace/segmentation/prepared --out /workspace/segmentation/features
+/workspace/segmentation/venv/bin/python install_public_observer.py
 ```
 
 The preparation audit writes source mask/converted-mask SHA256, explicit empty declarations, source/patient censuses and all subject split hashes. The feature smoke verifies unchanged frozen state and subject retention on public fixtures without scoring. It writes public subject tensor caches only on the pod, never to package extdata. This is not a training/integration claim.
@@ -22,7 +24,7 @@ The preparation audit writes source mask/converted-mask SHA256, explicit empty d
 After all seven gate results and their evidence references exist in a JSON object with `segmentation_6_1_1` through `segmentation_6_1_7` set to `true`, run one full-size primary cell (repeat each cohort × epsilon 1,4,8 × seed 20260919,20260920,20260921). Package installs and environment paths must identify the paired commits.
 
 ```sh
-export F_SEG_GATES_JSON=/workspace/segmentation/reviewed-gates.json
+export F_SEG_GATES_JSON=/workspace/segmentation/mechanism-gates.json
 export F_SEG_RUNNER_PARENT=/workspace/segmentation/runtime
 export DSFLOWER_VENV_ROOT=/workspace/segmentation/server-venvs
 export DSFLOWER_CLIENT_VENV_ROOT=/workspace/segmentation/client-venv
@@ -30,10 +32,12 @@ export R_LIBS_USER=/workspace/segmentation/rlib
 ./run_federated.sh /workspace/segmentation/prepared/busbra /workspace/segmentation/prepared/busbra/split-20260919.json 8 20260919 /workspace/segmentation/runs/busbra-eps8-seed20260919
 segmentation_artifact_dir=$(python -c 'import json,sys; print(json.load(open(sys.argv[1]))["output_dir"])' /workspace/segmentation/runs/busbra-eps8-seed20260919/federation-status.json)
 python score_public.py --features /workspace/segmentation/features/busbra --split /workspace/segmentation/runs/busbra-eps8-seed20260919/effective-split.json --probabilities /workspace/segmentation/runs/busbra-eps8-seed20260919/public-probabilities.csv --artifact "$segmentation_artifact_dir/model.pt" --out /workspace/segmentation/runs/busbra-eps8-seed20260919/channel-b.json
-python central_twins.py --features /workspace/segmentation/features/busbra --split /workspace/segmentation/runs/busbra-eps8-seed20260919/effective-split.json --capture /workspace/segmentation/runs/busbra-eps8-seed20260919/public-capture --gates /workspace/segmentation/reviewed-gates.json --epsilon 8 --out /workspace/segmentation/runs/busbra-eps8-seed20260919/twins
+python central_twins.py --features /workspace/segmentation/features/busbra --split /workspace/segmentation/runs/busbra-eps8-seed20260919/effective-split.json --capture /workspace/segmentation/runs/busbra-eps8-seed20260919/public-capture --gates "$F_SEG_GATES_JSON" --epsilon 8 --out /workspace/segmentation/runs/busbra-eps8-seed20260919/twins
 ```
 
-The isolated benchmark hook is opt-in through `F_SEG_PUBLIC_BENCHMARK=1` and set by the R driver. It seeds/captures public initial arrays and records the existing node accountant history/step count plus effective tensor hashes. It does not alter sampling, clipping, noise or production telemetry. Its sidecar directory must be empty for a new cell; stale captures fail twin validation. Do not install this hook in a production environment. The central twins require all 15 actual node-round captures to match the selected public tensors and use the same captured initial arrays; pooled DP calls the trusted runtime `_dp_fit`. The nonprivate diagnostics use the identical model/loss/optimizer and Poisson geometry exclusively within benchmark tooling. Their scope is public data only.
+The analyst-side benchmark hook is opt-in through `F_SEG_PUBLIC_BENCHMARK=1`, set by the R driver, and seeds/captures public initial arrays. Nodes keep the unchanged clean environment and mandatory integrity hook. The separate observer installer accepts only the dedicated segmentation venv; its deferred loader waits for mandatory runner hash verification. The driver writes an explicit public-cohort configuration beside each protected ephemeral node secret (0700 parent, 0600 configuration). Only then does the observer record actual accountant history/steps and effective tensor hashes. The supported `XDG_CACHE_HOME` route makes the pinned checkpoint available through the clean environment. Benchmark CPU threads are fixed at 2.
+
+Neither observer alters sampling, clipping, noise or production telemetry. The capture directory must be empty for a new cell; stale captures fail twin validation. Do not install this instrumentation in a production environment. The central twins require all 15 actual node-round captures to match the selected public tensors and use the same captured initial arrays; pooled DP calls the trusted runtime `_dp_fit`. The nonprivate diagnostics use the identical model/loss/optimizer and Poisson geometry exclusively within benchmark tooling. Their scope is public data only.
 
 The default CLI wires the full-size primary alpha=.5 matrix. Set `F_SEG_VARIANT=small192`, `heterogeneous`, or `bce` for the preregistered BUS-BRA extensions (the last two require epsilon8). The driver writes `effective-split.json`; use that file for the scoring and twin `--split` arguments for every variant. All campaign execution, final evidence assembly and cross-cell envelope checks remain pending actual scored cells. `segmentation_metrics.envelopes` accepts complete matched replicate results and refuses missing seeds; its positive shortfall is pooled nonprivate Dice minus federated DP Dice. Report failed floors and every failure/flag without deleting replicates. The JSON schema forbids pending/failed records from carrying fabricated scores.
 
