@@ -200,8 +200,562 @@ had worse NLL than their nulls under the fixed schedules. Concordance
 measures ranking, not probability calibration; inspect held-out NLL
 alongside concordance in the executed matrix. The campaign retains its
 preregistered v1 schedule and reports every family, including failed
-floors, without selecting models on its held-out results.</p>
-<pre><code><span><span class="co">#&gt; 3 executed cells and 6 failed attempts are archived.</span></span></code></pre>
+floors, without selecting models on its held-out results. For the
+executed matrix, lower NLL is better only relative to the matching null
+and likelihood family: a C-index floor or PASS does not establish
+calibrated probabilities. The rendered table therefore retains every
+exact twin’s NLL and labels whether federated-DP NLL is worse than its
+matched null.</p>
+<pre><code><span><span class="co">#&gt; 93 executed cells and 7 failed attempts are archived.</span></span></code></pre>
+<table class="table">
+<caption>Public held-out scores, mean ± SD over matched seeds</caption>
+<colgroup>
+<col width="4%">
+<col width="6%">
+<col width="4%">
+<col width="3%">
+<col width="6%">
+<col width="6%">
+<col width="9%">
+<col width="6%">
+<col width="7%">
+<col width="6%">
+<col width="10%">
+<col width="6%">
+<col width="10%">
+<col width="4%">
+<col width="6%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">cohort</th>
+<th align="left">subset</th>
+<th align="left">model</th>
+<th align="left">epsilon</th>
+<th align="left">C_federated_DP</th>
+<th align="left">C_pooled_DP</th>
+<th align="left">C_pooled_nonprivate</th>
+<th align="left">C_null</th>
+<th align="left">NLL_federated_DP</th>
+<th align="left">NLL_pooled_DP</th>
+<th align="left">NLL_pooled_nonprivate</th>
+<th align="left">NLL_null</th>
+<th align="left">federated_NLL_vs_null</th>
+<th align="right">shortfall</th>
+<th align="left">floor</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left">lung1</td>
+<td align="left">full</td>
+<td align="left">hazard</td>
+<td align="left">1</td>
+<td align="left">0.466 ± 0.040</td>
+<td align="left">0.466 ± 0.039</td>
+<td align="left">0.462 ± 0.037</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">0.534 ± 0.001</td>
+<td align="left">0.489 ± 0.015</td>
+<td align="left">0.479 ± 0.008</td>
+<td align="left">0.475 ± 0.007</td>
+<td align="left">worse</td>
+<td align="right">-0.004</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">lung1</td>
+<td align="left">full</td>
+<td align="left">hazard</td>
+<td align="left">4</td>
+<td align="left">0.452 ± 0.053</td>
+<td align="left">0.462 ± 0.045</td>
+<td align="left">0.462 ± 0.037</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">0.536 ± 0.008</td>
+<td align="left">0.478 ± 0.011</td>
+<td align="left">0.479 ± 0.008</td>
+<td align="left">0.475 ± 0.007</td>
+<td align="left">worse</td>
+<td align="right">0.009</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">lung1</td>
+<td align="left">full</td>
+<td align="left">hazard</td>
+<td align="left">8</td>
+<td align="left">0.455 ± 0.051</td>
+<td align="left">0.464 ± 0.036</td>
+<td align="left">0.462 ± 0.037</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">0.536 ± 0.009</td>
+<td align="left">0.479 ± 0.008</td>
+<td align="left">0.479 ± 0.008</td>
+<td align="left">0.475 ± 0.007</td>
+<td align="left">worse</td>
+<td align="right">0.007</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">lung1</td>
+<td align="left">full</td>
+<td align="left">lognormal</td>
+<td align="left">1</td>
+<td align="left">0.513 ± 0.053</td>
+<td align="left">0.507 ± 0.032</td>
+<td align="left">0.527 ± 0.013</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">6.445 ± 0.158</td>
+<td align="left">6.415 ± 0.151</td>
+<td align="left">6.391 ± 0.161</td>
+<td align="left">6.378 ± 0.166</td>
+<td align="left">worse</td>
+<td align="right">0.014</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">lung1</td>
+<td align="left">full</td>
+<td align="left">lognormal</td>
+<td align="left">4</td>
+<td align="left">0.517 ± 0.061</td>
+<td align="left">0.511 ± 0.062</td>
+<td align="left">0.527 ± 0.013</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">6.424 ± 0.161</td>
+<td align="left">6.404 ± 0.173</td>
+<td align="left">6.391 ± 0.161</td>
+<td align="left">6.378 ± 0.166</td>
+<td align="left">worse</td>
+<td align="right">0.010</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">lung1</td>
+<td align="left">full</td>
+<td align="left">lognormal</td>
+<td align="left">8</td>
+<td align="left">0.517 ± 0.058</td>
+<td align="left">0.519 ± 0.058</td>
+<td align="left">0.527 ± 0.013</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">6.424 ± 0.165</td>
+<td align="left">6.401 ± 0.174</td>
+<td align="left">6.391 ± 0.161</td>
+<td align="left">6.378 ± 0.166</td>
+<td align="left">worse</td>
+<td align="right">0.010</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">lung1</td>
+<td align="left">full</td>
+<td align="left">weibull</td>
+<td align="left">1</td>
+<td align="left">0.512 ± 0.062</td>
+<td align="left">0.515 ± 0.047</td>
+<td align="left">0.499 ± 0.006</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">6.729 ± 0.223</td>
+<td align="left">6.546 ± 0.124</td>
+<td align="left">6.409 ± 0.165</td>
+<td align="left">6.402 ± 0.172</td>
+<td align="left">worse</td>
+<td align="right">-0.013</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">lung1</td>
+<td align="left">full</td>
+<td align="left">weibull</td>
+<td align="left">4</td>
+<td align="left">0.519 ± 0.057</td>
+<td align="left">0.512 ± 0.061</td>
+<td align="left">0.499 ± 0.006</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">6.693 ± 0.115</td>
+<td align="left">6.553 ± 0.105</td>
+<td align="left">6.409 ± 0.165</td>
+<td align="left">6.402 ± 0.172</td>
+<td align="left">worse</td>
+<td align="right">-0.020</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">lung1</td>
+<td align="left">full</td>
+<td align="left">weibull</td>
+<td align="left">8</td>
+<td align="left">0.518 ± 0.060</td>
+<td align="left">0.511 ± 0.060</td>
+<td align="left">0.499 ± 0.006</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">6.693 ± 0.114</td>
+<td align="left">6.551 ± 0.120</td>
+<td align="left">6.409 ± 0.165</td>
+<td align="left">6.402 ± 0.172</td>
+<td align="left">worse</td>
+<td align="right">-0.019</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">full</td>
+<td align="left">hazard</td>
+<td align="left">1</td>
+<td align="left">0.542 ± 0.006</td>
+<td align="left">0.559 ± 0.006</td>
+<td align="left">0.560 ± 0.006</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">0.185 ± 0.001</td>
+<td align="left">0.151 ± 0.001</td>
+<td align="left">0.150 ± 0.001</td>
+<td align="left">0.243 ± 0.002</td>
+<td align="left">not worse</td>
+<td align="right">0.018</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">support2</td>
+<td align="left">full</td>
+<td align="left">hazard</td>
+<td align="left">4</td>
+<td align="left">0.543 ± 0.006</td>
+<td align="left">0.560 ± 0.006</td>
+<td align="left">0.560 ± 0.006</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">0.183 ± 0.002</td>
+<td align="left">0.151 ± 0.001</td>
+<td align="left">0.150 ± 0.001</td>
+<td align="left">0.243 ± 0.002</td>
+<td align="left">not worse</td>
+<td align="right">0.016</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">full</td>
+<td align="left">hazard</td>
+<td align="left">8</td>
+<td align="left">0.543 ± 0.006</td>
+<td align="left">0.559 ± 0.005</td>
+<td align="left">0.560 ± 0.006</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">0.183 ± 0.002</td>
+<td align="left">0.150 ± 0.001</td>
+<td align="left">0.150 ± 0.001</td>
+<td align="left">0.243 ± 0.002</td>
+<td align="left">not worse</td>
+<td align="right">0.017</td>
+<td align="left">FAIL</td>
+</tr>
+<tr class="odd">
+<td align="left">support2</td>
+<td align="left">full</td>
+<td align="left">lognormal</td>
+<td align="left">1</td>
+<td align="left">0.634 ± 0.005</td>
+<td align="left">0.640 ± 0.003</td>
+<td align="left">0.649 ± 0.004</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.670 ± 0.070</td>
+<td align="left">5.651 ± 0.057</td>
+<td align="left">5.479 ± 0.016</td>
+<td align="left">5.816 ± 0.044</td>
+<td align="left">not worse</td>
+<td align="right">0.015</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">full</td>
+<td align="left">lognormal</td>
+<td align="left">4</td>
+<td align="left">0.636 ± 0.003</td>
+<td align="left">0.639 ± 0.002</td>
+<td align="left">0.649 ± 0.004</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.647 ± 0.046</td>
+<td align="left">5.670 ± 0.064</td>
+<td align="left">5.479 ± 0.016</td>
+<td align="left">5.816 ± 0.044</td>
+<td align="left">not worse</td>
+<td align="right">0.012</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">support2</td>
+<td align="left">full</td>
+<td align="left">lognormal</td>
+<td align="left">8</td>
+<td align="left">0.634 ± 0.007</td>
+<td align="left">0.639 ± 0.004</td>
+<td align="left">0.649 ± 0.004</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.665 ± 0.064</td>
+<td align="left">5.664 ± 0.058</td>
+<td align="left">5.479 ± 0.016</td>
+<td align="left">5.816 ± 0.044</td>
+<td align="left">not worse</td>
+<td align="right">0.015</td>
+<td align="left">PASS</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">full</td>
+<td align="left">weibull</td>
+<td align="left">1</td>
+<td align="left">0.623 ± 0.004</td>
+<td align="left">0.626 ± 0.001</td>
+<td align="left">0.639 ± 0.005</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.417 ± 0.031</td>
+<td align="left">5.786 ± 0.018</td>
+<td align="left">4.985 ± 0.028</td>
+<td align="left">5.134 ± 0.035</td>
+<td align="left">worse</td>
+<td align="right">0.015</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">support2</td>
+<td align="left">full</td>
+<td align="left">weibull</td>
+<td align="left">4</td>
+<td align="left">0.622 ± 0.007</td>
+<td align="left">0.627 ± 0.003</td>
+<td align="left">0.639 ± 0.005</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.444 ± 0.044</td>
+<td align="left">5.763 ± 0.067</td>
+<td align="left">4.985 ± 0.028</td>
+<td align="left">5.134 ± 0.035</td>
+<td align="left">worse</td>
+<td align="right">0.017</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">full</td>
+<td align="left">weibull</td>
+<td align="left">8</td>
+<td align="left">0.622 ± 0.005</td>
+<td align="left">0.627 ± 0.003</td>
+<td align="left">0.639 ± 0.005</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.441 ± 0.024</td>
+<td align="left">5.779 ± 0.076</td>
+<td align="left">4.985 ± 0.028</td>
+<td align="left">5.134 ± 0.035</td>
+<td align="left">worse</td>
+<td align="right">0.016</td>
+<td align="left">PASS</td>
+</tr>
+<tr class="odd">
+<td align="left">support2</td>
+<td align="left">heterogeneous</td>
+<td align="left">hazard</td>
+<td align="left">8</td>
+<td align="left">0.544 ± 0.007</td>
+<td align="left">0.560 ± 0.005</td>
+<td align="left">0.559 ± 0.006</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">0.183 ± 0.002</td>
+<td align="left">0.150 ± 0.001</td>
+<td align="left">0.150 ± 0.001</td>
+<td align="left">0.243 ± 0.002</td>
+<td align="left">not worse</td>
+<td align="right">0.015</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">heterogeneous</td>
+<td align="left">lognormal</td>
+<td align="left">8</td>
+<td align="left">0.633 ± 0.004</td>
+<td align="left">0.639 ± 0.003</td>
+<td align="left">0.649 ± 0.005</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.675 ± 0.068</td>
+<td align="left">5.652 ± 0.064</td>
+<td align="left">5.483 ± 0.019</td>
+<td align="left">5.816 ± 0.044</td>
+<td align="left">not worse</td>
+<td align="right">0.015</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">support2</td>
+<td align="left">heterogeneous</td>
+<td align="left">weibull</td>
+<td align="left">8</td>
+<td align="left">0.614 ± 0.006</td>
+<td align="left">0.627 ± 0.003</td>
+<td align="left">0.639 ± 0.005</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.418 ± 0.030</td>
+<td align="left">5.829 ± 0.125</td>
+<td align="left">4.979 ± 0.033</td>
+<td align="left">5.134 ± 0.035</td>
+<td align="left">worse</td>
+<td align="right">0.025</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">small600</td>
+<td align="left">hazard</td>
+<td align="left">1</td>
+<td align="left">0.447 ± 0.004</td>
+<td align="left">0.476 ± 0.012</td>
+<td align="left">0.479 ± 0.006</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">0.380 ± 0.008</td>
+<td align="left">0.305 ± 0.011</td>
+<td align="left">0.300 ± 0.006</td>
+<td align="left">0.364 ± 0.003</td>
+<td align="left">worse</td>
+<td align="right">0.032</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">support2</td>
+<td align="left">small600</td>
+<td align="left">hazard</td>
+<td align="left">4</td>
+<td align="left">0.446 ± 0.007</td>
+<td align="left">0.482 ± 0.007</td>
+<td align="left">0.479 ± 0.006</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">0.383 ± 0.007</td>
+<td align="left">0.299 ± 0.006</td>
+<td align="left">0.300 ± 0.006</td>
+<td align="left">0.364 ± 0.003</td>
+<td align="left">worse</td>
+<td align="right">0.034</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">small600</td>
+<td align="left">hazard</td>
+<td align="left">8</td>
+<td align="left">0.446 ± 0.006</td>
+<td align="left">0.480 ± 0.007</td>
+<td align="left">0.479 ± 0.006</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">0.382 ± 0.007</td>
+<td align="left">0.300 ± 0.008</td>
+<td align="left">0.300 ± 0.006</td>
+<td align="left">0.364 ± 0.003</td>
+<td align="left">worse</td>
+<td align="right">0.033</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">support2</td>
+<td align="left">small600</td>
+<td align="left">lognormal</td>
+<td align="left">1</td>
+<td align="left">0.557 ± 0.012</td>
+<td align="left">0.594 ± 0.011</td>
+<td align="left">0.638 ± 0.007</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">6.060 ± 0.155</td>
+<td align="left">5.811 ± 0.157</td>
+<td align="left">5.523 ± 0.018</td>
+<td align="left">5.819 ± 0.043</td>
+<td align="left">worse</td>
+<td align="right">0.081</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">small600</td>
+<td align="left">lognormal</td>
+<td align="left">4</td>
+<td align="left">0.570 ± 0.009</td>
+<td align="left">0.592 ± 0.006</td>
+<td align="left">0.638 ± 0.007</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">6.051 ± 0.138</td>
+<td align="left">5.818 ± 0.145</td>
+<td align="left">5.523 ± 0.018</td>
+<td align="left">5.819 ± 0.043</td>
+<td align="left">worse</td>
+<td align="right">0.068</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">support2</td>
+<td align="left">small600</td>
+<td align="left">lognormal</td>
+<td align="left">8</td>
+<td align="left">0.569 ± 0.006</td>
+<td align="left">0.593 ± 0.007</td>
+<td align="left">0.638 ± 0.007</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">6.071 ± 0.147</td>
+<td align="left">5.785 ± 0.112</td>
+<td align="left">5.523 ± 0.018</td>
+<td align="left">5.819 ± 0.043</td>
+<td align="left">worse</td>
+<td align="right">0.069</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">small600</td>
+<td align="left">weibull</td>
+<td align="left">1</td>
+<td align="left">0.561 ± 0.004</td>
+<td align="left">0.578 ± 0.013</td>
+<td align="left">0.627 ± 0.009</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.293 ± 0.114</td>
+<td align="left">5.450 ± 0.106</td>
+<td align="left">5.015 ± 0.028</td>
+<td align="left">5.135 ± 0.036</td>
+<td align="left">worse</td>
+<td align="right">0.067</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="odd">
+<td align="left">support2</td>
+<td align="left">small600</td>
+<td align="left">weibull</td>
+<td align="left">4</td>
+<td align="left">0.568 ± 0.006</td>
+<td align="left">0.590 ± 0.009</td>
+<td align="left">0.627 ± 0.009</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.237 ± 0.074</td>
+<td align="left">5.534 ± 0.253</td>
+<td align="left">5.015 ± 0.028</td>
+<td align="left">5.135 ± 0.036</td>
+<td align="left">worse</td>
+<td align="right">0.059</td>
+<td align="left">not designated</td>
+</tr>
+<tr class="even">
+<td align="left">support2</td>
+<td align="left">small600</td>
+<td align="left">weibull</td>
+<td align="left">8</td>
+<td align="left">0.566 ± 0.010</td>
+<td align="left">0.588 ± 0.010</td>
+<td align="left">0.627 ± 0.009</td>
+<td align="left">0.500 ± 0.000</td>
+<td align="left">5.244 ± 0.090</td>
+<td align="left">5.504 ± 0.202</td>
+<td align="left">5.015 ± 0.028</td>
+<td align="left">5.135 ± 0.036</td>
+<td align="left">worse</td>
+<td align="right">0.061</td>
+<td align="left">not designated</td>
+</tr>
+</tbody>
+</table>
 <table class="table">
 <colgroup>
 <col width="16%">
@@ -217,39 +771,46 @@ floors, without selecting models on its held-out results.</p>
 </tr></thead>
 <tbody>
 <tr class="odd">
+<td align="left">support2</td>
+<td align="left">weibull</td>
+<td align="left">failed</td>
+<td align="left">Could not verify the dsFlower runner compatibility on
+the remote nodes.</td>
+</tr>
+<tr class="even">
 <td align="left">synthetic-public</td>
 <td align="left">hazard</td>
 <td align="left">failed</td>
 <td align="left">Federated training failed (status 1); no model was
 accepted or saved.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">synthetic-public</td>
 <td align="left">lognormal</td>
 <td align="left">failed</td>
 <td align="left">Federated training failed (status 1); no model was
 accepted or saved.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">synthetic-public</td>
 <td align="left">weibull</td>
 <td align="left">failed</td>
 <td align="left">The nodes completed without publishing a private
 model.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">synthetic-public</td>
 <td align="left">weibull</td>
 <td align="left">failed</td>
 <td align="left">Bundled declarative model validator not found.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td align="left">synthetic-public</td>
 <td align="left">weibull</td>
 <td align="left">failed</td>
 <td align="left">! ms is not a length 1 integer</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td align="left">synthetic-public</td>
 <td align="left">weibull</td>
 <td align="left">failed</td>

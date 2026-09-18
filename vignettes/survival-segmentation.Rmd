@@ -154,6 +154,10 @@ nulls under the fixed schedules. Concordance measures ranking, not probability
 calibration; inspect held-out NLL alongside concordance in the executed matrix.
 The campaign retains its preregistered v1 schedule and reports every family,
 including failed floors, without selecting models on its held-out results.
+For the executed matrix, lower NLL is better only relative to the matching null
+and likelihood family: a C-index floor or PASS does not establish calibrated
+probabilities. The rendered table therefore retains every exact twin's NLL and
+labels whether federated-DP NLL is worse than its matched null.
 
 ```{r evidence-census, echo=FALSE}
 cat(length(executed), "executed cells and", length(failed),
@@ -161,21 +165,28 @@ cat(length(executed), "executed cells and", length(failed),
 summary_records <- Filter(function(x) identical(x$record_type, "summary"), evidence)
 if (length(summary_records)) {
   groups <- Filter(function(x) identical(x$status, "executed"), summary_records[[1]]$groups)
+  mean_sd <- function(x) sprintf("%.3f ± %.3f", x$mean, x$sd)
   rows <- list()
   for (group in groups) for (epsilon in names(group$envelopes$summaries)) {
     x <- group$envelopes$summaries[[epsilon]]
     floor <- group$envelopes$utility_floor
     rows[[length(rows)+1L]] <- data.frame(
       cohort=group$dataset, subset=group$subset, model=group$variant,
-      epsilon=epsilon, C_index=x$federated$mean,
-      CI95=paste(round(unlist(x$federated$ci95),3),collapse=" to "),
-      heldout_NLL=x$heldout_nll$federated_dp$mean,
-      NLL_CI95=paste(round(unlist(x$heldout_nll$federated_dp$ci95),3),collapse=" to "),
+      epsilon=epsilon,
+      C_federated_DP=mean_sd(x$federated), C_pooled_DP=mean_sd(x$central_dp),
+      C_pooled_nonprivate=mean_sd(x$central), C_null=mean_sd(x$null),
+      NLL_federated_DP=mean_sd(x$heldout_nll$federated_dp),
+      NLL_pooled_DP=mean_sd(x$heldout_nll$central_dp),
+      NLL_pooled_nonprivate=mean_sd(x$heldout_nll$central),
+      NLL_null=mean_sd(x$heldout_nll$null),
+      federated_NLL_vs_null=if (x$heldout_nll$federated_dp$mean > x$heldout_nll$null$mean)
+        "worse" else "not worse",
       shortfall=x$gap$mean,
       floor=if (is.null(floor) || epsilon!="8") "not designated" else
-        if (isTRUE(floor$pass)) "PASS" else "FAILED")
+        if (isTRUE(floor$pass)) "PASS" else "FAIL")
   }
-  if (length(rows)) knitr::kable(do.call(rbind,rows),digits=3)
+  if (length(rows)) knitr::kable(do.call(rbind,rows),digits=3,
+                                 caption="Public held-out scores, mean ± SD over matched seeds")
 }
 if (length(failed)) {
   knitr::kable(do.call(rbind,lapply(failed,function(x) data.frame(
