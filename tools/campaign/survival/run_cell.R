@@ -1,7 +1,7 @@
 #!/usr/bin/env Rscript
 # Public survival experiment; privacy policy is set only inside custodian workers.
 args <- commandArgs(TRUE)
-if (length(args) != 7L) stop('Usage: run_cell.R workspace split variant epsilon out rounds epochs')
+if (!length(args) %in% c(7L, 8L)) stop('Usage: run_cell.R workspace split variant epsilon out rounds epochs [hazard-v2-config]')
 workspace <- normalizePath(args[[1]])
 split_dir <- normalizePath(args[[2]])
 variant <- match.arg(args[[3]], c('weibull', 'lognormal', 'hazard'))
@@ -9,6 +9,11 @@ epsilon <- as.numeric(args[[4]])
 out <- normalizePath(args[[5]], mustWork = FALSE)
 rounds <- as.integer(args[[6]])
 epochs <- as.integer(args[[7]])
+v2 <- if (length(args)==8L) jsonlite::read_json(args[[8]], simplifyVector=TRUE) else NULL
+if (!is.null(v2)) stopifnot(variant=='hazard', v2$protocol_version==2L,
+  rounds==v2$rounds, epochs==v2$local_epochs, v2$batch_size==64L,
+  v2$learning_rate %in% c(.02,.05), v2$K==10L)
+protocol_file <- if (is.null(v2)) 'PROTOCOL_F_SURVIVAL_V1.md' else 'PROTOCOL_F_SURVIVAL.md'
 .libPaths(c(file.path(workspace, 'runtime', 'rlib'), .libPaths()))
 server_root <- normalizePath(file.path(workspace,'runtime','server'))
 Sys.setenv(DSFLOWER_CLIENT_VENV_ROOT=file.path(workspace,'runtime'),
@@ -23,7 +28,7 @@ meta <- jsonlite::read_json(file.path(split_dir,'split.json'), simplifyVector=TR
 sha <- function(path) digest::digest(file=path,algo='sha256')
 stopifnot(identical(sha(file.path(split_dir,'train.csv')),meta$train_sha256),
           identical(sha(file.path(split_dir,'test.csv')),meta$test_sha256),
-          identical(sha(file.path(tools_dir,'survival','PROTOCOL_F_SURVIVAL.md')),meta$protocol_sha256))
+          identical(sha(file.path(tools_dir,'survival',protocol_file)),meta$protocol_sha256))
 for (i in 1:3) stopifnot(identical(
   sha(file.path(split_dir,paste0('site',i,'.csv'))),
   meta$sites$split_sha256[meta$sites$site==i]))
@@ -32,8 +37,13 @@ sites <- lapply(1:3,function(i) read.csv(file.path(split_dir,paste0('site',i,'.c
 test <- read.csv(file.path(split_dir,'test.csv'))
 common <- list(learning_rate=.05,batch_size=128L,local_epochs=epochs,
                optimizer='sgd',weight_decay=0,scheduler='none',hidden_layers=integer(0))
+if (!is.null(v2)) {
+  common$learning_rate <- v2$learning_rate
+  common$batch_size <- as.integer(v2$batch_size)
+}
 if (variant=='hazard') {
   model_params <- c(common,list(edges=c(0,7,14,21,30,45,60,90,120,180,270,365,540,730,1095,1460,1825)))
+  if (!is.null(v2)) model_params$edges <- seq(0,1825,length.out=v2$K+1L)
   contract <- 'pytorch_discrete_hazard'
 } else {
   model_params <- c(common,list(horizon=1825,time_scale=365,distribution=variant,dispersion=1))
@@ -48,7 +58,7 @@ cfg[['num-features']] <- length(features)
 cfg[['num-classes']] <- 2L
 cfg[['num-labels']] <- 2L
 cfg[['num-server-rounds']] <- rounds
-cfg[['batch-size']] <- 128L
+cfg[['batch-size']] <- common$batch_size
 cfg[['local-epochs']] <- epochs
 dir.create(out,recursive=TRUE,showWarnings=FALSE)
 config_file <- file.path(out,'config.json')
@@ -77,6 +87,11 @@ evidence <- list(schema_version=1L,record_type='cell',task='survival',status='ru
     preprocessing='fixed public bounds scaled to[-1,1]; safe placeholders; no private fitted moments',
     interval_convention='event(left,right]; censor completed periods only'),
   score_conventions=list(time_ties='excluded',risk_ties=.5,hazard_risk='negative left-endpoint restricted mean',gap='central minus federated (historic sign reversed)'))
+if (!is.null(v2)) {
+  evidence$protocol_version <- 2L
+  evidence$hazard_v2_config <- v2
+  evidence$evaluation <- meta$evaluation_role
+}
 # No transient running record is put in the archived evidence directory.
 result <- tryCatch({
   fed <- campaign_run_federated(sites,test,features,meta$feature_bounds,

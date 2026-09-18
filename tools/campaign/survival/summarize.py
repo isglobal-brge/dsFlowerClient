@@ -11,6 +11,7 @@ from metrics import envelopes
 def main():
     parser=argparse.ArgumentParser()
     parser.add_argument('evidence',type=Path)
+    parser.add_argument('--hazard-v2',action='store_true')
     args=parser.parse_args()
     groups=collections.defaultdict(lambda:collections.defaultdict(list))
     failures=[]
@@ -29,6 +30,8 @@ def main():
         key=(meta['dataset'],meta['subset'],record['variant'])
         groups[key][record['epsilon']].append(record['results'])
     expected={(dataset,subset,variant) for dataset,subsets in [('support2',['full','small600','heterogeneous']),('lung1',['full'])] for subset in subsets for variant in ['weibull','lognormal','hazard']}
+    if args.hazard_v2:
+        expected={group for group in expected if group[2]=='hazard'}
     if set(groups)-expected:
         raise ValueError('unexpected matrix group')
     summaries=[]
@@ -54,7 +57,8 @@ def main():
     result={'schema_version':1,'record_type':'summary','task':'survival',
             'status':'executed' if set(groups)==expected and all(s['status']=='executed' for s in summaries) else 'incomplete',
             'date_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            'expected_matrix_cells':90,'groups':summaries,'failed_attempts':failures,
+            'protocol_version':2 if args.hazard_v2 else 1,
+            'expected_matrix_cells':30 if args.hazard_v2 else 90,'groups':summaries,'failed_attempts':failures,
             'envelope_interpretation':'Empirical utility diagnostics, not privacy proofs; G=central-federated reverses historic delta.',
             'promotion':'Reviewer decision; floor failures are retained.'}
     (args.evidence/'summary.json').write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
