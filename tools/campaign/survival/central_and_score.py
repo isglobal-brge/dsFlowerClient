@@ -72,6 +72,7 @@ def train(cfg, x, y, epsilon, seed, private):
             master = hmac.new(secret, f'public-central-diagnostic:{seed}:{rnd}'.encode(), hashlib.sha256).digest()
             arrays, _ = client_app._dp_fit(model, x, y, pcfg, pins, len(x), cfg,
                                            master, effective['noise_multiplier'])
+            effective['execution_device'] = str(next(model.parameters()).device)
             # New model/optimizer per federation round, matching node lifecycle.
             model = build(cfg)
             params.set_torch_params(model, arrays)
@@ -111,7 +112,7 @@ def main():
     cfg = json.loads(args.config.read_text())
     meta = json.loads((args.split/'split.json').read_text())
     conf = survival.config_from_run(cfg, cfg['loss-name'])
-    train_frame, test_frame = (pd.read_csv(args.split/f'{part}.csv') for part in ('train','test'))
+    train_frame, test_frame = (pd.read_csv(args.split/f'{part}.csv', float_precision='round_trip') for part in ('train','test'))
     features = meta['features']
     cfg['feature-bounds'] = meta['feature_bounds']
     x, xt = (client_app._apply_feature_bounds(frame[features].to_numpy(dtype=np.float32), cfg)
@@ -148,7 +149,11 @@ def main():
     import flwr, opacus, scipy
     result['versions']={'python':platform.python_version(),'torch':torch.__version__,
         'opacus':opacus.__version__,'flwr':flwr.__version__,'numpy':np.__version__,
-        'scipy':scipy.__version__,'device':'cuda' if torch.cuda.is_available() else 'cpu',
+        'scipy':scipy.__version__,'pandas':pd.__version__,
+        'cuda_available':torch.cuda.is_available(),
+        'nonprivate_twin_device':'cpu',
+        'dp_twin_device':result.get('pooled_mechanism',{}).get('execution_device'),
+        'federation_device_rule':'_dp_fit chooses cuda when available, otherwise cpu; shared verified runtime',
         'platform':platform.platform(),'deterministic_algorithms':True}
     result['twin_matching']={
         'architecture_loss_preprocessing_initialization_optimizer_schedule':'exact',
@@ -157,6 +162,9 @@ def main():
     }
     result['elapsed_s']=time.monotonic()-started
     result['max_rss_native_units']=resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+    result['memory_measurement']={'scope':'central/scoring process peak resident memory',
+        'native_unit':'bytes' if platform.system()=='Darwin' else 'KiB',
+        'federation_peak_memory_measured':False}
     args.out.write_text(json.dumps(result,indent=2,allow_nan=False)+'\n')
 
 

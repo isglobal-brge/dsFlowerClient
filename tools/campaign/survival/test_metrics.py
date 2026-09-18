@@ -23,7 +23,11 @@ class MetricsTests(unittest.TestCase):
 
     def test_envelope_reversed_sign(self):
         def cell(seed,u):
-            return dict(seed=seed,n_train=100,minimum_site_n=33,central={'c_index':.7},federated_dp={'c_index':u},null={'c_index':.5})
+            return dict(seed=seed,n_train=100,minimum_site_n=33,
+                        central={'c_index':.7,'heldout_nll':2.},
+                        central_dp={'c_index':.6,'heldout_nll':2.5},
+                        federated_dp={'c_index':u,'heldout_nll':3.},
+                        null={'c_index':.5,'heldout_nll':4.})
         result=envelopes({1:[cell(i,.65) for i in range(3)],4:[cell(i,.60) for i in range(3)],8:[cell(i,.59) for i in range(3)]}, primary=True,small_n=True)
         self.assertTrue(result['epsilon_envelope'][0]['flag'])
         self.assertFalse(result['utility_floor']['pass'])

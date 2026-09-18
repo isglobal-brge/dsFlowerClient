@@ -86,6 +86,10 @@ def envelopes(by_epsilon, primary=False, small_n=False):
         summaries[str(epsilon)] = {
             'federated': mean_ci([c['federated_dp']['c_index'] for c in cells]),
             'central': mean_ci([c['central']['c_index'] for c in cells]),
+            'central_dp': mean_ci([c['central_dp']['c_index'] for c in cells]),
+            'null': mean_ci([c['null']['c_index'] for c in cells]),
+            'heldout_nll': {branch: mean_ci([c[branch]['heldout_nll'] for c in cells])
+                            for branch in ('federated_dp', 'central', 'central_dp', 'null')},
             'gap': mean_ci(gaps),
         }
         for cell, gap in zip(cells, gaps):

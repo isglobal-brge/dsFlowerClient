@@ -57,10 +57,18 @@ evidence <- list(schema_version=1L,record_type='cell',task='survival',status='ru
   adjacency='replace_one',privacy_unit='patient',site_count=3L,
   package_commits=build$commits,installed_build=build,
   campaign_tools_commit=commit('dsFlowerClient'),
-  package_versions=list(dsFlower=as.character(packageVersion('dsFlower')),dsFlowerClient=as.character(packageVersion('dsFlowerClient')),R=R.version.string),
+  package_versions=list(dsFlower=as.character(packageVersion('dsFlower')),dsFlowerClient=as.character(packageVersion('dsFlowerClient')),R=R.version.string,
+    DSI=as.character(packageVersion('DSI')),DSLite=as.character(packageVersion('DSLite')),
+    dsBase=as.character(packageVersion('dsBase')),resourcer=as.character(packageVersion('resourcer'))),
   runner_sha256=runner_hash,public_config=cfg,
   mechanism_provenance='Effective sigma/q/steps recomputed from public fixture subject census using audited unchanged runtime; independent PRV verification. No new private endpoint.',
   evaluation='channel B, public held-out subjects only',
+  outcome_semantics=list(target_order=c('time','event'),event=1,censored=0,
+    time_unit='days',baseline=meta$time_origin %||% 'synthetic baseline',
+    administrative_censor='time>1825 => time1825,event0; event at1825 retained',
+    invalid='time below1 or nonfinite/event not0or1/duplicate => valid0, never dropped',
+    preprocessing='fixed public bounds scaled to[-1,1]; safe placeholders; no private fitted moments',
+    interval_convention='event(left,right]; censor completed periods only'),
   score_conventions=list(time_ties='excluded',risk_ties=.5,hazard_risk='negative left-endpoint restricted mean',gap='central minus federated (historic sign reversed)'))
 # No transient running record is put in the archived evidence directory.
 result <- tryCatch({
@@ -79,12 +87,17 @@ result <- tryCatch({
   processx::run(python,c(script,'--config',config_file,'--split',split_dir,
      '--out',output,'--epsilon',as.character(epsilon),
      '--federated-model',file.path(fed$artifact_dir,'model.pt')),
-     error_on_status=TRUE,echo=TRUE,timeout=3600000)
+     error_on_status=TRUE,echo=TRUE,timeout=3600)
   scores <- jsonlite::read_json(output,simplifyVector=FALSE)
   evidence$status <- 'executed'
   evidence$results <- scores
   evidence$federation <- fed[setdiff(names(fed),c('metrics','artifact_dir'))]
   evidence$artifact_checksum <- fed$model_sha256
+  evidence$campaign_tool_sha256 <- lapply(setNames(
+    file.path(tools_dir,c('campaign_lib.R','survival/run_cell.R',
+                         'survival/central_and_score.py','survival/metrics.py')),
+    c('campaign_lib.R','run_cell.R','central_and_score.py','metrics.py')),sha)
+  evidence$topology <- 'three isolated DSLite custodian workers and local Flower transport'
   evidence$cleanup_ok <- isTRUE(fed$cleanup_ok)
   evidence
 },error=function(e) {
