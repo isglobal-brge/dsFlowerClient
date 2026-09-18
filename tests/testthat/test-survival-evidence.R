@@ -109,6 +109,7 @@ test_that("survival evidence schema records failures without claiming campaign c
     expect_match(x$score_conventions$gap, "reversed")
     expect_identical(x$evaluation, "channel B, public held-out subjects only")
     expect_true(nzchar(x$mechanism_provenance))
+    expect_true(is.character(x$topology) && nzchar(x$topology))
     expect_match(x$artifact_checksum, "^[a-f0-9]{64}$")
     expect_identical(x$artifact_checksum, x$results$model_sha256)
     expect_identical(x$artifact_checksum, x$federation$model_sha256)
@@ -152,6 +153,7 @@ test_that("survival evidence schema records failures without claiming campaign c
       expect_equal(site$total_steps, site$steps_per_epoch * site$total_epochs)
       expect_match(site$policy_hash, "^[a-f0-9]{64}$")
       expect_identical(site$verification_accountant, "PRV")
+      expect_true(is.character(site$calibration) && nzchar(site$calibration))
       expect_lte(site$independently_recomputed_replace_one_epsilon, x$epsilon+1e-8)
       expect_lte(site$independently_recomputed_replace_one_delta, x$delta+1e-12)
     }
@@ -165,5 +167,9 @@ test_that("survival evidence schema records failures without claiming campaign c
     expect_equal(x$results$twin_matching$pooled_epochs, x$public_config[["num-server-rounds"]] * x$public_config[["local-epochs"]])
     expect_true(nzchar(x$results$twin_matching$differences))
     expect_gt(x$results$elapsed_s, 0)
+    expect_gt(x$results$max_rss_native_units, 0)
+    expect_true(is.character(x$results$memory_measurement$scope) && nzchar(x$results$memory_measurement$scope))
+    expect_true(x$results$memory_measurement$native_unit %in% c("bytes", "KiB"))
+    expect_type(x$results$memory_measurement$federation_peak_memory_measured, "logical")
   }
 })

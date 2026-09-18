@@ -51,13 +51,14 @@ def cell(dataset, subset, variant, epsilon, seed):
         payload = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
         value.update(policy_hash=hashlib.sha256(b"dsflower/effective-dpsgd-policy/v1\x00"+payload).hexdigest(),
                      independently_recomputed_replace_one_epsilon=epsilon-.01,
-                     independently_recomputed_replace_one_delta=9e-6, verification_accountant="PRV")
+                     independently_recomputed_replace_one_delta=9e-6, verification_accountant="PRV", calibration="unit fixture")
         return value
     score = dict(c_index=.5, heldout_nll=1., n_evaluated_public_subjects=meta["n_test"], n_invalid_public_subjects=0)
     result = dict(seed=seed, n_train=n, minimum_site_n=min(s["n_subjects"] for s in sites), model_sha256="e"*64,
                   central=score.copy(), central_dp=score.copy(), null=score.copy(), federated_dp=score.copy(),
                   site_mechanisms=[dict(site=s["site"], **mechanism(s["n_subjects"])) for s in sites],
-                  pooled_mechanism=mechanism(n), elapsed_s=1.,
+                  pooled_mechanism=mechanism(n), elapsed_s=1., max_rss_native_units=1,
+                  memory_measurement=dict(scope="unit fixture", native_unit="bytes", federation_peak_memory_measured=False),
                   versions={name: "unit fixture" for name in ("python", "torch", "opacus", "flwr", "numpy", "scipy", "pandas",
                                                              "platform", "nonprivate_twin_device", "dp_twin_device", "federation_device_rule")},
                   twin_matching=dict(architecture_loss_preprocessing_initialization_optimizer_schedule="exact",
@@ -80,7 +81,7 @@ def cell(dataset, subset, variant, epsilon, seed):
                                        hazard_risk="negative left-endpoint restricted mean"),
                 outcome_semantics=dict(target_order=["time", "event"], event=1, censored=0, time_unit="days", baseline="unit fixture",
                                        administrative_censor="unit fixture", invalid="unit fixture", preprocessing="unit fixture", interval_convention="unit fixture"),
-                mechanism_provenance="unit fixture", evaluation="channel B, public held-out subjects only")
+                mechanism_provenance="unit fixture", topology="unit fixture", evaluation="channel B, public held-out subjects only")
 
 
 def complete_fixture():

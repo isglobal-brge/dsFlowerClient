@@ -94,6 +94,7 @@ def mechanism(value, n, cfg, epsilon, delta):
         v = value["independently_recomputed_replace_one_" + name]
         require(finite(v) and 0 < v <= limit, "independently recomputed privacy bound failed")
     require(value["verification_accountant"] == "PRV", "independent accountant missing")
+    require(nonempty(value["calibration"]), "calibration provenance missing")
 
 
 def validate_cell(record):
@@ -181,6 +182,7 @@ def validate_cell(record):
         require(nonempty(semantics[key]), "outcome semantics missing")
     require(nonempty(record["mechanism_provenance"]) and record["evaluation"] == "channel B, public held-out subjects only",
             "evaluation/mechanism provenance missing")
+    require(nonempty(record["topology"]), "federation topology missing")
     result, federation = record["results"], record["federation"]
     require(result["seed"] == meta["seed"] and result["n_train"] == meta["n_train"] and
             result["minimum_site_n"] == min(s["n_subjects"] for s in meta["sites"]), "result census/seed differs")
@@ -209,6 +211,10 @@ def validate_cell(record):
             twin["initialization_seed"] == 0 and twin["pooled_epochs"] == cfg["num-server-rounds"] * cfg["local-epochs"] and
             nonempty(twin["differences"]), "central twin matching missing")
     require(finite(result["elapsed_s"]) and result["elapsed_s"] > 0, "twin timing missing")
+    require(finite(result["max_rss_native_units"]) and result["max_rss_native_units"] > 0, "memory measurement missing")
+    memory = result["memory_measurement"]
+    require(nonempty(memory["scope"]) and memory["native_unit"] in ("bytes", "KiB") and
+            isinstance(memory["federation_peak_memory_measured"], bool), "memory scope, units or limitations missing")
 
 
 def flagged_keys(env):
