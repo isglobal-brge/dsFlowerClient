@@ -12,14 +12,20 @@ from assemble_evidence import (read_json, released_artifact, sha256,
 from run_matrix import write_status
 
 
-def verify_completed_federation(work, batch):
+def verify_completed_federation(work, batch, retry_twins=False):
     previous = read_json(work / "execution-status.json")
     status = read_json(work / "federation-status.json")
-    if previous.get("status") != "failed" or previous.get("phase") != "federation":
-        raise ValueError("only explicit failed federation exits may resume here")
+    if previous.get("status") != "failed" or previous.get("phase") != ("twins" if retry_twins else "federation"):
+        raise ValueError("only explicit failed exits in the requested phase may resume here")
     if status.get("status") != "predicted_pending_public_metric_summary" or status.get("cleanup_ok") is not True:
         raise ValueError("completed prediction and verified cleanup required")
-    if any((work / name).exists() for name in ("channel-b.json", "twins", "execution-status-before-postprocessing.json")):
+    forbidden = ["twins", "execution-status-before-postprocessing.json"]
+    if retry_twins:
+        if not (work / "channel-b.json").is_file():
+            raise ValueError("twin retry requires completed channel B")
+    else:
+        forbidden.append("channel-b.json")
+    if any((work / name).exists() for name in forbidden):
         raise ValueError("postprocessing already attempted; preserve its outcome")
     key = tuple(status[name] for name in ("dataset", "variant", "epsilon", "seed"))
     split = validate_split_provenance(work, key[0], key[1], key[3], status)
@@ -43,10 +49,14 @@ def main():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--work", type=Path, required=True)
     parser.add_argument("--batch-size", type=int, choices=(16,64), required=True)
+    parser.add_argument("--retry-twins", action="store_true",
+                        help="Retry a failed twin setup only when no twin output directory exists")
     args = parser.parse_args()
+    if (args.root / "CAMPAIGN_HOLD.json").exists():
+        raise ValueError("Campaign held for pipeline diagnosis")
     tools = Path(__file__).resolve().parent
     work = args.work.resolve()
-    key, previous, artifact = verify_completed_federation(work, args.batch_size)
+    key, previous, artifact = verify_completed_federation(work, args.batch_size, args.retry_twins)
     (work / "execution-status-before-postprocessing.json").write_text(json.dumps(previous, indent=2)+'\n')
     result = dict(previous, status="running", phase="channel_b", previous_execution=previous,
                   recovery="Existing successful federation artifact/predictions; no federation retraining")
@@ -59,6 +69,8 @@ def main():
         "--features", str(args.root / "features" / key[0]), "--split", str(work / "effective-split.json"),
         "--capture", str(work / "public-capture"), "--gates", os.environ["F_SEG_GATES_JSON"],
         "--epsilon", str(key[2]), "--batch-size", str(args.batch_size), "--out", str(work / "twins")])]
+    if args.retry_twins:
+        commands = commands[1:]
     for phase, command in commands:
         result["phase"] = phase
         write_status(work / "execution-status.json", result)

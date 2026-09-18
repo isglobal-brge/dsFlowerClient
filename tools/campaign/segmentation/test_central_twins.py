@@ -10,7 +10,7 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "inst/flower_app"))
 from dsflower_runner import segmentation, task
-from central_twins import validate_twin_pins, private_key, source_row_counts
+from central_twins import validate_twin_pins, private_key, source_row_counts, load_twin_pins
 
 
 def fixture_config():
@@ -35,6 +35,20 @@ class TwinPinTests(unittest.TestCase):
             path = Path(temporary)
             (path / "manifest.json").write_text(json.dumps(self.cfg))
             self.pins = task.load_run_pins(SimpleNamespace(node_config={"manifest-dir": temporary}))
+
+    def test_server_capture_without_custodian_unit_loads_unchanged_schedule(self):
+        captured = dict(self.cfg)
+        del captured["dp-unit"]
+        with tempfile.TemporaryDirectory() as temporary:
+            Path(temporary, "manifest.json").write_text(json.dumps(captured))
+            with self.assertRaisesRegex(ValueError, "custodian patient privacy"):
+                task.load_run_pins(SimpleNamespace(node_config={"manifest-dir": temporary}))
+        pins = load_twin_pins(captured)
+        self.assertEqual(pins, self.pins)
+        self.assertNotIn("dp-unit", captured)
+        validate_twin_pins(captured, self.cfg, pins)
+        with self.assertRaisesRegex(ValueError, "custodian patient privacy"):
+            load_twin_pins(dict(captured, **{"dp-unit": "row"}))
 
     def test_primary_and_bce_share_identical_feature_semantics(self):
         validate_twin_pins(self.cfg, self.cfg, self.pins)

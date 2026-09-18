@@ -69,6 +69,17 @@ def private_key(directory):
     return value
 
 
+def load_twin_pins(cfg):
+    # Server initialization captures omit this custodian-only manifest field.
+    # The public twin uses one cached row per patient, verified against captures
+    # before this loader runs. Keep cfg unchanged for provenance/RNG binding.
+    manifest = dict(cfg)
+    manifest.setdefault("dp-unit", "patient")
+    with tempfile.TemporaryDirectory() as temporary:
+        Path(temporary, "manifest.json").write_text(json.dumps(manifest))
+        return task.load_run_pins(SimpleNamespace(node_config={"manifest-dir": temporary}))
+
+
 def validate_twin_pins(cfg, manifest, pins, batch_size=16):
     """Bind cached feature semantics and all active optimizer pins to federation."""
     segmentation.validate_config(cfg)
@@ -236,9 +247,7 @@ def main():
     captures = [json.loads(p.read_text()) for p in args.capture.glob("accountant-*.json")]
     site_accounting = validate_captures(captures, list(map(len, split["sites"])),
                                         args.epsilon, expected_site_hashes, expected_source_rows, batch_size=args.batch_size)
-    with tempfile.TemporaryDirectory() as temporary:
-        Path(temporary, "manifest.json").write_text(json.dumps(cfg))
-        pins = task.load_run_pins(SimpleNamespace(node_config={"manifest-dir": temporary}))
+    pins = load_twin_pins(cfg)
     feature_manifest = json.loads((args.features / "manifest.json").read_text())
     pins["batch_size"] = args.batch_size
     validate_twin_pins(cfg, feature_manifest, pins, args.batch_size)

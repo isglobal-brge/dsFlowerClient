@@ -49,3 +49,23 @@ class PostprocessingRecoveryTests(unittest.TestCase):
         (self.root / "twins").mkdir()
         with self.assertRaisesRegex(ValueError, "already attempted"):
             verify_completed_federation(self.root, 16)
+
+    def test_twin_setup_retry_preserves_completed_channel(self):
+        write_json(self.root / "execution-status.json", {"status": "failed", "phase": "twins", "exit_code": 1})
+        write_json(self.root / "channel-b.json", {"status": "executed"})
+        key, previous, artifact = verify_completed_federation(self.root, 16, retry_twins=True)
+        self.assertEqual(previous["phase"], "twins")
+        with self.assertRaisesRegex(ValueError, "requested phase"):
+            verify_completed_federation(self.root, 16)
+        (self.root / "twins").mkdir()
+        with self.assertRaisesRegex(ValueError, "already attempted"):
+            verify_completed_federation(self.root, 16, retry_twins=True)
+
+    def test_twin_retry_rejects_running_cell_or_missing_channel(self):
+        for status, phase in (("running", "twins"), ("executed", "twins"), ("failed", "federation")):
+            write_json(self.root / "execution-status.json", {"status": status, "phase": phase})
+            with self.assertRaisesRegex(ValueError, "requested phase"):
+                verify_completed_federation(self.root, 16, retry_twins=True)
+        write_json(self.root / "execution-status.json", {"status": "failed", "phase": "twins"})
+        with self.assertRaisesRegex(ValueError, "completed channel B"):
+            verify_completed_federation(self.root, 16, retry_twins=True)
