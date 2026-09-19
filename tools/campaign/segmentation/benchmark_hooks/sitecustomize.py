@@ -34,12 +34,21 @@ def _attach(server_app):
             torch.manual_seed(seed)
             model, record = original_initial(cfg, track)
         arrays = get_torch_params(model)
+        binding_path = directory.parent / 'public-pretraining-binding.json'
+        binding = None
+        if os.environ.get('F_SEG_V5_BINDINGS') or binding_path.exists():
+            from public_initialization import apply
+            from flwr.common import ArrayRecord
+            binding = json.loads(binding_path.read_text())
+            arrays = apply(model, cfg, binding, seed)
+            record = ArrayRecord(numpy_ndarrays=arrays)
         destination = directory / "public-initial-arrays.npz"
         np.savez(destination, **{str(i): value for i, value in enumerate(arrays)})
         (directory / "public-initial.json").write_text(json.dumps({
             "seed": seed, "model_spec_b64": cfg["model-spec-b64"],
             "tensor_sha256": [hashlib.sha256(a.tobytes()).hexdigest() for a in arrays],
-            "config": dict(cfg)}, indent=2, sort_keys=True) + "\n")
+            "config": dict(cfg), **({'public_pretraining': binding} if binding else {})},
+            indent=2, sort_keys=True) + "\n")
         return model, record
 
     server_app._initial_arrays = initial

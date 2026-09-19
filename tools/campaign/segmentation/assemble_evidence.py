@@ -200,6 +200,10 @@ def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None, 
         raise ValueError("scored artifact checksum differs from released federation artifact")
     capture = directory / "public-capture"
     initial = read_json(capture / "public-initial.json")
+    if __import__('os').environ.get('F_SEG_V5_BINDINGS'):
+        from benchmark_hooks.public_initialization import verify_capture
+        binding_root = Path(__import__('os').environ['F_SEG_V5_BINDINGS'])
+        verify_capture(directory, read_json(binding_root / f'seed{seed}.json'))
     if initial["seed"] != seed:
         raise ValueError("initialization seed differs from preregistered split")
     with np.load(capture / "public-initial-arrays.npz", allow_pickle=False) as arrays:

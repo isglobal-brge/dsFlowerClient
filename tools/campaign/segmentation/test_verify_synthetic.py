@@ -28,7 +28,7 @@ class SyntheticVerificationTests(unittest.TestCase):
         self.prepared = self.root / "prepared"
         prepare(self.prepared)
         self.split = json.loads((self.prepared / "split-20260919.json").read_text())
-        torch.set_num_threads(1)
+        torch.set_num_threads(2)  # Match verify() and the pinned local predictor arithmetic.
         self.encoder = FixtureEncoder()
         self.X, self.y, self.sites = verifier.fixture_tensors(
             self.prepared, self.split, self.encoder, "cpu")
