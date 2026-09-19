@@ -11,6 +11,8 @@ from pathlib import Path
 
 import numpy as np
 
+from protocol_v4 import active_config
+
 from segmentation_metrics import envelopes, mean_interval, near_central_flags
 
 SEEDS = (20260919, 20260920, 20260921)
@@ -95,18 +97,19 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None,
     expected_source_rows optionally maps the same hash pairs to source row M.
     No source data or secret is returned.
     """
+    rounds = active_config()["rounds"]
     groups = defaultdict(list)
     for record in captures:
         if record.get("public_fixture_only") is not True:
             raise ValueError("accountant captures must identify public fixtures")
         groups[(record["features_sha256"], record["targets_sha256"])].append(record)
-    if len(groups) != 3 or len(captures) != 30:
+    if len(groups) != 3 or len(captures) != 3 * rounds:
         raise ValueError("three distinct sites and thirty node-round captures required")
     if expected_hashes is not None and set(groups) != set(expected_hashes):
         raise ValueError("captured effective tensors differ from exact twins")
     mechanisms = []
     for hashes, rows in sorted(groups.items()):
-        if sorted(row["round"] for row in rows) != list(range(1, 11)):
+        if sorted(row["round"] for row in rows) != list(range(1, rounds + 1)):
             raise ValueError("each site must have exactly one capture for rounds 1 through 10")
         mechanism = rows[0]["mechanism"]
         n = mechanism["accounting_population"]
@@ -119,7 +122,7 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None,
         expected = {"adjacency": "replace_one", "clipping_norm": 1.,
                     "steps_per_epoch": steps, "sample_rate": 1 / steps,
                     "expected_batch_size": max(1, n // steps),
-                    "total_epochs": 30, "total_steps": 30 * steps}
+                    "total_epochs": 3 * rounds, "total_steps": 3 * rounds * steps}
         if n < 1 or any(mechanism.get(key) != value for key, value in expected.items()):
             raise ValueError("captured mechanism differs from preregistered subject schedule")
         if expected_hashes is not None and expected_hashes[hashes] != n:
@@ -139,7 +142,7 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None,
                 raise ValueError("observed accountant history differs from calibrated sigma/q")
         mechanisms.append(dict(mechanism,
             source_rows=source_rows,
-            independent_accounting=independent_accounting(sigma, 1 / steps, 30 * steps, epsilon),
+            independent_accounting=independent_accounting(sigma, 1 / steps, 3 * rounds * steps, epsilon),
             features_sha256=hashes[0], targets_sha256=hashes[1],
             observed_round_steps=[r["observed_round_steps"] for r in sorted(rows, key=lambda r: r["round"])]))
     if Counter(m["accounting_population"] for m in mechanisms) != Counter(populations):
@@ -205,11 +208,16 @@ def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None, 
         raise ValueError("public initial arrays differ from their captured digest")
     initial_hash = hashlib.sha256(b"".join(a.tobytes() for a in tensors)).hexdigest()
     config = initial["config"]
-    expected = {"batch-size": batch_size, "local-epochs": 3, "num-server-rounds": 10,
+    expected = {"batch-size": batch_size, "local-epochs": 3, "num-server-rounds": active_config()["rounds"],
                 "learning-rate": .001, "optimizer-name": "adam", "scheduler-name": "none",
                 "segmentation-alpha": 1. if variant == "bce" else .5}
     if any(config.get(key) != value for key, value in expected.items()):
         raise ValueError("captured optimization differs from preregistration")
+    if __import__('os').environ.get('F_SEG_V4_CONFIG'):
+        import base64
+        from dsflower_runner import segmentation
+        if json.loads(base64.b64decode(config['model-spec-b64'])) != segmentation.decoder_spec(active_config()['decoder']):
+            raise ValueError('captured decoder differs from selected v4 configuration')
     captures = [read_json(p) for p in sorted(capture.glob("accountant-*.json"))]
     mechanisms = validate_captures(captures, list(map(len, sites)), epsilon, batch_size=batch_size)
     if [{k: v for k, v in m.items() if k != "independent_accounting"} for m in mechanisms] != [
@@ -221,7 +229,7 @@ def load_replicate(directory, dataset, variant, epsilon, seed, provenance=None, 
     pooled_expected = {"accounting_population": len(train), "adjacency": "replace_one",
                        "clipping_norm": 1., "steps_per_epoch": pooled_steps,
                        "sample_rate": 1 / pooled_steps, "expected_batch_size": len(train) // pooled_steps,
-                       "total_epochs": 30, "total_steps": pooled_steps * 30}
+                       "total_epochs": 3 * active_config()["rounds"], "total_steps": pooled_steps * 3 * active_config()["rounds"]}
     if any(pooled.get(key) != value for key, value in pooled_expected.items()):
         raise ValueError("pooled DP mechanism differs from preregistered subject schedule")
     pooled = dict(pooled, independent_accounting=independent_accounting(

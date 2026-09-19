@@ -21,6 +21,17 @@ started_at <- Sys.time()
 synthetic <- identical(Sys.getenv("F_SEG_SYNTHETIC"), "1")
 nominal_batch <- as.integer(Sys.getenv("F_SEG_BATCH_SIZE", "16"))
 stopifnot(nominal_batch %in% c(16L, 64L))
+v4_config <- Sys.getenv("F_SEG_V4_CONFIG")
+decoder <- "current"
+training_rounds <- 10L
+if (nzchar(v4_config)) {
+  candidate <- jsonlite::fromJSON(v4_config)
+  stopifnot(candidate$decoder %in% c("current", "narrow", "pointwise"),
+            candidate$rounds %in% c(10L, 20L), candidate$batch_size %in% c(16L, 64L))
+  decoder <- candidate$decoder
+  training_rounds <- as.integer(candidate$rounds)
+}
+
 gate_path <- Sys.getenv("F_SEG_GATES_JSON")
 if (!synthetic) {
   if (!file.exists(gate_path)) stop("F_SEG_GATES_JSON must identify blocking-gate evidence.")
@@ -77,6 +88,19 @@ if (identical(variant, "small192")) {
   split$sites <- split$small_sites
 }
 if (identical(variant, "heterogeneous")) split$sites <- split$heterogeneous_sites
+inner_path <- Sys.getenv("F_SEG_INNER_SPLIT")
+if (nzchar(inner_path)) {
+  stopifnot(nzchar(v4_config), identical(variant, "full"), identical(audit$dataset, "busbra"), epsilon == 8)
+  inner <- jsonlite::fromJSON(inner_path, simplifyVector = FALSE)
+  stopifnot(identical(inner$source_sha256, source_split_sha256),
+            identical(as.integer(inner$seed), seed), length(inner$sites) == 3L,
+            !any(unlist(inner$test) %in% unlist(split$test)))
+  for (i in seq_len(3L)) {
+    stopifnot(setequal(c(unlist(inner$sites[[i]]), intersect(unlist(inner$test), unlist(split$sites[[i]]))),
+                      unlist(split$sites[[i]])))
+  }
+  split <- inner
+}
 split$variant <- variant
 jsonlite::write_json(split, file.path(work_dir, "effective-split.json"), auto_unbox = TRUE, pretty = TRUE)
 frame <- utils::read.csv(file.path(prepared, "samples.csv"), stringsAsFactors = FALSE,
@@ -158,12 +182,12 @@ result <- tryCatch({
   ds.flower.superlink.start(fleet_port = ports[1], control_port = ports[2], serverappio_port = ports[3], insecure = TRUE)
   fit <- ds.flower.fit(conns, symbol = "D", target = "mask_path", task = "segmentation",
       model = "pytorch_resnet18_segmentation", data_kind = "image", strategy = "fedavg",
-      model_params = list(alpha = if (identical(variant, "bce")) 1 else .5, mask_values = "0,255", sample_id_col = "image_id",
+      model_params = list(decoder = decoder, alpha = if (identical(variant, "bce")) 1 else .5, mask_values = "0,255", sample_id_col = "image_id",
           image_path_col = "relative_path", mask_empty_col = "mask_empty", subject_id_col = "subject_id",
           optimizer = if (synthetic) "sgd" else "adam",
           learning_rate = if (synthetic) .01 else .001, batch_size = if (synthetic) 8L else nominal_batch,
           local_epochs = if (synthetic) 1L else 3L),
-      rounds = if (synthetic) 2L else 10L, torch_backend = "cuda", output_dir = file.path(work_dir, "artifact"), silent = TRUE)
+      rounds = if (synthetic) 2L else training_rounds, torch_backend = "cuda", output_dir = file.path(work_dir, "artifact"), silent = TRUE)
   writeLines(fit$stdout, file.path(work_dir, "flower-stdout.log"))
   writeLines(fit$stderr, file.path(work_dir, "flower-stderr.log"))
   if (!isTRUE(fit$available)) stop("No available released segmentation model.")

@@ -24,6 +24,7 @@ import torch
 from dsflower_runner import client_app, dp_harness, params, segmentation, seeding, task
 from segmentation_metrics import metrics, trivial_masks
 from assemble_evidence import validate_captures, independent_accounting
+from protocol_v4 import active_config
 
 BENCHMARK_KEY_ROOT = Path("/tmp") / ("dsflower-segmentation-benchmark-%d" % os.getuid())
 
@@ -91,7 +92,10 @@ def validate_twin_pins(cfg, manifest, pins, batch_size=16):
         # Alpha changes the loss only; the preregistered BCE branch shares features.
         if key != "segmentation-alpha" and cfg[key] != manifest[key]:
             raise ValueError("cached feature semantics differ from captured federation: " + key)
-    expected = {"batch-size": batch_size, "local-epochs": 3, "num-server-rounds": 10,
+    active_spec = json.loads(base64.b64decode(cfg["model-spec-b64"], validate=True))
+    if active_spec != segmentation.decoder_spec(active_config()["decoder"]):
+        raise ValueError("captured decoder differs from preregistration")
+    expected = {"batch-size": batch_size, "local-epochs": 3, "num-server-rounds": active_config()["rounds"],
                 "learning-rate": .001, "optimizer-name": "adam", "scheduler-name": "none"}
     defaults = {"weight-decay": 0., "l1-penalty": 0., "optimizer-momentum": 0.,
                 "optimizer-nesterov": False}
@@ -107,7 +111,7 @@ def validate_twin_pins(cfg, manifest, pins, batch_size=16):
             raise ValueError("captured optimizer differs from preregistration: " + key)
     if any(key.startswith("scheduler-") and key != "scheduler-name" for key in cfg):
         raise ValueError("preregistered schedule does not admit extra scheduler controls")
-    if (pins["batch_size"] != batch_size or pins["local_epochs"] != 3 or pins["num_rounds"] != 10
+    if (pins["batch_size"] != batch_size or pins["local_epochs"] != 3 or pins["num_rounds"] != active_config()["rounds"]
             or pins["learning_rate"] != .001 or pins["scheduler"]["name"] != "none"
             or pins["loss_name"] != "segmentation_bce_dice" or pins["n_classes"] != 2):
         raise ValueError("effective twin pins differ from captured federation")
@@ -218,7 +222,7 @@ def main():
     initial_meta = json.loads((args.capture / "public-initial.json").read_text())
     cfg = initial_meta["config"]
     segmentation.validate_config(cfg)
-    for key, expected in {"batch-size": args.batch_size, "local-epochs": 3, "num-server-rounds": 10,
+    for key, expected in {"batch-size": args.batch_size, "local-epochs": 3, "num-server-rounds": active_config()["rounds"],
                           "learning-rate": .001}.items():
         if cfg.get(key) != expected:
             raise ValueError("captured public initialization differs from primary preregistration: " + key)
