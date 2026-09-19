@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Verify actual three-node synthetic integration; never synthesize gate evidence."""
 import argparse
+import base64
 from collections import Counter
 import csv
 import hashlib
@@ -161,7 +162,7 @@ def verify_captures(records, expected_sites, epsilon):
     return results
 
 
-def verify(prepared, run):
+def verify(prepared, run, decoder="current"):
     status_path = run / "federation-status.json"
     status = json.loads(status_path.read_text())
     require(status.get("status") == "predicted_pending_public_metric_summary"
@@ -181,13 +182,16 @@ def verify(prepared, run):
     initial_meta = json.loads((capture / "public-initial.json").read_text())
     cfg = initial_meta["config"]
     segmentation.validate_config(cfg)
+    require(json.loads(base64.b64decode(cfg["model-spec-b64"])) == segmentation.decoder_spec(decoder),
+            "synthetic decoder differs from requested candidate")
+    parameter_tensors = 2 if decoder == "pointwise" else 6
     require(all(cfg.get(k) == v for k, v in {"batch-size": 8, "local-epochs": 1,
             "num-server-rounds": 2, "learning-rate": .01, "segmentation-alpha": .5}.items()),
             "synthetic schedule changed")
     require(initial_meta["seed"] == split["seed"] == status["seed"], "initialization seed changed")
     initial_npz = np.load(capture / "public-initial-arrays.npz", allow_pickle=False)
-    require(set(initial_npz.files) == {str(i) for i in range(6)}, "initial parameter count changed")
-    initial = [initial_npz[str(i)] for i in range(6)]
+    require(set(initial_npz.files) == {str(i) for i in range(parameter_tensors)}, "initial parameter count changed")
+    initial = [initial_npz[str(i)] for i in range(parameter_tensors)]
     require([tensor_hash(a) for a in initial] == initial_meta["tensor_sha256"], "initial arrays changed")
     torch.set_num_threads(2)
     torch.backends.cudnn.benchmark = False
@@ -213,10 +217,10 @@ def verify(prepared, run):
     require(all(a.shape == tuple(p.shape) and a.dtype == np.float32 and np.isfinite(a).all()
                 for a, p in zip(initial, model.parameters())), "initial tensor geometry invalid")
     state = torch.load(model_path, map_location="cpu", weights_only=True)
-    require(not list(model.buffers()) and len(state) == 6
+    require(not list(model.buffers()) and len(state) == parameter_tensors
             and set(state) == {n for n, _ in model.named_parameters()}
             and all(torch.isfinite(t).all().item() for t in state.values()),
-            "release must contain six finite trained decoder parameters without buffers")
+            "release must contain exact finite trained decoder parameters without buffers")
     model.load_state_dict(state, strict=True)
     require(any(not np.array_equal(a, b) for a, b in zip(initial, params.get_torch_params(model))),
             "release equals untrained initial arrays")
@@ -232,7 +236,7 @@ def verify(prepared, run):
                 model_sha256=sha256(model_path), split_sha256=sha256(split_path),
                 source_rows_sha256=sha256(prepared / "samples.csv"),
                 federation_status_sha256=sha256(status_path), cleanup_ok=True,
-                decoder_parameter_tensors=6, decoder_parameter_count=sum(p.numel() for p in model.parameters()),
+                decoder_parameter_tensors=parameter_tensors, decoder_parameter_count=sum(p.numel() for p in model.parameters()),
                 reloaded_predictions_match=True, python=platform.python_version(),
                 torch=torch.__version__, encoder_device=str(device), decoder_device="cpu")
 
@@ -242,7 +246,8 @@ if __name__ == "__main__":
     parser.add_argument("--prepared", type=Path, required=True)
     parser.add_argument("--run", type=Path, required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--decoder", choices=("current", "narrow", "pointwise"), default="current")
     args = parser.parse_args()
-    result = verify(args.prepared, args.run)
+    result = verify(args.prepared, args.run, args.decoder)
     args.out.write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
     print(json.dumps(result, allow_nan=False))

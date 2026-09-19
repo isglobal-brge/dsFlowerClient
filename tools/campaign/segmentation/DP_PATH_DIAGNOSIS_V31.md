@@ -133,3 +133,14 @@ traces and released diagnostic arrays stay under
 to overwrite its completed capture directory; replaying verification is read-only
 apart from regenerating derived diagnostic JSON. Do not relaunch scoring into an
 existing cell or treat these diagnostics as new matrix replicas.
+
+## Reviewer disposition — 2026-09-19
+
+The reviewer accepted the diagnosis: the observed federated-DP collapse is the
+per-site geometry boundary of this fixed decoder/schedule, with no runner defect
+found. Site N284, sigma1.86279 and540 updates differ from pooled N852,
+sigma1.21094 and1620 updates; pooled-DP Dice~0.60 at epsilon8 demonstrates useful
+learning at larger N. V3 floors remain FAILED and vetted=FALSE. The reviewer
+separately authorized the preregistered v4 public-development study of decoder
+capacity and schedule, at unchanged epsilon/delta/clip and original confirmation
+cohorts. V4 does not repair or relabel v3, and is not a promotion decision.

@@ -1,4 +1,5 @@
 import copy
+import base64
 import json
 from pathlib import Path
 import tempfile
@@ -76,13 +77,17 @@ class SyntheticVerificationTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "exceeds budget"):
             verifier.independent_accounting({"noise_multiplier": 1.}, 1)
 
-    def make_run(self):
+    def make_run(self, decoder="current"):
+        import shutil
+        if (self.root / "run").exists():
+            shutil.rmtree(self.root / "run")
         run = self.root / "run"
         capture, artifact = run / "public-capture", run / "artifact/saved-synthetic-model"
         self.artifact = artifact
         capture.mkdir(parents=True)
         artifact.mkdir(parents=True)
         cfg = dict(config(), **{"batch-size": 8, "local-epochs": 1, "num-server-rounds": 2})
+        cfg["model-spec-b64"] = base64.b64encode(json.dumps(segmentation.decoder_spec(decoder)).encode()).decode()
         model = params.load_user_model(cfg, segmentation.FEATURE_DIM, "segmentation_bce_dice")
         for parameter in model.parameters():
             parameter.data.zero_()
@@ -152,7 +157,7 @@ class SyntheticVerificationTests(unittest.TestCase):
             status = json.loads(status_path.read_text())
             status["model_sha256"] = verifier.sha256(model_path)
             status_path.write_text(json.dumps(status))
-            with self.assertRaisesRegex(ValueError, "six finite trained decoder parameters"):
+            with self.assertRaisesRegex(ValueError, "finite trained decoder parameters"):
                 verifier.verify(self.prepared, run)
 
     def test_artifact_directory_must_belong_to_the_actual_run(self):
@@ -163,6 +168,16 @@ class SyntheticVerificationTests(unittest.TestCase):
         status_path.write_text(json.dumps(status))
         with self.assertRaisesRegex(ValueError, "outside this run"):
             verifier.verify(self.prepared, run)
+
+    def test_v4_synthetic_verifier_requires_requested_decoder_and_exact_state(self):
+        for decoder, tensors in (("narrow", 6), ("pointwise", 2)):
+            run = self.make_run(decoder)
+            with mock.patch.object(segmentation, "prepare_encoder", return_value=(self.encoder, "cpu")), \
+                 mock.patch.object(verifier, "independent_accounting", return_value={}):
+                result = verifier.verify(self.prepared, run, decoder)
+                self.assertEqual(result["decoder_parameter_tensors"], tensors)
+                with self.assertRaisesRegex(ValueError, "decoder differs"):
+                    verifier.verify(self.prepared, run, "current")
 
 
 if __name__ == "__main__":
