@@ -684,13 +684,19 @@ ds.flower.model_parameters <- function(name) {
 
 # The released spatial decoder contains only trainable convolutions. The frozen
 # ResNet18 layer2 extractor lives outside this module on each node.
-.segmentation_decoder_spec <- function() {
+.segmentation_decoder_spec <- function(decoder = "current") {
+  if (identical(decoder, "pointwise")) return(list(kind = "sequential", layers = list(
+    list(op = "reshape", shape = list(128L, 16L, 16L)),
+    list(op = "conv2d", out_channels = 1L, kernel_size = 1L),
+    list(op = "upsample", scale_factor = 8L))))
+  if (!decoder %in% c("current", "narrow")) stop("Unknown segmentation decoder.")
+  channels <- if (identical(decoder, "narrow")) c(8L, 4L) else c(32L, 16L)
   list(kind = "sequential", layers = list(
     list(op = "reshape", shape = list(128L, 16L, 16L)),
-    list(op = "conv2d", out_channels = 32L, kernel_size = 3L, padding = 1L),
+    list(op = "conv2d", out_channels = channels[[1L]], kernel_size = 3L, padding = 1L),
     list(op = "relu"),
     list(op = "upsample", scale_factor = 2L),
-    list(op = "conv2d", out_channels = 16L, kernel_size = 3L, padding = 1L),
+    list(op = "conv2d", out_channels = channels[[2L]], kernel_size = 3L, padding = 1L),
     list(op = "relu"),
     list(op = "upsample", scale_factor = 4L),
     list(op = "conv2d", out_channels = 1L, kernel_size = 1L)))
@@ -1032,19 +1038,20 @@ ds.flower.model_parameters <- function(name) {
 
   ds.flower.register_model("pytorch_resnet18_segmentation", "neural",
       vetted = FALSE, overwrite = overwrite,
-      generate = function(p) .segmentation_decoder_spec(),
+      generate = function(p) .segmentation_decoder_spec(p$decoder),
       loss = "segmentation_bce_dice",
       defaults = utils::modifyList(neural_defaults, list(
-        learning_rate = 0.001, batch_size = 8L, alpha = 0.5,
+        learning_rate = 0.001, batch_size = 8L, alpha = 0.5, decoder = "current",
         mask_values = "0,255", image_asset = "images", mask_asset = "masks",
         image_path_col = "relative_path", sample_id_col = "image_id")),
       parameter_types = with_common(
-        alpha = "number", mask_values = "character",
+        alpha = "number", mask_values = "character", decoder = "character",
         image_asset = "character", mask_asset = "character",
         image_path_col = "character", sample_id_col = "character",
         mask_empty_col = "character", subject_id_col = "character"),
       parameter_choices = c(neural_choices, list(
-        alpha = c(0.5, 1), mask_values = c("0,1", "0,255"))),
+        alpha = c(0.5, 1), mask_values = c("0,1", "0,255"),
+        decoder = c("current", "narrow", "pointwise"))),
       data_kinds = "image",
       description = "Binary 128x128 segmentation decoder on frozen ResNet18 layer2.")
 

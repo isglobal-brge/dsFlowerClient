@@ -226,3 +226,18 @@ test_that("the real local HPO callback cannot initiate private segmentation trai
   expect_false(touched)
   expect_false(dsFlowerClient:::.dsflower_hpo_context$active)
 })
+
+test_that("v4 public-development decoders are explicit choices with unchanged default", {
+  original <- dsFlowerClient:::.segmentation_decoder_spec()
+  expect_identical(original, dsFlowerClient:::.segmentation_decoder_spec("current"))
+  narrow <- dsFlowerClient:::.segmentation_decoder_spec("narrow")
+  expect_identical(narrow$layers[[2L]]$out_channels, 8L)
+  expect_identical(narrow$layers[[5L]]$out_channels, 4L)
+  pointwise <- dsFlowerClient:::.segmentation_decoder_spec("pointwise")
+  expect_length(pointwise$layers, 3L)
+  expect_identical(pointwise$layers[[3L]]$scale_factor, 8L)
+  for (decoder in c("current", "narrow", "pointwise")) {
+    expect_s3_class(ds.flower.model("pytorch_resnet18_segmentation", decoder = decoder), "dsflower_model")
+  }
+  expect_error(ds.flower.model("pytorch_resnet18_segmentation", decoder = "arbitrary"))
+})
