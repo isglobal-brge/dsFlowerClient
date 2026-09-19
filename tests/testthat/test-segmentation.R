@@ -241,3 +241,20 @@ test_that("v4 public-development decoders are explicit choices with unchanged de
   }
   expect_error(ds.flower.model("pytorch_resnet18_segmentation", decoder = "arbitrary"))
 })
+
+test_that("saved v4 decoders reconstruct locally and reject mismatched metadata", {
+  path <- segmentation_model_fixture()
+  on.exit(unlink(path, recursive = TRUE), add = TRUE)
+  meta_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(meta_path, simplifyVector = FALSE)
+  for (decoder in c("current", "narrow", "pointwise")) {
+    meta$model_params$decoder <- decoder
+    meta$model_spec <- dsFlowerClient:::.segmentation_decoder_spec(decoder)
+    jsonlite::write_json(meta, meta_path, auto_unbox = TRUE)
+    contract <- dsFlowerClient:::.resolve_segmentation_prediction_contract(path)
+    expect_identical(contract$feature_dim, 32768L)
+    meta$model_params$decoder <- "unsupported"
+    jsonlite::write_json(meta, meta_path, auto_unbox = TRUE)
+    expect_error(dsFlowerClient:::.resolve_segmentation_prediction_contract(path), "decoder")
+  }
+})

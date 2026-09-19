@@ -194,7 +194,7 @@ result <- tryCatch({
   metadata <- jsonlite::fromJSON(file.path(fit$output_dir, "metadata.json"))
   history <- jsonlite::fromJSON(file.path(fit$output_dir, "history.json"))
   stopifnot(identical(metadata$status, "success"), as.integer(metadata$n_clients) == 3L,
-            nrow(history) == if (synthetic) 2L else 10L,
+            nrow(history) == if (synthetic) 2L else training_rounds,
             all(history$n_failures == 0L), inherits(fit, "dsflower_run"), fit$status == 0L)
   stopifnot(file.exists(file.path(work_dir, "public-capture", "public-initial-arrays.npz")))
   # Canonical subject/image ordering matches the independently cached public masks.

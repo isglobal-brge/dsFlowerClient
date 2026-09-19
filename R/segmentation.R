@@ -39,12 +39,15 @@
       stop("Saved segmentation profile pin is invalid: ", key, ".", call. = FALSE)
     }
   }
-  if (!is.numeric(p$alpha) || length(p$alpha) != 1L ||
+  decoder <- if (is.null(p$decoder)) "current" else p$decoder
+  if (!is.character(decoder) || length(decoder) != 1L ||
+      !decoder %in% c("current", "narrow", "pointwise") ||
+      !is.numeric(p$alpha) || length(p$alpha) != 1L ||
       !p$alpha %in% c(0.5, 1) ||
       !is.character(p$mask_values) || length(p$mask_values) != 1L ||
       !p$mask_values %in% c("0,1", "0,255") ||
       !identical(.spec_to_b64(meta$model_spec),
-                 .spec_to_b64(.segmentation_decoder_spec()))) {
+                 .spec_to_b64(.segmentation_decoder_spec(decoder)))) {
     stop("Saved segmentation decoder or mask contract is invalid.", call. = FALSE)
   }
   artifact <- file.path(model_dir, "model.pt")

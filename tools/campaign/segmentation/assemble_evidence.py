@@ -104,13 +104,13 @@ def validate_captures(captures, populations, epsilon, expected_hashes=None,
             raise ValueError("accountant captures must identify public fixtures")
         groups[(record["features_sha256"], record["targets_sha256"])].append(record)
     if len(groups) != 3 or len(captures) != 3 * rounds:
-        raise ValueError("three distinct sites and thirty node-round captures required")
+        raise ValueError("three distinct sites and every scheduled node-round capture required")
     if expected_hashes is not None and set(groups) != set(expected_hashes):
         raise ValueError("captured effective tensors differ from exact twins")
     mechanisms = []
     for hashes, rows in sorted(groups.items()):
         if sorted(row["round"] for row in rows) != list(range(1, rounds + 1)):
-            raise ValueError("each site must have exactly one capture for rounds 1 through 10")
+            raise ValueError("each site must have exactly one capture for every scheduled round")
         mechanism = rows[0]["mechanism"]
         n = mechanism["accounting_population"]
         source_rows = rows[0].get("source_rows")
