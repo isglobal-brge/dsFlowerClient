@@ -866,9 +866,10 @@ the stale-file finding and fresh artifact-inference checks. Current
 actual v5 results; <code>retained/v3/</code> and
 <code>retained/v4/</code> retain random-initialisation boundary
 evidence. The comparison below labels each protocol explicitly and never
-pools their seeds. The v4-to-v5 comparison also changes decoder/schedule
-settings, so it does not isolate a causal effect of pretraining
-alone.</p>
+pools their seeds. V4 and v5 selected the same narrow decoder and
+fine-tuning schedule; v5 adds the disclosed BUSI pretraining stage. V3
+uses a different decoder and schedule. All comparisons retain the
+public-development and reused-test limitations.</p>
 <table class="table">
 <caption>Federated-DP foreground-positive subject Dice: three-seed
 means</caption>

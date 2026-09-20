@@ -236,8 +236,9 @@ The original packaged batch files were exact v3 copies. `RECONCILE_V5.md` and
 checks. Current `batch16/` and `batch64/` records now contain the actual v5
 results; `retained/v3/` and `retained/v4/` retain random-initialisation boundary evidence. The
 comparison below labels each protocol explicitly and never pools their seeds.
-The v4-to-v5 comparison also changes decoder/schedule settings, so it does not
-isolate a causal effect of pretraining alone.
+V4 and v5 selected the same narrow decoder and fine-tuning schedule; v5 adds
+the disclosed BUSI pretraining stage. V3 uses a different decoder and schedule.
+All comparisons retain the public-development and reused-test limitations.
 
 ```{r segmentation-release-evidence, echo=FALSE, error=FALSE}
 seg_dir <- file.path(dirname(evidence_dir), "segmentation")
