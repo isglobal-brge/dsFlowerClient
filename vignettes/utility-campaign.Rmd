@@ -324,4 +324,9 @@ foreground and empty-mask strata. Private node evaluation is unsupported. Its
 three-site BrEaST/BUS-BRA protocol and exact central twins require separate
 executed evidence; no Dice score or practical utility floor is established by
 the constructor. See the [binary segmentation guide](binary-segmentation.html)
-and the segmentation campaign artifacts for the execution status.
+and the [combined survival/segmentation evidence article](survival-segmentation.html)
+for the packaged v5 public-initialisation results, the retained v3/v4
+random-initialisation boundaries, and the stale-file correction provenance.
+The default random decoder is distinct from the audited public-initialisation
+benchmark route. Neither evidence execution nor a passed utility floor changes
+the contract's pending reviewer-promotion status.

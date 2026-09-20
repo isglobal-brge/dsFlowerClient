@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">dsFlowerClient</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.5.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -80,6 +80,12 @@ its theory says it must.</p>
 <p>All numbers on this page are computed at render time from the
 evidence files committed under <code>inst/extdata/campaign/</code>.
 Nothing is typed in by hand.</p>
+<p>The right-censored survival campaign is documented separately in <a href="survival-segmentation.html">Survival contracts and evidence</a>.
+Its records live under <code>inst/extdata/campaign/survival/</code> and
+use subject-level splits, concordance and held-out NLL with exact
+architecture/loss twins. The AUC tables and private cross-validation
+examples below describe the classification contracts; private survival
+validation, holdout, CV and training through HPO are unsupported.</p>
 <div class="section level2">
 <h2 id="design">Design<a class="anchor" aria-label="anchor" href="#design"></a>
 </h2>
@@ -475,8 +481,13 @@ split, canonical 128 by 128 masks, per-subject Dice at threshold 0.5 and
 IoU, with foreground and empty-mask strata. Private node evaluation is
 unsupported. Its three-site BrEaST/BUS-BRA protocol and exact central
 twins require separate executed evidence; no Dice score or practical
-utility floor is established by the constructor. See the <a href="binary-segmentation.html">binary segmentation guide</a> and the
-segmentation campaign artifacts for the execution status.</p>
+utility floor is established by the constructor. See the <a href="binary-segmentation.html">binary segmentation guide</a> and the <a href="survival-segmentation.html">combined survival/segmentation
+evidence article</a> for the packaged v5 public-initialisation results,
+the retained v3/v4 random-initialisation boundaries, and the stale-file
+correction provenance. The default random decoder is distinct from the
+audited public-initialisation benchmark route. Neither evidence
+execution nor a passed utility floor changes the contract’s pending
+reviewer-promotion status.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

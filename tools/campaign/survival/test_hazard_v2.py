@@ -110,6 +110,60 @@ class HazardV2Tests(unittest.TestCase):
             self.assertEqual(result['protocol_version'], 2)
             self.assertEqual(result['status'], 'incomplete')
 
+    def test_release_summary_uses_selected_hazard_and_preserves_aft(self):
+        import copy
+        import summarize
+        from test_validate_completion import complete_fixture
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root/'v1').mkdir()
+            hazard = root/'hazard-v2'
+            hazard.mkdir()
+            selected = GRID[-1]
+            selection = dict(selected=selected, rule='unit fixture', protocol_sha256='a'*64,
+                             selected_utc='2026-01-01T00:00:00Z')
+            (hazard/'hazard_v2_selection.json').write_text(json.dumps(selection))
+            (hazard/'driver_complete.json').write_text(json.dumps(dict(status='executed',
+                selection_sha256=sha(hazard/'hazard_v2_selection.json'))))
+            for name, record in complete_fixture():
+                (root/name).write_text(json.dumps(record))
+                if name == 'summary.json':
+                    original = copy.deepcopy(record)
+                    (root/'v1/summary.json').write_text(json.dumps(record))
+                elif record['variant'] == 'hazard' and record['dataset']['dataset'] != 'synthetic-public':
+                    updated = copy.deepcopy(record)
+                    updated.update(protocol_version=2, hazard_v2_config=selected)
+                    updated['results']['federated_dp']['c_index'] = .7
+                    target = hazard/('confirmation-'+name)/'evidence.json'
+                    target.parent.mkdir()
+                    target.write_text(json.dumps(updated))
+            with patch('sys.argv', ['summarize', tmp, '--selected-hazard-v2']):
+                summarize.main()
+            current = json.loads((root/'summary.json').read_text())
+            self.assertEqual(current['status'], 'executed')
+            self.assertEqual(current['expected_matrix_cells'], 90)
+            for group, previous in zip(current['groups'], original['groups']):
+                if group['variant'] == 'hazard':
+                    self.assertAlmostEqual(group['envelopes']['summaries']['8']['federated']['mean'], .7)
+                else:
+                    self.assertEqual(group, previous)
+            self.assertEqual(json.loads((root/'v1/summary.json').read_text()), original)
+            self.assertIn('v2 / h06', (root/'SURVIVAL_EVIDENCE_SUMMARY.md').read_text())
+            target = next(hazard.glob('confirmation-*/evidence.json'))
+            preserved = target.read_text()
+            wrong = json.loads(preserved)
+            wrong['hazard_v2_config'] = GRID[0]
+            target.write_text(json.dumps(wrong))
+            with self.assertRaisesRegex(ValueError, 'invalid or duplicate'):
+                summarize.selected_hazard_records(root)
+            target.unlink()
+            with self.assertRaisesRegex(ValueError, 'all 30'):
+                summarize.selected_hazard_records(root)
+            target.write_text(preserved)
+            (hazard/'hazard_v2_selection.json').write_text('{}')
+            with self.assertRaisesRegex(ValueError, 'completion does not match'):
+                summarize.selected_hazard_records(root)
+
 
 if __name__ == '__main__':
     unittest.main()

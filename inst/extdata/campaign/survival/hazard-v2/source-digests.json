@@ -1,0 +1,171 @@
+{
+  "source_host": "pod2",
+  "source_root": "/workspace/survival/runtime/hazard_v2",
+  "files": [
+    {
+      "relative": "preregistration.json",
+      "source": "/workspace/survival/runtime/hazard_v2/preregistration.json",
+      "sha256": "073e1ce113060cbf83a530da2cdc2e120b9c6d3965c0467ece7b7c978f82799f"
+    },
+    {
+      "relative": "hazard_v2_selection.json",
+      "source": "/workspace/survival/runtime/hazard_v2/hazard_v2_selection.json",
+      "sha256": "f9660cdcc03714098da454f70dd1fa2614e26e1c1ec9e6901c96066400e26c41"
+    },
+    {
+      "relative": "driver_complete.json",
+      "source": "/workspace/survival/runtime/hazard_v2/driver_complete.json",
+      "sha256": "4fdc86aceefd13485378271b128fa5be61174e7f403a583634aaac110bd66e4e"
+    },
+    {
+      "relative": "confirmation-h06-lung1-full-1101-eps1/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-lung1-full-1101-eps1/evidence.json",
+      "sha256": "38e695a3e04038800ddadd2f438bbbde0b1fd8bc52ea8cacec0cfbd7da4c199f"
+    },
+    {
+      "relative": "confirmation-h06-lung1-full-1101-eps4/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-lung1-full-1101-eps4/evidence.json",
+      "sha256": "3e8216a80d1f3114248f9fda2d259bb534389a5ba7cadc11f799d205b38753a8"
+    },
+    {
+      "relative": "confirmation-h06-lung1-full-1101-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-lung1-full-1101-eps8/evidence.json",
+      "sha256": "1c571f80daa3c1f1257b303d100fd2af4c9fc0b665e61c81398c90f07baaee02"
+    },
+    {
+      "relative": "confirmation-h06-lung1-full-1102-eps1/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-lung1-full-1102-eps1/evidence.json",
+      "sha256": "7a374a7054936eb6c5a10269ea1410e65e89b0fe44d2ae9030c85f954acc1b07"
+    },
+    {
+      "relative": "confirmation-h06-lung1-full-1102-eps4/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-lung1-full-1102-eps4/evidence.json",
+      "sha256": "a07bd11f01bb84efbf5a77c7786e45bf116d668f8695ea31f7e1a881737b36b4"
+    },
+    {
+      "relative": "confirmation-h06-lung1-full-1102-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-lung1-full-1102-eps8/evidence.json",
+      "sha256": "e3ed7bf88e996ca81c6311bd51dbc2a72c0c4a12d3c82e6c4b885220f3f22dc8"
+    },
+    {
+      "relative": "confirmation-h06-lung1-full-1103-eps1/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-lung1-full-1103-eps1/evidence.json",
+      "sha256": "c9e8187c3262c3ae7e97291957a2a950bddcbc58fdf2d3c958d048d1844223dd"
+    },
+    {
+      "relative": "confirmation-h06-lung1-full-1103-eps4/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-lung1-full-1103-eps4/evidence.json",
+      "sha256": "18bdbea7bf4591b4b9f326b128758f6a379a0717afa9513661d3c796c314de38"
+    },
+    {
+      "relative": "confirmation-h06-lung1-full-1103-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-lung1-full-1103-eps8/evidence.json",
+      "sha256": "a45b364689c2785a1e07d1c6f6c523f7738b2efbaebc71e074541dc20d3c1db6"
+    },
+    {
+      "relative": "confirmation-h06-support2-full-1101-eps1/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-full-1101-eps1/evidence.json",
+      "sha256": "68f3c6fc22faf55ce8a81228be891f69bb6e97f155492d5bc2e44e59431edc4c"
+    },
+    {
+      "relative": "confirmation-h06-support2-full-1101-eps4/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-full-1101-eps4/evidence.json",
+      "sha256": "7213d6ef54785a7b61d39858495a1a5c0e08ecfa6916453bc6ab8f9ba914e591"
+    },
+    {
+      "relative": "confirmation-h06-support2-full-1101-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-full-1101-eps8/evidence.json",
+      "sha256": "1c5ee774b0628d6feeff58a7818c3cbbb7cca12a685f54570e312e37b6816095"
+    },
+    {
+      "relative": "confirmation-h06-support2-full-1102-eps1/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-full-1102-eps1/evidence.json",
+      "sha256": "acd55095708ff1017e1240b48e8600539e04d668631b43df421d72d8f1cb2d68"
+    },
+    {
+      "relative": "confirmation-h06-support2-full-1102-eps4/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-full-1102-eps4/evidence.json",
+      "sha256": "22008f30a298351d4d03cb6b67c02da0cecb3afeaeb0a5933fc192c62fbd45b4"
+    },
+    {
+      "relative": "confirmation-h06-support2-full-1102-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-full-1102-eps8/evidence.json",
+      "sha256": "2ddbf1c4ff3c008d04214d6c3f765717ace3d68a4a883b5329ded188227c6b72"
+    },
+    {
+      "relative": "confirmation-h06-support2-full-1103-eps1/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-full-1103-eps1/evidence.json",
+      "sha256": "4865a0e2b14f872f5942b4af7b1a8124bbd6dba8f3481616d36da06937627a11"
+    },
+    {
+      "relative": "confirmation-h06-support2-full-1103-eps4/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-full-1103-eps4/evidence.json",
+      "sha256": "01909f1c356ec38bdca65f30d1d9276f9781012ffaa99e2c1876019421954c13"
+    },
+    {
+      "relative": "confirmation-h06-support2-full-1103-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-full-1103-eps8/evidence.json",
+      "sha256": "110d722c0127bd7836e7c7cc26133385c41016fcf1f1aa2d9abfc640c3c1a2ac"
+    },
+    {
+      "relative": "confirmation-h06-support2-heterogeneous-1101-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-heterogeneous-1101-eps8/evidence.json",
+      "sha256": "dba6841f21a57c2c8e0190480dbf95b51dc15a74651ca01c3cc627b8c12601c4"
+    },
+    {
+      "relative": "confirmation-h06-support2-heterogeneous-1102-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-heterogeneous-1102-eps8/evidence.json",
+      "sha256": "bf73cadbba682071148d538577496166a17f6e71aeb7c76bd07ab09cf0f0f348"
+    },
+    {
+      "relative": "confirmation-h06-support2-heterogeneous-1103-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-heterogeneous-1103-eps8/evidence.json",
+      "sha256": "e21b72c8ecc9bb10af5ee1bfd2412e7315fe65c45d74e85e735eb00598535689"
+    },
+    {
+      "relative": "confirmation-h06-support2-small600-1101-eps1/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-small600-1101-eps1/evidence.json",
+      "sha256": "2ab3aec2a94b1ac863ef54ea766e26b7fab06306bed2bd813113a65c2500424a"
+    },
+    {
+      "relative": "confirmation-h06-support2-small600-1101-eps4/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-small600-1101-eps4/evidence.json",
+      "sha256": "cb9d61325be7c462bc9cf95e07ad3aec37baa839e1ebc73bacaa92231ce92634"
+    },
+    {
+      "relative": "confirmation-h06-support2-small600-1101-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-small600-1101-eps8/evidence.json",
+      "sha256": "88fbf7f17e6d854b23cb3309cbb0869069da19de7978f6e9f26fe1507b2e4666"
+    },
+    {
+      "relative": "confirmation-h06-support2-small600-1102-eps1/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-small600-1102-eps1/evidence.json",
+      "sha256": "2564973178634a1fc09c4074e00fd0bd49bb1458f4c10ab911494165543598bc"
+    },
+    {
+      "relative": "confirmation-h06-support2-small600-1102-eps4/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-small600-1102-eps4/evidence.json",
+      "sha256": "f4e7197769fc5ad265fee8e773aca02ca17b97642ffd141e79108121e02ef56c"
+    },
+    {
+      "relative": "confirmation-h06-support2-small600-1102-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-small600-1102-eps8/evidence.json",
+      "sha256": "763a132a87b09249a18490a76d06082449c70c52a1a429f933cd51cb976a4e91"
+    },
+    {
+      "relative": "confirmation-h06-support2-small600-1103-eps1/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-small600-1103-eps1/evidence.json",
+      "sha256": "042d7b6908b56af79986942248b6a002c94ed2896dad6af7ad3a9984c466b9c3"
+    },
+    {
+      "relative": "confirmation-h06-support2-small600-1103-eps4/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-small600-1103-eps4/evidence.json",
+      "sha256": "b7d1590c21ae80eb126dbd28126239e2e16302db79c02d757344a8c69db73a90"
+    },
+    {
+      "relative": "confirmation-h06-support2-small600-1103-eps8/evidence.json",
+      "source": "/workspace/survival/runtime/hazard_v2/runs/confirmation-h06-support2-small600-1103-eps8/evidence.json",
+      "sha256": "aa567a5f6489278913ca46bc4825971333938b99dc66a94d1746b53841c6e4b6"
+    }
+  ]
+}

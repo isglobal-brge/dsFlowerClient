@@ -1,0 +1,62 @@
+{
+  "grid": [
+    {
+      "id": "h01",
+      "protocol_version": 2,
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "learning_rate": 0.02,
+      "K": 10
+    },
+    {
+      "id": "h02",
+      "protocol_version": 2,
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "learning_rate": 0.05,
+      "K": 10
+    },
+    {
+      "id": "h03",
+      "protocol_version": 2,
+      "rounds": 20,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "learning_rate": 0.02,
+      "K": 10
+    },
+    {
+      "id": "h04",
+      "protocol_version": 2,
+      "rounds": 20,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "learning_rate": 0.05,
+      "K": 10
+    },
+    {
+      "id": "h05",
+      "protocol_version": 2,
+      "rounds": 10,
+      "local_epochs": 4,
+      "batch_size": 64,
+      "learning_rate": 0.02,
+      "K": 10
+    },
+    {
+      "id": "h06",
+      "protocol_version": 2,
+      "rounds": 10,
+      "local_epochs": 4,
+      "batch_size": 64,
+      "learning_rate": 0.05,
+      "K": 10
+    }
+  ],
+  "protocol_sha256": "c3802691e84901d86c8fcc01e9b17427fa27bc2772331098c678031c9fd56edd",
+  "driver_sha256": "a2a317a8d71a0f5103bc3ec5cfe21a35157b782320b5db840e6de053291a76ab",
+  "campaign_tools_commit": "408149dd691f4ae83b52629d14930f3134bbafea",
+  "started_utc": "2026-09-18T18:33:25.449228+00:00"
+}

@@ -1,8 +1,8 @@
 ---
-title: "Subject-level survival contracts"
+title: "Subject-level survival and segmentation evidence"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Subject-level survival contracts}
+  %\VignetteIndexEntry{Subject-level survival and segmentation evidence}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -25,8 +25,9 @@ failed <- Filter(function(x) identical(x$status, "failed"), cells)
 under the existing node-enforced DP mechanism. The custodian must configure
 patient privacy and a stable subject identifier. Epsilon, delta, clipping,
 privacy-unit selection and the accounting population are not analyst controls.
-The original 28 contracts retain their API and registry records. Segmentation
-is developed separately; this article reserves a section for that work.
+The original 28 contracts retain their API and registry records. Binary
+segmentation is included below with its public-initialisation evidence and
+separately labelled random-initialisation boundary comparisons.
 
 ## Two subject likelihoods
 
@@ -152,8 +153,18 @@ covariate-free null. Those probes are not release evidence. Their Weibull arms
 (including nonprivate training) and hazard DP arms had worse NLL than their
 nulls under the fixed schedules. Concordance measures ranking, not probability
 calibration; inspect held-out NLL alongside concordance in the executed matrix.
-The campaign retains its preregistered v1 schedule and reports every family,
-including failed floors, without selecting models on its held-out results.
+The current summary retains v1 AFT results and uses the selected **h06**
+discrete-hazard schedule from the preregistered v2 confirmation: 10 rounds,
+4 local epochs, batch size 64, learning rate 0.05, and 10 intervals. The
+selection record, preregistration, driver completion and all 30 confirmation
+cells are packaged under `survival/hazard-v2/`. The original v1 cells and
+`survival/v1/summary.json` remain boundary evidence. Schedule development and
+confirmation are distinguished in those records. The v2 confirmation reuses
+the public outer holdouts, so it is not independent external validation.
+LUNG1 v2 ran on pod CUDA whereas its v1 evidence used CPU; those schedules
+and device profiles must not be treated as a controlled schedule-only contrast.
+Failed utility floors remain reported, and reviewer promotion is separate
+from execution.
 For the executed matrix, lower NLL is better only relative to the matching null
 and likelihood family: a C-index floor or PASS does not establish calibrated
 probabilities. The rendered table therefore retains every exact twin's NLL and
@@ -200,9 +211,75 @@ attempt has no substituted score. Promotion remains a reviewer decision after
 all mathematical, gradient, accounting, authority, staging, sticky and API
 compatibility gates pass.
 
-## Segmentation — reserved for the parallel implementation
+## Binary segmentation: current public initialisation and retained boundaries
 
-**This section is intentionally reserved.** This survival increment does not
-register or implement a segmentation contract and makes no segmentation
-utility claim. The parallel implementation will supply its contract, subject
-selection, mask semantics, evidence and limitations here.
+The contract uses one selected image per subject, a frozen ImageNet ResNet-18
+encoder, canonical 128 by 128 masks, and a subject-separable BCE/Dice loss.
+Invalid subjects remain in the privacy census with zero loss validity.
+Private validation, holdout, cross-validation and private-score HPO are
+unsupported. The [binary segmentation guide](binary-segmentation.html) describes
+the complete schema, prediction mapping and fail-closed boundaries.
+
+Current results come from **protocol v5**, whose SHA256 begins `28a713f8`.
+The selected public-initialisation route uses a narrow 9,521-parameter decoder,
+60 public pretraining epochs on BUSI, 20 federated rounds and nominal batch 16.
+Batch 64 is a sensitivity arm. BUSI is the public dataset described by
+Al-Dhabyani et al. (2020), obtained through its Kaggle mirror; the packaged
+`public-pretraining/audit.json`, per-seed records and
+`public-pretraining-manifest.json` retain dataset, checkpoint and audit digests.
+The campaign's audited benchmark binding loads public decoder tensors before
+private training. These results do not describe the default random decoder
+initialisation or a general analyst checkpoint-upload API.
+
+The original packaged batch files were exact v3 copies. `RECONCILE_V5.md` and
+`audit-results.json` record the stale-file finding and fresh artifact-inference
+checks. Current `batch16/` and `batch64/` records now contain the actual v5
+results; `retained/v3/` and `retained/v4/` retain random-initialisation boundary evidence. The
+comparison below labels each protocol explicitly and never pools their seeds.
+The v4-to-v5 comparison also changes decoder/schedule settings, so it does not
+isolate a causal effect of pretraining alone.
+
+```{r segmentation-release-evidence, echo=FALSE, error=FALSE}
+seg_dir <- file.path(dirname(evidence_dir), "segmentation")
+protocol_hash <- digest::digest(file=file.path(seg_dir, "protocol-v5.md"),
+                                algo="sha256")
+stopifnot(startsWith(protocol_hash, "28a713f8"))
+seg_rows <- list()
+add_seg <- function(path, version, cohort, subset, epsilons, batch, digits=3L) {
+  record <- jsonlite::read_json(file.path(seg_dir, path), simplifyVector=FALSE)
+  stopifnot(identical(record$status, "executed"))
+  if (identical(version, "v5 public-init")) {
+    stopifnot(identical(record$protocol_sha256, protocol_hash))
+  }
+  for (epsilon in epsilons) {
+    cells <- Filter(function(x) identical(x$variant, subset) && x$epsilon == epsilon,
+                    c(record$replicates, record$additional_replicates))
+    stopifnot(length(cells) == 3L,
+              length(unique(vapply(cells, function(x) x$seed, numeric(1)))) == 3L)
+    values <- vapply(cells, function(x) x$federated_dp$foreground_positive$dice,
+                     numeric(1))
+    stopifnot(all(is.finite(values)))
+    seg_rows[[length(seg_rows)+1L]] <<- data.frame(
+      protocol=version, cohort=cohort, subset=subset, batch=batch,
+      epsilon=epsilon, seeds=length(values),
+      foreground_Dice=sprintf(paste0("%.", digits, "f"), mean(values)),
+      SD=sprintf("%.3f", stats::sd(values)))
+  }
+}
+add_seg("retained/v4/batch16/busbra-evidence.json", "v4 random-init boundary",
+        "BUS-BRA", "full", c(1,4,8), 16, digits=2L)
+add_seg("batch16/busbra-evidence.json", "v5 public-init", "BUS-BRA", "full", c(1,4,8), 16)
+add_seg("batch16/busbra-evidence.json", "v5 public-init", "BUS-BRA", "heterogeneous", 8, 16)
+add_seg("batch16/busbra-evidence.json", "v5 public-init", "BUS-BRA", "small192", 8, 16)
+add_seg("batch16/breast-evidence.json", "v5 public-init", "BrEaST", "full", 8, 16)
+add_seg("batch64/busbra-evidence.json", "v5 public-init", "BUS-BRA", "full", 8, 64)
+knitr::kable(do.call(rbind, seg_rows), row.names=FALSE,
+             caption="Federated-DP foreground-positive subject Dice: three-seed means")
+```
+
+These are public held-out metrics at threshold 0.5, with foreground-positive
+and empty-mask strata kept separate in the full records. The selected v5
+route clears its recorded utility floor, while the random-initialisation
+boundaries remain visible. Execution and utility floors do not establish
+calibration, clinical validity or reviewer acceptance. The segmentation
+contract remains `vetted=FALSE`.

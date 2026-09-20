@@ -1,0 +1,142 @@
+{
+  "selected": {
+    "candidate": {
+      "decoder": "narrow",
+      "parameters": 9521,
+      "batch_size": 16,
+      "rounds": 20,
+      "pretraining_epochs": 60
+    },
+    "dice": 0.6322182899493723,
+    "foreground_dice": 0.6322182899493723,
+    "strongest_trivial": 0.29275348505327137,
+    "foreground_strongest_trivial": 0.29275348505327137,
+    "logical_site_updates": 8100,
+    "floor_passed": true
+  },
+  "ranking": [
+    {
+      "candidate": {
+        "decoder": "narrow",
+        "parameters": 9521,
+        "batch_size": 16,
+        "rounds": 20,
+        "pretraining_epochs": 60
+      },
+      "dice": 0.6322182899493723,
+      "foreground_dice": 0.6322182899493723,
+      "strongest_trivial": 0.29275348505327137,
+      "foreground_strongest_trivial": 0.29275348505327137,
+      "logical_site_updates": 8100,
+      "floor_passed": true
+    },
+    {
+      "candidate": {
+        "decoder": "narrow",
+        "parameters": 9521,
+        "batch_size": 16,
+        "rounds": 10,
+        "pretraining_epochs": 60
+      },
+      "dice": 0.6265968156417504,
+      "foreground_dice": 0.6265968156417504,
+      "strongest_trivial": 0.29275348505327137,
+      "foreground_strongest_trivial": 0.29275348505327137,
+      "logical_site_updates": 4050,
+      "floor_passed": true
+    },
+    {
+      "candidate": {
+        "decoder": "narrow",
+        "parameters": 9521,
+        "batch_size": 16,
+        "rounds": 20,
+        "pretraining_epochs": 20
+      },
+      "dice": 0.6234411238923458,
+      "foreground_dice": 0.6234411238923458,
+      "strongest_trivial": 0.29275348505327137,
+      "foreground_strongest_trivial": 0.29275348505327137,
+      "logical_site_updates": 8100,
+      "floor_passed": true
+    },
+    {
+      "candidate": {
+        "decoder": "narrow",
+        "parameters": 9521,
+        "batch_size": 64,
+        "rounds": 20,
+        "pretraining_epochs": 60
+      },
+      "dice": 0.6216893916565174,
+      "foreground_dice": 0.6216893916565174,
+      "strongest_trivial": 0.29275348505327137,
+      "foreground_strongest_trivial": 0.29275348505327137,
+      "logical_site_updates": 2160,
+      "floor_passed": true
+    },
+    {
+      "candidate": {
+        "decoder": "narrow",
+        "parameters": 9521,
+        "batch_size": 16,
+        "rounds": 10,
+        "pretraining_epochs": 20
+      },
+      "dice": 0.6178541589172002,
+      "foreground_dice": 0.6178541589172002,
+      "strongest_trivial": 0.29275348505327137,
+      "foreground_strongest_trivial": 0.29275348505327137,
+      "logical_site_updates": 4050,
+      "floor_passed": true
+    },
+    {
+      "candidate": {
+        "decoder": "narrow",
+        "parameters": 9521,
+        "batch_size": 64,
+        "rounds": 10,
+        "pretraining_epochs": 60
+      },
+      "dice": 0.6163590597191982,
+      "foreground_dice": 0.6163590597191982,
+      "strongest_trivial": 0.29275348505327137,
+      "foreground_strongest_trivial": 0.29275348505327137,
+      "logical_site_updates": 1080,
+      "floor_passed": true
+    },
+    {
+      "candidate": {
+        "decoder": "narrow",
+        "parameters": 9521,
+        "batch_size": 64,
+        "rounds": 20,
+        "pretraining_epochs": 20
+      },
+      "dice": 0.6143585716851273,
+      "foreground_dice": 0.6143585716851273,
+      "strongest_trivial": 0.29275348505327137,
+      "foreground_strongest_trivial": 0.29275348505327137,
+      "logical_site_updates": 2160,
+      "floor_passed": true
+    },
+    {
+      "candidate": {
+        "decoder": "narrow",
+        "parameters": 9521,
+        "batch_size": 64,
+        "rounds": 10,
+        "pretraining_epochs": 20
+      },
+      "dice": 0.6066227388920382,
+      "foreground_dice": 0.6066227388920382,
+      "strongest_trivial": 0.29275348505327137,
+      "foreground_strongest_trivial": 0.29275348505327137,
+      "logical_site_updates": 1080,
+      "floor_passed": true
+    }
+  ],
+  "selection_metric": "mean federated-DP inner-validation foreground-positive Dice",
+  "confirmation": "66 cells; selected batch primary, other batch sensitivity; no pooling",
+  "promotion": "vetted remains FALSE; reviewer decides"
+}

@@ -2,8 +2,8 @@
   "schema": "dsflower-segmentation-campaign-combined-v2",
   "contract": "pytorch_resnet18_segmentation",
   "task": "segmentation",
-  "protocol_sha256": "5a157dd8bb6700386eb22e2c977d8f1773d09ff56c793fbbedac68113f220edd",
-  "executed_at": "2026-09-18T23:35:25.955002+00:00",
+  "protocol_sha256": "28a713f8ffe6f7bb7b74e7d59d13d1be265d5738b43503c60e6581a67e0c5820",
+  "executed_at": "2026-09-20T05:56:05.238119+00:00",
   "status": "executed",
   "cells": [
     {
@@ -538,12 +538,12 @@
   "arms": {
     "16": {
       "path": "batch16/campaign-status.json",
-      "sha256": "2b824a2acbffb1f3cf82ae993294ea9aa5bf50303ab79a1f1806940b75f250f6",
+      "sha256": "7627e41dd72525b9fee644d9eaca3e927bfa3a1adf01e7850e6d0c6f1c698c95",
       "status": "executed"
     },
     "64": {
       "path": "batch64/campaign-status.json",
-      "sha256": "f05f8a179919ab3f26e9211426dcb7b42fac02f533fcd3e1cc31b0a420bc728e",
+      "sha256": "4d1400ca03216993c43c4962b11aa3e42e25322f43f1f290ab2c487f4e8f328d",
       "status": "executed"
     }
   },

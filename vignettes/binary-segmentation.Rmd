@@ -18,11 +18,13 @@ fits a binary mask on the canonical
 configure its image and mask roots. The analyst supplies schema column names
 and asset aliases, never filesystem roots or privacy parameters.
 
-The prior v2 campaign is **invalid: pipeline defect under investigation**;
-its scores and floor verdicts are not release evidence. The fresh v3 campaign
-uses the preregistered Adam schedule below and retains v2 separately as
-invalidated history. Mechanism checks remain separately recorded; execution
-does not constitute reviewer acceptance.
+The current evidence is **protocol v5: public BUSI decoder pretraining followed
+by federated DP fine-tuning**. Random-initialization v3 and v4 results remain
+separately labelled boundary evidence; v2 remains invalidated by its schedule
+defect. The September 20 reconciliation established that the previously
+packaged current files were stale v3 copies. The current files now contain the
+verified v5 results. Mechanism checks remain separately recorded; execution
+and a passed utility floor do not constitute reviewer acceptance.
 
 ## Paired image and mask schema
 
@@ -76,11 +78,21 @@ Custodians provision these exact weights before training. Missing or mismatched
 weights fail preflight. The encoder is frozen, in evaluation mode, outside the
 released module; its BatchNorm statistics never learn from private images.
 
-The released decoder has three convolutions (128 to 32, 32 to 16, 16 to 1),
+The default decoder has three convolutions (128 to 32, 32 to 16, 16 to 1),
 ReLU activations and nearest upsampling by 2 then 4, producing `[1,128,128]`.
 The loss mixes per-image mean BCE and smoothed Dice with `alpha=0.5` and
 smoothing 1. `alpha=1` is the declared BCE ablation. There is no batch-wide Dice,
 trainable encoder, mixed precision, or image augmentation in this first profile.
+
+The constructor defaults to random initialization and the 41,537-parameter
+`decoder="current"`. It also supports `decoder="narrow"` (9,521 parameters;
+convolution channels 128 to 8, 8 to 4, 4 to 1) and `decoder="pointwise"` (129
+parameters). Selecting the narrow architecture does not load a public decoder
+checkpoint. The v5 benchmark used the narrow decoder with a BUSI-pretrained
+checkpoint applied by campaign-only tooling outside the trusted DP runner.
+That tooling replaced both the live decoder parameters and the initial arrays
+transmitted by Flower. The constructor has no public-checkpoint loading
+argument, so the example above does not reproduce the v5 initialization.
 
 ## Local prediction and public evaluation
 
@@ -144,23 +156,51 @@ no utility claim.
 
 ## Public benchmark evidence
 
-The preregistered campaign uses BrEaST and BUS-BRA with three DSLite sites,
+The current preregistered v5 campaign uses BrEaST and BUS-BRA with three DSLite sites,
 subject-disjoint 80/20 splits, three seeds, epsilon 1, 4 and 8, delta `1e-5`,
-clipping 1 and separate nominal batch-size 16 and 64 arms. Protocol v3 fixes 128 by 128
-inputs, ten rounds with three local epochs per round (30 total), round-local
-Adam at learning rate 0.001, and no augmentation or mixed precision. BUS-BRA also has the nested
+clipping 1 and separate nominal batch-size 16 and 64 arms. Protocol v5 fixes 128 by 128
+inputs and selects the narrow decoder, 60 public pretraining epochs, batch16
+and 20 rounds from three-seed BUS-BRA inner validation. Batch64 is the
+prespecified sensitivity arm. Fine-tuning uses three local epochs per round
+(60 total), round-local Adam at learning rate 0.001, and no augmentation or
+mixed precision. BUS-BRA also has the nested
 192-subject, BCE-only and heterogeneous-site extensions. The released
 federated DP model is compared with pooled DP, pooled nonprivate and
-federated nonprivate twins using the same initial decoder, effective tensors,
+federated nonprivate twins using the same seed-specific public-pretrained decoder, effective tensors,
 loss, optimizer and subject splits. Nonprivate twins are public benchmark
 diagnostics outside the released contract.
 The trivial comparison selects the strongest of four fixed masks: empty,
 full, a centered disk of radius 32, and a centered 64 by 64 square.
 
+Public pretraining used 780 BUSI images from the
+[Arya Shah Kaggle mirror, version 1](https://www.kaggle.com/datasets/aryashah2k/breast-ultrasound-images-dataset),
+attributed to [Al-Dhabyani et al. (2020)](https://doi.org/10.1016/j.dib.2019.104863).
+It is a disclosed nonprivate stage outside fine-tuning's DP accounting. BUSI
+has no patient mapping for this protocol and supplies no held-out utility
+claim; within-BUSI duplicates were retained and cross-dataset near-duplicate
+screening was not claimed. The mirror's CC0 declaration is preserved as
+provenance. `provenance/busi-v1/provenance.json`,
+`public-pretraining-manifest.json` and `public-pretraining/audit.json` bind the
+dataset, preprocessing, encoder and seed-specific checkpoint digests.
+The dataset ZIP SHA256 is
+`7fffc86a517934da55021f66641d81383058d26a30adb0ffab3780ca7e52d57d`;
+the pretraining audit SHA256 is
+`d59334151e074de56afaaec81e92930ddaad8371f7f2665577096ce4ff7d9d57`.
+Dataset and checkpoint tensors are not distributed with the package.
+
+Selection excluded outer-test subjects, but confirmation reused previously
+inspected public outer splits. These results describe public benchmark
+confirmation after development, not an unseen clinical test. Repeated
+benchmark runs are separately recorded; their privacy budgets must not be
+portrayed as one non-composed private release. The model remains `vetted=FALSE`.
+
 The tables below read `campaign-status.json`, `breast-evidence.json` and
 `busbra-evidence.json` in each arm directory under
 `inst/extdata/campaign/segmentation/` at render time. Arms are reported separately;
-no result is selected or averaged across arms.
+batch16 is the selected primary arm and batch64 is sensitivity, with no
+averaging across arms. Current `protocol.md` is byte-identical to
+`protocol-v5.md`, SHA256
+`28a713f8ffe6f7bb7b74e7d59d13d1be265d5738b43503c60e6581a67e0c5820`.
 The frozen protocol, dataset release hashes, licence texts, subject-mapping
 audits and split hashes are archived alongside the evidence. The
 archival assembler validates the complete JSON schemas, captured accountant
@@ -169,6 +209,16 @@ checks the schema identity, contract and protocol hash again. An incomplete
 cohort cannot produce a completed-matrix summary. Execution status is separate
 from utility acceptance and reviewer promotion.
 
+The earlier negative results remain in `retained/v3/` and `retained/v4/`, each
+with its original protocol. V4 uses the same selected narrow decoder and
+20-round schedule with random initialization; v3 uses the original decoder
+and ten rounds. The following comparison retains those distinctions.
+The reconciliation report and `audit-results.json` under
+`reconciliation-v5-20260920/` document the stale-path correction. Independent
+forward scoring reproduced all six v5 batch16 full-cohort epsilon8 results;
+the captured initialization matched the public checkpoints. Batch64 was not
+independently forward-scored in that audit.
+
 ```{r segmentation-evidence, eval=TRUE, echo=FALSE, error=FALSE, results="asis"}
 evidence_dir <- file.path("..", "inst", "extdata", "campaign", "segmentation")
 if (!dir.exists(evidence_dir)) {
@@ -176,11 +226,35 @@ if (!dir.exists(evidence_dir)) {
                               package = "dsFlowerClient")
 }
 archive_dir <- evidence_dir
+boundary_rows <- list()
+for (version in c("v3", "v4", "v5")) {
+  version_dir <- if (version == "v5") archive_dir else
+    file.path(archive_dir, "retained", version)
+  evidence <- jsonlite::read_json(file.path(version_dir, "batch16", "busbra-evidence.json"))
+  stopifnot(identical(evidence$protocol_sha256,
+    digest::digest(file = file.path(version_dir, "protocol.md"), algo = "sha256")))
+  for (epsilon in c(1, 4, 8)) {
+    replicates <- Filter(function(value) value$epsilon == epsilon, evidence$replicates)
+    stopifnot(length(replicates) == 3L,
+      setequal(vapply(replicates, function(value) value$seed, integer(1)),
+               c(20260919L, 20260920L, 20260921L)))
+    boundary_rows[[length(boundary_rows) + 1L]] <- data.frame(
+      Protocol = version,
+      Initialization = if (version == "v5") "Public BUSI" else "Random",
+      Epsilon = epsilon,
+      `Foreground Dice` = sprintf("%.3f", mean(vapply(replicates,
+        function(value) value$federated_dp$foreground_positive$dice, numeric(1)))),
+      check.names = FALSE)
+  }
+}
+print(knitr::kable(do.call(rbind, boundary_rows), row.names = FALSE,
+  caption = "BUS-BRA batch16 federated-DP foreground Dice: mean over three seeds, with earlier boundaries retained."))
+cat("\n\n")
 render_arm <- function(evidence_dir) {
   if (basename(evidence_dir) %in% c("batch16", "batch64")) {
     cat("## Nominal ", basename(evidence_dir), " arm\n\n", sep = "")
   }
-  protocol_hash <- digest::digest(file = file.path(archive_dir, "protocol.md"),
+  protocol_hash <- digest::digest(file = file.path(archive_dir, "protocol-v5.md"),
                                   algo = "sha256")
   read_evidence <- function(filename, schema_file) {
     value <- jsonlite::read_json(file.path(evidence_dir, filename))

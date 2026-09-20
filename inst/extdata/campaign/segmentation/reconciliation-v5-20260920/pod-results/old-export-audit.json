@@ -1,0 +1,68 @@
+[
+  {
+    "dataset": "busbra",
+    "seed": 20260919,
+    "model_path": "/workspace/segmentation/v3/runs-batch16/busbra-full-eps8-seed20260919/artifact/pytorch_resnet18_segmentation_FedAvg_10r_20260918_193419/model.pt",
+    "model_sha256": "4c7049472e29cd964d568d203d129d1ecdc529d98dd065e5a3a190cfd251840a",
+    "foreground_dice": 0.0,
+    "foreground_pixel_rate": 0.0,
+    "subjects_with_foreground": 0,
+    "max_probability": 0.37363871932029724,
+    "public_pretraining_present": false
+  },
+  {
+    "dataset": "busbra",
+    "seed": 20260920,
+    "model_path": "/workspace/segmentation/v3/runs-batch16/busbra-full-eps8-seed20260920/artifact/pytorch_resnet18_segmentation_FedAvg_10r_20260918_194943/model.pt",
+    "model_sha256": "f37297bdbf2e7bbd3a010d1bc1e2181cf07dcbc02286a41b6e38a29c9cabfd9a",
+    "foreground_dice": 0.0,
+    "foreground_pixel_rate": 0.0,
+    "subjects_with_foreground": 0,
+    "max_probability": 0.3293812870979309,
+    "public_pretraining_present": false
+  },
+  {
+    "dataset": "busbra",
+    "seed": 20260921,
+    "model_path": "/workspace/segmentation/v3/runs-batch16/busbra-full-eps8-seed20260921/artifact/pytorch_resnet18_segmentation_FedAvg_10r_20260918_200431/model.pt",
+    "model_sha256": "37376430811ad1ed5ab35cde0cf369f48ab7304d79fbb77e09407dfcabba4d39",
+    "foreground_dice": 0.0,
+    "foreground_pixel_rate": 0.0,
+    "subjects_with_foreground": 0,
+    "max_probability": 0.3068883717060089,
+    "public_pretraining_present": false
+  },
+  {
+    "dataset": "breast",
+    "seed": 20260919,
+    "model_path": "/workspace/segmentation/v3/runs-batch16/breast-full-eps8-seed20260919/artifact/pytorch_resnet18_segmentation_FedAvg_10r_20260918_175346/model.pt",
+    "model_sha256": "c4b3978f97e072b9ec3b1e2592f31f12a74403bcb32bdd42fd3cf99311dc5fb1",
+    "foreground_dice": 0.13265339639408608,
+    "foreground_pixel_rate": 0.9967447916666666,
+    "subjects_with_foreground": 51,
+    "max_probability": 0.5303128957748413,
+    "public_pretraining_present": false
+  },
+  {
+    "dataset": "breast",
+    "seed": 20260920,
+    "model_path": "/workspace/segmentation/v3/runs-batch16/breast-full-eps8-seed20260920/artifact/pytorch_resnet18_segmentation_FedAvg_10r_20260918_175959/model.pt",
+    "model_sha256": "73a95c7c240ee57eabe92e92655b9e1d8c4057642adf6855fdbbe8caf73af12f",
+    "foreground_dice": 0.0,
+    "foreground_pixel_rate": 0.0,
+    "subjects_with_foreground": 0,
+    "max_probability": 0.4788646399974823,
+    "public_pretraining_present": false
+  },
+  {
+    "dataset": "breast",
+    "seed": 20260921,
+    "model_path": "/workspace/segmentation/v3/runs-batch16/breast-full-eps8-seed20260921/artifact/pytorch_resnet18_segmentation_FedAvg_10r_20260918_180604/model.pt",
+    "model_sha256": "569c1ee6c0cea04bf43325822347d3b965d88ad29ffb79b35383de67d60dd56c",
+    "foreground_dice": 0.0,
+    "foreground_pixel_rate": 0.0,
+    "subjects_with_foreground": 0,
+    "max_probability": 0.4414685070514679,
+    "public_pretraining_present": false
+  }
+]

@@ -1,3 +1,23 @@
+# dsFlowerClient 0.5.0
+
+* Admit the subject-level Weibull and log-normal AFT survival contracts and
+  discrete-hazard contract, with public time/grid settings, local prediction,
+  and fail-closed private validation, holdout, cross-validation and HPO guards.
+* Package the preregistered hazard-v2 confirmation for selected schedule h06
+  (10 rounds, 4 local epochs, batch 64, learning rate 0.05, 10 intervals), and
+  use its 30 confirmation cells for current hazard summaries while retaining
+  the original v1 matrix unchanged.
+* Merge binary segmentation and document the v5 public-initialisation campaign
+  route using audited public BUSI decoder checkpoints. This benchmark route
+  is distinct from the constructor's random decoder initialisation; the
+  segmentation contract remains unpromoted pending reviewer acceptance.
+* Correct stale segmentation evidence that was an exact copy of v3: current
+  batch-16 and batch-64 records now contain genuine protocol-v5 results.
+  Retain explicitly labelled v3/v4 random-initialisation boundary evidence,
+  public-pretraining manifests/audits and stale-file reconciliation provenance.
+* Regenerate the survival/segmentation evidence summaries and articles from
+  packaged records, retaining failed floors and provenance limitations.
+
 # dsFlowerClient 0.4.4
 
 ### Explicit resource routing and lifecycle

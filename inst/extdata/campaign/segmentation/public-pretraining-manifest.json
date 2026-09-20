@@ -1,0 +1,16 @@
+{
+  "public-pretraining/audit.json": "d59334151e074de56afaaec81e92930ddaad8371f7f2665577096ce4ff7d9d57",
+  "public-pretraining/epochs20/seed20260919.json": "952fa2910c806bcaf15859bfbf3ddb56166922f22848023fdf391103bd84d654",
+  "public-pretraining/epochs20/seed20260919.npz": "3a495ccd2d85e889542ff573badab2edcf71e6385ccc897f25028febad4b69ce",
+  "public-pretraining/epochs20/seed20260920.json": "cdf77204da6820e3567b482733f2e4fcc040136d0779c8fbb9d1ba4cc6b3ddd6",
+  "public-pretraining/epochs20/seed20260920.npz": "5871d732be2bba056e9d0e539ac01c51310c6d501f8a2441a5113239258c4165",
+  "public-pretraining/epochs20/seed20260921.json": "0076abc51a7717bcbbdd614b39354a213f3092f03a59de588374426df406d148",
+  "public-pretraining/epochs20/seed20260921.npz": "86ab44a4daa2a37fab8910c80140f1e4a788af7926b3ab82775e409d7f9194b0",
+  "public-pretraining/epochs60/seed20260919.json": "7d4152fab1052a7696ccfa722a5661836f455a648a96e6f99654b8e734f5c55d",
+  "public-pretraining/epochs60/seed20260919.npz": "b6db994dbb3a922b7b62e60a97a6dac5ce56757015d8e3756b1788e08673d311",
+  "public-pretraining/epochs60/seed20260920.json": "3f3e9d6ceca5dda443c8e0f52d882f5d23b041685eff4b954bbd95449a9523db",
+  "public-pretraining/epochs60/seed20260920.npz": "b49b39a40ac00287ba5292f053aafff4c8ef042d09ac9c3a51d88ef2d94e07ed",
+  "public-pretraining/epochs60/seed20260921.json": "d7bfadb69b4c539669783e566a6185424f748102b612b48710d1a03cb46f7b1d",
+  "public-pretraining/epochs60/seed20260921.npz": "54a83fc0751d6a3fba2f461db5a9b1e06ef7b828beed30bc0fc2fc7530452abb",
+  "public-pretraining/public-busi-tensors.npz": "0e05f791099ea50089304e30ed44607ced0691f4f3fde97c3133432e6e938f0d"
+}

@@ -1,0 +1,25 @@
+{
+  "dataset": "BUSI",
+  "privacy": "public_nonprivate",
+  "seed": 20260920,
+  "decoder": "narrow",
+  "epochs": 20,
+  "checkpoint": "/workspace/segmentation/v5/public-pretraining/epochs20/seed20260920.npz",
+  "checkpoint_sha256": "5871d732be2bba056e9d0e539ac01c51310c6d501f8a2441a5113239258c4165",
+  "tensor_sha256": [
+    "7ebf4db87bc494dbe5a7595ebd76594474ae9a0f9160b60dd6bb8568768f8ad2",
+    "b46ea1de243e516ac099f46d61301c1597573eff472f630fe7c331b87b76823e",
+    "dd563fcc297a4423b29e022857d15b36ac76a9d877282d4fca0fa795466a9fa1",
+    "c7cd9f4d6a0be23c5a94a3086cbd26ed3fa0a35a42f098ece8c6aa191a22c75a",
+    "4ed8ad0e4a0a939eb0aefe57b88655635a276ccdc5420c6ced80a0098f1b1d2d",
+    "2706b1e32ef3e2bfc7e3e7326151c64c1efb3cec330789dd7c6c35dbe0eb3f9c"
+  ],
+  "encoder_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+  "protocol_sha256": "28a713f8ffe6f7bb7b74e7d59d13d1be265d5738b43503c60e6581a67e0c5820",
+  "dataset_sha256": "7fffc86a517934da55021f66641d81383058d26a30adb0ffab3780ca7e52d57d",
+  "audit_sha256": "d59334151e074de56afaaec81e92930ddaad8371f7f2665577096ce4ff7d9d57",
+  "provenance_sha256": "0e3dd39468fdfe562b54b412284eb7315e612ba2f579b566ec49495bfe3bc51d",
+  "initial_random_tensor_sha256": "c585298347592d2ad1ff05c2fae23f5441924569918ea36013f8860f4215dcfd",
+  "optimizer": "Adam lr=.001 betas=(.9,.999) eps=1e-8 no decay; batch16, no DP",
+  "training_loss": 0.364855075493837
+}
