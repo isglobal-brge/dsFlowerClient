@@ -34,6 +34,8 @@ is `NA`. The default curve grid is the public edges (hazard) or `[0, horizon]`.}
 \value{
 A response vector, probability matrix, or (for `type = "survival"`)
   a list with `times` and a subject-by-time `survival` matrix.
+  Binary segmentation returns an array [image, channel, row, column] on the
+  canonical 128 by 128 grid; response masks use probability >= 0.5.
   Saved vision and native-tree
   classifiers return response values from their ordered public target levels.
 }

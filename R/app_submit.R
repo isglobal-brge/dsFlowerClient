@@ -219,7 +219,10 @@
   if (.is_survival_loss(loss_name)) {
     out[["survival-config-b64"]] <- .survival_json_b64(.survival_config(p, loss_name))
   }
-  if (identical(loss_name, "negbin_nll")) {
+  if (identical(loss_name, "segmentation_bce_dice")) {
+    out[["segmentation-alpha"]] <- as.numeric(p[["alpha"]] %||% 0.5)
+    out[["segmentation-smooth"]] <- 1
+  } else if (identical(loss_name, "negbin_nll")) {
     out[["nb-dispersion"]] <- as.numeric(p[["nb_dispersion"]] %||% 1)
   } else if (identical(loss_name, "gamma_nll")) {
     out[["gamma-shape"]] <- as.numeric(p[["gamma_shape"]] %||% 1)
@@ -310,7 +313,7 @@
   params <- sub$params %||% list()
   input_dim <- if (identical(data_kind, "image")) {
     switch(as.character(params[["backbone"]] %||% "resnet18"),
-      resnet18 = 512L, resnet18_3d = 512L,
+      resnet18 = 512L, resnet18_3d = 512L, resnet18_layer2 = 32768L,
       densenet121 = 1024L, densenet121_3d = 1024L,
       stop("Unsupported trusted image backbone.", call. = FALSE))
   } else {
@@ -365,7 +368,8 @@
 #' @param model A model name or \code{dsflower_model} (registry-resolved).
 #' @param target Character; ordered `c(time, event)` for survival, one target
 #'   column for scalar outcomes, or exactly \code{num_labels}
-#'   distinct columns for a multilabel model.
+#'   distinct columns for a multilabel model. Binary segmentation uses exactly
+#'   one mask-path column, with its vocabulary declared by the model.
 #' @param features Character vector; feature columns.
 #' @param data Optional character data source resolved during connection.
 #' @param resource Optional Opal or Armadillo Resource name.
@@ -486,6 +490,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     stop("Survival training inside HPO is unsupported; use a preregistered ",
          "public training schedule.", call. = FALSE)
   }
+  .assert_segmentation_hpo_supported(sub$loss)
   if (!is.null(holdout_spec)) {
     .assert_holdout_supported(sub, data_kind)
   }
@@ -501,6 +506,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
            "the __survival_ prefix is reserved.", call. = FALSE)
     }
     .validate_public_target_spec(target_levels, target_bounds, "survival")
+  } else if (identical(sub$loss, "segmentation_bce_dice")) {
+    .validate_public_target_spec(target_levels, target_bounds, "segmentation")
   }
   request <- NULL
   if (identical(sub$track, "native_tree")) {
@@ -656,6 +663,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                 negbin_nll = "count", gamma_nll = "regression",
                 aft_weibull_nll = "survival", aft_lognormal_nll = "survival",
                 discrete_hazard_nll = "survival",
+                segmentation_bce_dice = "segmentation",
                 "classification")
   p <- sub[["params"]] %||% list()
   n_target_classes <- as.integer(
@@ -695,7 +703,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
          "the `symbol=` data path).", call. = FALSE)
   }
   n_features <- if (identical(data_kind, "image")) {
-    .vision_extractor_feature_dim(p[["backbone"]])
+    if (identical(sub$loss, "segmentation_bce_dice")) 32768L else
+      .vision_extractor_feature_dim(p[["backbone"]])
   } else if (!is.null(features)) {
     length(features)
   } else {
@@ -753,6 +762,16 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         "backbone" = p[["backbone"]],
         "image-size" = as.integer(p[["image_size"]]),
         "vision-extractor-profile" = p[["vision_extractor_profile"]]))
+    }
+    if (identical(sub$loss, "segmentation_bce_dice")) {
+      prepare_config[["num-labels"]] <- NULL
+      prepare_config <- c(prepare_config, .segmentation_public_config(p), list(
+        image_asset = p[["image_asset"]], mask_asset = p[["mask_asset"]],
+        image_path_col = p[["image_path_col"]], mask_path_col = target,
+        sample_id_col = p[["sample_id_col"]]))
+      for (field in c("mask_empty_col", "subject_id_col")) {
+        if (!is.null(p[[field]])) prepare_config[[field]] <- p[[field]]
+      }
     }
   } else if (identical(sub$track, "native_tree")) {
     prepare_config <- c(prepare_config, list(
@@ -845,7 +864,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       .toml_kv("loss-name", sub$loss %||% "bce_logits"),
       paste0("num-classes = ", as.integer(
         p[["n_classes"]] %||% p[["num_classes"]] %||% 2L)),
-      paste0("num-labels = ", as.integer(p[["num_labels"]] %||% 2L)),
+      if (!identical(sub$loss, "segmentation_bce_dice"))
+        paste0("num-labels = ", as.integer(p[["num_labels"]] %||% 2L)),
       paste0("local-epochs = ", as.integer(p[["local_epochs"]] %||% 1L)),
       paste0("batch-size = ", as.integer(p[["batch_size"]] %||% 32L)),
       unname(vapply(names(training_config), function(key) {
@@ -861,6 +881,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         paste0("image-size = ", as.integer(p[["image_size"]] %||% 224L)),
         .toml_kv("vision-extractor-profile",
                  p[["vision_extractor_profile"]]))
+    }
+    if (identical(sub$loss, "segmentation_bce_dice")) {
+      segmentation_config <- .segmentation_public_config(p)
+      cfg <- c(cfg, unname(vapply(names(segmentation_config), function(key) {
+        .toml_kv(key, segmentation_config[[key]])
+      }, character(1))))
     }
   } else if (identical(sub$track, "native_tree")) {
     cfg <- c(
@@ -1035,6 +1061,13 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   if (identical(task_type, "survival")) {
     if (!is.null(levels) || !is.null(bounds)) {
       stop("Survival uses fixed event coding and public survival time bounds; ",
+           "target_levels and target_bounds are unsupported.", call. = FALSE)
+    }
+    return(list(levels = NULL, bounds = NULL))
+  }
+  if (identical(task_type, "segmentation")) {
+    if (!is.null(levels) || !is.null(bounds)) {
+      stop("Segmentation uses a mask-path target and declared mask_values; ",
            "target_levels and target_bounds are unsupported.", call. = FALSE)
     }
     return(list(levels = NULL, bounds = NULL))

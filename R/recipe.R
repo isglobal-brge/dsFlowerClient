@@ -40,6 +40,8 @@ ds.flower.recipe <- function(model,
   }
   inferred_type <- if (.is_survival_loss(model$loss)) {
     "survival"
+  } else if (identical(model$loss, "segmentation_bce_dice")) {
+    "segmentation"
   } else if (model$loss %in% c("poisson_nll", "negbin_nll")) {
     "count"
   } else if (model$loss %in% c("mse", "huber", "quantile", "gamma_nll")) {

@@ -188,3 +188,13 @@ produced by the canonical runner.
    releases.
 5. Treat HookApp upload, execution and DP-SGD-level granularity as distinct
    concerns.
+
+
+## Segmentation admission
+
+The `pytorch_resnet18_segmentation` registration maps to the trusted
+`segmentation_bce_dice` loss and exact `resnet18_layer2_128_v1` spatial profile.
+It requires the custodian patient policy, image/mask asset containment and a
+stable image ID. Adding a registry name cannot enable an alternate decoder,
+encoder checkpoint, batch-wide Dice or private validation. See the
+[binary segmentation guide](binary-segmentation.html) for the public schema.

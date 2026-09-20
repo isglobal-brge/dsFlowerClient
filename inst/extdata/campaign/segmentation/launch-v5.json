@@ -1,0 +1,12 @@
+{
+  "pid": 2399086,
+  "log": "/workspace/logs/segmentation-v5-driver.log",
+  "pid_file": "/workspace/segmentation/v5-driver.pid",
+  "study_root": "/workspace/segmentation/v5",
+  "status_file": "/workspace/segmentation/v5/STATUS_R2.md",
+  "launched_at": "2026-09-19T07:24:46.190740+00:00",
+  "protocol_sha256": "28a713f8ffe6f7bb7b74e7d59d13d1be265d5738b43503c60e6581a67e0c5820",
+  "registration_sha256": "684cccf41cf0b7236ae82063c2cd922643bb938489d736731232750d4d8542bb",
+  "command": "nohup /bin/sh /workspace/segmentation/campaign-v5/tools/campaign/segmentation/launch_v5.sh > /workspace/logs/segmentation-v5-driver.log 2>&1 < /dev/null &",
+  "outcome_polled": false
+}

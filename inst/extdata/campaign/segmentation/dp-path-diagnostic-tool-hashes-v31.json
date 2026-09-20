@@ -1,0 +1,11 @@
+{
+  "checks/diagnose-dp-v31.py": "194ceff3dbe06a28c4b5a188b0074631d3da93119aec76cd5cb39739ba667e8c",
+  "checks/diagnose-dp-ten-v31.py": "7cb88d50b5e9c5833214ce20fda92c2c3d884f491242ebf8ec2068d51b18e226",
+  "checks/diagnose-nonprivate-v31.py": "02009d070dbbb4688bd4e693508bd2d4d7f216c9628774b7a9404ae8a392e066",
+  "checks/public-dp-trace-v31.py": "8a2edf1a3a9d15978e0c9043860c07368c8967e046e45154fb66af194b03272b",
+  "checks/install-diagnostic-trace-v31.py": "778971151f4866dc904bfa6c7969c318ad6dcd7050e300a78840a319975f1230",
+  "checks/launch-diagnostic-v31.sh": "6a59a29145f42ed5fe789bc066a7ef429fa44b41a69f77edf511c42efdcb94a8",
+  "checks/verify-dp-diagnosis-v31.py": "d982b9f48dd0e1105e1f01ef331f2f0f25032275c592b95ee9b7b4e7de9f0c1e",
+  "checks/check-diagnostic-observer-parity.py": "aed300afcdd8b722f33b5ea6a1df83d2fa60bd71174e23d4c566d43153be3572",
+  "checks/finalize-dp-v31.py": "308bedac53005ac2ae46fe717e2bd723877fcd5dd2cebf57ee3d8bf4a9194538"
+}

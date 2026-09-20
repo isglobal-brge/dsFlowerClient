@@ -22,6 +22,8 @@ navbar:
           href: articles/api-quickstart.html
         - text: "Server Method Registration"
           href: articles/method-registration-live-federation.html
+        - text: "Binary 2D Segmentation"
+          href: articles/binary-segmentation.html
         - text: "Utility Campaign"
           href: articles/utility-campaign.html
 
@@ -33,6 +35,7 @@ articles:
       - method-registration-live-federation
       - utility-campaign
       - survival-segmentation
+      - binary-segmentation
 
 reference:
   - title: "High-level submission"
@@ -88,6 +91,12 @@ reference:
       - ds.flower.model.random_forest
       - ds.flower.model.lightgbm
       - ds.flower.model.catboost
+
+  - title: "Binary 2D Segmentation"
+    desc: "Pinned spatial decoder, subject privacy, and local mask prediction."
+    contents:
+      - ds.flower.model.pytorch_resnet18_segmentation
+      - ds.flower.task.segmentation
 
   - title: "Specification: Strategies"
     desc: "Federated aggregation strategy specifications."

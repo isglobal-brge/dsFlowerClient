@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dsflower-segmentation-campaign-summary-v1",
+  "type": "object",
+  "required": ["schema", "status", "contract", "task", "protocol_sha256", "cells", "promotion"],
+  "properties": {
+    "schema": {"const": "dsflower-segmentation-campaign-summary-v1"},
+    "status": {"enum": ["not_executed", "failed", "executed"]},
+    "contract": {"const": "pytorch_resnet18_segmentation"},
+    "task": {"const": "segmentation"},
+    "protocol_sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+    "promotion": {"type": "string", "minLength": 1},
+    "cells": {
+      "type": "array", "minItems": 33, "maxItems": 33, "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "required": ["dataset", "variant", "epsilon", "seed", "status"],
+        "properties": {
+          "dataset": {"enum": ["breast", "busbra"]},
+          "variant": {"enum": ["full", "small192", "bce", "heterogeneous"]},
+          "epsilon": {"enum": [1, 4, 8]},
+          "seed": {"enum": [20260919, 20260920, 20260921]},
+          "status": {"enum": ["not_executed", "failed", "executed"]},
+          "reason": {"type": "string", "minLength": 1}
+        },
+        "allOf": [
+          {"if": {"properties": {"status": {"enum": ["not_executed", "failed"]}}},
+           "then": {"required": ["reason"]}}
+        ]
+      }
+    }
+  },
+  "not": {"anyOf": [{"required": ["scores"]}, {"required": ["replicates"]}]},
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "executed"}}},
+     "then": {"properties": {"cells": {"items": {"properties": {"status": {"const": "executed"}}}}}}}
+  ]
+}

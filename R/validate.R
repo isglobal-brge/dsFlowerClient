@@ -560,6 +560,10 @@
     stop("Saved model metadata is unreadable.", call. = FALSE)
   }
   .reject_survival_private_evaluation(.validation_atomic(meta$loss_name))
+  if (identical(meta$loss_name, "segmentation_bce_dice")) {
+    stop("Private segmentation validation and HPO are unsupported; ",
+         "score public or authorized local data instead.", call. = FALSE)
+  }
   track <- tolower(as.character(.validation_atomic(meta$track %||% "")))
   if (length(track) != 1L || !track %in% c("neural", "native_tree")) {
     stop("Private validation supports declarative neural artifacts or sanitized ",

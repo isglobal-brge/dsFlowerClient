@@ -1,0 +1,14 @@
+{
+  "schema": "dsflower-segmentation-public-memory-smoke-v1",
+  "status": "passed",
+  "synthetic_subject_batch": 285,
+  "all_parameter_grad_samples_finite": true,
+  "optimizer_steps": 0,
+  "scoring_performed": false,
+  "peak_cuda_allocated_bytes": 1910498816,
+  "peak_cuda_reserved_bytes": 2327838720,
+  "three_node_peak_plus_1gib_each": 8952721920,
+  "device_total_bytes": 47708110848,
+  "three_node_bound_fits": true,
+  "elapsed_s": 0.6331642847508192
+}

@@ -40,7 +40,8 @@ allowlist: stock losses \code{bce_logits},
 \code{hinge} (linear SVM), \code{ordinal} (CORN); plus vetted custom per-sample
 losses \code{negbin_nll} (overdispersed counts), \code{gamma_nll}
 (positive continuous), \code{huber} (bounded robust regression), and
-\code{quantile} (bounded conditional-quantile regression).
+\code{quantile} (bounded conditional-quantile regression), and
+\code{segmentation_bce_dice} (the pinned per-image binary mask decoder).
 The node pins the actual loss; this is the client's request.}
 
 \item{defaults}{Named list of default params merged under user-supplied params.}

@@ -69,6 +69,17 @@
       params[["backbone"]], params[["image_size"]])
   }
 
+  if (identical(model$name, "pytorch_resnet18_segmentation")) {
+    params[["backbone"]] <- "resnet18_layer2"
+    params[["vision_extractor_profile"]] <- "resnet18_layer2_128_v1"
+    params[["image_size"]] <- 128L
+    params[["segmentation_selection"]] <- "canonical-image-id-lexicographic-v1"
+    params[["segmentation_preprocessing"]] <- "rgb_bilinear_imagenet_128_v1"
+    params[["segmentation_output_shape"]] <- "1,128,128"
+    params[["segmentation_checkpoint_sha256"]] <-
+      .SEGMENTATION_CHECKPOINT_SHA256
+  }
+
   if (identical(m$track, "neural")) {
     spec <- m$generate(params)
     is_seq   <- !is.null(spec$layers)

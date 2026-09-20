@@ -314,3 +314,14 @@ this cohort.
 - Each evidence file records package versions, host, seeds, split policy,
   model hyperparameters, per-replicate metrics and the full privacy
   configuration, so any cell can be re-executed and compared byte-for-byte.
+
+
+## Binary segmentation protocol
+
+The experimental segmentation contract uses a subject-disjoint public split,
+canonical 128 by 128 masks, per-subject Dice at threshold 0.5 and IoU, with
+foreground and empty-mask strata. Private node evaluation is unsupported. Its
+three-site BrEaST/BUS-BRA protocol and exact central twins require separate
+executed evidence; no Dice score or practical utility floor is established by
+the constructor. See the [binary segmentation guide](binary-segmentation.html)
+and the segmentation campaign artifacts for the execution status.

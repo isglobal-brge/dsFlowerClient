@@ -34,6 +34,7 @@
   <ul class="dropdown-menu" aria-labelledby="dropdown-guides">
 <li><a class="dropdown-item" href="../articles/api-quickstart.html">API Quickstart</a></li>
     <li><a class="dropdown-item" href="../articles/method-registration-live-federation.html">Server Method Registration</a></li>
+    <li><a class="dropdown-item" href="../articles/binary-segmentation.html">Binary 2D Segmentation</a></li>
     <li><a class="dropdown-item" href="../articles/utility-campaign.html">Utility Campaign</a></li>
   </ul>
 </li>
@@ -465,6 +466,17 @@ policy, model hyperparameters, per-replicate metrics and the full
 privacy configuration, so any cell can be re-executed and compared
 byte-for-byte.</li>
 </ul>
+</div>
+<div class="section level2">
+<h2 id="binary-segmentation-protocol">Binary segmentation protocol<a class="anchor" aria-label="anchor" href="#binary-segmentation-protocol"></a>
+</h2>
+<p>The experimental segmentation contract uses a subject-disjoint public
+split, canonical 128 by 128 masks, per-subject Dice at threshold 0.5 and
+IoU, with foreground and empty-mask strata. Private node evaluation is
+unsupported. Its three-site BrEaST/BUS-BRA protocol and exact central
+twins require separate executed evidence; no Dice score or practical
+utility floor is established by the constructor. See the <a href="binary-segmentation.html">binary segmentation guide</a> and the
+segmentation campaign artifacts for the execution status.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

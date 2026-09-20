@@ -158,18 +158,13 @@ ds.flower.task <- function(name = "classification") {
          call. = FALSE)
   }
 
-  key <- .dsflower_choice_key(name)
-  if (key %in% c("segmentation")) {
-    stop("Task '", name, "' is not supported by the enforced-DP runtime. ",
-         "Supported tasks: classification, regression, count, survival.", call. = FALSE)
-  }
-
   choices <- c(
     classification = "ds.flower.task.classification",
     class = "ds.flower.task.classification",
     regression = "ds.flower.task.regression",
     count = "ds.flower.task.count",
-    survival = "ds.flower.task.survival"
+    survival = "ds.flower.task.survival",
+    segmentation = "ds.flower.task.segmentation"
   )
 
   .dsflower_call_constructor(.dsflower_choice(name, choices, "task"), list())
@@ -336,6 +331,8 @@ ds.flower.fit <- function(conns,
     model_spec$loss <- .dsflower_model_loss(registered, model_spec$params)
   }
 
+  .assert_segmentation_hpo_supported(model_spec$loss)
+
   strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
     if (length(strategy_params)) {
       stop("'strategy_params' cannot be used when 'strategy' is already a ",
@@ -355,6 +352,8 @@ ds.flower.fit <- function(conns,
         "regression" else "classification"
     } else if (.is_survival_loss(model_loss)) {
       "survival"
+    } else if (identical(model_loss, "segmentation_bce_dice")) {
+      "segmentation"
     } else if (model_loss %in% c("poisson_nll", "negbin_nll")) {
       "count"
     } else if (model_loss %in% c(

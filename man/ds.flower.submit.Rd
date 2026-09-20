@@ -38,7 +38,8 @@ ds.flower.submit(
 
 \item{target}{Character; ordered `c(time, event)` for survival, one target
 column for scalar outcomes, or exactly \code{num_labels}
-distinct columns for a multilabel model.}
+distinct columns for a multilabel model. Binary segmentation uses exactly
+one mask-path column, with its vocabulary declared by the model.}
 
 \item{features}{Character vector; feature columns.}
 

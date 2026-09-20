@@ -1,0 +1,1086 @@
+{
+  "dataset": "breast",
+  "empty_declaration": "Only XLSX Classification=normal and no tumor/other annotation; four explicit blank PNGs generated",
+  "image_root": "/workspace/segmentation/data/breast",
+  "mask_conversion": "equal RGB silhouette from RGBA -> L uint8 {0,255}; native geometry; all tumor/other suspicious-lesion annotations unioned by runtime",
+  "mask_hashes": {
+    "case001_tumor.png": {
+      "normalized_sha256": "d41a3d9ec482b04929b8058f1805e9668f4390976649aa234c8d11a12a771d57",
+      "source_sha256": "ee9ee091ff976524c702237737d49c5fff88f1b3bb7cc8b89081903853657643"
+    },
+    "case002_tumor.png": {
+      "normalized_sha256": "a84ae927eb9d0cc7cb179ec68b7784f52bff6601fdad33784cac3dcc8f14b4ef",
+      "source_sha256": "430e4680497d6bc995cdae5602d28f61c97648a1ec38e3b41807199d5b95e29d"
+    },
+    "case003_tumor.png": {
+      "normalized_sha256": "e616933dd3df9e4c87d8e9af9bf0ff8f0ebffb3c9277f0f491b5217caf922616",
+      "source_sha256": "d3108ff19d17f5646eb145150cca87694211bd0025d93b6fdd1fcded09c7de6a"
+    },
+    "case004_tumor.png": {
+      "normalized_sha256": "0467bfbb5c7f593c0b44bc3b6cf8780dc7de535c154a1f46660f627708f62d01",
+      "source_sha256": "bf70015d7deac3e5c3ac3991203fa4bb68dd5297fb3804e6ef8bbcfc11244716"
+    },
+    "case005_tumor.png": {
+      "normalized_sha256": "59cc041e767e3f1dcaa554145962a7ad616053838430db58f84303c4c876cca3",
+      "source_sha256": "60cf29061a9df01696b4dfbcc13c0fc0e3e0256da70d04dc7db72224a72119ee"
+    },
+    "case006_tumor.png": {
+      "normalized_sha256": "d50202ecedfc516c3bcf3be703e5e936384486ad85cd4c75c1ccba975739c977",
+      "source_sha256": "805c84863ce2675cec8bfaa2f07b847336b7841ab75f568b61d108a5d78b7f2b"
+    },
+    "case007_tumor.png": {
+      "normalized_sha256": "c3578395cd8748c85d5e8e7a9efeed395e904693af112d8be838d735218b3ea8",
+      "source_sha256": "7e037815da3521cebce02739e29e20c16753a268cc222ddd8c1705c802c316e3"
+    },
+    "case008_tumor.png": {
+      "normalized_sha256": "cc52c351f8798dc2866cc5c7a49d0ba35006b5d670efd151b68f5e366361222c",
+      "source_sha256": "6f1eda09be8826a2ed1320d988870a00c3e38348dc1492b8a49931d1a81b65e6"
+    },
+    "case009_tumor.png": {
+      "normalized_sha256": "238824ab72adea57f6d306180241c9b4d61872987a753bb29f1c06a137bd541b",
+      "source_sha256": "8b1a7192e63c5ae5571490d6426d749d27612a67321fd232c8d54872784dbce0"
+    },
+    "case010_tumor.png": {
+      "normalized_sha256": "7a979bbd2698aadabe4a64c471539191b21d4b98697ffe3205da4a4b6f0005c2",
+      "source_sha256": "361613a925584ce185334cffee00b7e331c2a88febdb69fcd529e3f8c014ddd8"
+    },
+    "case011_tumor.png": {
+      "normalized_sha256": "bd52dc3c17157c9eef99f4e35075b462705a8b88401c2221483350e3c3dfc7f3",
+      "source_sha256": "0a259ad06b7ea3b85ef62c30d0016beb1341e056314bdc82efc06d98b9addf78"
+    },
+    "case012_tumor.png": {
+      "normalized_sha256": "42ddd6a8191a10dc18d3e93599af224f2e660ebd9d363734882ae76e43d7be3e",
+      "source_sha256": "660448071351780bef8b22e85bc18908a2e0dee0ff2ec771ef4fb81a2dd00e98"
+    },
+    "case013_tumor.png": {
+      "normalized_sha256": "60d494d1e5f30b7f26ad409c57899519f7d736072e8542553b9fcdd98a49b031",
+      "source_sha256": "234396c265587f5ba08221ba815260335e712c17c2124f9ac799ed289ade13ef"
+    },
+    "case014_tumor.png": {
+      "normalized_sha256": "cd45678d3117655088885e22ff5310e65a1692ab437b04a0732c27d09d2a6713",
+      "source_sha256": "38eb04231b2e7b43823c1782b0fdbb0d87232fd6a419d0afc02146eac66f1971"
+    },
+    "case015_tumor.png": {
+      "normalized_sha256": "9ac0d43fafb46a6a7661f301352ae1ae7bb4f17674b2cc8e9de89d928f695ad9",
+      "source_sha256": "1ab7a55977cce4dfe5ba731eb67b4933ffe354867446125b719d4caec8576271"
+    },
+    "case016_tumor.png": {
+      "normalized_sha256": "56fd91bf207a1050cb6e9202ab812b63cbf9667a58dfc64a9d68187abf1c6647",
+      "source_sha256": "5c4be7176959d5d6db6ea52ac07e0fb8fb7b997f585ba55e684d1db742734b10"
+    },
+    "case017_tumor.png": {
+      "normalized_sha256": "a1e908b6c15d11a4eafa6ae2fb68165d4a924075443fbaaf1d503cc9eec3ce26",
+      "source_sha256": "0925131d2f513aa03f948f99bcb132e8517a3c925d09f1e8bc79db6d28492e2b"
+    },
+    "case018_tumor.png": {
+      "normalized_sha256": "14953fe47e71607a547a0306b35f4cd80b8e186b505f1a5cd4c6add487599603",
+      "source_sha256": "c2576c91ae1b738229ef72901750ab494a2c30018e20a9e023cbe071d97b759b"
+    },
+    "case019_tumor.png": {
+      "normalized_sha256": "f6c6f7aa466e1b8e39f227ca7d01db68ed742caedd2e53c88bbcb12677ac37b0",
+      "source_sha256": "7702e6605b6bc82428345083bf6b8acc662787a10d0626e416861df831b12662"
+    },
+    "case020_tumor.png": {
+      "normalized_sha256": "aedfded3122ab405db150c4c9d18c3b80ad8756c91dbfa7bb41b69b9810f35f7",
+      "source_sha256": "10e1ba67cdcdf6547993ddff771f8039eb1918ed4b311c18616a9570c7823e0b"
+    },
+    "case021_tumor.png": {
+      "normalized_sha256": "38cf27406476ab5cb721872b1edfe348f9d97ef3a6409776d9070152dbc964a4",
+      "source_sha256": "5c3f27b3ae3690646778203a87ff14ab55209a1ff2fa1ff36d3d56e1da0aa82c"
+    },
+    "case022_other1.png": {
+      "normalized_sha256": "402674d62a510e21dd9957ecfb919b80919ec501c926c3bb7d051d6091ca7fc9",
+      "source_sha256": "83f58519273bd1b8255c7203b3cae4d9add6257a3f484fce853365e38812b9fb"
+    },
+    "case022_other2.png": {
+      "normalized_sha256": "6806acbffd8397c368883a55938e6cc3f26a0924f3782000425302f2a02d110c",
+      "source_sha256": "5936577404665314b19c27fa2450712e5804326c26519f5beaeeb5054217da28"
+    },
+    "case022_tumor.png": {
+      "normalized_sha256": "81ddb2c4b895c2f27e0f14d3c2d70c938c94c44f63771c2181c919bd0aa46806",
+      "source_sha256": "caf0747f455b90042082fc8f4b4889fdc1f701f0939cdaa1d9b1cffd11634c76"
+    },
+    "case023_tumor.png": {
+      "normalized_sha256": "13f6d4f4d63ce61858cc9a3f1a76fa30990ef92de618ed2e0bd49e5773ab488d",
+      "source_sha256": "77e750c4bd2463e98beb4c1c6ebcf5158a93def2545e9435c471e6bfba56335c"
+    },
+    "case024_tumor.png": {
+      "normalized_sha256": "a22b6890a9549ecec24a932315a229f6b4ebe45ec55562af27dcdb24522143e2",
+      "source_sha256": "89efde543cf14286ee8978ad7b1e78001f2bcbefe8ee150fae2ce9520d9349a0"
+    },
+    "case025_tumor.png": {
+      "normalized_sha256": "38db0bc332c6de6f3349120318e668af0edaebb84190106d3b3e0f46fc61ce4a",
+      "source_sha256": "d6922056ec57a46b0cb1ddb306e1e38d25df462a47dccb1c8d5ab9405ad7ae49"
+    },
+    "case026_tumor.png": {
+      "normalized_sha256": "99c2f147588b7ab5380af2bc257f218829d213d92e0ab274026a90a282001f76",
+      "source_sha256": "7ab3abb09678fd0399e032dd843dfdd245d6939141e46db91ac2874715246cb6"
+    },
+    "case027_tumor.png": {
+      "normalized_sha256": "d34d67423ae3803074a0493ca82d786cb3d401387ce1d901b30ef6de7f3ec781",
+      "source_sha256": "5065afe57944c99944ca307116a60b2564538d9c516a2d9c987ac0637be4af38"
+    },
+    "case028_tumor.png": {
+      "normalized_sha256": "ca780d6693d19ec2740fff1d618b00e0daeff7aefbae69f2b61087a898ed40c3",
+      "source_sha256": "7248c041d695faabf7908a3b586c33d205fb0fdf5b6c86fc110492a4eea78c7f"
+    },
+    "case029_tumor.png": {
+      "normalized_sha256": "ebe4d4028ef6c0765b91131fe219d7c3ec2c2f06923f79700a199c2c35706a70",
+      "source_sha256": "7def34425bf4d4e83e372256012e4e8f4bea4c182779c48ae71074941ed86d1a"
+    },
+    "case030_tumor.png": {
+      "normalized_sha256": "5fee5df6b02668f6e4f7f7b1a4edcf733339738bc759162e7f8c81c3070bbf1c",
+      "source_sha256": "ae22aceae5694df2740962500789654b2816a9f7153c0f1924a17af4cd75e56a"
+    },
+    "case031_tumor.png": {
+      "normalized_sha256": "fd9c6f81f45478d11642c027b07b5a3d29857ef4a23e7694eb3ccdbff6e194e5",
+      "source_sha256": "ed04aec045eca9599951b538f241f9c99f696498c9401e0d1256712e2a616185"
+    },
+    "case032_tumor.png": {
+      "normalized_sha256": "96b9e410372d2581746e5429b8abf981ae4c3bcc04b64aa4de022c2da0110a17",
+      "source_sha256": "e1abf4edad28ebac3fb4dc72effb10be2c0719da905adfde59c6b3a0d84ef755"
+    },
+    "case033_tumor.png": {
+      "normalized_sha256": "417b13a3c094567915e40892fc23a8b8c5579c8c81d838cd5c2f6c8534539b5a",
+      "source_sha256": "abe859c85e0f268e5cc1ac13db87730a09b9d78d84be6dfcba3bb3dbfc483f51"
+    },
+    "case034_tumor.png": {
+      "normalized_sha256": "19e62182105f21031369db8db4a614afaae1cc74d858167632a960991ca9c57e",
+      "source_sha256": "b55afea793fd2e81c9db4ff68f24b6200840e82cfa8decc1aa3451847047caf2"
+    },
+    "case035_tumor.png": {
+      "normalized_sha256": "ba6b1523dd64489fd99738cf49f48f24a0cdbce6e5a6fc1f7b0741eef21eb145",
+      "source_sha256": "c521d09c6ab4cdd51b0a1560a784ebd3812214e6f447661ea833de68e8235722"
+    },
+    "case036_other1.png": {
+      "normalized_sha256": "49799c26e7e938b6e407fdb9a5926235a43fe4a6609a56ce1334839da635bb1e",
+      "source_sha256": "60a790dbc6ec55e05f1ef68a9161442c8664a39b0e061152783491238345902d"
+    },
+    "case036_other2.png": {
+      "normalized_sha256": "01a1988e608b572c60b8fc367819ef994f6df97ec1981649ed68f01822164be0",
+      "source_sha256": "090d58a4ca2f101a516ae8ef1f0327b4a3de33463784a91b7cf1ba0364729f7c"
+    },
+    "case036_tumor.png": {
+      "normalized_sha256": "581e524aabc99cd1f9869da1f5c7d7e4f9c3f848a49c2fc196e1c60a3fe12946",
+      "source_sha256": "686525fed0e46ee523aecd3f94c09d4e3afedbe1c4f1cabd879c5b2b577d9980"
+    },
+    "case037_tumor.png": {
+      "normalized_sha256": "5145c62e85885c4b648a77061f83900d5629c0977013f357358af477a866a045",
+      "source_sha256": "4bd30d0287565e8f0dd47a0ea30cbebba5283f3d7239932120dba2d17aec6926"
+    },
+    "case038_other1.png": {
+      "normalized_sha256": "d777d224842eec84302537ea39ac3458e5ae189e9c7f6ecc44d25370f6ebef4d",
+      "source_sha256": "7c30551357d57c1a5ba63d05149705a471fdaf3b8604983e6e3e07c7e226500d"
+    },
+    "case038_tumor.png": {
+      "normalized_sha256": "b98638145102156fc337668279149210e2dd7d8e5d80fe021a24f3f1007aadc8",
+      "source_sha256": "80fba174e769d28469346f78a2e62a902768f767b21fbb392c8122e75f4fac12"
+    },
+    "case039_tumor.png": {
+      "normalized_sha256": "e51c313220a9dca0d0d618fec6155fe9360238cbc6f4e53b7162afd0f7f5a8ba",
+      "source_sha256": "f0c6cd042d448fea8200cadead54b518dbb63acc46524c176645532df5558a31"
+    },
+    "case040_tumor.png": {
+      "normalized_sha256": "6c1c9d6afb89bea2fda110546f27df6ff361e40f0e0a96a40ee7c77be06a9d86",
+      "source_sha256": "ee540a5b7a133d394f835ddbcb1649ac157c9cf91e59f5843340991bebdcfb26"
+    },
+    "case041_tumor.png": {
+      "normalized_sha256": "6be90197b889ad6f3e11a550f46619518df53d48d6a1d28fcec828a6e8c5ca9d",
+      "source_sha256": "fbcff55ec77323bc3c993f120f983d868edcb580186f82fa0f4b97767c24174f"
+    },
+    "case042_tumor.png": {
+      "normalized_sha256": "921dde98e9bac54bce1afaaec8796943b060c1ff346bf33e8783da58b9ff4287",
+      "source_sha256": "e1c7ef4be22a949a8ffd1f7bf9d0a41964cc5073322228408128e64f6c967fa3"
+    },
+    "case043_tumor.png": {
+      "normalized_sha256": "14b3a45241b7b7ebd659fed19f1218d840f02418535c9fdfba6b8a9b7cf75f70",
+      "source_sha256": "3a43e2f76d5286a35e79903a80492d8ef463dc35b85cbdb6cb0faf71085bf25a"
+    },
+    "case044_tumor.png": {
+      "normalized_sha256": "4e878ca913565a438c709049b9f6b006b3bf96192e5170a265256fbcbb544bb7",
+      "source_sha256": "fac550ed959bdc584e58fd26a5de9ac724fd6f4f1ce5335c5b5adec2a0e1b8ec"
+    },
+    "case046_tumor.png": {
+      "normalized_sha256": "c4aa9e88b7d2f2c0197e09d1f5923374d64da7eb3260191e30d68c1e5a24268a",
+      "source_sha256": "b4a03926cc27825f5d1455d6681477925edb9fbad729a373d8b1ad117b5f2e9c"
+    },
+    "case047_tumor.png": {
+      "normalized_sha256": "8d683f441f481381e8970888fd899f2aaa310c10c7019017494e3733a06a185c",
+      "source_sha256": "e2ab821bfd0f14978c8cf786ce3613468e924bbdf7ae08c3bb32d023892f0d11"
+    },
+    "case048_tumor.png": {
+      "normalized_sha256": "b0f91acb24fc58e1bc33abb87302e49be9317b1535c5ec29cfa8de517022f011",
+      "source_sha256": "0cc68a0be1b8057a6699614fdc34dac90143ec66892e99f10aadc89eec9dfafc"
+    },
+    "case049_tumor.png": {
+      "normalized_sha256": "c1317cb57f343a6e54f2876ef9649c987ff39ec5fe78f312c14984b9091e9662",
+      "source_sha256": "761716ca8bad9dc22ca274fd1f451b6c56bb9706b04667974fe10b9f98c2b378"
+    },
+    "case050_tumor.png": {
+      "normalized_sha256": "dda343762e16251d495316f729787dc9c1f891645f37b045d1a150ff7b4958ae",
+      "source_sha256": "a7d30a255dc601097a53f750121e732a4e66efa7bac7249bc60f4a21cb51bab0"
+    },
+    "case051_tumor.png": {
+      "normalized_sha256": "ef14c6bc03d706a62be0bb29abdf077c1f2bba5d7f98df87ac373e3dd0187784",
+      "source_sha256": "38cf7693161e4c8bb823570f0e97ebc28805edbf90a914a7635f8897544f2094"
+    },
+    "case052_tumor.png": {
+      "normalized_sha256": "b5614a368a4eb7a3e2fdeef79992274cca23130097a4c10e4df65b5236716eba",
+      "source_sha256": "dfde211bf3649ff654f7a3255dfbda607b955faf45f96b0732075d0dbf8fee29"
+    },
+    "case053_tumor.png": {
+      "normalized_sha256": "e126551fd706c632ddd0ca8a379952a568ec293395a22b96d6ec964e72c55608",
+      "source_sha256": "b4f2ad90b4484969ba76cf7cbf8ea08a729cdbf4e32e3874374e10d85e102f11"
+    },
+    "case054_tumor.png": {
+      "normalized_sha256": "d38e6b34a0bd08b86b9fd4cf8e85efb1f0bfe4e12bd68fbed0d45e6f5b4972d7",
+      "source_sha256": "9159df6a70e3373d3973e41aeb057b86750fc37e500ed89eee8be5818af5e22a"
+    },
+    "case055_tumor.png": {
+      "normalized_sha256": "889f8de8a140497bba71e9bc07a9473229feea10c7c61670305737de7b9dcd94",
+      "source_sha256": "76afa1e28dba263f247e74fe030577b92736cee26e1ed48afeb5e4a7ff82e73a"
+    },
+    "case056_tumor.png": {
+      "normalized_sha256": "3e562ad86021741242ab52c1b820e33daf003a89123e419fbf7f5d9fbe53311f",
+      "source_sha256": "55d63c15383edd5af8044ac61656d19c88a49473c004cbaaae13acbba03ce9e3"
+    },
+    "case057_tumor.png": {
+      "normalized_sha256": "5efaced08f232f15b6d81fde53c039f2479e981f108c00fc4e48998e54ba7da7",
+      "source_sha256": "4ce7a1f01d1f2abd6e5bb468d4bd79e90173e33530b282842e97fd24de4c444b"
+    },
+    "case058_tumor.png": {
+      "normalized_sha256": "fd5c776e979d7697feb72033fa0deaa2e595aea8c198a07f6cf1fc5a1cd3d8dd",
+      "source_sha256": "dfbb57f52b6850413b2556bb155abec98008d007494c51a2e49a734e9782a76e"
+    },
+    "case059_tumor.png": {
+      "normalized_sha256": "6cd98d697810d0c6fa690135fc6165f5ae7f58972669331b2649081576fc15d6",
+      "source_sha256": "0c2c6cc914c9c48b722980e7207ea269521ea792196213fe2c4a8a4d87802e9b"
+    },
+    "case060_tumor.png": {
+      "normalized_sha256": "8f81ac67793850dfb694a0fd56ea3c74c85d17023ee10380225d2b1ec6c52b62",
+      "source_sha256": "09595f53a123974d1ea29df28da7489ca64c0b031764140af47659f7c3d32ab1"
+    },
+    "case062_tumor.png": {
+      "normalized_sha256": "4509c97202320ad942c25569612e4ee94fe9bfa4d522addb81b808e0f95daed7",
+      "source_sha256": "c236e955982b48aee0384bc714550c26643aa5bc26f58d34e512ae6d23afd471"
+    },
+    "case063_tumor.png": {
+      "normalized_sha256": "8fffb86e524270d0c63b207e749dd6ca80047565483ef0549b4cdc4079ecb4d5",
+      "source_sha256": "2911cf1b233658e1b1c6edaa5883fff559db17fc7ef58bb8911082231d41c425"
+    },
+    "case064_tumor.png": {
+      "normalized_sha256": "98c81a801c90def7b28049c848a29d34b29de5c39fe5d76d810be058f10afd8d",
+      "source_sha256": "12d3e53ed3f4b522a09df9104f5f1eb2155c1be0afde238a4af1dd0898f36406"
+    },
+    "case065_tumor.png": {
+      "normalized_sha256": "90587b310a5d7ff84bdb08141e9eb0a3948fc7ea7b664842eb7ddc31cc4b7254",
+      "source_sha256": "4615d23e6bdcbc4b9d865f6308021edec7b9ab93933da8baea108bbe9c411777"
+    },
+    "case066_tumor.png": {
+      "normalized_sha256": "2cfb1054c191878a3666ffc9c460545f8497f1cb452510fbb952bd16f53f543d",
+      "source_sha256": "118cbf2f876736093202209963c8d4c842d7bbd5518e1ee2e768affd7dd76fb7"
+    },
+    "case067_tumor.png": {
+      "normalized_sha256": "52bc79a9c89b329a013f15f2f1d09a503c1e45869a9edac335aa5ce935da4414",
+      "source_sha256": "c2619f457c5452c72d8b5a03c8c521eac83babb8121fac33f2bc5d947f246b3c"
+    },
+    "case068_tumor.png": {
+      "normalized_sha256": "f1aefb8ac8c823263da0ab263abbfa51e406d06376f52851e841bd467551aeb7",
+      "source_sha256": "a890318a4f7e749dfbdba4a2a730c9dcdc1c398024f19a3e54a74d3ebce4b51d"
+    },
+    "case069_tumor.png": {
+      "normalized_sha256": "b26ef865feb41a2ad719a2d08e7fd15d2d7173e7e4392e5d2b759dad4e4a629c",
+      "source_sha256": "e0f848ad5705744d2688b7ea2dfbeae176338c6c199286bbcf21a97368b0ab71"
+    },
+    "case070_tumor.png": {
+      "normalized_sha256": "7672a7b8e60a73b64ff584a56ee4025979a91577cf65361f924d8e9fd8f34072",
+      "source_sha256": "a9b18f553e28123f5b3b14be4ae3de58f48cb040396aa0992f44a739ae107b4c"
+    },
+    "case071_tumor.png": {
+      "normalized_sha256": "e1509b7907c8e55f18d33b03192cdf7e425101fbf20cb39ef855555975d210f8",
+      "source_sha256": "8a605469e1ed75e1311cb8c73c244aafba4b18bc232c591650fdf20f64810e38"
+    },
+    "case072_tumor.png": {
+      "normalized_sha256": "689033a384ef4a256217ac10129beacc58c5cba2dbbe589898db7a287c4d0402",
+      "source_sha256": "e187d2259869aea1ad5836ea91f9967614d5ff237917e1b97c42280b4a0d43a0"
+    },
+    "case073_tumor.png": {
+      "normalized_sha256": "7371710c874b95fdd7c5278e7c0513c007412b099760c6d445b44c9c52af0183",
+      "source_sha256": "4fc1808c452682241414c7743c90e739807a5550346bc6abe8b3a84d7f80182a"
+    },
+    "case074_tumor.png": {
+      "normalized_sha256": "664c562055abdbfe3623228614badb799051844a0700bd93b1a33aafd7589609",
+      "source_sha256": "71ce0cfeab6c9b0f3f4111b9685ae60a8357406206ae113d9c1e30d26ebb7f02"
+    },
+    "case075_tumor.png": {
+      "normalized_sha256": "159c3c3be22d9416bb8e657c4eee3efcedc5bf4381c40439d2711c6d4da03a19",
+      "source_sha256": "e4907c2b1602f982f64b264128cf36626277e9edf325b012c9103fb183896e88"
+    },
+    "case076_tumor.png": {
+      "normalized_sha256": "12c8c45c711a49c4810d2b0aebda0ff1683ae883fed304d8f654da8d18d9b208",
+      "source_sha256": "f78ce6020c007a47ec83b83b41bba2f67e04a7009c2e957f1230ccbdde085ce0"
+    },
+    "case077_tumor.png": {
+      "normalized_sha256": "281f4b1bd3a3d98b28e4ce8ed70b810a290dc4ee4c62db7a30c2e8c7bdbce1c0",
+      "source_sha256": "b4d6cc891c24929b4a5aad59143927bc23dc83d10d347d4904b90de26bd863ce"
+    },
+    "case078_tumor.png": {
+      "normalized_sha256": "d59507a2402beafcb652a74e51635d036b8a2a0b3f6d6a5528db702bade6ba39",
+      "source_sha256": "b161bab477d3eb4c3b312179fdb68fb51437b63d2b610e41305403166952c9b1"
+    },
+    "case079_tumor.png": {
+      "normalized_sha256": "46cbb455b6966cb33795a7a4b54d943cd89ae93eaa7a9921fbd43731bebec29f",
+      "source_sha256": "1329edba103ec8a5acd7c13f7ae23b491fb45cb426bf9d3a8ba98e9aada62884"
+    },
+    "case080_tumor.png": {
+      "normalized_sha256": "706fcc792fab9ee8352cccd26732e614fe6e04df2cc21c0fc5eb3b1bf3741575",
+      "source_sha256": "e31c4b87edeb8f9365befb6d3ef197a557a015b339d563a2361a3881154b61f8"
+    },
+    "case081_tumor.png": {
+      "normalized_sha256": "21aac4bc0c635e3473dd4323812337bd85672edcd07b5c2b93a52f85a219f9c9",
+      "source_sha256": "0f8b9baa88c7305d513e728ad53703715bb32abe1bc5bb1781f12af6829072c3"
+    },
+    "case082_tumor.png": {
+      "normalized_sha256": "49483fbf2d785888c03a7a99d3a5f039b8ff0f09a93a1fd95c313eaf4e2becda",
+      "source_sha256": "baebf76ed4e83aefc44c746e5501c02b797db137228b5d3da275e221aed1fa9d"
+    },
+    "case083_tumor.png": {
+      "normalized_sha256": "50e234076ae4be170f13b6d842d409e1dcb5c4b401361e540555314254ecff16",
+      "source_sha256": "fc63be2c69162a51221a635e1880e1cfa69c0c093a9e9b9383a3f2148cb39195"
+    },
+    "case084_tumor.png": {
+      "normalized_sha256": "3133fbd65585825a090a574244000f9b92ed471d961773dc4351d8d61bbb6ee1",
+      "source_sha256": "c00f7a8bc1a56197bbe18da215aabcc0accbc8e46714ff634eedcf0a07ad6260"
+    },
+    "case085_other1.png": {
+      "normalized_sha256": "345865dfe1f2fd38ba699bf8d1147922d3bb65dda0359a11b8d79768be11cf64",
+      "source_sha256": "7102a4ecf8973bbcf2be28d87c6e63e71654dbcc495a5024306e6f31cb6153e9"
+    },
+    "case085_other2.png": {
+      "normalized_sha256": "38388b053f9308670d0c4e3fd24685b4fdae9d9399337aaed5e5035fcba251a1",
+      "source_sha256": "a0d8fc1290fc81ad3272b30361e7c1660a0eaa6a8b9b0e14b75767273057e0c7"
+    },
+    "case085_tumor.png": {
+      "normalized_sha256": "78408f931e0e2c0d84db6efd2b85f8298287cebed6d4b8099b9b6e5c8320895c",
+      "source_sha256": "3305d6cc1d476dc08ae29436f64b1c6c65bef1a3909a8d9c5b317378a09ac44b"
+    },
+    "case086_tumor.png": {
+      "normalized_sha256": "5fd957459e64c62fbcd389680f33cb2e86349ffbaf0fcebafb32397a71ca2975",
+      "source_sha256": "99978972e512cba30204be0489f11f0f92436dc6b71c40af3e87c8ad3a916040"
+    },
+    "case087_tumor.png": {
+      "normalized_sha256": "14cd2bca11e0921ab8c931811f3f24f774ab5da551746b4419598175be46db67",
+      "source_sha256": "215e51b77d47737d9613a637aa705000a60874f1cfc81770ffd4f608453df9ff"
+    },
+    "case088_tumor.png": {
+      "normalized_sha256": "4dd72003927e03356fc89e148d0e1602d459cf1d4326bd26693032a2b85601d7",
+      "source_sha256": "470f4c0d4b46a9f74c7b1709dc183ed94402515d8a5f950249c118391adfa85b"
+    },
+    "case089_tumor.png": {
+      "normalized_sha256": "6218f053ee50597abecb76a5fbc71e3b6fc7f563ce74b472c4e7250b21ae0b7e",
+      "source_sha256": "40474c4baf424db0156aa64c9130123a8d4daf706501cc702d744aff257f0d05"
+    },
+    "case090_tumor.png": {
+      "normalized_sha256": "6acf16b2786c01cd37e3f390a1626d6dd8d2d59792b26c73df744e3e4171d8c4",
+      "source_sha256": "ef4dd61f250921c7bcfdb6b91e540af38a3c9c0fe9251d14283fa583c3bbf5c8"
+    },
+    "case091_tumor.png": {
+      "normalized_sha256": "4ce71389fe4aec917d7b4ed1f79a6c4e7ddf80941b23f10f0cba24ea42c5986b",
+      "source_sha256": "04760793f7008be60a8416494760ee14bc4975540411c0fae08d22566ef4ea21"
+    },
+    "case092_other1.png": {
+      "normalized_sha256": "78bbbbb81f519ac52f27d2c3e0fb20676b9b1c1319d1884117ce08843d9cca40",
+      "source_sha256": "e0840b2d5d546683d1270e5d735a43c85edea6bb473a96f308cae6085d4dc56c"
+    },
+    "case092_tumor.png": {
+      "normalized_sha256": "7fab58944c5664c333573e56e737d9c2bd73f09e9ab5ed4d338e44193f06d514",
+      "source_sha256": "f81c1bfef2f91bfeaaa3c48439b3abc5291b4e863a0e75e4afdebe3696790262"
+    },
+    "case093_tumor.png": {
+      "normalized_sha256": "7bda012a9b86f25dc5159946a6b670b81d8cd3f4fbab228870e2e9d54a5cd242",
+      "source_sha256": "e24c0e8b1c9677d291e6316ede534c0b8134ef540e9209410e9a6d8fe261f024"
+    },
+    "case094_tumor.png": {
+      "normalized_sha256": "1bd2b5f6b0ad879a5eeecdfa5f8dd92b887e6a64fe1cc40fd0641a777632e931",
+      "source_sha256": "e8b912f2cb24346b31c74c90ab10adf2f1b02adb2aebf3ac6a9956a7b5326711"
+    },
+    "case095_tumor.png": {
+      "normalized_sha256": "15580e48371c84a6809d0b380bdf3ecf92d585b2bbdf52280313c6c59d0bb074",
+      "source_sha256": "580c19972817fe91ebec328fee1fb8ecc509fcdc0a155fc47e6c9e70ef2e3f39"
+    },
+    "case096_tumor.png": {
+      "normalized_sha256": "c703ad7bff7927227e94ced11937fc8386401d349f8e00d01dcb47a074c5e8e5",
+      "source_sha256": "1b56ed72b9e9774ff434b799b45b13f4996c864a44bddfa22a1ffa23db5591e9"
+    },
+    "case097_tumor.png": {
+      "normalized_sha256": "7c3f783a3cd61c883b9e538d55075aa831dfa7b5d14c8b98d746568ec5dff3dd",
+      "source_sha256": "f97579439ce74523e11ad1fc69fc35fdc12ea816a28b31037c2b8ae081628747"
+    },
+    "case098_tumor.png": {
+      "normalized_sha256": "da6ae6b49e383eb7a4c6ed4e8010e43162a1b1e1c17ac92261ceadaf8d8de682",
+      "source_sha256": "62749717572997b64195f52c656d380e86e1116d0780f552d19bda538008aa6c"
+    },
+    "case099_tumor.png": {
+      "normalized_sha256": "4c540980d11c178a2ee0364ee4b5d7df0d07fdce2ac905f52457bce33170308f",
+      "source_sha256": "69a5f970d05aa69217ab7b6e1b2548a2027c58e39251b716d50465ad4158dec7"
+    },
+    "case100_tumor.png": {
+      "normalized_sha256": "dd92ae25dc77a46d3b032da483e3cf16d71410377dbf4922bd37389f990963c0",
+      "source_sha256": "4fbab8e17d61ced4bf8c732395bf93d6f799096da83887a44e339e464c30ac68"
+    },
+    "case101_tumor.png": {
+      "normalized_sha256": "1d17ffce437a6ac34c88fee4d377a670cde5bfe4655f024bb3738a6d085a3550",
+      "source_sha256": "c3c0640eb1a3738c09903ff0a1c32164366d9193a90d567a6baa172afcf94e70"
+    },
+    "case102_tumor.png": {
+      "normalized_sha256": "f5a3a8349649776a4e1d841df7c3fdf3fd26d86bcc02d1490cc3327033cb5338",
+      "source_sha256": "30ed3dbacea943df2c3f1c36348498fbc1f8917b58c023558d8be7c77d8984f7"
+    },
+    "case103_tumor.png": {
+      "normalized_sha256": "c34c22dd6b2ed18c0f99c567c33536b6bf827e714a04f955358c66c584542b1e",
+      "source_sha256": "c1b331910f67226ef63665777b735ead99b20e7a8f40db96a5b4bfe6b5ff17c6"
+    },
+    "case104_tumor.png": {
+      "normalized_sha256": "3d951d745f0c04424fabb62d7396f76256033debc2797883f7c18f170b8b97fa",
+      "source_sha256": "3e0ac20593cdba7569e502380c3d308ec3115b602a1c8526317512a151b033ee"
+    },
+    "case105_tumor.png": {
+      "normalized_sha256": "ac1d50d7bcef8c905e8fb8a0e58fdabbbe63623d73b7fe24138e9a077a044558",
+      "source_sha256": "6c514b0c18726c2a6dff117ff0ed9c66359d41557996f14caa1152922e586b09"
+    },
+    "case106_tumor.png": {
+      "normalized_sha256": "1bcece3a771db087370033e3b18f2715e044be759ec2679f1597b45f414c2355",
+      "source_sha256": "54bdb7ce3fdc60ea4aadf16c46c46d7c610bff12689691e1e848defd4a8496ce"
+    },
+    "case107_tumor.png": {
+      "normalized_sha256": "979a00db0d9e9264cd05ae65557301783d605d7ce312d08677464ceb89b420f0",
+      "source_sha256": "dc9cb855abdae93dc9a85df673e4af19862d502b261f6c1a780785fab8a306f8"
+    },
+    "case108_tumor.png": {
+      "normalized_sha256": "0ffabe7aa676bfb44ff440f9bf772a3b83898d0b7274203580c5950665a7436d",
+      "source_sha256": "922fea3f7738e4868b400332e792ddcd78fa69a5591c346cbc55959120a9012f"
+    },
+    "case109_tumor.png": {
+      "normalized_sha256": "908c7d74aa812bec603af13b04982bb30d4adb90e5b51ddd78bcf49aea065c54",
+      "source_sha256": "1a775918cf5375d9a373dba15b28bdc15778c4be25832c82293aeedef8cfcf73"
+    },
+    "case110_tumor.png": {
+      "normalized_sha256": "635a9e888626ec7ba5839d848639046ed73d79a3404002a95df897a2fc34d754",
+      "source_sha256": "df2ebc8c68b65e25d870a52b65cc1525dd0ee2849df0bb00ada138ef8691ad6f"
+    },
+    "case111_tumor.png": {
+      "normalized_sha256": "288e683c79574e4257c993e41bbc3f1c1e8988a0a17f4a258b5ce9b7b90afb5c",
+      "source_sha256": "463cfaeac7449d6914eddf88f5fe79f189b46f78ba029cc396b2ed38457f5a43"
+    },
+    "case112_tumor.png": {
+      "normalized_sha256": "ae62e9f01f10cebd528625ab4d1a6fda1317fcd842119823fb2c738c830c07cf",
+      "source_sha256": "92b75ee1da8ff9518b6b20367cf880532f18cc33a5055755b014f89cdf30e518"
+    },
+    "case113_tumor.png": {
+      "normalized_sha256": "2bca0d9503073d1c8d488ad52fea5cd8fb2cd87786b16b2b0e4215ec3c097398",
+      "source_sha256": "29c013a4277e6c07c04b79020808c4c63cda2473c3e787d980cd1a3346a1ec2a"
+    },
+    "case114_tumor.png": {
+      "normalized_sha256": "5de73f978a4db6b2496c178cb6b23444083c0003372c133469ed9b3e4267a9c3",
+      "source_sha256": "cffbb99f1921e85630500eaeecfae7bb1c6ea8bd1c249a6f81af10793413f28b"
+    },
+    "case115_tumor.png": {
+      "normalized_sha256": "c2ec0a4cd1cbea5c04fe8df7a38adfd550365b0cfdf807a3b4606a19478f31d2",
+      "source_sha256": "caa0d575e24696af0c1f28546f546104a8a95d69c91a1590b0b2f0151bf9f93f"
+    },
+    "case116_tumor.png": {
+      "normalized_sha256": "069e084110da7e65f2f4ef0df3d71a10a754ec8a53692497e06075e8dd5dd710",
+      "source_sha256": "8c28c8ba422c6a031b48cae8b241b840cea1b30a3c6d8dc89688afa053d741bf"
+    },
+    "case117_tumor.png": {
+      "normalized_sha256": "4ec5a91d998d59ce37400f175ca6079ce90174a1eacec0f183c58d5dd38bbfcc",
+      "source_sha256": "642d450a896b4b6daa89a8d42c6f26b6640b7635fcf41d76f5c626e30aa15d94"
+    },
+    "case118_tumor.png": {
+      "normalized_sha256": "da620b721bd20bc659b7c5f7c3b3a2303dda9ddab8eb1b15a9b2930ef7253ae4",
+      "source_sha256": "6d2617a3e7ad30becfe6e9640779e705095fb7848b3ad5b6f9bc462dc4145e0e"
+    },
+    "case119_tumor.png": {
+      "normalized_sha256": "7fecc637c97d2c7de66a488083218da406e631e40bec91471996fee01a5f5f7b",
+      "source_sha256": "a142faa76b2df5aabc8dbce50a26fdbdb5dd28bb805795e79701d26edad8a862"
+    },
+    "case120_tumor.png": {
+      "normalized_sha256": "40f32f52445f9fcaf56fc83267aa9442db51c6b838fa504903e6af2df38e35ff",
+      "source_sha256": "f35256945b3671d1ec9ad519c6e9e8e8e0101d5d4216f4912459f0167c268a3e"
+    },
+    "case121_tumor.png": {
+      "normalized_sha256": "b9ce0abe2acf9dd3bcaf082db9e8b4a024135369eeeb84cec3a3e0d3820dfafb",
+      "source_sha256": "c3f243908e85ec312517b502b2c7c0bf8a6f413c5a69802214f39514f54831ab"
+    },
+    "case122_tumor.png": {
+      "normalized_sha256": "b58d9be5595b27bb25e9b443d59e567b6d8cb60e040261f9ad90cb4e61570a9f",
+      "source_sha256": "9249b0f2984df153f9c56c8a74e1e835f957819ab254c655143cd4d9830ff03a"
+    },
+    "case123_tumor.png": {
+      "normalized_sha256": "17ec7e7f31b7840b5a895afd6c2a8a7e7414960dbcd384a678da53db254790a5",
+      "source_sha256": "7d955c48c112d64cd4d355ada05452548dbd516cfff54052c6abab1a93faf23e"
+    },
+    "case124_tumor.png": {
+      "normalized_sha256": "cddbe4c0db42763627da2d594c5974b3dd0b913efc8f3cd08ba0b5a31aa12964",
+      "source_sha256": "7d9e67d1a5ef493b2969732202271aa7a97b200a62262c72012be69751dd486b"
+    },
+    "case125_tumor.png": {
+      "normalized_sha256": "e0c14604f2e6a038fc25eac100f3115a540913aefb40a28227e6a5f77f19c324",
+      "source_sha256": "c74974ab1323139c768270c48fb200387ed4b202c45fd51dc63bb44ace34deec"
+    },
+    "case126_tumor.png": {
+      "normalized_sha256": "04a0e5e8d0ddc583819136dc254097102afdf80d79b4edf7aabff542a2f601d4",
+      "source_sha256": "a4744af41c61abca10bb16728f51cf8b4199812ed9a0a71c07263d536b7ae2be"
+    },
+    "case127_tumor.png": {
+      "normalized_sha256": "38688e7a2fb460fd47bf710da543e854faa3c0c5d425185683f428e8ab001bf8",
+      "source_sha256": "d178effc255d0e37f7f58fe03d54118a4b7017bd82732c883b705a8baad95b83"
+    },
+    "case128_tumor.png": {
+      "normalized_sha256": "9cf06ff3635a9255577fae7da7b7234782d225689ef16d54d2d330417b83811d",
+      "source_sha256": "209decbb1eb99a34c5809e953df5474b1d908b26e08311eb729672c679020a7d"
+    },
+    "case129_tumor.png": {
+      "normalized_sha256": "75ac0477f489abe5eb092bf7d56644f1d68ea1b42c26c2c5eb8262d023057d49",
+      "source_sha256": "f57981ba2324e039a5037f893ed59a5ad41e3bfb9c34cd9e29fd4fcc48098df6"
+    },
+    "case130_tumor.png": {
+      "normalized_sha256": "778df9c009a36c39f047385b10852723c25718c62daded2c3a8171f3954734e1",
+      "source_sha256": "8669d1d5beee8ebe3a2e03d78b81649cfd2964ba79a50aeafbe7c129e2ad605e"
+    },
+    "case131_tumor.png": {
+      "normalized_sha256": "9b91cc27fdd70b002a754ccb5bb2e59454628af6dbc5d67c32daccc5f29ec74f",
+      "source_sha256": "b39f115974e410c76f35a2f27d630ea77fa31509018efd351d8029c34adcb9ae"
+    },
+    "case132_tumor.png": {
+      "normalized_sha256": "d4bd80c8a1ff573d05213e39f8f39244f8f2cbb3d85aa362515e3bdc2e882a84",
+      "source_sha256": "b690490c8d51e3b2c4b5d8be0e364f2d6767d68c2d8462efb9a5a4470cfaba13"
+    },
+    "case133_tumor.png": {
+      "normalized_sha256": "0ae0bfa0674ad843ada6003a6c1681ba2f371e331cf05910ae217257677499ef",
+      "source_sha256": "9ac8eb7e1cb83b684174d5e867ed546d2f2374ad64bed019d19291bc09347f2b"
+    },
+    "case134_tumor.png": {
+      "normalized_sha256": "1456722901d009a5dba9322e5700144359b5d93b9b0446c612556f5240f6273b",
+      "source_sha256": "d8d6f8ef294062bc39f81d136901b1757d56682a6ee12b5e157d59eb5a8b397e"
+    },
+    "case135_tumor.png": {
+      "normalized_sha256": "c80660878612483ecc393d67b4c332b9d2b897de388001e6a682663beea204b8",
+      "source_sha256": "0d26ebf7ddf600efa9fd45c0060f45d6890c6f661a6bdf50c46d2a408a9e236b"
+    },
+    "case136_tumor.png": {
+      "normalized_sha256": "eceddfd48ff6d81daed6fd4e4b8ea1e65f4f1674ddb3efac5870b4a0a791286c",
+      "source_sha256": "bcdd7662c06f106e4c52efb96172981fb8a10258a2b492c38962331a25aab786"
+    },
+    "case137_tumor.png": {
+      "normalized_sha256": "de12eddf995c301e0c16c1cbf5834fc5202204e7f6eb2a8de9864540047db8f8",
+      "source_sha256": "0986f5fb52986cbb69eda214c4e3e9547db67e0690939f81730833046bb67afe"
+    },
+    "case138_tumor.png": {
+      "normalized_sha256": "bc0af93ed480c83daa636c2e9b2e17141f94254ef54592006fee9150cc4a5adc",
+      "source_sha256": "0b4153ed3b31ba043513d7b69d0a0c7b76336b264c228e1e8c11292fd0b59e09"
+    },
+    "case139_tumor.png": {
+      "normalized_sha256": "1a0aaf1116dbf7c5e367b8535589f4e9b4d5ff66ce5935dd0ebb82d2aa32f5d9",
+      "source_sha256": "f0649a86a44d72022c5bac1280743fa6aa6493d79c416235285efe175ec94739"
+    },
+    "case140_other1.png": {
+      "normalized_sha256": "1a13c66fdae5e964cef8169fa444b576a2df2c2ba778f5c03328c63a6154e888",
+      "source_sha256": "815b214ea27455bbfb73abc54bafbd55b02ff2d2442b2b58fc40f4254cedbeb9"
+    },
+    "case140_other2.png": {
+      "normalized_sha256": "2ca1db6e88187c5237561b8358da2bb0fbea146c761b7bdde9e32b39cf1b4991",
+      "source_sha256": "9d608745e6986b528128360a217f1cf77df432897b32a2ee9dd4add1674af1d7"
+    },
+    "case140_other3.png": {
+      "normalized_sha256": "05bad2a16155a15c4ed8f9246fc0ea986dfcef2cecdfc7a68b45ddee5740ae6f",
+      "source_sha256": "335b5a2ac6b6e6e15c69eb85543d6835605037d6e67457f16d338821e9878168"
+    },
+    "case140_other4.png": {
+      "normalized_sha256": "eb9b6fda6e2de3b8e09e0ba616deaea2fff5758ce38dbac2ce2330a3cbb46344",
+      "source_sha256": "285900fb94be1a94018cfcc8a8f5096c02d72061ac3ab6c20af2bfcbbe475e00"
+    },
+    "case140_tumor.png": {
+      "normalized_sha256": "25c7baace3999108bfcaf590bdac916dbbb90a88b8ba95874c4fcb6f854cd433",
+      "source_sha256": "a4eccb064c1fbfc5a2742eb08998699896feafa1fe96f554ae7efae41350c090"
+    },
+    "case141_tumor.png": {
+      "normalized_sha256": "97cda971fdd1b1bf1ea43e24f48605200fc89a59c80a9d03379de3b94a76de09",
+      "source_sha256": "b5a4fd73695461dbb8ed4d68cdf562dd81fc589b7bfe785faca9180c1f44fce4"
+    },
+    "case142_tumor.png": {
+      "normalized_sha256": "f2aa9bb9316079432f9603854bcbb1f611b23cbfcc7f2869535bee0f0d85059b",
+      "source_sha256": "b2ee9d90bfe3c372bb912f306f06b474fabeb9d66b37d3dadf353161339a8935"
+    },
+    "case143_tumor.png": {
+      "normalized_sha256": "8acdda759f326987e3f4f9bd734657a798a3a27e34b3288997d6f6621be72fd4",
+      "source_sha256": "88ffa93df50e84b58d52aaafc65a46a9dfa082380bdbd9c1e31f2f2c0a398420"
+    },
+    "case144_tumor.png": {
+      "normalized_sha256": "86d40171eca11212f81ca8c2a899f5f77e29f34fb67bd55d93fc75c5265c535b",
+      "source_sha256": "2173336647025da1929a1707de46f1e4edf91c1247f84a67067fbe787adc78b2"
+    },
+    "case145_tumor.png": {
+      "normalized_sha256": "9515761a555762c2f1af776862f6a7647d66f465afc4e42c8f5fd12366420096",
+      "source_sha256": "578dfcad779e940872a23846b5db0a25332ed13ed9b5871e47006f5dff5beb80"
+    },
+    "case146_tumor.png": {
+      "normalized_sha256": "7d9293a8da0a0d3c87eb907c8d4366a0d510320c00110552d9b21642c9b4b3ef",
+      "source_sha256": "01954e89f788fb28f434d63d93308968082b0705804b447e3f89a2ab547876e5"
+    },
+    "case147_tumor.png": {
+      "normalized_sha256": "6dbab188f7d18ca1553359b8e12e631adcaf8a146e9e2fc39756554e432d6426",
+      "source_sha256": "56552b865d115cfc1fa6f1eec7b99bb8dad94c34426dcb99769f313b2e253dba"
+    },
+    "case148_tumor.png": {
+      "normalized_sha256": "f7465940dd2e0d6f1824410bc1d84065066592a4ec4acc328765c8e8c224adaa",
+      "source_sha256": "5c5b9bbc7bb304a3138c2470d3ab00aa39b8c290717e0bb5f25b510dfdb6fc4b"
+    },
+    "case149_tumor.png": {
+      "normalized_sha256": "30c1cb1d8d309d6d414ff2b1fc2e197e5ed64cfbbf6291b09b0691ce36848b62",
+      "source_sha256": "ffd2fe1f7d02ef4dc0ab5b263e4baa1d49786c25d2e457c12bd4a432e0922020"
+    },
+    "case150_tumor.png": {
+      "normalized_sha256": "b39d91dbd18d5c61b800cdd98bb19576251cf652a88fa86539fc664c116e2652",
+      "source_sha256": "6f3bf3558c45096c1583fc9edfc3c5a13305f44927aebcbe86dfe873180b84e1"
+    },
+    "case151_other1.png": {
+      "normalized_sha256": "144b609e6a4af5f28f0a4a5d8077cfef2d8bf6b67d099d7638b5c930376599f7",
+      "source_sha256": "6ffa643217b18e324aa9d80448769173010c7b810ca2c914c1f56a18300f0d37"
+    },
+    "case151_other2.png": {
+      "normalized_sha256": "aa2cf3ae68721fdfd2f831202cf6b5b2c72e7768814aed731d9adaeb15f4012c",
+      "source_sha256": "6dace7d244f8e3db23d6a28c22975db51c6cb7e444baeb5e2df70a901d2f5aec"
+    },
+    "case151_tumor.png": {
+      "normalized_sha256": "c02924eb23cac374f627811363805bbbac6dfe6b447a4a36c7e61a7afd6cb948",
+      "source_sha256": "778b11d4f06c4f4a2b1706d484c116a43052e6d3d028797888a94a365f95dcf0"
+    },
+    "case152_tumor.png": {
+      "normalized_sha256": "fcc027740aebd91a50e0a4b4149358d496bcb589d0b08960b58a8e0214b985d5",
+      "source_sha256": "513a220efe833b0295c160ed387509706c2b1a8ba169d368942021c5e1719ead"
+    },
+    "case153_tumor.png": {
+      "normalized_sha256": "2f2a4d69e9b84fb32c2b4ef948d76bc15dd22230aafef40833226ed4457d815e",
+      "source_sha256": "00034cb435d9ac9faa0b5939c5a11c1631078ce2aaebf1d80b2443497f7b6c35"
+    },
+    "case154_tumor.png": {
+      "normalized_sha256": "8e795334fa4f86bd45a9752dc1165aacee0c8c0f17076e02821b56f70fdcff2f",
+      "source_sha256": "58c2d5f1c21e40022f64f90974e0e276656250a6fa1cec0397a4548169c91041"
+    },
+    "case155_tumor.png": {
+      "normalized_sha256": "8921b5a85f80291cec81ec68a66298d8b56948dbbdbbfc3f0d5e891ba47d6080",
+      "source_sha256": "f376415088a0e5fe672e7c259a354c46935732fb5dd051e73d72ee61a318e52b"
+    },
+    "case156_tumor.png": {
+      "normalized_sha256": "887c7af5f563d2ab656df5cca6df5ecc9f37a217ad1e5ddfe45bfb3d22863e34",
+      "source_sha256": "d8a36ad6789f23da226e75281d4ca143170cb2d4df98b185c824083f6dc720bf"
+    },
+    "case157_tumor.png": {
+      "normalized_sha256": "1184ea9635616b0f4018be8ffcdbb023380143eff0510c491635965bc8115fd6",
+      "source_sha256": "92e30514e1a695475c0834172bec61689b56e09a27e5e640f01dabfb4f6582fd"
+    },
+    "case158_tumor.png": {
+      "normalized_sha256": "1f5a0b351d790107c95067f0c43901ed6ce7986a6b84de787f4fc80babc8f3fe",
+      "source_sha256": "4ba4e97b19288511532f87f7f7658b40f54f3e5be07325cdb5de6591f7ad42f5"
+    },
+    "case159_tumor.png": {
+      "normalized_sha256": "65e6512d30bd3a1038c591a596df38fdc53f57acf43ff62b2eba3fd092f0883f",
+      "source_sha256": "31aacfca455951494797930de0ea324016e05674019a8ceba0fe3d3b5cef2256"
+    },
+    "case160_tumor.png": {
+      "normalized_sha256": "e8f911b7480523771137261b5bf7dde9e3b6d279bc523abe157f41e9bee2e330",
+      "source_sha256": "15c4e9903b55d20bf5dbfcbf3a245ffc60aecaab85bc154d35de801e90adf384"
+    },
+    "case161_tumor.png": {
+      "normalized_sha256": "0a97009b80d0067f904225c5ad5c7c50d003f8aa532e8ab3a3d702f6f66e144b",
+      "source_sha256": "d757a93b218f5cd438c94dbc88f436e1155d2f0b00102146d4357814c01bbe29"
+    },
+    "case162_tumor.png": {
+      "normalized_sha256": "ef38dddbf453874c26cbc8a7ef8f5a3cf9db937f51c4618eddb97f35ee560734",
+      "source_sha256": "f15ef43115fbcb7d7ae06c3f82a89650dea0529f16a0684bd1a7be8e9135e8d3"
+    },
+    "case163_tumor.png": {
+      "normalized_sha256": "fc72b4308353b18eab91d8ac705d15aa2b9ef8d803222667bfe14c15edf7ebb3",
+      "source_sha256": "fcb289d47119ca4ed2827c3ae5a056d66129e3d46bb239ed5fc721875807ad1e"
+    },
+    "case164_tumor.png": {
+      "normalized_sha256": "640ef4061e62ed546c89295d19298b642cdf7cf5127cf3ed8c9da0701ac9f88d",
+      "source_sha256": "454fdf52d470b0d6a30a52d1f20db7fca847d9644b44c21eda9d562102029f2b"
+    },
+    "case165_tumor.png": {
+      "normalized_sha256": "46e222fc72e8344b62bbbc15f8aaff7ce5ab89d4c5bea85a6a15715330453947",
+      "source_sha256": "86fd5a1f00709b42a017a984374565bc3ff518d9145b44180467a5e732fe92bc"
+    },
+    "case166_tumor.png": {
+      "normalized_sha256": "3c3eaeba7ab03c74921a27e647f52f4a0845315e8db72bbd10a008150f5138a2",
+      "source_sha256": "b3d028e221107700671f62eb6fe5eb3ffd8bacaa637ddfc5ec051c51a48055ba"
+    },
+    "case167_tumor.png": {
+      "normalized_sha256": "4439571ef3fc0a50cf5ae5308a3c6da9fa0df8b2fa22f5e1250956b31d33623d",
+      "source_sha256": "4dff7c954978d709338086fd8b94b4d65696cd1d704a6552330168c590077f7d"
+    },
+    "case168_tumor.png": {
+      "normalized_sha256": "f490508899536bc71b8888c3d34a779dfd2d39cfa45ed85286e301471868dc06",
+      "source_sha256": "e86a83231756e78e09389a97db25d1d7ceefc50662671745cb7aafc5b81059b1"
+    },
+    "case169_tumor.png": {
+      "normalized_sha256": "047487017d6eacb6ea9558b6b0b9ac37d3bd0edf2ccf3ae2f102d0a127ea62de",
+      "source_sha256": "6d97628609fba19812aa6d1ec4f1b664641ba48dfc0f9b8ec83bfef83914a50c"
+    },
+    "case170_tumor.png": {
+      "normalized_sha256": "9750b5ca009214f3f4543cf181342b8847852a31f36a84717cc8cbbfdf928535",
+      "source_sha256": "4421011f1cce5ab1b076bfdda5db4b384bcba84af4094a13a2e8b29e80972041"
+    },
+    "case171_tumor.png": {
+      "normalized_sha256": "1db2d9d515af59be849dd561e4695a6f4158c19611fe7a8f1f976c424c153212",
+      "source_sha256": "707e893433278f7b0768efd3fc04e1ed5611922edeb4f0875b4c87bb326d2027"
+    },
+    "case172_tumor.png": {
+      "normalized_sha256": "24d3b2458809c8a7a134af25734e90d862ed852e415f14fd0d05a9f4fddff9c4",
+      "source_sha256": "e206a3cc0967c35560738adde8b329cbacb07ca2051cfec71f43f36f51cba5c5"
+    },
+    "case173_tumor.png": {
+      "normalized_sha256": "6c9eaa7047a8212cf67e008b15f8e29def5927bf5128293084647deb40c69ca1",
+      "source_sha256": "25816effcc41b97a56935a2fc17b7ac76531c1ea490bc544b553a9559f4e33c2"
+    },
+    "case174_tumor.png": {
+      "normalized_sha256": "23ab5c5fa43c19de37b87b016b084aaedb54fc0b6a284bbffda5411ee4ddabf7",
+      "source_sha256": "df8b94e91eb9057b94b4c890e85c4af8a9ca178e5f332136a1cb5161c8172f41"
+    },
+    "case175_tumor.png": {
+      "normalized_sha256": "75ddb19bfe68a68c47f85bf620162a68f3efa30eb930d74055e20ca1c35f9379",
+      "source_sha256": "e3f27864cc4ff6845496075f2cff44a99e8bf23afb0c573cbfbd5cc487f6535b"
+    },
+    "case176_tumor.png": {
+      "normalized_sha256": "243ac60cbf45ae668016f4691c8476782a747b9d7d7f45268619ffd5e15f130e",
+      "source_sha256": "5819aee99b4b19257b1edefb5b2c19ac884f5024aaa37a4de6a318b08b1a58fc"
+    },
+    "case177_tumor.png": {
+      "normalized_sha256": "a467f40f6c4bc910cc6479f84e202268c297aee85555e38698ef4b67769c6fc4",
+      "source_sha256": "d981c34c65c3a3e389ccffb0a514fb3bab42d5b9255eec9ed2a16de3200d4418"
+    },
+    "case178_tumor.png": {
+      "normalized_sha256": "04602222a338c67d3d28ba14c8636024ae6ca5ae0b6d16f01c94c77d8f345473",
+      "source_sha256": "7a57798ec4bb83401fae01410c4ade5cf73c10c8db47f28cbed03c5ec5934097"
+    },
+    "case179_tumor.png": {
+      "normalized_sha256": "36f79d23878ce306f429d3e90e17932b1b12ce3eb49f01aa032444a01a153733",
+      "source_sha256": "22bafe154d424b9009104ad16a0b3fea52a92dd3631f382fdca4e4c7d946850e"
+    },
+    "case180_tumor.png": {
+      "normalized_sha256": "9ee4985cf37aa22e69c81605d7b10017718ea071c14c8c97004b3ae40a51f130",
+      "source_sha256": "8a4472c27abe0919a0d6dc04eb2c74b78076943987c2850ce8c419dbf6a0f186"
+    },
+    "case181_tumor.png": {
+      "normalized_sha256": "4426bf6cce240e056e3589c66abc386b3061e22cc6af9ee0010fa89f15356353",
+      "source_sha256": "1db7f34d6b08f80e438226c1460066942ab8b85d655861b46a2a5688e5cb9e22"
+    },
+    "case182_tumor.png": {
+      "normalized_sha256": "9457c86a0f39e38af923a7aa97f87c403e7d2e51f7a4ec64391093e9d8045331",
+      "source_sha256": "123c09c3a17ff2a155a9a94a6b04ef3de0a174c4bef60a560ef0fa2aae794342"
+    },
+    "case183_tumor.png": {
+      "normalized_sha256": "9d822a4829baf26e010da91db894906366225846dd226ccadfd8e5dbfaa99e98",
+      "source_sha256": "baa8e4941d1b592909c71642950ca53b50773cf169fd05ad0ff4fb573010b802"
+    },
+    "case184_tumor.png": {
+      "normalized_sha256": "42aad1821d664fd31a4d3db5d9e9670cac12278f544afeeadc05d6c1e65ffe3c",
+      "source_sha256": "b536ed428e8b778d3a48976f83e09c041e9a4afca66c0e3ef7f35050f69e356f"
+    },
+    "case185_tumor.png": {
+      "normalized_sha256": "d5f0fb809544ff86484db37d3705afbd9866250e15c15e7784f68f2828d8935d",
+      "source_sha256": "d64de9ed98e36e90169afb75d402a2dab46c9f9044a94b083e627890f26af089"
+    },
+    "case186_tumor.png": {
+      "normalized_sha256": "8f5965afa1b69c8758270c18e8336c5757602035d81b3e9623c7e10a514892f1",
+      "source_sha256": "cc40e145d12ad1aecc8e2d1735d635abfc5b237faa4555af3341ed766e0ed013"
+    },
+    "case187_tumor.png": {
+      "normalized_sha256": "c15612cab8797d9c6771120b26ffbd91940e57c0f3a3d3af26b498e0638fcc72",
+      "source_sha256": "ebef59606003caabdd955e90d46a71b90f243a89ae47ce243614dd8b538b1949"
+    },
+    "case188_tumor.png": {
+      "normalized_sha256": "4d62c8d5aa5b9224e1815fa64a602d47ca08b1bc1f07612048b76373ab76625f",
+      "source_sha256": "e215a91b1920ade391dffe0a15700bf923a73f89a79724eb38f70bf184bc9419"
+    },
+    "case189_tumor.png": {
+      "normalized_sha256": "1f16b9bef8fccb284c1f1356c76e9d7878db36dc26ad447a995f523e039519e1",
+      "source_sha256": "3b2f6dc975d91cd5363dd556b9e3c233de02d007a1574a09e14399d5e675d499"
+    },
+    "case190_tumor.png": {
+      "normalized_sha256": "b5830b8249dbed42adf27bfec13e44637847d263408b82a87a830bf01f399771",
+      "source_sha256": "e0d68504426b2d53e7725a274d432de9b252af6e292d25ecf55f720af4fc2dcf"
+    },
+    "case191_tumor.png": {
+      "normalized_sha256": "2213825e88df149780c104e67e450b48b4bb45df11672c447df51e88e4eadf23",
+      "source_sha256": "dca7f447d9ef4397d2dcc50adad35bccb77681c7ff2d3f06929883401c18aae1"
+    },
+    "case192_tumor.png": {
+      "normalized_sha256": "c20d17ed5ed5ea7d6eea32147eab8ac31d48e6f5b7e5c2064dad4f68c34b8c8c",
+      "source_sha256": "0d2d0b479bd1db5c9132722bc0497f14023296c7093984df7be9be50a96d1dd4"
+    },
+    "case193_tumor.png": {
+      "normalized_sha256": "50bd097590b30f533688abd76c1defe376792de254183efd87554f39152993d2",
+      "source_sha256": "8e19c771b21c02bb62f8f016bc2bac8e85851bebc5bf682fd74bbd0c29a07282"
+    },
+    "case194_tumor.png": {
+      "normalized_sha256": "8ba65dc14bbbdbf1155b3c1194092a042d53d70a4eaa5fb14e81a3d9316fc076",
+      "source_sha256": "9a85a5de2fb69be5e845383c2a9108461316dfe119a868eed38c5ad79f5a3442"
+    },
+    "case195_tumor.png": {
+      "normalized_sha256": "1f2996ca2c975709dacbf27bbb359a49c1d1cc4e9d02fc033c589a8119c4990a",
+      "source_sha256": "0b487efe151a2f8cc8412c1e348fcf1faecbf281d439b85d93432cbe908f6cca"
+    },
+    "case196_tumor.png": {
+      "normalized_sha256": "9f480956399a5cf1794837b3e5d4959b34bab78a5c216fdd5f72aae75f7e1c13",
+      "source_sha256": "8e9861569f6c42adf29ce5390860a50ca714d352b5b423276196d683a7b5be0c"
+    },
+    "case197_tumor.png": {
+      "normalized_sha256": "39bdf9555aec87c3536e4fdfcb18847d9d03c7ff1244fdc05d5ce12ec1fca5cc",
+      "source_sha256": "ce4b4fbf3780b6c1459437d2bc73b40f2e2146d73f20b11d30f3eb243fc2c59d"
+    },
+    "case198_tumor.png": {
+      "normalized_sha256": "0e4bcdbf4f9d171aa534eadbf927e1ec646a843984b31881b8365302c6f38de1",
+      "source_sha256": "9ccb4555be726ddc2047a8d8dbe50b77b1eee8c544e440e79428ca511c5dfd29"
+    },
+    "case199_tumor.png": {
+      "normalized_sha256": "02fe69a75a3f06d77a61f371a4159d2014a070108a9dfa2973e53c2e332643a6",
+      "source_sha256": "bb830c3ffb870e35f423feea6e16d4a2214a4ba13be1b514b966e1e9191c75d4"
+    },
+    "case200_tumor.png": {
+      "normalized_sha256": "dc997370b7bf33b53ca47b16e7956afc49e49c38f97fc36f331a287b79c17243",
+      "source_sha256": "80a7b02d0dd0deec3d750ee1544ed54b7fc0720f4eac73848d60ffead7f42a73"
+    },
+    "case201_tumor.png": {
+      "normalized_sha256": "b374d6589d55540da82e66b2865ec7d006fe83ce3a2974c1a0a84317256cd630",
+      "source_sha256": "632afe5e7af8facb6e91d646cb90e310b8703385488704d5890e5829d4885f0b"
+    },
+    "case202_tumor.png": {
+      "normalized_sha256": "0ee457b5d150125ce9ae710e8dfbde0bababc93f125dcb677f40ea27ea574007",
+      "source_sha256": "23094dc6ebfa14ca4ccadbcf19d7f7e7dbf98958b6a195c7f58b90c0fe4d9786"
+    },
+    "case203_tumor.png": {
+      "normalized_sha256": "01ea45ff44f37c5ad2e5139d148e6bb85dec5ddaf55dd85b8f2a4b0fa451daa3",
+      "source_sha256": "de3baae1e7c3ea93b6f4038a72dcf3e426731269eedcaa243686bfa68d6d5b39"
+    },
+    "case204_tumor.png": {
+      "normalized_sha256": "a6afbacf06de479e244fecb556f9f710821a67b90c53ec1e7fb374894e263d54",
+      "source_sha256": "6ca26b1f2cbbdffeee486c594940d739b69efd9bd1a4e0b97ee3f0f0e9e0242e"
+    },
+    "case205_tumor.png": {
+      "normalized_sha256": "1f2d77b46d57b047b82421b205713aedcc292b6d3c289a3ff7723c0df29b15a4",
+      "source_sha256": "b3359c062a39130f352877f9492f17f958f286ea9e194be69dec10b3f1b27a4c"
+    },
+    "case206_tumor.png": {
+      "normalized_sha256": "59a01da80ba97f0be12d3d22161db19754a5e6072475c8d82a2984492cc07b84",
+      "source_sha256": "bbbe7d6ac2da3b3beef691b7b9ec2369deb400be524dadb56b903b05b3842299"
+    },
+    "case207_tumor.png": {
+      "normalized_sha256": "a2d6dbf08611f7c6db45585756fc313c45879af27ab311fbcbd4712adf1b573b",
+      "source_sha256": "e6e12d25f2db367722ad812c2aa44e9d29f79225f64c4b6dfee4c88b8a940084"
+    },
+    "case208_tumor.png": {
+      "normalized_sha256": "31136789bf3f4f2612cda17df9dec79e528d753457d2b7a527a3c070f7e61761",
+      "source_sha256": "ac0b453be6352654265f92f977e768d9fef4a10f2bf30b04cd15d3ca927372bd"
+    },
+    "case210_tumor.png": {
+      "normalized_sha256": "c9ff77354d642233f611c6ff2540130ca0f31034caff52e51987766ef51deac2",
+      "source_sha256": "0de8af9929ebff5b3e88e4d995485f4c8bbda4c3986aaa53661895e3bbdaf0e6"
+    },
+    "case211_tumor.png": {
+      "normalized_sha256": "1f0c6204013ecce62a36edb76e438775258cde2828bb5aee37f5d89acf6f6dec",
+      "source_sha256": "65dce5785ce2bb4b7fc54373991ded07d5246db7baad3d6b88b69d0f09f9793f"
+    },
+    "case212_tumor.png": {
+      "normalized_sha256": "7b83106acf26f46e1d2634a04b21c745e2c68290db5eb4bd1ee7e2787bd6de0c",
+      "source_sha256": "adbd29e9f9588f0b1f246e5a2e3cfbac8c2257eb07bdb947326da047cbb504bf"
+    },
+    "case214_tumor.png": {
+      "normalized_sha256": "e10be74db555b8074b0b4c6af2e8d554b4f0a843c48579a588a630f35bdbfb70",
+      "source_sha256": "c33af514a4dd3edb9838da9b367e2aa730db89051d463d5164bf943b00109ccd"
+    },
+    "case215_tumor.png": {
+      "normalized_sha256": "58a7b4973881133f07b32a53fc5d4ee638dc7c4ff6455bf088ad5fa283733a2f",
+      "source_sha256": "2aa39c1c1adb734553bd038e74d1a99c49f6ee24fa609a167522462a777a1d33"
+    },
+    "case216_tumor.png": {
+      "normalized_sha256": "f4ebec31bafcd8bb3d5497c7f4bd128e7b84494f1c7661f4bac750ee6e08da43",
+      "source_sha256": "7f865b4d569644ba7a2ee06622670dd18abf9e016e25b4cf7434d6df4732c989"
+    },
+    "case217_tumor.png": {
+      "normalized_sha256": "e075af13e7af9bd5f99ca3933574398b1fdf886bb4fb9005171128259f0d127f",
+      "source_sha256": "d3355ecf5bc2d82a97a737bfe7d7e02bbe159e68afd80fea5d63ab0d2313694b"
+    },
+    "case218_tumor.png": {
+      "normalized_sha256": "56e08182be7b46c944022facf7069d3a9eb6a9c2a9f43d980938813a1187b69f",
+      "source_sha256": "0fd7ccc9b98fdefd8a57b985fa39fbe29adc8ca279fecb00854d2fe91c827af2"
+    },
+    "case219_tumor.png": {
+      "normalized_sha256": "8a2f4f26a83ca6a0bb2a2a9501330bf341691166b5580155a3755f8b28d32061",
+      "source_sha256": "505911a0346f633af2a48e90e24da0f94f5cc40e299b719f37a0f53e8e99c5f7"
+    },
+    "case220_tumor.png": {
+      "normalized_sha256": "b6ec35462b5fca72087b5355d0a1de814c575c64145c76e35b7c235a24a0bda2",
+      "source_sha256": "c6ada61d9d1f48904b8b34613bca04915a707c68a7f907ac27de60fb21006bbb"
+    },
+    "case221_tumor.png": {
+      "normalized_sha256": "fd9894812231adb0123476fa7b56a8f8469915f261798b6f4d5bb916b030a12f",
+      "source_sha256": "b4ebe70159821f759a1fadf00b10f583088093e4af76a27ce51f6951d68b36bd"
+    },
+    "case222_tumor.png": {
+      "normalized_sha256": "1dbfd23227065875b5439a93b76ec22ba187d3a6494016f2726f3309bcb8a2f9",
+      "source_sha256": "db438123113e691242fd40ea429d15314aa297af859a71f3023964fae4e769ad"
+    },
+    "case223_tumor.png": {
+      "normalized_sha256": "f8c6194d15c32c820c988d2b6ccb9cc39c3b93fdd7b5d9cd16e04c00754b84d1",
+      "source_sha256": "bb2418d9fb09b0c726601a708ae031a77fce84cae60ec78c579498e0f21bb159"
+    },
+    "case224_tumor.png": {
+      "normalized_sha256": "e2449c62b0cd2d4ef5098741ba2e00bb1ff604cd2880fee7cc50c655ad3b85b1",
+      "source_sha256": "306e02dd71c8b6bc6312aead551366f3d16423043e79d208393e9d72f94322c8"
+    },
+    "case225_tumor.png": {
+      "normalized_sha256": "a2752db03f5cd0e5c9a4b984f81133a89e403040c5d88ae0677bfe455ac4cfb1",
+      "source_sha256": "4b396e1013668e43f621cb3b6492557342be3185a3f6d1ba06cabc5696f273a7"
+    },
+    "case226_tumor.png": {
+      "normalized_sha256": "88ef23df8cce5f5cee91d59c2d4783fb7c50110eb6c9558e53a34052a71bf7a6",
+      "source_sha256": "16d7dfc43200e73ba11d040250971452680243d6996d9c8b10b2b050654b2228"
+    },
+    "case227_tumor.png": {
+      "normalized_sha256": "debff3c2aade3c9158fd01ecf4abda8a741da8c98889f2cd28cd9ced01847736",
+      "source_sha256": "76672b3ff4c624c64636645de46c01f70a9525de6c1a07fe9a59fcda20dd46d3"
+    },
+    "case228_tumor.png": {
+      "normalized_sha256": "bfd253caf5cb87e7c0a3c994efc44df4ad4c34099b238c3cfc6ed611354cf968",
+      "source_sha256": "469ea55fba92821b154293a04d8486be8c76af7553ba6950ec165650f6dcc0e4"
+    },
+    "case229_tumor.png": {
+      "normalized_sha256": "a525303a19eae76343412d458c515dc75b6dd7dc09ccbe1b6f8873cdfd62129b",
+      "source_sha256": "fedf2f2a2a9c307a83768e789ceeb62a1c8e7cc91b0ca0ba60568ffc96f08077"
+    },
+    "case230_tumor.png": {
+      "normalized_sha256": "bba9704895ef120b0af7adb8a23baacdeeb64c395e51b0cf01712a1349103921",
+      "source_sha256": "af8ad94466748d96de760dd0ac2847bd7d2d8e7dfa9bbfd00da7dd8deb542149"
+    },
+    "case231_tumor.png": {
+      "normalized_sha256": "324920dcb73b07dc92623907d30c4c5150793e92ba279b69c2d8181d6a979522",
+      "source_sha256": "2eaeb0a712a96a8a40cce19a4894c39b6767f0a32cb8650e6d07b15bac372aa7"
+    },
+    "case232_tumor.png": {
+      "normalized_sha256": "9c500e738fcf3be7f08fbb846d062019b9639efcd1deb8ee3d2c2d7876d9f508",
+      "source_sha256": "2a4e8c34c16101323259d3e951ae4aeb090d032cd0480cd17e8750494a3b2ee5"
+    },
+    "case233_tumor.png": {
+      "normalized_sha256": "f3bb91ff7a7170dfaad6b26da0eac2c2cac660b43a951e94a1e981a7c6732ca8",
+      "source_sha256": "4fabcaa1344a32bcae4d0fde929c0576138fff50e0d69438cbf64b7bf9f341e7"
+    },
+    "case234_tumor.png": {
+      "normalized_sha256": "8a6793bb849ddc8c55a04fd3a39cb54d2c4423d77770d4460f24dd224552d20b",
+      "source_sha256": "f8413bc1ee41ded6ff50bda3c6f8204b25b8cd5942855a7c8e6e21c204580e20"
+    },
+    "case235_tumor.png": {
+      "normalized_sha256": "f07066313696de4697eebd60244fce73689f2cfcb3fffddc750b9aa75466762a",
+      "source_sha256": "2a5994e5bddda94a7acc2e7ff3e232d3724afbae30a03fb84895c3324baf7d19"
+    },
+    "case236_tumor.png": {
+      "normalized_sha256": "75e1950b7af17de4f87cc7a5efaf79ac3e7bc07ebfd9dd294f094617084e11e8",
+      "source_sha256": "c8d743bcb558a5fb1b2574678fe0b61afbc688561ca56440263344270d1f7a22"
+    },
+    "case237_tumor.png": {
+      "normalized_sha256": "bdaeaff82b858d279c54000674780ef4356e9b6f08f7ac1be319b542c690b32d",
+      "source_sha256": "d723cb21bca6c605f3493212f05dccbce1a0d4e95b896b11747e67a26a6e878c"
+    },
+    "case238_tumor.png": {
+      "normalized_sha256": "fec4b9ee03cd2255b7d8373a99156f8dd9cc13f5b13e3beb0ff503850edac7ca",
+      "source_sha256": "3c21563c8f0ae4d18ddbcc12c3abed26666f569bae62b2a4d0a397bbc128580e"
+    },
+    "case239_tumor.png": {
+      "normalized_sha256": "3ca6680eb3816c291fcaec3ea39e204a81e440c8c754b29ffca13d4f1f2b84fa",
+      "source_sha256": "f5fe86603cab3b56129f9e5f1b590854f5736292be362b5c488397561ee66045"
+    },
+    "case240_tumor.png": {
+      "normalized_sha256": "3cc42f5d413c1449bbca20a9a94a44da108feba79109b435ce0e6fac10698b2b",
+      "source_sha256": "6a8efff0b415a4c655481723edc4b83b52160d5f2091e83dfe43645318cca529"
+    },
+    "case241_tumor.png": {
+      "normalized_sha256": "f52c4cd6dbccfadb9aafe42632bce0211f7315df6af88b3cc7c56d8b9a2daa39",
+      "source_sha256": "03bbabad15822a3bee566f0c5e1fcc4782ffb497f7d948d84abe0af8ca8d504f"
+    },
+    "case242_tumor.png": {
+      "normalized_sha256": "40bcf12188b1f1a0f5bf72ba6658064daec3986a7d1193b16f1886d7fd1e1906",
+      "source_sha256": "e62e347739e0a5e2c1d725016dfe45607fd573bcf9c4b0d20ed20d5ca82b5df2"
+    },
+    "case243_tumor.png": {
+      "normalized_sha256": "f1ddb296963ae8e779f925e1239d944a1c50a879ed62ca9f20b12ba1ea8f0277",
+      "source_sha256": "b68d676297a1cff5f5e4561d696086e1c6b96a263a69ca7964340c524184a625"
+    },
+    "case244_tumor.png": {
+      "normalized_sha256": "93d124b7eecfd8392cea3a7184d8471080230e44dfc3f9618e4141b46d224019",
+      "source_sha256": "51c8a2ffb7b2e4e42b2b0371c7d047b8d5d65e476ce0fb610c43c31c72310a7c"
+    },
+    "case245_tumor.png": {
+      "normalized_sha256": "b153e94974e08fe12454b7c277fad37824f7552a2d12eae7b67d1da8560c5f9b",
+      "source_sha256": "0d4fa3e16f5ec35826587e64cfbe8d487f0c6c670b64c37e45d0ddfbacab7c09"
+    },
+    "case246_tumor.png": {
+      "normalized_sha256": "b74f374ddae761444e118e2e19e72168fe98c8835000fc61af93340c1f8624a2",
+      "source_sha256": "e5333be9cd623a8dc9e35a17679206756edef5eddbc7a6dd231fef3b0ffa098c"
+    },
+    "case247_tumor.png": {
+      "normalized_sha256": "dc369e688005ef8052f21fed2d9e3845d1a6c91976ee39f05eebf4198f8f6c19",
+      "source_sha256": "eb6f1b2658e8a9824db46874441bb8a77d07b26ffabf0544a9e20b125033efa6"
+    },
+    "case248_tumor.png": {
+      "normalized_sha256": "ab7f392f99fd7df934affd70e3568791eff820748a311a8ddb171cf6b08a53d5",
+      "source_sha256": "e3b29ed4e6a5070d1f0ee5e769e2c4895101c7f69db9c97a5f91b38073931e32"
+    },
+    "case249_tumor.png": {
+      "normalized_sha256": "9374941642a6d0d0bc65ac126fe37294bd4e435514b6f9c674b40b0bc8f1250c",
+      "source_sha256": "1b0d9aeca46e6f1039f5ce1b2f1cab323b1f4836ed0fc4df398cd7055e149f59"
+    },
+    "case250_tumor.png": {
+      "normalized_sha256": "0e38fa0ddb7f28580a832fd971747fb9445a496bc91ede869034f1f61e102c16",
+      "source_sha256": "0edd455d75c0fbc902d08ca9622fb09edef7dc68b3205231be1ea1da07f450bb"
+    },
+    "case251_tumor.png": {
+      "normalized_sha256": "3e5c1b328d71b2d3db54bf2568cfab7de1b5d3ee0a15e1ddfe513241ad14c1dc",
+      "source_sha256": "d82d05d7fce07e2e102bee8e09188892b48a93e0b435e3ab963c06604cf16282"
+    },
+    "case252_tumor.png": {
+      "normalized_sha256": "deda53598d514a2a8ee2f46c41ab6152ae971f94140428f9b43160a80c87866b",
+      "source_sha256": "d820aaa33dff6471bf59028dbe9651881f1043f7ecbf563bc5e8818b1cdac92c"
+    },
+    "case253_tumor.png": {
+      "normalized_sha256": "77327be4cc5e95a1b64aa9997288576cbe5a92956aa04750b6dcc7d9ad95a223",
+      "source_sha256": "54c3349822a08a41709c47e26fa9df60aacdc8091eec148a49bca0ef7e6673e9"
+    },
+    "case254_tumor.png": {
+      "normalized_sha256": "38a38e7183d3307a367dd69b0dbf44612c497ee9cf8af7cbed1e818c0340acb8",
+      "source_sha256": "144a8f5b0d5ed0a7f0ef4b5cc4e352f8ab40de1deba98becc9102bd064298eb3"
+    },
+    "case255_tumor.png": {
+      "normalized_sha256": "a0277c2ecfe2c95c1e68f9c75af19e05024ae9e812eeb91bf14387acb0df81bb",
+      "source_sha256": "5ed6dcb9ba56f5d5774b0e3cece5fd9566926b7de7291448769eae87473e70f6"
+    },
+    "case256_tumor.png": {
+      "normalized_sha256": "2e7f26a8f917471992619cad19fe96fa9a1ece0dd34ea0bde8ef89f0ec731d2e",
+      "source_sha256": "9d6053746221ff652b62a58a2141f74751893f1b93e704ea52b282869a6f7712"
+    }
+  },
+  "mask_root": "/workspace/segmentation/prepared/breast/masks",
+  "mask_vocabulary": "0,255",
+  "patient_mapping": "CaseID + unique Image_filename; publisher explicitly one scan per patient",
+  "public_declared_empty": 4,
+  "public_mask_annotations": 266,
+  "public_source_images": 256,
+  "public_subjects": 256,
+  "samples_sha256": "4b0308c22f71f4ebebc7a3032b26cc78b8f981cc2db551ab9e80cc57c93af3a9",
+  "schema": "dsflower-segmentation-public-audit-v1",
+  "split_hashes": {
+    "20260919": "02f49d2228be533659c3f774870f4cd926efca37eb05f4fa0ee67d48aa0404bf",
+    "20260920": "1dff89495225ae5a99e2555f1da0370604dee5dead64e6f2f39e2213df8bd37c",
+    "20260921": "421b3e2de703986f70f0d5ef34c2dfe08f1d29e60a4ca7eb11d8c1ab56781c11"
+  }
+}

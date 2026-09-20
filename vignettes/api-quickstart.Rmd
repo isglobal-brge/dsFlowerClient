@@ -147,3 +147,13 @@ uploads on both success and error. End the DataSHIELD session when finished:
 ```r
 DSI::datashield.logout(conns)
 ```
+
+
+## Binary image segmentation
+
+Use `ds.flower.model.pytorch_resnet18_segmentation()` with `data_kind = "image"`
+and `target` naming a mask-path column. The custodian must configure patient
+privacy and paired image/mask roots. The [binary segmentation guide](binary-segmentation.html)
+describes stable image IDs, explicit empty annotations, the pinned 128×128
+profile and local mask prediction. Private validation, holdout and CV do not
+support this contract.

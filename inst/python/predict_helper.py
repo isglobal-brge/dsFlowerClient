@@ -185,6 +185,9 @@ def predict_pytorch_vision(config, paths, pred_type):
     if pred_type not in ("response", "prob"):
         raise ValueError("vision prediction type is invalid")
 
+    if config.get("loss-name") == "segmentation_bce_dice":
+        return predict_segmentation(config, paths, pred_type)
+
     validation, vision, model_spec, params = _load_vision_runner_modules()
 
     # Both public preflights happen before paths reach an image reader.
@@ -222,6 +225,67 @@ def predict_pytorch_vision(config, paths, pred_type):
             predictions.extend(np.argmax(probabilities, axis=1).tolist())
         else:
             predictions.extend(probabilities.tolist())
+    return predictions
+
+
+def _load_segmentation_runner():
+    flower_app = Path(__file__).resolve().parents[1] / "flower_app"
+    sys.path.insert(0, str(flower_app))
+    from dsflower_runner import model_spec, segmentation
+    return model_spec, segmentation
+
+
+def predict_segmentation(config, paths, pred_type):
+    """Bounded analyst-local prediction on the canonical 128x128 mask grid."""
+    import hashlib
+    import io
+    import torch
+    if len(paths) * 128 * 128 > _MAX_VISION_PREDICTION_CELLS:
+        raise ValueError("segmentation prediction output exceeds the local cell ceiling")
+    builder, segmentation = _load_segmentation_runner()
+    cfg = {key: value for key, value in config.items()
+           if not key.startswith("validation-")}
+    cfg["task-type"] = "segmentation"
+    segmentation.validate_config(cfg)
+    public_spec = _decode_model_spec(cfg.get("model-spec-b64"))
+    segmentation.validate_decoder_spec(public_spec)
+    model = builder.build_from_spec(
+        public_spec, in_dim=32768, out_dim=1, output_shape=(1, 128, 128),
+        output_limit=builder.output_limit_for_loss("segmentation_bce_dice"))
+    artifact = base64.b64decode(
+        config["validation-model-path-b64"], validate=True).decode("utf-8")
+    if (not isinstance(artifact, str) or not artifact
+            or config.get("validation-artifact-format") != "pytorch-state-dict-v1"):
+        raise ValueError("segmentation artifact path must be one string")
+    info = os.lstat(artifact)
+    if (not stat.S_ISREG(info.st_mode) or not 0 < info.st_size <= 64 * 1024 * 1024
+            or info.st_size != config.get("validation-artifact-size-bytes")):
+        raise ValueError("segmentation artifact size is invalid")
+    with open(artifact, "rb") as handle:
+        data = handle.read(64 * 1024 * 1024 + 1)
+    if len(data) != info.st_size:
+        raise ValueError("segmentation artifact size changed")
+    digest = hashlib.sha256(data).hexdigest()
+    if digest != config.get("validation-artifact-sha256"):
+        raise ValueError("segmentation artifact digest mismatch")
+    state = _load_state_dict_safely(io.BytesIO(data))
+    if any(not bool(torch.isfinite(value).all()) for value in state.values()):
+        raise ValueError("segmentation artifact contains non-finite parameters")
+    model.load_state_dict(state, strict=True)
+    model.eval()
+    # Encoder profile/checkpoint validation also precedes all image reads.
+    encoder, device = segmentation.prepare_encoder(cfg)
+    predictions = []
+    for start in range(0, len(paths), 16):
+        chunk = paths[start:start + 16]
+        features = segmentation.extract_prediction_features(encoder, chunk, device)
+        with torch.no_grad():
+            probabilities = model(torch.as_tensor(features, dtype=torch.float32)).sigmoid()
+        if (tuple(probabilities.shape) != (len(chunk), 1, 128, 128)
+                or not bool(torch.isfinite(probabilities).all())):
+            raise RuntimeError("segmentation prediction output is invalid")
+        value = probabilities if pred_type == "prob" else (probabilities >= 0.5).int()
+        predictions.extend(value.flatten(1).cpu().tolist())
     return predictions
 
 
