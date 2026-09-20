@@ -1,0 +1,208 @@
+---
+title: "Subject-level survival contracts"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Subject-level survival contracts}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(collapse=TRUE, comment="#>")
+evidence_dir <- file.path("..", "inst", "extdata", "campaign", "survival")
+if (!dir.exists(evidence_dir)) {
+  evidence_dir <- system.file("extdata", "campaign", "survival", package="dsFlowerClient")
+}
+evidence_files <- list.files(evidence_dir, pattern="\\.json$", full.names=TRUE)
+evidence <- lapply(evidence_files, jsonlite::read_json, simplifyVector=FALSE)
+cells <- Filter(function(x) identical(x$record_type, "cell") ||
+  (!is.null(x$variant) && !is.null(x$status)), evidence)
+executed <- Filter(function(x) identical(x$status, "executed"), cells)
+failed <- Filter(function(x) identical(x$status, "failed"), cells)
+```
+
+`pytorch_aft` and `pytorch_discrete_hazard` train baseline survival predictors
+under the existing node-enforced DP mechanism. The custodian must configure
+patient privacy and a stable subject identifier. Epsilon, delta, clipping,
+privacy-unit selection and the accounting population are not analyst controls.
+The original 28 contracts retain their API and registry records. Segmentation
+is developed separately; this article reserves a section for that work.
+
+## Two subject likelihoods
+
+The AFT contract uses a scalar location predictor `mu(x)` and a fixed public
+Weibull shape or log-normal sigma. `dispersion` is one of `0.5`, `1`, `2`.
+The location is bounded to [-10,10], and incompatible public time/dispersion
+ranges fail before private data is accessed. Weibull uses its full event or
+censor likelihood; log-normal censor likelihood uses stable `log_ndtr`.
+Reported event density includes the original-time Jacobian.
+
+```{r aft, eval=FALSE}
+model <- ds.flower.model.pytorch_aft(
+  horizon = 1825, time_scale = 365,
+  distribution = "lognormal", dispersion = 1,
+  hidden_layers = integer(0))
+fit <- ds.flower.fit(
+  conns, symbol = "D", target = c("time", "event"),
+  features = c("age", "baseline_covariate"), model = model,
+  feature_bounds = list(lower = c(0, 0), upper = c(100, 1)),
+  rounds = 10)
+```
+
+Time is measured in days from the declared baseline. Event coding is exactly
+1=event, 0=right censoring. Finite times above the public horizon are
+administratively censored at the horizon; an event exactly at the horizon
+remains an event. Times below the public minimum resolution, nonfinite times,
+invalid event codes and duplicate subject records become safe placeholders
+with `valid=0`. They are never removed from the privacy census or denominator.
+No arithmetic averaging of survival outcomes occurs.
+
+The hazard contract maps a covariate vector to K logits. K is at most 64.
+Intervals are `(left, right]`: an event contributes through its event interval;
+a censor contributes only completely observed intervals. Censoring inside an
+interval contributes no observed non-event for that incomplete interval.
+
+```{r hazard, eval=FALSE}
+model <- ds.flower.model.pytorch_discrete_hazard(
+  edges = c(0, 7, 14, 21, 30, 45, 60, 90, 120,
+            180, 270, 365, 540, 730, 1095, 1460, 1825))
+```
+
+For subject i, the loss is `valid_i * sum(mask_ij * BCE(logit_ij,event_ij))/K`.
+The batch loss is the mean over every sampled subject, including invalid
+subjects' zero contributions. A tensor item contains the whole period vector;
+Opacus sums its period effects and clips that subject's complete parameter
+gradient once. Periods are never flattened into independent training examples.
+
+## Censuses and privacy accounting
+
+The source manifest retains M source rows and N subjects. A separate local,
+server-owned artifact holds N derived subject vectors. Both censuses and the
+exact source-to-subject transformation are checked before training. Invalid
+subjects do not reduce N. The accountant still uses `q=1/ceiling(N/batch_size)`
+and the complete pinned round/epoch horizon; K never multiplies N.
+
+Replace-one conversion, secure Poisson draws, secure Gaussian noise, empty
+noisy steps and fixed client weights remain unchanged. Distribution, dispersion,
+interval edges, validity and effective transformed tensors are bound into
+sticky semantics. Repeating an equivalent release does not generate a new
+noise draw on the same deterministic software/device profile. Separate models,
+splits or experiments on overlapping real subjects compose.
+
+Cox partial likelihood remains excluded because one subject's risk set can
+change another subject's gradient. Calling its event terms individual losses
+does not make them subject-separable.
+
+## Prediction and channel-B evaluation
+
+Released artifacts retain the public model specification and survival settings.
+Local prediction reconstructs the same head and transformation:
+
+```{r prediction, eval=FALSE}
+risk <- ds.flower.predict(fit, public_test_features, type="risk")
+curves <- ds.flower.predict(fit, public_test_features, type="survival",
+                            times=c(30, 180, 365))
+median <- ds.flower.predict(fit, public_test_features, type="median")
+```
+
+AFT risk is `-mu`; hazard risk is negative restricted mean survival over the
+public grid using left-endpoint survival. Hazard curves may cross. Curves are
+constant between hazard interval ends; a hazard median beyond the horizon is
+unavailable. AFT medians follow the selected public distribution.
+
+Concordance and held-out NLL are evaluated only on public or independently
+authorized analyst-local data. The campaign excludes observed-time ties and
+awards half credit to exact risk ties. Its likelihood score uses original-time
+AFT density or hazard NLL divided by K. These are different likelihood scales;
+compare each contract with its own exact twin.
+
+`ds.flower.validate`, private holdout, cross-validation and survival training
+inside HPO reject at public preflight. No private training losses, concordance,
+event counts or validity summaries are returned. This work does not implement
+competing risks, delayed entry, interval censoring or time-varying covariates.
+
+## Public evidence and preregistration
+
+The protocol is distributed at
+`tools/campaign/survival/PROTOCOL_F_SURVIVAL.md`. It fixes subject splits before
+any scoring, a baseline-only covariate subset, public bounds, three seeds,
+three isolated DSLite sites, epsilon 1/4/8, delta 1e-5 and clip 1. SUPPORT2 is the
+primary cohort; LUNG1 is the small secondary cohort. Source hashes, split hashes,
+versions, exact commits, runner hashes and mechanism details accompany executed
+JSONs under `inst/extdata/campaign/survival/`.
+
+[SUPPORT2 (UCI 880)](https://archive-beta.ics.uci.edu/dataset/880/support2)
+lists CC BY 4.0. [The source description](https://hbiostat.org/data/repo/supportdesc)
+identifies day-3 assessments; this campaign excludes them and outcome-derived
+fields. [TCIA LUNG1 clinical data](https://www.cancerimagingarchive.net/collection/nsclc-radiomics/)
+is CC BY-NC 3.0 and measures survival from treatment start. The clinical file
+has noncommercial terms; it is not a commercial-use benchmark.
+
+The preregistered primary floor is mean SUPPORT2 C-index at epsilon 8 at least
+0.60 and at least null +0.05, assessed separately for each model. Failure is
+reported as failure. All four historical utility-envelope checks are empirical
+diagnostics, not privacy proofs. Here shortfall is `G=central-federated`, the
+reverse sign of the older article's delta. Confidence intervals describe
+variation over matched public split replicates; overlapping splits and only
+three replicates limit their interpretation.
+
+Log-normal AFT is the introductory example because the reviewer's exploratory
+pooled probes found useful ranking and better held-out NLL than their
+covariate-free null. Those probes are not release evidence. Their Weibull arms
+(including nonprivate training) and hazard DP arms had worse NLL than their
+nulls under the fixed schedules. Concordance measures ranking, not probability
+calibration; inspect held-out NLL alongside concordance in the executed matrix.
+The campaign retains its preregistered v1 schedule and reports every family,
+including failed floors, without selecting models on its held-out results.
+For the executed matrix, lower NLL is better only relative to the matching null
+and likelihood family: a C-index floor or PASS does not establish calibrated
+probabilities. The rendered table therefore retains every exact twin's NLL and
+labels whether federated-DP NLL is worse than its matched null.
+
+```{r evidence-census, echo=FALSE}
+cat(length(executed), "executed cells and", length(failed),
+    "failed attempts are archived.\n")
+summary_records <- Filter(function(x) identical(x$record_type, "summary"), evidence)
+if (length(summary_records)) {
+  groups <- Filter(function(x) identical(x$status, "executed"), summary_records[[1]]$groups)
+  mean_sd <- function(x) sprintf("%.3f ± %.3f", x$mean, x$sd)
+  rows <- list()
+  for (group in groups) for (epsilon in names(group$envelopes$summaries)) {
+    x <- group$envelopes$summaries[[epsilon]]
+    floor <- group$envelopes$utility_floor
+    rows[[length(rows)+1L]] <- data.frame(
+      cohort=group$dataset, subset=group$subset, model=group$variant,
+      epsilon=epsilon,
+      C_federated_DP=mean_sd(x$federated), C_pooled_DP=mean_sd(x$central_dp),
+      C_pooled_nonprivate=mean_sd(x$central), C_null=mean_sd(x$null),
+      NLL_federated_DP=mean_sd(x$heldout_nll$federated_dp),
+      NLL_pooled_DP=mean_sd(x$heldout_nll$central_dp),
+      NLL_pooled_nonprivate=mean_sd(x$heldout_nll$central),
+      NLL_null=mean_sd(x$heldout_nll$null),
+      federated_NLL_vs_null=if (x$heldout_nll$federated_dp$mean > x$heldout_nll$null$mean)
+        "worse" else "not worse",
+      shortfall=x$gap$mean,
+      floor=if (is.null(floor) || epsilon!="8") "not designated" else
+        if (isTRUE(floor$pass)) "PASS" else "FAIL")
+  }
+  if (length(rows)) knitr::kable(do.call(rbind,rows),digits=3,
+                                 caption="Public held-out scores, mean ± SD over matched seeds")
+}
+if (length(failed)) {
+  knitr::kable(do.call(rbind,lapply(failed,function(x) data.frame(
+    cohort=x$dataset$dataset,model=x$variant,status=x$status,
+    reason=x$error))))
+}
+```
+
+Only archived executed cells support a measured-utility statement. A failed
+attempt has no substituted score. Promotion remains a reviewer decision after
+all mathematical, gradient, accounting, authority, staging, sticky and API
+compatibility gates pass.
+
+## Segmentation — reserved for the parallel implementation
+
+**This section is intentionally reserved.** This survival increment does not
+register or implement a segmentation contract and makes no segmentation
+utility claim. The parallel implementation will supply its contract, subject
+selection, mask semantics, evidence and limitations here.

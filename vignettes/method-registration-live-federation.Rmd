@@ -53,6 +53,30 @@ remain writable only by the service account and be protected against cloning.
 There is no privacy database, historical counter or admission decision based on
 earlier trainings. `datashield.seed` is not used as the DP key.
 
+### Survival requires custodian patient privacy
+
+The survival contracts use the existing registered training methods and require
+the custodian to configure a stable subject identifier in the compute profile:
+
+```r
+options(
+  default.dsflower.dp_unit = "patient",
+  default.dsflower.patient_column = "subject_id"
+)
+```
+
+The analyst cannot supply these settings through the model or training request.
+Survival uses one subject per sampled and clipped example, including for a
+K-period hazard vector. Invalid outcomes or duplicate subject records retain
+the subject in the privacy census with a zero loss contribution. Patient IDs,
+source counts, validity indicators and derived targets stay on the node.
+
+Install matching client/server runner trees before enabling these contracts;
+version strings alone do not establish compatibility. No new aggregate method
+for private survival metrics is enabled: validation, holdout and CV are
+unsupported. The [survival article](survival-segmentation.html) describes the
+public configuration and supported channel-B evaluation.
+
 ## Register methods with Opal
 
 With administrator credentials, `opalr` can register every method declared by

@@ -66,6 +66,7 @@
 }
 
 .assert_holdout_supported <- function(sub, data_kind) {
+  .reject_survival_private_evaluation(sub$loss)
   track <- if (is.list(sub)) sub$track %||% "" else ""
   if (!is.character(track) || length(track) != 1L || is.na(track) ||
       !track %in% c("neural", "native_tree")) {
@@ -144,6 +145,7 @@
 }
 
 .assert_cross_validation_supported <- function(sub, data_kind) {
+  .reject_survival_private_evaluation(sub$loss)
   track <- if (is.list(sub)) sub$track %||% NULL else NULL
   if (!is.character(track) || length(track) != 1L || is.na(track) ||
       !track %in% c("neural", "native_tree")) {

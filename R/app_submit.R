@@ -216,6 +216,9 @@
     "l1-penalty" = as.numeric(p[["l1_penalty"]] %||% 0),
     "optimizer-name" = optimizer,
     "scheduler-name" = scheduler)
+  if (.is_survival_loss(loss_name)) {
+    out[["survival-config-b64"]] <- .survival_json_b64(.survival_config(p, loss_name))
+  }
   if (identical(loss_name, "negbin_nll")) {
     out[["nb-dispersion"]] <- as.numeric(p[["nb_dispersion"]] %||% 1)
   } else if (identical(loss_name, "gamma_nll")) {
@@ -319,6 +322,9 @@
     input_dim = input_dim,
     num_classes = as.integer(params[["n_classes"]] %||% 2L),
     num_labels = as.integer(params[["num_labels"]] %||% 2L))
+  if (.is_survival_loss(sub$loss)) {
+    payload$survival_config <- .survival_config(params, sub$loss)
+  }
   cache_key <- digest::digest(payload, algo = "sha256")
   if (exists(cache_key, envir = .model_spec_preflight_cache,
              inherits = FALSE)) {
@@ -357,7 +363,8 @@
 #'
 #' @param conns DSI connections.
 #' @param model A model name or \code{dsflower_model} (registry-resolved).
-#' @param target Character; one target column, or exactly \code{num_labels}
+#' @param target Character; ordered `c(time, event)` for survival, one target
+#'   column for scalar outcomes, or exactly \code{num_labels}
 #'   distinct columns for a multilabel model.
 #' @param features Character vector; feature columns.
 #' @param data Optional character data source resolved during connection.
@@ -475,6 +482,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   model$params <- .dsflower_resolve_model_params(
     registered_model, model_params)
   sub <- .emit_submission(model)
+  if (.is_survival_loss(sub$loss) && isTRUE(.DSFLOWER_HPO_CONTEXT$active)) {
+    stop("Survival training inside HPO is unsupported; use a preregistered ",
+         "public training schedule.", call. = FALSE)
+  }
   if (!is.null(holdout_spec)) {
     .assert_holdout_supported(sub, data_kind)
   }
@@ -482,6 +493,15 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     .assert_cross_validation_supported(sub, data_kind)
   }
   target <- .validate_submission_target(sub, target)
+  if (.is_survival_loss(sub$loss)) {
+    if (is.null(features) || !length(features) ||
+        length(intersect(features, target)) ||
+        any(startsWith(c(features, target), "__survival_"))) {
+      stop("Survival requires explicit distinct feature/time/event roles; ",
+           "the __survival_ prefix is reserved.", call. = FALSE)
+    }
+    .validate_public_target_spec(target_levels, target_bounds, "survival")
+  }
   request <- NULL
   if (identical(sub$track, "native_tree")) {
     if (!identical(num_rounds, 1L)) {
@@ -634,6 +654,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                 mse = "regression", huber = "regression",
                 quantile = "regression", poisson_nll = "count",
                 negbin_nll = "count", gamma_nll = "regression",
+                aft_weibull_nll = "survival", aft_lognormal_nll = "survival",
+                discrete_hazard_nll = "survival",
                 "classification")
   p <- sub[["params"]] %||% list()
   n_target_classes <- as.integer(
@@ -830,7 +852,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         .toml_kv(key, training_config[[key]])
       }, character(1))))
     if (!is.null(public_bounds))
-      cfg <- c(cfg, .toml_kv("feature-bounds-b64", .spec_to_b64(public_bounds)))
+      cfg <- c(cfg, .toml_kv("feature-bounds-b64",
+        if (.is_survival_loss(sub$loss)) .survival_bounds_b64(public_bounds) else
+          .spec_to_b64(public_bounds)))
     if (identical(data_kind, "image")) {
       cfg <- c(cfg, .toml_kv(
         "backbone", as.character(p[["backbone"]] %||% "resnet18")),
@@ -867,6 +891,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     model_spec = sub$spec,
     model_params = sub$params %||% list(),
     loss_name = sub$loss %||% NULL,
+    survival_config = .survival_config(sub$params, sub$loss),
+    target = target,
     data_kind = data_kind,
     strategy = list(name = strategy_spec$name, params = strategy_spec$params),
     num_rounds = as.integer(num_rounds),
@@ -916,7 +942,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     stop("'target' must contain unique, non-empty target column names.",
          call. = FALSE)
   }
-  if (identical(sub$loss, "multilabel_bce")) {
+  if (.is_survival_loss(sub$loss)) {
+    if (length(target) != 2L) {
+      stop("Survival requires exactly two ordered target columns: time, event.",
+           call. = FALSE)
+    }
+  } else if (identical(sub$loss, "multilabel_bce")) {
     num_labels <- suppressWarnings(as.integer(
       (sub[["params"]] %||% list())[["num_labels"]]))
     if (length(num_labels) != 1L || is.na(num_labels) ||
@@ -1001,6 +1032,13 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
 #' @keywords internal
 .validate_public_target_spec <- function(levels, bounds, task_type,
                                          loss_name = "", n_classes = 2L) {
+  if (identical(task_type, "survival")) {
+    if (!is.null(levels) || !is.null(bounds)) {
+      stop("Survival uses fixed event coding and public survival time bounds; ",
+           "target_levels and target_bounds are unsupported.", call. = FALSE)
+    }
+    return(list(levels = NULL, bounds = NULL))
+  }
   numeric_task <- task_type %in% c("regression", "count", "continuous")
   if (isTRUE(numeric_task)) {
     if (!is.null(levels)) {

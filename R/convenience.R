@@ -159,16 +159,17 @@ ds.flower.task <- function(name = "classification") {
   }
 
   key <- .dsflower_choice_key(name)
-  if (key %in% c("survival", "segmentation")) {
+  if (key %in% c("segmentation")) {
     stop("Task '", name, "' is not supported by the enforced-DP runtime. ",
-         "Supported tasks: classification, regression, count.", call. = FALSE)
+         "Supported tasks: classification, regression, count, survival.", call. = FALSE)
   }
 
   choices <- c(
     classification = "ds.flower.task.classification",
     class = "ds.flower.task.classification",
     regression = "ds.flower.task.regression",
-    count = "ds.flower.task.count"
+    count = "ds.flower.task.count",
+    survival = "ds.flower.task.survival"
   )
 
   .dsflower_call_constructor(.dsflower_choice(name, choices, "task"), list())
@@ -352,6 +353,8 @@ ds.flower.fit <- function(conns,
     expected_task <- if (identical(model_spec$track, "native_tree")) {
       if (identical(model_spec$params$task, "regression"))
         "regression" else "classification"
+    } else if (.is_survival_loss(model_loss)) {
+      "survival"
     } else if (model_loss %in% c("poisson_nll", "negbin_nll")) {
       "count"
     } else if (model_loss %in% c(

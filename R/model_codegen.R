@@ -82,7 +82,8 @@
     # The spec is DATA shipped in the run config (base64 JSON); there is NO user
     # package and NO researcher code in the FAB (pkg_dir absent), so the node builds
     # the architecture itself -- the import-time exfil surface simply does not exist.
-    list(track = "neural", spec = spec, loss = m$loss, params = params)
+    list(track = "neural", spec = spec,
+         loss = .dsflower_model_loss(m, params), params = params)
 
   } else if (identical(m$track, "native_tree") &&
              m$engine %in% .NATIVE_TREE_ENGINES) {

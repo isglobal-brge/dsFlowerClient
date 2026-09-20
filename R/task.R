@@ -33,10 +33,10 @@ ds.flower.task.count <- function() {
 
 .assert_supported_task <- function(task) {
   if (!inherits(task, "dsflower_task") ||
-      !task$type %in% c("classification", "regression", "count")) {
+      !task$type %in% c("classification", "regression", "count", "survival")) {
     type <- if (inherits(task, "dsflower_task")) task$type else "invalid"
     stop("Task '", type, "' is not supported by the enforced-DP runtime. ",
-         "Supported tasks: classification, regression, count.", call. = FALSE)
+         "Supported tasks: classification, regression, count, survival.", call. = FALSE)
   }
   invisible(task)
 }
@@ -49,4 +49,11 @@ ds.flower.task.count <- function() {
 print.dsflower_task <- function(x, ...) {
   cat("dsflower_task:", x$type, "\n")
   invisible(x)
+}
+
+#' Create a right-censored survival task specification
+#' @return A `dsflower_task` object with type = "survival".
+#' @export
+ds.flower.task.survival <- function() {
+  structure(list(type = "survival"), class = "dsflower_task")
 }

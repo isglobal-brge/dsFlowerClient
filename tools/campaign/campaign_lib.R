@@ -42,6 +42,16 @@ methods::setMethod("dsIsAsync", "CampaignDSLiteConnection", function(conn) {
        assignResource = FALSE)
 })
 methods::setMethod("dsKeepAlive", "CampaignDSLiteConnection", function(conn) NULL)
+methods::setMethod("dsListSymbols", "CampaignDSLiteConnection", function(conn) {
+  .campaign_remote_call(conn, function() {
+    DSI::dsListSymbols(.campaign_dslite_conn)
+  })
+})
+methods::setMethod("dsRmSymbol", "CampaignDSLiteConnection", function(conn, symbol) {
+  .campaign_remote_call(conn, function(symbol) {
+    DSI::dsRmSymbol(.campaign_dslite_conn, symbol)
+  }, symbol)
+})
 methods::setMethod(
   "dsAggregate", "CampaignDSLiteConnection",
   function(conn, expr, async = TRUE) {
@@ -291,7 +301,8 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
                                    epsilon, delta = 1e-6, rounds,
                                    model_params, work_dir, venv_root,
                                    contract = "pytorch_logreg",
-                                   cv_folds = NULL) {
+                                   cv_folds = NULL, target = "target",
+                                   patient_column = NULL, score_function = NULL) {
   n_sites <- length(site_data)
   dir.create(work_dir, recursive = TRUE, showWarnings = FALSE, mode = "0700")
   output_dir <- file.path(work_dir, "artifact")
@@ -347,7 +358,8 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
   worker_libpaths <- .libPaths()
   parallel::clusterMap(
     cluster,
-    function(index, data, work_dir, libpaths, venv_root, epsilon, delta) {
+    function(index, data, work_dir, libpaths, venv_root, epsilon, delta,
+             patient_column) {
       .libPaths(libpaths)
       Sys.setenv(
         DSFLOWER_VENV_ROOT = venv_root,
@@ -362,6 +374,11 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
         dsflower.dp_per_training_epsilon = epsilon,
         dsflower.dp_per_training_delta = delta
       )
+      if (!is.null(patient_column)) {
+        options(dsflower.dp_unit = "patient",
+                dsflower.patient_column = patient_column,
+                dsflower.dp_clipping_norm = 1)
+      }
       suppressPackageStartupMessages({
         library(DSI)
         library(DSLite)
@@ -385,7 +402,7 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
       libpaths = worker_libpaths,
       venv_root = venv_root,
       epsilon = epsilon,
-      delta = delta),
+      delta = delta, patient_column = patient_column),
     SIMPLIFY = FALSE
   )
 
@@ -463,22 +480,57 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
       elapsed_s = elapsed, cleanup_ok = cleanup_ok))
   }
 
-  fit <- ds.flower.fit(
+  fit <- withCallingHandlers(ds.flower.fit(
     conns,
     symbol = "D",
-    target = "target",
+    target = target,
     features = features,
     model = contract,
     model_params = model_params,
     strategy = "fedavg",
     rounds = as.integer(rounds),
     feature_bounds = feature_bounds,
-    target_levels = c("0", "1"),
+    target_levels = if (is.null(patient_column)) c("0", "1") else NULL,
     torch_backend = "cpu",
     output_dir = output_dir,
     silent = TRUE,
     verbose = FALSE
-  )
+  ), error = function(e) {
+    if (is.null(patient_column)) return(invisible(NULL))
+    # Public survival campaign diagnostics only; preserve the original failure
+    # and its cleanup while retaining traces that otherwise disappear with Rtmp.
+    try({
+    diagnostic <- character()
+    for (frame in sys.frames()) {
+      for (name in c("clean_stdout", "clean_stderr")) {
+        if (exists(name, envir = frame, inherits = FALSE)) {
+          value <- get(name, envir = frame, inherits = FALSE)
+          if (is.character(value)) diagnostic <- c(diagnostic, name, value)
+        }
+      }
+    }
+    link_log <- file.path(tempdir(), "dsflower_superlink", "superlink.log")
+    if (file.exists(link_log)) diagnostic <- c(
+      diagnostic, "SuperLink", readLines(link_log, warn = FALSE))
+    node_logs <- try(parallel::clusterCall(cluster, function() {
+      paths <- list.files(file.path(tempdir(), "dsflower", "supernodes"),
+                          pattern = "\\.log$", full.names = TRUE)
+      unlist(lapply(paths, function(path) {
+        utils::tail(readLines(path, warn = FALSE), 300L)
+      }), use.names = FALSE)
+    }), silent = TRUE)
+    if (!inherits(node_logs, "try-error")) {
+      diagnostic <- c(diagnostic, "SuperNodes", unlist(node_logs, use.names = FALSE))
+    }
+    diagnostic <- unlist(strsplit(diagnostic, "\n", fixed = TRUE), use.names = FALSE)
+    sensitive <- grepl("token|secret|authorization|bearer", diagnostic, ignore.case = TRUE)
+    diagnostic[sensitive] <- "[authentication-related diagnostic line redacted]"
+    diagnostic <- gsub("[A-Za-z0-9_-]{20,}\\.[A-Za-z0-9_-]{20,}\\.[A-Za-z0-9_-]{20,}",
+                       "[credential redacted]", diagnostic)
+    writeLines(diagnostic, file.path(work_dir, "failure-diagnostics.log"))
+    }, silent = TRUE)
+    invisible(NULL)
+  })
 
   if (!isTRUE(fit$available)) {
     node_logs <- try(parallel::clusterCall(cluster, function() {
@@ -512,6 +564,9 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
   history <- jsonlite::fromJSON(file.path(persisted_dir, "history.json"))
 
   # Channel B: consume the released artifact locally on the held-out test set.
+  if (!is.null(score_function)) {
+    metrics <- score_function(fit, test, features)
+  } else {
   prob <- ds.flower.predict(fit, test[, features, drop = FALSE], type = "prob")
   p1 <- if (is.matrix(prob) || is.data.frame(prob)) {
     prob <- as.matrix(prob)
@@ -524,6 +579,7 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
     as.numeric(prob)
   }
   metrics <- campaign_metrics(test$target, p1)
+  }
 
   cleanup()
   Sys.sleep(1)
@@ -535,6 +591,8 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
 
   list(
     metrics = metrics,
+    artifact_dir = persisted_dir,
+    cleanup_ok = cleanup_ok,
     n_clients = as.integer(metadata$n_clients),
     n_failures = as.integer(sum(history$n_failures)),
     n_rounds_run = nrow(history),

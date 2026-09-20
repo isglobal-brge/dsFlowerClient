@@ -36,7 +36,8 @@ ds.flower.submit(
 
 \item{model}{A model name or \code{dsflower_model} (registry-resolved).}
 
-\item{target}{Character; one target column, or exactly \code{num_labels}
+\item{target}{Character; ordered `c(time, event)` for survival, one target
+column for scalar outcomes, or exactly \code{num_labels}
 distinct columns for a multilabel model.}
 
 \item{features}{Character vector; feature columns.}

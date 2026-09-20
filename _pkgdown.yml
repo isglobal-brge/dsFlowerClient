@@ -32,6 +32,7 @@ articles:
       - api-quickstart
       - method-registration-live-federation
       - utility-campaign
+      - survival-segmentation
 
 reference:
   - title: "High-level submission"
@@ -70,6 +71,8 @@ reference:
     desc: "Model specification objects for federated learning."
     contents:
       - ds.flower.model
+      - ds.flower.model.pytorch_aft
+      - ds.flower.model.pytorch_discrete_hazard
       - ds.flower.model.pytorch_linear_regression
       - ds.flower.model.pytorch_logreg
       - ds.flower.model.pytorch_densenet121

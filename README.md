@@ -260,6 +260,17 @@ optimizer/loss, outside a resource cap, or not implemented fail before staging;
 accepted first-party parameters are pinned in the manifest and actually consumed
 by the trusted runner.
 
+Right-censored survival is supported by `pytorch_aft` (fixed public Weibull
+shape or log-normal sigma) and `pytorch_discrete_hazard` (a fixed public grid,
+K <= 64). Both require the custodian's patient privacy policy, an explicit
+baseline feature list, and ordered `target = c("time", "event")` with event
+coding 1/0. Supply an explicit AFT horizon or hazard grid before training.
+Private validation, holdout, CV and survival training inside HPO are rejected
+at public preflight. Released artifacts support local survival curves, medians
+and risk scores on public or independently authorized held-out data. See the
+[survival contracts and evidence article](https://isglobal-brge.github.io/dsFlowerClient/articles/survival-segmentation.html)
+for the time convention, prediction definitions and campaign status.
+
 The image contracts cover private federated training of their frozen-backbone
 heads, private validation, and local researcher-side prediction for saved
 native dsFlower ResNet-18/DenseNet-121 binary or multiclass releases, including

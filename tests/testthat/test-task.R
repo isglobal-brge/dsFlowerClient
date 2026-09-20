@@ -12,8 +12,9 @@ test_that("regression task has correct type", {
   expect_equal(task$type, "regression")
 })
 
-test_that("survival task fails early while no enforced-DP runtime exists", {
-  expect_error(ds.flower.task("survival"), "not supported")
+test_that("survival task has a supported typed constructor", {
+  expect_identical(ds.flower.task("survival"), ds.flower.task.survival())
+  expect_identical(ds.flower.task.survival()$type, "survival")
 })
 
 test_that("segmentation task fails early while no enforced-DP runtime exists", {

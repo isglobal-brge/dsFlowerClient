@@ -25,7 +25,7 @@ test_that("recipe validates model type", {
 })
 
 test_that("recipe rejects handcrafted unsupported task specs", {
-  unsupported <- structure(list(type = "survival"), class = "dsflower_task")
+  unsupported <- structure(list(type = "unsupported"), class = "dsflower_task")
   expect_error(
     ds.flower.recipe(model = ds.flower.model.pytorch_logreg(),
                      task = unsupported),

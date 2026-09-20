@@ -1,0 +1,289 @@
+{
+  "schema_version": 1,
+  "record_type": "cell",
+  "task": "survival",
+  "status": "executed",
+  "started_utc": "2026-09-18T13:51:11Z",
+  "dataset": {
+    "schema_version": 1,
+    "dataset": "lung1",
+    "source": {
+      "url": "https://www.cancerimagingarchive.net/wp-content/uploads/NSCLC-Radiomics-Lung1.clinical-version3-Oct-2019.csv",
+      "sha256": "132f72b58b9660bf5e6b24b9817b335f1896360bc253e1f2034a3ffee593e6fd",
+      "licence": "CC BY-NC 3.0",
+      "licence_url": "https://www.cancerimagingarchive.net/collection/nsclc-radiomics/",
+      "release": "Clinical version 3 October 2019; collection version 4 2020-10-22",
+      "attribution": "Aerts et al. (2014), DOI 10.7937/K9/TCIA.2015.PF0M9REI"
+    },
+    "protocol_sha256": "f05e0eeddbb2da4ec039d2a43ca8f8b56737f1b4ceb5aee33d1f5600271c9f70",
+    "seed": 1101,
+    "subset": "full",
+    "public_fixture": true,
+    "subject_provenance": "One release row per stable public subject ID; no duplicate IDs",
+    "n_original_rows": 422,
+    "n_train": 337,
+    "n_test": 85,
+    "split_rule": "SHA256(seed:id), floor(0.8*N) train, no outcome stratification",
+    "train_sha256": "82ccd4056340b65aec4ae0e23a4709aff0a1106d4136eee7b80ddc0a37c78242",
+    "test_sha256": "1be51b04632e69174b9282429f4e486ba0fe5b28ec06c17897c21aebdbf3227a",
+    "sites": [
+      {
+        "site": 1,
+        "source_rows": 113,
+        "n_subjects": 113,
+        "split_sha256": "4cebe21bf3c51c18d2bc2b372c925ce758a3c2adcd5e89f777d06b6c1a03e4bc"
+      },
+      {
+        "site": 2,
+        "source_rows": 112,
+        "n_subjects": 112,
+        "split_sha256": "be290316f280f3f0fbb74d58f97bdb560ba6116ec691d77eb5be2ca5db10c5d5"
+      },
+      {
+        "site": 3,
+        "source_rows": 112,
+        "n_subjects": 112,
+        "split_sha256": "688ca8df39def7baa256f53b7ecc07941c1b44269a0470b2cc42433112963c44"
+      }
+    ],
+    "features": ["age", "male", "t_stage", "n_stage", "m_stage", "histology_0", "histology_1", "histology_2", "histology_3"],
+    "feature_bounds": {
+      "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0],
+      "upper": [100, 1, 4, 3, 1, 1, 1, 1, 1]
+    },
+    "time_origin": "treatment_start"
+  },
+  "variant": "weibull",
+  "contract": "pytorch_aft",
+  "epsilon": 4,
+  "delta": 1e-05,
+  "clip": 1,
+  "adjacency": "replace_one",
+  "privacy_unit": "patient",
+  "site_count": 3,
+  "package_commits": {
+    "dsFlower": "dc6570b9908642a79763483e3b602d9040b55a6e",
+    "dsFlowerClient": "bfcf736a39c2f1bb46f6a745145c4e6034b620ff"
+  },
+  "installed_build": {
+    "commits": {
+      "dsFlower": "dc6570b9908642a79763483e3b602d9040b55a6e",
+      "dsFlowerClient": "bfcf736a39c2f1bb46f6a745145c4e6034b620ff"
+    },
+    "runner_sha256": "ac08384b65fe18eeb1a1bbc7c757f8103cb59990f164f32cc7b047405d8e4ac8",
+    "built_utc": "2026-09-18T13:38:07Z",
+    "package_versions": [
+      "0.4.5",
+      "0.4.4"
+    ]
+  },
+  "campaign_tools_commit": "58ccbb683536f9a7c6e1bff59d70adf1cc97e073",
+  "package_versions": {
+    "dsFlower": "0.4.5",
+    "dsFlowerClient": "0.4.4",
+    "R": "R version 4.5.2 (2025-10-31)",
+    "DSI": "1.8.0",
+    "DSLite": "1.4.1",
+    "dsBase": "6.3.5",
+    "resourcer": "1.5.0"
+  },
+  "runner_sha256": "ac08384b65fe18eeb1a1bbc7c757f8103cb59990f164f32cc7b047405d8e4ac8",
+  "public_config": {
+    "learning-rate": 0.05,
+    "weight-decay": 0,
+    "l1-penalty": 0,
+    "optimizer-name": "sgd",
+    "scheduler-name": "none",
+    "survival-config-b64": "eyJzY2hlbWFfdmVyc2lvbiI6MSwidGltZV91bml0IjoiZGF5cyIsInRpbWVfb3JpZ2luIjoiYmFzZWxpbmUiLCJ0X21pbiI6MSwiaG9yaXpvbiI6MTgyNSwidGltZV9zY2FsZSI6MzY1LCJkaXN0cmlidXRpb24iOiJ3ZWlidWxsIiwiZGlzcGVyc2lvbiI6MX0=",
+    "optimizer-momentum": 0,
+    "optimizer-nesterov": false,
+    "model-spec-b64": "eyJraW5kIjoic2VxdWVudGlhbCIsImxheWVycyI6W3sib3AiOiJsaW5lYXIiLCJvdXQiOiJAb3V0In1dfQ==",
+    "loss-name": "aft_weibull_nll",
+    "num-features": 9,
+    "num-classes": 2,
+    "num-labels": 2,
+    "num-server-rounds": 10,
+    "batch-size": 128,
+    "local-epochs": 2
+  },
+  "mechanism_provenance": "Effective sigma/q/steps recomputed from public fixture subject census using audited unchanged runtime; independent PRV verification. No new private endpoint.",
+  "evaluation": "channel B, public held-out subjects only",
+  "outcome_semantics": {
+    "target_order": ["time", "event"],
+    "event": 1,
+    "censored": 0,
+    "time_unit": "days",
+    "baseline": "treatment_start",
+    "administrative_censor": "time>1825 => time1825,event0; event at1825 retained",
+    "invalid": "time below1 or nonfinite/event not0or1/duplicate => valid0, never dropped",
+    "preprocessing": "fixed public bounds scaled to[-1,1]; safe placeholders; no private fitted moments",
+    "interval_convention": "event(left,right]; censor completed periods only"
+  },
+  "score_conventions": {
+    "time_ties": "excluded",
+    "risk_ties": 0.5,
+    "hazard_risk": "negative left-endpoint restricted mean",
+    "gap": "central minus federated (historic sign reversed)"
+  },
+  "results": {
+    "seed": 1101,
+    "n_train": 337,
+    "minimum_site_n": 112,
+    "federated_dp": {
+      "c_index": 0.482722355769231,
+      "heldout_nll": 6.60048412308651,
+      "n_evaluated_public_subjects": 85,
+      "n_invalid_public_subjects": 0
+    },
+    "model_sha256": "6ec63423ca5a8533fc69214686cb4b33139bb6af542ccfb8f4469834bd1c57f6",
+    "central": {
+      "c_index": 0.497145432692308,
+      "heldout_nll": 6.22555805729797,
+      "n_evaluated_public_subjects": 85,
+      "n_invalid_public_subjects": 0
+    },
+    "central_dp": {
+      "c_index": 0.463491586538462,
+      "heldout_nll": 6.4522746413709,
+      "n_evaluated_public_subjects": 85,
+      "n_invalid_public_subjects": 0
+    },
+    "pooled_mechanism": {
+      "adjacency": "replace_one",
+      "noise_multiplier": 5.9375,
+      "clipping_norm": 1,
+      "accounting_population": 337,
+      "steps_per_epoch": 3,
+      "sample_rate": 0.333333333333333,
+      "expected_batch_size": 112,
+      "total_epochs": 20,
+      "total_steps": 60,
+      "policy_hash": "4023e59f833116690f26a87da0721eb9d95f5609a060545bce7a389f9723c813",
+      "calibration": "trusted PRV with RDP fallback",
+      "verification_accountant": "PRV",
+      "add_remove_delta": 1.19202922022118e-06,
+      "independently_recomputed_replace_one_epsilon": 3.99837595272571,
+      "independently_recomputed_replace_one_delta": 9.99285062265609e-06,
+      "execution_device": "cpu"
+    },
+    "null": {
+      "c_index": 0.5,
+      "heldout_nll": 6.21374775538776,
+      "n_evaluated_public_subjects": 85,
+      "n_invalid_public_subjects": 0
+    },
+    "site_mechanisms": [
+      {
+        "site": 1,
+        "adjacency": "replace_one",
+        "noise_multiplier": 9.9609375,
+        "clipping_norm": 1,
+        "accounting_population": 113,
+        "steps_per_epoch": 1,
+        "sample_rate": 1,
+        "expected_batch_size": 113,
+        "total_epochs": 20,
+        "total_steps": 20,
+        "policy_hash": "3a290fe8cae5d47cb86a8df8489681798e4a091a765e18b858373a7f95ee11ff",
+        "calibration": "trusted PRV with RDP fallback",
+        "verification_accountant": "PRV",
+        "add_remove_delta": 1.19202922022118e-06,
+        "independently_recomputed_replace_one_epsilon": 3.99221864272148,
+        "independently_recomputed_replace_one_delta": 9.96579759466037e-06
+      },
+      {
+        "site": 2,
+        "adjacency": "replace_one",
+        "noise_multiplier": 9.9609375,
+        "clipping_norm": 1,
+        "accounting_population": 112,
+        "steps_per_epoch": 1,
+        "sample_rate": 1,
+        "expected_batch_size": 112,
+        "total_epochs": 20,
+        "total_steps": 20,
+        "policy_hash": "69efde1df06c1a3fe3b8273c970c092dd9a0df9fa5370ef963f39ce0fd145851",
+        "calibration": "trusted PRV with RDP fallback",
+        "verification_accountant": "PRV",
+        "add_remove_delta": 1.19202922022118e-06,
+        "independently_recomputed_replace_one_epsilon": 3.99221864272148,
+        "independently_recomputed_replace_one_delta": 9.96579759466037e-06
+      },
+      {
+        "site": 3,
+        "adjacency": "replace_one",
+        "noise_multiplier": 9.9609375,
+        "clipping_norm": 1,
+        "accounting_population": 112,
+        "steps_per_epoch": 1,
+        "sample_rate": 1,
+        "expected_batch_size": 112,
+        "total_epochs": 20,
+        "total_steps": 20,
+        "policy_hash": "69efde1df06c1a3fe3b8273c970c092dd9a0df9fa5370ef963f39ce0fd145851",
+        "calibration": "trusted PRV with RDP fallback",
+        "verification_accountant": "PRV",
+        "add_remove_delta": 1.19202922022118e-06,
+        "independently_recomputed_replace_one_epsilon": 3.99221864272148,
+        "independently_recomputed_replace_one_delta": 9.96579759466037e-06
+      }
+    ],
+    "versions": {
+      "python": "3.11.14",
+      "torch": "2.14.0",
+      "opacus": "1.6.0",
+      "flwr": "1.31.0",
+      "numpy": "2.4.6",
+      "scipy": "1.17.1",
+      "pandas": "3.0.6",
+      "cuda_available": false,
+      "nonprivate_twin_device": "cpu",
+      "null_twin_device": "cpu",
+      "dp_twin_device": "cpu",
+      "heldout_evaluation_device": "cpu",
+      "cuda_device": null,
+      "cuda_toolkit": null,
+      "cublas_workspace_config": ":4096:8",
+      "cudnn_version": null,
+      "cudnn_benchmark": false,
+      "cudnn_deterministic": true,
+      "cuda_matmul_allow_tf32": false,
+      "cudnn_allow_tf32": true,
+      "federation_device_rule": "_dp_fit chooses cuda when available, otherwise cpu; shared verified runtime",
+      "platform": "macOS-15.4.1-arm64-arm-64bit",
+      "deterministic_algorithms": true
+    },
+    "twin_matching": {
+      "architecture_loss_preprocessing_initialization_optimizer_schedule": "exact",
+      "initialization_seed": 0,
+      "pooled_epochs": 20,
+      "differences": "Pooled population changes q and steps; nonprivate twin has no clipping/noise; FedAvg averages sites equally; central DP secret is unrecorded and independent."
+    },
+    "elapsed_s": 1.25952308299748,
+    "max_rss_native_units": 498827264,
+    "memory_measurement": {
+      "scope": "central/scoring process peak resident memory",
+      "native_unit": "bytes",
+      "federation_peak_memory_measured": false
+    }
+  },
+  "federation": {
+    "cleanup_ok": true,
+    "n_clients": 3,
+    "n_failures": 0,
+    "n_rounds_run": 10,
+    "model_sha256": "6ec63423ca5a8533fc69214686cb4b33139bb6af542ccfb8f4469834bd1c57f6",
+    "elapsed_s": 223.557062864304
+  },
+  "artifact_checksum": "6ec63423ca5a8533fc69214686cb4b33139bb6af542ccfb8f4469834bd1c57f6",
+  "campaign_tool_sha256": {
+    "campaign_lib.R": "f0d8ed207a29f66b2280294e49a3d76894a3cb9d484a997b76342a19bb910a0a",
+    "run_cell.R": "215874721663a15361132a532a9544942f0ae19b91095ca0e3271d5acf84a723",
+    "central_and_score.py": "00f539dda5370e21f1f61cb559eb678129f384dd23f6baa18da4585545e96a7d",
+    "metrics.py": "d60fe85744bc49a4d819e90fa27b87f947734872c8ad22ea9e30f1248049962a"
+  },
+  "topology": "three isolated DSLite custodian workers and local Flower transport",
+  "cleanup_ok": true,
+  "finished_utc": "2026-09-18T13:55:01Z",
+  "elapsed_s": 230.337796926498
+}

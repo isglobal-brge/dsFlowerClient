@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "record_type": "cell",
+  "task": "survival",
+  "status": "failed",
+  "started_utc": "2026-09-18T11:20:49Z",
+  "dataset": {
+    "schema_version": 1,
+    "dataset": "synthetic-public",
+    "source": {
+      "release": "prepare_synthetic.py, numpy default_rng1101",
+      "licence": "CC0-1.0",
+      "sha256": "f7052b368c81690e51b923775f77070b8e24b0f2f21c1b6d4be06a70fcc35585"
+    },
+    "public_fixture": true,
+    "seed": 1101,
+    "subset": "synthetic",
+    "n_original_rows": 90,
+    "n_train": 72,
+    "n_test": 18,
+    "sites": [
+      {
+        "site": 1,
+        "source_rows": 24,
+        "n_subjects": 24,
+        "split_sha256": "ade67b8ca7adb859054c5c752a5f9c6646505e7005663770dbb0e7a180595b7b"
+      },
+      {
+        "site": 2,
+        "source_rows": 24,
+        "n_subjects": 24,
+        "split_sha256": "583ea78118b3f7dcba1787a342d20f58dbcb244caee3963330e0a7f0cf5844d5"
+      },
+      {
+        "site": 3,
+        "source_rows": 24,
+        "n_subjects": 24,
+        "split_sha256": "1006315018d24c0ede665bd0446b2fabdf27b9e60ca984e19c11cff7a13667de"
+      }
+    ],
+    "features": "x",
+    "feature_bounds": {
+      "lower": -1,
+      "upper": 1
+    },
+    "train_sha256": "f7052b368c81690e51b923775f77070b8e24b0f2f21c1b6d4be06a70fcc35585",
+    "test_sha256": "19bd3c89fe2d252e7d18eadbbb92c5f99d8a64667daecc36f30ff7cd3b55e7f8",
+    "protocol_sha256": "f05e0eeddbb2da4ec039d2a43ca8f8b56737f1b4ceb5aee33d1f5600271c9f70"
+  },
+  "variant": "hazard",
+  "contract": "pytorch_discrete_hazard",
+  "epsilon": 8,
+  "delta": 1e-05,
+  "clip": 1,
+  "adjacency": "replace_one",
+  "privacy_unit": "patient",
+  "site_count": 3,
+  "package_commits": {
+    "dsFlower": "962281a8b047c69419c01da658b2f33d8e4c7cc6",
+    "dsFlowerClient": "19e882361f08553949d1f6e36dc419eab9ddb5db"
+  },
+  "installed_build": {
+    "commits": {
+      "dsFlower": "962281a8b047c69419c01da658b2f33d8e4c7cc6",
+      "dsFlowerClient": "19e882361f08553949d1f6e36dc419eab9ddb5db"
+    },
+    "runner_sha256": "5f5754a49bef98bc4da5000c7117e88b7642c6270bf25e1ad338f465de6263d7",
+    "built_utc": "2026-09-18T11:09:30Z",
+    "package_versions": [
+      "0.4.5",
+      "0.4.4"
+    ]
+  },
+  "campaign_tools_commit": "8b9406099db87129b3564e63c8f410860a3b45ff",
+  "package_versions": {
+    "dsFlower": "0.4.5",
+    "dsFlowerClient": "0.4.4",
+    "R": "R version 4.5.2 (2025-10-31)",
+    "DSI": "1.8.0",
+    "DSLite": "1.4.1",
+    "dsBase": "6.3.5",
+    "resourcer": "1.5.0"
+  },
+  "runner_sha256": "5f5754a49bef98bc4da5000c7117e88b7642c6270bf25e1ad338f465de6263d7",
+  "public_config": {
+    "learning-rate": 0.05,
+    "weight-decay": 0,
+    "l1-penalty": 0,
+    "optimizer-name": "sgd",
+    "scheduler-name": "none",
+    "survival-config-b64": "eyJzY2hlbWFfdmVyc2lvbiI6MSwidGltZV91bml0IjoiZGF5cyIsInRpbWVfb3JpZ2luIjoiYmFzZWxpbmUiLCJ0X21pbiI6MSwiaG9yaXpvbiI6MTgyNSwiZWRnZXMiOlswLDcsMTQsMjEsMzAsNDUsNjAsOTAsMTIwLDE4MCwyNzAsMzY1LDU0MCw3MzAsMTA5NSwxNDYwLDE4MjVdfQ==",
+    "optimizer-momentum": 0,
+    "optimizer-nesterov": false,
+    "model-spec-b64": "eyJraW5kIjoic2VxdWVudGlhbCIsImxheWVycyI6W3sib3AiOiJsaW5lYXIiLCJvdXQiOiJAb3V0In1dfQ==",
+    "loss-name": "discrete_hazard_nll",
+    "num-features": 1,
+    "num-classes": 2,
+    "num-labels": 2,
+    "num-server-rounds": 2,
+    "batch-size": 128,
+    "local-epochs": 1
+  },
+  "mechanism_provenance": "Effective sigma/q/steps recomputed from public fixture subject census using audited unchanged runtime; independent PRV verification. No new private endpoint.",
+  "evaluation": "channel B, public held-out subjects only",
+  "outcome_semantics": {
+    "target_order": [
+      "time",
+      "event"
+    ],
+    "event": 1,
+    "censored": 0,
+    "time_unit": "days",
+    "baseline": "synthetic baseline",
+    "administrative_censor": "time>1825 => time1825,event0; event at1825 retained",
+    "invalid": "time below1 or nonfinite/event not0or1/duplicate => valid0, never dropped",
+    "preprocessing": "fixed public bounds scaled to[-1,1]; safe placeholders; no private fitted moments",
+    "interval_convention": "event(left,right]; censor completed periods only"
+  },
+  "score_conventions": {
+    "time_ties": "excluded",
+    "risk_ties": 0.5,
+    "hazard_risk": "negative left-endpoint restricted mean",
+    "gap": "central minus federated (historic sign reversed)"
+  },
+  "error": "Federated training failed (status 1); no model was accepted or saved.",
+  "cleanup_ok": true,
+  "finished_utc": "2026-09-18T11:32:44Z",
+  "elapsed_s": 714.262377023697,
+  "investigation": {
+    "status": "reviewed infrastructure evidence limitation",
+    "observation": "Concurrent local three-site attempt reported synthesized Flower runtime status1 before releasing an artifact. CLI stdout/stderr and node logs were removed during cleanup. Exact cause cannot be established; host contention is observed, not proved causal. A scoped calling handler now preserves sanitized diagnostics before cleanup; the same configuration will be retried sequentially."
+  }
+}

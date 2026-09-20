@@ -37,6 +37,13 @@ mechanism behaves the way its theory says it must.
 All numbers on this page are computed at render time from the evidence files
 committed under `inst/extdata/campaign/`. Nothing is typed in by hand.
 
+The right-censored survival campaign is documented separately in
+[Survival contracts and evidence](survival-segmentation.html). Its records live
+under `inst/extdata/campaign/survival/` and use subject-level splits, concordance
+and held-out NLL with exact architecture/loss twins. The AUC tables and private
+cross-validation examples below describe the classification contracts; private
+survival validation, holdout, CV and training through HPO are unsupported.
+
 ## Design
 
 Each campaign **cell** fixes a model contract, a dataset, a privacy budget

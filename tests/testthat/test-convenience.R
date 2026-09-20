@@ -16,7 +16,7 @@ test_that("generic strategy constructor resolves aliases", {
 
 test_that("generic task constructor resolves aliases", {
   expect_equal(ds.flower.task("class")$type, "classification")
-  expect_error(ds.flower.task("survival"), "not supported")
+  expect_equal(ds.flower.task("survival")$type, "survival")
   expect_error(ds.flower.task("segmentation"), "not supported")
   expect_error(ds.flower.task("not_a_task"), "Unknown task")
 })

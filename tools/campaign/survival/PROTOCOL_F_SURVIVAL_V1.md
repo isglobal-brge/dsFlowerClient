@@ -1,0 +1,131 @@
+# F-SURVIVAL preregistration v1
+
+Frozen 2026-09-18 before any scored survival run. Implementation correctness
+pilots may use synthetic data. This protocol is not evidence of execution.
+
+## Data and splits
+
+- Primary: SUPPORT2 UCI 880, release metadata last updated 2024-09-09,
+  https://archive.ics.uci.edu/static/public/880/data.csv,
+  SHA256 `9da794bbd5c3a6a816e677cc17535e58c122d9ef4cbefd404489330a9f9cd2de`.
+  Attribution: Frank Harrell, SUPPORT investigators, 1995,
+  DOI 10.3886/ICPSR02957.v2. CC BY 4.0 is explicitly listed at
+  https://archive-beta.ics.uci.edu/dataset/880/support2; the current non-beta
+  page delegates licensing to the original source. Preserve this distinction.
+- Secondary: TCIA NSCLC-Radiomics, Lung1 clinical version 3 October 2019
+  (clinical file linked by collection version 4, 2020-10-22),
+  https://www.cancerimagingarchive.net/wp-content/uploads/NSCLC-Radiomics-Lung1.clinical-version3-Oct-2019.csv,
+  SHA256 `132f72b58b9660bf5e6b24b9817b335f1896360bc253e1f2034a3ffee593e6fd`.
+  CC BY-NC 3.0, research/noncommercial use; attribution Aerts et al. 2014,
+  DOI 10.7937/K9/TCIA.2015.PF0M9REI. No CT images needed.
+- Stable public subject IDs are `id` and `PatientID`. No private fixture
+  counts or tensors enter reports. All campaign counts refer to these public
+  releases. Preserve every source row, including invalid targets.
+- Seeds 1101, 1102, 1103 define SHA256 subject order: hash UTF-8
+  `seed + ':' + id`. First floor(0.8 N) train; rest test. No stratification
+  using outcomes. Lock every split and its hash before scoring any cell.
+- Assign ordered training subjects cyclically to three disjoint DSLite sites.
+  Small SUPPORT2 subset: first 600 training subjects, same held-out test.
+  Heterogeneous stress: sort training subjects by baseline age (ID breaks
+  ties), divide into three contiguous groups, use the same test set.
+- No development split or model selection. No choice depends on scored
+  outcomes. Failed cells and utility floors remain in the record.
+
+## Baseline covariates and preprocessing
+
+SUPPORT2 uses only `age`, `sex`, `num.co`, `diabetes`, `dementia`, `ca`,
+and `dzgroup`. Age bounds [0,100]; comorbidity count [0,10]. Binary male,
+diabetes and dementia in [0,1]; cancer indicators `yes`, `metastatic`;
+fixed disease indicators ARF/MOSF w/Sepsis, CHF, COPD, Cirrhosis,
+Colon Cancer, Coma, Lung Cancer, MOSF w/Malig (all [0,1]). Missing or unknown
+categorical values give all-zero indicators; missing continuous values use
+the public range midpoint before the runtime's fixed scaling to [-1,1].
+No day-3 physiology, scores, `hospdead`, `slos`, `sfdm2`, charges, length
+of stay, clinician prognosis, DNR timing or post-entry ADL fields.
+
+LUNG1 uses age [0,100], clinical T [0,4], N [0,3], M [0,1], male [0,1],
+fixed histology indicators large cell, squamous cell carcinoma,
+adenocarcinoma, nos [0,1]. Missing numeric values use public midpoints.
+No observed extrema, means, quantiles or fitted private encoding.
+
+Targets are ordered time,event: SUPPORT2 `d.time`,`death` (study entry);
+LUNG1 `Survival.time`,`deadstatus.event` (treatment start). Units days,
+event 1=death, 0=right censoring. Minimum resolution 1 day, horizon 1825
+days, AFT time scale 365 days. Finite time >1825 is administratively censored;
+event exactly at 1825 remains an event. Invalid time/event/duplicate subject
+uses a safe placeholder with valid=0 and remains in the subject denominator.
+
+## Models, training and matrices
+
+- AFT Weibull shape 1; AFT lognormal sigma 1. Scalar linear predictor.
+- Hazard linear head with 16 periods; edges
+  `[0,7,14,21,30,45,60,90,120,180,270,365,540,730,1095,1460,1825]`.
+  Event intervals are `(left,right]`; censoring includes completed periods
+  only. Subject loss is masked BCE summed over periods /16.
+- Fixed public initialization seed 0, exact same declarative head and
+  initialization in each twin. Replicate conditions differ by split seed.
+- SGD learning rate 0.05, momentum 0, weight decay 0, no scheduler,
+  batch size 128, 10 federation rounds, 2 local epochs per round.
+  This schedule is fixed before scoring; it is not a tuned optimum.
+- Custodian patient privacy, replace-one adjacency, epsilon {1,4,8},
+  delta 1e-5, clip 1. No analyst privacy controls. Existing secure Poisson
+  sampler and noise, replace-one conversion, full horizon accounting and
+  sticky retries are unchanged. Each subject is sampled/clipped once.
+- Full SUPPORT2 and LUNG1: all three models × three epsilons × three seeds.
+  Nested SUPPORT2-600: same matrix. Heterogeneous full SUPPORT2 stress:
+  three models × epsilon 8 × three seeds.
+- Three actual isolated DSLite workers, no simulated FedAvg substitutes.
+  Two-round three-node synthetic checks precede cohort scoring.
+- Each split/model has a pooled nonprivate exact architecture/loss/scale/
+  initialization/optimizer/schedule twin and pooled DP diagnostic twin.
+  Pooled epochs = rounds × local epochs; site and pooled step counts differ
+  with their declared N. Report this inherent trajectory difference.
+- Covariate-free null: same loss and schedule with zero covariates. Constant
+  risk yields C-index 0.5 when comparable pairs exist. No optional Brier in v1.
+
+## Scores and floors
+
+Channel B only: public held-out C-index and mean original-time AFT NLL
+(including event log(time_scale) Jacobian), or mean discrete NLL /K.
+Risk is -mu for AFT; negative left-endpoint restricted mean survival
+sum_j (b_j-b_(j-1)) S(b_(j-1)) for hazard. Curves may cross.
+
+Concordance rule: include pairs only when one subject has a strictly earlier
+observed event than the other's time; exclude all tied observed times;
+higher risk for earlier event is concordant; exact risk ties receive 0.5.
+No comparable pairs => unavailable, never fabricated 0.5. Invalid held-out
+records do not contribute metrics; report evaluation denominator only for
+these public releases. No test-cohort censoring estimator is required.
+
+Primary utility floor at epsilon 8 for each SUPPORT2 model: mean replicate
+C-index ≥0.60 AND ≥mean null+0.05. Report each failed model as failed; no
+post-hoc best-model pooling. Report per-replicate values and two-sided 95%
+Student-t confidence intervals over three replicate scores and matched gaps.
+These intervals describe split variation; overlapping splits are not an
+independent clinical sample and three replicates give limited precision.
+
+Four empirical envelope diagnostics (not privacy proofs):
+1. Positive shortfall G=U_central-U_federated. This reverses the original
+   article's delta sign. Flag G_next-G_previous > max(adjacent gap SDs).
+2. Primary epsilon-8 floor above.
+3. Small-N gap SD at epsilon 8 ≤ gap SD at epsilon 1, otherwise flag.
+4. Per replicate flag N_train*epsilon<2000, U_central<0.95 and |G|<0.005.
+   Also report a separately labelled minimum-site-N companion diagnostic.
+Investigate flags with sigma/q/steps, subject denominator and artifact hash.
+Do not delete replicates or relax budgets/clip/floors.
+
+## Evidence and gates
+
+Executed JSON schema v1 lives in dsFlowerClient/inst/extdata/campaign/survival/.
+Record executed/failure status and UTC times, package commits/versions,
+runner hashes, dataset release/hash/licence, protocol hash, split hashes,
+source rows and N per site, K, settings, effective accountant/sigma/q/steps/
+expected-batch divisor per site, dependency/device versions, model checksum,
+replicate scores/CIs, envelopes, exact-twin differences, runtime/memory and
+cleanup. Never store node secrets or private fixtures. Missing results are
+explicitly unavailable, not placeholder scores. Scored artifacts must come
+from successful enforced-DP runs. Mechanism/authority/staging/sticky/API
+gates in design §6.1 items 1–7 are blocking; Claude decides promotion.
+
+Real private-cohort experiments with different models/splits compose.
+Public benchmark execution does not grant unlimited private experimentation.

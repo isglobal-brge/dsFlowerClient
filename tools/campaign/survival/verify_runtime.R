@@ -1,0 +1,11 @@
+.libPaths(c(normalizePath('runtime/rlib'),.libPaths()))
+Sys.setenv(DSFLOWER_CLIENT_VENV_ROOT=normalizePath('runtime'),DSFLOWER_VENV_ROOT=normalizePath('runtime/server'))
+library(dsFlower)
+library(dsFlowerClient)
+python <- file.path(normalizePath('runtime/venv'),'bin','python')
+imports <- dsFlower:::.FRAMEWORK_HEALTH_IMPORT$pytorch
+stopifnot(system2(python,c('-c',shQuote(paste0('import ',imports,'; import optuna; assert optuna.__version__ == "4.8.0"; assert flwr.__version__ == "1.31.0"'))))==0)
+writeLines(dsFlower:::.python_env_spec_hash('pytorch'),'runtime/venv/.dsflower_ready')
+writeLines(dsFlowerClient:::.client_venv_marker(),'runtime/venv/.dsflower_client_ready')
+stopifnot(dsFlower:::.venv_is_healthy(normalizePath('runtime/venv'),'pytorch'),dsFlowerClient:::.client_venv_is_healthy())
+cat('WORKSPACE_RUNTIME_READY\n')
