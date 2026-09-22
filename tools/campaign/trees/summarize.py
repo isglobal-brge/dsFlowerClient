@@ -80,11 +80,21 @@ for contract, dataset in {(c["contract"], c["dataset"]) for c in cells}:
 
 failures = [{"file": path.name, "evidence": json.loads(path.read_text())}
             for path in sorted(root.glob("failure_*.json"))]
-result = {"schema": "dsflower-campaign-summary-v2", "track": "trees", "cells": cells,
+result = {"schema": "dsflower-campaign-summary-v2", "track": "trees",
+          "status": "blocked" if failures and not cells else "measured",
+          "cells": cells,
           "series_diagnostics": series, "failures": failures,
-          "utility_floor_epsilon8_pass": all(c["utility_floor_pass"] for c in cells if c["epsilon"] == 8),
-          "epsilon_monotonicity_pass": all(s["epsilon_monotonicity_pass"] is not False for s in series),
-          "near_zero_cost_scan_pass": not any(c["near_zero_cost_flag"] for c in cells),
+          "utility_floor_epsilon8_pass": (all(c["utility_floor_pass"] for c in cells if c["epsilon"] == 8)
+                                          if any(c["epsilon"] == 8 for c in cells) else None),
+          "epsilon_monotonicity_pass": (all(s["epsilon_monotonicity_pass"] for s in series
+                                            if s["epsilon_monotonicity_pass"] is not None)
+                                         if any(s["epsilon_monotonicity_pass"] is not None for s in series) else None),
+          "near_zero_cost_scan_pass": not any(c["near_zero_cost_flag"] for c in cells) if cells else None,
+          "completed_cells": len(cells),
+          "unmeasured_primary_cells": [{"contract": "random_forest", "dataset": dataset, "epsilon": epsilon}
+              for dataset in ("breast", "cdc9k") for epsilon in (1, 4, 8)
+              if not any(c["contract"] == "random_forest" and c["dataset"] == dataset
+                         and c["epsilon"] == epsilon for c in cells)],
           "provisioning": {"reused": True, "initial_elapsed_s": 97, "reprovisioning_elapsed_s": 0},
           "interpretation": "Descriptive public benchmark evidence; gaps include algorithm, federation and DP costs. Three replicates do not establish general utility or prove privacy."}
 (root / "summary.json").write_text(json.dumps(result, indent=2, allow_nan=False) + "\n")
