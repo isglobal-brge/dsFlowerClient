@@ -1,0 +1,17 @@
+/opt/cells-sequence/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+AUC-rank candidate                 AUC      inner-sd  full-sd   inner-L2 full-L2 noise-ranks(inner/full)
+       1 adam01_e4_b512            0.919101 0.007650  0.006259  0.5777   0.4726 1/1
+       2 adam003_e8_b256           0.908255 0.014561  0.012279  1.0995   0.9272 7/7
+       3 adam01_e4_b256            0.876624 0.010834  0.009194  0.8181   0.6942 4/4
+       4 adam003_e4_b256           0.860266 0.010834  0.009194  0.8181   0.6942 4/4
+       5 adam003_e8_b512           0.859591 0.010441  0.008502  0.7884   0.6420 3/3
+       6 adam001_e4_b256           0.790618 0.010834  0.009194  0.8181   0.6942 4/4
+       7 adam003_e4_b512           0.785540 0.007650  0.006259  0.5777   0.4726 1/1
+       8 sgd01_e8_b256             0.737378 0.014561  0.012279  1.0995   0.9272 7/7
+Full TRAIN, q=0.1, batch=256, rounds=5: epochs steps sigma max-site-gradient-sd
+     1    50 1.408691 0.005894
+     2   100 1.713867 0.007171
+     4   200 2.197266 0.009194
+     8   400 2.934570 0.012279
+    12   600 3.520508 0.014730

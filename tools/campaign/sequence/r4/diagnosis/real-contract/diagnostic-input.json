@@ -1,0 +1,29 @@
+{
+  "diagnostic_only": true,
+  "test_accessed": false,
+  "seed": 20260922,
+  "epsilon": 8,
+  "unit": "window",
+  "validation_subjects": [1, 8, 17, 25, 30],
+  "site_subjects": [
+    [6, 11, 16, 21, 28],
+    [3, 7, 14, 22, 26, 29],
+    [5, 15, 19, 23, 27]
+  ],
+  "site_windows": [1797, 2029, 1738],
+  "rounds": 5,
+  "model_params": {
+    "n_tokens": 128,
+    "n_features": 9,
+    "n_classes": 6,
+    "hidden": 32,
+    "optimizer": "adam",
+    "learning_rate": 0.01,
+    "batch_size": 256,
+    "local_epochs": 4,
+    "scheduler": "none",
+    "weight_decay": 0,
+    "l1_penalty": 0
+  },
+  "audit_sha256": "8240b6b76664eb46018c198d3c87f462d705157af75cc67a960c994c0ba1f4dd"
+}
