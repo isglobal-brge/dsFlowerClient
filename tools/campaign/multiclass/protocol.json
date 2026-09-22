@@ -1,0 +1,49 @@
+{
+  "schema": "dsflower-multiclass-protocol-v1",
+  "declared_at_utc": "2026-09-22T00:11:04Z",
+  "contract": "pytorch_multiclass",
+  "dataset": {
+    "name": "UCI Cardiotocography",
+    "uci_id": 193,
+    "source_url": "https://archive.ics.uci.edu/static/public/193/data.csv",
+    "landing_url": "https://archive.ics.uci.edu/dataset/193/cardiotocography",
+    "dataset_doi": "10.24432/C51S4N",
+    "citation": "Ayres-de-Campos D, Bernardes J, Garrido A, Marques-de-Sa J, Pereira-Leite L. (2000). SisPorto 2.0: A program for automated analysis of cardiotocograms. Journal of Maternal-Fetal Medicine 9:311-318.",
+    "paper_doi": "10.1002/1520-6661(200009/10)9:5<311::AID-MFM12>3.0.CO;2-9",
+    "license": "CC BY 4.0",
+    "target": "NSP: 1 normal, 2 suspect, 3 pathologic; CLASS excluded",
+    "cohort": "All 2126 records, all 21 standard measurements; no subsampling, feature selection or missing-value exclusions"
+  },
+  "split": {
+    "type": "80/20 stratified by NSP; within-class test size rounded; shuffled training classes dealt round-robin to three sites",
+    "test_fraction": 0.2,
+    "seeds": [
+      20260820,
+      20260821,
+      20260822
+    ],
+    "seed_scope": "R train/test/site split and central initialization only; node DP randomness is not researcher-seeded",
+    "paired_across_epsilon": true
+  },
+  "bounds_policy": "Same campaign rule: public TRAIN cohort min/max widened by 10 percent of each range, plus/minus 0.5 for constants. Declared before training, never derived from test. This public-data utility simulation does not claim that private empirical extrema can be freely disclosed.",
+  "training": {
+    "sites": 3,
+    "rounds": 5,
+    "replicates": 3,
+    "execution_epsilon_order": [
+      1,
+      8,
+      4
+    ],
+    "delta": 1e-06,
+    "parameters": "All pytorch_multiclass v0.5.0 registry defaults: linear softmax, 3 classes, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, no scheduler, no regularization",
+    "privacy": "Unchanged node defaults except administrator per-training epsilon; delta 1e-6, row unit, clipping norm 1, replace-one adjacency",
+    "inner_validation": "None; no schedule selection or hyperparameter search"
+  },
+  "central": "nnet::multinom, decay=0, maxit=3000, reltol=1e-10, MaxNWts=10000. Same clipped affine bounds transform as federated model; fit pooled training data; require convergence=0.",
+  "trivial": "Training majority class for accuracy; training class proportions for probability metrics, yielding tied-score macro-AUC 0.5. No test prevalence used.",
+  "metrics": "Unweighted mean of three one-vs-rest rank AUCs with average ties; argmax accuracy; natural-log multiclass log-loss with true-class probability floor 1e-15. Gap is federated minus central macro-AUC. SD is sample SD over three paired seeds.",
+  "diagnostic": "At epsilon 8, mean accuracy strictly above mean majority accuracy AND mean macro-AUC > 0.5. Also disclose each replicate and whether all pass.",
+  "test_use": "One scoring pass per replicate, after settings are fixed; no rerun of a scored cell with changed settings.",
+  "alternative": "None: full specified cohort is used and no fallback multiclass contract is named. Report a failing diagnostic as a boundary."
+}
