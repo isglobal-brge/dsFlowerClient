@@ -12,8 +12,6 @@ import statistics
 
 BRANCHES = ("central", "nonprivate_federated", "federated_dp", "pooled_dp", "trivial")
 METRICS = ("auc", "accuracy", "brier", "log_loss")
-DIAGNOSIS_FILES = ("audit.json", "candidates-before-sweep.json", "nonprivate-sweep.json",
-                   "shortlist.json", "dp-confirmation.json", "selection.json")
 LIMITATIONS = [
     "Primary evaluation is per image; partitioning, head training and privacy are per patient. Patient-mean-feature evaluation is secondary.",
     "All three R5 seeds use the same 852/212 patient split (split seed 20260919). SD describes three training realizations, not split or population uncertainty.",
@@ -202,6 +200,7 @@ def main(root, out):
     host = dict(protocol['host'], hostname=preflight['hostname'], gpus=preflight['gpus'], state_at_end='left_running')
     wall = dict(matrix_start=read(work / 'matrix-start.json'), matrix_complete=read(work / 'matrix-complete.json'),
         scoring_started_at=lock['started_at'], scoring_finished_at=results['finished_at'], scoring_elapsed_s=results['elapsed_s'])
+    wall['matrix_start_to_scoring_finish_s'] = (datetime.fromisoformat(results['finished_at']) - datetime.fromisoformat(wall['matrix_start']['started_at'])).total_seconds()
     summary = dict(schema='dsflower-vision-r5-summary-v1', status='executed',
         generated_at=datetime.now(timezone.utc).isoformat(), contract=protocol['contract'],
         dataset=dataset, release=release, host=host, protocol_sha256=sha(protocol_path),
