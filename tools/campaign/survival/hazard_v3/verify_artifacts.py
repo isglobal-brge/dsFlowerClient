@@ -63,7 +63,21 @@ def main():
             str(meta['seed']) if is_development else f'{meta["subset"]}-{meta["seed"]}')
         for part in ('train','test'):
             require(sha(split/f'{part}.csv')==meta[f'{part}_sha256'],'split hash')
+        training=pd.read_csv(split/'train.csv',usecols=['subject_id'],dtype=str)['subject_id']
+        training_ids=set(training)
+        require(len(training)==len(training_ids)==meta['n_train'],'unique training patients')
+        covered=set()
+        for site in meta['sites']:
+            site_path=split/f'site{site["site"]}.csv'
+            require(sha(site_path)==site['split_sha256'],'site file hash')
+            patients=pd.read_csv(site_path,usecols=['subject_id'],dtype=str)['subject_id']
+            patient_ids=set(patients)
+            require(len(patients)==len(patient_ids)==site['n_subjects'],'unique site patients')
+            require(covered.isdisjoint(patient_ids),'patients overlap across sites')
+            covered.update(patient_ids)
+        require(covered==training_ids,'site partition differs from pooled training')
         test=pd.read_csv(split/'test.csv',float_precision='round_trip')
+        require(training_ids.isdisjoint(set(test['subject_id'].astype(str))),'within-seed training/evaluation overlap')
         cfg['feature-bounds']=meta['feature_bounds']
         x=client_app._apply_feature_bounds(test[meta['features']].to_numpy(dtype=np.float32),cfg)
         branches=[('federated_dp','model.pt')]
@@ -79,6 +93,7 @@ def main():
     report=dict(status='verified',verified_confirmation_cells=len(verified),confirmation_models_per_cell=4,
                 development_models_per_cell=1,identities=verified,
                 verified_development_cells=len(verified_development),development_identities=verified_development,
+                patient_partition_checks='Unique subjects, disjoint sites, exact union with pooled training, and disjoint within-seed evaluation subjects; every site file hash verified',
                 method='Read-only reload of archived released weights, independent NumPy metrics, frozen split/model/configuration hashes')
     (archive/'artifact_verification.json').write_text(json.dumps(report,indent=2)+'\n')
     print('ARTIFACTS_VERIFIED',len(verified),'confirmation;',len(verified_development),'development')

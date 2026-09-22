@@ -25,6 +25,10 @@ def validate(record):
     require(record['artifact_checksum']==result['model_sha256']==fed['model_sha256'] and digest(record['artifact_checksum']),'model hash')
     require(record['installed_build']['runner_sha256']==record['runner_sha256'],'runner identity')
     require(sum(s['n_subjects'] for s in meta['sites'])==meta['n_train'],'patient census')
+    expected_sites=([1942]*3 if record['hazard_v3_phase']=='development' else
+        {'full':[2428]*3,'two-sites':[3642]*2,'heterogeneous':[2428]*3,'small600':[200]*3}[meta['subset']])
+    require([s['n_subjects'] for s in meta['sites']]==expected_sites,'predeclared site populations')
+    require(meta['n_test']==(1458 if record['hazard_v3_phase']=='development' else 1821),'predeclared evaluation population')
     for site in result['site_mechanisms']:
         n=next(s['n_subjects'] for s in meta['sites'] if s['site']==site['site'])
         mechanism(site,n,cfg,record['epsilon'],record['delta'])
