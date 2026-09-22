@@ -7,6 +7,7 @@ of the public `ds.flower.fit` call to pass the selected strategy. No package
 namespace is modified. All selection cells use actual isolated DSLite workers.
 
 The pod reuses its existing Ubuntu22.04/R4.6.1/Python3.11.10 installation.
+`provision.sh` and `install_r.R` preserve the initial bootstrap whose hashes appear in provenance.
 `resume_environment.sh` repairs the previously missing R dependencies and
 runs the canonical install/freeze. The CPU requirements retain the campaign's
 Torch2.4.1/Opacus1.5.2/Flower1.31.0 numerical versions; the complete actual

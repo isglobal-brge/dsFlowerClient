@@ -1,0 +1,5 @@
+.libPaths(c('/workspace/hazard/runtime/rlib', .libPaths()))
+options(repos=c(CRAN='https://cloud.r-project.org'), Ncpus=8)
+remotes::install_github('datashield/dsBase@6.3.5', lib=.libPaths()[1], upgrade='never', dependencies=NA)
+stopifnot(requireNamespace('dsBase',quietly=TRUE))
+writeLines(capture.output(sessionInfo()), '/workspace/hazard/runtime/r-session.txt')
