@@ -101,6 +101,17 @@ in `data_cache/CHECKSUMS.sha256`. All emitted evidence is under
 `inst/extdata/campaign/regression/`; local model artifacts and node state remain
 in `/workspace/cells/runs/`. Never publish the node secret files.
 
+For slow pod downloads, `fetch_wheels.py <wheel-directory>` downloads the 60
+Linux CPython 3.11 wheels in `pylock.toml` and verifies every SHA-256. Transfer
+that directory to `/workspace/cells/wheels/` before package installation;
+`provision.sh` then validates the checksums and instructs uv to install locally.
+The lock satisfies the release package requirements and pins CPU Torch 2.14.0.
+It uses PyTorch's official `download.pytorch.org` mirror because the alternate
+`download-r2.pytorch.org` host returned HTTP 403 for the same hashed artifacts.
+The executed provisioning transferred the wheel archive in parallel 8 MiB
+chunks over SSH because individual pod connections were throttled. No runtime
+or model code was changed for this transport workaround.
+
 The driver refuses to overwrite or restart a started cell. Use a fresh work
 root for an independent replication; do not delete run guards to seek a better
 score. `summarize.py` checks split disjointness, identical central/trivial

@@ -42,6 +42,10 @@ stopifnot(fed$n_clients == 3L, fed$n_rounds_run == 5L, fed$n_failures == 0L,
 installed <- installed.packages()
 record <- list(schema = "dsflower-regression-runtime-v1",
   runner_sha256 = runner, environment = campaign_env_info(Sys.getenv("DSFLOWER_VENV_ROOT")),
+  python_packages = setNames(lapply(c("venvs/native-tree", "venvs/pytorch", "client/venv"),
+    function(venv) strsplit(processx::run("uv", c("pip", "freeze", "--python",
+      file.path(root, venv, "bin", "python")), error_on_status = TRUE)$stdout,
+      "\n", fixed = TRUE)[[1]]), c("native_tree", "pytorch", "client")),
   r_packages = as.list(setNames(installed[, "Version"], installed[, "Package"])),
   synthetic_preflight = fed[c("metrics", "node_privacy", "cleanup_ok", "n_clients",
                               "n_failures", "n_rounds_run", "model_sha256", "elapsed_s")])
