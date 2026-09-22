@@ -1,12 +1,9 @@
 {
   "blocker_kind": null,
-  "elapsed_s": 40.59,
+  "elapsed_s": 37.09,
   "error": null,
   "expected_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
-  "expected_versions": {
-    "dsFlower": "0.5.1",
-    "dsFlowerClient": "0.5.0"
-  },
+  "expected_version": "0.5.0",
   "filesystem_probes": [
     {
       "argv": [
@@ -14,10 +11,10 @@
         "--",
         "/workspace"
       ],
-      "elapsed_s": 0.003,
+      "elapsed_s": 0.005,
       "returncode": 0,
       "stderr": "",
-      "stdout": "  File: /workspace\n  Size: 3002341   \tBlocks: 5864       IO Block: 65536  directory\nDevice: 50h/80d\tInode: 63964822    Links: 3\nAccess: (0777/drwxrwxrwx)  Uid: (    0/    root)   Gid: (    0/    root)\nAccess: 2026-09-22 00:17:01.000000000 +0000\nModify: 2026-09-22 00:18:24.000000000 +0000\nChange: 2026-09-22 00:18:24.000000000 +0000\n Birth: -\n",
+      "stdout": "  File: /workspace\n  Size: 3001654   \tBlocks: 5863       IO Block: 65536  directory\nDevice: 50h/80d\tInode: 63964822    Links: 3\nAccess: (0777/drwxrwxrwx)  Uid: (    0/    root)   Gid: (    0/    root)\nAccess: 2026-09-22 00:17:01.000000000 +0000\nModify: 2026-09-22 00:18:24.000000000 +0000\nChange: 2026-09-22 00:18:24.000000000 +0000\n Birth: -\n",
       "timed_out": false,
       "timeout_s": 10
     },
@@ -27,10 +24,10 @@
         "--",
         "/workspace/cells-vision/Rlib/dsFlower/DESCRIPTION"
       ],
-      "elapsed_s": 0.005,
+      "elapsed_s": 0.007,
       "returncode": 0,
       "stderr": "",
-      "stdout": "  File: /workspace/cells-vision/Rlib/dsFlower/DESCRIPTION\n  Size: 1796      \tBlocks: 4          IO Block: 65536  regular file\nDevice: 50h/80d\tInode: 197603666   Links: 1\nAccess: (0666/-rw-rw-rw-)  Uid: (    0/    root)   Gid: (    0/    root)\nAccess: 2026-09-22 01:19:28.000000000 +0000\nModify: 2026-09-22 01:19:25.000000000 +0000\nChange: 2026-09-22 01:19:50.000000000 +0000\n Birth: -\n",
+      "stdout": "  File: /workspace/cells-vision/Rlib/dsFlower/DESCRIPTION\n  Size: 1796      \tBlocks: 4          IO Block: 65536  regular file\nDevice: 50h/80d\tInode: 146607940   Links: 1\nAccess: (0666/-rw-rw-rw-)  Uid: (    0/    root)   Gid: (    0/    root)\nAccess: 2026-09-22 00:37:53.000000000 +0000\nModify: 2026-09-22 00:37:50.000000000 +0000\nChange: 2026-09-22 00:38:14.000000000 +0000\n Birth: -\n",
       "timed_out": false,
       "timeout_s": 10
     },
@@ -40,22 +37,22 @@
         "--",
         "/workspace/cells-vision/prepared/busbra/audit.json"
       ],
-      "elapsed_s": 0.003,
+      "elapsed_s": 0.005,
       "returncode": 0,
       "stderr": "",
-      "stdout": "  File: /workspace/cells-vision/prepared/busbra/audit.json\n  Size: 407937    \tBlocks: 797        IO Block: 65536  regular file\nDevice: 50h/80d\tInode: 108898944   Links: 1\nAccess: (0666/-rw-rw-rw-)  Uid: (    0/    root)   Gid: (    0/    root)\nAccess: 2026-09-22 01:04:18.000000000 +0000\nModify: 2026-09-22 00:26:43.000000000 +0000\nChange: 2026-09-22 00:26:43.000000000 +0000\n Birth: -\n",
+      "stdout": "  File: /workspace/cells-vision/prepared/busbra/audit.json\n  Size: 407937    \tBlocks: 797        IO Block: 65536  regular file\nDevice: 50h/80d\tInode: 108898944   Links: 1\nAccess: (0666/-rw-rw-rw-)  Uid: (    0/    root)   Gid: (    0/    root)\nAccess: 2026-09-22 00:26:43.000000000 +0000\nModify: 2026-09-22 00:26:43.000000000 +0000\nChange: 2026-09-22 00:26:43.000000000 +0000\n Birth: -\n",
       "timed_out": false,
       "timeout_s": 10
     }
   ],
-  "generated_at": "2026-09-22T01:20:22.966877+00:00",
+  "generated_at": "2026-09-22T00:41:12.096501+00:00",
   "gpu_probe": {
     "argv": [
       "nvidia-smi",
       "--query-gpu=name,uuid,memory.total,memory.used",
       "--format=csv"
     ],
-    "elapsed_s": 1.316,
+    "elapsed_s": 0.031,
     "returncode": 0,
     "stderr": "",
     "stdout": "name, uuid, memory.total [MiB], memory.used [MiB]\nNVIDIA A40, GPU-71ab6101-1d6b-147c-5ee3-af1fc7a677ee, 46068 MiB, 0 MiB\n",
@@ -76,7 +73,7 @@
     "dsFlowerClient": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
   },
   "installed_versions": {
-    "dsFlower": "0.5.1",
+    "dsFlower": "0.5.0",
     "dsFlowerClient": "0.5.0"
   },
   "r_version": "R version 4.6.1 (2026-06-24)",
@@ -87,10 +84,10 @@
       "args <- commandArgs(TRUE)\n.libPaths(c(args[[1]], .libPaths()))\nlibrary(dsFlower)\nlibrary(dsFlowerClient)\ncat(jsonlite::toJSON(list(\n  r_version = R.version.string,\n  versions = list(dsFlower = as.character(packageVersion(\"dsFlower\")),\n                  dsFlowerClient = as.character(packageVersion(\"dsFlowerClient\"))),\n  runner_sha256 = list(dsFlower = dsFlower:::.compute_harness_hash(),\n                      dsFlowerClient = dsFlowerClient:::.compute_local_runner_hash())),\n  auto_unbox = TRUE))\n",
       "/workspace/cells-vision/Rlib"
     ],
-    "elapsed_s": 1.95,
+    "elapsed_s": 1.983,
     "returncode": 0,
-    "stderr": "dsFlower v0.5.1 loaded.\ndsFlowerClient 0.5.0 -- Python environment OK\n",
-    "stdout": "{\"r_version\":\"R version 4.6.1 (2026-06-24)\",\"versions\":{\"dsFlower\":\"0.5.1\",\"dsFlowerClient\":\"0.5.0\"},\"runner_sha256\":{\"dsFlower\":\"2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724\",\"dsFlowerClient\":\"2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724\"}}",
+    "stderr": "dsFlower v0.5.0 loaded.\ndsFlowerClient 0.5.0 -- Python environment OK\n",
+    "stdout": "{\"r_version\":\"R version 4.6.1 (2026-06-24)\",\"versions\":{\"dsFlower\":\"0.5.0\",\"dsFlowerClient\":\"0.5.0\"},\"runner_sha256\":{\"dsFlower\":\"2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724\",\"dsFlowerClient\":\"2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724\"}}",
     "timed_out": false,
     "timeout_s": 45
   },
@@ -103,7 +100,7 @@
       "-c",
       "import json, torch, torchvision; assert torch.cuda.is_available(); print(json.dumps(dict(torch=torch.__version__, torchvision=torchvision.__version__, cuda=torch.version.cuda, gpu=torch.cuda.get_device_name())))"
     ],
-    "elapsed_s": 37.311,
+    "elapsed_s": 35.058,
     "returncode": 0,
     "stderr": "",
     "stdout": "{\"torch\": \"2.6.0+cu124\", \"torchvision\": \"0.21.0+cu124\", \"cuda\": \"12.4\", \"gpu\": \"NVIDIA A40\"}\n",

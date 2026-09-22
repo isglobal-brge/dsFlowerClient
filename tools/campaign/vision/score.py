@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """One fixed test-scoring pass, after every requested model and twin is trained."""
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 import csv
 from datetime import datetime, timezone
 import hashlib
@@ -35,24 +36,38 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def predict(tools, artifact, paths_file, predictions):
+    started = time.monotonic()
+    subprocess.run(["Rscript", str(tools / "predict.R"), str(artifact),
+                    str(paths_file), str(predictions)], check=True)
+    return time.monotonic() - started
+
+
 def main(root, epsilons):
     tools = Path(__file__).resolve().parent
     protocol = read_json(tools / "protocol.json")
     lock = root / "scoring-lock.json"
     assert not lock.exists(), "Scoring was already started; never change or repeat a scored configuration"
     frozen = {}
+    federated_artifacts = {}
     for epsilon in epsilons:
         for seed in protocol["seeds"]:
             run = root / "runs" / f"pytorch_resnet18-eps{epsilon}-seed{seed}"
-            assert read_json(run / "federation-status.json")["status"] == "trained_unscored"
+            federation = read_json(run / "federation-status.json")
+            assert federation["status"] == "trained_unscored"
+            artifact = Path(federation["output_dir"])
+            assert sha(artifact / "model.pt") == federation["model_sha256"]
+            federated_artifacts[epsilon, seed] = artifact
             twins = read_json(run / "twins-status.json")
             assert all(v["status"] == "trained_unscored" for v in twins.values())
-            for path in [run / "artifact/model.pt", run / "twins-status.json",
+            for path in [artifact / "model.pt", artifact / "metadata.json",
+                         run / "public-capture/public-initial.json", run / "twins-status.json",
                          *[Path(v["artifact"]) for v in twins.values()]]:
                 frozen[str(path)] = sha(path)
     with lock.open("x") as stream:
         json.dump(dict(started_at=datetime.now(timezone.utc).isoformat(),
             protocol_sha256=sha(tools / "protocol.json"), artifacts=frozen, epsilon_order=epsilons,
+            scoring_driver_sha256=sha(Path(__file__)), prediction_driver_sha256=sha(tools / "predict.R"),
             configuration_changes_after_scoring_forbidden=True), stream, indent=2)
         stream.write("\n")
     torch.set_num_threads(2)
@@ -77,6 +92,13 @@ def main(root, epsilons):
         # The canonical local predictor embeds images in outer batches of 1024 (internally bounded to 32).
         features = np.concatenate([vision.extract_features_from_paths(encoder, paths[i:i+1024], size, is3d, device)
                                    for i in range(0, len(paths), 1024)])
+        # Independent, fixed models; each canonical predictor runs exactly once.
+        # Keep the three epsilon predictions in this foreground scoring job.
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            jobs = {epsilon: pool.submit(predict, tools, federated_artifacts[epsilon, seed],
+                        paths_file, directory / f"federated-eps{epsilon}.csv")
+                    for epsilon in epsilons}
+            prediction_seconds = {epsilon: job.result() for epsilon, job in jobs.items()}
         central_metric = None
         for epsilon in epsilons:
             started = time.monotonic()
@@ -84,8 +106,6 @@ def main(root, epsilons):
             cfg = read_json(run / "public-capture/public-initial.json")["config"]
             twins = read_json(run / "twins-status.json")
             predictions = directory / f"federated-eps{epsilon}.csv"
-            subprocess.run(["Rscript", str(tools / "predict.R"), str(run / "artifact"),
-                            str(paths_file), str(predictions)], check=True)
             with predictions.open() as stream:
                 reader = csv.DictReader(stream)
                 assert reader.fieldnames == ["benign", "malignant"], reader.fieldnames
@@ -111,7 +131,10 @@ def main(root, epsilons):
                 training_prevalence=prevalence, gap=results["federated_dp"]["auc"]-results["central"]["auc"],
                 acceptance_diagnostic=(results["federated_dp"]["auc"] > .5 and
                                        results["federated_dp"]["accuracy"] > majority_rate),
-                scoring_elapsed_s=time.monotonic()-started, test_prediction_sha256=sha(predictions))
+                scoring_elapsed_s=prediction_seconds[epsilon] + time.monotonic()-started,
+                prediction_elapsed_s=prediction_seconds[epsilon],
+                prediction_execution="Three epsilon models concurrently per seed, each scored once after artifact lock.",
+                test_prediction_sha256=sha(predictions))
             (run / "scores.json").write_text(json.dumps(record, indent=2, allow_nan=False) + "\n")
             print(json.dumps(record), flush=True)
 

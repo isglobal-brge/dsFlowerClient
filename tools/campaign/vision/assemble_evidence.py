@@ -47,6 +47,8 @@ def main(root, out, epsilons):
     runtime = read(root / "runtime_preflight.json")
     assert runtime["status"] == "verified"
     assert sha(tools / "protocol.json") == read(root / "scoring-lock.json")["protocol_sha256"]
+    assert sha(tools / "score.py") == read(root / "scoring-lock.json")["scoring_driver_sha256"]
+    assert sha(tools / "predict.R") == read(root / "scoring-lock.json")["prediction_driver_sha256"]
     audit = read(root / "prepared/busbra/audit.json")
     source = read(root / "data/release-manifest.json")
     archive = next(r for r in source["sources"] if r["filename"] == "BUSBRA.zip")
@@ -64,13 +66,18 @@ def main(root, out, epsilons):
         'cat(jsonlite::toJSON(as.list(sapply(c("dsFlower","dsFlowerClient","dsImaging","dsHPC","DSI","DSLite"), function(p) as.character(packageVersion(p)))), auto_unbox=TRUE))'], text=True)
     release = dict(protocol["release"], installed_versions=json.loads(dependencies), r_version=runtime["r_version"],
                    installed_runner_sha256=runtime["installed_runner_sha256"],
+                   python_packages=read(root / "verification-0.5.1/python-packages.json"),
+                   guarded_import_check=read(root / "verification-0.5.1/import_check.json"),
+                   prediction_numerics=read(root / "verification-0.5.1/prediction-numerics.json"),
                    torch=json.loads(runtime["torch_probe"]["stdout"]),
                    pretrained_checkpoint=next(r for r in source["sources"] if r["filename"] == "resnet18-f37072fd.pth"),
                    public_observer=read(root / "observer-install.json"))
     out.mkdir(parents=True, exist_ok=True)
     summary = dict(schema="dsflower-vision-summary-v1", status="executed", contract=protocol["contract"],
         dataset=dataset, release=release, host=host, protocol_sha256=sha(tools / "protocol.json"),
-        no_test_tuning=True, alternative=protocol["evaluation"]["alternative"], cells=[])
+        no_test_tuning=True, scored_replicates=len(epsilons) * len(protocol["seeds"]),
+        pod_left_running=True, original_failure_archive="blocked-0.5.0/",
+        alternative=protocol["evaluation"]["alternative"], cells=[])
     for epsilon in epsilons:
         replicates = []
         for seed in protocol["seeds"]:
@@ -82,8 +89,14 @@ def main(root, out, epsilons):
             for capture in captures:
                 pcfg, mechanism = capture["privacy_config"], capture["mechanism"]
                 assert pcfg["epsilon"] == epsilon and pcfg["delta"] == 1e-6 and pcfg["clipping_norm"] == 1
+                history = capture["accountant_history"]
+                assert all(h[0] == mechanism["noise_multiplier"] and h[1] == mechanism["sample_rate"] for h in history)
+                assert sum(h[2] for h in history) == capture["observed_round_steps"] == 9
                 capture["independent_composition"] = independent_accounting(
                     mechanism["noise_multiplier"], mechanism["sample_rate"], mechanism["total_steps"], epsilon)
+            pooled = twins["pooled_dp"]["mechanism"]
+            twins["pooled_dp"]["independent_composition"] = independent_accounting(
+                pooled["noise_multiplier"], pooled["sample_rate"], pooled["total_steps"], epsilon)
             for item in manifests:
                 assert item["manifest"]["dp-unit"] == "patient"
                 assert item["manifest"]["patient_column"] == "subject_id"
@@ -100,9 +113,12 @@ def main(root, out, epsilons):
                 **scores["metrics"], gap_auc=scores["gap"],
                 heldout_majority_rate=scores["test_majority_rate"], training_prevalence=scores["training_prevalence"],
                 acceptance_diagnostic=scores["acceptance_diagnostic"],
+                prediction_execution=scores["prediction_execution"],
                 node_reported_contract=read(run / "node-contract.json"),
                 node_training_manifests=manifests, node_accountant_captures=captures,
                 central_training=twins["central"], pooled_dp_training=twins["pooled_dp"],
+                training_tensor_parity_verified=True, federation_history=fed["history"],
+                federated_artifact_metadata=fed["metadata"],
                 federated_model_sha256=fed["model_sha256"],
                 wall_clock_s=dict(federated=fed["elapsed_s"], central=twins["central"]["elapsed_s"],
                     pooled_dp=twins["pooled_dp"]["elapsed_s"], scoring=scores["scoring_elapsed_s"],
@@ -114,6 +130,7 @@ def main(root, out, epsilons):
         majority = aggregate([r["heldout_majority_rate"] for r in replicates])
         passed = means["federated_dp"]["auc"]["mean"] > .5 and means["federated_dp"]["accuracy"]["mean"] > majority["mean"]
         diagnostic = dict(predeclared=protocol["evaluation"]["diagnostic"], epsilon=8,
+            role="annotation_only", affects_execution_status=False,
             assessed=epsilon == 8, passed=passed if epsilon == 8 else None,
             per_seed_passed=[r["acceptance_diagnostic"] for r in replicates], majority_rate=majority)
         record = dict(schema="dsflower-vision-cell-v1", status="executed", generated_at=datetime.now(timezone.utc).isoformat(),
@@ -126,10 +143,13 @@ def main(root, out, epsilons):
             alternative=dict(attempted=False, reason=protocol["evaluation"]["alternative"]),
             limitations=["Image-level evaluation; patient-level privacy and partitioning.",
                         "Central is the matched finite-schedule noiseless reference, not an optimized upper bound.",
+                        "Prediction uses the pushed canonical and direct twin routes; test feature bitwise parity is not asserted. Runtime numerical controls are recorded in release.prediction_numerics.",
+                        "Epsilon is per five-round training; no campaign-wide composition claim across repeated public-cohort fits.",
                         "Three seeds; DP randomness additionally depends on node-owned secrets."])
         name = f"pilot_busbra_pytorch_resnet18_eps{epsilon}.json"
         (out / name).write_text(json.dumps(record, indent=2, allow_nan=False) + "\n")
-        summary["cells"].append(dict(epsilon=epsilon, file=name, aggregate=means, gap_auc=gap,
+        summary["cells"].append(dict(epsilon=epsilon, file=name, status="executed",
+                                     scored_replicates=len(replicates), aggregate=means, gap_auc=gap,
                                      acceptance_diagnostic=diagnostic))
     (out / "runtime_preflight.json").write_text(json.dumps(runtime, indent=2) + "\n")
     (out / "summary.json").write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n")

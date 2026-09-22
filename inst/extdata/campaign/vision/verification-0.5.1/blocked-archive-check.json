@@ -1,0 +1,17 @@
+{
+  "status": "verified",
+  "original_commit": "548aec6",
+  "all_original_evidence_preserved_byte_for_byte": true,
+  "files": {
+    "README.md": "83edb84d353ed58c231cd9d88ee581e653548151a03a78e938b27f92542868b3",
+    "first_attempt.json": "182eea155ec0f6581b71c8f7538ac0712f1caaa811276d7c9b8dd75e9adbfd85",
+    "import_check.json": "13ee53fbeccef84badc27f8a35cf85788afeeb231790fae73e7ab4c2af918069",
+    "pilot_busbra_pytorch_resnet18_eps1.json": "c631b0a3f24c43e9657084fae0f870b4217027c2a81c24e4ee11b67011d84a61",
+    "pilot_busbra_pytorch_resnet18_eps4.json": "496635dd96f465f2166ff85ef430a3b307a0bb6c631bca86f4ce34d8c1227358",
+    "pilot_busbra_pytorch_resnet18_eps8.json": "87daff5fae6d21ed4b31488752fd893a07cba3ccf6b2a456c675693a1d3b92f5",
+    "provisioning.json": "07a02991955fecb5105c2bed2dbc0ba7b6d967528d2f8d55c6a494e1ea7ec0d6",
+    "release_integrity_check.json": "3c2684263d86d16f36776a471a0536ac7edde88af8b459a4ba8ff64800efb127",
+    "runtime_preflight.json": "448e2125e7b1b8f00211febe97fef2c796ce0ba23b68906f9c175cd329d1ce50",
+    "summary.json": "f1a072bf23708db271cdfc8844d0fd3f9c8bbfe2d85cdf127ffcd9dfc71b325d"
+  }
+}

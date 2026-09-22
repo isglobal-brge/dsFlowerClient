@@ -1,77 +1,182 @@
 {
-  "acceptance_diagnostic_assessed": false,
-  "blocker": {
-    "affected_nodes": 3,
-    "alternate_dependency_stack_tested": false,
-    "child_exit_code": 99,
-    "client_error": "Federated training failed (status 1); no model was accepted or saved.",
-    "diagnostics": "first_attempt.json",
-    "diagnostics_sha256": "182eea155ec0f6581b71c8f7538ac0712f1caaa811276d7c9b8dd75e9adbfd85",
-    "error": "DSFLOWER SECURITY: package '_remote_module_non_scriptable' is not in pinned_packages.json (default-deny).\nAborting process.",
-    "independent_check": "import_check.json",
-    "kind": "runtime_integrity_default_deny",
-    "package_or_gate_change_attempted": false,
-    "reproduced_without_benchmark_observer": true,
-    "stage": "public_model_construction"
-  },
-  "cells": [
-    {
-      "epsilon": 1,
-      "file": "pilot_busbra_pytorch_resnet18_eps1.json",
-      "gap_auc": {
-        "mean": null,
-        "n": 0,
-        "sd": null
-      },
-      "scored_replicates": 0,
-      "status": "blocked"
-    },
-    {
-      "epsilon": 8,
-      "file": "pilot_busbra_pytorch_resnet18_eps8.json",
-      "gap_auc": {
-        "mean": null,
-        "n": 0,
-        "sd": null
-      },
-      "scored_replicates": 0,
-      "status": "blocked"
-    },
-    {
-      "epsilon": 4,
-      "file": "pilot_busbra_pytorch_resnet18_eps4.json",
-      "gap_auc": {
-        "mean": null,
-        "n": 0,
-        "sd": null
-      },
-      "scored_replicates": 0,
-      "status": "blocked"
-    }
-  ],
-  "central_trained": false,
+  "schema": "dsflower-vision-summary-v1",
+  "status": "executed",
   "contract": "pytorch_resnet18",
   "dataset": {
+    "name": "BUS-BRA",
+    "version": "1.0",
+    "source_url": "https://zenodo.org/records/8231412",
+    "archive_url": "https://zenodo.org/api/records/8231412/files/BUSBRA.zip/content",
     "archive_bytes": 133917740,
     "archive_sha256": "ba3e6ed19cc37c682d8d39e25435bbf8a555a12cb7e641b5f2117685c95580ff",
-    "archive_url": "https://zenodo.org/api/records/8231412/files/BUSBRA.zip/content",
-    "archive_verification": "Fresh archive matched pinned SHA-256 and publisher MD5.",
+    "archive_verification": "Fresh download matched pinned SHA-256 and publisher MD5 before preparation.",
     "citation_reference": "G\u00f3mez-Flores W, Gregorio-Calas MJ, Pereira WCA (2024). BUS-BRA: A Breast Ultrasound Dataset for Assessing Computer-aided Diagnosis Systems. Medical Physics 51:3110\u20133123. doi:10.1002/mp.16812.",
     "citation_url": "https://doi.org/10.1002/mp.16812",
     "dataset_doi": "10.5281/zenodo.8231412",
-    "licence": "Zenodo declares CC BY 4.0; archive attribution licence also requires citation.",
-    "licence_sha256": "e9e3ea607a53575d9d17c07cdb35972d9506a19dcafde49383fb0f875f01b92d",
-    "name": "BUS-BRA",
-    "patient_mapping": "released Case column, exact 1..1064, filename prefix agrees; publisher declares 1064 patients; both official CV folds keep Case together",
-    "source_url": "https://zenodo.org/records/8231412",
+    "licence": "CC BY 4.0 in Zenodo; archive attribution licence also requires citation.",
+    "archive_licence_sha256": "e9e3ea607a53575d9d17c07cdb35972d9506a19dcafde49383fb0f875f01b92d",
     "total_images": 1875,
     "total_patients": 1064,
-    "version": "1.0"
+    "patient_mapping": "released Case column, exact 1..1064, filename prefix agrees; publisher declares 1064 patients; both official CV folds keep Case together"
   },
-  "federation_attempts": 1,
-  "generated_at": "2026-09-22T01:04:19.050514+00:00",
+  "release": {
+    "change_scope": "Server import guard only; canonical runner and all training, sampling, clipping and privacy settings unchanged.",
+    "client_version": "0.5.0",
+    "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+    "dsFlower_patch_branch": "fix/import-guard-torch-generated-modules",
+    "dsFlower_patch_commit": "c4eaaf153db4a7204878bf1d8995c16faa615110",
+    "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "server_version": "0.5.1",
+    "version": "dsFlower 0.5.1 / dsFlowerClient 0.5.0",
+    "installed_versions": {
+      "dsFlower": "0.5.1",
+      "dsFlowerClient": "0.5.0",
+      "dsImaging": "0.3.8",
+      "dsHPC": "0.2.5",
+      "DSI": "1.8.0",
+      "DSLite": "1.4.1"
+    },
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "installed_runner_sha256": {
+      "dsFlower": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+      "dsFlowerClient": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+    },
+    "python_packages": {
+      "python": "3.11.10",
+      "packages": {
+        "Jinja2": "3.1.6",
+        "Mako": "1.4.1",
+        "MarkupSafe": "3.0.3",
+        "PyYAML": "6.0.3",
+        "Pygments": "2.21.0",
+        "SQLAlchemy": "2.0.54",
+        "alembic": "1.20.0",
+        "certifi": "2026.7.22",
+        "cffi": "2.1.1",
+        "charset-normalizer": "3.5.1",
+        "click": "8.5.0",
+        "cryptography": "46.0.7",
+        "filelock": "4.0.1",
+        "flwr": "1.31.0",
+        "fsspec": "2026.9.0",
+        "greenlet": "3.5.6",
+        "grpcio": "1.84.0",
+        "grpcio-health-checking": "1.81.1",
+        "idna": "3.20",
+        "importlib_resources": "7.1.0",
+        "iterators": "0.0.2",
+        "markdown-it-py": "4.2.0",
+        "mdurl": "0.1.2",
+        "monai": "1.5.2",
+        "mpmath": "1.3.0",
+        "networkx": "3.6.1",
+        "nibabel": "5.4.2",
+        "numpy": "2.4.6",
+        "nvidia-cublas-cu12": "12.4.5.8",
+        "nvidia-cuda-cupti-cu12": "12.4.127",
+        "nvidia-cuda-nvrtc-cu12": "12.4.127",
+        "nvidia-cuda-runtime-cu12": "12.4.127",
+        "nvidia-cudnn-cu12": "9.1.0.70",
+        "nvidia-cufft-cu12": "11.2.1.3",
+        "nvidia-curand-cu12": "10.3.5.147",
+        "nvidia-cusolver-cu12": "11.6.1.9",
+        "nvidia-cusparse-cu12": "12.3.1.170",
+        "nvidia-cusparselt-cu12": "0.6.2",
+        "nvidia-nccl-cu12": "2.21.5",
+        "nvidia-nvjitlink-cu12": "12.4.127",
+        "nvidia-nvtx-cu12": "12.4.127",
+        "opacus": "1.6.0",
+        "opt_einsum": "3.4.0",
+        "packaging": "25.0",
+        "pandas": "3.0.6",
+        "pathspec": "0.12.1",
+        "pillow": "12.3.0",
+        "protobuf": "6.33.6",
+        "pyarrow": "25.0.1",
+        "pycparser": "3.0",
+        "pycryptodome": "3.23.0",
+        "pydicom": "3.0.2",
+        "pynrrd": "1.1.3",
+        "python-dateutil": "2.9.0.post0",
+        "requests": "2.34.2",
+        "rich": "13.9.4",
+        "scipy": "1.17.1",
+        "shellingham": "1.5.4",
+        "simpleitk": "2.5.6",
+        "six": "1.17.0",
+        "sympy": "1.13.1",
+        "tomli": "2.4.1",
+        "tomli_w": "1.2.0",
+        "torch": "2.6.0+cu124",
+        "torchvision": "0.21.0+cu124",
+        "triton": "3.2.0",
+        "typer": "0.20.1",
+        "typing_extensions": "4.16.0",
+        "urllib3": "2.8.0",
+        "uv": "0.11.33"
+      }
+    },
+    "guarded_import_check": {
+      "schema": "dsflower-vision-import-check-v1",
+      "returncode": 0,
+      "stdout": "CLIENTAPP_IMPORT_PASSED\nPUBLIC_MODEL_BUILD_PASSED\n",
+      "stderr": "",
+      "benchmark_observer_enabled": false,
+      "public_model_construction_called": true,
+      "training_called": false,
+      "data_staged": false,
+      "integrity_gate_modified": false
+    },
+    "prediction_numerics": {
+      "torch": "2.6.0+cu124",
+      "cuda_available": true,
+      "canonical_predictor_runtime": {
+        "matmul_allow_tf32": false,
+        "cudnn_allow_tf32": true,
+        "deterministic_algorithms": false,
+        "nvidia_tf32_override": null
+      },
+      "node_and_twin_training": {
+        "matmul_allow_tf32": false,
+        "cudnn_allow_tf32": false,
+        "deterministic_algorithms": true
+      },
+      "direct_twin_test_features": {
+        "matmul_allow_tf32": false,
+        "cudnn_allow_tf32": false,
+        "deterministic_algorithms": true
+      },
+      "policy": "Retain the pushed prediction routes and numeric controls; identical checkpoint/transform and exact training tensor parity are verified. Test feature bitwise parity across the two prediction paths is not asserted.",
+      "test_data_read": false
+    },
+    "torch": {
+      "torch": "2.6.0+cu124",
+      "torchvision": "0.21.0+cu124",
+      "cuda": "12.4",
+      "gpu": "NVIDIA A40"
+    },
+    "pretrained_checkpoint": {
+      "bytes": 46830571,
+      "filename": "resnet18-f37072fd.pth",
+      "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+      "url": "https://download.pytorch.org/models/resnet18-f37072fd.pth"
+    },
+    "public_observer": {
+      "observer": "/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/vision_public_observer.py",
+      "observer_sha256": "70989543107b44a9a60887dd1ad6879d02afa9d386e3ed901c38c4cac3e1f904",
+      "pth": "/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/vision_public_observer.pth",
+      "runner_or_integrity_hook_modified": false
+    }
+  },
   "host": {
     "gpu": "NVIDIA A40",
+    "pod_id": "0nk8si7zupfczc",
+    "pod_name": "pod-flower-vision",
+    "root": "/workspace/cells-vision",
+    "hostname": "5dc98e434db0",
     "gpus": [
       {
         "memory.total [MiB]": "46068 MiB",
@@ -80,47 +185,389 @@
         "uuid": "GPU-71ab6101-1d6b-147c-5ee3-af1fc7a677ee"
       }
     ],
-    "hostname": "5dc98e434db0",
-    "pod_id": "0nk8si7zupfczc",
-    "pod_name": "pod-flower-vision",
-    "root": "/workspace/cells-vision",
-    "state_at_end": "left_running"
+    "state_at_end": "left_running",
+    "python": "3.11.10"
   },
-  "optimizer_steps_observed": 0,
+  "protocol_sha256": "7bd9ade83e17f617c9dc153835ebab46cb41acceb0a9802f9bbdd328586950a8",
+  "no_test_tuning": true,
+  "scored_replicates": 9,
   "pod_left_running": true,
-  "pooled_dp_trained": false,
-  "previous_volume_blocker": "Superseded: fresh pod storage, release install, archive checks and dsImaging admission passed.",
-  "release": {
-    "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
-    "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
-    "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
-    "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
-    "installed_runner_sha256": {
-      "dsFlower": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
-      "dsFlowerClient": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+  "original_failure_archive": "blocked-0.5.0/",
+  "alternative": "None predeclared: this task specifies one cohort and one contract, with no named fallback. Report any epsilon-8 diagnostic failure without a post-score configuration change.",
+  "cells": [
+    {
+      "epsilon": 1,
+      "file": "pilot_busbra_pytorch_resnet18_eps1.json",
+      "status": "executed",
+      "scored_replicates": 3,
+      "aggregate": {
+        "central": {
+          "auc": {
+            "mean": 0.5961829307429408,
+            "sd": 0.04152694662113353,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6704177710609935,
+            "sd": 0.01949264638709557,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.21580698196118933,
+            "sd": 0.006730871272169697,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6223542812200108,
+            "sd": 0.014840637738632112,
+            "n": 3
+          }
+        },
+        "federated_dp": {
+          "auc": {
+            "mean": 0.5320733569570034,
+            "sd": 0.03977594827463302,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.5245000387506782,
+            "sd": 0.11648882629654192,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.24879524442105205,
+            "sd": 0.021559026559929813,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6907566418978508,
+            "sd": 0.04392641201090622,
+            "n": 3
+          }
+        },
+        "pooled_dp": {
+          "auc": {
+            "mean": 0.552621945769265,
+            "sd": 0.05218545141478204,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6606399932832158,
+            "sd": 0.01228953602770712,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.22811167793898832,
+            "sd": 0.014646787947213658,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6518842364388385,
+            "sd": 0.03639016940836251,
+            "n": 3
+          }
+        },
+        "trivial": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6704177710609935,
+            "sd": 0.01949264638709557,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.22115024761470947,
+            "sd": 0.007049217858339802,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6343232251708171,
+            "sd": 0.014767847993760465,
+            "n": 3
+          }
+        }
+      },
+      "gap_auc": {
+        "mean": -0.0641095737859374,
+        "sd": 0.020084160518941012,
+        "n": 3
+      },
+      "acceptance_diagnostic": {
+        "predeclared": "AUC > 0.5 and accuracy > held-out majority-class rate; report per-replicate and three-seed mean comparison.",
+        "epsilon": 8,
+        "role": "annotation_only",
+        "affects_execution_status": false,
+        "assessed": false,
+        "passed": null,
+        "per_seed_passed": [
+          false,
+          false,
+          true
+        ],
+        "majority_rate": {
+          "mean": 0.6704177710609935,
+          "sd": 0.01949264638709563,
+          "n": 3
+        }
+      }
     },
-    "installed_versions": {
-      "dsFlower": "0.5.0",
-      "dsFlowerClient": "0.5.0"
+    {
+      "epsilon": 8,
+      "file": "pilot_busbra_pytorch_resnet18_eps8.json",
+      "status": "executed",
+      "scored_replicates": 3,
+      "aggregate": {
+        "central": {
+          "auc": {
+            "mean": 0.5961829307429408,
+            "sd": 0.04152694662113353,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6704177710609935,
+            "sd": 0.01949264638709557,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.21580698196118933,
+            "sd": 0.006730871272169697,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6223542812200108,
+            "sd": 0.014840637738632112,
+            "n": 3
+          }
+        },
+        "federated_dp": {
+          "auc": {
+            "mean": 0.5328321689918305,
+            "sd": 0.04012992824981106,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.5200265312976311,
+            "sd": 0.11898903345904935,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.24950491676101652,
+            "sd": 0.022917390553542,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6922292202009525,
+            "sd": 0.04673216365365985,
+            "n": 3
+          }
+        },
+        "pooled_dp": {
+          "auc": {
+            "mean": 0.5521969961786231,
+            "sd": 0.05401437752740178,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6677511043943269,
+            "sd": 0.016144310607568033,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.22627389947983814,
+            "sd": 0.013400541525332658,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6474723011299924,
+            "sd": 0.03278918226926333,
+            "n": 3
+          }
+        },
+        "trivial": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6704177710609935,
+            "sd": 0.01949264638709557,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.22115024761470947,
+            "sd": 0.007049217858339802,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6343232251708171,
+            "sd": 0.014767847993760465,
+            "n": 3
+          }
+        }
+      },
+      "gap_auc": {
+        "mean": -0.06335076175111036,
+        "sd": 0.02064908493835464,
+        "n": 3
+      },
+      "acceptance_diagnostic": {
+        "predeclared": "AUC > 0.5 and accuracy > held-out majority-class rate; report per-replicate and three-seed mean comparison.",
+        "epsilon": 8,
+        "role": "annotation_only",
+        "affects_execution_status": false,
+        "assessed": true,
+        "passed": false,
+        "per_seed_passed": [
+          false,
+          false,
+          false
+        ],
+        "majority_rate": {
+          "mean": 0.6704177710609935,
+          "sd": 0.01949264638709563,
+          "n": 3
+        }
+      }
     },
-    "pretrained_checkpoint": {
-      "bytes": 46830571,
-      "filename": "resnet18-f37072fd.pth",
-      "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
-      "url": "https://download.pytorch.org/models/resnet18-f37072fd.pth"
+    {
+      "epsilon": 4,
+      "file": "pilot_busbra_pytorch_resnet18_eps4.json",
+      "status": "executed",
+      "scored_replicates": 3,
+      "aggregate": {
+        "central": {
+          "auc": {
+            "mean": 0.5961829307429408,
+            "sd": 0.04152694662113353,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6704177710609935,
+            "sd": 0.01949264638709557,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.21580698196118933,
+            "sd": 0.006730871272169697,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6223542812200108,
+            "sd": 0.014840637738632112,
+            "n": 3
+          }
+        },
+        "federated_dp": {
+          "auc": {
+            "mean": 0.5328532846330162,
+            "sd": 0.03909144773659328,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.5226982226355628,
+            "sd": 0.11379760270806938,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.2485811502877283,
+            "sd": 0.020882069901741285,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6903094356750806,
+            "sd": 0.04251927550254526,
+            "n": 3
+          }
+        },
+        "pooled_dp": {
+          "auc": {
+            "mean": 0.555216158749315,
+            "sd": 0.0578445023001123,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6650844377276602,
+            "sd": 0.013563957146849959,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.22628610738816698,
+            "sd": 0.012929859587440163,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6468672939970894,
+            "sd": 0.031214035969124806,
+            "n": 3
+          }
+        },
+        "trivial": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6704177710609935,
+            "sd": 0.01949264638709557,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.22115024761470947,
+            "sd": 0.007049217858339802,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6343232251708171,
+            "sd": 0.014767847993760465,
+            "n": 3
+          }
+        }
+      },
+      "gap_auc": {
+        "mean": -0.06332964610992471,
+        "sd": 0.019539661363647595,
+        "n": 3
+      },
+      "acceptance_diagnostic": {
+        "predeclared": "AUC > 0.5 and accuracy > held-out majority-class rate; report per-replicate and three-seed mean comparison.",
+        "epsilon": 8,
+        "role": "annotation_only",
+        "affects_execution_status": false,
+        "assessed": false,
+        "passed": null,
+        "per_seed_passed": [
+          false,
+          false,
+          true
+        ],
+        "majority_rate": {
+          "mean": 0.6704177710609935,
+          "sd": 0.01949264638709563,
+          "n": 3
+        }
+      }
+    }
+  ],
+  "wall_clock": {
+    "session_verification_started_at": "2026-09-22T01:17:53Z",
+    "training_started_at": "2026-09-22T01:23:04.330573+00:00",
+    "training_ended_at": "2026-09-22T04:22:46.136087+00:00",
+    "training_matrix_elapsed_s": 10781.805514,
+    "scoring": {
+      "started_at": "2026-09-22T04:22:58.207836+00:00",
+      "ended_at": "2026-09-22T04:30:09.058517+00:00",
+      "elapsed_s": 430.85068296827376,
+      "returncode": 0,
+      "scope": "Single foreground scoring process; three independent canonical epsilon predictions concurrently per seed; direct twin features and metrics included."
     },
-    "r_version": "R version 4.6.1 (2026-06-24)",
-    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
-    "torch": {
-      "cuda": "12.4",
-      "gpu": "NVIDIA A40",
-      "torch": "2.6.0+cu124",
-      "torchvision": "0.21.0+cu124"
-    },
-    "version": "0.5.0"
+    "verification_start_to_scores_elapsed_s": 11536.058517,
+    "evidence_packaged_at": "2026-09-22T04:31:43.825816+00:00",
+    "note": "Actual wall time; concurrent scoring durations are not summed. Central fits are reused across epsilons. Packaging and git delivery follow scoring."
   },
-  "schema": "dsflower-vision-summary-v1",
-  "scored_replicates": 0,
-  "status": "blocked",
-  "test_scoring_started": false
+  "verification": "verification-0.5.1/final-evidence-audit.json"
 }

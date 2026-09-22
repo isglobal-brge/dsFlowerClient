@@ -1,33 +1,13 @@
 # BUS-BRA frozen-backbone classification
 
-Execution is **blocked before DP training** on the fresh A40 pod. Both
-installed 0.5.0 runner hashes and all patient split hashes passed verification;
-the archive was freshly rehashed and dsImaging admission passed. The first
-epsilon-1 / seed-20260919 federation then aborted on all three nodes:
+This campaign resumes the frozen protocol after installing the server-only
+import-guard patch from `fix/import-guard-torch-generated-modules`, commit
+`c4eaaf153db4a7204878bf1d8995c16faa615110`. It leaves the client at 0.5.0 and
+both canonical runners unchanged. The 0.5.0 failure evidence and original
+protocol are retained under `inst/extdata/campaign/vision/blocked-0.5.0/`.
+See the evidence README and summary for the measured execution outcome.
 
-```text
-DSFLOWER SECURITY: package '_remote_module_non_scriptable' is not in pinned_packages.json (default-deny).
-Aborting process.
-```
-
-The installed gate independently reproduces exit 99 during public model
-construction with the benchmark observer disabled and no data staged.
-`params.load_user_model` imports Opacus; its Torch dependency imports a
-generated module outside the trusted installation directories. The unchanged
-gate rejects that module. A plain ClientApp import passes. The tested runtime
-is torch 2.6.0+cu124, torchvision 0.21.0+cu124, Flower 1.31.0 and R 4.6.1;
-the complete resolved dependencies are in the evidence's `provisioning.json`.
-No alternate dependency stack or gate change was attempted.
-
-The failed federation took 735.409 seconds, including startup checks, and
-cleaned up its Flower processes successfully. No DP optimizer steps completed,
-no trained model was released, and no central/pooled twin or test scoring ran.
-All metric and gap fields remain null. The epsilon-8 diagnostic is unassessed.
-The drivers below are implemented, but training/twin/scoring execution has
-not been validated past this blocker; only admission, preflight and synthetic
-metric checks passed. The pod remains running.
-
-This driver evaluates `pytorch_resnet18` from dsFlower/dsFlowerClient 0.5.0:
+This driver evaluates `pytorch_resnet18` with dsFlower 0.5.1 and dsFlowerClient 0.5.0:
 a frozen ImageNet ResNet-18 and a 1,026-parameter linear classification head.
 The [frozen protocol](protocol.json) declares three patient-disjoint sites,
 five rounds, three seeds, epsilon 1/8/4, delta 1e-6, patient clipping norm 1,
@@ -37,8 +17,9 @@ Every seed reuses the byte-identical segmentation split: 852 training and
 212 test patients, with 284 training patients per site. The released runner
 averages image features within each patient and uses the modal patient label.
 Metrics are evaluated per image, with malignant as the positive class.
-The epsilon-8 diagnostic requires AUC > 0.5 and accuracy above the held-out
-majority rate; report both individual replicates and the three-seed means.
+The epsilon-8 annotation compares AUC with 0.5 and accuracy with the held-out
+majority rate, for individual replicates and the three-seed means. These
+comparisons do not determine execution status or trigger configuration changes.
 No schedule search or post-score configuration changes are permitted. No
 alternative cohort or contract is predeclared.
 
@@ -52,78 +33,104 @@ fit is reused across epsilon values for each seed.
 
 ## Reproduction
 
-The commands below reproduce the frozen campaign and its current blocker;
-they do not establish a working scored cell.
-
-Use only the designated `pod-flower-vision` pod and `/workspace/cells-vision`.
-A fresh Ubuntu 22.04 GPU image needs `rsync` installed before source transfer.
-Use `rsync -rlzt` with the supplied wrapper: the volume does not support
-preserving laptop ownership. Exclude `.git`, `*.o`, `*.so` and `__pycache__`.
-The client install uses `--preclean` to rebuild native objects for Linux.
-Place unchanged v0.5.0 package sources at
-`src/dsFlower` and `src/dsFlowerClient`. Also place released dependency sources
-at `src/dsHPC` (v0.2.5, commit
-`2917ad168e2f1c6f191a9d964632744e52cc2d4b`) and `src/dsImaging` (v0.3.8,
-commit `a5f218273cbf44cd3d4401672bd508299828284c`).
+Use only `pod-flower-vision` and `/workspace/cells-vision`. The prepared BUS-BRA
+collections and frozen checkpoint are reused. For a fresh pod, provision
+0.5.0 and run `prepare.py` as documented in the archived blocked README.
+Then fetch the server patch, verify its commit, and transfer it with the pod
+rsync wrapper (`-rlzt`, excluding `.git`, `*.o`, `*.so`, and `__pycache__`).
+Transfer this vision driver directory separately; no client reinstall is needed.
+From the client checkout, also run the CI source comparison:
+`python3 tools/check-runner-sync.py --server /path/to/dsFlower`.
 
 ```sh
 ROOT=/workspace/cells-vision
 TOOLS="$ROOT/src/dsFlowerClient/tools/campaign/vision"
-bash "$TOOLS/provision.sh"
-python "$TOOLS/prepare.py" --root "$ROOT"
 source "$TOOLS/environment.sh"
+# The prepared runtime is retained; no dependency setup is needed.
+DSFLOWER_SKIP_PYTHON_SETUP=true R CMD INSTALL --preclean \
+  --library="$ROOT/Rlib" "$ROOT/src/dsFlower"
 PY="$ROOT/venvs/pytorch-gpu/bin/python"
-python "$TOOLS/verify_runtime.py" --root "$ROOT" --library "$ROOT/Rlib" \
+mkdir -p "$ROOT/verification-0.5.1"
+python3 "$TOOLS/verify_runtime.py" --root "$ROOT" --library "$ROOT/Rlib" \
   --runner-sha256 2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724 \
   > "$ROOT/runtime_preflight.json"
+"$PY" "$TOOLS/verify_import.py" --root "$ROOT" \
+  > "$ROOT/verification-0.5.1/import_check.json"
+"$PY" "$ROOT/src/dsFlower/inst/python/tests/test_sitecustomize.py"
 Rscript "$TOOLS/check_admission.R" "$ROOT"
-"$PY" "$TOOLS/install_public_observer.py" > "$ROOT/observer-install.json"
 "$PY" "$TOOLS/test_metrics.py"
+# Needed on a fresh runtime; already installed on the prepared pod.
+"$PY" "$TOOLS/install_public_observer.py" > "$ROOT/observer-install.json"
+```
+
+Capture the remaining data-free evidence inputs before running the matrix:
+
+```sh
+"$PY" - <<'PY' > "$ROOT/verification-0.5.1/python-packages.json"
+import importlib.metadata as m, json, platform
+print(json.dumps(dict(python=platform.python_version(), packages=dict(sorted(
+    (d.metadata['Name'], d.version) for d in m.distributions()))), indent=2))
+PY
+"$ROOT/client/venv/bin/python" - <<'PY' > "$ROOT/verification-0.5.1/prediction-numerics.json"
+import json, os, torch
+fixed = dict(matmul_allow_tf32=False, cudnn_allow_tf32=False, deterministic_algorithms=True)
+print(json.dumps(dict(torch=torch.__version__, cuda_available=torch.cuda.is_available(),
+    canonical_predictor_runtime=dict(matmul_allow_tf32=torch.backends.cuda.matmul.allow_tf32,
+        cudnn_allow_tf32=torch.backends.cudnn.allow_tf32,
+        deterministic_algorithms=torch.are_deterministic_algorithms_enabled(),
+        nvidia_tf32_override=os.environ.get('NVIDIA_TF32_OVERRIDE')),
+    node_and_twin_training=fixed, direct_twin_test_features=fixed,
+    policy='Retain the pushed numerical controls; test feature bitwise parity is not asserted.',
+    test_data_read=False), indent=2))
+PY
+```
+
+Before training, require the installed guard SHA-256 to equal the fetched
+commit's guard (`3ae7c9ce6750c81c00e8c70e618d0bc52978486d7736587f39c716ff401fe98d`),
+and recheck the archive, checkpoint and all three split hashes. If resuming
+the original failure, move its run directory into `runs/blocked-0.5.0/` after
+confirming its status is failed and no scoring marker exists. Retain it in full.
+
+```sh
 "$PY" "$TOOLS/run_matrix.py" --root "$ROOT" --epsilons 1 8 4
-```
-
-After the failed first matrix attempt, record the independent check and
-blocked evidence with:
-
-```sh
-"$PY" "$TOOLS/verify_import.py" --root "$ROOT" > "$ROOT/import-check.json"
-python "$TOOLS/record_blocked.py" --root "$ROOT" \
-  --out "$ROOT/src/dsFlowerClient/inst/extdata/campaign/vision"
-```
-
-The following downstream commands were not executed because training failed:
-
-```sh
 "$PY" "$TOOLS/score.py" --root "$ROOT" --epsilons 1 8 4
 "$PY" "$TOOLS/assemble_evidence.py" --root "$ROOT" \
-  --out "$ROOT/src/dsFlowerClient/inst/extdata/campaign/vision" --epsilons 1 8 4
+  --out "$ROOT/evidence-0.5.1" --epsilons 1 8 4
 ```
 
 All commands run in the foreground. The matrix stops on any failed run.
 Training and twin verification never read held-out images or summarize
 held-out labels. `score.py` requires all trained artifacts and writes an
 exclusive scoring marker with their hashes before test access; it refuses
-a second invocation. Retain failed attempts and their diagnostics.
+a second invocation. The scorer resolves each saved model from the federation
+status `output_dir`, including its model-named subdirectory; this path fix
+was validated on a synthetic image before any held-out data access. Retain
+failed attempts and their diagnostics. To bound scoring wall-clock time, the
+three independent epsilon predictions for a seed run concurrently within the
+foreground scoring process, through the same canonical predictor, once each.
+Model settings, training order and metric definitions are unchanged. Do not
+rerun this scored pod or change any scored configuration.
 
-`prepare.py` calls the segmentation campaign's `fetch` function for BUS-BRA,
-the checkpoint and provenance, then its unchanged `prepare_busbra` and
-`split_subjects` functions. Mechanical preparation performs the original
-metadata and mask audit but computes no model scores. All three generated
-split hashes must equal the archived hashes. Each training site is admitted
-through an actual dsImaging resource with image assets, sample manifests,
-content hashes, the pathology vocabulary and the patient roster. No legacy
-table-backed image shortcut is used.
+The recorded prediction numerical controls preserve the pushed routes: the
+canonical predictor uses its default cuDNN TF32 setting, while direct twin
+feature extraction disables TF32 and enables deterministic algorithms.
+The checkpoint and transforms agree; exact tensor parity is verified for
+training. Test feature bitwise parity between these inference routes is not
+asserted. See `verification-0.5.1/prediction-numerics.json` in the evidence.
 
-The public benchmark observer is copied from the segmentation/sequence
-machinery. Analyst-side instrumentation seeds and captures public initial
-arrays. Custodian-side instrumentation is installed only in the isolated
-campaign venv, attaches after the mandatory runner integrity verifier, and
-records node privacy settings, accountant steps and tensor hashes. It calls
-the original training/calibration functions without replacing their results.
-Node keys live under POSIX `/tmp`, because the volume ignores permissions.
-They are not copied into evidence. Seeds alone do not reconstruct node-owned
-DP noise. Patient data and model artifacts stay on the benchmark pod; only
-public-cohort aggregate evidence is committed.
+`prepare.py` reuses segmentation preparation and requires byte-identical
+patient split hashes. Each site is admitted through an actual dsImaging
+resource with image assets, pathology vocabulary and patient roster.
+The released runner pools features and labels by patient before clipping.
+
+The public benchmark observer seeds and captures analyst-side public initial
+arrays. The observer in the isolated campaign venv attaches only after the
+mandatory runner integrity verifier and records node privacy settings,
+accountant steps and tensor hashes. It calls the original functions without
+replacing their results. Node keys live under POSIX `/tmp` and are never
+copied into evidence. Seeds alone do not reconstruct node-owned DP noise.
+Patient data and model artifacts stay on the pod; only aggregate evidence
+for this public cohort is committed.
 
 ## Provenance
 
@@ -145,6 +152,3 @@ The pinned ImageNet checkpoint is `resnet18-f37072fd.pth`, SHA-256
 `f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec`.
 Evidence is written to `inst/extdata/campaign/vision/`; see its README and
 `summary.json` for execution status and measured outcomes.
-
-`release_integrity_check.json` additionally verifies that the installed and
-pod-source integrity gates match the v0.5.0 Git tag byte for byte.

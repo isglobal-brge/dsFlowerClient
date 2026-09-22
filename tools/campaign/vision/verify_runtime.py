@@ -37,7 +37,7 @@ def main():
     result = dict(schema="dsflower-vision-runtime-preflight-v1",
                   generated_at=datetime.now(timezone.utc).isoformat(),
                   hostname=socket.gethostname(),
-                  expected_version="0.5.0", expected_runner_sha256=args.runner_sha256,
+                  expected_versions={"dsFlower": "0.5.1", "dsFlowerClient": "0.5.0"}, expected_runner_sha256=args.runner_sha256,
                   installed_versions=None, installed_runner_sha256=None,
                   training_started=False, scoring_started=False)
     result["workspace_mount"] = [line for line in Path("/proc/self/mountinfo").read_text().splitlines()
@@ -73,11 +73,11 @@ cat(jsonlite::toJSON(list(
             result["installed_versions"] = release["versions"]
             result["r_version"] = release["r_version"]
             result["installed_runner_sha256"] = release["runner_sha256"]
-            matched = (all(v == "0.5.0" for v in release["versions"].values())
+            matched = (release["versions"] == result["expected_versions"]
                        and all(v == args.runner_sha256 for v in release["runner_sha256"].values()))
             result.update(status="verified" if matched else "blocked",
                           blocker_kind=None if matched else "release_mismatch",
-                          error=None if matched else "Install unchanged v0.5.0 sources before training.")
+                          error=None if matched else "Expected dsFlower 0.5.1, dsFlowerClient 0.5.0, and unchanged canonical runners.")
         else:
             result.update(status="blocked", blocker_kind="release_verification_failed",
                           error="Installed R packages could not be verified; see release_probe.")

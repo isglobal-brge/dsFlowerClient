@@ -1,0 +1,126 @@
+{
+  "acceptance_diagnostic_assessed": false,
+  "blocker": {
+    "affected_nodes": 3,
+    "alternate_dependency_stack_tested": false,
+    "child_exit_code": 99,
+    "client_error": "Federated training failed (status 1); no model was accepted or saved.",
+    "diagnostics": "first_attempt.json",
+    "diagnostics_sha256": "182eea155ec0f6581b71c8f7538ac0712f1caaa811276d7c9b8dd75e9adbfd85",
+    "error": "DSFLOWER SECURITY: package '_remote_module_non_scriptable' is not in pinned_packages.json (default-deny).\nAborting process.",
+    "independent_check": "import_check.json",
+    "kind": "runtime_integrity_default_deny",
+    "package_or_gate_change_attempted": false,
+    "reproduced_without_benchmark_observer": true,
+    "stage": "public_model_construction"
+  },
+  "cells": [
+    {
+      "epsilon": 1,
+      "file": "pilot_busbra_pytorch_resnet18_eps1.json",
+      "gap_auc": {
+        "mean": null,
+        "n": 0,
+        "sd": null
+      },
+      "scored_replicates": 0,
+      "status": "blocked"
+    },
+    {
+      "epsilon": 8,
+      "file": "pilot_busbra_pytorch_resnet18_eps8.json",
+      "gap_auc": {
+        "mean": null,
+        "n": 0,
+        "sd": null
+      },
+      "scored_replicates": 0,
+      "status": "blocked"
+    },
+    {
+      "epsilon": 4,
+      "file": "pilot_busbra_pytorch_resnet18_eps4.json",
+      "gap_auc": {
+        "mean": null,
+        "n": 0,
+        "sd": null
+      },
+      "scored_replicates": 0,
+      "status": "blocked"
+    }
+  ],
+  "central_trained": false,
+  "contract": "pytorch_resnet18",
+  "dataset": {
+    "archive_bytes": 133917740,
+    "archive_sha256": "ba3e6ed19cc37c682d8d39e25435bbf8a555a12cb7e641b5f2117685c95580ff",
+    "archive_url": "https://zenodo.org/api/records/8231412/files/BUSBRA.zip/content",
+    "archive_verification": "Fresh archive matched pinned SHA-256 and publisher MD5.",
+    "citation_reference": "G\u00f3mez-Flores W, Gregorio-Calas MJ, Pereira WCA (2024). BUS-BRA: A Breast Ultrasound Dataset for Assessing Computer-aided Diagnosis Systems. Medical Physics 51:3110\u20133123. doi:10.1002/mp.16812.",
+    "citation_url": "https://doi.org/10.1002/mp.16812",
+    "dataset_doi": "10.5281/zenodo.8231412",
+    "licence": "Zenodo declares CC BY 4.0; archive attribution licence also requires citation.",
+    "licence_sha256": "e9e3ea607a53575d9d17c07cdb35972d9506a19dcafde49383fb0f875f01b92d",
+    "name": "BUS-BRA",
+    "patient_mapping": "released Case column, exact 1..1064, filename prefix agrees; publisher declares 1064 patients; both official CV folds keep Case together",
+    "source_url": "https://zenodo.org/records/8231412",
+    "total_images": 1875,
+    "total_patients": 1064,
+    "version": "1.0"
+  },
+  "federation_attempts": 1,
+  "generated_at": "2026-09-22T01:04:19.050514+00:00",
+  "host": {
+    "gpu": "NVIDIA A40",
+    "gpus": [
+      {
+        "memory.total [MiB]": "46068 MiB",
+        "memory.used [MiB]": "0 MiB",
+        "name": "NVIDIA A40",
+        "uuid": "GPU-71ab6101-1d6b-147c-5ee3-af1fc7a677ee"
+      }
+    ],
+    "hostname": "5dc98e434db0",
+    "pod_id": "0nk8si7zupfczc",
+    "pod_name": "pod-flower-vision",
+    "root": "/workspace/cells-vision",
+    "state_at_end": "left_running"
+  },
+  "optimizer_steps_observed": 0,
+  "pod_left_running": true,
+  "pooled_dp_trained": false,
+  "previous_volume_blocker": "Superseded: fresh pod storage, release install, archive checks and dsImaging admission passed.",
+  "release": {
+    "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+    "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+    "installed_runner_sha256": {
+      "dsFlower": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+      "dsFlowerClient": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+    },
+    "installed_versions": {
+      "dsFlower": "0.5.0",
+      "dsFlowerClient": "0.5.0"
+    },
+    "pretrained_checkpoint": {
+      "bytes": 46830571,
+      "filename": "resnet18-f37072fd.pth",
+      "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+      "url": "https://download.pytorch.org/models/resnet18-f37072fd.pth"
+    },
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "torch": {
+      "cuda": "12.4",
+      "gpu": "NVIDIA A40",
+      "torch": "2.6.0+cu124",
+      "torchvision": "0.21.0+cu124"
+    },
+    "version": "0.5.0"
+  },
+  "schema": "dsflower-vision-summary-v1",
+  "scored_replicates": 0,
+  "status": "blocked",
+  "test_scoring_started": false
+}

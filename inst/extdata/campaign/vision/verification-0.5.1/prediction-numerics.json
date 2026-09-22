@@ -1,0 +1,22 @@
+{
+  "torch": "2.6.0+cu124",
+  "cuda_available": true,
+  "canonical_predictor_runtime": {
+    "matmul_allow_tf32": false,
+    "cudnn_allow_tf32": true,
+    "deterministic_algorithms": false,
+    "nvidia_tf32_override": null
+  },
+  "node_and_twin_training": {
+    "matmul_allow_tf32": false,
+    "cudnn_allow_tf32": false,
+    "deterministic_algorithms": true
+  },
+  "direct_twin_test_features": {
+    "matmul_allow_tf32": false,
+    "cudnn_allow_tf32": false,
+    "deterministic_algorithms": true
+  },
+  "policy": "Retain the pushed prediction routes and numeric controls; identical checkpoint/transform and exact training tensor parity are verified. Test feature bitwise parity across the two prediction paths is not asserted.",
+  "test_data_read": false
+}

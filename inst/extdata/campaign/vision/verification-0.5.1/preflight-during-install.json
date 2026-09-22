@@ -1,0 +1,84 @@
+{
+  "blocker_kind": "workspace_unavailable",
+  "elapsed_s": 0.049,
+  "error": "Cannot access /workspace, the installed release, or prepared BUS-BRA; runtime verification and training cannot start.",
+  "expected_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+  "expected_versions": {
+    "dsFlower": "0.5.1",
+    "dsFlowerClient": "0.5.0"
+  },
+  "filesystem_probes": [
+    {
+      "argv": [
+        "stat",
+        "--",
+        "/workspace"
+      ],
+      "elapsed_s": 0.004,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "  File: /workspace\n  Size: 3002341   \tBlocks: 5864       IO Block: 65536  directory\nDevice: 50h/80d\tInode: 63964822    Links: 3\nAccess: (0777/drwxrwxrwx)  Uid: (    0/    root)   Gid: (    0/    root)\nAccess: 2026-09-22 00:17:01.000000000 +0000\nModify: 2026-09-22 00:18:24.000000000 +0000\nChange: 2026-09-22 00:18:24.000000000 +0000\n Birth: -\n",
+      "timed_out": false,
+      "timeout_s": 10
+    },
+    {
+      "argv": [
+        "stat",
+        "--",
+        "/workspace/cells-vision/Rlib/dsFlower/DESCRIPTION"
+      ],
+      "elapsed_s": 0.007,
+      "returncode": 1,
+      "stderr": "stat: cannot statx '/workspace/cells-vision/Rlib/dsFlower/DESCRIPTION': No such file or directory\n",
+      "stdout": "",
+      "timed_out": false,
+      "timeout_s": 10
+    },
+    {
+      "argv": [
+        "stat",
+        "--",
+        "/workspace/cells-vision/prepared/busbra/audit.json"
+      ],
+      "elapsed_s": 0.007,
+      "returncode": 0,
+      "stderr": "",
+      "stdout": "  File: /workspace/cells-vision/prepared/busbra/audit.json\n  Size: 407937    \tBlocks: 797        IO Block: 65536  regular file\nDevice: 50h/80d\tInode: 108898944   Links: 1\nAccess: (0666/-rw-rw-rw-)  Uid: (    0/    root)   Gid: (    0/    root)\nAccess: 2026-09-22 01:04:18.000000000 +0000\nModify: 2026-09-22 00:26:43.000000000 +0000\nChange: 2026-09-22 00:26:43.000000000 +0000\n Birth: -\n",
+      "timed_out": false,
+      "timeout_s": 10
+    }
+  ],
+  "generated_at": "2026-09-22T01:19:19.082319+00:00",
+  "gpu_probe": {
+    "argv": [
+      "nvidia-smi",
+      "--query-gpu=name,uuid,memory.total,memory.used",
+      "--format=csv"
+    ],
+    "elapsed_s": 0.031,
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "name, uuid, memory.total [MiB], memory.used [MiB]\nNVIDIA A40, GPU-71ab6101-1d6b-147c-5ee3-af1fc7a677ee, 46068 MiB, 0 MiB\n",
+    "timed_out": false,
+    "timeout_s": 10
+  },
+  "gpus": [
+    {
+      "memory.total [MiB]": "46068 MiB",
+      "memory.used [MiB]": "0 MiB",
+      "name": "NVIDIA A40",
+      "uuid": "GPU-71ab6101-1d6b-147c-5ee3-af1fc7a677ee"
+    }
+  ],
+  "hostname": "5dc98e434db0",
+  "installed_runner_sha256": null,
+  "installed_versions": null,
+  "release_probe": null,
+  "schema": "dsflower-vision-runtime-preflight-v1",
+  "scoring_started": false,
+  "status": "blocked",
+  "training_started": false,
+  "workspace_mount": [
+    "1584 1563 0:80 /podvolumes/5yue4r7xuzpm/0nk8si7zupfczc /workspace rw,nosuid,nodev,relatime - fuse mfs\\043eu-se-1.runpod.net:9421 rw,user_id=0,group_id=0,allow_other"
+  ]
+}
