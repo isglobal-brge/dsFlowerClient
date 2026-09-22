@@ -1,4 +1,4 @@
-# Multiclass utility evidence: CTG and HAR561
+# Multiclass utility evidence: CTG, HAR561 and CDC GenHlth
 
 Dataset: [UCI Cardiotocography, id 193](https://archive.ics.uci.edu/dataset/193/cardiotocography),
 all 2,126 records and 21 standard CTG measurements. `NSP` is the three-class
@@ -22,7 +22,7 @@ row clipping is 1. The entire campaign is not one composed epsilon guarantee.
 
 See [reproduction and interpretation](../../../../tools/campaign/multiclass/README.md)
 and the pre-scoring [protocol](../../../../tools/campaign/multiclass/protocol.json).
-`summary.json` lists CTG and HAR561 separately, with three epsilon entries each;
+`summary.json` lists CTG, HAR561 and CDC GenHlth separately, with three epsilon entries each;
 `environment.json` records the original CTG pod,
 provisioning time and dependency versions. The cell JSONs contain the complete
 per-replicate metrics, splits, public TRAIN-derived feature bounds, node-reported
@@ -181,3 +181,54 @@ is authorized. CTG remains the ranking-retained, argmax-calibration-lost
 measurement at 1,701 training rows. HAR remains the subject-privacy utility
 boundary with seven units/site, outside the useful regime on this epsilon grid;
 this is the utility law, not a defect. Their scored evidence stays unchanged.
+
+### Measured CDC GenHlth result
+
+The fixed cdc45k cohort contains 45,000 respondents with class counts [7987,
+15752, 13400, 5658, 2203] for GenHlth 1–5. Each seed has 36,000 training rows
+and 9,000 held-out rows; the three sites have [11998, 12002, 12000] rows and
+effective privacy units. Cohort membership matches the original logistic
+prepared-CSV checksum exactly. These descriptive held-out counts were generated
+only during final scoring.
+
+| Epsilon | Federated macro-AUC | Accuracy | Log-loss | Macro-AUC gap |
+|---:|---:|---:|---:|---:|
+| 1 | 0.7518 ± 0.0022 | 0.4326 ± 0.0039 | 1.2926 ± 0.0245 | -0.0319 ± 0.0035 |
+| 4 | 0.7517 ± 0.0017 | 0.4330 ± 0.0017 | 1.2914 ± 0.0171 | -0.0321 ± 0.0034 |
+| 8 | 0.7512 ± 0.0015 | 0.4341 ± 0.0018 | 1.2916 ± 0.0094 | -0.0325 ± 0.0021 |
+
+Values are mean ± sample SD over the three paired split seeds. Central macro-AUC
+was 0.7837 ± 0.0025, accuracy 0.4650 ± 0.0065, and log-loss 1.1664 ± 0.0077.
+Trivial macro-AUC was 0.5000, accuracy 0.3500, and log-loss 1.4435. Its hard
+prediction is GenHlth class 2, the training majority.
+
+Epsilon-8 diagnostics are descriptive annotations, not acceptance criteria:
+
+| Seed | Macro-AUC | Accuracy | Majority accuracy | AUC > 0.5 | Accuracy > majority |
+|---:|---:|---:|---:|:---|:---|
+| 20260820 | 0.751002 | 0.432222 | 0.350000 | Yes | Yes |
+| 20260821 | 0.749818 | 0.434111 | 0.350000 | Yes | Yes |
+| 20260822 | 0.752861 | 0.435889 | 0.350000 | Yes | Yes |
+
+Pre-declared cdc45k alternative: 45000 survey respondents, one row per
+respondent, five nominal GenHlth classes. At epsilon 8, mean macro-AUC is
+0.751227 versus central 0.783736; mean accuracy is 0.434074 versus majority
+0.350000. Diagnostics are annotations only. This scored outcome is final; no
+further alternative.
+
+All three central and nine federated models finished before the sealed test
+bundle was opened once for scoring. Central scores were reused across epsilon;
+each federated model was scored once. All 45 global rounds completed with three
+clients, zero reported failures and successful cleanup. No settings changed
+after scoring, no scored cell was rerun, and no further alternative was run.
+
+Unique central-plus-federated fit time was 4179.3 seconds (central fits counted
+once; final scoring and other orchestration excluded). Per-fit timings remain in
+the cell JSONs.
+
+Independent saved-evidence validation checked raw/cohort checksums, recorded
+split pairing and class balance, public bounds, five-class output schema,
+registry defaults, node row-privacy policies, release runner and frozen tooling
+hashes, training-before-scoring chronology, history, paired metrics and sample
+SD. Original CTG/HAR scored JSON hashes and summary entries remain unchanged.
+The release packages were unchanged and the pod is left running.

@@ -1208,7 +1208,422 @@
         "note": "Sum of three central and nine federated fit durations, with central fits counted once per seed. Federated durations include federation setup/cleanup; final test scoring and other orchestration time are excluded."
       },
       "validation": "All three cells: paired official subject-disjoint splits, 21 train/9 test subjects, three disjoint sites of seven training subjects, 7352/2947 windows, 561 public [-1,1] bounds, six classes, registry defaults except n_classes=6, patient privacy on subject, clipping norm 1, five rounds and zero failures. Official outer/inner archive hashes, one test-table load after all training, timezone-aware declaration/training/scoring order, node policies, runner/tooling hashes, replicate diagnostics, means and sample SD independently checked without retraining or rescoring."
+    },
+    {
+      "schema": "dsflower-campaign-v2",
+      "track": "multiclass",
+      "contract": "pytorch_multiclass",
+      "dataset": {
+        "name": "cdc45k GenHlth",
+        "cohort_name": "cdc45k",
+        "uci_id": 891,
+        "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+        "landing_url": "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
+        "dataset_doi": "10.24432/C53919",
+        "citation": "CDC Diabetes Health Indicators [Dataset]. (2017). UCI Machine Learning Repository.",
+        "thesis_citation_key": "uci_cdc_diabetes_health_indicators",
+        "target": "GenHlth: 1 excellent, 2 very good, 3 good, 4 fair, 5 poor; treated as nominal multiclass",
+        "row_unit": "One row per survey respondent, as documented by UCI; row-level privacy is the contract default.",
+        "excluded": [
+          "ID",
+          "Diabetes_binary"
+        ],
+        "features": [
+          "HighBP",
+          "HighChol",
+          "CholCheck",
+          "BMI",
+          "Smoker",
+          "Stroke",
+          "HeartDiseaseorAttack",
+          "PhysActivity",
+          "Fruits",
+          "Veggies",
+          "HvyAlcoholConsump",
+          "AnyHealthcare",
+          "NoDocbcCost",
+          "MentHlth",
+          "PhysHlth",
+          "DiffWalk",
+          "Sex",
+          "Age",
+          "Education",
+          "Income"
+        ],
+        "cohort": "Exact logistic n-scaling cdc45k membership: R seed 20260819, sample rounded proportional counts within Diabetes_binary classes, concatenate and sort source row indices, trim only excess beyond 45000. Diabetes_binary is used only to reproduce cohort membership, never as a model feature.",
+        "size_choice": "cdc45k fixed at 45000 rows; 20 inputs and linear softmax on provisioned 32-vCPU pod. No timing pilot or scored fallback.",
+        "n_total": 45000,
+        "download_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+        "legacy_logistic_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+        "n_train": 36000,
+        "n_test": 9000,
+        "n_per_site": [
+          11998,
+          12002,
+          12000
+        ]
+      },
+      "host": {
+        "nodename": "fd619c1c1fcd",
+        "sysname": "Linux",
+        "release": "6.17.0-14-generic",
+        "machine": "x86_64",
+        "r_version": "R version 4.6.1 (2026-06-24)",
+        "pod_id": "6aq9cxaigfwlby",
+        "pod_name": "pod-flower-multiclass",
+        "vcpus": 32
+      },
+      "versions": {
+        "dsflower": "0.5.0",
+        "dsflowerclient": "0.5.0",
+        "flwr": "1.31.0",
+        "torch": "2.14.0+cpu",
+        "opacus": "1.6.0",
+        "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+        "dsflower_source_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+        "dsflowerclient_release_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+        "nnet": "7.3.21"
+      },
+      "protocol": {
+        "schema": "dsflower-multiclass-cdcgenhlth-protocol-v1",
+        "declared_at_utc": "2026-09-22T01:13:18.972590+00:00",
+        "authorization": "FLOWER_CELLS_MULTICLASS_2026-09-22: user-declared CDC GenHlth alternative; CTG and HAR561 remain documented measurements; no further alternative.",
+        "contract": "pytorch_multiclass",
+        "dataset": {
+          "name": "cdc45k GenHlth",
+          "cohort_name": "cdc45k",
+          "uci_id": 891,
+          "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+          "landing_url": "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
+          "dataset_doi": "10.24432/C53919",
+          "citation": "CDC Diabetes Health Indicators [Dataset]. (2017). UCI Machine Learning Repository.",
+          "thesis_citation_key": "uci_cdc_diabetes_health_indicators",
+          "target": "GenHlth: 1 excellent, 2 very good, 3 good, 4 fair, 5 poor; treated as nominal multiclass",
+          "row_unit": "One row per survey respondent, as documented by UCI; row-level privacy is the contract default.",
+          "excluded": [
+            "ID",
+            "Diabetes_binary"
+          ],
+          "features": [
+            "HighBP",
+            "HighChol",
+            "CholCheck",
+            "BMI",
+            "Smoker",
+            "Stroke",
+            "HeartDiseaseorAttack",
+            "PhysActivity",
+            "Fruits",
+            "Veggies",
+            "HvyAlcoholConsump",
+            "AnyHealthcare",
+            "NoDocbcCost",
+            "MentHlth",
+            "PhysHlth",
+            "DiffWalk",
+            "Sex",
+            "Age",
+            "Education",
+            "Income"
+          ],
+          "cohort": "Exact logistic n-scaling cdc45k membership: R seed 20260819, sample rounded proportional counts within Diabetes_binary classes, concatenate and sort source row indices, trim only excess beyond 45000. Diabetes_binary is used only to reproduce cohort membership, never as a model feature.",
+          "size_choice": "cdc45k fixed at 45000 rows; 20 inputs and linear softmax on provisioned 32-vCPU pod. No timing pilot or scored fallback."
+        },
+        "download_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+        "legacy_logistic_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+        "split": {
+          "type": "80/20 split stratified by GenHlth using rounded per-class test counts, followed by shuffled per-class round-robin dealing into three sites; copied campaign_split algorithm.",
+          "seeds": [
+            20260820,
+            20260821,
+            20260822
+          ],
+          "paired_across_epsilon": true,
+          "seed_scope": "Cohort partitioning and central initialization; federated initialization and cryptographic sticky node DP randomness retain release behavior."
+        },
+        "bounds_policy": "Fixed public schema, copied from the CDC trees campaign declaration: binary [0,1], BMI [0,100] (declared clipping domain, not empirical extrema), MentHlth/PhysHlth [0,30], Age [1,13], Education [1,6], Income [1,8]. Clip and affine-scale to [-1,1] identically for central and federation; no empirical test or train bounds.",
+        "training": {
+          "sites": 3,
+          "rounds": 5,
+          "replicates": 3,
+          "execution_epsilon_order": [
+            1,
+            4,
+            8
+          ],
+          "delta": 1e-06,
+          "parameters": "All v0.5.0 registry optimization defaults: linear softmax, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, momentum 0, nesterov false, weight_decay 0, l1_penalty 0, scheduler none, hidden_layers []; only n_classes=5 supplies the public output schema.",
+          "privacy": "Row unit, clipping norm 1, replace-one adjacency, epsilon per node training. Nine fits do not constitute a single composed privacy guarantee.",
+          "inner_validation": "None; no tuning or model selection."
+        },
+        "central": "Unregularized multinomial logistic regression nnet::multinom(decay=0,maxit=3000,reltol=1e-10,MaxNWts=10000), identical training rows and public bounded transform. Require convergence=0; fit once per split seed and reuse scores across epsilon.",
+        "trivial": "Training class proportions for probabilities; their majority for hard prediction. No test prevalence used.",
+        "metrics": "Mean of five one-vs-rest rank AUCs with average ties, argmax accuracy with first-class tie break, natural-log log-loss with true-class probability floor 1e-15. Paired gap = federated-DP macro-AUC minus central; mean and sample SD over three replicates.",
+        "diagnostics": "Annotations only, not acceptance or pass/fail: epsilon-8 mean macro-AUC > 0.5 and accuracy strictly above majority predictor test accuracy; disclose replicate indicators too. Report any outcome; no further alternative.",
+        "test_use": "Preparation reads raw data only to reproduce the fixed cohort and stratified partitions, writes sealed held-out RDS and separate training RDS without examining or reporting test values/statistics. Training opens only training RDS. After all three central and nine federated models finish, create scoring marker and open sealed held-out RDS once in one final scoring phase. Score each fitted model once; reuse central scores across epsilon. Never rerun a scored cell or change settings after scoring.",
+        "failure_policy": "Refuse existing run directories, score markers and cell artifacts; preserve failures and artifacts. Release code and the shared/logistic/CTG/HAR tooling remain unchanged."
+      },
+      "tooling_sha256": {
+        "run_cdcgenhlth.R": "335af2b4a58dd3eac74500b540342cb954fcd3e637f002c512c67613f93e205c",
+        "cdcgenhlth_campaign.R": "cd9c354a9767f6408adb2f08ad468cc7145000a47f09924f133b10a7a22e6f65",
+        "cdcgenhlth.R": "0440d94a15d430025bed8161693cc72270bc489df4382dad3bd60341faef3b7d",
+        "cdcgenhlth_protocol.json": "e39e3f6d711f0e787673d523f61d9f6917c292ee66ff72d1879b588eef268abc",
+        "prepare_cdcgenhlth.R": "240a09fb9715135ad1d16b5e618d0af286a658212608171e58a6f5b7a6fe9299",
+        "check_cdcgenhlth.R": "64eb0ec07c87d7e6aa165edb09dd7a4a483ea35c0625759dee6d5e12c069f74d",
+        "run_cdcgenhlth.sh": "aa18b3d28b46f7ddc5f5d256fcc0107f4ddebaa8c18cd7d776d47860e9035f15"
+      },
+      "preparation": {
+        "schema": "dsflower-cdcgenhlth-preparation-v1",
+        "prepared_at_utc": "2026-09-22T01:18:01Z",
+        "cohort_name": "cdc45k",
+        "n_total": 45000,
+        "cohort_seed": 20260819,
+        "split_seeds": [
+          20260820,
+          20260821,
+          20260822
+        ],
+        "raw_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+        "legacy_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+        "cohort_index_sha256": "39a6af59d3d9360a689597ada372ac53556ceb7b34d7fdc74f743414dc4eb241",
+        "prepared_sha256": "10932e91baa41cf259c097b378325e0e31b8b54161ee6cd9c216d113c05374c5",
+        "training_sha256": "eb6dc9008cdb78adfdbfb816b1fb284fa9c2c919ef54307b6f5ae3389dcf1415",
+        "sealed_test_sha256": "7acba2f54539b4e28ef13adb2206d4aed788afce2fed7138e81498fbecb39d1b",
+        "rng_kind": [
+          "Mersenne-Twister",
+          "Inversion",
+          "Rejection"
+        ],
+        "r_version": "R version 4.6.1 (2026-06-24)",
+        "test_policy": "Prepared and sealed; no held-out values or statistics examined or reported."
+      },
+      "cells": [
+        {
+          "epsilon": 1,
+          "evidence_file": "cdcgenhlth_pytorch_multiclass_eps1.json",
+          "evidence_sha256": "b8f4537b3c35c25c5ed6355089ea3842c39e8227cfbc95a70a5fe7dbdb6b6fd7",
+          "summary": {
+            "central_mean_sd": {
+              "macro_auc": {
+                "mean": 0.7837360191131526,
+                "sd": 0.0024813482000689683
+              },
+              "acc": {
+                "mean": 0.46500000000000036,
+                "sd": 0.006455928465037364
+              },
+              "logloss": {
+                "mean": 1.16637070027352,
+                "sd": 0.007740545640090403
+              }
+            },
+            "federated_mean_sd": {
+              "macro_auc": {
+                "mean": 0.7518289331098154,
+                "sd": 0.00220654697970375
+              },
+              "acc": {
+                "mean": 0.43262962962962964,
+                "sd": 0.003914728966436807
+              },
+              "logloss": {
+                "mean": 1.2925854091112265,
+                "sd": 0.024527489976390635
+              }
+            },
+            "trivial_mean_sd": {
+              "macro_auc": {
+                "mean": 0.5,
+                "sd": 0.0
+              },
+              "acc": {
+                "mean": 0.35,
+                "sd": 0.0
+              },
+              "logloss": {
+                "mean": 1.44353505788892,
+                "sd": 0.0
+              }
+            },
+            "gap_mean_sd": {
+              "macro_auc": {
+                "mean": -0.03190708600333728,
+                "sd": 0.0034563268891154076
+              }
+            },
+            "diagnostic": {
+              "applicable_epsilon": 8,
+              "mean_accuracy_above_majority": true,
+              "mean_macro_auc_above_half": true,
+              "all_replicates_above_majority": true,
+              "all_replicates_above_half": true
+            }
+          },
+          "wall_clock_total_s": 1370.215963125228,
+          "wall_clock_note": "Attributed total includes the same three central fits in every epsilon row; use training_runtime for the sum with central fits counted once."
+        },
+        {
+          "epsilon": 4,
+          "evidence_file": "cdcgenhlth_pytorch_multiclass_eps4.json",
+          "evidence_sha256": "9d0a85fe23a1332bbeea44d3d81a31b8f92ea46758d920ec21ad2332057cb619",
+          "summary": {
+            "central_mean_sd": {
+              "macro_auc": {
+                "mean": 0.7837360191131526,
+                "sd": 0.0024813482000689683
+              },
+              "acc": {
+                "mean": 0.46500000000000036,
+                "sd": 0.006455928465037364
+              },
+              "logloss": {
+                "mean": 1.16637070027352,
+                "sd": 0.007740545640090403
+              }
+            },
+            "federated_mean_sd": {
+              "macro_auc": {
+                "mean": 0.7516652193998193,
+                "sd": 0.0016769336583286362
+              },
+              "acc": {
+                "mean": 0.433037037037037,
+                "sd": 0.0017008833338081524
+              },
+              "logloss": {
+                "mean": 1.2914064832685266,
+                "sd": 0.01712180499783251
+              }
+            },
+            "trivial_mean_sd": {
+              "macro_auc": {
+                "mean": 0.5,
+                "sd": 0.0
+              },
+              "acc": {
+                "mean": 0.35,
+                "sd": 0.0
+              },
+              "logloss": {
+                "mean": 1.44353505788892,
+                "sd": 0.0
+              }
+            },
+            "gap_mean_sd": {
+              "macro_auc": {
+                "mean": -0.0320707997133333,
+                "sd": 0.003367195682519217
+              }
+            },
+            "diagnostic": {
+              "applicable_epsilon": 8,
+              "mean_accuracy_above_majority": true,
+              "mean_macro_auc_above_half": true,
+              "all_replicates_above_majority": true,
+              "all_replicates_above_half": true
+            }
+          },
+          "wall_clock_total_s": 1409.280194282531,
+          "wall_clock_note": "Attributed total includes the same three central fits in every epsilon row; use training_runtime for the sum with central fits counted once."
+        },
+        {
+          "epsilon": 8,
+          "evidence_file": "cdcgenhlth_pytorch_multiclass_eps8.json",
+          "evidence_sha256": "4667d675c925054defc971f6be2f4ee30585178c65f0418ea7f1e97b1119ed48",
+          "summary": {
+            "central_mean_sd": {
+              "macro_auc": {
+                "mean": 0.7837360191131526,
+                "sd": 0.0024813482000689683
+              },
+              "acc": {
+                "mean": 0.46500000000000036,
+                "sd": 0.006455928465037364
+              },
+              "logloss": {
+                "mean": 1.16637070027352,
+                "sd": 0.007740545640090403
+              }
+            },
+            "federated_mean_sd": {
+              "macro_auc": {
+                "mean": 0.751226799219243,
+                "sd": 0.0015342344143142942
+              },
+              "acc": {
+                "mean": 0.434074074074074,
+                "sd": 0.0018336138954796492
+              },
+              "logloss": {
+                "mean": 1.2916162827325366,
+                "sd": 0.009405223776060456
+              }
+            },
+            "trivial_mean_sd": {
+              "macro_auc": {
+                "mean": 0.5,
+                "sd": 0.0
+              },
+              "acc": {
+                "mean": 0.35,
+                "sd": 0.0
+              },
+              "logloss": {
+                "mean": 1.44353505788892,
+                "sd": 0.0
+              }
+            },
+            "gap_mean_sd": {
+              "macro_auc": {
+                "mean": -0.03250921989390965,
+                "sd": 0.0020910437107585747
+              }
+            },
+            "diagnostic": {
+              "applicable_epsilon": 8,
+              "mean_accuracy_above_majority": true,
+              "mean_macro_auc_above_half": true,
+              "all_replicates_above_majority": true,
+              "all_replicates_above_half": true
+            }
+          },
+          "wall_clock_total_s": 1429.349310398101,
+          "wall_clock_note": "Attributed total includes the same three central fits in every epsilon row; use training_runtime for the sum with central fits counted once."
+        }
+      ],
+      "diagnostic_epsilon8": {
+        "applicable_epsilon": 8,
+        "mean_accuracy_above_majority": true,
+        "mean_macro_auc_above_half": true,
+        "all_replicates_above_majority": true,
+        "all_replicates_above_half": true
+      },
+      "scoring": {
+        "training_started_at_utc": "2026-09-22T01:18:02Z",
+        "training_completed_at_utc": "2026-09-22T02:27:49Z",
+        "started_at_utc": "2026-09-22T02:27:49Z",
+        "test_bundle_loads": 1,
+        "held_out_partitions": 3,
+        "central_fits": 3,
+        "federated_fits": 9,
+        "central_scores_reused_across_epsilon": true,
+        "changed_settings_after_scoring": false
+      },
+      "training_runtime": {
+        "central_fits": 3,
+        "federated_fits": 9,
+        "central_fit_total_s": 14.76158070564271,
+        "federated_fit_total_s": 4164.560725688935,
+        "unique_training_total_s": 4179.322306394578,
+        "note": "Three central and nine federated fit durations; central fits counted once per seed. Federated durations include setup/cleanup. Final scoring excluded."
+      },
+      "validation": "Paired GenHlth-stratified cdc45k splits and three stratified sites, 20 public feature bounds, five nominal classes, registry defaults except n_classes=5, row privacy, clipping norm 1, five rounds and zero failures. Raw and legacy logistic cohort hashes, frozen protocol/tooling, release runner provenance, split index hashes, node policies, class counts, central convergence, one sealed test-bundle load after three central and nine federated fits, timezone-aware scoring order, baseline pairing, replicate annotations, means and sample SD independently checked from recorded artifacts without retraining or rescoring."
     }
   ],
-  "interpretation": "CTG remains a calibration boundary: ranking retained, argmax lost. HAR561 is the single user-predeclared alternative; both outcomes are retained."
+  "interpretations": {
+    "ctg": "Ranking retained, argmax calibration lost under class imbalance at 1701 training rows. The original CTG measurements are retained unchanged.",
+    "har561": "Subject-level privacy with seven units per site is outside the useful regime at every budget in the grid; this is a utility-law boundary, not a defect. The original HAR561 measurements are retained unchanged.",
+    "cdcgenhlth": "Pre-declared cdc45k alternative: 45000 survey respondents, one row per respondent, five nominal GenHlth classes. At epsilon 8, mean macro-AUC is 0.751227 versus central 0.783736; mean accuracy is 0.434074 versus majority 0.350000. Diagnostics are annotations only. This scored outcome is final; no further alternative."
+  },
+  "interpretation": "CTG and HAR561 remain documented boundary measurements. CDC GenHlth is the pre-declared large-cohort row-private alternative. All outcomes are retained; epsilon-8 diagnostics are descriptive annotations, not acceptance criteria."
 }

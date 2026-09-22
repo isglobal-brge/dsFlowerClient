@@ -230,3 +230,13 @@ scoring. `cdcgenhlth_*.json` records results and environment; `summary.json`
 retains CTG and HAR and adds CDC. Epsilon comparisons are per node training,
 not a composed nine-fit privacy claim. The gap includes optimization,
 federation and privacy costs; it does not isolate a causal privacy penalty.
+
+
+The scored CDC result is macro-AUC 0.7518 / 0.7517 / 0.7512 at epsilon
+1 / 4 / 8, versus central 0.7837. Accuracy is 0.4326 / 0.4330 / 0.4341
+versus the 0.3500 majority baseline. All three epsilon-8 replicates have
+macro-AUC above 0.5 and accuracy above majority; these are annotations only.
+Macro-AUC is nearly flat across the budget grid. The paired gap includes the
+fixed five-round optimization, federation and privacy costs. All nine fits
+were scored once after all training completed, with no changed settings or
+further alternative. See the [full results and sample SD](../../../inst/extdata/campaign/multiclass/README.md).

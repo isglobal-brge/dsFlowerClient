@@ -1,0 +1,1087 @@
+{
+  "schema": "dsflower-campaign-v2",
+  "cell_id": "cdcgenhlth_pytorch_multiclass_eps1",
+  "generated_at": "2026-09-22T02:27:58Z",
+  "host": {
+    "nodename": "fd619c1c1fcd",
+    "sysname": "Linux",
+    "release": "6.17.0-14-generic",
+    "machine": "x86_64",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "pod_id": "6aq9cxaigfwlby",
+    "pod_name": "pod-flower-multiclass",
+    "vcpus": 32
+  },
+  "versions": {
+    "dsflower": "0.5.0",
+    "dsflowerclient": "0.5.0",
+    "flwr": "1.31.0",
+    "torch": "2.14.0+cpu",
+    "opacus": "1.6.0",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "dsflower_source_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsflowerclient_release_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "nnet": "7.3.21"
+  },
+  "tooling_sha256": {
+    "run_cdcgenhlth.R": "335af2b4a58dd3eac74500b540342cb954fcd3e637f002c512c67613f93e205c",
+    "cdcgenhlth_campaign.R": "cd9c354a9767f6408adb2f08ad468cc7145000a47f09924f133b10a7a22e6f65",
+    "cdcgenhlth.R": "0440d94a15d430025bed8161693cc72270bc489df4382dad3bd60341faef3b7d",
+    "cdcgenhlth_protocol.json": "e39e3f6d711f0e787673d523f61d9f6917c292ee66ff72d1879b588eef268abc",
+    "prepare_cdcgenhlth.R": "240a09fb9715135ad1d16b5e618d0af286a658212608171e58a6f5b7a6fe9299",
+    "check_cdcgenhlth.R": "64eb0ec07c87d7e6aa165edb09dd7a4a483ea35c0625759dee6d5e12c069f74d",
+    "run_cdcgenhlth.sh": "aa18b3d28b46f7ddc5f5d256fcc0107f4ddebaa8c18cd7d776d47860e9035f15"
+  },
+  "contract": "pytorch_multiclass",
+  "dataset": {
+    "name": "cdc45k GenHlth",
+    "cohort_name": "cdc45k",
+    "uci_id": 891,
+    "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+    "landing_url": "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
+    "dataset_doi": "10.24432/C53919",
+    "citation": "CDC Diabetes Health Indicators [Dataset]. (2017). UCI Machine Learning Repository.",
+    "thesis_citation_key": "uci_cdc_diabetes_health_indicators",
+    "target": "GenHlth: 1 excellent, 2 very good, 3 good, 4 fair, 5 poor; treated as nominal multiclass",
+    "row_unit": "One row per survey respondent, as documented by UCI; row-level privacy is the contract default.",
+    "excluded": [
+      "ID",
+      "Diabetes_binary"
+    ],
+    "features": [
+      "HighBP",
+      "HighChol",
+      "CholCheck",
+      "BMI",
+      "Smoker",
+      "Stroke",
+      "HeartDiseaseorAttack",
+      "PhysActivity",
+      "Fruits",
+      "Veggies",
+      "HvyAlcoholConsump",
+      "AnyHealthcare",
+      "NoDocbcCost",
+      "MentHlth",
+      "PhysHlth",
+      "DiffWalk",
+      "Sex",
+      "Age",
+      "Education",
+      "Income"
+    ],
+    "cohort": "Exact logistic n-scaling cdc45k membership: R seed 20260819, sample rounded proportional counts within Diabetes_binary classes, concatenate and sort source row indices, trim only excess beyond 45000. Diabetes_binary is used only to reproduce cohort membership, never as a model feature.",
+    "size_choice": "cdc45k fixed at 45000 rows; 20 inputs and linear softmax on provisioned 32-vCPU pod. No timing pilot or scored fallback.",
+    "n_total": 45000,
+    "download_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+    "legacy_logistic_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+    "n_train": 36000,
+    "n_test": 9000,
+    "n_per_site": [11998, 12002, 12000]
+  },
+  "split": {
+    "type": "80/20 split stratified by GenHlth using rounded per-class test counts, followed by shuffled per-class round-robin dealing into three sites; copied campaign_split algorithm.",
+    "seeds": [
+      20260820,
+      20260821,
+      20260822
+    ],
+    "paired_across_epsilon": true,
+    "seed_scope": "Cohort partitioning and central initialization; federated initialization and cryptographic sticky node DP randomness retain release behavior."
+  },
+  "protocol": {
+    "schema": "dsflower-multiclass-cdcgenhlth-protocol-v1",
+    "declared_at_utc": "2026-09-22T01:13:18.972590+00:00",
+    "authorization": "FLOWER_CELLS_MULTICLASS_2026-09-22: user-declared CDC GenHlth alternative; CTG and HAR561 remain documented measurements; no further alternative.",
+    "contract": "pytorch_multiclass",
+    "dataset": {
+      "name": "cdc45k GenHlth",
+      "cohort_name": "cdc45k",
+      "uci_id": 891,
+      "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+      "landing_url": "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
+      "dataset_doi": "10.24432/C53919",
+      "citation": "CDC Diabetes Health Indicators [Dataset]. (2017). UCI Machine Learning Repository.",
+      "thesis_citation_key": "uci_cdc_diabetes_health_indicators",
+      "target": "GenHlth: 1 excellent, 2 very good, 3 good, 4 fair, 5 poor; treated as nominal multiclass",
+      "row_unit": "One row per survey respondent, as documented by UCI; row-level privacy is the contract default.",
+      "excluded": [
+        "ID",
+        "Diabetes_binary"
+      ],
+      "features": [
+        "HighBP",
+        "HighChol",
+        "CholCheck",
+        "BMI",
+        "Smoker",
+        "Stroke",
+        "HeartDiseaseorAttack",
+        "PhysActivity",
+        "Fruits",
+        "Veggies",
+        "HvyAlcoholConsump",
+        "AnyHealthcare",
+        "NoDocbcCost",
+        "MentHlth",
+        "PhysHlth",
+        "DiffWalk",
+        "Sex",
+        "Age",
+        "Education",
+        "Income"
+      ],
+      "cohort": "Exact logistic n-scaling cdc45k membership: R seed 20260819, sample rounded proportional counts within Diabetes_binary classes, concatenate and sort source row indices, trim only excess beyond 45000. Diabetes_binary is used only to reproduce cohort membership, never as a model feature.",
+      "size_choice": "cdc45k fixed at 45000 rows; 20 inputs and linear softmax on provisioned 32-vCPU pod. No timing pilot or scored fallback."
+    },
+    "download_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+    "legacy_logistic_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+    "split": {
+      "type": "80/20 split stratified by GenHlth using rounded per-class test counts, followed by shuffled per-class round-robin dealing into three sites; copied campaign_split algorithm.",
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "paired_across_epsilon": true,
+      "seed_scope": "Cohort partitioning and central initialization; federated initialization and cryptographic sticky node DP randomness retain release behavior."
+    },
+    "bounds_policy": "Fixed public schema, copied from the CDC trees campaign declaration: binary [0,1], BMI [0,100] (declared clipping domain, not empirical extrema), MentHlth/PhysHlth [0,30], Age [1,13], Education [1,6], Income [1,8]. Clip and affine-scale to [-1,1] identically for central and federation; no empirical test or train bounds.",
+    "training": {
+      "sites": 3,
+      "rounds": 5,
+      "replicates": 3,
+      "execution_epsilon_order": [
+        1,
+        4,
+        8
+      ],
+      "delta": 1e-06,
+      "parameters": "All v0.5.0 registry optimization defaults: linear softmax, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, momentum 0, nesterov false, weight_decay 0, l1_penalty 0, scheduler none, hidden_layers []; only n_classes=5 supplies the public output schema.",
+      "privacy": "Row unit, clipping norm 1, replace-one adjacency, epsilon per node training. Nine fits do not constitute a single composed privacy guarantee.",
+      "inner_validation": "None; no tuning or model selection."
+    },
+    "central": "Unregularized multinomial logistic regression nnet::multinom(decay=0,maxit=3000,reltol=1e-10,MaxNWts=10000), identical training rows and public bounded transform. Require convergence=0; fit once per split seed and reuse scores across epsilon.",
+    "trivial": "Training class proportions for probabilities; their majority for hard prediction. No test prevalence used.",
+    "metrics": "Mean of five one-vs-rest rank AUCs with average ties, argmax accuracy with first-class tie break, natural-log log-loss with true-class probability floor 1e-15. Paired gap = federated-DP macro-AUC minus central; mean and sample SD over three replicates.",
+    "diagnostics": "Annotations only, not acceptance or pass/fail: epsilon-8 mean macro-AUC > 0.5 and accuracy strictly above majority predictor test accuracy; disclose replicate indicators too. Report any outcome; no further alternative.",
+    "test_use": "Preparation reads raw data only to reproduce the fixed cohort and stratified partitions, writes sealed held-out RDS and separate training RDS without examining or reporting test values/statistics. Training opens only training RDS. After all three central and nine federated models finish, create scoring marker and open sealed held-out RDS once in one final scoring phase. Score each fitted model once; reuse central scores across epsilon. Never rerun a scored cell or change settings after scoring.",
+    "failure_policy": "Refuse existing run directories, score markers and cell artifacts; preserve failures and artifacts. Release code and the shared/logistic/CTG/HAR tooling remain unchanged."
+  },
+  "preparation": {
+    "schema": "dsflower-cdcgenhlth-preparation-v1",
+    "prepared_at_utc": "2026-09-22T01:18:01Z",
+    "cohort_name": "cdc45k",
+    "n_total": 45000,
+    "cohort_seed": 20260819,
+    "split_seeds": [
+      20260820,
+      20260821,
+      20260822
+    ],
+    "raw_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+    "legacy_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+    "cohort_index_sha256": "39a6af59d3d9360a689597ada372ac53556ceb7b34d7fdc74f743414dc4eb241",
+    "prepared_sha256": "10932e91baa41cf259c097b378325e0e31b8b54161ee6cd9c216d113c05374c5",
+    "training_sha256": "eb6dc9008cdb78adfdbfb816b1fb284fa9c2c919ef54307b6f5ae3389dcf1415",
+    "sealed_test_sha256": "7acba2f54539b4e28ef13adb2206d4aed788afce2fed7138e81498fbecb39d1b",
+    "rng_kind": [
+      "Mersenne-Twister",
+      "Inversion",
+      "Rejection"
+    ],
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "test_policy": "Prepared and sealed; no held-out values or statistics examined or reported."
+  },
+  "privacy": {
+    "epsilon": 1,
+    "delta": 1e-06,
+    "clipping_norm": 1,
+    "unit": "row",
+    "patient_column": null,
+    "adjacency": "replace_one",
+    "guarantee_scope": "per-training",
+    "composition_note": "Epsilon is per node training; the nine fits are not a single composed release guarantee.",
+    "bounds_policy": "Fixed public schema, copied from the CDC trees campaign declaration: binary [0,1], BMI [0,100] (declared clipping domain, not empirical extrema), MentHlth/PhysHlth [0,30], Age [1,13], Education [1,6], Income [1,8]. Clip and affine-scale to [-1,1] identically for central and federation; no empirical test or train bounds.",
+    "randomness": "Published seeds control cohort partitioning and central initialization; federated initialization and node cryptographic DP noise retain release behavior."
+  },
+  "scoring": {
+    "training_started_at_utc": "2026-09-22T01:18:02Z",
+    "training_completed_at_utc": "2026-09-22T02:27:49Z",
+    "started_at_utc": "2026-09-22T02:27:49Z",
+    "test_bundle_loads": 1,
+    "held_out_partitions": 3,
+    "central_fits": 3,
+    "federated_fits": 9,
+    "central_scores_reused_across_epsilon": true,
+    "changed_settings_after_scoring": false
+  },
+  "rounds": 5,
+  "model_params_requested": {
+    "n_classes": 5
+  },
+  "model_params_resolved": {
+    "momentum": 0,
+    "nesterov": false,
+    "learning_rate": 0.1,
+    "batch_size": 32,
+    "local_epochs": 1,
+    "weight_decay": 0,
+    "l1_penalty": 0,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "hidden_layers": [],
+    "n_classes": 5
+  },
+  "per_replicate": [
+    {
+      "seed": 20260820,
+      "split": {
+        "n_train": 36000,
+        "n_test": 9000,
+        "n_per_site": [11998, 12002, 12000],
+        "training_effective_units": [11998, 12002, 12000],
+        "class_counts_train": {
+          "1": 6390,
+          "2": 12602,
+          "3": 10720,
+          "4": 4526,
+          "5": 1762
+        },
+        "class_counts_test": {
+          "1": 1597,
+          "2": 3150,
+          "3": 2680,
+          "4": 1132,
+          "5": 441
+        },
+        "class_counts_sites": [
+          {
+            "1": 2130,
+            "2": 4200,
+            "3": 3573,
+            "4": 1508,
+            "5": 587
+          },
+          {
+            "1": 2130,
+            "2": 4201,
+            "3": 3574,
+            "4": 1509,
+            "5": 588
+          },
+          {
+            "1": 2130,
+            "2": 4201,
+            "3": 3573,
+            "4": 1509,
+            "5": 587
+          }
+        ],
+        "train_index_sha256": "65ab4ec7075bf4a622f2ce9c207c60a9795d86b9e39c9ad1c1d80a3f44ab5624",
+        "test_index_sha256": "f4f41ea04e28671fcaad83401f1d057f6c8977afe1219dab99ffb90b0b93d008",
+        "site_index_sha256": [
+          "7d698a2c702e71732f4c2742e702d97cfbf72bce5f6b6675516012410d4b046f",
+          "00906ef5e04f2d94b76bc53a7566061045a19c2395a067c80434d5c176e2e6d1",
+          "e047c7a98640a2f85e4147fc2424471d2e17b19f7bc2533bfce5c9e54fec6249"
+        ]
+      },
+      "central": {
+        "macro_auc": 0.781152576326564,
+        "acc": 0.458777777777778,
+        "logloss": 1.16931423275213,
+        "auc_by_class": {
+          "1": 0.776111133337861,
+          "2": 0.67590115316782,
+          "3": 0.675988156527489,
+          "4": 0.835077026233201,
+          "5": 0.94268541236645
+        },
+        "convergence": 0
+      },
+      "federated_dp": {
+        "macro_auc": 0.753119940073615,
+        "acc": 0.429,
+        "logloss": 1.28555410295661,
+        "auc_by_class": {
+          "1": 0.704468842743524,
+          "2": 0.659584669651336,
+          "3": 0.63755715095409,
+          "4": 0.823935483175577,
+          "5": 0.940053553843549
+        }
+      },
+      "trivial": {
+        "macro_auc": 0.5,
+        "acc": 0.35,
+        "logloss": 1.44353505788892,
+        "auc_by_class": {
+          "1": 0.5,
+          "2": 0.5,
+          "3": 0.5,
+          "4": 0.5,
+          "5": 0.5
+        },
+        "majority_class": 2,
+        "training_prevalence": [0.1775, 0.350055555555556, 0.297777777777778, 0.125722222222222, 0.0489444444444444],
+        "probability_policy": "training class frequencies; argmax is training majority"
+      },
+      "gap_macro_auc": -0.0280326362529489,
+      "feature_bounds": {
+        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        "upper": [1, 1, 1, 100, 1, 1, 1, 1, 1, 1, 1, 1, 1, 30, 30, 1, 1, 13, 6, 8]
+      },
+      "node_privacy": {
+        "site1": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site2": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site3": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        }
+      },
+      "released_metadata": {
+        "model_id": "pytorch_multiclass_FedAvg_5r_20260922_012548",
+        "model": "pytorch_multiclass",
+        "framework": "pytorch",
+        "track": "neural",
+        "model_spec": {
+          "kind": "sequential",
+          "layers": [
+            {
+              "op": "linear",
+              "out": "@out"
+            }
+          ]
+        },
+        "model_params": {
+          "learning_rate": 0.1,
+          "batch_size": 32,
+          "local_epochs": 1,
+          "weight_decay": 0,
+          "l1_penalty": 0,
+          "optimizer": "sgd",
+          "scheduler": "none",
+          "hidden_layers": [],
+          "n_classes": 5,
+          "momentum": 0,
+          "nesterov": false
+        },
+        "loss_name": "cross_entropy",
+        "survival_config": {},
+        "target": "target",
+        "data_kind": "tabular",
+        "available": true,
+        "available_rounds": [1, 2, 3, 4, 5],
+        "strategy": "FedAvg",
+        "privacy": "server-enforced-dp",
+        "num_rounds": 5,
+        "requested_num_rounds": 5,
+        "n_clients": 3,
+        "features": ["HighBP", "HighChol", "CholCheck", "BMI", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+        "feature_lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        "feature_upper": [1, 1, 1, 100, 1, 1, 1, 1, 1, 1, 1, 1, 1, 30, 30, 1, 1, 13, 6, 8],
+        "target_levels": ["1", "2", "3", "4", "5"],
+        "target_bounds": {},
+        "created_at": "2026-09-22T01:25:48",
+        "holdout": {},
+        "holdout_contract": {},
+        "status": "success"
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "rounds": [
+          {
+            "round": 1,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 2,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 3,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 4,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 5,
+            "n_failures": 0,
+            "available": true
+          }
+        ]
+      },
+      "model_sha256": "cb328ce47be835b03f5b3ec3ad7c941c4acebca128c47e630e3b133f6ddfa684",
+      "diagnostic": {
+        "accuracy_above_majority": true,
+        "macro_auc_above_half": true
+      },
+      "wall_clock": {
+        "central_fit_s": 4.98919010162354,
+        "federated_s": 453.035346031189,
+        "total_s": 458.024536132812,
+        "central_reused_across_epsilon": true
+      },
+      "cleanup_ok": true
+    },
+    {
+      "seed": 20260821,
+      "split": {
+        "n_train": 36000,
+        "n_test": 9000,
+        "n_per_site": [11998, 12002, 12000],
+        "training_effective_units": [11998, 12002, 12000],
+        "class_counts_train": {
+          "1": 6390,
+          "2": 12602,
+          "3": 10720,
+          "4": 4526,
+          "5": 1762
+        },
+        "class_counts_test": {
+          "1": 1597,
+          "2": 3150,
+          "3": 2680,
+          "4": 1132,
+          "5": 441
+        },
+        "class_counts_sites": [
+          {
+            "1": 2130,
+            "2": 4200,
+            "3": 3573,
+            "4": 1508,
+            "5": 587
+          },
+          {
+            "1": 2130,
+            "2": 4201,
+            "3": 3574,
+            "4": 1509,
+            "5": 588
+          },
+          {
+            "1": 2130,
+            "2": 4201,
+            "3": 3573,
+            "4": 1509,
+            "5": 587
+          }
+        ],
+        "train_index_sha256": "4758b7f3c721568ee918c85a1030ed4089b99ccb4c6b28597854ec120c9da346",
+        "test_index_sha256": "147bd1ea07888d2c7c5b3211cb64fd05e09d08129bbaf36589b8d84bb4080a64",
+        "site_index_sha256": [
+          "ab6ad57f36f836f3b14df9e631809cf6cb5098ea31865af43c5969e1df457cf8",
+          "21b7198a695f4b477e4200dcd07d80f01b679c24fdd6cec77d2d8e2489268428",
+          "edd88f4de97e63e22b06f48979118dafd3bd500b7ad2b86287cb8a709e6ee944"
+        ]
+      },
+      "central": {
+        "macro_auc": 0.78395468113423,
+        "acc": 0.471666666666667,
+        "logloss": 1.17220767942702,
+        "auc_by_class": {
+          "1": 0.786235225425628,
+          "2": 0.687962176095509,
+          "3": 0.678103745512942,
+          "4": 0.821768713364148,
+          "5": 0.945703545272921
+        },
+        "convergence": 0
+      },
+      "federated_dp": {
+        "macro_auc": 0.749281108588184,
+        "acc": 0.432111111111111,
+        "logloss": 1.31986065635304,
+        "auc_by_class": {
+          "1": 0.690429153812392,
+          "2": 0.660505765839099,
+          "3": 0.641174074249008,
+          "4": 0.81335784930146,
+          "5": 0.94093869973896
+        }
+      },
+      "trivial": {
+        "macro_auc": 0.5,
+        "acc": 0.35,
+        "logloss": 1.44353505788892,
+        "auc_by_class": {
+          "1": 0.5,
+          "2": 0.5,
+          "3": 0.5,
+          "4": 0.5,
+          "5": 0.5
+        },
+        "majority_class": 2,
+        "training_prevalence": [0.1775, 0.350055555555556, 0.297777777777778, 0.125722222222222, 0.0489444444444444],
+        "probability_policy": "training class frequencies; argmax is training majority"
+      },
+      "gap_macro_auc": -0.0346735725460458,
+      "feature_bounds": {
+        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        "upper": [1, 1, 1, 100, 1, 1, 1, 1, 1, 1, 1, 1, 1, 30, 30, 1, 1, 13, 6, 8]
+      },
+      "node_privacy": {
+        "site1": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site2": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site3": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        }
+      },
+      "released_metadata": {
+        "model_id": "pytorch_multiclass_FedAvg_5r_20260922_013323",
+        "model": "pytorch_multiclass",
+        "framework": "pytorch",
+        "track": "neural",
+        "model_spec": {
+          "kind": "sequential",
+          "layers": [
+            {
+              "op": "linear",
+              "out": "@out"
+            }
+          ]
+        },
+        "model_params": {
+          "learning_rate": 0.1,
+          "batch_size": 32,
+          "local_epochs": 1,
+          "weight_decay": 0,
+          "l1_penalty": 0,
+          "optimizer": "sgd",
+          "scheduler": "none",
+          "hidden_layers": [],
+          "n_classes": 5,
+          "momentum": 0,
+          "nesterov": false
+        },
+        "loss_name": "cross_entropy",
+        "survival_config": {},
+        "target": "target",
+        "data_kind": "tabular",
+        "available": true,
+        "available_rounds": [1, 2, 3, 4, 5],
+        "strategy": "FedAvg",
+        "privacy": "server-enforced-dp",
+        "num_rounds": 5,
+        "requested_num_rounds": 5,
+        "n_clients": 3,
+        "features": ["HighBP", "HighChol", "CholCheck", "BMI", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+        "feature_lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        "feature_upper": [1, 1, 1, 100, 1, 1, 1, 1, 1, 1, 1, 1, 1, 30, 30, 1, 1, 13, 6, 8],
+        "target_levels": ["1", "2", "3", "4", "5"],
+        "target_bounds": {},
+        "created_at": "2026-09-22T01:33:23",
+        "holdout": {},
+        "holdout_contract": {},
+        "status": "success"
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "rounds": [
+          {
+            "round": 1,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 2,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 3,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 4,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 5,
+            "n_failures": 0,
+            "available": true
+          }
+        ]
+      },
+      "model_sha256": "281187e92e026bcaefa66763b953cfbca59b61147e4d2fefd1a0fa6a733dbff5",
+      "diagnostic": {
+        "accuracy_above_majority": true,
+        "macro_auc_above_half": true
+      },
+      "wall_clock": {
+        "central_fit_s": 4.96658229827881,
+        "federated_s": 450.84899687767,
+        "total_s": 455.815579175949,
+        "central_reused_across_epsilon": true
+      },
+      "cleanup_ok": true
+    },
+    {
+      "seed": 20260822,
+      "split": {
+        "n_train": 36000,
+        "n_test": 9000,
+        "n_per_site": [11998, 12002, 12000],
+        "training_effective_units": [11998, 12002, 12000],
+        "class_counts_train": {
+          "1": 6390,
+          "2": 12602,
+          "3": 10720,
+          "4": 4526,
+          "5": 1762
+        },
+        "class_counts_test": {
+          "1": 1597,
+          "2": 3150,
+          "3": 2680,
+          "4": 1132,
+          "5": 441
+        },
+        "class_counts_sites": [
+          {
+            "1": 2130,
+            "2": 4200,
+            "3": 3573,
+            "4": 1508,
+            "5": 587
+          },
+          {
+            "1": 2130,
+            "2": 4201,
+            "3": 3574,
+            "4": 1509,
+            "5": 588
+          },
+          {
+            "1": 2130,
+            "2": 4201,
+            "3": 3573,
+            "4": 1509,
+            "5": 587
+          }
+        ],
+        "train_index_sha256": "62b63541911f9d2d1fe7f01e275bd42407226c2424cc3a07da36cc9c51bbb6c4",
+        "test_index_sha256": "bce82b16c013d9a402586df9a49ee2903de3983657624114108084c3890508e8",
+        "site_index_sha256": [
+          "38a52c91588ce927a1d79ed9d6404b0f14055402651d431af34777327e66ec14",
+          "798e7f32c6e3a853fa4c70f2931c0545e4e3a942125ca2bb8a870ce8789132e3",
+          "2e42f62389017afd82fe0b9c7cb2f86bd2cbd6e7fea8b47d0e1298b2dff200c0"
+        ]
+      },
+      "central": {
+        "macro_auc": 0.786100799878664,
+        "acc": 0.464555555555556,
+        "logloss": 1.15759018864141,
+        "auc_by_class": {
+          "1": 0.786423170690756,
+          "2": 0.684033998100665,
+          "3": 0.680290477989798,
+          "4": 0.831908693082504,
+          "5": 0.947847659529598
+        },
+        "convergence": 0
+      },
+      "federated_dp": {
+        "macro_auc": 0.753085750667647,
+        "acc": 0.436777777777778,
+        "logloss": 1.27234146802403,
+        "auc_by_class": {
+          "1": 0.700603911612945,
+          "2": 0.659930999864333,
+          "3": 0.645067364915927,
+          "4": 0.815941838928899,
+          "5": 0.943884638016129
+        }
+      },
+      "trivial": {
+        "macro_auc": 0.5,
+        "acc": 0.35,
+        "logloss": 1.44353505788892,
+        "auc_by_class": {
+          "1": 0.5,
+          "2": 0.5,
+          "3": 0.5,
+          "4": 0.5,
+          "5": 0.5
+        },
+        "majority_class": 2,
+        "training_prevalence": [0.1775, 0.350055555555556, 0.297777777777778, 0.125722222222222, 0.0489444444444444],
+        "probability_policy": "training class frequencies; argmax is training majority"
+      },
+      "gap_macro_auc": -0.0330150492110177,
+      "feature_bounds": {
+        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        "upper": [1, 1, 1, 100, 1, 1, 1, 1, 1, 1, 1, 1, 1, 30, 30, 1, 1, 13, 6, 8]
+      },
+      "node_privacy": {
+        "site1": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site2": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site3": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        }
+      },
+      "released_metadata": {
+        "model_id": "pytorch_multiclass_FedAvg_5r_20260922_014050",
+        "model": "pytorch_multiclass",
+        "framework": "pytorch",
+        "track": "neural",
+        "model_spec": {
+          "kind": "sequential",
+          "layers": [
+            {
+              "op": "linear",
+              "out": "@out"
+            }
+          ]
+        },
+        "model_params": {
+          "learning_rate": 0.1,
+          "batch_size": 32,
+          "local_epochs": 1,
+          "weight_decay": 0,
+          "l1_penalty": 0,
+          "optimizer": "sgd",
+          "scheduler": "none",
+          "hidden_layers": [],
+          "n_classes": 5,
+          "momentum": 0,
+          "nesterov": false
+        },
+        "loss_name": "cross_entropy",
+        "survival_config": {},
+        "target": "target",
+        "data_kind": "tabular",
+        "available": true,
+        "available_rounds": [1, 2, 3, 4, 5],
+        "strategy": "FedAvg",
+        "privacy": "server-enforced-dp",
+        "num_rounds": 5,
+        "requested_num_rounds": 5,
+        "n_clients": 3,
+        "features": ["HighBP", "HighChol", "CholCheck", "BMI", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+        "feature_lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1],
+        "feature_upper": [1, 1, 1, 100, 1, 1, 1, 1, 1, 1, 1, 1, 1, 30, 30, 1, 1, 13, 6, 8],
+        "target_levels": ["1", "2", "3", "4", "5"],
+        "target_bounds": {},
+        "created_at": "2026-09-22T01:40:50",
+        "holdout": {},
+        "holdout_contract": {},
+        "status": "success"
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "rounds": [
+          {
+            "round": 1,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 2,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 3,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 4,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 5,
+            "n_failures": 0,
+            "available": true
+          }
+        ]
+      },
+      "model_sha256": "55c8d40d70b503f5c05295331b48fa86bc7c5adc364f121e35bcbf1a4e3efea5",
+      "diagnostic": {
+        "accuracy_above_majority": true,
+        "macro_auc_above_half": true
+      },
+      "wall_clock": {
+        "central_fit_s": 4.80580830574036,
+        "federated_s": 451.570039510727,
+        "total_s": 456.375847816467,
+        "central_reused_across_epsilon": true
+      },
+      "cleanup_ok": true
+    }
+  ],
+  "summary": {
+    "central_mean_sd": {
+      "macro_auc": {
+        "mean": 0.783736019113153,
+        "sd": 0.00248134820006894
+      },
+      "acc": {
+        "mean": 0.465,
+        "sd": 0.00645592846503731
+      },
+      "logloss": {
+        "mean": 1.16637070027352,
+        "sd": 0.00774054564008999
+      }
+    },
+    "federated_mean_sd": {
+      "macro_auc": {
+        "mean": 0.751828933109815,
+        "sd": 0.00220654697970379
+      },
+      "acc": {
+        "mean": 0.43262962962963,
+        "sd": 0.00391472896643668
+      },
+      "logloss": {
+        "mean": 1.29258540911123,
+        "sd": 0.0245274899763871
+      }
+    },
+    "trivial_mean_sd": {
+      "macro_auc": {
+        "mean": 0.5,
+        "sd": 0
+      },
+      "acc": {
+        "mean": 0.35,
+        "sd": 0
+      },
+      "logloss": {
+        "mean": 1.44353505788892,
+        "sd": 0
+      }
+    },
+    "gap_mean_sd": {
+      "macro_auc": {
+        "mean": -0.0319070860033375,
+        "sd": 0.00345632688911544
+      }
+    },
+    "diagnostic": {
+      "applicable_epsilon": 8,
+      "mean_accuracy_above_majority": true,
+      "mean_macro_auc_above_half": true,
+      "all_replicates_above_majority": true,
+      "all_replicates_above_half": true
+    }
+  }
+}
