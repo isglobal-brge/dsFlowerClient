@@ -14,7 +14,9 @@ for path in paths:
     value = json.loads(path.read_text())
     assert value["schema"] == "dsflower-campaign-v2" and value["status"] == "completed"
     assert value["rounds"] == 1 and value["rounds_reason"] == "native-tree schedule"
-    assert value["versions"]["dsflower"] == value["versions"]["dsflowerclient"] == "0.5.0"
+    assert value["versions"]["dsflower"] == "0.5.0"
+    assert value["versions"]["dsflowerclient"] == "0.5.1"
+    assert value["versions"]["runner_sha256"] == value["versions"]["node_runner_sha256"]
     reps = value["per_replicate"]
     assert [rep["seed"] for rep in reps] == [20260820, 20260821, 20260822]
     for rep in reps:
@@ -41,6 +43,9 @@ for path in paths:
     floor = (s["federated_mean_sd"]["acc"]["mean"] >= s["trivial_mean_sd"]["acc"]["mean"] - .02
              or s["federated_mean_sd"]["auc"]["mean"] > .6)
     assert floor == value["diagnostic"]["utility_floor_pass"]
+    diagnostic = (s["federated_mean_sd"]["auc"]["mean"] > .5 and
+                  s["federated_mean_sd"]["acc"]["mean"] > s["trivial_mean_sd"]["acc"]["mean"])
+    assert diagnostic == value["diagnostic"]["pass"]
     red_conditions = (s["central_mean_sd"]["auc"]["mean"] < .95 and
                       abs(s["delta_mean_sd"]["auc"]["mean"]) < .005)
     cells.append({"file": path.name, "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
@@ -48,6 +53,7 @@ for path in paths:
                   "n": value["dataset"]["n_total"], "epsilon": value["privacy"]["epsilon"],
                   "rounds": 1, "seeds": value["split"]["seeds"], "summary": s,
                   "utility_floor_pass": floor,
+                  "diagnostic_pass": diagnostic,
                   "near_zero_cost_flag": bool(red_conditions and value["dataset"]["n_total"] * value["privacy"]["epsilon"] < 2000),
                   "minimum_site_near_zero_cost_flag": bool(red_conditions and min(value["dataset"]["n_per_site"]) * value["privacy"]["epsilon"] < 2000),
                   "elapsed_s": value["elapsed_s"]})
@@ -83,6 +89,13 @@ failures = [{"file": path.name, "evidence": json.loads(path.read_text())}
 result = {"schema": "dsflower-campaign-summary-v2", "track": "trees",
           "status": "blocked" if failures and not cells else "measured",
           "cells": cells,
+          "epsilon8_diagnostic_pass": (all(c["diagnostic_pass"] for c in cells
+              if c["epsilon"] == 8 and c["dataset"] in ("breast", "cdc9k"))
+              if sum(c["epsilon"] == 8 and c["dataset"] in ("breast", "cdc9k") for c in cells) == 2 else None),
+          "alternative": {"dataset": "cdc45k", "epsilon": 8,
+              "triggered": any(not c["diagnostic_pass"] for c in cells
+                  if c["epsilon"] == 8 and c["dataset"] in ("breast", "cdc9k")),
+              "executed": any(c["dataset"] == "cdc45k" for c in cells)},
           "series_diagnostics": series, "failures": failures,
           "utility_floor_epsilon8_pass": (all(c["utility_floor_pass"] for c in cells if c["epsilon"] == 8)
                                           if any(c["epsilon"] == 8 for c in cells) else None),
@@ -104,4 +117,4 @@ for c in cells:
           f'central={s["central_mean_sd"]["auc"]["mean"]:.6f} '
           f'fed={s["federated_mean_sd"]["auc"]["mean"]:.6f} '
           f'gap={s["delta_mean_sd"]["auc"]["mean"]:+.6f}±{s["delta_mean_sd"]["auc"]["sd"]:.6f} '
-          f'floor={"PASS" if c["utility_floor_pass"] else "FAIL"}')
+          f'diagnostic={"PASS" if c["diagnostic_pass"] else "FAIL"}')

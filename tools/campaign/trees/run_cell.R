@@ -12,16 +12,19 @@ for (key in c("dataset", "epsilon", "root", "out")) stopifnot(!is.null(opt[[key]
 for (key in c("replicates", "rounds", "sites")) opt[[key]] <- as.integer(opt[[key]])
 opt$epsilon <- as.numeric(opt$epsilon)
 stopifnot(opt$contract %in% c("random_forest", "extra_trees"),
-          opt$dataset %in% c("breast", "cdc9k"), opt$epsilon %in% c(1, 4, 8),
+          opt$dataset %in% c("breast", "cdc9k", "cdc45k"), opt$epsilon %in% c(1, 4, 8),
           opt$replicates == 3L, opt$rounds == 1L, opt$sites == 3L)
+stopifnot(opt$dataset != "cdc45k" || opt$epsilon == 8)
 tools_dir <- dirname(sub("--file=", "", grep("^--file=", commandArgs(), value = TRUE)[1]))
 source(file.path(tools_dir, "campaign_lib.R"))
 stopifnot(packageVersion("dsFlower") == "0.5.0",
-          packageVersion("dsFlowerClient") == "0.5.0")
+          packageVersion("dsFlowerClient") == "0.5.1")
+client_commit <- Sys.getenv("DSFLOWER_CLIENT_SOURCE_COMMIT")
+stopifnot(grepl("^[0-9a-f]{40}$", client_commit))
 venv_root <- Sys.getenv("DSFLOWER_VENV_ROOT")
 stopifnot(nzchar(venv_root))
 cell_id <- sprintf("pilot_%s_%s_eps%g", opt$dataset, opt$contract, opt$epsilon)
-runs_dir <- file.path(opt$root, "runs", "trees", cell_id)
+runs_dir <- file.path(opt$root, "runs", "trees-0.5.1", cell_id)
 out_path <- file.path(opt$out, paste0(cell_id, ".json"))
 if (dir.exists(runs_dir) || file.exists(out_path)) stop("Cell already attempted: ", cell_id)
 dir.create(runs_dir, recursive = TRUE)
@@ -71,15 +74,20 @@ stopifnot(identical(sha(file.path(cache_dir, filename)), expected_sha))
 cohort <- campaign_load_cohort(opt$dataset, cache_dir)
 features <- cohort$meta$features
 schema <- public_schema(opt$dataset, features)
-stopifnot(nrow(cohort$df) == if (opt$dataset == "breast") 683L else 9000L)
+stopifnot(nrow(cohort$df) == switch(opt$dataset, breast = 683L, cdc9k = 9000L, cdc45k = 45000L))
 env_info <- campaign_env_info(venv_root)
 env_info$host$pod_id <- "2sy2g4pb3xwgqt"
 env_info$host$pod_name <- "pod-flower-tabular"
 env_info$host$requested_vcpu <- 32L
 env_info$host$requested_memory_gb <- 64L
 env_info$versions$runner_sha256 <- dsFlowerClient:::.compute_local_runner_hash()
+env_info$versions$node_runner_sha256 <- dsFlower:::.compute_harness_hash()
+env_info$versions$jsonlite <- as.character(packageVersion("jsonlite"))
+env_info$versions$native_python <- jsonlite::fromJSON(processx::run(
+  file.path(venv_root, "native-tree", "bin", "python"), c("-c",
+  "import sys,numpy,json; print(json.dumps(dict(python=sys.version,numpy=numpy.__version__,json=json.__version__)))"))$stdout)
 stopifnot(identical(env_info$versions$runner_sha256, dsFlower:::.compute_harness_hash()))
-tool_files <- c("run_cell.R", "campaign_lib.R", "central_train.py", "README.md")
+tool_files <- c("run_cell.R", "campaign_lib.R", "central_train.py", "README.md", "protocol.json")
 tool_hashes <- setNames(lapply(file.path(tools_dir, tool_files), sha), tool_files)
 write_json(list(cell_id = cell_id, started_at = format(Sys.time(), "%FT%T%z"),
                 options = opt, model_params = model_params,
@@ -168,6 +176,8 @@ summary <- list(central_mean_sd = msd("central"), federated_mean_sd = msd("feder
                 trivial_mean_sd = msd("trivial"), delta_mean_sd = msd("gap"))
 floor_pass <- summary$federated_mean_sd$acc$mean >= summary$trivial_mean_sd$acc$mean - 0.02 ||
   summary$federated_mean_sd$auc$mean > 0.6
+diagnostic_pass <- summary$federated_mean_sd$auc$mean > 0.5 &&
+  summary$federated_mean_sd$acc$mean > summary$trivial_mean_sd$acc$mean
 dataset <- c(cohort$meta, list(
   uci_id = if (opt$dataset == "breast") 15L else 891L,
   full_name = if (opt$dataset == "breast") "Breast Cancer Wisconsin (Original)" else "CDC Diabetes Health Indicators",
@@ -175,14 +185,14 @@ dataset <- c(cohort$meta, list(
   citation = if (opt$dataset == "breast") {
     "Wolberg, W. (1990). Breast Cancer Wisconsin (Original). UCI Machine Learning Repository. https://doi.org/10.24432/C5HP4Z"
   } else "CDC Diabetes Health Indicators (2017). UCI Machine Learning Repository. https://doi.org/10.24432/C53919",
-  cohort_seed = if (opt$dataset == "cdc9k") 20260819L else NULL,
+  cohort_seed = if (startsWith(opt$dataset, "cdc")) 20260819L else NULL,
   n_train = per_replicate[[1]]$n_train, n_test = per_replicate[[1]]$n_test,
   n_per_site = per_replicate[[1]]$n_per_site))
 artifact <- list(schema = "dsflower-campaign-v2", status = "completed",
   generated_at = format(Sys.time(), "%FT%T%z"), host = env_info$host,
   versions = c(env_info$versions, list(sklearn = central_details$sklearn)),
   release_commits = list(dsFlower = "408f08c539329e2711260050ab40a6567aa4d89e",
-                        dsFlowerClient = "50dda000a32ffcbdd039c2b74c909df451392bfb"),
+                        dsFlowerClient = client_commit),
   tool_sha256 = tool_hashes, contract = opt$contract, dataset = dataset,
   split = list(type = "uniform-stratified", test_fraction = 0.2, seeds = seeds,
                site_assignment = "round-robin per class on training rows; unchanged campaign_split"),
@@ -194,10 +204,16 @@ artifact <- list(schema = "dsflower-campaign-v2", status = "completed",
     reported_configuration = "See every replicate's node_privacy; native accounting is separately labelled public recomputation"),
   rounds = 1L, rounds_reason = "native-tree schedule", model_params = model_params,
   model_params_overrides = list(), per_replicate = per_replicate, summary = summary,
-  diagnostic = list(utility_floor_pass = floor_pass,
+  diagnostic = list(pass = diagnostic_pass,
+    criterion = "mean fed AUC > 0.5 AND mean fed accuracy > mean majority-class accuracy",
+    alternative = "If either primary epsilon-8 diagnostic fails, run only random_forest cdc45k epsilon 8 with three registered seeds",
+    per_replicate_pass = vapply(per_replicate, function(rep) {
+      rep$federated_dp$auc > 0.5 && rep$federated_dp$acc > rep$trivial$acc
+    }, logical(1)),
+    utility_floor_pass = floor_pass,
     utility_floor = "mean fed accuracy >= mean trivial accuracy - 0.02 OR mean fed AUC > 0.6",
     inherited_from = "vignettes/utility-campaign.Rmd", epsilon8_operating_point = opt$epsilon == 8),
   elapsed_s = as.numeric(difftime(Sys.time(), started, units = "secs")),
   provisioning = list(reused = TRUE, initial_elapsed_s = 97, reprovisioning_elapsed_s = 0))
 write_json(artifact, out_path)
-cat("WROTE", out_path, "utility floor", if (floor_pass) "PASS" else "FAIL", "\n")
+cat("WROTE", out_path, "registered diagnostic", if (diagnostic_pass) "PASS" else "FAIL", "\n")

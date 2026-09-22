@@ -1,13 +1,9 @@
 # Representative native-tree utility cells
 
 Three-site DSLite/PSOCK federation, with SuperNodes and SuperLink on loopback,
-using dsFlower 0.5.0 and the canonical-container fix in dsFlowerClient 0.5.1.
-Client patch branch: `fix/native-tree-canonical-container`, commit
-`598d21c4627496a65d44034440f2d221ce6e04a2`.
-Only client container serialization validation changed. Runner SHA-256 remains
-`2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724`
-on both sides. Registry defaults and all privacy mechanisms are unchanged.
-The original failures and protocol are preserved under `failed-0.5.0/`.
+using unchanged dsFlower and dsFlowerClient 0.5.0. This directory contains a
+track-local copy of the existing campaign library; package code, runner,
+registry and privacy defaults are unchanged.
 
 ## Frozen design
 
@@ -53,20 +49,25 @@ Report AUC, accuracy, Brier and log-loss, plus paired fed-minus-central gaps.
 
 ## Diagnostics frozen before scoring
 
-The primary diagnostic at epsilon 8 is **mean federated-DP AUC > 0.5 AND
-mean accuracy strictly above mean majority-class accuracy**, across the three
-registered seeds. Per-replicate flags are also recorded. This supersedes the
-original permissive utility floor before any held-out scoring in this campaign.
-The inherited floor and epsilon-monotonicity/near-zero-gap checks remain
-secondary descriptive diagnostics in the JSON; they do not control selection.
+Reuse the binary campaign checks in `vignettes/utility-campaign.Rmd`:
 
-If either primary dataset fails the epsilon-8 diagnostic, run exactly one
-pre-declared alternative: `random_forest`, `cdc45k`, epsilon 8, the same three
-seeds, sites, bounds, registry defaults and one-round schedule. The 45,000-row
-cohort uses the unchanged fixed-seed loader used by the logreg n-scaling arm.
-This alternative is a separate cell, never a replacement for a failed result.
-Use `extra_trees` only if random_forest still fails to execute after the fix;
-it is not a utility-search option. Never rerun a scored cell with changed settings.
+1. Utility floor: mean accuracy >= mean trivial accuracy - 0.02 **or**
+   mean AUC > 0.6, reported for every cell and explicitly at epsilon 8.
+2. Epsilon monotonicity: a paired AUC gap may worsen by at most the larger
+   of the adjacent cells' gap SDs.
+3. Near-zero-cost flag: cohort n × epsilon < 2000, central mean AUC < 0.95,
+   and absolute mean AUC gap < 0.005. Also report a separate minimum-site-n
+   companion flag without substituting it for the original rule.
+4. The original seed-dispersion check targets heart, absent here: report
+   it as not applicable, and show endpoint SDs descriptively.
+
+No new stronger claim is implied by passing the inherited permissive floor.
+If an epsilon-8 floor fails, run at most one alternative: default
+`extra_trees` at epsilon 8 on the first failing dataset in breast, cdc9k
+order. It has 32 trees per node, depth 3, with a matched-size/depth sklearn
+ExtraTreesClassifier comparator. Also use this named fallback if RF fails
+internally; preserve the error. Never alter or rerun a scored cell. Other
+envelope flags are reported, not used to search for better results.
 
 ## Data provenance
 
@@ -96,8 +97,6 @@ Use the work-root layout documented in `../README.md`. The existing pod
 
 ```sh
 export R_LIBS=/workspace/cells/Rlib
-# Set to the pushed fix/native-tree-canonical-container commit used to install:
-export DSFLOWER_CLIENT_SOURCE_COMMIT=598d21c4627496a65d44034440f2d221ce6e04a2
 export DSFLOWER_VENV_ROOT=/workspace/cells/venvs
 export DSFLOWER_CLIENT_VENV_ROOT=/workspace/cells/client
 export DSFLOWER_NODE_SECRET_FILE=/workspace/cells/smoke/parent-node-secret
@@ -108,29 +107,9 @@ Rscript tools/campaign/trees/run_cell.R --contract random_forest \
   --root /workspace/cells --out inst/extdata/campaign/trees
 ```
 
-Run `python3 tools/campaign/trees/run_matrix.py` in the foreground for breast
-epsilon 1,8,4, then cdc9k epsilon 1,8,4 and the conditional cdc45k endpoint.
-The matrix stops on any execution failure; an authorized extra-trees fallback
-must preserve that failure and use the same frozen data/splits/bounds.
+Run breast epsilon 1,8,4, then cdc9k epsilon 1,8,4, in the foreground.
 The runner refuses existing cell/run paths to prevent accidental rescoring.
-Runs are stored under `/workspace/cells/runs/trees-0.5.1/`.
 Use a separate work root for independent reproduction. Native releases and
 site secrets remain in the pod work root; only public evidence is committed.
 Run `python3 tools/campaign/trees/summarize.py inst/extdata/campaign/trees`
 to validate the evidence and rebuild `summary.json` without training.
-
-## Patch and regression verification
-
-In the dsFlowerClient patch checkout, install with
-`R CMD INSTALL --no-configure -l /workspace/cells/Rlib .` to reuse cached Python
-environments. The node package remains 0.5.0. Run the R native-tree, validation
-and import tests and Python canonical JSON, prediction, import and artifact
-validation tests. `tests/testthat/fixtures/generate-native-tree-training.py`
-regenerates the small actual-training fixture using fixed public synthetic
-records; its test-only fixed secret never enters campaign training.
-
-`diagnose.R` is the one-training, unscored 0.5.0 reproduction. It captures the
-public ensemble and validation inputs before failure cleanup and does not
-call held-out prediction. Its preserved comparison and release bytes are in
-`inst/extdata/campaign/trees/diagnosis-0.5.0/`; see `TREES_DIAGNOSIS.md` there.
-The patched validator is also exercised directly on those exact saved bytes.

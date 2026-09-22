@@ -1,0 +1,18 @@
+{
+  "host": {
+    "nodename": "b85270415cca",
+    "sysname": "Linux",
+    "release": "6.8.0-100-generic",
+    "machine": "x86_64",
+    "r_version": "R version 4.6.1 (2026-06-24)"
+  },
+  "versions": {
+    "dsflower": "0.5.0",
+    "dsflowerclient": "0.5.0",
+    "flwr": "1.31.0",
+    "torch": "2.14.0+cpu",
+    "opacus": "1.6.0",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "node_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+  }
+}

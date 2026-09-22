@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "completed_at_utc": "2026-09-22T00:45:04.435239+00:00",
+  "client_commit": "598d21c4627496a65d44034440f2d221ce6e04a2",
+  "r": {
+    "filter": "native-tree|validation|import-xgboost",
+    "expectations_passed": 478,
+    "failures": 0,
+    "warnings": 0,
+    "skips": 0,
+    "log": "tests-r.log"
+  },
+  "python": {
+    "tests_passed": 14,
+    "log": "tests-python.log"
+  },
+  "saved_failure_artifact_validation": "passed unchanged original bytes",
+  "runner_changed": false,
+  "time_cap_minutes": 20
+}
