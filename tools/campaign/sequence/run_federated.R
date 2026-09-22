@@ -20,7 +20,7 @@ Sys.setenv(F_SEQUENCE_PUBLIC_BENCHMARK = "1", F_SEQUENCE_INIT_SEED = seed,
            F_SEQUENCE_CAPTURE_DIR = capture, CUBLAS_WORKSPACE_CONFIG = ":4096:8",
            OMP_NUM_THREADS = "2", MKL_NUM_THREADS = "2", OPENBLAS_NUM_THREADS = "2",
            PYTHONPATH = paste(file.path(tools, "benchmark_hooks"),
-             file.path(root, "src/dsFlowerClient/inst/flower_app"), sep = ":"))
+             system.file("flower_app", package = "dsFlowerClient"), sep = ":"))
 audit <- jsonlite::fromJSON(file.path(root, "prepared/audit.json"))
 train <- utils::read.csv(file.path(root, "prepared/train.csv"), check.names = FALSE)
 sites <- lapply(seq_len(3), function(i) train[train$subject %in% audit$site_subjects[i, ], ])

@@ -37,9 +37,11 @@ result = {"recorded_at": datetime.now(timezone.utc).isoformat(),
              "gpu_total_memory_bytes": torch.cuda.get_device_properties(0).total_memory,
              "nvidia_smi": subprocess.check_output(["nvidia-smi", "--query-gpu=name,driver_version,memory.total", "--format=csv,noheader"], text=True).strip()},
     "packages": {**r, "python": sys.version, "python_packages": {
-        name: importlib.metadata.version(name) for name in ("torch", "opacus", "flwr", "numpy", "pandas", "pyarrow", "cryptography")}},
+        d.metadata["Name"]: d.version for d in importlib.metadata.distributions()}},
     "release_sources": release, "tooling_sha256": files,
     "tooling_commit": os.environ.get("SEQUENCE_TOOLING_COMMIT"),
+    "runtime_storage": {name: str((root / name).resolve()) for name in ("Rlib", "venvs", "client")},
+    "startup_attempts": json.loads((root / "startup-attempts.json").read_text()) if (root / "startup-attempts.json").exists() else [],
     "privacy_randomness": "Release-owned cryptographic secrets; no deterministic-noise replacement or secret publication.",
     "initialization_seeds": [20260922, 20260923, 20260924]}
 (root / "runtime.json").write_text(json.dumps(result, indent=2) + "\n")

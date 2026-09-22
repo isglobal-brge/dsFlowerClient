@@ -10,7 +10,7 @@ import sysconfig
 
 def install():
     prefix = Path(sys.prefix)
-    if prefix != Path("/workspace/cells-sequence/venvs/pytorch-gpu") or prefix == Path(sys.base_prefix):
+    if prefix.resolve() != Path("/workspace/cells-sequence/venvs/pytorch-gpu").resolve() or prefix == Path(sys.base_prefix):
         raise RuntimeError("run with /workspace/cells-sequence/venvs/pytorch-gpu/bin/python only")
     destination = Path(sysconfig.get_path("purelib"))
     if prefix.resolve() not in destination.resolve().parents:

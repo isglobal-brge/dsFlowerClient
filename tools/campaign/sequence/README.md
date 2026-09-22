@@ -36,6 +36,10 @@ majority class. No pooled-DP twin is scheduled.
 The work root is `/workspace/cells-sequence` on Ubuntu 22.04 with an NVIDIA GPU.
 Rsync the two release sources into `src/dsFlower` and `src/dsFlowerClient`.
 Use `rsync -rz` on the RunPod FUSE volume, which cannot preserve laptop owners.
+The provisioner keeps environments and the R library on local POSIX storage
+under `/opt/cells-sequence`, with aliases in the work root. Importing Flower
+from the network volume exceeded the release's fixed 15-second SuperLink
+readiness deadline in an initial attempt, before any model initialization.
 
 ```sh
 ROOT=/workspace/cells-sequence
@@ -44,7 +48,7 @@ bash "$TOOLS/provision.sh"
 export R_LIBS_USER=$ROOT/Rlib
 export DSFLOWER_VENV_ROOT=$ROOT/venvs
 export DSFLOWER_CLIENT_VENV_ROOT=$ROOT/client
-export PYTHONPATH=$ROOT/src/dsFlowerClient/inst/flower_app
+export PYTHONPATH=$ROOT/Rlib/dsFlowerClient/flower_app
 export CUBLAS_WORKSPACE_CONFIG=:4096:8
 PYTHON=$ROOT/venvs/pytorch-gpu/bin/python
 "$PYTHON" "$TOOLS/prepare_public_data.py" --root "$ROOT"

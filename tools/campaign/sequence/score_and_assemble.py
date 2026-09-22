@@ -106,6 +106,8 @@ def main(root, out):
             p = np.concatenate([np.asarray(predict_pytorch_spec(str(path), values[i:i+256], "prob",
                     cfg["model-spec-b64"], "cross_entropy", num_classes=6)) for i in range(0, len(values), 256)])
             branch_metrics[name] = metrics(y, p)
+        scoring_elapsed = time.monotonic() - started
+        failed_startup = [a for a in runtime.get("startup_attempts", []) if a["epsilon"] == epsilon and a["seed"] == seed]
         rep = {"seed": seed, **branch_metrics, "trivial": trivial,
                "gap_macro_auc": branch_metrics["federated_dp"]["macro_auc"] - branch_metrics["central"]["macro_auc"],
                "federated_model_sha256": status["model_sha256"],
@@ -115,7 +117,10 @@ def main(root, out):
                "initial_tensor_sha256": initial["tensor_sha256"], "effective_config": cfg,
                "elapsed_s": {"federated_training": status["elapsed_s"],
                              "central_training": read(run / "central/status.json")["elapsed_s"],
-                             "scoring": time.monotonic() - started},
+                             "scoring": scoring_elapsed,
+                             "failed_startup": sum(a["elapsed_s"] for a in failed_startup),
+                             "total_wall_clock": read(run / "execution-status.json")["elapsed_s"] + scoring_elapsed + sum(a["elapsed_s"] for a in failed_startup)},
+               "startup_attempts": failed_startup,
                "diagnostic_pass": branch_metrics["federated_dp"]["macro_auc"] > 0.5 and branch_metrics["federated_dp"]["accuracy"] > trivial["accuracy"]}
         (run / "scores.json").write_text(json.dumps(rep, indent=2) + "\n")
         grouped[epsilon].append(rep)

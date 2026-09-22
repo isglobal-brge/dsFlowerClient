@@ -16,9 +16,9 @@ def main(root):
     preflight = json.loads((root / "preflight.json").read_text())
     assert preflight["attempts"][0]["contract"] == "pytorch_lstm"
     assert preflight["attempts"][0]["status"] == "passed"
-    env = dict(os.environ, R_LIBS_USER=str(root / "Rlib"),
-               DSFLOWER_VENV_ROOT=str(root / "venvs"), DSFLOWER_CLIENT_VENV_ROOT=str(root / "client"),
-               PYTHONPATH=str(root / "src/dsFlowerClient/inst/flower_app"),
+    env = dict(os.environ, R_LIBS_USER=str((root / "Rlib").resolve()),
+               DSFLOWER_VENV_ROOT=str((root / "venvs").resolve()), DSFLOWER_CLIENT_VENV_ROOT=str((root / "client").resolve()),
+               PYTHONPATH=str((root / "Rlib/dsFlowerClient/flower_app").resolve()),
                OMP_NUM_THREADS="2", OPENBLAS_NUM_THREADS="2", MKL_NUM_THREADS="2", CUBLAS_WORKSPACE_CONFIG=":4096:8")
     parent = Path("/tmp/dsflower-sequence-parent")
     parent.mkdir(mode=0o700, exist_ok=True)
