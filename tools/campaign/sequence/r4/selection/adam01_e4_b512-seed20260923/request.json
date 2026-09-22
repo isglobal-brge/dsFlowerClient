@@ -1,0 +1,29 @@
+{
+  "work": "/workspace/cells-sequence/r4/implementation/selection/adam01_e4_b512-seed20260923",
+  "prepared": "/workspace/cells-sequence/r4/prepared",
+  "seed": 20260923,
+  "epsilon": 8,
+  "protocol": {
+    "rounds": 5,
+    "delta": 1e-06,
+    "clipping_norm": 1,
+    "seeds": [20260922, 20260923, 20260924],
+    "epsilon_order": [1, 4, 8],
+    "units": "window",
+    "model_params": {
+      "n_tokens": 128,
+      "n_features": 9,
+      "n_classes": 6,
+      "hidden": 32,
+      "optimizer": "adam",
+      "learning_rate": 0.01,
+      "batch_size": 512,
+      "local_epochs": 4,
+      "scheduler": "none",
+      "weight_decay": 0,
+      "l1_penalty": 0
+    }
+  },
+  "inner_selection": true,
+  "test_accessed": false
+}

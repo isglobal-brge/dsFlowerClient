@@ -1,3 +1,55 @@
+# Corrected R4 window-level cell: pre-run declaration
+
+Declared 2026-09-22T07:13:30.459226+00:00 before full-data R4 training or TEST scoring.
+Selected **Adam 0.01, batch 512, 4 local epochs × five rounds**,
+hidden32, no scheduler or penalties. Selection uses TRAIN subjects only,
+with the diagnosis’s unchanged subject-disjoint inner split: fit subjects
+3, 5, 6, 7, 11, 14, 15, 16, 19, 21, 22, 23, 26, 27, 28, 29; validation subjects 1, 8, 17, 25, 30.
+Three subject-disjoint sites retain their original membership after removing
+inner-validation subjects. The two highest noiseless-clipped diagnosis
+candidates were compared using the REAL window-DP contract at ε=8 across
+seeds 20260922–20260924; final-round mean inner-validation macro-AUC selects
+the winner. No early checkpoint selection or held-out access was used.
+
+| Adam LR / local epochs / batch | Inner AUC mean ± SD | Accuracy mean ± SD | Log-loss mean ± SD |
+|---|---:|---:|---:|
+| 0.01 / 4 / 512 | 0.771937 ± 0.030525 | 0.386652 ± 0.027010 | 1.288269 ± 0.069811 |
+| 0.003 / 8 / 256 | 0.754319 ± 0.005975 | 0.356078 ± 0.000323 | 1.365349 ± 0.015789 |
+
+The corrected cell uses ε∈{1,4,8}, δ=1e-6, window unit, unit clipping, the
+same 21 TRAIN and nine held-out subjects, original three sites (2,553 /
+2,397 / 2,402 windows), split and three seeds as `har_window_*`.
+The selected schedule has [100, 100, 100] optimizer steps per site.
+Raw 128×9 token-major windows receive the public channel-bound transform
+`clip(x,-b,b)/b` once, with `b=(1,1,1,1,1,1,2,2,2)`.
+**This is a window-level mechanism measurement on subject-disjoint sites
+and provides no subject-level protection.**
+
+Comparators on the identical split: the same network centrally trained
+without privacy under the R3 nominal schedule (Adam .01, batch256, 20 epochs,
+Adam reset every four epochs, 580 steps); selected-schedule non-private
+federated twin without clipping or noise; selected-schedule clipped noiseless
+federated twin; and TRAIN-frequency/majority trivial predictor. Reuse the
+frozen R3 central model identities and metrics after exact split, bounds and
+initialization verification. The two noiseless twins use matched public
+Poisson streams and equal site weights; real DP retains node-owned randomness.
+The optional pooled-DP twin is not scheduled.
+
+Report macro one-vs-rest AUC, accuracy and log-loss, mean ± sample SD over
+three seeds, and paired federated-DP minus central AUC gaps. Diagnostics
+are annotations. Complete all training before the exclusive scoring marker;
+read held-out windows once, score each new model once, then make no further
+alternative or rerun. Selection supplies no end-to-end private guarantee.
+No campaign-wide composition guarantee is claimed.
+
+HAR provenance: Anguita et al. (2013), *A Public Domain Dataset for Human
+Activity Recognition Using Smartphones*, ESANN; UCI dataset 240, DOI
+10.24432/C54S4K. Thesis citation keys: `anguita_har_2013` and `uci_har`.
+The existing official archive SHA-256 and all R3 evidence are preserved.
+No package code changes; reuse `pod-flower-sequence-2` and leave it running.
+
+---
+
 # Corrected UCI HAR sequence cells (R3 declaration)
 
 Token: `FLOWER_CELLS_SEQUENCE_2026-09-22`.

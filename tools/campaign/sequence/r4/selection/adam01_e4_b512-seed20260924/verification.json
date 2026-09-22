@@ -1,0 +1,128 @@
+{
+  "status": "passed",
+  "captured_node_rounds": 15,
+  "test_accessed": false,
+  "accounting": [
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    },
+    {
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 80,
+      "sample_rate": 0.25,
+      "noise_multiplier": 3.3203125,
+      "epsilon_replace_one": 7.998412568423719,
+      "delta_replace_one": 9.992208693957093e-07
+    }
+  ],
+  "model_sha256": "38a58a4bfd31dc3ab4549db77a448e5a3707e4a5bc42effe430e1ef31cc629c2"
+}

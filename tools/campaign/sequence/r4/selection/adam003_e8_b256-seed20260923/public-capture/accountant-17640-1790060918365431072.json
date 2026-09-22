@@ -1,0 +1,77 @@
+{
+  "schema": "dsflower-sequence-benchmark-accountant-v1",
+  "public_fixture_only": true,
+  "dataset": "uci_har",
+  "round": 3,
+  "source_rows": 1738,
+  "mechanism": {
+    "adjacency": "replace_one",
+    "noise_multiplier": 3.4716796875,
+    "clipping_norm": 1.0,
+    "accounting_population": 1738,
+    "steps_per_epoch": 7,
+    "sample_rate": 0.14285714285714285,
+    "expected_batch_size": 248,
+    "total_epochs": 40,
+    "total_steps": 280,
+    "policy_hash": "11e0ab409c62326e70443eaf6522f7ceedef75f0db52d6c3b4d5f405a00913e4"
+  },
+  "privacy_config": {
+    "epsilon": 8.0,
+    "delta": 1e-06,
+    "clipping_norm": 1.0,
+    "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+    "adjacency": "replace_one",
+    "sample_aggregate": false,
+    "sa_blocks": 8,
+    "egress_time_pad": 0.0,
+    "egress_timeout": 900,
+    "egress_memory_mb": 8192,
+    "egress_file_mb": 1024,
+    "egress_processes": 128,
+    "hook_enabled": false,
+    "allow_per_node_metrics": false,
+    "allow_exact_num_examples": false,
+    "n_samples": 1738
+  },
+  "training_pins": {
+    "loss_name": "cross_entropy",
+    "batch_size": 256,
+    "local_epochs": 8,
+    "num_rounds": 5,
+    "n_classes": 6,
+    "learning_rate": 0.003,
+    "optimizer": {
+      "name": "adam",
+      "weight_decay": 0.0,
+      "l1_penalty": 0.0,
+      "momentum": 0.0,
+      "nesterov": false,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "eps": 1e-08,
+      "amsgrad": false,
+      "rmsprop_alpha": 0.99
+    },
+    "scheduler": {
+      "name": "none",
+      "step_size": 1,
+      "gamma": 0.1,
+      "min_lr": 0.0
+    },
+    "round_index": 3
+  },
+  "observed_round_steps": 56,
+  "accountant_type": "PRVAccountant",
+  "accountant_history": [
+    [
+      3.4716796875,
+      0.14285714285714285,
+      56
+    ]
+  ],
+  "elapsed_s": 13.452925788005814,
+  "peak_cuda_bytes": 117695488,
+  "features_sha256": "c7ae56c40715fedafe32360bda1541f5c77a1049705858e6c4f2141a305640da",
+  "targets_sha256": "2a367c5948099a5e86a9cb14e9a83121101b9e24510285dfbf2a2dca4690be05"
+}
