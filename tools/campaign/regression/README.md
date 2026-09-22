@@ -57,6 +57,24 @@ key **`uci_cdc_diabetes_health_indicators`**. Public coding references:
 [CDC BRFSS 2015 documentation](https://www.cdc.gov/brfss/annual_data/annual_2015.html).
 Source, cohort, split, protocol and tooling checksums accompany the results.
 
+The declaration was committed as `9796615` before data preparation or CDC
+training. On the already provisioned pod, use the additional tools below;
+all training is foreground and refuses an existing started-cell guard.
+
+```sh
+export R_LIBS=/workspace/cells/Rlib
+python3 /workspace/cells/dsFlowerClient/tools/campaign/regression/prepare_cdcbmi.py --root /workspace/cells
+bash /workspace/cells/dsFlowerClient/tools/campaign/regression/run_cdcbmi.sh /workspace/cells
+```
+
+`prepare_cdcbmi.py` verifies the original logistic cohort checksum and routes
+rows into fixed train/test/site CSVs without outcome analysis. It records
+source row identities and checksums for disjointness auditing. `run_cdcbmi.R`
+passes only training rows to the unchanged federation library; the held-out
+file is opened only in the final scoring callback. `central_rows.py` fits
+OLS before opening its test file. The original three regression scripts are
+unchanged. A size fallback cannot be used after any cdc45k score exists.
+
 ## Parkinsons correction and boundary interpretation
 
 The original `pilot_parkinsons_*.json`, `protocol.json`, and runner scripts are
