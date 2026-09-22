@@ -15,7 +15,8 @@
   ],
   "evaluation": {
     "aggregation": "arithmetic mean and sample SD across three seeds",
-    "alternative": "None selected; no scored primary run or alternative was attempted.",
+    "alternative": "None predeclared: this task specifies one cohort and one contract, with no named fallback. Report any epsilon-8 diagnostic failure without a post-score configuration change.",
+    "central_schedule": "Five rounds of one local epoch, batch 32, SGD 0.001, same initial head, patient-mean frozen features and patient-modal label, pooled Poisson sampling, expected batch divisor; no clipping or noise. Reuse this central fit across epsilon values for a seed.",
     "diagnostic": "AUC > 0.5 and accuracy > held-out majority-class rate; report per-replicate and three-seed mean comparison.",
     "diagnostic_epsilon": 8,
     "gap": "federated_dp AUC minus central AUC",
@@ -25,6 +26,7 @@
       "brier",
       "log_loss"
     ],
+    "pooled_dp": "Run unchanged released _dp_fit on the 852 pooled patient records, with the same five-round schedule and epsilon/delta/clip as federation.",
     "positive_class": "malignant",
     "test_policy": "Do not inspect held-out labels/images or score models before settings are fixed. One scoring pass for each trained replicate; never change a scored configuration.",
     "threshold": 0.5,
@@ -35,6 +37,14 @@
     ],
     "unit": "image"
   },
+  "frozen_at": "2026-09-22T00:27:58.584465+00:00",
+  "host": {
+    "gpu": "NVIDIA A40",
+    "pod_id": "0nk8si7zupfczc",
+    "pod_name": "pod-flower-vision",
+    "root": "/workspace/cells-vision"
+  },
+  "instrumentation": "Public-only observer copies of the segmentation/sequence harness: seed/capture analyst initialization; observe node accountant inputs/steps and public tensor hashes after the mandatory runner integrity gate. No replacement of training, privacy calibration, clipping or sampling.",
   "model": {
     "backbone": "resnet18",
     "bounds_policy": "Released image transform and fixed feature totalization; no data-derived feature bounds.",
@@ -72,6 +82,7 @@
   "patient_column": "subject_id",
   "patient_training": "Released runner averages frozen features within patient and takes deterministic modal label before patient DP-SGD. Source pathology labels are consistent within patient according to archived audit.",
   "privacy_unit": "patient",
+  "randomness": "Seed controls patient split and analyst-side public initial head. DP noise/sampling use unchanged node-owned sticky cryptographic randomness. Node secrets are not published; seed alone cannot reconstruct them.",
   "release": {
     "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
     "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
@@ -104,8 +115,8 @@
       "20260920": "6198d99eb33342cbfb78fedbed75dfe7d57e494921523d39560bae7d3f313873",
       "20260921": "2a89fb47ee0a269843e1562d7f5a08aa339d806519ad90a0a5b796e0711491bd"
     },
-    "source_directory": "/workspace/segmentation/prepared/busbra",
-    "split_source": "Archived segmentation provenance; pod files not yet verified."
+    "source_directory": "/workspace/cells-vision/prepared/busbra",
+    "split_source": "Recreated by the unchanged segmentation prepare_busbra/split_subjects functions; require byte-identical archived hashes before execution."
   },
-  "status": "planned_unexecuted"
+  "status": "frozen_before_training"
 }

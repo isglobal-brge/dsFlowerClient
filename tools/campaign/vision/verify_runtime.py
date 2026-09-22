@@ -29,7 +29,8 @@ def probe(argv, timeout):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--library", default="/workspace/segmentation/rlib")
+    parser.add_argument("--root", default="/workspace/cells-vision")
+    parser.add_argument("--library", default="/workspace/cells-vision/Rlib")
     parser.add_argument("--runner-sha256", required=True)
     args = parser.parse_args()
     started = time.monotonic()
@@ -46,7 +47,7 @@ def main():
     result["gpus"] = list(csv.DictReader(io.StringIO(result["gpu_probe"]["stdout"]),
                                         skipinitialspace=True))
     paths = ["/workspace", str(Path(args.library) / "dsFlower/DESCRIPTION"),
-             "/workspace/segmentation/prepared/busbra/audit.json"]
+             str(Path(args.root) / "prepared/busbra/audit.json")]
     result["filesystem_probes"] = [probe(["stat", "--", path], 10) for path in paths]
     result["release_probe"] = None
     if any(item["returncode"] != 0 for item in result["filesystem_probes"]):
@@ -58,6 +59,7 @@ def main():
 library(dsFlower)
 library(dsFlowerClient)
 cat(jsonlite::toJSON(list(
+  r_version = R.version.string,
   versions = list(dsFlower = as.character(packageVersion("dsFlower")),
                   dsFlowerClient = as.character(packageVersion("dsFlowerClient"))),
   runner_sha256 = list(dsFlower = dsFlower:::.compute_harness_hash(),
@@ -69,15 +71,23 @@ cat(jsonlite::toJSON(list(
         if check["returncode"] == 0:
             release = json.loads(check["stdout"])
             result["installed_versions"] = release["versions"]
+            result["r_version"] = release["r_version"]
             result["installed_runner_sha256"] = release["runner_sha256"]
             matched = (all(v == "0.5.0" for v in release["versions"].values())
                        and all(v == args.runner_sha256 for v in release["runner_sha256"].values()))
             result.update(status="verified" if matched else "blocked",
                           blocker_kind=None if matched else "release_mismatch",
-                          error=None if matched else "Install unchanged v0.5.0 sources into /workspace/cells-rlib before training.")
+                          error=None if matched else "Install unchanged v0.5.0 sources before training.")
         else:
             result.update(status="blocked", blocker_kind="release_verification_failed",
                           error="Installed R packages could not be verified; see release_probe.")
+    if result["status"] == "verified":
+        result["torch_probe"] = probe([str(Path(args.root) / "venvs/pytorch-gpu/bin/python"),
+            "-c", "import json, torch, torchvision; assert torch.cuda.is_available(); "
+            "print(json.dumps(dict(torch=torch.__version__, torchvision=torchvision.__version__, "
+            "cuda=torch.version.cuda, gpu=torch.cuda.get_device_name())))"], 45)
+        if result["torch_probe"]["returncode"] != 0:
+            result.update(status="blocked", blocker_kind="cuda_unavailable", error="CUDA runtime verification failed.")
     result["elapsed_s"] = round(time.monotonic() - started, 3)
     print(json.dumps(result, indent=2, sort_keys=True), flush=True)
     return 0 if result["status"] == "verified" else 2
