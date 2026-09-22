@@ -5,6 +5,7 @@ import hashlib
 import hmac
 import json
 from pathlib import Path
+import sys
 import time
 
 import numpy as np
@@ -12,6 +13,9 @@ import torch
 from dsflower_runner import client_app, dp_harness, params
 
 from diagnose import controls, extract, ids_hash, logistic
+# prepare.py imports segmentation preparation and changes sys.path; bind this
+# helper to the vision driver explicitly before importing the original twins.
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from central_twins import arrays_hash, digest, nonprivate_round, private_key
 
 

@@ -281,7 +281,7 @@ def main(root, out):
     (out / "report-r4.md").write_text(markdown(summary, audit, sweep, confirmation))
     snapshots = [(protocol_path, Path("protocol.json")), (records_file, Path("scores-results.json"))]
     snapshots += [(diagnosis / name, Path("diagnosis") / name) for name in DIAGNOSIS_FILES]
-    for name in ("scoring-lock.json", "matrix-start.json", "matrix-complete.json", "training-staging.json", "runtime-preflight.json", "input-verification.json"):
+    for name in ("scoring-lock.json", "matrix-start.json", "matrix-complete.json", "training-staging.json", "runtime-preflight.json", "input-verification.json", "matrix-import-failure.json"):
         path = root / "r4" / name
         if path.exists():
             snapshots.append((path, Path(name)))

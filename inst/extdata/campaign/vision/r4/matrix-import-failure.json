@@ -1,0 +1,9 @@
+{
+  "status": "failed_before_training",
+  "error": "ImportError: arrays_hash resolved through segmentation/central_twins.py because prepare.py altered sys.path",
+  "matrix_lock_created": false,
+  "final_fits_started": 0,
+  "test_accessed": false,
+  "fix": "Explicitly prefer the vision helper directory before importing original central_twins.",
+  "declaration_commit": "3636e9aaf8876fb24e463b16f88f26f2dd869c0e"
+}
