@@ -5,6 +5,7 @@ import hashlib
 import json
 import math
 import statistics
+from datetime import datetime
 from pathlib import Path
 
 
@@ -24,6 +25,12 @@ def verify_statistics(recorded, recomputed):
             assert math.isclose(recorded[key], value, rel_tol=0, abs_tol=1e-14), key
 
 
+def timestamp(value):
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    assert parsed.utcoffset() is not None, "Timestamp must declare its timezone"
+    return parsed
+
+
 ap = argparse.ArgumentParser()
 ap.add_argument("evidence", type=Path)
 args = ap.parse_args()
@@ -41,10 +48,14 @@ defaults = dict(momentum=0, nesterov=False, learning_rate=0.1, batch_size=32,
                 local_epochs=1, weight_decay=0, l1_penalty=0, optimizer="sgd",
                 scheduler="none", hidden_layers=[], n_classes=6)
 levels = [str(i) for i in range(1, 7)]
+archive_sha256 = "c00b803081a5c797cd5e4b83700a9810b38d53d9d84e01917e090e1fdbc81031"
+inner_archive_sha256 = "2045e435c955214b38145fb5fa00776c72814f01b203fec405152dac7d5bfeb0"
 rows = []
 paired = None
 fixed = None
 official_subjects = None
+central_fit_seconds = {}
+federated_fit_seconds = []
 for epsilon in (1, 4, 8):
     path = args.evidence / f"har561_pytorch_multiclass_eps{epsilon}.json"
     cell = json.loads(path.read_text())
@@ -58,8 +69,18 @@ for epsilon in (1, 4, 8):
     features = dataset["features"]
     assert len(features) == len(set(features)) == 561
     assert "subject" not in features and "target" not in features
-    assert len(dataset["download_sha256"]) == 64
-    int(dataset["download_sha256"], 16)
+    assert dataset["download_sha256"] == archive_sha256
+    assert dataset["inner_archive_sha256"] == inner_archive_sha256
+    protocol = cell["protocol"]
+    assert protocol["archive_sha256"] == archive_sha256
+    assert protocol["inner_archive_sha256"] == inner_archive_sha256
+    scoring = cell["scoring"]
+    assert scoring["test_table_loads"] == 1
+    assert scoring["central_fits"] == 3 and scoring["federated_fits"] == 9
+    assert scoring["central_scores_reused_across_epsilon"] is True
+    assert scoring["changed_settings_after_scoring"] is False
+    assert (timestamp(protocol["declared_at_utc"]) <= timestamp(scoring["training_completed_at_utc"]) <=
+            timestamp(scoring["started_at_utc"]) <= timestamp(cell["generated_at"]))
     privacy = cell["privacy"]
     assert privacy["epsilon"] == epsilon and privacy["delta"] == 1e-6
     assert privacy["unit"] == "patient" and privacy["patient_column"] == "subject"
@@ -68,11 +89,11 @@ for epsilon in (1, 4, 8):
     assert cell["rounds"] == 5
     assert cell["model_params_requested"] == {"n_classes": 6}
     assert cell["model_params_resolved"] == defaults
-    current_fixed = (dataset, cell["protocol"], cell["versions"], cell["tooling_sha256"])
+    current_fixed = (dataset, protocol, cell["versions"], cell["tooling_sha256"], scoring)
     if fixed is None:
         fixed = current_fixed
     else:
-        assert fixed == current_fixed, "Dataset, protocol, environment or tooling changed across epsilon"
+        assert fixed == current_fixed, "Dataset, protocol, environment, tooling or scoring changed across epsilon"
     tooling = cell["tooling_sha256"]
     assert {"har561.R", "har561_campaign.R", "run_har561.R", "har561_protocol.json"} <= tooling.keys()
     for name, expected_hash in tooling.items():
@@ -115,6 +136,17 @@ for epsilon in (1, 4, 8):
         assert rep["history"]["n_clients"] == 3
         assert rep["history"]["n_rounds"] == 5 and rep["history"]["n_failures"] == 0
         assert rep["cleanup_ok"] is True and rep["central"]["convergence"] == 0
+        elapsed = rep["wall_clock"]
+        assert elapsed["central_reused_across_epsilon"] is True
+        assert all(math.isfinite(elapsed[key]) and elapsed[key] >= 0
+                   for key in ("central_fit_s", "federated_s", "total_s"))
+        assert math.isclose(elapsed["total_s"], elapsed["central_fit_s"] + elapsed["federated_s"],
+                            rel_tol=0, abs_tol=1e-9)
+        if rep["seed"] in central_fit_seconds:
+            assert central_fit_seconds[rep["seed"]] == elapsed["central_fit_s"]
+        else:
+            central_fit_seconds[rep["seed"]] = elapsed["central_fit_s"]
+        federated_fit_seconds.append(elapsed["federated_s"])
         bounds = rep["feature_bounds"]
         assert bounds == dict(lower=[-1] * 561, upper=[1] * 561)
         metadata = rep["released_metadata"]
@@ -158,17 +190,30 @@ for epsilon in (1, 4, 8):
     verify_statistics(cell["summary"], recomputed)
     rows.append(dict(epsilon=epsilon, evidence_file=path.name,
                      evidence_sha256=hashlib.sha256(path.read_bytes()).hexdigest(), summary=recomputed,
-                     wall_clock_total_s=sum(rep["wall_clock"]["total_s"] for rep in reps)))
+                     wall_clock_total_s=sum(rep["wall_clock"]["total_s"] for rep in reps),
+                     wall_clock_note="Attributed total includes the same three central fits in every epsilon row; "
+                     "use training_runtime for the sum with central fits counted once."))
 
 acceptance = dict(rows[-1]["summary"]["diagnostic"])
 acceptance["passed"] = acceptance["mean_accuracy_above_majority"] and acceptance["mean_macro_auc_above_half"]
+assert len(central_fit_seconds) == 3 and len(federated_fit_seconds) == 9
+central_total = sum(central_fit_seconds.values())
+federated_total = sum(federated_fit_seconds)
 har = dict(schema="dsflower-campaign-v2", track="multiclass", contract="pytorch_multiclass",
            dataset=dataset, host=cell["host"], versions=cell["versions"], protocol=cell["protocol"],
            tooling_sha256=tooling, cells=rows, acceptance_epsilon8=acceptance,
+           scoring=scoring,
+           training_runtime=dict(central_fits=3, federated_fits=9,
+                                 central_fit_total_s=central_total, federated_fit_total_s=federated_total,
+                                 unique_training_total_s=central_total + federated_total,
+                                 note="Sum of three central and nine federated fit durations, with central fits "
+                                 "counted once per seed. Federated durations include federation setup/cleanup; "
+                                 "final test scoring and other orchestration time are excluded."),
            validation="All three cells: paired official subject-disjoint splits, 21 train/9 test subjects, "
            "three disjoint sites of seven training subjects, 7352/2947 windows, 561 public [-1,1] bounds, "
            "six classes, registry defaults except n_classes=6, patient privacy on subject, clipping norm 1, "
-           "five rounds and zero failures. Node policies, runner/tooling hashes, replicate diagnostics, "
+           "five rounds and zero failures. Official outer/inner archive hashes, one test-table load after all "
+           "training, timezone-aware declaration/training/scoring order, node policies, runner/tooling hashes, replicate diagnostics, "
            "means and sample SD independently checked without retraining or rescoring.")
 combined = dict(schema="dsflower-campaign-v2", track="multiclass", contract="pytorch_multiclass",
                 datasets=[ctg, har],

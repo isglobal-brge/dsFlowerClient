@@ -2,320 +2,1213 @@
   "schema": "dsflower-campaign-v2",
   "track": "multiclass",
   "contract": "pytorch_multiclass",
-  "dataset": {
-    "name": "UCI Cardiotocography",
-    "uci_id": 193,
-    "source_url": "https://archive.ics.uci.edu/static/public/193/data.csv",
-    "landing_url": "https://archive.ics.uci.edu/dataset/193/cardiotocography",
-    "dataset_doi": "10.24432/C51S4N",
-    "citation": "Ayres-de-Campos D, Bernardes J, Garrido A, Marques-de-Sa J, Pereira-Leite L. (2000). SisPorto 2.0: A program for automated analysis of cardiotocograms. Journal of Maternal-Fetal Medicine 9:311-318.",
-    "paper_doi": "10.1002/1520-6661(200009/10)9:5<311::AID-MFM12>3.0.CO;2-9",
-    "license": "CC BY 4.0",
-    "target": "NSP: 1 normal, 2 suspect, 3 pathologic; CLASS excluded",
-    "cohort": "All 2126 records, all 21 standard measurements; no subsampling, feature selection or missing-value exclusions",
-    "n_total": 2126,
-    "features": [
-      "LB",
-      "AC",
-      "FM",
-      "UC",
-      "DL",
-      "DS",
-      "DP",
-      "ASTV",
-      "MSTV",
-      "ALTV",
-      "MLTV",
-      "Width",
-      "Min",
-      "Max",
-      "Nmax",
-      "Nzeros",
-      "Mode",
-      "Mean",
-      "Median",
-      "Variance",
-      "Tendency"
-    ],
-    "download_sha256": "4648b5bf338d18f0c7e030a5d2cfb2018c831695cdb90129912cf00367c7d751",
-    "n_train": 1701,
-    "n_test": 425,
-    "n_per_site": [
-      566,
-      568,
-      567
-    ]
-  },
-  "host": {
-    "nodename": "fd619c1c1fcd",
-    "sysname": "Linux",
-    "release": "6.17.0-14-generic",
-    "machine": "x86_64",
-    "r_version": "R version 4.6.1 (2026-06-24)",
-    "pod_id": "6aq9cxaigfwlby",
-    "pod_name": "pod-flower-multiclass",
-    "vcpus": 32
-  },
-  "versions": {
-    "dsflower": "0.5.0",
-    "dsflowerclient": "0.5.0",
-    "flwr": "1.31.0",
-    "torch": "2.14.0+cpu",
-    "opacus": "1.6.0",
-    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
-    "dsflower_source_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
-    "dsflowerclient_release_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
-    "nnet": "7.3.21"
-  },
-  "protocol": {
-    "schema": "dsflower-multiclass-protocol-v1",
-    "declared_at_utc": "2026-09-22T00:11:04Z",
-    "contract": "pytorch_multiclass",
-    "dataset": {
-      "name": "UCI Cardiotocography",
-      "uci_id": 193,
-      "source_url": "https://archive.ics.uci.edu/static/public/193/data.csv",
-      "landing_url": "https://archive.ics.uci.edu/dataset/193/cardiotocography",
-      "dataset_doi": "10.24432/C51S4N",
-      "citation": "Ayres-de-Campos D, Bernardes J, Garrido A, Marques-de-Sa J, Pereira-Leite L. (2000). SisPorto 2.0: A program for automated analysis of cardiotocograms. Journal of Maternal-Fetal Medicine 9:311-318.",
-      "paper_doi": "10.1002/1520-6661(200009/10)9:5<311::AID-MFM12>3.0.CO;2-9",
-      "license": "CC BY 4.0",
-      "target": "NSP: 1 normal, 2 suspect, 3 pathologic; CLASS excluded",
-      "cohort": "All 2126 records, all 21 standard measurements; no subsampling, feature selection or missing-value exclusions"
-    },
-    "split": {
-      "type": "80/20 stratified by NSP; within-class test size rounded; shuffled training classes dealt round-robin to three sites",
-      "test_fraction": 0.2,
-      "seeds": [
-        20260820,
-        20260821,
-        20260822
+  "datasets": [
+    {
+      "schema": "dsflower-campaign-v2",
+      "track": "multiclass",
+      "contract": "pytorch_multiclass",
+      "dataset": {
+        "name": "UCI Cardiotocography",
+        "uci_id": 193,
+        "source_url": "https://archive.ics.uci.edu/static/public/193/data.csv",
+        "landing_url": "https://archive.ics.uci.edu/dataset/193/cardiotocography",
+        "dataset_doi": "10.24432/C51S4N",
+        "citation": "Ayres-de-Campos D, Bernardes J, Garrido A, Marques-de-Sa J, Pereira-Leite L. (2000). SisPorto 2.0: A program for automated analysis of cardiotocograms. Journal of Maternal-Fetal Medicine 9:311-318.",
+        "paper_doi": "10.1002/1520-6661(200009/10)9:5<311::AID-MFM12>3.0.CO;2-9",
+        "license": "CC BY 4.0",
+        "target": "NSP: 1 normal, 2 suspect, 3 pathologic; CLASS excluded",
+        "cohort": "All 2126 records, all 21 standard measurements; no subsampling, feature selection or missing-value exclusions",
+        "n_total": 2126,
+        "features": [
+          "LB",
+          "AC",
+          "FM",
+          "UC",
+          "DL",
+          "DS",
+          "DP",
+          "ASTV",
+          "MSTV",
+          "ALTV",
+          "MLTV",
+          "Width",
+          "Min",
+          "Max",
+          "Nmax",
+          "Nzeros",
+          "Mode",
+          "Mean",
+          "Median",
+          "Variance",
+          "Tendency"
+        ],
+        "download_sha256": "4648b5bf338d18f0c7e030a5d2cfb2018c831695cdb90129912cf00367c7d751",
+        "n_train": 1701,
+        "n_test": 425,
+        "n_per_site": [
+          566,
+          568,
+          567
+        ]
+      },
+      "host": {
+        "nodename": "fd619c1c1fcd",
+        "sysname": "Linux",
+        "release": "6.17.0-14-generic",
+        "machine": "x86_64",
+        "r_version": "R version 4.6.1 (2026-06-24)",
+        "pod_id": "6aq9cxaigfwlby",
+        "pod_name": "pod-flower-multiclass",
+        "vcpus": 32
+      },
+      "versions": {
+        "dsflower": "0.5.0",
+        "dsflowerclient": "0.5.0",
+        "flwr": "1.31.0",
+        "torch": "2.14.0+cpu",
+        "opacus": "1.6.0",
+        "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+        "dsflower_source_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+        "dsflowerclient_release_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+        "nnet": "7.3.21"
+      },
+      "protocol": {
+        "schema": "dsflower-multiclass-protocol-v1",
+        "declared_at_utc": "2026-09-22T00:11:04Z",
+        "contract": "pytorch_multiclass",
+        "dataset": {
+          "name": "UCI Cardiotocography",
+          "uci_id": 193,
+          "source_url": "https://archive.ics.uci.edu/static/public/193/data.csv",
+          "landing_url": "https://archive.ics.uci.edu/dataset/193/cardiotocography",
+          "dataset_doi": "10.24432/C51S4N",
+          "citation": "Ayres-de-Campos D, Bernardes J, Garrido A, Marques-de-Sa J, Pereira-Leite L. (2000). SisPorto 2.0: A program for automated analysis of cardiotocograms. Journal of Maternal-Fetal Medicine 9:311-318.",
+          "paper_doi": "10.1002/1520-6661(200009/10)9:5<311::AID-MFM12>3.0.CO;2-9",
+          "license": "CC BY 4.0",
+          "target": "NSP: 1 normal, 2 suspect, 3 pathologic; CLASS excluded",
+          "cohort": "All 2126 records, all 21 standard measurements; no subsampling, feature selection or missing-value exclusions"
+        },
+        "split": {
+          "type": "80/20 stratified by NSP; within-class test size rounded; shuffled training classes dealt round-robin to three sites",
+          "test_fraction": 0.2,
+          "seeds": [
+            20260820,
+            20260821,
+            20260822
+          ],
+          "seed_scope": "R train/test/site split and central initialization only; node DP randomness is not researcher-seeded",
+          "paired_across_epsilon": true
+        },
+        "bounds_policy": "Same campaign rule: public TRAIN cohort min/max widened by 10 percent of each range, plus/minus 0.5 for constants. Declared before training, never derived from test. This public-data utility simulation does not claim that private empirical extrema can be freely disclosed.",
+        "training": {
+          "sites": 3,
+          "rounds": 5,
+          "replicates": 3,
+          "execution_epsilon_order": [
+            1,
+            8,
+            4
+          ],
+          "delta": 1e-06,
+          "parameters": "All pytorch_multiclass v0.5.0 registry defaults: linear softmax, 3 classes, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, no scheduler, no regularization",
+          "privacy": "Unchanged node defaults except administrator per-training epsilon; delta 1e-6, row unit, clipping norm 1, replace-one adjacency",
+          "inner_validation": "None; no schedule selection or hyperparameter search"
+        },
+        "central": "nnet::multinom, decay=0, maxit=3000, reltol=1e-10, MaxNWts=10000. Same clipped affine bounds transform as federated model; fit pooled training data; require convergence=0.",
+        "trivial": "Training majority class for accuracy; training class proportions for probability metrics, yielding tied-score macro-AUC 0.5. No test prevalence used.",
+        "metrics": "Unweighted mean of three one-vs-rest rank AUCs with average ties; argmax accuracy; natural-log multiclass log-loss with true-class probability floor 1e-15. Gap is federated minus central macro-AUC. SD is sample SD over three paired seeds.",
+        "diagnostic": "At epsilon 8, mean accuracy strictly above mean majority accuracy AND mean macro-AUC > 0.5. Also disclose each replicate and whether all pass.",
+        "test_use": "One scoring pass per replicate, after settings are fixed; no rerun of a scored cell with changed settings.",
+        "alternative": "None: full specified cohort is used and no fallback multiclass contract is named. Report a failing diagnostic as a boundary."
+      },
+      "tooling_sha256": {
+        "run_cell.R": "74df65d7f52ab4a0f3dcf036dde3a5eec04c8198b83a70fd4c040a0aa0e8c15e",
+        "campaign_lib.R": "e616e9e793f3698a931ce9c615079fb253982822325f2eb0f6e728456c7a8dab",
+        "multiclass.R": "e9eab02327434004014a14c8d67ccb5077976d186f3ead0bcf1dd953b973fd31",
+        "protocol.json": "749e7631f6460c29d07addce784b6e5cf30c43cec072d7022df23f41681c199f"
+      },
+      "cells": [
+        {
+          "epsilon": 1,
+          "evidence_file": "pilot_ctg_pytorch_multiclass_eps1.json",
+          "evidence_sha256": "381259c6839086a91222583902926d2fb7a5a5b3f124e5eab7e814ff28d53197",
+          "summary": {
+            "central_mean_sd": {
+              "macro_auc": {
+                "mean": 0.967870122525151,
+                "sd": 0.00249958455071314
+              },
+              "acc": {
+                "mean": 0.896470588235294,
+                "sd": 0.00848365005991527
+              },
+              "logloss": {
+                "mean": 0.242946237391829,
+                "sd": 0.00997908982356894
+              }
+            },
+            "federated_mean_sd": {
+              "macro_auc": {
+                "mean": 0.808712090828779,
+                "sd": 0.0908366534369664
+              },
+              "acc": {
+                "mean": 0.778823529411765,
+                "sd": 0
+              },
+              "logloss": {
+                "mean": 0.704726268362476,
+                "sd": 0.043502656226494
+              }
+            },
+            "trivial_mean_sd": {
+              "macro_auc": {
+                "mean": 0.5,
+                "sd": 0
+              },
+              "acc": {
+                "mean": 0.778823529411765,
+                "sd": 0
+              },
+              "logloss": {
+                "mean": 0.674413266654124,
+                "sd": 0
+              }
+            },
+            "gap_mean_sd": {
+              "macro_auc": {
+                "mean": -0.159158031696371,
+                "sd": 0.0930519481239252
+              }
+            },
+            "diagnostic": {
+              "applicable_epsilon": 8,
+              "mean_accuracy_above_majority": false,
+              "mean_macro_auc_above_half": true,
+              "all_replicates_pass": false
+            }
+          },
+          "wall_clock_total_s": 354.872841358185
+        },
+        {
+          "epsilon": 4,
+          "evidence_file": "pilot_ctg_pytorch_multiclass_eps4.json",
+          "evidence_sha256": "0dbc29c2253890edc00084820129b9dd837ef58e2949bf5ab20299f33bc59ea4",
+          "summary": {
+            "central_mean_sd": {
+              "macro_auc": {
+                "mean": 0.967870122525151,
+                "sd": 0.00249958455071314
+              },
+              "acc": {
+                "mean": 0.896470588235294,
+                "sd": 0.00848365005991527
+              },
+              "logloss": {
+                "mean": 0.242946237391829,
+                "sd": 0.00997908982356894
+              }
+            },
+            "federated_mean_sd": {
+              "macro_auc": {
+                "mean": 0.863732366857925,
+                "sd": 0.0215737110844825
+              },
+              "acc": {
+                "mean": 0.778823529411765,
+                "sd": 0
+              },
+              "logloss": {
+                "mean": 0.681181350054833,
+                "sd": 0.00934230273043881
+              }
+            },
+            "trivial_mean_sd": {
+              "macro_auc": {
+                "mean": 0.5,
+                "sd": 0
+              },
+              "acc": {
+                "mean": 0.778823529411765,
+                "sd": 0
+              },
+              "logloss": {
+                "mean": 0.674413266654124,
+                "sd": 0
+              }
+            },
+            "gap_mean_sd": {
+              "macro_auc": {
+                "mean": -0.104137755667226,
+                "sd": 0.0211496135620381
+              }
+            },
+            "diagnostic": {
+              "applicable_epsilon": 8,
+              "mean_accuracy_above_majority": false,
+              "mean_macro_auc_above_half": true,
+              "all_replicates_pass": false
+            }
+          },
+          "wall_clock_total_s": 361.475170135498
+        },
+        {
+          "epsilon": 8,
+          "evidence_file": "pilot_ctg_pytorch_multiclass_eps8.json",
+          "evidence_sha256": "eb68e207d4d9a6d82aede5c04a84ba6bf319bc194debfb40a6ddd560dc2511b2",
+          "summary": {
+            "central_mean_sd": {
+              "macro_auc": {
+                "mean": 0.967870122525151,
+                "sd": 0.00249958455071314
+              },
+              "acc": {
+                "mean": 0.896470588235294,
+                "sd": 0.00848365005991527
+              },
+              "logloss": {
+                "mean": 0.242946237391829,
+                "sd": 0.00997908982356894
+              }
+            },
+            "federated_mean_sd": {
+              "macro_auc": {
+                "mean": 0.867435815016081,
+                "sd": 0.0470337930975351
+              },
+              "acc": {
+                "mean": 0.778823529411765,
+                "sd": 0
+              },
+              "logloss": {
+                "mean": 0.677368157868187,
+                "sd": 0.0259144160899873
+              }
+            },
+            "trivial_mean_sd": {
+              "macro_auc": {
+                "mean": 0.5,
+                "sd": 0
+              },
+              "acc": {
+                "mean": 0.778823529411765,
+                "sd": 0
+              },
+              "logloss": {
+                "mean": 0.674413266654124,
+                "sd": 0
+              }
+            },
+            "gap_mean_sd": {
+              "macro_auc": {
+                "mean": -0.10043430750907,
+                "sd": 0.0456821339042561
+              }
+            },
+            "diagnostic": {
+              "applicable_epsilon": 8,
+              "mean_accuracy_above_majority": false,
+              "mean_macro_auc_above_half": true,
+              "all_replicates_pass": false
+            }
+          },
+          "wall_clock_total_s": 398.12189722061197
+        }
       ],
-      "seed_scope": "R train/test/site split and central initialization only; node DP randomness is not researcher-seeded",
-      "paired_across_epsilon": true
+      "acceptance_epsilon8": {
+        "applicable_epsilon": 8,
+        "mean_accuracy_above_majority": false,
+        "mean_macro_auc_above_half": true,
+        "all_replicates_pass": false,
+        "passed": false
+      },
+      "validation": "All three cells: paired splits/bounds/baselines; 3 sites, 5 rounds, zero failures; node policies and runner hashes; means and sample SD independently recomputed."
     },
-    "bounds_policy": "Same campaign rule: public TRAIN cohort min/max widened by 10 percent of each range, plus/minus 0.5 for constants. Declared before training, never derived from test. This public-data utility simulation does not claim that private empirical extrema can be freely disclosed.",
-    "training": {
-      "sites": 3,
-      "rounds": 5,
-      "replicates": 3,
-      "execution_epsilon_order": [
-        1,
-        8,
-        4
+    {
+      "schema": "dsflower-campaign-v2",
+      "track": "multiclass",
+      "contract": "pytorch_multiclass",
+      "dataset": {
+        "name": "UCI Human Activity Recognition Using Smartphones (561 engineered features)",
+        "uci_id": 240,
+        "source_url": "https://archive.ics.uci.edu/static/public/240/human+activity+recognition+using+smartphones.zip",
+        "landing_url": "https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones",
+        "dataset_doi": "10.24432/C54S4K",
+        "citation": "Anguita D, Ghio A, Oneto L, Parra X, Reyes-Ortiz JL. (2013). A Public Domain Dataset for Human Activity Recognition Using Smartphones. ESANN 2013.",
+        "license": "UCI landing page: CC BY 4.0; historical archive README separately states noncommercial use and required citation.",
+        "target": "1 WALKING, 2 WALKING_UPSTAIRS, 3 WALKING_DOWNSTAIRS, 4 SITTING, 5 STANDING, 6 LAYING",
+        "cohort": "All 10299 engineered-feature windows from 30 subjects; 7352 official training windows and 2947 official held-out windows; all 561 features in official order, named feature_001 through feature_561; no exclusions, subsampling or feature selection.",
+        "relationship_to_sequence": "Same collection as sequence track; this cell uses engineered feature vectors, not raw inertial windows.",
+        "n_total": 10299,
+        "features": [
+          "feature_001",
+          "feature_002",
+          "feature_003",
+          "feature_004",
+          "feature_005",
+          "feature_006",
+          "feature_007",
+          "feature_008",
+          "feature_009",
+          "feature_010",
+          "feature_011",
+          "feature_012",
+          "feature_013",
+          "feature_014",
+          "feature_015",
+          "feature_016",
+          "feature_017",
+          "feature_018",
+          "feature_019",
+          "feature_020",
+          "feature_021",
+          "feature_022",
+          "feature_023",
+          "feature_024",
+          "feature_025",
+          "feature_026",
+          "feature_027",
+          "feature_028",
+          "feature_029",
+          "feature_030",
+          "feature_031",
+          "feature_032",
+          "feature_033",
+          "feature_034",
+          "feature_035",
+          "feature_036",
+          "feature_037",
+          "feature_038",
+          "feature_039",
+          "feature_040",
+          "feature_041",
+          "feature_042",
+          "feature_043",
+          "feature_044",
+          "feature_045",
+          "feature_046",
+          "feature_047",
+          "feature_048",
+          "feature_049",
+          "feature_050",
+          "feature_051",
+          "feature_052",
+          "feature_053",
+          "feature_054",
+          "feature_055",
+          "feature_056",
+          "feature_057",
+          "feature_058",
+          "feature_059",
+          "feature_060",
+          "feature_061",
+          "feature_062",
+          "feature_063",
+          "feature_064",
+          "feature_065",
+          "feature_066",
+          "feature_067",
+          "feature_068",
+          "feature_069",
+          "feature_070",
+          "feature_071",
+          "feature_072",
+          "feature_073",
+          "feature_074",
+          "feature_075",
+          "feature_076",
+          "feature_077",
+          "feature_078",
+          "feature_079",
+          "feature_080",
+          "feature_081",
+          "feature_082",
+          "feature_083",
+          "feature_084",
+          "feature_085",
+          "feature_086",
+          "feature_087",
+          "feature_088",
+          "feature_089",
+          "feature_090",
+          "feature_091",
+          "feature_092",
+          "feature_093",
+          "feature_094",
+          "feature_095",
+          "feature_096",
+          "feature_097",
+          "feature_098",
+          "feature_099",
+          "feature_100",
+          "feature_101",
+          "feature_102",
+          "feature_103",
+          "feature_104",
+          "feature_105",
+          "feature_106",
+          "feature_107",
+          "feature_108",
+          "feature_109",
+          "feature_110",
+          "feature_111",
+          "feature_112",
+          "feature_113",
+          "feature_114",
+          "feature_115",
+          "feature_116",
+          "feature_117",
+          "feature_118",
+          "feature_119",
+          "feature_120",
+          "feature_121",
+          "feature_122",
+          "feature_123",
+          "feature_124",
+          "feature_125",
+          "feature_126",
+          "feature_127",
+          "feature_128",
+          "feature_129",
+          "feature_130",
+          "feature_131",
+          "feature_132",
+          "feature_133",
+          "feature_134",
+          "feature_135",
+          "feature_136",
+          "feature_137",
+          "feature_138",
+          "feature_139",
+          "feature_140",
+          "feature_141",
+          "feature_142",
+          "feature_143",
+          "feature_144",
+          "feature_145",
+          "feature_146",
+          "feature_147",
+          "feature_148",
+          "feature_149",
+          "feature_150",
+          "feature_151",
+          "feature_152",
+          "feature_153",
+          "feature_154",
+          "feature_155",
+          "feature_156",
+          "feature_157",
+          "feature_158",
+          "feature_159",
+          "feature_160",
+          "feature_161",
+          "feature_162",
+          "feature_163",
+          "feature_164",
+          "feature_165",
+          "feature_166",
+          "feature_167",
+          "feature_168",
+          "feature_169",
+          "feature_170",
+          "feature_171",
+          "feature_172",
+          "feature_173",
+          "feature_174",
+          "feature_175",
+          "feature_176",
+          "feature_177",
+          "feature_178",
+          "feature_179",
+          "feature_180",
+          "feature_181",
+          "feature_182",
+          "feature_183",
+          "feature_184",
+          "feature_185",
+          "feature_186",
+          "feature_187",
+          "feature_188",
+          "feature_189",
+          "feature_190",
+          "feature_191",
+          "feature_192",
+          "feature_193",
+          "feature_194",
+          "feature_195",
+          "feature_196",
+          "feature_197",
+          "feature_198",
+          "feature_199",
+          "feature_200",
+          "feature_201",
+          "feature_202",
+          "feature_203",
+          "feature_204",
+          "feature_205",
+          "feature_206",
+          "feature_207",
+          "feature_208",
+          "feature_209",
+          "feature_210",
+          "feature_211",
+          "feature_212",
+          "feature_213",
+          "feature_214",
+          "feature_215",
+          "feature_216",
+          "feature_217",
+          "feature_218",
+          "feature_219",
+          "feature_220",
+          "feature_221",
+          "feature_222",
+          "feature_223",
+          "feature_224",
+          "feature_225",
+          "feature_226",
+          "feature_227",
+          "feature_228",
+          "feature_229",
+          "feature_230",
+          "feature_231",
+          "feature_232",
+          "feature_233",
+          "feature_234",
+          "feature_235",
+          "feature_236",
+          "feature_237",
+          "feature_238",
+          "feature_239",
+          "feature_240",
+          "feature_241",
+          "feature_242",
+          "feature_243",
+          "feature_244",
+          "feature_245",
+          "feature_246",
+          "feature_247",
+          "feature_248",
+          "feature_249",
+          "feature_250",
+          "feature_251",
+          "feature_252",
+          "feature_253",
+          "feature_254",
+          "feature_255",
+          "feature_256",
+          "feature_257",
+          "feature_258",
+          "feature_259",
+          "feature_260",
+          "feature_261",
+          "feature_262",
+          "feature_263",
+          "feature_264",
+          "feature_265",
+          "feature_266",
+          "feature_267",
+          "feature_268",
+          "feature_269",
+          "feature_270",
+          "feature_271",
+          "feature_272",
+          "feature_273",
+          "feature_274",
+          "feature_275",
+          "feature_276",
+          "feature_277",
+          "feature_278",
+          "feature_279",
+          "feature_280",
+          "feature_281",
+          "feature_282",
+          "feature_283",
+          "feature_284",
+          "feature_285",
+          "feature_286",
+          "feature_287",
+          "feature_288",
+          "feature_289",
+          "feature_290",
+          "feature_291",
+          "feature_292",
+          "feature_293",
+          "feature_294",
+          "feature_295",
+          "feature_296",
+          "feature_297",
+          "feature_298",
+          "feature_299",
+          "feature_300",
+          "feature_301",
+          "feature_302",
+          "feature_303",
+          "feature_304",
+          "feature_305",
+          "feature_306",
+          "feature_307",
+          "feature_308",
+          "feature_309",
+          "feature_310",
+          "feature_311",
+          "feature_312",
+          "feature_313",
+          "feature_314",
+          "feature_315",
+          "feature_316",
+          "feature_317",
+          "feature_318",
+          "feature_319",
+          "feature_320",
+          "feature_321",
+          "feature_322",
+          "feature_323",
+          "feature_324",
+          "feature_325",
+          "feature_326",
+          "feature_327",
+          "feature_328",
+          "feature_329",
+          "feature_330",
+          "feature_331",
+          "feature_332",
+          "feature_333",
+          "feature_334",
+          "feature_335",
+          "feature_336",
+          "feature_337",
+          "feature_338",
+          "feature_339",
+          "feature_340",
+          "feature_341",
+          "feature_342",
+          "feature_343",
+          "feature_344",
+          "feature_345",
+          "feature_346",
+          "feature_347",
+          "feature_348",
+          "feature_349",
+          "feature_350",
+          "feature_351",
+          "feature_352",
+          "feature_353",
+          "feature_354",
+          "feature_355",
+          "feature_356",
+          "feature_357",
+          "feature_358",
+          "feature_359",
+          "feature_360",
+          "feature_361",
+          "feature_362",
+          "feature_363",
+          "feature_364",
+          "feature_365",
+          "feature_366",
+          "feature_367",
+          "feature_368",
+          "feature_369",
+          "feature_370",
+          "feature_371",
+          "feature_372",
+          "feature_373",
+          "feature_374",
+          "feature_375",
+          "feature_376",
+          "feature_377",
+          "feature_378",
+          "feature_379",
+          "feature_380",
+          "feature_381",
+          "feature_382",
+          "feature_383",
+          "feature_384",
+          "feature_385",
+          "feature_386",
+          "feature_387",
+          "feature_388",
+          "feature_389",
+          "feature_390",
+          "feature_391",
+          "feature_392",
+          "feature_393",
+          "feature_394",
+          "feature_395",
+          "feature_396",
+          "feature_397",
+          "feature_398",
+          "feature_399",
+          "feature_400",
+          "feature_401",
+          "feature_402",
+          "feature_403",
+          "feature_404",
+          "feature_405",
+          "feature_406",
+          "feature_407",
+          "feature_408",
+          "feature_409",
+          "feature_410",
+          "feature_411",
+          "feature_412",
+          "feature_413",
+          "feature_414",
+          "feature_415",
+          "feature_416",
+          "feature_417",
+          "feature_418",
+          "feature_419",
+          "feature_420",
+          "feature_421",
+          "feature_422",
+          "feature_423",
+          "feature_424",
+          "feature_425",
+          "feature_426",
+          "feature_427",
+          "feature_428",
+          "feature_429",
+          "feature_430",
+          "feature_431",
+          "feature_432",
+          "feature_433",
+          "feature_434",
+          "feature_435",
+          "feature_436",
+          "feature_437",
+          "feature_438",
+          "feature_439",
+          "feature_440",
+          "feature_441",
+          "feature_442",
+          "feature_443",
+          "feature_444",
+          "feature_445",
+          "feature_446",
+          "feature_447",
+          "feature_448",
+          "feature_449",
+          "feature_450",
+          "feature_451",
+          "feature_452",
+          "feature_453",
+          "feature_454",
+          "feature_455",
+          "feature_456",
+          "feature_457",
+          "feature_458",
+          "feature_459",
+          "feature_460",
+          "feature_461",
+          "feature_462",
+          "feature_463",
+          "feature_464",
+          "feature_465",
+          "feature_466",
+          "feature_467",
+          "feature_468",
+          "feature_469",
+          "feature_470",
+          "feature_471",
+          "feature_472",
+          "feature_473",
+          "feature_474",
+          "feature_475",
+          "feature_476",
+          "feature_477",
+          "feature_478",
+          "feature_479",
+          "feature_480",
+          "feature_481",
+          "feature_482",
+          "feature_483",
+          "feature_484",
+          "feature_485",
+          "feature_486",
+          "feature_487",
+          "feature_488",
+          "feature_489",
+          "feature_490",
+          "feature_491",
+          "feature_492",
+          "feature_493",
+          "feature_494",
+          "feature_495",
+          "feature_496",
+          "feature_497",
+          "feature_498",
+          "feature_499",
+          "feature_500",
+          "feature_501",
+          "feature_502",
+          "feature_503",
+          "feature_504",
+          "feature_505",
+          "feature_506",
+          "feature_507",
+          "feature_508",
+          "feature_509",
+          "feature_510",
+          "feature_511",
+          "feature_512",
+          "feature_513",
+          "feature_514",
+          "feature_515",
+          "feature_516",
+          "feature_517",
+          "feature_518",
+          "feature_519",
+          "feature_520",
+          "feature_521",
+          "feature_522",
+          "feature_523",
+          "feature_524",
+          "feature_525",
+          "feature_526",
+          "feature_527",
+          "feature_528",
+          "feature_529",
+          "feature_530",
+          "feature_531",
+          "feature_532",
+          "feature_533",
+          "feature_534",
+          "feature_535",
+          "feature_536",
+          "feature_537",
+          "feature_538",
+          "feature_539",
+          "feature_540",
+          "feature_541",
+          "feature_542",
+          "feature_543",
+          "feature_544",
+          "feature_545",
+          "feature_546",
+          "feature_547",
+          "feature_548",
+          "feature_549",
+          "feature_550",
+          "feature_551",
+          "feature_552",
+          "feature_553",
+          "feature_554",
+          "feature_555",
+          "feature_556",
+          "feature_557",
+          "feature_558",
+          "feature_559",
+          "feature_560",
+          "feature_561"
+        ],
+        "download_sha256": "c00b803081a5c797cd5e4b83700a9810b38d53d9d84e01917e090e1fdbc81031",
+        "inner_archive_sha256": "2045e435c955214b38145fb5fa00776c72814f01b203fec405152dac7d5bfeb0",
+        "n_train": 7352,
+        "n_test": 2947,
+        "n_per_site": [
+          2338,
+          2504,
+          2510
+        ]
+      },
+      "host": {
+        "nodename": "fd619c1c1fcd",
+        "sysname": "Linux",
+        "release": "6.17.0-14-generic",
+        "machine": "x86_64",
+        "r_version": "R version 4.6.1 (2026-06-24)",
+        "pod_id": "6aq9cxaigfwlby",
+        "pod_name": "pod-flower-multiclass",
+        "vcpus": 32
+      },
+      "versions": {
+        "dsflower": "0.5.0",
+        "dsflowerclient": "0.5.0",
+        "flwr": "1.31.0",
+        "torch": "2.14.0+cpu",
+        "opacus": "1.6.0",
+        "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+        "dsflower_source_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+        "dsflowerclient_release_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+        "nnet": "7.3.21"
+      },
+      "protocol": {
+        "schema": "dsflower-multiclass-har561-protocol-v1",
+        "declared_at_utc": "2026-09-22T00:46:21.523715+00:00",
+        "authorization": "FLOWER_CELLS_MULTICLASS_2026-09-22: one user-declared HAR561 alternative after the CTG accuracy diagnostic failed; original CTG protocol and evidence remain unchanged.",
+        "contract": "pytorch_multiclass",
+        "dataset": {
+          "name": "UCI Human Activity Recognition Using Smartphones (561 engineered features)",
+          "uci_id": 240,
+          "source_url": "https://archive.ics.uci.edu/static/public/240/human+activity+recognition+using+smartphones.zip",
+          "landing_url": "https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones",
+          "dataset_doi": "10.24432/C54S4K",
+          "citation": "Anguita D, Ghio A, Oneto L, Parra X, Reyes-Ortiz JL. (2013). A Public Domain Dataset for Human Activity Recognition Using Smartphones. ESANN 2013.",
+          "license": "UCI landing page: CC BY 4.0; historical archive README separately states noncommercial use and required citation.",
+          "target": "1 WALKING, 2 WALKING_UPSTAIRS, 3 WALKING_DOWNSTAIRS, 4 SITTING, 5 STANDING, 6 LAYING",
+          "cohort": "All 10299 engineered-feature windows from 30 subjects; 7352 official training windows and 2947 official held-out windows; all 561 features in official order, named feature_001 through feature_561; no exclusions, subsampling or feature selection.",
+          "relationship_to_sequence": "Same collection as sequence track; this cell uses engineered feature vectors, not raw inertial windows."
+        },
+        "split": {
+          "type": "Official subject-disjoint train/test split; 21 training subjects, 9 held-out subjects. For each seed, shuffle sorted training subjects with R sample and assign consecutive groups of seven to three sites.",
+          "seeds": [
+            20260820,
+            20260821,
+            20260822
+          ],
+          "paired_across_epsilon": true,
+          "seed_scope": "Subject-to-site partition and central initialization only. Generic federated Torch initialization and node cryptographic DP randomness retain release behavior; published seeds do not fully reproduce federated fits."
+        },
+        "bounds_policy": "Declared public bounds [-1,1] for every feature, from official archive README. Clip and affine-scale identically in central and released federated preprocessing. No data-derived bounds.",
+        "released_patient_semantics": "Unchanged dsFlower 0.5.0 generic patient path clips/transforms each window to public bounds, averages features within subject, selects the modal class (smallest class breaks ties), then applies DP-SGD clipping to each pooled subject. Thus 7 effective training units/site and 21 overall, not gradients of all window losses grouped by subject. Central reference is trained on all official training windows; it shares split/model family/bounds but not this pooling.",
+        "training": {
+          "sites": 3,
+          "rounds": 5,
+          "replicates": 3,
+          "execution_epsilon_order": [
+            1,
+            8,
+            4
+          ],
+          "delta": 1e-06,
+          "parameters": "All pytorch_multiclass v0.5.0 optimization defaults: linear softmax, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, no scheduler, no regularization. Sole schema override n_classes=6 for six public activities.",
+          "privacy": "patient unit with subject column, clipping norm 1, replace-one adjacency; per-node per-training epsilon 1/4/8, delta 1e-6. Seven pooled subjects and batch size32 imply full-unit sampling and one update/round.",
+          "inner_validation": "None; no optimization search, validation split or post-score changes."
+        },
+        "central": "Unregularized multinomial logistic regression (nnet::multinom decay=0, maxit=3000, reltol=1e-10, MaxNWts=10000), fit all 7352 official training windows with public bounded transform; require convergence=0. Fit once per seed and reuse across epsilon. This is a window-trained central reference, not a subject-pooling-matched preprocessing twin.",
+        "trivial": "Training-window majority class for accuracy; training-window class proportions for probabilities. No test prevalence used.",
+        "metrics": "Window-level unweighted mean of six one-vs-rest rank AUCs with average ties; argmax accuracy with first-class tie break; natural-log multiclass log-loss with true-class probability floor1e-15. Gap is federated-DP minus central macro-AUC, sample SD across three replicate seeds on one fixed official split.",
+        "diagnostic": "At epsilon8, mean accuracy strictly above training-majority predictor test accuracy AND mean macro-AUC >0.5. Disclose every replicate and whether all pass. No alternative after this one.",
+        "test_use": "Train all three central and nine federated models without opening test members; training callback never forces its test promise. Create scoring marker, open official X_test/y_test/subject_test once in one final scoring run, then score each fitted model once. Never rerun a scored cell with changed settings.",
+        "failure_policy": "Retain started run markers and any failure; no overwrite. Report whatever diagnostic outcome occurs.",
+        "archive_sha256": "c00b803081a5c797cd5e4b83700a9810b38d53d9d84e01917e090e1fdbc81031",
+        "inner_archive_sha256": "2045e435c955214b38145fb5fa00776c72814f01b203fec405152dac7d5bfeb0"
+      },
+      "tooling_sha256": {
+        "run_har561.R": "d5b2eec0ea6bad82c579444b80b09fac5ff28b675b683e25b5adb95af489f70c",
+        "har561_campaign.R": "62fafa17df9cb7ca27754fbb472e7ef9077a5bb8f93fdc9698248976e55d5be9",
+        "har561.R": "0ddebfa755e84ff2e1d9ee11ab7f92f561bcec3d63948c6b408557408dd5141e",
+        "har561_protocol.json": "4d1d128e83e9dca1155c531e3ac12aa27dea5f0dfca633ba81cb401fc9b59969"
+      },
+      "cells": [
+        {
+          "epsilon": 1,
+          "evidence_file": "har561_pytorch_multiclass_eps1.json",
+          "evidence_sha256": "71e8490a98bdb2131b0e0f1096becfdd1eba8f55cd152da9b6cc92aa16093e44",
+          "summary": {
+            "central_mean_sd": {
+              "macro_auc": {
+                "mean": 0.977948122806893,
+                "sd": 0.0
+              },
+              "acc": {
+                "mean": 0.894468951476077,
+                "sd": 0.0
+              },
+              "logloss": {
+                "mean": 3.39880376489101,
+                "sd": 0.0
+              }
+            },
+            "federated_mean_sd": {
+              "macro_auc": {
+                "mean": 0.501314444725215,
+                "sd": 0.11327699519148102
+              },
+              "acc": {
+                "mean": 0.1462504241601628,
+                "sd": 0.07103638077861654
+              },
+              "logloss": {
+                "mean": 8.649848303085676,
+                "sd": 3.4520355696532277
+              }
+            },
+            "trivial_mean_sd": {
+              "macro_auc": {
+                "mean": 0.5,
+                "sd": 0.0
+              },
+              "acc": {
+                "mean": 0.182219205972175,
+                "sd": 0.0
+              },
+              "logloss": {
+                "mean": 1.7899413369434,
+                "sd": 0.0
+              }
+            },
+            "gap_mean_sd": {
+              "macro_auc": {
+                "mean": -0.47663367808167806,
+                "sd": 0.11327699519148102
+              }
+            },
+            "diagnostic": {
+              "applicable_epsilon": 8,
+              "mean_accuracy_above_majority": false,
+              "mean_macro_auc_above_half": true,
+              "all_replicates_pass": false
+            }
+          },
+          "wall_clock_total_s": 364.493749380111,
+          "wall_clock_note": "Attributed total includes the same three central fits in every epsilon row; use training_runtime for the sum with central fits counted once."
+        },
+        {
+          "epsilon": 4,
+          "evidence_file": "har561_pytorch_multiclass_eps4.json",
+          "evidence_sha256": "0170c08b0cca379072919f3f8ea1bf7efdc1b7568e75ff82986aae7b137c2f21",
+          "summary": {
+            "central_mean_sd": {
+              "macro_auc": {
+                "mean": 0.977948122806893,
+                "sd": 0.0
+              },
+              "acc": {
+                "mean": 0.894468951476077,
+                "sd": 0.0
+              },
+              "logloss": {
+                "mean": 3.39880376489101,
+                "sd": 0.0
+              }
+            },
+            "federated_mean_sd": {
+              "macro_auc": {
+                "mean": 0.5280581518314214,
+                "sd": 0.05479774781136477
+              },
+              "acc": {
+                "mean": 0.178486596538853,
+                "sd": 0.009997230989247461
+              },
+              "logloss": {
+                "mean": 3.026642743347777,
+                "sd": 0.8485532150928765
+              }
+            },
+            "trivial_mean_sd": {
+              "macro_auc": {
+                "mean": 0.5,
+                "sd": 0.0
+              },
+              "acc": {
+                "mean": 0.182219205972175,
+                "sd": 0.0
+              },
+              "logloss": {
+                "mean": 1.7899413369434,
+                "sd": 0.0
+              }
+            },
+            "gap_mean_sd": {
+              "macro_auc": {
+                "mean": -0.44988997097547173,
+                "sd": 0.05479774781136477
+              }
+            },
+            "diagnostic": {
+              "applicable_epsilon": 8,
+              "mean_accuracy_above_majority": false,
+              "mean_macro_auc_above_half": true,
+              "all_replicates_pass": false
+            }
+          },
+          "wall_clock_total_s": 372.939586639405,
+          "wall_clock_note": "Attributed total includes the same three central fits in every epsilon row; use training_runtime for the sum with central fits counted once."
+        },
+        {
+          "epsilon": 8,
+          "evidence_file": "har561_pytorch_multiclass_eps8.json",
+          "evidence_sha256": "91981d4c805de1f80546c75f597d4006f291bb00a128a5c4067b21d75a3f493b",
+          "summary": {
+            "central_mean_sd": {
+              "macro_auc": {
+                "mean": 0.977948122806893,
+                "sd": 0.0
+              },
+              "acc": {
+                "mean": 0.894468951476077,
+                "sd": 0.0
+              },
+              "logloss": {
+                "mean": 3.39880376489101,
+                "sd": 0.0
+              }
+            },
+            "federated_mean_sd": {
+              "macro_auc": {
+                "mean": 0.565299440931154,
+                "sd": 0.023802637274168426
+              },
+              "acc": {
+                "mean": 0.156430268069223,
+                "sd": 0.047191015893447666
+              },
+              "logloss": {
+                "mean": 2.1694267907909,
+                "sd": 0.1895660020457071
+              }
+            },
+            "trivial_mean_sd": {
+              "macro_auc": {
+                "mean": 0.5,
+                "sd": 0.0
+              },
+              "acc": {
+                "mean": 0.182219205972175,
+                "sd": 0.0
+              },
+              "logloss": {
+                "mean": 1.7899413369434,
+                "sd": 0.0
+              }
+            },
+            "gap_mean_sd": {
+              "macro_auc": {
+                "mean": -0.412648681875739,
+                "sd": 0.023802637274168426
+              }
+            },
+            "diagnostic": {
+              "applicable_epsilon": 8,
+              "mean_accuracy_above_majority": false,
+              "mean_macro_auc_above_half": true,
+              "all_replicates_pass": false
+            }
+          },
+          "wall_clock_total_s": 362.407938241958,
+          "wall_clock_note": "Attributed total includes the same three central fits in every epsilon row; use training_runtime for the sum with central fits counted once."
+        }
       ],
-      "delta": 1e-06,
-      "parameters": "All pytorch_multiclass v0.5.0 registry defaults: linear softmax, 3 classes, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, no scheduler, no regularization",
-      "privacy": "Unchanged node defaults except administrator per-training epsilon; delta 1e-6, row unit, clipping norm 1, replace-one adjacency",
-      "inner_validation": "None; no schedule selection or hyperparameter search"
-    },
-    "central": "nnet::multinom, decay=0, maxit=3000, reltol=1e-10, MaxNWts=10000. Same clipped affine bounds transform as federated model; fit pooled training data; require convergence=0.",
-    "trivial": "Training majority class for accuracy; training class proportions for probability metrics, yielding tied-score macro-AUC 0.5. No test prevalence used.",
-    "metrics": "Unweighted mean of three one-vs-rest rank AUCs with average ties; argmax accuracy; natural-log multiclass log-loss with true-class probability floor 1e-15. Gap is federated minus central macro-AUC. SD is sample SD over three paired seeds.",
-    "diagnostic": "At epsilon 8, mean accuracy strictly above mean majority accuracy AND mean macro-AUC > 0.5. Also disclose each replicate and whether all pass.",
-    "test_use": "One scoring pass per replicate, after settings are fixed; no rerun of a scored cell with changed settings.",
-    "alternative": "None: full specified cohort is used and no fallback multiclass contract is named. Report a failing diagnostic as a boundary."
-  },
-  "tooling_sha256": {
-    "run_cell.R": "74df65d7f52ab4a0f3dcf036dde3a5eec04c8198b83a70fd4c040a0aa0e8c15e",
-    "campaign_lib.R": "e616e9e793f3698a931ce9c615079fb253982822325f2eb0f6e728456c7a8dab",
-    "multiclass.R": "e9eab02327434004014a14c8d67ccb5077976d186f3ead0bcf1dd953b973fd31",
-    "protocol.json": "749e7631f6460c29d07addce784b6e5cf30c43cec072d7022df23f41681c199f"
-  },
-  "cells": [
-    {
-      "epsilon": 1,
-      "evidence_file": "pilot_ctg_pytorch_multiclass_eps1.json",
-      "evidence_sha256": "381259c6839086a91222583902926d2fb7a5a5b3f124e5eab7e814ff28d53197",
-      "summary": {
-        "central_mean_sd": {
-          "macro_auc": {
-            "mean": 0.967870122525151,
-            "sd": 0.00249958455071314
-          },
-          "acc": {
-            "mean": 0.896470588235294,
-            "sd": 0.00848365005991527
-          },
-          "logloss": {
-            "mean": 0.242946237391829,
-            "sd": 0.00997908982356894
-          }
-        },
-        "federated_mean_sd": {
-          "macro_auc": {
-            "mean": 0.808712090828779,
-            "sd": 0.0908366534369664
-          },
-          "acc": {
-            "mean": 0.778823529411765,
-            "sd": 0
-          },
-          "logloss": {
-            "mean": 0.704726268362476,
-            "sd": 0.043502656226494
-          }
-        },
-        "trivial_mean_sd": {
-          "macro_auc": {
-            "mean": 0.5,
-            "sd": 0
-          },
-          "acc": {
-            "mean": 0.778823529411765,
-            "sd": 0
-          },
-          "logloss": {
-            "mean": 0.674413266654124,
-            "sd": 0
-          }
-        },
-        "gap_mean_sd": {
-          "macro_auc": {
-            "mean": -0.159158031696371,
-            "sd": 0.0930519481239252
-          }
-        },
-        "diagnostic": {
-          "applicable_epsilon": 8,
-          "mean_accuracy_above_majority": false,
-          "mean_macro_auc_above_half": true,
-          "all_replicates_pass": false
-        }
+      "acceptance_epsilon8": {
+        "applicable_epsilon": 8,
+        "mean_accuracy_above_majority": false,
+        "mean_macro_auc_above_half": true,
+        "all_replicates_pass": false,
+        "passed": false
       },
-      "wall_clock_total_s": 354.872841358185
-    },
-    {
-      "epsilon": 4,
-      "evidence_file": "pilot_ctg_pytorch_multiclass_eps4.json",
-      "evidence_sha256": "0dbc29c2253890edc00084820129b9dd837ef58e2949bf5ab20299f33bc59ea4",
-      "summary": {
-        "central_mean_sd": {
-          "macro_auc": {
-            "mean": 0.967870122525151,
-            "sd": 0.00249958455071314
-          },
-          "acc": {
-            "mean": 0.896470588235294,
-            "sd": 0.00848365005991527
-          },
-          "logloss": {
-            "mean": 0.242946237391829,
-            "sd": 0.00997908982356894
-          }
-        },
-        "federated_mean_sd": {
-          "macro_auc": {
-            "mean": 0.863732366857925,
-            "sd": 0.0215737110844825
-          },
-          "acc": {
-            "mean": 0.778823529411765,
-            "sd": 0
-          },
-          "logloss": {
-            "mean": 0.681181350054833,
-            "sd": 0.00934230273043881
-          }
-        },
-        "trivial_mean_sd": {
-          "macro_auc": {
-            "mean": 0.5,
-            "sd": 0
-          },
-          "acc": {
-            "mean": 0.778823529411765,
-            "sd": 0
-          },
-          "logloss": {
-            "mean": 0.674413266654124,
-            "sd": 0
-          }
-        },
-        "gap_mean_sd": {
-          "macro_auc": {
-            "mean": -0.104137755667226,
-            "sd": 0.0211496135620381
-          }
-        },
-        "diagnostic": {
-          "applicable_epsilon": 8,
-          "mean_accuracy_above_majority": false,
-          "mean_macro_auc_above_half": true,
-          "all_replicates_pass": false
-        }
+      "scoring": {
+        "training_completed_at_utc": "2026-09-22T01:03:52Z",
+        "started_at_utc": "2026-09-22T01:03:52Z",
+        "test_table_loads": 1,
+        "central_fits": 3,
+        "federated_fits": 9,
+        "central_scores_reused_across_epsilon": true,
+        "changed_settings_after_scoring": false
       },
-      "wall_clock_total_s": 361.475170135498
-    },
-    {
-      "epsilon": 8,
-      "evidence_file": "pilot_ctg_pytorch_multiclass_eps8.json",
-      "evidence_sha256": "eb68e207d4d9a6d82aede5c04a84ba6bf319bc194debfb40a6ddd560dc2511b2",
-      "summary": {
-        "central_mean_sd": {
-          "macro_auc": {
-            "mean": 0.967870122525151,
-            "sd": 0.00249958455071314
-          },
-          "acc": {
-            "mean": 0.896470588235294,
-            "sd": 0.00848365005991527
-          },
-          "logloss": {
-            "mean": 0.242946237391829,
-            "sd": 0.00997908982356894
-          }
-        },
-        "federated_mean_sd": {
-          "macro_auc": {
-            "mean": 0.867435815016081,
-            "sd": 0.0470337930975351
-          },
-          "acc": {
-            "mean": 0.778823529411765,
-            "sd": 0
-          },
-          "logloss": {
-            "mean": 0.677368157868187,
-            "sd": 0.0259144160899873
-          }
-        },
-        "trivial_mean_sd": {
-          "macro_auc": {
-            "mean": 0.5,
-            "sd": 0
-          },
-          "acc": {
-            "mean": 0.778823529411765,
-            "sd": 0
-          },
-          "logloss": {
-            "mean": 0.674413266654124,
-            "sd": 0
-          }
-        },
-        "gap_mean_sd": {
-          "macro_auc": {
-            "mean": -0.10043430750907,
-            "sd": 0.0456821339042561
-          }
-        },
-        "diagnostic": {
-          "applicable_epsilon": 8,
-          "mean_accuracy_above_majority": false,
-          "mean_macro_auc_above_half": true,
-          "all_replicates_pass": false
-        }
+      "training_runtime": {
+        "central_fits": 3,
+        "federated_fits": 9,
+        "central_fit_total_s": 73.9323773384093,
+        "federated_fit_total_s": 878.0441422462465,
+        "unique_training_total_s": 951.9765195846558,
+        "note": "Sum of three central and nine federated fit durations, with central fits counted once per seed. Federated durations include federation setup/cleanup; final test scoring and other orchestration time are excluded."
       },
-      "wall_clock_total_s": 398.12189722061197
+      "validation": "All three cells: paired official subject-disjoint splits, 21 train/9 test subjects, three disjoint sites of seven training subjects, 7352/2947 windows, 561 public [-1,1] bounds, six classes, registry defaults except n_classes=6, patient privacy on subject, clipping norm 1, five rounds and zero failures. Official outer/inner archive hashes, one test-table load after all training, timezone-aware declaration/training/scoring order, node policies, runner/tooling hashes, replicate diagnostics, means and sample SD independently checked without retraining or rescoring."
     }
   ],
-  "acceptance_epsilon8": {
-    "applicable_epsilon": 8,
-    "mean_accuracy_above_majority": false,
-    "mean_macro_auc_above_half": true,
-    "all_replicates_pass": false,
-    "passed": false
-  },
-  "validation": "All three cells: paired splits/bounds/baselines; 3 sites, 5 rounds, zero failures; node policies and runner hashes; means and sample SD independently recomputed."
+  "interpretation": "CTG remains a calibration boundary: ranking retained, argmax lost. HAR561 is the single user-predeclared alternative; both outcomes are retained."
 }
