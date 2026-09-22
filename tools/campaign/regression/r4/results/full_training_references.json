@@ -1,0 +1,46 @@
+{
+  "purpose": "diagnostic references on original training rows only",
+  "splits": [
+    {
+      "split_seed": 20260820,
+      "n_training": 36000,
+      "ols_rank": 21,
+      "ols": {
+        "rmse": 6.169908859744558,
+        "mean_residual": 7.290484265670076e-14
+      },
+      "trivial": {
+        "rmse": 6.6047454120183104,
+        "mean_residual": -2.0037305148434823e-15
+      }
+    },
+    {
+      "split_seed": 20260821,
+      "n_training": 36000,
+      "ols_rank": 21,
+      "ols": {
+        "rmse": 6.146779220027282,
+        "mean_residual": -1.234954854428199e-13
+      },
+      "trivial": {
+        "rmse": 6.574817133568271,
+        "mean_residual": 2.1505760135672364e-15
+      }
+    },
+    {
+      "split_seed": 20260822,
+      "n_training": 36000,
+      "ols_rank": 21,
+      "ols": {
+        "rmse": 6.1678768342723345,
+        "mean_residual": -9.290109422484724e-14
+      },
+      "trivial": {
+        "rmse": 6.596375706115286,
+        "mean_residual": -2.1568919489962154e-15
+      }
+    }
+  ],
+  "ols_mean_rmse": 6.161521638014725,
+  "trivial_mean_rmse": 6.591979417233955
+}

@@ -1,0 +1,57 @@
+{
+  "cohort_seed": 20260819,
+  "logistic_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "rng_kind": [
+    "Mersenne-Twister",
+    "Inversion",
+    "Rejection"
+  ],
+  "splits": {
+    "20260820": {
+      "n_train": 36000,
+      "n_per_site": [
+        12000,
+        12000,
+        12000
+      ],
+      "membership_verified": true
+    },
+    "20260821": {
+      "n_train": 36000,
+      "n_per_site": [
+        12000,
+        12000,
+        12000
+      ],
+      "membership_verified": true
+    },
+    "20260822": {
+      "n_train": 36000,
+      "n_per_site": [
+        12000,
+        12000,
+        12000
+      ],
+      "membership_verified": true
+    }
+  },
+  "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+  "source_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+  "training_checksums": {
+    "cdcbmi_seed20260820/train.csv": "9aaf164e06bd3170c8dba86be9efde202390ac8932584cf94e2b059fe2160301",
+    "cdcbmi_seed20260820/site1.csv": "7a1dc2fa2cd82e0453ccd30951a6459c4c88fef0bfd60ec16dd1fae79a131c7c",
+    "cdcbmi_seed20260820/site2.csv": "7f9db575dfc410d17f3fbc90a9cd8271be87b3e250c6d40da7e4dd3bac1b1556",
+    "cdcbmi_seed20260820/site3.csv": "7828c38a108bd5e83f723a65b536eb0a7c15ec8a7cf85253b865e409a6454414",
+    "cdcbmi_seed20260821/train.csv": "9c72247236705c1dc1677d902e29fdf028b73001a3d7003f2fdd1e7d5dd2a41f",
+    "cdcbmi_seed20260821/site1.csv": "c34710c9c5ae00e4a6ed2663c826ed0383b0bc18800abd23875073aa3cbeea9a",
+    "cdcbmi_seed20260821/site2.csv": "6f0d1b80c6258b69ae5b289f9b9e7b148005e4e97867e52bac48128e50fe13da",
+    "cdcbmi_seed20260821/site3.csv": "702d46a84131dd12e6ed71ddf125ac3c57ec5b3b42685a099d0d96cbf9fe22f8",
+    "cdcbmi_seed20260822/train.csv": "13da4f1a503f464161080e7d3e9c877c7afecd70ec00a11d8b53344137cc1d64",
+    "cdcbmi_seed20260822/site1.csv": "6413da416905c17fcb4eab4b12098acdf0f0f9fb0f10d485927e452da2dae745",
+    "cdcbmi_seed20260822/site2.csv": "de324b096e17f0f53cfabbda38f197ceebdeaea6c64c9031d272b84519deaa65",
+    "cdcbmi_seed20260822/site3.csv": "e43d250ddc2819fb21df99fefbc26ac433fd962d07ca42aba4563092125027f4"
+  },
+  "frozen_hashes_verified": true,
+  "heldout_policy": "Source read only for deterministic routing; no test.csv opened or created, no held-out summaries or scoring."
+}
