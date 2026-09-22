@@ -1,0 +1,121 @@
+== output-perturbation floor: composed Gaussian RDP + sensitivity bound ==
+  PASS  compute_output_sigma meets the closed Gaussian RDP bound
+  PASS  Gaussian RDP calibration is safe across the full numeric policy range
+  PASS  composed per-release sigma scales exactly as sqrt(R)
+  PASS  compute_output_sigma rejects eps<=0
+  PASS  compute_output_sigma rejects a non-integer release horizon
+  PASS  clip_update bounds ||delta|| <= C
+  PASS  output-perturbation DESTROYS raw-data exfil (1e6 -> O(sigma))
+  PASS  floor noise std == 2*sigma(C) for C=1 (2C sensitivity, no double-C)
+  PASS  floor noise std == 2*sigma(C) for C=4 (2C sensitivity, no double-C)
+== loss allowlist: only stock per-sample-decomposable losses ==
+  PASS  loss_from_allowlist('bce_logits') ok
+  PASS  loss_from_allowlist('cross_entropy') ok
+  PASS  loss_from_allowlist('mse') ok
+  PASS  loss_from_allowlist('poisson_nll') ok
+  PASS  loss_from_allowlist('multilabel_bce') ok
+  PASS  loss_from_allowlist rejects unknown 'cox_partial'
+== per-sample independence probe: catches what static validation misses ==
+  PASS  clean model passes the probe
+  PASS  x - x.mean(0) coupling REJECTED
+  PASS  batch-attention coupling REJECTED
+== assert_releasable: no un-noised stash channels ==
+  PASS  clean model is releasable
+  PASS  buffer stash channel REJECTED
+  PASS  frozen-param stash channel REJECTED
+== Tier-2 gate (ISOLATED gated_local_update): adversarial uploads cannot leak ==
+  PASS  Tier-2 exfil via weights DESTROYED by the gate (1e6 raw -> O(sigma))
+  PASS  Tier-2 in-process MONKEYPATCH defeated by isolation (parent DP intact, release bounded)
+  PASS  isolation: the parent NEVER imported the untrusted upload (absent from sys.modules)
+  PASS  trusted Hook loader shares the exact SecureNumpyRng class with its DP gate
+  PASS  Tier-2 shape-mismatch NEUTRALIZED (validate-or-zero -> noisy global shape)
+  PASS  Tier-2 crashing/data-dependent upload -> finite NOISY release
+  PASS  Tier-2 oversized result rejected by the size cap -> noisy zero update (no parent OOM)
+  PASS  Tier-2 wrong array-count rejected before load -> noisy zero update
+  PASS  gated_local_update refuses a non-str module (the node never imports an object)
+  PASS  HookApp stays disabled when the timing envelope is shorter than timeout+guard
+  PASS  seccomp network-lock helper is present + callable (no-op off-Linux)
+== custom loss factory: negative-binomial NLL (per-sample, DP-SGD-safe) ==
+  PASS  loss_from_allowlist('negbin_nll', cfg) returns a callable
+  PASS  negbin_nll -> exact Poisson NLL as dispersion -> inf
+  PASS  negbin_nll rejects dispersion <= 0 (fail closed)
+  PASS  negbin_nll rejects non-finite dispersion (fail closed)
+  PASS  negbin_nll model passes the per-sample independence probe
+== custom loss factory: gamma NLL (per-sample, DP-SGD-safe) ==
+  PASS  loss_from_allowlist('gamma_nll', cfg) returns a callable
+  PASS  gamma_nll(shape=1) == exponential NLL
+  PASS  gamma_nll rejects shape <= 0 (fail closed)
+  PASS  gamma_nll model passes the per-sample independence probe
+== robust Huber regression (public parameter, per-sample DP-SGD) ==
+  PASS  huber uses the exact public delta
+  PASS  changing huber-delta changes the applied loss
+  PASS  huber rejects an invalid public delta
+  PASS  huber model passes the per-sample independence probe
+  PASS  huber has scalar width and the wide regression output domain
+== quantile regression (public level, per-sample DP-SGD) ==
+  PASS  quantile uses the exact public pinball level
+  PASS  changing quantile-level changes the applied loss
+  PASS  quantile rejects endpoints and non-finite levels
+  PASS  quantile model passes the per-sample independence probe
+  PASS  quantile has scalar width and the wide regression output domain
+== ordinal (CORN): node-decided K-1 width + stock per-sample BCE ==
+  PASS  ordinal output_width = K-1
+  PASS  ordinal degenerate (K=2) width = 1
+  PASS  ordinal loss is stock BCEWithLogitsLoss
+== conv ops: node-shaped CNN, per-sample, stock + Opacus grad_sample ==
+  PASS  CNN spec builds to a stock module with output width == out_dim
+  PASS  CNN has no buffers (assert_releasable holds)
+  PASS  CNN passes the per-sample independence probe
+  PASS  conv2d on a flat (un-reshaped) input REJECTED
+  PASS  reshape that changes element count REJECTED
+  PASS  conv out_channels over cap REJECTED
+== hostile model specs: reject before large constructors/forwards ==
+  PASS  oversized encoded spec rejected before base64 decode
+  PASS  oversized decoded spec rejected before JSON parse
+  PASS  huge linear parameter product rejected before constructor
+  PASS  huge convolution parameter product rejected before constructor
+  PASS  cumulative parameter budget rejects before the overflowing constructor
+  PASS  oversized activation shape rejected before a model forward
+  PASS  oversized node-owned input dim rejected before constructor
+  PASS  non-finite graph affine constants rejected
+  PASS  oversized graph affine constants rejected
+  PASS  direct MSE regression keeps a wide finite output domain
+== adaptive routing: the SERVER picks the DP mechanism, unforgeably ==
+  PASS  declarative spec -> neural (DP-SGD, tight)
+  PASS  retired trees track -> fail-closed to the floor
+  PASS  explicit egress -> egress (output-perturbation floor)
+  PASS  uploaded code requesting NEURAL -> FORCED to the floor (cannot be fooled)
+  PASS  uploaded code requesting retired TREES -> FORCED to the floor
+  PASS  unrecognized track -> fail-closed to the floor
+== typed graph (DAG): residual/skip/concat, per-sample, gate-admitted ==
+  PASS  DAG ResNet block (residual conv) builds, output width == out_dim
+  PASS  DAG GraphModule admitted by assert_stock_architecture
+  PASS  DAG ResNet block has no buffers (releasable)
+  PASS  DAG ResNet block passes the per-sample independence probe
+  PASS  DAG concat (2 branches) builds with summed feature width
+  PASS  DAG add with mismatched per-sample shapes REJECTED
+  PASS  DAG forward-referenced input (non-topological) REJECTED
+  PASS  DAG division is total at zero and emits only finite bounded logits
+  PASS  totalized DAG division remains per-sample independent
+  PASS  DAG extreme finite arithmetic saturates instead of failing
+== advanced graph ops: attention / broadcast / upsample (per-sample) ==
+  PASS  transformer attention block (matmul/softmax/transpose) builds, admitted, width ok
+  PASS  attention block per-sample-safe (attention over TOKENS, not the batch)
+  PASS  broadcast mul [4,1,1] x [4,4,4] (squeeze-excitation) builds
+  PASS  upsample (U-Net decoder path) builds
+== recurrent (LSTM/GRU) via sanitized Opacus DP-RNN -- gate stays strict ==
+  PASS  LSTM sequence DAG builds, output width == out_dim
+  PASS  LSTM admitted (RecurrentBlock + sanitized DPLSTM, no buffers)
+  PASS  LSTM per-sample-safe (recurrence over TIME, not the batch)
+  PASS  gate STILL rejects ANY module carrying a hook (sanitize did NOT weaken it)
+== improved floor: sample-and-aggregate -- conservative multi-block sensitivity ==
+  PASS  sample-and-aggregate L2 sensitivity <= 2C/k for ANY one-block neighbor
+  PASS  sample-and-aggregate noise matches min(2C,4C/k) conservative sensitivity
+  PASS  Gaussian RDP sigma is strictly safe at the numerical policy edge
+  PASS  SAA is GATED OFF without a full sandbox (subprocess-only) -> plain 2C floor
+  PASS  with a full sandbox the node uses the fixed public block count
+  PASS  custodian governance off-switch honoured even with a full sandbox
+  PASS  subprocess isolation (the monkeypatch fix) is universally available
+  PASS  SAA full-sandbox gate requires real net+fs isolation (not subprocess alone)
+
+== DP safety suite: 102 passed, 0 failed ==

@@ -1,0 +1,23 @@
+{
+  "correction": "The scorer inherited preparation audit test_accessed=false into scored cells. Preserve it as preparation_test_accessed=false and mark scored dataset test_accessed=true.",
+  "metrics_or_settings_changed": false,
+  "scorer_rerun": false,
+  "executed_tooling_commit": "9557545f6649f440c43566b6dcf4553db38bef65",
+  "files": [
+    {
+      "file": "pilot_uci_har_pytorch_lstm_eps1.json",
+      "original_sha256": "25153fa16a562f82c15fec3088dba9481c685ba252941ba130e2f7147f3c1f11",
+      "corrected_sha256": "397b92c639d0d29d0431dcc32e01fe35349d22a4facba5cd4ec0d4af1c226204"
+    },
+    {
+      "file": "pilot_uci_har_pytorch_lstm_eps8.json",
+      "original_sha256": "6d9ec17ec460876b954bb165e01cc2f8b4082b141d328f326d20b65afe9f1992",
+      "corrected_sha256": "185bbab1205ab8da754fae207313a7cabfb7be950de1b5882d23cf1ea733db03"
+    },
+    {
+      "file": "pilot_uci_har_pytorch_lstm_eps4.json",
+      "original_sha256": "22e5c8184ecfb534a7ddbbc8e0489c7ace32b29d09b53e1c184e9ae3fc9a0367",
+      "corrected_sha256": "663c10ad52c3f1f74514fa7226675a37409141dee7d86234c6b6bf7bd4e13a0d"
+    }
+  ]
+}

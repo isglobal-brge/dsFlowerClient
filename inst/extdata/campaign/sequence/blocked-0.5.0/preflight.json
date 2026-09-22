@@ -9,7 +9,7 @@
       "contract": "pytorch_lstm",
       "status": "passed",
       "phase": "dp_fit",
-      "elapsed_s": 2.5868800040334463,
+      "elapsed_s": 26.908968307077885,
       "mechanism": {
         "adjacency": "replace_one",
         "noise_multiplier": 19.375,

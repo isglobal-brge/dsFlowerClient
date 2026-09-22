@@ -1,0 +1,49 @@
+test_portable_weights_are_bounded_and_reject_non_finite_values (test_runner_contracts.ArtifactRuntimeTests.test_portable_weights_are_bounded_and_reject_non_finite_values) ... ok
+test_save_results_writes_reader_compatible_portable_weights (test_runner_contracts.ArtifactRuntimeTests.test_save_results_writes_reader_compatible_portable_weights) ... ok
+test_unavailable_privacy_tail_writes_status_but_no_model (test_runner_contracts.ArtifactRuntimeTests.test_unavailable_privacy_tail_writes_status_but_no_model) ... ok
+test_patient_pooling_uses_majority_per_label (test_runner_contracts.MultilabelRuntimeTests.test_patient_pooling_uses_majority_per_label) ... ok
+test_tabular_loader_returns_n_by_l_targets (test_runner_contracts.MultilabelRuntimeTests.test_tabular_loader_returns_n_by_l_targets) ... ok
+test_execution_failure_marker_survives_an_exact_replay (test_runner_contracts.ReplaySafetyTests.test_execution_failure_marker_survives_an_exact_replay) ... ok
+test_public_preflight_failure_and_replay_remain_unavailable (test_runner_contracts.ReplaySafetyTests.test_public_preflight_failure_and_replay_remain_unavailable) ... ok
+test_replay_never_reads_private_data_or_new_seed (test_runner_contracts.ReplaySafetyTests.test_replay_never_reads_private_data_or_new_seed) ... ok
+test_adaptive_strategy_receives_public_hyperparameters (test_runner_contracts.StrategyRuntimeTests.test_adaptive_strategy_receives_public_hyperparameters) ... [93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+ok
+test_aggregation_rejects_duplicate_node_replies (test_runner_contracts.StrategyRuntimeTests.test_aggregation_rejects_duplicate_node_replies) ... [93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+ok
+test_strategy_marks_public_preflight_unavailable (test_runner_contracts.StrategyRuntimeTests.test_strategy_marks_public_preflight_unavailable) ... [93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+ok
+test_strategy_pins_a_fresh_exact_round_config_for_every_message (test_runner_contracts.StrategyRuntimeTests.test_strategy_pins_a_fresh_exact_round_config_for_every_message) ... [93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+[92mINFO [0m:      configure_train: Sampled 2 nodes (out of 2)
+ok
+test_strategy_rejects_an_extra_connected_node_before_sending (test_runner_contracts.StrategyRuntimeTests.test_strategy_rejects_an_extra_connected_node_before_sending) ... [93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+[92mINFO [0m:      configure_train: Sampled 2 nodes (out of 3)
+ok
+test_strategy_requires_every_configured_node_in_every_round (test_runner_contracts.StrategyRuntimeTests.test_strategy_requires_every_configured_node_in_every_round) ... [93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+[92mINFO [0m:      aggregate_train: Received 2 results and 0 failures
+[93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+[92mINFO [0m:      aggregate_train: Received 1 results and 1 failures
+[92mINFO [0m:      	> Received error in reply from node 2: client failed
+[93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+[92mINFO [0m:      aggregate_train: Received 1 results and 1 failures
+[92mINFO [0m:      	> Received error in reply from node 2: client failed
+[93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+[92mINFO [0m:      aggregate_train: Received 1 results and 1 failures
+[92mINFO [0m:      	> Received error in reply from node 2: client failed
+[93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+[92mINFO [0m:      aggregate_train: Received 1 results and 1 failures
+[92mINFO [0m:      	> Received error in reply from node 2: client failed
+[93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+[92mINFO [0m:      aggregate_train: Received 1 results and 1 failures
+[92mINFO [0m:      	> Received error in reply from node 2: client failed
+[92mINFO [0m:      aggregate_train: Received 1 results and 0 failures
+[92mINFO [0m:      aggregate_train: Received 3 results and 0 failures
+ok
+test_unavailable_rounds_never_replace_trained_arrays (test_runner_contracts.StrategyRuntimeTests.test_unavailable_rounds_never_replace_trained_arrays) ... [93mWARNING [0m:   fraction_evaluate is set to 0.0. Federated evaluation will be skipped.
+[92mINFO [0m:      aggregate_train: Received 2 results and 0 failures
+ok
+test_tree_track_is_rejected_and_runtime_entry_points_are_absent (test_runner_contracts.UnsupportedTrackTests.test_tree_track_is_rejected_and_runtime_entry_points_are_absent) ... ok
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.073s
+
+OK

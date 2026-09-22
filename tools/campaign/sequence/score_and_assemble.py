@@ -136,7 +136,8 @@ def main(root, out):
         summary["gap_macro_auc"] = mean_sd([r["gap_macro_auc"] for r in reps])
         cell = {"schema": "dsflower-sequence-campaign-v1", "status": "executed", "contract": "pytorch_lstm",
                 "epsilon": epsilon, "runtime": runtime, "protocol": protocol, "protocol_sha256": sha(tools / "protocol.json"),
-                "dataset": {**audit, "n_test_windows": len(y), "n_test_subjects": 9,
+                "dataset": {**audit, "preparation_test_accessed": audit["test_accessed"],
+                            "test_accessed": True, "n_test_windows": len(y), "n_test_subjects": 9,
                             "test_subjects": sorted(map(int, np.unique(subjects))), "n_total": len(y) + audit["n_train_windows"]},
                 "per_replicate": reps, "summary": summary,
                 "utility_diagnostics": {"epsilon8_annotation": epsilon == 8, "annotation_only": True,

@@ -1,0 +1,27 @@
+{
+  "schema": "dsflower-sequence-tooling-recovery-v1",
+  "seed": 20260922,
+  "epsilon": 1,
+  "failure_phase": "central capture verification before training",
+  "cause": "Expected target hashes used int64; released task._load_target and observer used float32. All feature hashes already matched.",
+  "correction": "Match runner float32 label representation before pooling; retain int64 conversion at the cross-entropy loss and class census.",
+  "settings_changed": false,
+  "federation_retrained": false,
+  "central_training_started_before_failure": false,
+  "test_accessed": false,
+  "validated_node_round_captures": 15,
+  "retained_federation_elapsed_s": 132.1684,
+  "timing_limitation": "Resumed execution time includes retained federation training and continuation wall time; interrupted wrapper overhead is excluded.",
+  "second_interruption": {
+    "failure_phase": "central TRAIN-only predictor smoke check after fitting",
+    "cause": "The initial central checkpoint omitted shared recurrent parameter aliases required by the unchanged strict predictor.",
+    "correction": "Save the central model with stock state_dict, matching the released ServerApp artifact writer.",
+    "settings_changed": false,
+    "federation_retrained": false,
+    "central_unscored_replayed": true,
+    "test_accessed": false,
+    "verification_record": "central-replay-verification.json",
+    "unique_parameter_tensors_bit_identical": true,
+    "federated_predictor_train_smoke": "passed"
+  }
+}

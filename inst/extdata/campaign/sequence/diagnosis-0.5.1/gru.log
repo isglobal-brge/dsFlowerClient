@@ -1,0 +1,5 @@
+{"python": "3.11.10 (main, Sep  7 2024, 18:35:41) [GCC 11.4.0]", "versions": {"torch": "2.6.0+cu124", "opacus": "1.6.0", "flwr": "1.31.0"}, "kind": "gru"}
+PHASE client_app import
+PHASE recurrent model construction
+PHASE optimizer construction
+PASS guarded recurrent import and ordinary optimizer step

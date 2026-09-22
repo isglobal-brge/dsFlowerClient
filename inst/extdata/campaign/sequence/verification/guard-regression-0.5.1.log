@@ -1,0 +1,14 @@
+test_canonical_clientapp_ref_loads_only_after_hash_pin_activation (test_sitecustomize.ParentImportBoundaryTests.test_canonical_clientapp_ref_loads_only_after_hash_pin_activation) ... ok
+test_canonical_runner_is_verified_even_under_a_safe_prefix (test_sitecustomize.ParentImportBoundaryTests.test_canonical_runner_is_verified_even_under_a_safe_prefix) ... ok
+test_flower_clientapp_loader_is_wrapped_after_module_exec (test_sitecustomize.ParentImportBoundaryTests.test_flower_clientapp_loader_is_wrapped_after_module_exec) ... ok
+test_foreign_packages_require_the_single_pin_map_contract (test_sitecustomize.ParentImportBoundaryTests.test_foreign_packages_require_the_single_pin_map_contract) ... ok
+test_generated_torch_template_requires_origin_and_exact_source (test_sitecustomize.ParentImportBoundaryTests.test_generated_torch_template_requires_origin_and_exact_source) ... ok
+test_node_track_selects_only_its_exact_clientapp_reference (test_sitecustomize.ParentImportBoundaryTests.test_node_track_selects_only_its_exact_clientapp_reference) ... ok
+test_recurrent_contracts_train_in_fresh_guarded_processes (test_sitecustomize.ParentImportBoundaryTests.test_recurrent_contracts_train_in_fresh_guarded_processes) ... ok
+test_runtime_name_does_not_exempt_foreign_top_level_code (test_sitecustomize.ParentImportBoundaryTests.test_runtime_name_does_not_exempt_foreign_top_level_code) ... ok
+test_uploaded_module_is_denied_before_runtime_and_safe_path_exemptions (test_sitecustomize.ParentImportBoundaryTests.test_uploaded_module_is_denied_before_runtime_and_safe_path_exemptions) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 17.532s
+
+OK
