@@ -13,6 +13,9 @@ import time
 def main(root):
     tools = Path(__file__).resolve().parent
     protocol = json.loads((tools / "protocol.json").read_text())
+    preflight = json.loads((root / "preflight.json").read_text())
+    assert preflight["attempts"][0]["contract"] == "pytorch_lstm"
+    assert preflight["attempts"][0]["status"] == "passed"
     env = dict(os.environ, R_LIBS_USER=str(root / "Rlib"),
                DSFLOWER_VENV_ROOT=str(root / "venvs"), DSFLOWER_CLIENT_VENV_ROOT=str(root / "client"),
                PYTHONPATH=str(root / "src/dsFlowerClient/inst/flower_app"),
