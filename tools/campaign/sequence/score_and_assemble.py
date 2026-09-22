@@ -61,6 +61,7 @@ def main(root, out):
     audit = read(root / "prepared/audit.json")
     runtime = read(root / "runtime.json")
     runs = []
+    initial_by_seed = {}
     for epsilon in protocol["epsilon_order"]:
         for seed in protocol["seeds"]:
             run = root / "runs" / f"pytorch_lstm-eps{epsilon}-seed{seed}"
@@ -68,6 +69,8 @@ def main(root, out):
             assert status["status"] == "trained_unscored" and status["cleanup_ok"]
             assert read(run / "central/status.json")["status"] == "trained_unscored"
             initial = read(run / "public-capture/public-initial.json")
+            previous = initial_by_seed.setdefault(seed, initial["tensor_sha256"])
+            assert previous == initial["tensor_sha256"]
             captures, _ = verify_captures(root, run, initial["config"])
             for capture in captures:
                 m = capture["mechanism"]

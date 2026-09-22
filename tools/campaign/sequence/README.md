@@ -48,6 +48,7 @@ export PYTHONPATH=$ROOT/src/dsFlowerClient/inst/flower_app
 export CUBLAS_WORKSPACE_CONFIG=:4096:8
 PYTHON=$ROOT/venvs/pytorch-gpu/bin/python
 "$PYTHON" "$TOOLS/prepare_public_data.py" --root "$ROOT"
+"$PYTHON" "$TOOLS/preflight.py" "$ROOT"
 "$PYTHON" "$TOOLS/install_public_observer.py"
 "$PYTHON" "$TOOLS/capture_runtime.py" "$ROOT"
 "$PYTHON" "$TOOLS/run_matrix.py" --root "$ROOT"
@@ -71,6 +72,8 @@ is federated-DP minus central macro AUC. At epsilon 8 the mean accuracy must
 exceed the training-majority predictor's test accuracy and mean macro AUC must
 exceed 0.5; per-seed diagnostics are also reported. No setting is changed after
 scoring. A shared package failure stops execution and is documented explicitly.
+The synthetic preflight must pass the unchanged GPU DP training path before
+starting any HAR replicate; it does not score or train on HAR.
 
 ## Dataset provenance
 
