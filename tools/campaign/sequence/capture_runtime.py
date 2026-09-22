@@ -15,7 +15,8 @@ import torch
 root = Path(sys.argv[1]).resolve()
 tools = Path(__file__).resolve().parent
 release = json.loads((tools / "release-source.json").read_text())
-env = dict(os.environ, R_LIBS_USER=str(root / "Rlib"))
+env = dict(os.environ, R_LIBS_USER=str(root / "Rlib"),
+           DSFLOWER_VENV_ROOT=str(root / "venvs"), DSFLOWER_CLIENT_VENV_ROOT=str(root / "client"))
 code = '''library(dsFlower); library(dsFlowerClient); cat(jsonlite::toJSON(list(
   R = R.version.string, DSI = as.character(packageVersion("DSI")),
   DSLite = as.character(packageVersion("DSLite")), dsFlower = as.character(packageVersion("dsFlower")),
