@@ -86,7 +86,17 @@ DSFLOWER_SKIP_PYTHON_SETUP=1 R CMD INSTALL -l "$ROOT/Rlib" "$ROOT/src/dsFlower"
 ```
 
 Then rerun preflight, runtime capture, matrix, and the single final scorer in
-the order above. The scorer opens `test-scoring-started.json` exclusively.
+the order above. The scorer opens `test-scoring-started.json` exclusively. The execution driver
+also refuses further training once that marker exists. An unscored tooling
+interruption can be resumed with `run_matrix.py --root "$ROOT" --resume-unscored`;
+it retains completed phases only after checking their model hashes and cleanup
+status. Preserve the failed phase's empty directory/log under `attempts/` first.
+
+The first completed federation exposed a checker-only label-dtype mismatch:
+node captures hash float32 targets, while the initial checker used int64.
+Matching the runner's dtype verified every feature and target hash without
+changing any data values, model settings or completed federation. The first
+central attempt had stopped before training. Its failure log is archived.
 `trace_guard.py` is synthetic and does not open the HAR archive. The guard
 regression lives in dsFlower's `inst/python/tests/test_sitecustomize.py`.
 

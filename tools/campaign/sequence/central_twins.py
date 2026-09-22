@@ -19,7 +19,9 @@ def digest(x):
 def training_tensors(root, cfg):
     data = np.load(root / "prepared/train.npz")
     x = client_app._apply_feature_bounds(data["X"], cfg)
-    return x, data["y"], data["subjects"]
+    # task._load_target returns float32 before pooling; the observer hashes
+    # those bytes, before _dp_fit converts classification targets to long.
+    return x, data["y"].astype(np.float32), data["subjects"]
 
 
 def verify_captures(root, run, cfg):
@@ -103,7 +105,7 @@ def main(root, run):
               "initial_tensor_sha256": initial["tensor_sha256"],
               "optimizer": pins["optimizer"], "rounds": 5, "steps": 5,
               "learning_rate": pins["learning_rate"], "test_accessed": False,
-              "poisson_sample_rate": 1.0, "subject_modal_class_counts": np.bincount(y, minlength=6).tolist()}
+              "poisson_sample_rate": 1.0, "subject_modal_class_counts": np.bincount(y.astype(np.int64), minlength=6).tolist()}
     (out / "status.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result))
 
