@@ -20,7 +20,8 @@ export DSFLOWER_CLIENT_VENV_ROOT="$ROOT/client"
 export DSFLOWER_TORCH_BACKEND=cpu
 if [ -f "$ROOT/wheels/CHECKSUMS.sha256" ]; then
   (cd "$ROOT/wheels" && sha256sum -c CHECKSUMS.sha256)
-  export UV_NO_INDEX=1 UV_FIND_LINKS="$ROOT/wheels"
+  export UV_NO_INDEX=1 UV_OFFLINE=1 UV_FIND_LINKS="$ROOT/wheels"
+  export UV_CONSTRAINT="$ROOT/dsFlowerClient/tools/campaign/regression/runtime-constraints.txt"
 fi
 R CMD INSTALL --library="$ROOT/Rlib" "$ROOT/dsFlower"
 R CMD INSTALL --library="$ROOT/Rlib" "$ROOT/dsFlowerClient"

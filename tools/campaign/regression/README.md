@@ -107,7 +107,9 @@ in `/workspace/cells/runs/`. Never publish the node secret files.
 For slow pod downloads, `fetch_wheels.py <wheel-directory>` downloads the 60
 Linux CPython 3.11 wheels in `pylock.toml` and verifies every SHA-256. Transfer
 that directory to `/workspace/cells/wheels/` before package installation;
-`provision.sh` then validates the checksums and instructs uv to install locally.
+`provision.sh` then validates the checksums and instructs uv to install locally
+with offline mode and `runtime-constraints.txt`. Both are needed because cached
+index entries can otherwise select newer versions absent from the wheel set.
 The lock satisfies the release package requirements and pins CPU Torch 2.14.0.
 It uses PyTorch's official `download.pytorch.org` mirror because the alternate
 `download-r2.pytorch.org` host returned HTTP 403 for the same hashed artifacts.
