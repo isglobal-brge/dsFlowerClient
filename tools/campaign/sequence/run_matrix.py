@@ -24,7 +24,7 @@ def main(root):
     parent.mkdir(mode=0o700, exist_ok=True)
     env["DSFLOWER_NODE_SECRET_FILE"] = str(parent / "secret")
     env["DSFLOWER_TEST_ALLOW_EPHEMERAL_SECRET"] = "1"
-    python = str(root / "venvs/pytorch-gpu/bin/python")
+    python = str(Path(env["DSFLOWER_VENV_ROOT"]) / "pytorch-gpu/bin/python")
     for epsilon in protocol["epsilon_order"]:
         for seed in protocol["seeds"]:
             name = f"pytorch_lstm-eps{epsilon}-seed{seed}"

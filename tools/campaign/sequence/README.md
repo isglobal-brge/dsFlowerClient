@@ -50,7 +50,7 @@ export DSFLOWER_VENV_ROOT=$ROOT/venvs
 export DSFLOWER_CLIENT_VENV_ROOT=$ROOT/client
 export PYTHONPATH=$ROOT/Rlib/dsFlowerClient/flower_app
 export CUBLAS_WORKSPACE_CONFIG=:4096:8
-PYTHON=$ROOT/venvs/pytorch-gpu/bin/python
+PYTHON=$(realpath "$ROOT/venvs")/pytorch-gpu/bin/python
 "$PYTHON" "$TOOLS/prepare_public_data.py" --root "$ROOT"
 "$PYTHON" "$TOOLS/preflight.py" "$ROOT"
 "$PYTHON" "$TOOLS/install_public_observer.py"
