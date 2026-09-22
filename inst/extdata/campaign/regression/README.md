@@ -1,7 +1,7 @@
-# Regression evidence: target scale and public-unit BMI
+# Regression evidence: target scale and training-selected BMI schedule
 
-The track contains three cells: Parkinson subject-level privacy, raw-unit CDC
-BMI, and the separately declared public-unit CDC BMI cell. All use unchanged
+The track contains four cells: Parkinson subject-level privacy, raw-unit CDC
+BMI, default public-unit CDC BMI, and the training-selected R4 schedule. All use unchanged
 `pytorch_linear_regression`, dsFlower/dsFlowerClient 0.5.0, three sites, five
 FedAvg rounds, three seeds, epsilon 1/4/8, delta 1e-6 and unit clipping.
 
@@ -41,7 +41,7 @@ DOI [10.24432/C53919](https://doi.org/10.24432/C53919), thesis key
 public declared clipping policy, not empirical cohort bounds or a claim about
 universal BRFSS endpoints. Original cohort/split checksums remain unchanged.
 
-## Completed three-cell comparison
+## Historical three-cell comparison before R4
 
 | Contract | Dataset/cell | n | Privacy unit | ε | Central RMSE | DP RMSE | Trivial RMSE | DP R² | Gap mean ± SD | Diagnostics |
 |---|---|---:|---|---:|---:|---:|---:|---:|---:|---|
@@ -311,3 +311,81 @@ post-test tuning, or further alternative. Package sources are unchanged.
 Privacy accounting is per training; no composed-grid or private-selection
 guarantee is claimed. Cohort citation: **`uci_cdc_diabetes_health_indicators`**,
 UCI DOI [10.24432/C53919](https://doi.org/10.24432/C53919).
+
+## R4 completed result
+
+The declaration above was committed and pushed before execution as
+`1952d5f983a9a00aab1385bb09da641c34ef8e00`. All nine corrected-cell
+federated-DP runs and nine real pooled-DP runs completed once, with five rounds,
+zero failures and successful cleanup. The three noiseless reference fits were
+scored once each and reused across budgets. The pod remains running.
+
+All error columns below are BMI RMSE; R² is dimensionless. Entries are mean ±
+sample SD over seeds 20260820/20260821/20260822. Gap is paired federated-DP RMSE
+minus OLS RMSE. These overlapping splits do not provide independent-cohort
+confidence intervals.
+
+| ε | OLS | Non-private federated | Federated DP | Pooled DP | Trivial | DP R² | Gap |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 6.195724 ± 0.050925 | 6.244206 ± 0.053173 | 6.276009 ± 0.086275 | 6.234600 ± 0.064903 | 6.580037 ± 0.061765 | 0.090251 ± 0.009807 | 0.080285 ± 0.035780 |
+| 4 | 6.195724 ± 0.050925 | 6.244206 ± 0.053173 | 6.248502 ± 0.045165 | 6.253638 ± 0.076029 | 6.580037 ± 0.061765 | 0.098152 ± 0.004789 | 0.052779 ± 0.005768 |
+| 8 | 6.195724 ± 0.050925 | 6.244206 ± 0.053173 | 6.241133 ± 0.060517 | 6.252376 ± 0.065611 | 6.580037 ± 0.061765 | 0.100311 ± 0.001537 | 0.045409 ± 0.018193 |
+
+Every corrected federated-DP replicate has RMSE below trivial and positive R²;
+these remain annotations, not acceptance gates. The noiseless twin remains
+0.048483 BMI RMSE above OLS on average. The paired DP-minus-noiseless differences
+are 0.031802 / 0.004296 / −0.003074 BMI at epsilon 1/4/8. They include independent
+initialization and sampling variation and do not establish a negative causal
+privacy cost at epsilon 8. The longer clipped schedule removes most of the
+default cell's optimization shortfall, consistent with the training-only
+[R4 diagnosis](REGRESSION_DIAGNOSIS_R4.md). Remaining OLS gaps include clipping,
+finite optimization, federation and privacy effects. The historical default
+cell is retained unchanged and annotated with that diagnosis in `summary.json`.
+
+The following saved summaries include MAE as well as RMSE and R²:
+
+| ε | Arm | RMSE mean ± SD | MAE mean ± SD | R² mean ± SD |
+|---:|---|---:|---:|---:|
+| 1 | OLS | 6.195724 ± 0.050925 | 4.349886 ± 0.044146 | 0.113335 ± 0.003695 |
+| 1 | Non-private federated | 6.244206 ± 0.053173 | 4.291102 ± 0.043010 | 0.099403 ± 0.004978 |
+| 1 | Federated DP | 6.276009 ± 0.086275 | 4.322588 ± 0.043750 | 0.090251 ± 0.009807 |
+| 1 | Pooled DP | 6.234600 ± 0.064903 | 4.338367 ± 0.030109 | 0.102196 ± 0.004386 |
+| 1 | Training mean | 6.580037 ± 0.061765 | 4.704457 ± 0.044573 | -0.000054 ± 0.000046 |
+| 4 | OLS | 6.195724 ± 0.050925 | 4.349886 ± 0.044146 | 0.113335 ± 0.003695 |
+| 4 | Non-private federated | 6.244206 ± 0.053173 | 4.291102 ± 0.043010 | 0.099403 ± 0.004978 |
+| 4 | Federated DP | 6.248502 ± 0.045165 | 4.298831 ± 0.051328 | 0.098152 ± 0.004789 |
+| 4 | Pooled DP | 6.253638 ± 0.076029 | 4.294137 ± 0.041496 | 0.096717 ± 0.007023 |
+| 4 | Training mean | 6.580037 ± 0.061765 | 4.704457 ± 0.044573 | -0.000054 ± 0.000046 |
+| 8 | OLS | 6.195724 ± 0.050925 | 4.349886 ± 0.044146 | 0.113335 ± 0.003695 |
+| 8 | Non-private federated | 6.244206 ± 0.053173 | 4.291102 ± 0.043010 | 0.099403 ± 0.004978 |
+| 8 | Federated DP | 6.241133 ± 0.060517 | 4.299425 ± 0.037584 | 0.100311 ± 0.001537 |
+| 8 | Pooled DP | 6.252376 ± 0.065611 | 4.295717 ± 0.033840 | 0.097074 ± 0.002960 |
+| 8 | Training mean | 6.580037 ± 0.061765 | 4.704457 ± 0.044573 | -0.000054 ± 0.000046 |
+
+Final execution ran from **2026-09-22 06:52:41 UTC** through
+**2026-09-22T07:21:46Z**. Summed replicate wall-clock time was
+**1736.710 seconds**; the six selection federations
+took **586.476 seconds** in total.
+
+One startup attempt failed because the lightweight pod checkout lacked the
+existing `central_public_units.py` helper. The failure occurred before any
+final model training or test scoring. The unchanged helper was staged, the
+failed-start guard/log were preserved, and execution then completed. No scored
+cell was retrained or rescored; no further alternative was run.
+
+Evidence: `cdcbmi_r4_pytorch_linear_regression_eps*.json` retain every arm's
+per-replicate scores, sample SDs, node policies/configurations, split hashes,
+model hashes, versions and timings. `cdcbmi_r4_selection.json` records the full
+training-only sweep. `cdcbmi_r4_accounting.json` records full-horizon calibration.
+`cdcbmi_r4_execution_audit.json` verifies 18 private model byte hashes, three
+budget guards, nine scoring guards, comparator reuse and the startup recovery.
+`cdcbmi_r4_validation.json` records publication checksums and preservation of
+the historical artifacts. No raw rows, prediction tables, credentials or
+private R fit objects are published.
+
+Execution records retain the untouched public-unit base protocol and its
+checksum. Their top-level `model_params`/`model_params_overrides` and node
+configurations describe the effective corrected schedule. The separate
+`cdcbmi_r4_protocol.json` resolves that inheritance explicitly. The source
+cohort remains **`uci_cdc_diabetes_health_indicators`**, UCI DOI
+[10.24432/C53919](https://doi.org/10.24432/C53919).

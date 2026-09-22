@@ -1,0 +1,4638 @@
+{
+  "schema": "dsflower-campaign-v2",
+  "cell_id": "cdcbmi_r4_pytorch_linear_regression_eps4",
+  "generated_at": "2026-09-22T07:11:21Z",
+  "predeclaration_commit": "1952d5f983a9a00aab1385bb09da641c34ef8e00",
+  "host": {
+    "nodename": "58c659d7e550",
+    "sysname": "Linux",
+    "release": "6.8.0-136-generic",
+    "machine": "x86_64",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "pod_id": "n4emgxhiqzy5i4",
+    "pod_name": "pod-flower-regression"
+  },
+  "versions": {
+    "dsflower": "0.5.0",
+    "dsflowerclient": "0.5.0",
+    "flwr": "1.31.0",
+    "torch": "2.14.0+cpu",
+    "opacus": "1.6.0",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "release_tag": "v0.5.0",
+    "release_commits": {
+      "dsFlower": "408f08c539329e2711260050ab40a6567aa4d89e",
+      "dsFlowerClient": "50dda000a32ffcbdd039c2b74c909df451392bfb"
+    }
+  },
+  "runtime": {
+    "pod": "pod-flower-regression",
+    "root": "/workspace/cells",
+    "before": {
+      "r_version": "4.6.1",
+      "uv_version": "0.11.33",
+      "python_3_11_installed": false,
+      "package_sources_extracted": false,
+      "r_dependencies_installed": true,
+      "r_arrow_roundtrip_verified": true,
+      "python_venvs_present": false,
+      "source_tag_archives_present": true,
+      "wheel_transfer_incomplete": true
+    },
+    "cpu_count": 32,
+    "cgroup_memory_bytes": 64000000000,
+    "nvidia_devices": [],
+    "uv_version": "uv 0.11.33 (x86_64-unknown-linux-gnu)",
+    "r": {
+      "version": "R version 4.6.1 (2026-06-24)",
+      "packages": {
+        "dsFlower": "0.5.0",
+        "dsFlowerClient": "0.5.0",
+        "DSI": "1.8.0",
+        "DSLite": "1.4.1",
+        "resourcer": "1.5.1",
+        "arrow": "25.0.1",
+        "digest": "0.6.39",
+        "jsonlite": "2.0.0",
+        "processx": "3.9.0",
+        "ps": "1.9.3",
+        "filelock": "1.0.3"
+      },
+      "server_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+      "client_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+      "health": {
+        "native_tree": true,
+        "pytorch": true,
+        "client": true
+      }
+    },
+    "python": {
+      "native_tree": {
+        "path": "/workspace/cells/venvs/native-tree/bin/python",
+        "version": "3.11.15 (main, Jul 18 2026, 17:02:49) [Clang 22.1.3 ]",
+        "packages": {
+          "flwr": "1.31.0",
+          "numpy": "2.4.6",
+          "pandas": "3.0.3",
+          "pyarrow": "23.0.1",
+          "cryptography": "46.0.7"
+        }
+      },
+      "pytorch": {
+        "path": "/workspace/cells/venvs/pytorch/bin/python",
+        "version": "3.11.15 (main, Jul 18 2026, 17:02:49) [Clang 22.1.3 ]",
+        "packages": {
+          "flwr": "1.31.0",
+          "numpy": "2.4.6",
+          "pandas": "3.0.3",
+          "pyarrow": "23.0.1",
+          "cryptography": "46.0.7",
+          "torch": "2.14.0+cpu",
+          "opacus": "1.6.0",
+          "scipy": "1.17.1"
+        }
+      },
+      "client": {
+        "path": "/workspace/cells/client/venv/bin/python",
+        "version": "3.11.15 (main, Jul 18 2026, 17:02:49) [Clang 22.1.3 ]",
+        "packages": {
+          "flwr": "1.31.0",
+          "numpy": "2.4.6",
+          "pandas": "3.0.3",
+          "pyarrow": "23.0.1",
+          "cryptography": "46.0.7",
+          "torch": "2.14.0+cpu",
+          "opacus": "1.6.0",
+          "optuna": "4.8.0",
+          "scipy": "1.17.1"
+        }
+      }
+    },
+    "tags": {
+      "dsFlower": {
+        "tag": "v0.5.0",
+        "commit": "408f08c539329e2711260050ab40a6567aa4d89e"
+      },
+      "dsFlowerClient": {
+        "tag": "v0.5.0",
+        "commit": "50dda000a32ffcbdd039c2b74c909df451392bfb"
+      }
+    },
+    "sha256": {
+      "regression-r4-server-v050.tar": "16f0f9b53ad9d666716b6ae6d7ed5bfa8e1fc886c418bf6613d78f83c509a410",
+      "regression-r4-client-v050.tar": "cf19fe6d5d0b9ad7e474bb470fb1e864be5f732aaaae39b4170d64e70394aedd",
+      "wheels.tar": "828008601d2717d4da5f616209e97b76beb652a6d2713e2626ec3c6b3d7dbdf6",
+      "wheels/CHECKSUMS.sha256": "a15cc25061f3632b9c7bb6629b748359826c16d8975919b4e405a6c033080ed1",
+      "dsFlowerClient/tools/campaign/regression/runtime-constraints.txt": "5c188827b3a1eaa45f3830e20bb478caf840d8b6aa9cec6ed50f199b380e95e3",
+      "dsFlowerClient/tools/campaign/regression/pylock.toml": "2c6aa3fe62e2b630eeec55a7122f8b0b351be438543f61b5e62c90beed581e69"
+    },
+    "times": {
+      "start": "2026-09-22T06:08:09Z",
+      "resume": "2026-09-22T06:24:40Z",
+      "end": "2026-09-22T06:25:20Z"
+    },
+    "status": "complete",
+    "left_running": true
+  },
+  "contract": "pytorch_linear_regression",
+  "dataset": {
+    "name": "CDC Diabetes Health Indicators: BMI regression",
+    "cohort": "cdc45k",
+    "n_total": 45000,
+    "uci_id": 891,
+    "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+    "source_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+    "landing_url": "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
+    "doi": "10.24432/C53919",
+    "citation": "CDC Diabetes Health Indicators [Dataset]. (2017). UCI Machine Learning Repository. https://doi.org/10.24432/C53919.",
+    "thesis_citation_key": "uci_cdc_diabetes_health_indicators",
+    "cohort_seed": 20260819,
+    "logistic_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+    "cohort_reuse": "Exact fixed-seed stratified cdc45k cohort from tools/campaign/campaign_lib.R; verify its original logistic prepared CSV SHA256 before changing target to BMI. Diabetes_binary is used only to preserve the original sampling and split strata.",
+    "n_source": 253680,
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "rng_kind": [
+      "Mersenne-Twister",
+      "Inversion",
+      "Rejection"
+    ],
+    "splits": {
+      "20260820": {
+        "seed": 20260820,
+        "n_train": 36000,
+        "n_test": 9000,
+        "n_per_site": [
+          12000,
+          12000,
+          12000
+        ]
+      },
+      "20260821": {
+        "seed": 20260821,
+        "n_train": 36000,
+        "n_test": 9000,
+        "n_per_site": [
+          12000,
+          12000,
+          12000
+        ]
+      },
+      "20260822": {
+        "seed": 20260822,
+        "n_train": 36000,
+        "n_test": 9000,
+        "n_per_site": [
+          12000,
+          12000,
+          12000
+        ]
+      }
+    },
+    "prepared_at": "2026-09-22T01:22:17.925109+00:00",
+    "protocol_sha256": "46f158164316f4bffcd1a7941b810ff903ec5ccf092d1dd787fda794bfbe55f0",
+    "loader_sha256": "9f39ddbf7760960e0521bd68028d8eb482312f652601fdd4bf740dc29e90a876",
+    "logistic_campaign_lib_sha256": "f0d8ed207a29f66b2280294e49a3d76894a3cb9d484a997b76342a19bb910a0a",
+    "checksums": {
+      "cdc_diabetes_health_indicators.csv": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+      "cdcbmi_seed20260820/site1.csv": "7a1dc2fa2cd82e0453ccd30951a6459c4c88fef0bfd60ec16dd1fae79a131c7c",
+      "cdcbmi_seed20260820/site2.csv": "7f9db575dfc410d17f3fbc90a9cd8271be87b3e250c6d40da7e4dd3bac1b1556",
+      "cdcbmi_seed20260820/site3.csv": "7828c38a108bd5e83f723a65b536eb0a7c15ec8a7cf85253b865e409a6454414",
+      "cdcbmi_seed20260820/split.json": "06e64a86fc14927dc861156d58495a5b5c082d4f3a53b567ec532442137025e6",
+      "cdcbmi_seed20260820/test.csv": "a63ed01b915388f82d5533cd12e71bc2865f11674691f8e8bba684978a7ef24e",
+      "cdcbmi_seed20260820/train.csv": "9aaf164e06bd3170c8dba86be9efde202390ac8932584cf94e2b059fe2160301",
+      "cdcbmi_seed20260821/site1.csv": "c34710c9c5ae00e4a6ed2663c826ed0383b0bc18800abd23875073aa3cbeea9a",
+      "cdcbmi_seed20260821/site2.csv": "6f0d1b80c6258b69ae5b289f9b9e7b148005e4e97867e52bac48128e50fe13da",
+      "cdcbmi_seed20260821/site3.csv": "702d46a84131dd12e6ed71ddf125ac3c57ec5b3b42685a099d0d96cbf9fe22f8",
+      "cdcbmi_seed20260821/split.json": "8ed7999946072883402244c5427aa69544f174f933fd69f3112dc91a61298ff7",
+      "cdcbmi_seed20260821/test.csv": "0de7936a8c02a09c5b58a6481c67365aba9c0ea064744275553832d26b4c88d0",
+      "cdcbmi_seed20260821/train.csv": "9c72247236705c1dc1677d902e29fdf028b73001a3d7003f2fdd1e7d5dd2a41f",
+      "cdcbmi_seed20260822/site1.csv": "6413da416905c17fcb4eab4b12098acdf0f0f9fb0f10d485927e452da2dae745",
+      "cdcbmi_seed20260822/site2.csv": "de324b096e17f0f53cfabbda38f197ceebdeaea6c64c9031d272b84519deaa65",
+      "cdcbmi_seed20260822/site3.csv": "e43d250ddc2819fb21df99fefbc26ac433fd962d07ca42aba4563092125027f4",
+      "cdcbmi_seed20260822/split.json": "c614e1549024eebed476516913765d42349a787a800081ccf94f97b51cb51767",
+      "cdcbmi_seed20260822/test.csv": "620378c354b9a7d59a0d2bb4549ff8a366e51b9b29e3793e3396df669a1fe9b7",
+      "cdcbmi_seed20260822/train.csv": "13da4f1a503f464161080e7d3e9c877c7afecd70ec00a11d8b53344137cc1d64"
+    },
+    "heldout_policy": "Preparation only routes rows; no held-out BMI summaries, model fitting, predictions, metrics, or setting selection"
+  },
+  "protocol_sha256": "ed78789be0fd48185ad291208c2afcf819c2bf3618100d67e8a91326e82ab4a5",
+  "protocol": {
+    "schema": "dsflower-regression-public-units-protocol-v1",
+    "dataset": {
+      "name": "CDC Diabetes Health Indicators: BMI regression",
+      "cohort": "cdc45k",
+      "n_total": 45000,
+      "uci_id": 891,
+      "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+      "source_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+      "landing_url": "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
+      "doi": "10.24432/C53919",
+      "citation": "CDC Diabetes Health Indicators [Dataset]. (2017). UCI Machine Learning Repository. https://doi.org/10.24432/C53919.",
+      "thesis_citation_key": "uci_cdc_diabetes_health_indicators",
+      "cohort_seed": 20260819,
+      "logistic_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+      "cohort_reuse": "Exact fixed-seed stratified cdc45k cohort from tools/campaign/campaign_lib.R; verify its original logistic prepared CSV SHA256 before changing target to BMI. Diabetes_binary is used only to preserve the original sampling and split strata."
+    },
+    "contract": "pytorch_linear_regression",
+    "seeds": [20260820, 20260821, 20260822],
+    "epsilon_order": [1, 4, 8],
+    "sites": 3,
+    "rounds": 5,
+    "replicates": 3,
+    "split": {
+      "unit": "respondent row",
+      "stratification": "Diabetes_binary; BMI is never used for cohort selection or splitting",
+      "test_fraction": 0.2,
+      "n_train": 36000,
+      "n_test": 9000,
+      "method": "Reuse the original campaign_split: R set.seed(seed), sample 20% within each diabetes stratum for test, then shuffle each training stratum and deal round-robin to three sites.",
+      "overlap": "No source row shared between training/test or between sites"
+    },
+    "features": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+    "excluded_columns": ["ID", "Diabetes_binary"],
+    "target": "BMI",
+    "feature_bounds": {
+      "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+      "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+    },
+    "target_bounds": {
+      "lower": -1,
+      "upper": 1
+    },
+    "bounds_policy": "Reuse the previously declared public clipping interval BMI [12,98]; client harness transforms training targets to (clip(BMI,12,98)-55)/43. Unchanged runner clips these targets to [-1,1], scales features through the original public bounds to [-1,1], and returns public-unit predictions. Harness inverts predictions with 55+43*prediction. No empirical centering, scaling or prediction clipping.",
+    "model_params_overrides": {},
+    "registry_defaults": {
+      "learning_rate": 0.01,
+      "batch_size": 32,
+      "local_epochs": 1,
+      "weight_decay": 0,
+      "l1_penalty": 0,
+      "optimizer": "sgd",
+      "scheduler": "none",
+      "hidden_layers": []
+    },
+    "privacy": {
+      "epsilon": "per cell",
+      "delta": 1e-06,
+      "unit": "row",
+      "clipping_norm": 1,
+      "adjacency": "replace_one",
+      "randomness": "Unchanged node secrets and canonical sticky seeding; replicate split seeds are not DP noise seeds; no composition claim across trainings"
+    },
+    "central": "OLS with intercept on all 36000 original training rows using the same public feature transform and float32 public-unit targets; predictions mapped back to BMI units.",
+    "trivial": "Mean of the original BMI values of all training rows",
+    "metrics": {
+      "unit": "held-out respondent rows",
+      "names": ["rmse", "mae", "r2"],
+      "prediction_postprocessing": "55+43*prediction; no clipping; raw held-out BMI truth",
+      "gap": "federated_dp.rmse - central.rmse"
+    },
+    "diagnostics": {
+      "epsilon": 8,
+      "criteria": ["federated-DP RMSE below training-mean predictor RMSE", "federated-DP R2 above zero"],
+      "interpretation": "Annotations only, never pass/fail gates or reasons to rerun"
+    },
+    "selection": "One declared third cell, three epsilons and three seeds, each trained/scored once. Reuse existing cohort and split files. No held-out file opened before final scoring callback. No tuning, fallback, retries of scored cells or further alternative.",
+    "bounds_references": ["https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators", "https://www.cdc.gov/brfss/annual_data/2015/pdf/CODEBOOK15_LLCP.pdf"],
+    "cell": "cdcbmi_public_units",
+    "original_target_bounds": {
+      "lower": 12,
+      "upper": 98
+    },
+    "public_target_transform": {
+      "center": 55,
+      "scale": 43,
+      "forward": "(clip(BMI,12,98)-55)/43",
+      "inverse": "55+43*prediction"
+    },
+    "schedule_rationale": "Keep defaults: 375 steps per round and 1875 over five rounds. Unit-clipped signal has nominal cumulative intercept-motion bound 18.75, far above public target magnitude <=1; raw target mean approximately 28 exceeded that bound. Poisson sampling makes per-step signal bound .01*actual_batch_size/32; Gaussian noise is unbounded. Reachability does not prove convergence."
+  },
+  "split": {
+    "unit": "respondent row",
+    "stratification": "Diabetes_binary; BMI is never used for cohort selection or splitting",
+    "test_fraction": 0.2,
+    "n_train": 36000,
+    "n_test": 9000,
+    "method": "Reuse the original campaign_split: R set.seed(seed), sample 20% within each diabetes stratum for test, then shuffle each training stratum and deal round-robin to three sites.",
+    "overlap": "No source row shared between training/test or between sites"
+  },
+  "seeds": [20260820, 20260821, 20260822],
+  "privacy": {
+    "epsilon": 4,
+    "delta": 1e-06,
+    "unit": "row",
+    "clipping_norm": 1
+  },
+  "feature_bounds": {
+    "HighBP": {
+      "lower": 0,
+      "upper": 1
+    },
+    "HighChol": {
+      "lower": 0,
+      "upper": 1
+    },
+    "CholCheck": {
+      "lower": 0,
+      "upper": 1
+    },
+    "Smoker": {
+      "lower": 0,
+      "upper": 1
+    },
+    "Stroke": {
+      "lower": 0,
+      "upper": 1
+    },
+    "HeartDiseaseorAttack": {
+      "lower": 0,
+      "upper": 1
+    },
+    "PhysActivity": {
+      "lower": 0,
+      "upper": 1
+    },
+    "Fruits": {
+      "lower": 0,
+      "upper": 1
+    },
+    "Veggies": {
+      "lower": 0,
+      "upper": 1
+    },
+    "HvyAlcoholConsump": {
+      "lower": 0,
+      "upper": 1
+    },
+    "AnyHealthcare": {
+      "lower": 0,
+      "upper": 1
+    },
+    "NoDocbcCost": {
+      "lower": 0,
+      "upper": 1
+    },
+    "GenHlth": {
+      "lower": 1,
+      "upper": 5
+    },
+    "MentHlth": {
+      "lower": 0,
+      "upper": 30
+    },
+    "PhysHlth": {
+      "lower": 0,
+      "upper": 30
+    },
+    "DiffWalk": {
+      "lower": 0,
+      "upper": 1
+    },
+    "Sex": {
+      "lower": 0,
+      "upper": 1
+    },
+    "Age": {
+      "lower": 1,
+      "upper": 13
+    },
+    "Education": {
+      "lower": 1,
+      "upper": 6
+    },
+    "Income": {
+      "lower": 1,
+      "upper": 8
+    }
+  },
+  "target_bounds": {
+    "lower": -1,
+    "upper": 1
+  },
+  "rounds": 5,
+  "model_params": {
+    "learning_rate": 0.01,
+    "batch_size": 32,
+    "local_epochs": 5,
+    "weight_decay": 0,
+    "l1_penalty": 0,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "hidden_layers": []
+  },
+  "model_params_overrides": {
+    "optimizer": "sgd",
+    "learning_rate": 0.01,
+    "local_epochs": 5,
+    "batch_size": 32
+  },
+  "selection": {
+    "schema": "dsflower-regression-r4-selection-v1",
+    "selected_at": "2026-09-22T06:49:50.388262+00:00",
+    "criterion": "Smallest mean real federated-DP inner-validation RMSE across the three original training partitions; no test rows used",
+    "selected": "sgd_lr001_e5_b32",
+    "selected_params": {
+      "optimizer": "sgd",
+      "learning_rate": 0.01,
+      "local_epochs": 5,
+      "batch_size": 32
+    },
+    "epsilon": 8,
+    "delta": 1e-06,
+    "rounds": 5,
+    "clipping_norm": 1,
+    "privacy_unit": "row",
+    "n_inner_training": 28800,
+    "n_inner_validation": 7200,
+    "n_sites": 3,
+    "split_method": "Reuse diagnosis: independently permute each original 12000-row site with NumPy PCG64 seed 20260922+site (1-based); prefix 2400 validation, suffix 9600 training. Site allocation inherited from original stratified cohort; inner holdout is random within each site, not exactly restratified.",
+    "hash_encoding": "Position and source-row arrays in order, little-endian signed int64 bytes, SHA-256; source rows one-based, positions zero-based",
+    "candidates": [
+      {
+        "candidate": "sgd_lr003_e5_b64",
+        "model_params": {
+          "optimizer": "sgd",
+          "learning_rate": 0.03,
+          "local_epochs": 5,
+          "batch_size": 64
+        },
+        "rmse_mean": 6.16515709579074,
+        "rmse_sd": 0.106387396399146,
+        "validation_rmse": [6.14539386890157, 6.07003709372497, 6.28004032474568],
+        "replicates": [
+          {
+            "purpose": "training-only schedule selection",
+            "seed": 20260820,
+            "candidate": "sgd_lr003_e5_b64",
+            "model_params": {
+              "optimizer": "sgd",
+              "learning_rate": 0.03,
+              "local_epochs": 5,
+              "batch_size": 64
+            },
+            "split": [
+              {
+                "training_source_ids_sha256": "17d4778cf1c7e74844ddc5c3544b206b6b115e543ed2979153014fc055184977",
+                "validation_source_ids_sha256": "5a0eca52aaa9b53165918aac3a87af33166f6336bdbd727ab197109c6a3ff503",
+                "site": 1,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "7a1dc2fa2cd82e0453ccd30951a6459c4c88fef0bfd60ec16dd1fae79a131c7c",
+                "inner_training_positions_sha256": "b2b63236776dffbd319e58cebada3c25cb5a23190cec3bc41e62be60a66de7d4",
+                "inner_validation_positions_sha256": "7e643170280bb5e9811eec1064542ff5b5e21a62b2e21ea51b0991491b840e86"
+              },
+              {
+                "training_source_ids_sha256": "489eff96ae552ef940854649da907fd0b77778a57126342043979468df7a77ff",
+                "validation_source_ids_sha256": "6bb741838edee7e4b5a9a1777d3c2b93bd919207bf765ae56eaae86b2b1b9bd8",
+                "site": 2,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "7f9db575dfc410d17f3fbc90a9cd8271be87b3e250c6d40da7e4dd3bac1b1556",
+                "inner_training_positions_sha256": "2a1b74883567e91ef3f55bd12331f13bc9fa83d23ccca34a2f2892eb4fd56070",
+                "inner_validation_positions_sha256": "4b03af5312b096a62150b7eeb4aa7fecfa81ee8a2d1f79936531d3ed9251a0a8"
+              },
+              {
+                "training_source_ids_sha256": "76bb2f1d6541e682851192114586f90a0a3781f44369108feb0a14794232b783",
+                "validation_source_ids_sha256": "ccd2d89b4a2f7d11d9be2e57e9869e6dc0b8774bc28d5a8822b6000628d04a8a",
+                "site": 3,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "7828c38a108bd5e83f723a65b536eb0a7c15ec8a7cf85253b865e409a6454414",
+                "inner_training_positions_sha256": "28e4dcbe0010f6ffb88f468d3d9ea880b2d4459ab62ec67c0a747b4e9c1efa94",
+                "inner_validation_positions_sha256": "038ab9d1b9623ee0a9190015ec9532575b738959bd571115dba3786b063c1251"
+              }
+            ],
+            "sealed_test_opened": false,
+            "environment": {
+              "host": {
+                "nodename": "58c659d7e550",
+                "sysname": "Linux",
+                "release": "6.8.0-136-generic",
+                "machine": "x86_64",
+                "r_version": "R version 4.6.1 (2026-06-24)"
+              },
+              "versions": {
+                "dsflower": "0.5.0",
+                "dsflowerclient": "0.5.0",
+                "flwr": "1.31.0",
+                "torch": "2.14.0+cpu",
+                "opacus": "1.6.0",
+                "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+              }
+            },
+            "n_inner_training": 28800,
+            "n_inner_validation": 7200,
+            "baselines": {
+              "training": {
+                "trivial": {
+                  "rmse": 6.6199275974439,
+                  "mae": 4.75213209635417,
+                  "r2": 0,
+                  "mean_residual": 1.58024032709567e-15,
+                  "mean_prediction": 28.3928125
+                },
+                "ols": {
+                  "rmse": 6.1978610396652,
+                  "mae": 4.38467643599144,
+                  "r2": 0.123448997982333,
+                  "mean_residual": 2.46961558331373e-12,
+                  "mean_prediction": 28.3928125000025
+                }
+              },
+              "validation": {
+                "trivial": {
+                  "rmse": 6.54375750904934,
+                  "mae": 4.8086625,
+                  "r2": -0.000141670915183356,
+                  "mean_residual": -0.0778819444444429,
+                  "mean_prediction": 28.3928125
+                },
+                "ols": {
+                  "rmse": 6.06138838262455,
+                  "mae": 4.37935953945336,
+                  "r2": 0.141873423788209,
+                  "mean_residual": -0.0916835193067566,
+                  "mean_prediction": 28.3790109251377
+                }
+              }
+            },
+            "federated": {
+              "metrics": {
+                "training": {
+                  "rmse": 6.25312602288657,
+                  "mae": 4.33190116529249,
+                  "r2": 0.107747273763711,
+                  "mean_residual": -0.580960990494738,
+                  "mean_prediction": 27.8118515095053
+                },
+                "validation": {
+                  "rmse": 6.14539386890157,
+                  "mae": 4.3471405805399,
+                  "r2": 0.117922847070476,
+                  "mean_residual": -0.670162356570363,
+                  "mean_prediction": 27.8005320878741
+                }
+              },
+              "node_privacy": [
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 64,
+                      "learning-rate": 0.03,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 64,
+                      "learning-rate": 0.03,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 64,
+                      "learning-rate": 0.03,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                }
+              ],
+              "artifact_dir": "/workspace/cells/r4/selection_sgd_lr003_e5_b64_20260820/artifact/pytorch_linear_regression_FedAvg_5r_20260922_064102",
+              "cleanup_ok": true,
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds_run": 5,
+              "model_sha256": "3d3cd719f0fd953ab23f1590d6a959090d810593e49e2b9e666622a82a22b194",
+              "elapsed_s": 97.1192007064819
+            }
+          },
+          {
+            "purpose": "training-only schedule selection",
+            "seed": 20260821,
+            "candidate": "sgd_lr003_e5_b64",
+            "model_params": {
+              "optimizer": "sgd",
+              "learning_rate": 0.03,
+              "local_epochs": 5,
+              "batch_size": 64
+            },
+            "split": [
+              {
+                "training_source_ids_sha256": "4adfdeb33a16d676f0038c891bafc3302749823b7f2f3276ea744cee076adcb2",
+                "validation_source_ids_sha256": "f4c5dd9d28770f81a855220572e606e906fdc4dd601e61613ba7b2c7b042fc14",
+                "site": 1,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "c34710c9c5ae00e4a6ed2663c826ed0383b0bc18800abd23875073aa3cbeea9a",
+                "inner_training_positions_sha256": "b2b63236776dffbd319e58cebada3c25cb5a23190cec3bc41e62be60a66de7d4",
+                "inner_validation_positions_sha256": "7e643170280bb5e9811eec1064542ff5b5e21a62b2e21ea51b0991491b840e86"
+              },
+              {
+                "training_source_ids_sha256": "7726881a72fdebd91a0951a46492b8ca16b1f09fc6e6d4e568c8d74158c41393",
+                "validation_source_ids_sha256": "b6451bee083f04a7e666d9b87d7d624b546f0c7d1ef0deb2d33e65b01199f572",
+                "site": 2,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "6f0d1b80c6258b69ae5b289f9b9e7b148005e4e97867e52bac48128e50fe13da",
+                "inner_training_positions_sha256": "2a1b74883567e91ef3f55bd12331f13bc9fa83d23ccca34a2f2892eb4fd56070",
+                "inner_validation_positions_sha256": "4b03af5312b096a62150b7eeb4aa7fecfa81ee8a2d1f79936531d3ed9251a0a8"
+              },
+              {
+                "training_source_ids_sha256": "6a47c3c26f7dee5f3784fe0bb3706214a40deab429a7ef920c746436bb693d43",
+                "validation_source_ids_sha256": "24ce49eebc96d03dd8629721dec8d44e9752f7b3234bfbddfa980da389de7bef",
+                "site": 3,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "702d46a84131dd12e6ed71ddf125ac3c57ec5b3b42685a099d0d96cbf9fe22f8",
+                "inner_training_positions_sha256": "28e4dcbe0010f6ffb88f468d3d9ea880b2d4459ab62ec67c0a747b4e9c1efa94",
+                "inner_validation_positions_sha256": "038ab9d1b9623ee0a9190015ec9532575b738959bd571115dba3786b063c1251"
+              }
+            ],
+            "sealed_test_opened": false,
+            "environment": {
+              "host": {
+                "nodename": "58c659d7e550",
+                "sysname": "Linux",
+                "release": "6.8.0-136-generic",
+                "machine": "x86_64",
+                "r_version": "R version 4.6.1 (2026-06-24)"
+              },
+              "versions": {
+                "dsflower": "0.5.0",
+                "dsflowerclient": "0.5.0",
+                "flwr": "1.31.0",
+                "torch": "2.14.0+cpu",
+                "opacus": "1.6.0",
+                "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+              }
+            },
+            "n_inner_training": 28800,
+            "n_inner_validation": 7200,
+            "baselines": {
+              "training": {
+                "trivial": {
+                  "rmse": 6.60839039159373,
+                  "mae": 4.74958376736111,
+                  "r2": 0,
+                  "mean_residual": 1.42070979546743e-15,
+                  "mean_prediction": 28.396875
+                },
+                "ols": {
+                  "rmse": 6.18832915465587,
+                  "mae": 4.37809819952613,
+                  "r2": 0.123089179507008,
+                  "mean_residual": 2.64517830678457e-12,
+                  "mean_prediction": 28.3968750000026
+                }
+              },
+              "validation": {
+                "trivial": {
+                  "rmse": 6.43880510300738,
+                  "mae": 4.70885850694444,
+                  "r2": -4.80958151491961e-05,
+                  "mean_residual": 0.0446527777777792,
+                  "mean_prediction": 28.396875
+                },
+                "ols": {
+                  "rmse": 5.98030180656669,
+                  "mae": 4.29975623364787,
+                  "r2": 0.137306487645449,
+                  "mean_residual": 0.0137322266664947,
+                  "mean_prediction": 28.3659544488887
+                }
+              }
+            },
+            "federated": {
+              "metrics": {
+                "training": {
+                  "rmse": 6.27204068832124,
+                  "mae": 4.31811951733505,
+                  "r2": 0.0992042012909201,
+                  "mean_residual": -0.911067330280526,
+                  "mean_prediction": 27.4858076697195
+                },
+                "validation": {
+                  "rmse": 6.07003709372497,
+                  "mae": 4.25366842091084,
+                  "r2": 0.111222568455095,
+                  "mean_residual": -0.896183406925864,
+                  "mean_prediction": 27.4560388152964
+                }
+              },
+              "node_privacy": [
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 64,
+                      "learning-rate": 0.03,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 64,
+                      "learning-rate": 0.03,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 64,
+                      "learning-rate": 0.03,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                }
+              ],
+              "artifact_dir": "/workspace/cells/r4/selection_sgd_lr003_e5_b64_20260821/artifact/pytorch_linear_regression_FedAvg_5r_20260922_064428",
+              "cleanup_ok": true,
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds_run": 5,
+              "model_sha256": "1102b892fa8b6a090da08e562b7702d9022fafcfbf81123d8b8d92fc75114deb",
+              "elapsed_s": 95.0405607223511
+            }
+          },
+          {
+            "purpose": "training-only schedule selection",
+            "seed": 20260822,
+            "candidate": "sgd_lr003_e5_b64",
+            "model_params": {
+              "optimizer": "sgd",
+              "learning_rate": 0.03,
+              "local_epochs": 5,
+              "batch_size": 64
+            },
+            "split": [
+              {
+                "training_source_ids_sha256": "1f1bcfefe43c01d1c6227fdd7df55a05e91796c4395b46c146f8f79573591e40",
+                "validation_source_ids_sha256": "90d70165725d0540ef0c9c6ac3331b3c88be7060d13d1756de38cfbbf781f031",
+                "site": 1,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "6413da416905c17fcb4eab4b12098acdf0f0f9fb0f10d485927e452da2dae745",
+                "inner_training_positions_sha256": "b2b63236776dffbd319e58cebada3c25cb5a23190cec3bc41e62be60a66de7d4",
+                "inner_validation_positions_sha256": "7e643170280bb5e9811eec1064542ff5b5e21a62b2e21ea51b0991491b840e86"
+              },
+              {
+                "training_source_ids_sha256": "480ec6939f7f912958203e6dd291e51c7cd475d825a66f9b5aa3301505379ff2",
+                "validation_source_ids_sha256": "0e65d341c86ca6391de24d2d62530a25bb8532661a1d6143d5489d72004e68cd",
+                "site": 2,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "de324b096e17f0f53cfabbda38f197ceebdeaea6c64c9031d272b84519deaa65",
+                "inner_training_positions_sha256": "2a1b74883567e91ef3f55bd12331f13bc9fa83d23ccca34a2f2892eb4fd56070",
+                "inner_validation_positions_sha256": "4b03af5312b096a62150b7eeb4aa7fecfa81ee8a2d1f79936531d3ed9251a0a8"
+              },
+              {
+                "training_source_ids_sha256": "1c25096510ba551142be9ff0ab93dde91e327d05124fe833e469dd8972640a8f",
+                "validation_source_ids_sha256": "00cd4256cf9578342d65904de55d58652bb013a8ec6ffd502e4a1b84c6c1f1ce",
+                "site": 3,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "e43d250ddc2819fb21df99fefbc26ac433fd962d07ca42aba4563092125027f4",
+                "inner_training_positions_sha256": "28e4dcbe0010f6ffb88f468d3d9ea880b2d4459ab62ec67c0a747b4e9c1efa94",
+                "inner_validation_positions_sha256": "038ab9d1b9623ee0a9190015ec9532575b738959bd571115dba3786b063c1251"
+              }
+            ],
+            "sealed_test_opened": false,
+            "environment": {
+              "host": {
+                "nodename": "58c659d7e550",
+                "sysname": "Linux",
+                "release": "6.8.0-136-generic",
+                "machine": "x86_64",
+                "r_version": "R version 4.6.1 (2026-06-24)"
+              },
+              "versions": {
+                "dsflower": "0.5.0",
+                "dsflowerclient": "0.5.0",
+                "flwr": "1.31.0",
+                "torch": "2.14.0+cpu",
+                "opacus": "1.6.0",
+                "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+              }
+            },
+            "n_inner_training": 28800,
+            "n_inner_validation": 7200,
+            "baselines": {
+              "training": {
+                "trivial": {
+                  "rmse": 6.5847698620227,
+                  "mae": 4.75284023919753,
+                  "r2": 0,
+                  "mean_residual": 2.57152253351647e-16,
+                  "mean_prediction": 28.3994444444444
+                },
+                "ols": {
+                  "rmse": 6.15732896692694,
+                  "mae": 4.37867872945544,
+                  "r2": 0.125613361534957,
+                  "mean_residual": 2.65566290565527e-12,
+                  "mean_prediction": 28.3994444444471
+                }
+              },
+              "validation": {
+                "trivial": {
+                  "rmse": 6.64262926943173,
+                  "mae": 4.77837345679012,
+                  "r2": -4.90643330262053e-05,
+                  "mean_residual": -0.0465277777777775,
+                  "mean_prediction": 28.3994444444444
+                },
+                "ols": {
+                  "rmse": 6.21224696250688,
+                  "mae": 4.40442950252277,
+                  "r2": 0.125341133319289,
+                  "mean_residual": 0.00879086435437186,
+                  "mean_prediction": 28.4547630865766
+                }
+              }
+            },
+            "federated": {
+              "metrics": {
+                "training": {
+                  "rmse": 6.22880628853929,
+                  "mae": 4.31453540552821,
+                  "r2": 0.105194906099273,
+                  "mean_residual": -0.775298508577463,
+                  "mean_prediction": 27.624145935867
+                },
+                "validation": {
+                  "rmse": 6.28004032474568,
+                  "mae": 4.34917046506372,
+                  "r2": 0.106146915677026,
+                  "mean_residual": -0.765112317692902,
+                  "mean_prediction": 27.6808599045293
+                }
+              },
+              "node_privacy": [
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 64,
+                      "learning-rate": 0.03,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 64,
+                      "learning-rate": 0.03,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 64,
+                      "learning-rate": 0.03,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                }
+              ],
+              "artifact_dir": "/workspace/cells/r4/selection_sgd_lr003_e5_b64_20260822/artifact/pytorch_linear_regression_FedAvg_5r_20260922_064743",
+              "cleanup_ok": true,
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds_run": 5,
+              "model_sha256": "596c6fd8a4305f8a6e0410ff105a6c82a6c23c023fbc155ee1477b6795319076",
+              "elapsed_s": 96.0201499462128
+            }
+          }
+        ]
+      },
+      {
+        "candidate": "sgd_lr001_e5_b32",
+        "model_params": {
+          "optimizer": "sgd",
+          "learning_rate": 0.01,
+          "local_epochs": 5,
+          "batch_size": 32
+        },
+        "rmse_mean": 6.13788304392493,
+        "rmse_sd": 0.110509400492833,
+        "validation_rmse": [6.12507206810081, 6.03433746648921, 6.25423959718476],
+        "replicates": [
+          {
+            "purpose": "training-only schedule selection",
+            "seed": 20260820,
+            "candidate": "sgd_lr001_e5_b32",
+            "model_params": {
+              "optimizer": "sgd",
+              "learning_rate": 0.01,
+              "local_epochs": 5,
+              "batch_size": 32
+            },
+            "split": [
+              {
+                "training_source_ids_sha256": "17d4778cf1c7e74844ddc5c3544b206b6b115e543ed2979153014fc055184977",
+                "validation_source_ids_sha256": "5a0eca52aaa9b53165918aac3a87af33166f6336bdbd727ab197109c6a3ff503",
+                "site": 1,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "7a1dc2fa2cd82e0453ccd30951a6459c4c88fef0bfd60ec16dd1fae79a131c7c",
+                "inner_training_positions_sha256": "b2b63236776dffbd319e58cebada3c25cb5a23190cec3bc41e62be60a66de7d4",
+                "inner_validation_positions_sha256": "7e643170280bb5e9811eec1064542ff5b5e21a62b2e21ea51b0991491b840e86"
+              },
+              {
+                "training_source_ids_sha256": "489eff96ae552ef940854649da907fd0b77778a57126342043979468df7a77ff",
+                "validation_source_ids_sha256": "6bb741838edee7e4b5a9a1777d3c2b93bd919207bf765ae56eaae86b2b1b9bd8",
+                "site": 2,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "7f9db575dfc410d17f3fbc90a9cd8271be87b3e250c6d40da7e4dd3bac1b1556",
+                "inner_training_positions_sha256": "2a1b74883567e91ef3f55bd12331f13bc9fa83d23ccca34a2f2892eb4fd56070",
+                "inner_validation_positions_sha256": "4b03af5312b096a62150b7eeb4aa7fecfa81ee8a2d1f79936531d3ed9251a0a8"
+              },
+              {
+                "training_source_ids_sha256": "76bb2f1d6541e682851192114586f90a0a3781f44369108feb0a14794232b783",
+                "validation_source_ids_sha256": "ccd2d89b4a2f7d11d9be2e57e9869e6dc0b8774bc28d5a8822b6000628d04a8a",
+                "site": 3,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "7828c38a108bd5e83f723a65b536eb0a7c15ec8a7cf85253b865e409a6454414",
+                "inner_training_positions_sha256": "28e4dcbe0010f6ffb88f468d3d9ea880b2d4459ab62ec67c0a747b4e9c1efa94",
+                "inner_validation_positions_sha256": "038ab9d1b9623ee0a9190015ec9532575b738959bd571115dba3786b063c1251"
+              }
+            ],
+            "sealed_test_opened": false,
+            "environment": {
+              "host": {
+                "nodename": "58c659d7e550",
+                "sysname": "Linux",
+                "release": "6.8.0-136-generic",
+                "machine": "x86_64",
+                "r_version": "R version 4.6.1 (2026-06-24)"
+              },
+              "versions": {
+                "dsflower": "0.5.0",
+                "dsflowerclient": "0.5.0",
+                "flwr": "1.31.0",
+                "torch": "2.14.0+cpu",
+                "opacus": "1.6.0",
+                "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+              }
+            },
+            "n_inner_training": 28800,
+            "n_inner_validation": 7200,
+            "baselines": {
+              "training": {
+                "trivial": {
+                  "rmse": 6.6199275974439,
+                  "mae": 4.75213209635417,
+                  "r2": 0,
+                  "mean_residual": 1.58024032709567e-15,
+                  "mean_prediction": 28.3928125
+                },
+                "ols": {
+                  "rmse": 6.1978610396652,
+                  "mae": 4.38467643599144,
+                  "r2": 0.123448997982333,
+                  "mean_residual": 2.46961558331373e-12,
+                  "mean_prediction": 28.3928125000025
+                }
+              },
+              "validation": {
+                "trivial": {
+                  "rmse": 6.54375750904934,
+                  "mae": 4.8086625,
+                  "r2": -0.000141670915183356,
+                  "mean_residual": -0.0778819444444429,
+                  "mean_prediction": 28.3928125
+                },
+                "ols": {
+                  "rmse": 6.06138838262455,
+                  "mae": 4.37935953945336,
+                  "r2": 0.141873423788209,
+                  "mean_residual": -0.0916835193067566,
+                  "mean_prediction": 28.3790109251377
+                }
+              }
+            },
+            "federated": {
+              "metrics": {
+                "training": {
+                  "rmse": 6.23797747832459,
+                  "mae": 4.35643541929209,
+                  "r2": 0.112065100752905,
+                  "mean_residual": -0.336396606761134,
+                  "mean_prediction": 28.0564158932389
+                },
+                "validation": {
+                  "rmse": 6.12507206810081,
+                  "mae": 4.36765856073548,
+                  "r2": 0.123746967839535,
+                  "mean_residual": -0.425235566277471,
+                  "mean_prediction": 28.045458878167
+                }
+              },
+              "node_privacy": [
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 32,
+                      "learning-rate": 0.01,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 32,
+                      "learning-rate": 0.01,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 32,
+                      "learning-rate": 0.01,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                }
+              ],
+              "artifact_dir": "/workspace/cells/r4/selection_sgd_lr001_e5_b32_20260820/artifact/pytorch_linear_regression_FedAvg_5r_20260922_064249",
+              "cleanup_ok": true,
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds_run": 5,
+              "model_sha256": "69985d7ac83d6e1a8aa84ff1d5358e261f4f1880207d584ac8f9a5338a4e35c5",
+              "elapsed_s": 99.9158809185028
+            }
+          },
+          {
+            "purpose": "training-only schedule selection",
+            "seed": 20260821,
+            "candidate": "sgd_lr001_e5_b32",
+            "model_params": {
+              "optimizer": "sgd",
+              "learning_rate": 0.01,
+              "local_epochs": 5,
+              "batch_size": 32
+            },
+            "split": [
+              {
+                "training_source_ids_sha256": "4adfdeb33a16d676f0038c891bafc3302749823b7f2f3276ea744cee076adcb2",
+                "validation_source_ids_sha256": "f4c5dd9d28770f81a855220572e606e906fdc4dd601e61613ba7b2c7b042fc14",
+                "site": 1,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "c34710c9c5ae00e4a6ed2663c826ed0383b0bc18800abd23875073aa3cbeea9a",
+                "inner_training_positions_sha256": "b2b63236776dffbd319e58cebada3c25cb5a23190cec3bc41e62be60a66de7d4",
+                "inner_validation_positions_sha256": "7e643170280bb5e9811eec1064542ff5b5e21a62b2e21ea51b0991491b840e86"
+              },
+              {
+                "training_source_ids_sha256": "7726881a72fdebd91a0951a46492b8ca16b1f09fc6e6d4e568c8d74158c41393",
+                "validation_source_ids_sha256": "b6451bee083f04a7e666d9b87d7d624b546f0c7d1ef0deb2d33e65b01199f572",
+                "site": 2,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "6f0d1b80c6258b69ae5b289f9b9e7b148005e4e97867e52bac48128e50fe13da",
+                "inner_training_positions_sha256": "2a1b74883567e91ef3f55bd12331f13bc9fa83d23ccca34a2f2892eb4fd56070",
+                "inner_validation_positions_sha256": "4b03af5312b096a62150b7eeb4aa7fecfa81ee8a2d1f79936531d3ed9251a0a8"
+              },
+              {
+                "training_source_ids_sha256": "6a47c3c26f7dee5f3784fe0bb3706214a40deab429a7ef920c746436bb693d43",
+                "validation_source_ids_sha256": "24ce49eebc96d03dd8629721dec8d44e9752f7b3234bfbddfa980da389de7bef",
+                "site": 3,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "702d46a84131dd12e6ed71ddf125ac3c57ec5b3b42685a099d0d96cbf9fe22f8",
+                "inner_training_positions_sha256": "28e4dcbe0010f6ffb88f468d3d9ea880b2d4459ab62ec67c0a747b4e9c1efa94",
+                "inner_validation_positions_sha256": "038ab9d1b9623ee0a9190015ec9532575b738959bd571115dba3786b063c1251"
+              }
+            ],
+            "sealed_test_opened": false,
+            "environment": {
+              "host": {
+                "nodename": "58c659d7e550",
+                "sysname": "Linux",
+                "release": "6.8.0-136-generic",
+                "machine": "x86_64",
+                "r_version": "R version 4.6.1 (2026-06-24)"
+              },
+              "versions": {
+                "dsflower": "0.5.0",
+                "dsflowerclient": "0.5.0",
+                "flwr": "1.31.0",
+                "torch": "2.14.0+cpu",
+                "opacus": "1.6.0",
+                "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+              }
+            },
+            "n_inner_training": 28800,
+            "n_inner_validation": 7200,
+            "baselines": {
+              "training": {
+                "trivial": {
+                  "rmse": 6.60839039159373,
+                  "mae": 4.74958376736111,
+                  "r2": 0,
+                  "mean_residual": 1.42070979546743e-15,
+                  "mean_prediction": 28.396875
+                },
+                "ols": {
+                  "rmse": 6.18832915465587,
+                  "mae": 4.37809819952613,
+                  "r2": 0.123089179507008,
+                  "mean_residual": 2.64517830678457e-12,
+                  "mean_prediction": 28.3968750000026
+                }
+              },
+              "validation": {
+                "trivial": {
+                  "rmse": 6.43880510300738,
+                  "mae": 4.70885850694444,
+                  "r2": -4.80958151491961e-05,
+                  "mean_residual": 0.0446527777777792,
+                  "mean_prediction": 28.396875
+                },
+                "ols": {
+                  "rmse": 5.98030180656669,
+                  "mae": 4.29975623364787,
+                  "r2": 0.137306487645449,
+                  "mean_residual": 0.0137322266664947,
+                  "mean_prediction": 28.3659544488887
+                }
+              }
+            },
+            "federated": {
+              "metrics": {
+                "training": {
+                  "rmse": 6.23311794777064,
+                  "mae": 4.31860325654348,
+                  "r2": 0.110349744364594,
+                  "mean_residual": -0.618602220871382,
+                  "mean_prediction": 27.7782727791286
+                },
+                "validation": {
+                  "rmse": 6.03433746648921,
+                  "mae": 4.25403322091947,
+                  "r2": 0.121646135486353,
+                  "mean_residual": -0.607441704178022,
+                  "mean_prediction": 27.7447805180442
+                }
+              },
+              "node_privacy": [
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 32,
+                      "learning-rate": 0.01,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 32,
+                      "learning-rate": 0.01,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 32,
+                      "learning-rate": 0.01,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                }
+              ],
+              "artifact_dir": "/workspace/cells/r4/selection_sgd_lr001_e5_b32_20260821/artifact/pytorch_linear_regression_FedAvg_5r_20260922_064607",
+              "cleanup_ok": true,
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds_run": 5,
+              "model_sha256": "3d4d2d6efa2cae228633c3380e483f112bc1f4b51a27ccfacb2660b6ba89b3ea",
+              "elapsed_s": 96.7517788410187
+            }
+          },
+          {
+            "purpose": "training-only schedule selection",
+            "seed": 20260822,
+            "candidate": "sgd_lr001_e5_b32",
+            "model_params": {
+              "optimizer": "sgd",
+              "learning_rate": 0.01,
+              "local_epochs": 5,
+              "batch_size": 32
+            },
+            "split": [
+              {
+                "training_source_ids_sha256": "1f1bcfefe43c01d1c6227fdd7df55a05e91796c4395b46c146f8f79573591e40",
+                "validation_source_ids_sha256": "90d70165725d0540ef0c9c6ac3331b3c88be7060d13d1756de38cfbbf781f031",
+                "site": 1,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "6413da416905c17fcb4eab4b12098acdf0f0f9fb0f10d485927e452da2dae745",
+                "inner_training_positions_sha256": "b2b63236776dffbd319e58cebada3c25cb5a23190cec3bc41e62be60a66de7d4",
+                "inner_validation_positions_sha256": "7e643170280bb5e9811eec1064542ff5b5e21a62b2e21ea51b0991491b840e86"
+              },
+              {
+                "training_source_ids_sha256": "480ec6939f7f912958203e6dd291e51c7cd475d825a66f9b5aa3301505379ff2",
+                "validation_source_ids_sha256": "0e65d341c86ca6391de24d2d62530a25bb8532661a1d6143d5489d72004e68cd",
+                "site": 2,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "de324b096e17f0f53cfabbda38f197ceebdeaea6c64c9031d272b84519deaa65",
+                "inner_training_positions_sha256": "2a1b74883567e91ef3f55bd12331f13bc9fa83d23ccca34a2f2892eb4fd56070",
+                "inner_validation_positions_sha256": "4b03af5312b096a62150b7eeb4aa7fecfa81ee8a2d1f79936531d3ed9251a0a8"
+              },
+              {
+                "training_source_ids_sha256": "1c25096510ba551142be9ff0ab93dde91e327d05124fe833e469dd8972640a8f",
+                "validation_source_ids_sha256": "00cd4256cf9578342d65904de55d58652bb013a8ec6ffd502e4a1b84c6c1f1ce",
+                "site": 3,
+                "n_train": 9600,
+                "n_validation": 2400,
+                "source_sha256": "e43d250ddc2819fb21df99fefbc26ac433fd962d07ca42aba4563092125027f4",
+                "inner_training_positions_sha256": "28e4dcbe0010f6ffb88f468d3d9ea880b2d4459ab62ec67c0a747b4e9c1efa94",
+                "inner_validation_positions_sha256": "038ab9d1b9623ee0a9190015ec9532575b738959bd571115dba3786b063c1251"
+              }
+            ],
+            "sealed_test_opened": false,
+            "environment": {
+              "host": {
+                "nodename": "58c659d7e550",
+                "sysname": "Linux",
+                "release": "6.8.0-136-generic",
+                "machine": "x86_64",
+                "r_version": "R version 4.6.1 (2026-06-24)"
+              },
+              "versions": {
+                "dsflower": "0.5.0",
+                "dsflowerclient": "0.5.0",
+                "flwr": "1.31.0",
+                "torch": "2.14.0+cpu",
+                "opacus": "1.6.0",
+                "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+              }
+            },
+            "n_inner_training": 28800,
+            "n_inner_validation": 7200,
+            "baselines": {
+              "training": {
+                "trivial": {
+                  "rmse": 6.5847698620227,
+                  "mae": 4.75284023919753,
+                  "r2": 0,
+                  "mean_residual": 2.57152253351647e-16,
+                  "mean_prediction": 28.3994444444444
+                },
+                "ols": {
+                  "rmse": 6.15732896692694,
+                  "mae": 4.37867872945544,
+                  "r2": 0.125613361534957,
+                  "mean_residual": 2.65566290565527e-12,
+                  "mean_prediction": 28.3994444444471
+                }
+              },
+              "validation": {
+                "trivial": {
+                  "rmse": 6.64262926943173,
+                  "mae": 4.77837345679012,
+                  "r2": -4.90643330262053e-05,
+                  "mean_residual": -0.0465277777777775,
+                  "mean_prediction": 28.3994444444444
+                },
+                "ols": {
+                  "rmse": 6.21224696250688,
+                  "mae": 4.40442950252277,
+                  "r2": 0.125341133319289,
+                  "mean_residual": 0.00879086435437186,
+                  "mean_prediction": 28.4547630865766
+                }
+              }
+            },
+            "federated": {
+              "metrics": {
+                "training": {
+                  "rmse": 6.20176304335901,
+                  "mae": 4.33402312494297,
+                  "r2": 0.112947885389435,
+                  "mean_residual": -0.487772624330181,
+                  "mean_prediction": 27.9116718201143
+                },
+                "validation": {
+                  "rmse": 6.25423959718476,
+                  "mae": 4.36982292894274,
+                  "r2": 0.113476386503199,
+                  "mean_residual": -0.478060155043172,
+                  "mean_prediction": 27.967912067179
+                }
+              },
+              "node_privacy": [
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 32,
+                      "learning-rate": 0.01,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 32,
+                      "learning-rate": 0.01,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                },
+                {
+                  "policy": {
+                    "accountant": "stateless-per-training-v1",
+                    "guarantee_scope": "per-training",
+                    "per_training_epsilon": 8,
+                    "per_training_delta": 1e-06,
+                    "dp_unit": "row",
+                    "patient_column": {},
+                    "unit_canonicalization": "trim-utf8-v2",
+                    "adjacency": "replace_one"
+                  },
+                  "clipping_norm": 1,
+                  "staged_configurations": [
+                    {
+                      "n_samples": 9600,
+                      "n_units": 9600,
+                      "target_column": "BMI",
+                      "feature_columns": ["HighBP", "HighChol", "CholCheck", "Smoker", "Stroke", "HeartDiseaseorAttack", "PhysActivity", "Fruits", "Veggies", "HvyAlcoholConsump", "AnyHealthcare", "NoDocbcCost", "GenHlth", "MentHlth", "PhysHlth", "DiffWalk", "Sex", "Age", "Education", "Income"],
+                      "dp-unit": "row",
+                      "patient_column": {},
+                      "patient-id-canonicalization": "trim-utf8-v2",
+                      "target-preencoded": true,
+                      "dp-track": "neural",
+                      "num-server-rounds": 5,
+                      "num-features": 20,
+                      "loss-name": "mse",
+                      "num-classes": 2,
+                      "num-labels": 2,
+                      "local-epochs": 5,
+                      "batch-size": 32,
+                      "learning-rate": 0.01,
+                      "weight-decay": 0,
+                      "l1-penalty": 0,
+                      "optimizer-name": "sgd",
+                      "scheduler-name": "none",
+                      "optimizer-momentum": 0,
+                      "optimizer-nesterov": false,
+                      "feature-bounds": {
+                        "lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 1],
+                        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 5, 30, 30, 1, 1, 13, 6, 8]
+                      },
+                      "target-bounds": {
+                        "lower": -1,
+                        "upper": 1
+                      },
+                      "dp_enabled": true,
+                      "allow_per_node_metrics": false,
+                      "allow_exact_num_examples": false,
+                      "fixed_client_sampling": true,
+                      "privacy-adjacency": "replace_one",
+                      "privacy-policy-sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+                      "privacy-epsilon": 8,
+                      "privacy-delta": 1e-06,
+                      "privacy-clipping_norm": 1,
+                      "privacy-sample_aggregate": 0,
+                      "privacy-sa_blocks": 8,
+                      "privacy-egress_time_pad": 0,
+                      "privacy-egress_timeout": 900,
+                      "privacy-egress_memory_mb": 8192,
+                      "privacy-egress_file_mb": 1024,
+                      "privacy-egress_processes": 128,
+                      "privacy-hook_enabled": 0
+                    }
+                  ]
+                }
+              ],
+              "artifact_dir": "/workspace/cells/r4/selection_sgd_lr001_e5_b32_20260822/artifact/pytorch_linear_regression_FedAvg_5r_20260922_064933",
+              "cleanup_ok": true,
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds_run": 5,
+              "model_sha256": "b60e26b0729c5734f3ef01fa3c0fe3fd264c739c1ddc8634e94659030d5fd462",
+              "elapsed_s": 101.628340005875
+            }
+          }
+        ]
+      }
+    ],
+    "sealed_test_opened": false,
+    "limitations": "Overlapping outer training partitions; three unpaired random initializations, descriptive SD only. Privacy accounting is per fit, not a composed selection release."
+  },
+  "per_replicate": [
+    {
+      "seed": 20260820,
+      "split": {
+        "n_train": 36000,
+        "n_test": 9000,
+        "n_per_site": [12000, 12000, 12000],
+        "membership_file": "cdcbmi_split_seed20260820.json",
+        "membership_sha256": "06e64a86fc14927dc861156d58495a5b5c082d4f3a53b567ec532442137025e6"
+      },
+      "central": {
+        "rmse": 6.16233737399256,
+        "mae": 4.31880012278155,
+        "r2": 0.109101166741599
+      },
+      "trivial": {
+        "rmse": 6.52885397771658,
+        "mae": 4.66646830864198,
+        "r2": -2.61541964461376e-05
+      },
+      "nonprivate_federated": {
+        "rmse": 6.21437490959284,
+        "mae": 4.2642836994595,
+        "r2": 0.0939913407185013
+      },
+      "nonprivate_fit": {
+        "coefficients": [-0.612599114624714, 0.0284393250302626, 0.00797084383388914, 0.00794214373178447, -0.00445193431716841, -0.0139076090414755, -0.00612441382726091, -0.0130433168894358, -0.00622406841351887, 0.000128888187018646, -0.0172965044460388, 0.00242767101909164, 0.00371297490849817, 0.0414884192828138, -0.00344738796958475, -0.0109760083639767, 0.0269436915375083, 0.00577403536227518, -0.0453634314470741, -0.0118570451578015, 0.00115287241537652],
+        "ols": {
+          "method": "OLS",
+          "intercept": true,
+          "observation_unit": "row",
+          "n_training_rows": 36000,
+          "n_features": 20,
+          "rank": 21,
+          "singular_values": [579.053821456848, 231.078615536157, 200.638137201548, 184.658146631399, 181.940817235496, 162.387006586808, 151.008529006369, 136.973945193713, 134.940569758025, 111.945051273316, 104.639359608121, 97.0407471704436, 93.5959311081772, 82.2872654977348, 81.790967544568, 77.9292769468364, 73.2881249892082, 70.317506205622, 68.756363105718, 62.7262559555037, 34.0349805746568],
+          "coefficients": [-0.612599114624714, 0.0284393250302626, 0.00797084383388914, 0.00794214373178447, -0.00445193431716841, -0.0139076090414755, -0.00612441382726091, -0.0130433168894358, -0.00622406841351887, 0.000128888187018646, -0.0172965044460388, 0.00242767101909164, 0.00371297490849817, 0.0414884192828138, -0.00344738796958475, -0.0109760083639767, 0.0269436915375083, 0.00577403536227518, -0.0453634314470741, -0.0118570451578015, 0.00115287241537652],
+          "numpy_version": "2.4.6",
+          "pandas_version": "3.0.3",
+          "target_transform": {
+            "center": 55,
+            "scale": 43,
+            "forward": "(clip(BMI,12,98)-55)/43",
+            "inverse": "55+43*prediction"
+          }
+        },
+        "training_mean": 28.4083888888889,
+        "nonprivate": {
+          "seed": 20260820,
+          "sigma": 0,
+          "weights": [0.0277306940406561, 0.00748624140396714, 0.00091541581787169, -0.00599992135539651, -0.00647246977314353, -0.00134777557104826, -0.011994905769825, -0.00758088054135442, -0.00132727611344308, -0.0105098402127624, -0.00120912108104676, 0.00717949867248535, 0.0361457951366901, 0.00122521189041436, -0.0101408744230866, 0.023737384006381, 0.00975430943071842, -0.0325749553740025, -0.0201190356165171, 0.0075464085675776, -0.598249852657318],
+          "trajectory": [
+            {
+              "round": 1,
+              "training": {
+                "rmse": 7.46702465844982,
+                "mean_residual": 0.430370460955012
+              },
+              "validation": {
+                "rmse": 7.46702465844982,
+                "mean_residual": 0.430370460955012
+              }
+            },
+            {
+              "round": 2,
+              "training": {
+                "rmse": 6.61903503334032,
+                "mean_residual": -0.109937849231892
+              },
+              "validation": {
+                "rmse": 6.61903503334032,
+                "mean_residual": -0.109937849231892
+              }
+            },
+            {
+              "round": 3,
+              "training": {
+                "rmse": 6.30226396678992,
+                "mean_residual": -0.298718691760881
+              },
+              "validation": {
+                "rmse": 6.30226396678992,
+                "mean_residual": -0.298718691760881
+              }
+            },
+            {
+              "round": 4,
+              "training": {
+                "rmse": 6.24056970233491,
+                "mean_residual": -0.604764191644059
+              },
+              "validation": {
+                "rmse": 6.24056970233491,
+                "mean_residual": -0.604764191644059
+              }
+            },
+            {
+              "round": 5,
+              "training": {
+                "rmse": 6.22890970352622,
+                "mean_residual": -0.720175929557118
+              },
+              "validation": {
+                "rmse": 6.22890970352622,
+                "mean_residual": -0.720175929557118
+              }
+            }
+          ],
+          "training": {
+            "rmse": 6.22890970352622,
+            "mean_residual": -0.720175929557118
+          },
+          "validation": {
+            "rmse": 6.22890970352622,
+            "mean_residual": -0.720175929557118
+          },
+          "final_gradient": {
+            "coordinate_clamped_row_fraction": 0.00830555555555556,
+            "norm_clipped_row_fraction": 0.307472222222222,
+            "mean_raw_gradient_norm": 0.102983929216862,
+            "mean_clipped_gradient_norm": 0.0139891458675265
+          }
+        },
+        "config": {
+          "optimizer": "sgd",
+          "lr": 0.01,
+          "epochs": 5,
+          "batch": 32
+        },
+        "initialization_seed": 20260820,
+        "elapsed_s": 2.61409334931523,
+        "train_sha256": "9aaf164e06bd3170c8dba86be9efde202390ac8932584cf94e2b059fe2160301"
+      },
+      "pooled_dp": {
+        "rmse": 6.20811023030522,
+        "mae": 4.26711450276772,
+        "r2": 0.0958171052934859
+      },
+      "pooled_training": {
+        "metrics": {
+          "scoring_deferred": true
+        },
+        "node_privacy": [
+          {
+            "policy": {
+              "accountant": "stateless-per-training-v1",
+              "guarantee_scope": "per-training",
+              "per_training_epsilon": 4,
+              "per_training_delta": 1e-06,
+              "dp_unit": "row",
+              "patient_column": {},
+              "unit_canonicalization": "trim-utf8-v2",
+              "adjacency": "replace_one"
+            },
+            "clipping_norm": 1,
+            "staged_configurations": [
+              {
+                "n_samples": 36000,
+                "n_units": 36000,
+                "target_column": "BMI",
+                "feature_columns": [
+                  "HighBP",
+                  "HighChol",
+                  "CholCheck",
+                  "Smoker",
+                  "Stroke",
+                  "HeartDiseaseorAttack",
+                  "PhysActivity",
+                  "Fruits",
+                  "Veggies",
+                  "HvyAlcoholConsump",
+                  "AnyHealthcare",
+                  "NoDocbcCost",
+                  "GenHlth",
+                  "MentHlth",
+                  "PhysHlth",
+                  "DiffWalk",
+                  "Sex",
+                  "Age",
+                  "Education",
+                  "Income"
+                ],
+                "dp-unit": "row",
+                "patient_column": {},
+                "patient-id-canonicalization": "trim-utf8-v2",
+                "target-preencoded": true,
+                "dp-track": "neural",
+                "num-server-rounds": 5,
+                "num-features": 20,
+                "loss-name": "mse",
+                "num-classes": 2,
+                "num-labels": 2,
+                "local-epochs": 5,
+                "batch-size": 32,
+                "learning-rate": 0.01,
+                "weight-decay": 0,
+                "l1-penalty": 0,
+                "optimizer-name": "sgd",
+                "scheduler-name": "none",
+                "optimizer-momentum": 0,
+                "optimizer-nesterov": false,
+                "feature-bounds": {
+                  "lower": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    1,
+                    1
+                  ],
+                  "upper": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    5,
+                    30,
+                    30,
+                    1,
+                    1,
+                    13,
+                    6,
+                    8
+                  ]
+                },
+                "target-bounds": {
+                  "lower": -1,
+                  "upper": 1
+                },
+                "dp_enabled": true,
+                "allow_per_node_metrics": false,
+                "allow_exact_num_examples": false,
+                "fixed_client_sampling": true,
+                "privacy-adjacency": "replace_one",
+                "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+                "privacy-epsilon": 4,
+                "privacy-delta": 1e-06,
+                "privacy-clipping_norm": 1,
+                "privacy-sample_aggregate": 0,
+                "privacy-sa_blocks": 8,
+                "privacy-egress_time_pad": 0,
+                "privacy-egress_timeout": 900,
+                "privacy-egress_memory_mb": 8192,
+                "privacy-egress_file_mb": 1024,
+                "privacy-egress_processes": 128,
+                "privacy-hook_enabled": 0
+              }
+            ]
+          }
+        ],
+        "artifact_dir": "/workspace/cells/runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep1/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_070323",
+        "cleanup_ok": true,
+        "n_clients": 1,
+        "n_failures": 0,
+        "n_rounds_run": 5,
+        "model_sha256": "4664bd490b4df30a20d17a74b96ec1f0c1149a1b3b4930e79eafd6bac0f56d34",
+        "elapsed_s": 100.771338701248
+      },
+      "central_fit": {
+        "method": "OLS",
+        "intercept": true,
+        "observation_unit": "row",
+        "n_training_rows": 36000,
+        "n_features": 20,
+        "rank": 21,
+        "singular_values": [579.053821456848, 231.078615536157, 200.638137201548, 184.658146631399, 181.940817235496, 162.387006586808, 151.008529006369, 136.973945193713, 134.940569758025, 111.945051273316, 104.639359608121, 97.0407471704436, 93.5959311081772, 82.2872654977348, 81.790967544568, 77.9292769468364, 73.2881249892082, 70.317506205622, 68.756363105718, 62.7262559555037, 34.0349805746568],
+        "coefficients": [-0.612599114624714, 0.0284393250302626, 0.00797084383388914, 0.00794214373178447, -0.00445193431716841, -0.0139076090414755, -0.00612441382726091, -0.0130433168894358, -0.00622406841351887, 0.000128888187018646, -0.0172965044460388, 0.00242767101909164, 0.00371297490849817, 0.0414884192828138, -0.00344738796958475, -0.0109760083639767, 0.0269436915375083, 0.00577403536227518, -0.0453634314470741, -0.0118570451578015, 0.00115287241537652],
+        "numpy_version": "2.4.6",
+        "pandas_version": "3.0.3",
+        "target_transform": {
+          "center": 55,
+          "scale": 43,
+          "forward": "(clip(BMI,12,98)-55)/43",
+          "inverse": "55+43*prediction"
+        }
+      },
+      "training_mean": 28.4083888888889,
+      "baseline_provenance": {
+        "train_sha256": "9aaf164e06bd3170c8dba86be9efde202390ac8932584cf94e2b059fe2160301",
+        "test_sha256": "a63ed01b915388f82d5533cd12e71bc2865f11674691f8e8bba684978a7ef24e",
+        "frozen_sha256": "b04139d7225f9fbd7aa2dd578f4807afc75badc85aeb26ad839a484863d1e4f5",
+        "fit_completed_before_test_load": true,
+        "script_sha256": "8854922e173298a40034497a4f648db4e397b51fe970b654f0503d69598d0826"
+      },
+      "federated_dp": {
+        "rmse": 6.21860742850456,
+        "mae": 4.26647537481123,
+        "r2": 0.0927567822250954,
+        "decomposition": {
+          "mean_residual": -0.784692834112379,
+          "residual_variance": 38.0553355059448,
+          "mean_prediction": 27.5903071658876,
+          "target_mean": 28.375
+        }
+      },
+      "gap_rmse": 0.0562700545119963,
+      "diagnostics": {
+        "rmse_below_trivial": true,
+        "r2_positive": true,
+        "role": "annotation_only"
+      },
+      "node_privacy": [
+        {
+          "policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 4,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": {},
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "clipping_norm": 1,
+          "staged_configurations": [
+            {
+              "n_samples": 12000,
+              "n_units": 12000,
+              "target_column": "BMI",
+              "feature_columns": [
+                "HighBP",
+                "HighChol",
+                "CholCheck",
+                "Smoker",
+                "Stroke",
+                "HeartDiseaseorAttack",
+                "PhysActivity",
+                "Fruits",
+                "Veggies",
+                "HvyAlcoholConsump",
+                "AnyHealthcare",
+                "NoDocbcCost",
+                "GenHlth",
+                "MentHlth",
+                "PhysHlth",
+                "DiffWalk",
+                "Sex",
+                "Age",
+                "Education",
+                "Income"
+              ],
+              "dp-unit": "row",
+              "patient_column": {},
+              "patient-id-canonicalization": "trim-utf8-v2",
+              "target-preencoded": true,
+              "dp-track": "neural",
+              "num-server-rounds": 5,
+              "num-features": 20,
+              "loss-name": "mse",
+              "num-classes": 2,
+              "num-labels": 2,
+              "local-epochs": 5,
+              "batch-size": 32,
+              "learning-rate": 0.01,
+              "weight-decay": 0,
+              "l1-penalty": 0,
+              "optimizer-name": "sgd",
+              "scheduler-name": "none",
+              "optimizer-momentum": 0,
+              "optimizer-nesterov": false,
+              "feature-bounds": {
+                "lower": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ],
+                "upper": [
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  5,
+                  30,
+                  30,
+                  1,
+                  1,
+                  13,
+                  6,
+                  8
+                ]
+              },
+              "target-bounds": {
+                "lower": -1,
+                "upper": 1
+              },
+              "dp_enabled": true,
+              "allow_per_node_metrics": false,
+              "allow_exact_num_examples": false,
+              "fixed_client_sampling": true,
+              "privacy-adjacency": "replace_one",
+              "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+              "privacy-epsilon": 4,
+              "privacy-delta": 1e-06,
+              "privacy-clipping_norm": 1,
+              "privacy-sample_aggregate": 0,
+              "privacy-sa_blocks": 8,
+              "privacy-egress_time_pad": 0,
+              "privacy-egress_timeout": 900,
+              "privacy-egress_memory_mb": 8192,
+              "privacy-egress_file_mb": 1024,
+              "privacy-egress_processes": 128,
+              "privacy-hook_enabled": 0
+            }
+          ]
+        },
+        {
+          "policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 4,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": {},
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "clipping_norm": 1,
+          "staged_configurations": [
+            {
+              "n_samples": 12000,
+              "n_units": 12000,
+              "target_column": "BMI",
+              "feature_columns": [
+                "HighBP",
+                "HighChol",
+                "CholCheck",
+                "Smoker",
+                "Stroke",
+                "HeartDiseaseorAttack",
+                "PhysActivity",
+                "Fruits",
+                "Veggies",
+                "HvyAlcoholConsump",
+                "AnyHealthcare",
+                "NoDocbcCost",
+                "GenHlth",
+                "MentHlth",
+                "PhysHlth",
+                "DiffWalk",
+                "Sex",
+                "Age",
+                "Education",
+                "Income"
+              ],
+              "dp-unit": "row",
+              "patient_column": {},
+              "patient-id-canonicalization": "trim-utf8-v2",
+              "target-preencoded": true,
+              "dp-track": "neural",
+              "num-server-rounds": 5,
+              "num-features": 20,
+              "loss-name": "mse",
+              "num-classes": 2,
+              "num-labels": 2,
+              "local-epochs": 5,
+              "batch-size": 32,
+              "learning-rate": 0.01,
+              "weight-decay": 0,
+              "l1-penalty": 0,
+              "optimizer-name": "sgd",
+              "scheduler-name": "none",
+              "optimizer-momentum": 0,
+              "optimizer-nesterov": false,
+              "feature-bounds": {
+                "lower": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ],
+                "upper": [
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  5,
+                  30,
+                  30,
+                  1,
+                  1,
+                  13,
+                  6,
+                  8
+                ]
+              },
+              "target-bounds": {
+                "lower": -1,
+                "upper": 1
+              },
+              "dp_enabled": true,
+              "allow_per_node_metrics": false,
+              "allow_exact_num_examples": false,
+              "fixed_client_sampling": true,
+              "privacy-adjacency": "replace_one",
+              "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+              "privacy-epsilon": 4,
+              "privacy-delta": 1e-06,
+              "privacy-clipping_norm": 1,
+              "privacy-sample_aggregate": 0,
+              "privacy-sa_blocks": 8,
+              "privacy-egress_time_pad": 0,
+              "privacy-egress_timeout": 900,
+              "privacy-egress_memory_mb": 8192,
+              "privacy-egress_file_mb": 1024,
+              "privacy-egress_processes": 128,
+              "privacy-hook_enabled": 0
+            }
+          ]
+        },
+        {
+          "policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 4,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": {},
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "clipping_norm": 1,
+          "staged_configurations": [
+            {
+              "n_samples": 12000,
+              "n_units": 12000,
+              "target_column": "BMI",
+              "feature_columns": [
+                "HighBP",
+                "HighChol",
+                "CholCheck",
+                "Smoker",
+                "Stroke",
+                "HeartDiseaseorAttack",
+                "PhysActivity",
+                "Fruits",
+                "Veggies",
+                "HvyAlcoholConsump",
+                "AnyHealthcare",
+                "NoDocbcCost",
+                "GenHlth",
+                "MentHlth",
+                "PhysHlth",
+                "DiffWalk",
+                "Sex",
+                "Age",
+                "Education",
+                "Income"
+              ],
+              "dp-unit": "row",
+              "patient_column": {},
+              "patient-id-canonicalization": "trim-utf8-v2",
+              "target-preencoded": true,
+              "dp-track": "neural",
+              "num-server-rounds": 5,
+              "num-features": 20,
+              "loss-name": "mse",
+              "num-classes": 2,
+              "num-labels": 2,
+              "local-epochs": 5,
+              "batch-size": 32,
+              "learning-rate": 0.01,
+              "weight-decay": 0,
+              "l1-penalty": 0,
+              "optimizer-name": "sgd",
+              "scheduler-name": "none",
+              "optimizer-momentum": 0,
+              "optimizer-nesterov": false,
+              "feature-bounds": {
+                "lower": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ],
+                "upper": [
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  5,
+                  30,
+                  30,
+                  1,
+                  1,
+                  13,
+                  6,
+                  8
+                ]
+              },
+              "target-bounds": {
+                "lower": -1,
+                "upper": 1
+              },
+              "dp_enabled": true,
+              "allow_per_node_metrics": false,
+              "allow_exact_num_examples": false,
+              "fixed_client_sampling": true,
+              "privacy-adjacency": "replace_one",
+              "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+              "privacy-epsilon": 4,
+              "privacy-delta": 1e-06,
+              "privacy-clipping_norm": 1,
+              "privacy-sample_aggregate": 0,
+              "privacy-sa_blocks": 8,
+              "privacy-egress_time_pad": 0,
+              "privacy-egress_timeout": 900,
+              "privacy-egress_memory_mb": 8192,
+              "privacy-egress_file_mb": 1024,
+              "privacy-egress_processes": 128,
+              "privacy-hook_enabled": 0
+            }
+          ]
+        }
+      ],
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "cleanup_ok": true
+      },
+      "model_sha256": "d646e7ba703de091cb865b9699fc245f1d947197a6e4ced360545fe676866b61",
+      "federation_elapsed_s": 92.3725774288177,
+      "elapsed_s": 193.427191734314
+    },
+    {
+      "seed": 20260821,
+      "split": {
+        "n_train": 36000,
+        "n_test": 9000,
+        "n_per_site": [12000, 12000, 12000],
+        "membership_file": "cdcbmi_split_seed20260821.json",
+        "membership_sha256": "8ed7999946072883402244c5427aa69544f174f933fd69f3112dc91a61298ff7"
+      },
+      "central": {
+        "rmse": 6.25433721839657,
+        "mae": 4.40041680795479,
+        "r2": 0.114999757989445
+      },
+      "trivial": {
+        "rmse": 6.64864087034632,
+        "mae": 4.75352551851852,
+        "r2": -0.000107195956736694
+      },
+      "nonprivate_federated": {
+        "rmse": 6.30559716290943,
+        "mae": 4.34071063147651,
+        "r2": 0.100433556791766
+      },
+      "nonprivate_fit": {
+        "coefficients": [-0.61263572837459, 0.0270464071416061, 0.00860949821744783, 0.00936683030344964, -0.0052898410833768, -0.0152025513581945, -0.00603671640317447, -0.0144109242470625, -0.00579612794025675, 0.000278458581108304, -0.0151347376044723, 0.000334610469746584, 0.00269558648328074, 0.0422519157230046, -0.00135617425866524, -0.0121524632946321, 0.0269775819599806, 0.00690320207962846, -0.0444967594862632, -0.00998366131608305, 0.0019497222607695],
+        "ols": {
+          "method": "OLS",
+          "intercept": true,
+          "observation_unit": "row",
+          "n_training_rows": 36000,
+          "n_features": 20,
+          "rank": 21,
+          "singular_values": [579.461272592228, 231.182583367123, 200.307721352276, 184.266313929004, 181.974894966269, 162.619513282157, 150.828039181715, 137.336268059264, 134.628035222584, 111.410929387503, 104.17529190932, 97.1327603567937, 93.8354438944117, 82.3345625867129, 81.3312089331431, 78.1573453970952, 73.0304090380869, 70.1020388888967, 69.0795174714113, 62.8777149478402, 33.9371043488203],
+          "coefficients": [-0.61263572837459, 0.0270464071416061, 0.00860949821744783, 0.00936683030344964, -0.0052898410833768, -0.0152025513581945, -0.00603671640317447, -0.0144109242470625, -0.00579612794025675, 0.000278458581108304, -0.0151347376044723, 0.000334610469746584, 0.00269558648328074, 0.0422519157230046, -0.00135617425866524, -0.0121524632946321, 0.0269775819599806, 0.00690320207962846, -0.0444967594862632, -0.00998366131608305, 0.0019497222607695],
+          "numpy_version": "2.4.6",
+          "pandas_version": "3.0.3",
+          "target_transform": {
+            "center": 55,
+            "scale": 43,
+            "forward": "(clip(BMI,12,98)-55)/43",
+            "inverse": "55+43*prediction"
+          }
+        },
+        "training_mean": 28.3879444444444,
+        "nonprivate": {
+          "seed": 20260821,
+          "sigma": 0,
+          "weights": [0.0261170472949743, 0.00865792483091354, 0.0050267125479877, -0.00510139716789126, -0.00588706554844975, -0.00540432939305902, -0.0121716195717454, -0.00645585916936398, -0.00119357404764742, -0.0103851379826665, -0.00258859875611961, 0.00331526715308428, 0.0364452563226223, 0.00312693975865841, -0.00898550730198622, 0.0231170505285263, 0.00998049136251211, -0.0344506613910198, -0.0148492567241192, 0.00636687176302075, -0.606106519699097],
+          "trajectory": [
+            {
+              "round": 1,
+              "training": {
+                "rmse": 7.12254739882473,
+                "mean_residual": 0.23940064417426
+              },
+              "validation": {
+                "rmse": 7.12254739882473,
+                "mean_residual": 0.23940064417426
+              }
+            },
+            {
+              "round": 2,
+              "training": {
+                "rmse": 6.41795167536652,
+                "mean_residual": -0.0643641976796918
+              },
+              "validation": {
+                "rmse": 6.41795167536652,
+                "mean_residual": -0.0643641976796918
+              }
+            },
+            {
+              "round": 3,
+              "training": {
+                "rmse": 6.2405734626927,
+                "mean_residual": -0.498828276465337
+              },
+              "validation": {
+                "rmse": 6.2405734626927,
+                "mean_residual": -0.498828276465337
+              }
+            },
+            {
+              "round": 4,
+              "training": {
+                "rmse": 6.2247033077259,
+                "mean_residual": -0.816839363120082
+              },
+              "validation": {
+                "rmse": 6.2247033077259,
+                "mean_residual": -0.816839363120082
+              }
+            },
+            {
+              "round": 5,
+              "training": {
+                "rmse": 6.19305150014246,
+                "mean_residual": -0.654488982598815
+              },
+              "validation": {
+                "rmse": 6.19305150014246,
+                "mean_residual": -0.654488982598815
+              }
+            }
+          ],
+          "training": {
+            "rmse": 6.19305150014246,
+            "mean_residual": -0.654488982598815
+          },
+          "validation": {
+            "rmse": 6.19305150014246,
+            "mean_residual": -0.654488982598815
+          },
+          "final_gradient": {
+            "coordinate_clamped_row_fraction": 0.00788888888888889,
+            "norm_clipped_row_fraction": 0.305583333333333,
+            "mean_raw_gradient_norm": 0.0912011563777924,
+            "mean_clipped_gradient_norm": 0.00563663896173239
+          }
+        },
+        "config": {
+          "optimizer": "sgd",
+          "lr": 0.01,
+          "epochs": 5,
+          "batch": 32
+        },
+        "initialization_seed": 20260821,
+        "elapsed_s": 2.61245860811323,
+        "train_sha256": "9c72247236705c1dc1677d902e29fdf028b73001a3d7003f2fdd1e7d5dd2a41f"
+      },
+      "pooled_dp": {
+        "rmse": 6.34140831913761,
+        "mae": 4.34191594599353,
+        "r2": 0.0901867899970591
+      },
+      "pooled_training": {
+        "metrics": {
+          "scoring_deferred": true
+        },
+        "node_privacy": [
+          {
+            "policy": {
+              "accountant": "stateless-per-training-v1",
+              "guarantee_scope": "per-training",
+              "per_training_epsilon": 4,
+              "per_training_delta": 1e-06,
+              "dp_unit": "row",
+              "patient_column": {},
+              "unit_canonicalization": "trim-utf8-v2",
+              "adjacency": "replace_one"
+            },
+            "clipping_norm": 1,
+            "staged_configurations": [
+              {
+                "n_samples": 36000,
+                "n_units": 36000,
+                "target_column": "BMI",
+                "feature_columns": [
+                  "HighBP",
+                  "HighChol",
+                  "CholCheck",
+                  "Smoker",
+                  "Stroke",
+                  "HeartDiseaseorAttack",
+                  "PhysActivity",
+                  "Fruits",
+                  "Veggies",
+                  "HvyAlcoholConsump",
+                  "AnyHealthcare",
+                  "NoDocbcCost",
+                  "GenHlth",
+                  "MentHlth",
+                  "PhysHlth",
+                  "DiffWalk",
+                  "Sex",
+                  "Age",
+                  "Education",
+                  "Income"
+                ],
+                "dp-unit": "row",
+                "patient_column": {},
+                "patient-id-canonicalization": "trim-utf8-v2",
+                "target-preencoded": true,
+                "dp-track": "neural",
+                "num-server-rounds": 5,
+                "num-features": 20,
+                "loss-name": "mse",
+                "num-classes": 2,
+                "num-labels": 2,
+                "local-epochs": 5,
+                "batch-size": 32,
+                "learning-rate": 0.01,
+                "weight-decay": 0,
+                "l1-penalty": 0,
+                "optimizer-name": "sgd",
+                "scheduler-name": "none",
+                "optimizer-momentum": 0,
+                "optimizer-nesterov": false,
+                "feature-bounds": {
+                  "lower": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    1,
+                    1
+                  ],
+                  "upper": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    5,
+                    30,
+                    30,
+                    1,
+                    1,
+                    13,
+                    6,
+                    8
+                  ]
+                },
+                "target-bounds": {
+                  "lower": -1,
+                  "upper": 1
+                },
+                "dp_enabled": true,
+                "allow_per_node_metrics": false,
+                "allow_exact_num_examples": false,
+                "fixed_client_sampling": true,
+                "privacy-adjacency": "replace_one",
+                "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+                "privacy-epsilon": 4,
+                "privacy-delta": 1e-06,
+                "privacy-clipping_norm": 1,
+                "privacy-sample_aggregate": 0,
+                "privacy-sa_blocks": 8,
+                "privacy-egress_time_pad": 0,
+                "privacy-egress_timeout": 900,
+                "privacy-egress_memory_mb": 8192,
+                "privacy-egress_file_mb": 1024,
+                "privacy-egress_processes": 128,
+                "privacy-hook_enabled": 0
+              }
+            ]
+          }
+        ],
+        "artifact_dir": "/workspace/cells/runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep2/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_070634",
+        "cleanup_ok": true,
+        "n_clients": 1,
+        "n_failures": 0,
+        "n_rounds_run": 5,
+        "model_sha256": "3388fe1e38ac449e61ff4f9b1769109b6c2f3e56ed9961ba122c1a3b4676693b",
+        "elapsed_s": 94.8240215778351
+      },
+      "central_fit": {
+        "method": "OLS",
+        "intercept": true,
+        "observation_unit": "row",
+        "n_training_rows": 36000,
+        "n_features": 20,
+        "rank": 21,
+        "singular_values": [579.461272592228, 231.182583367123, 200.307721352276, 184.266313929004, 181.974894966269, 162.619513282157, 150.828039181715, 137.336268059264, 134.628035222584, 111.410929387503, 104.17529190932, 97.1327603567937, 93.8354438944117, 82.3345625867129, 81.3312089331431, 78.1573453970952, 73.0304090380869, 70.1020388888967, 69.0795174714113, 62.8777149478402, 33.9371043488203],
+        "coefficients": [-0.61263572837459, 0.0270464071416061, 0.00860949821744783, 0.00936683030344964, -0.0052898410833768, -0.0152025513581945, -0.00603671640317447, -0.0144109242470625, -0.00579612794025675, 0.000278458581108304, -0.0151347376044723, 0.000334610469746584, 0.00269558648328074, 0.0422519157230046, -0.00135617425866524, -0.0121524632946321, 0.0269775819599806, 0.00690320207962846, -0.0444967594862632, -0.00998366131608305, 0.0019497222607695],
+        "numpy_version": "2.4.6",
+        "pandas_version": "3.0.3",
+        "target_transform": {
+          "center": 55,
+          "scale": 43,
+          "forward": "(clip(BMI,12,98)-55)/43",
+          "inverse": "55+43*prediction"
+        }
+      },
+      "training_mean": 28.3879444444444,
+      "baseline_provenance": {
+        "train_sha256": "9c72247236705c1dc1677d902e29fdf028b73001a3d7003f2fdd1e7d5dd2a41f",
+        "test_sha256": "0de7936a8c02a09c5b58a6481c67365aba9c0ea064744275553832d26b4c88d0",
+        "frozen_sha256": "ee649b8b626c67cecdd79075d6e58fcfc36d99cc2788e80fd7988f6729f6c303",
+        "fit_completed_before_test_load": true,
+        "script_sha256": "8854922e173298a40034497a4f648db4e397b51fe970b654f0503d69598d0826"
+      },
+      "federated_dp": {
+        "rmse": 6.30045792713315,
+        "mae": 4.35801347027222,
+        "r2": 0.101899302210674,
+        "decomposition": {
+          "mean_residual": -0.527405139313804,
+          "residual_variance": 39.4176139106004,
+          "mean_prediction": 27.929372638464,
+          "target_mean": 28.4567777777778
+        }
+      },
+      "gap_rmse": 0.0461207087365869,
+      "diagnostics": {
+        "rmse_below_trivial": true,
+        "r2_positive": true,
+        "role": "annotation_only"
+      },
+      "node_privacy": [
+        {
+          "policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 4,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": {},
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "clipping_norm": 1,
+          "staged_configurations": [
+            {
+              "n_samples": 12000,
+              "n_units": 12000,
+              "target_column": "BMI",
+              "feature_columns": [
+                "HighBP",
+                "HighChol",
+                "CholCheck",
+                "Smoker",
+                "Stroke",
+                "HeartDiseaseorAttack",
+                "PhysActivity",
+                "Fruits",
+                "Veggies",
+                "HvyAlcoholConsump",
+                "AnyHealthcare",
+                "NoDocbcCost",
+                "GenHlth",
+                "MentHlth",
+                "PhysHlth",
+                "DiffWalk",
+                "Sex",
+                "Age",
+                "Education",
+                "Income"
+              ],
+              "dp-unit": "row",
+              "patient_column": {},
+              "patient-id-canonicalization": "trim-utf8-v2",
+              "target-preencoded": true,
+              "dp-track": "neural",
+              "num-server-rounds": 5,
+              "num-features": 20,
+              "loss-name": "mse",
+              "num-classes": 2,
+              "num-labels": 2,
+              "local-epochs": 5,
+              "batch-size": 32,
+              "learning-rate": 0.01,
+              "weight-decay": 0,
+              "l1-penalty": 0,
+              "optimizer-name": "sgd",
+              "scheduler-name": "none",
+              "optimizer-momentum": 0,
+              "optimizer-nesterov": false,
+              "feature-bounds": {
+                "lower": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ],
+                "upper": [
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  5,
+                  30,
+                  30,
+                  1,
+                  1,
+                  13,
+                  6,
+                  8
+                ]
+              },
+              "target-bounds": {
+                "lower": -1,
+                "upper": 1
+              },
+              "dp_enabled": true,
+              "allow_per_node_metrics": false,
+              "allow_exact_num_examples": false,
+              "fixed_client_sampling": true,
+              "privacy-adjacency": "replace_one",
+              "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+              "privacy-epsilon": 4,
+              "privacy-delta": 1e-06,
+              "privacy-clipping_norm": 1,
+              "privacy-sample_aggregate": 0,
+              "privacy-sa_blocks": 8,
+              "privacy-egress_time_pad": 0,
+              "privacy-egress_timeout": 900,
+              "privacy-egress_memory_mb": 8192,
+              "privacy-egress_file_mb": 1024,
+              "privacy-egress_processes": 128,
+              "privacy-hook_enabled": 0
+            }
+          ]
+        },
+        {
+          "policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 4,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": {},
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "clipping_norm": 1,
+          "staged_configurations": [
+            {
+              "n_samples": 12000,
+              "n_units": 12000,
+              "target_column": "BMI",
+              "feature_columns": [
+                "HighBP",
+                "HighChol",
+                "CholCheck",
+                "Smoker",
+                "Stroke",
+                "HeartDiseaseorAttack",
+                "PhysActivity",
+                "Fruits",
+                "Veggies",
+                "HvyAlcoholConsump",
+                "AnyHealthcare",
+                "NoDocbcCost",
+                "GenHlth",
+                "MentHlth",
+                "PhysHlth",
+                "DiffWalk",
+                "Sex",
+                "Age",
+                "Education",
+                "Income"
+              ],
+              "dp-unit": "row",
+              "patient_column": {},
+              "patient-id-canonicalization": "trim-utf8-v2",
+              "target-preencoded": true,
+              "dp-track": "neural",
+              "num-server-rounds": 5,
+              "num-features": 20,
+              "loss-name": "mse",
+              "num-classes": 2,
+              "num-labels": 2,
+              "local-epochs": 5,
+              "batch-size": 32,
+              "learning-rate": 0.01,
+              "weight-decay": 0,
+              "l1-penalty": 0,
+              "optimizer-name": "sgd",
+              "scheduler-name": "none",
+              "optimizer-momentum": 0,
+              "optimizer-nesterov": false,
+              "feature-bounds": {
+                "lower": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ],
+                "upper": [
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  5,
+                  30,
+                  30,
+                  1,
+                  1,
+                  13,
+                  6,
+                  8
+                ]
+              },
+              "target-bounds": {
+                "lower": -1,
+                "upper": 1
+              },
+              "dp_enabled": true,
+              "allow_per_node_metrics": false,
+              "allow_exact_num_examples": false,
+              "fixed_client_sampling": true,
+              "privacy-adjacency": "replace_one",
+              "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+              "privacy-epsilon": 4,
+              "privacy-delta": 1e-06,
+              "privacy-clipping_norm": 1,
+              "privacy-sample_aggregate": 0,
+              "privacy-sa_blocks": 8,
+              "privacy-egress_time_pad": 0,
+              "privacy-egress_timeout": 900,
+              "privacy-egress_memory_mb": 8192,
+              "privacy-egress_file_mb": 1024,
+              "privacy-egress_processes": 128,
+              "privacy-hook_enabled": 0
+            }
+          ]
+        },
+        {
+          "policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 4,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": {},
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "clipping_norm": 1,
+          "staged_configurations": [
+            {
+              "n_samples": 12000,
+              "n_units": 12000,
+              "target_column": "BMI",
+              "feature_columns": [
+                "HighBP",
+                "HighChol",
+                "CholCheck",
+                "Smoker",
+                "Stroke",
+                "HeartDiseaseorAttack",
+                "PhysActivity",
+                "Fruits",
+                "Veggies",
+                "HvyAlcoholConsump",
+                "AnyHealthcare",
+                "NoDocbcCost",
+                "GenHlth",
+                "MentHlth",
+                "PhysHlth",
+                "DiffWalk",
+                "Sex",
+                "Age",
+                "Education",
+                "Income"
+              ],
+              "dp-unit": "row",
+              "patient_column": {},
+              "patient-id-canonicalization": "trim-utf8-v2",
+              "target-preencoded": true,
+              "dp-track": "neural",
+              "num-server-rounds": 5,
+              "num-features": 20,
+              "loss-name": "mse",
+              "num-classes": 2,
+              "num-labels": 2,
+              "local-epochs": 5,
+              "batch-size": 32,
+              "learning-rate": 0.01,
+              "weight-decay": 0,
+              "l1-penalty": 0,
+              "optimizer-name": "sgd",
+              "scheduler-name": "none",
+              "optimizer-momentum": 0,
+              "optimizer-nesterov": false,
+              "feature-bounds": {
+                "lower": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ],
+                "upper": [
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  5,
+                  30,
+                  30,
+                  1,
+                  1,
+                  13,
+                  6,
+                  8
+                ]
+              },
+              "target-bounds": {
+                "lower": -1,
+                "upper": 1
+              },
+              "dp_enabled": true,
+              "allow_per_node_metrics": false,
+              "allow_exact_num_examples": false,
+              "fixed_client_sampling": true,
+              "privacy-adjacency": "replace_one",
+              "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+              "privacy-epsilon": 4,
+              "privacy-delta": 1e-06,
+              "privacy-clipping_norm": 1,
+              "privacy-sample_aggregate": 0,
+              "privacy-sa_blocks": 8,
+              "privacy-egress_time_pad": 0,
+              "privacy-egress_timeout": 900,
+              "privacy-egress_memory_mb": 8192,
+              "privacy-egress_file_mb": 1024,
+              "privacy-egress_processes": 128,
+              "privacy-hook_enabled": 0
+            }
+          ]
+        }
+      ],
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "cleanup_ok": true
+      },
+      "model_sha256": "6d41040ba421b2f1ea03a7741c8a68913ace1253febe201e63b6b0d7c52784b3",
+      "federation_elapsed_s": 95.2098548412323,
+      "elapsed_s": 190.359037637711
+    },
+    {
+      "seed": 20260822,
+      "split": {
+        "n_train": 36000,
+        "n_test": 9000,
+        "n_per_site": [12000, 12000, 12000],
+        "membership_file": "cdcbmi_split_seed20260822.json",
+        "membership_sha256": "c614e1549024eebed476516913765d42349a787a800081ccf94f97b51cb51767"
+      },
+      "central": {
+        "rmse": 6.1704962342535,
+        "mae": 4.33044081328361,
+        "r2": 0.115905262946537
+      },
+      "trivial": {
+        "rmse": 6.56261511274702,
+        "mae": 4.69337861111111,
+        "r2": -2.87611899452145e-05
+      },
+      "nonprivate_federated": {
+        "rmse": 6.21264683442611,
+        "mae": 4.26831080585056,
+        "r2": 0.103785523720718
+      },
+      "nonprivate_fit": {
+        "coefficients": [-0.609434379833769, 0.027646635190004, 0.00811536984159122, 0.0074111793404623, -0.00483681776890522, -0.013227741472891, -0.00766626562060457, -0.0139984109629777, -0.00621825088353948, 0.00059373560150355, -0.0158637206494241, -0.000251884255956071, 0.00238729006404337, 0.0407247590856919, -0.00179764090694141, -0.0111732609863582, 0.0272948170900714, 0.00656381038167806, -0.0442628454697156, -0.0105861306955425, 0.000432722196694527],
+        "ols": {
+          "method": "OLS",
+          "intercept": true,
+          "observation_unit": "row",
+          "n_training_rows": 36000,
+          "n_features": 20,
+          "rank": 21,
+          "singular_values": [579.556840558216, 230.593674104871, 200.265011467806, 184.949105851644, 182.021274625785, 162.564088546232, 151.095013588402, 137.469516176003, 134.283987767501, 111.785697301052, 104.511379714198, 96.9660785568187, 93.5952188846995, 82.342388799033, 81.1571397563714, 77.8358971261153, 73.0381519086139, 70.1057435251047, 68.2315253675, 62.6707057429529, 33.83472896442],
+          "coefficients": [-0.609434379833769, 0.027646635190004, 0.00811536984159122, 0.0074111793404623, -0.00483681776890522, -0.013227741472891, -0.00766626562060457, -0.0139984109629777, -0.00621825088353948, 0.00059373560150355, -0.0158637206494241, -0.000251884255956071, 0.00238729006404337, 0.0407247590856919, -0.00179764090694141, -0.0111732609863582, 0.0272948170900714, 0.00656381038167806, -0.0442628454697156, -0.0105861306955425, 0.000432722196694527],
+          "numpy_version": "2.4.6",
+          "pandas_version": "3.0.3",
+          "target_transform": {
+            "center": 55,
+            "scale": 43,
+            "forward": "(clip(BMI,12,98)-55)/43",
+            "inverse": "55+43*prediction"
+          }
+        },
+        "training_mean": 28.40875,
+        "nonprivate": {
+          "seed": 20260822,
+          "sigma": 0,
+          "weights": [0.0259638819843531, 0.00721738860011101, 0.00426506111398339, -0.00253674085251987, -0.00674813985824585, -0.00581964151933789, -0.0127476947382092, -0.00572489947080612, 0.0008728580432944, -0.0124800764024258, -0.00108546169940382, 0.00345856603235006, 0.038028284907341, -0.000940551224630326, -0.0120389135554433, 0.0224435850977898, 0.00989822018891573, -0.0320874899625778, -0.014433067291975, 0.00735769653692842, -0.616752624511719],
+          "trajectory": [
+            {
+              "round": 1,
+              "training": {
+                "rmse": 6.46409171223071,
+                "mean_residual": -0.204528983748207
+              },
+              "validation": {
+                "rmse": 6.46409171223071,
+                "mean_residual": -0.204528983748207
+              }
+            },
+            {
+              "round": 2,
+              "training": {
+                "rmse": 6.24843938691359,
+                "mean_residual": -0.291312288898975
+              },
+              "validation": {
+                "rmse": 6.24843938691359,
+                "mean_residual": -0.291312288898975
+              }
+            },
+            {
+              "round": 3,
+              "training": {
+                "rmse": 6.25336422534982,
+                "mean_residual": -0.85685898641828
+              },
+              "validation": {
+                "rmse": 6.25336422534982,
+                "mean_residual": -0.85685898641828
+              }
+            },
+            {
+              "round": 4,
+              "training": {
+                "rmse": 6.19640267475954,
+                "mean_residual": -0.445927250439094
+              },
+              "validation": {
+                "rmse": 6.19640267475954,
+                "mean_residual": -0.445927250439094
+              }
+            },
+            {
+              "round": 5,
+              "training": {
+                "rmse": 6.21665513509319,
+                "mean_residual": -0.647424365041157
+              },
+              "validation": {
+                "rmse": 6.21665513509319,
+                "mean_residual": -0.647424365041157
+              }
+            }
+          ],
+          "training": {
+            "rmse": 6.21665513509319,
+            "mean_residual": -0.647424365041157
+          },
+          "validation": {
+            "rmse": 6.21665513509319,
+            "mean_residual": -0.647424365041157
+          },
+          "final_gradient": {
+            "coordinate_clamped_row_fraction": 0.00783333333333333,
+            "norm_clipped_row_fraction": 0.308194444444444,
+            "mean_raw_gradient_norm": 0.0857594534754753,
+            "mean_clipped_gradient_norm": 0.00290379952639341
+          }
+        },
+        "config": {
+          "optimizer": "sgd",
+          "lr": 0.01,
+          "epochs": 5,
+          "batch": 32
+        },
+        "initialization_seed": 20260822,
+        "elapsed_s": 2.63027896266431,
+        "train_sha256": "13da4f1a503f464161080e7d3e9c877c7afecd70ec00a11d8b53344137cc1d64"
+      },
+      "pooled_dp": {
+        "rmse": 6.2113954468998,
+        "mae": 4.27338134903378,
+        "r2": 0.104146528843237
+      },
+      "pooled_training": {
+        "metrics": {
+          "scoring_deferred": true
+        },
+        "node_privacy": [
+          {
+            "policy": {
+              "accountant": "stateless-per-training-v1",
+              "guarantee_scope": "per-training",
+              "per_training_epsilon": 4,
+              "per_training_delta": 1e-06,
+              "dp_unit": "row",
+              "patient_column": {},
+              "unit_canonicalization": "trim-utf8-v2",
+              "adjacency": "replace_one"
+            },
+            "clipping_norm": 1,
+            "staged_configurations": [
+              {
+                "n_samples": 36000,
+                "n_units": 36000,
+                "target_column": "BMI",
+                "feature_columns": [
+                  "HighBP",
+                  "HighChol",
+                  "CholCheck",
+                  "Smoker",
+                  "Stroke",
+                  "HeartDiseaseorAttack",
+                  "PhysActivity",
+                  "Fruits",
+                  "Veggies",
+                  "HvyAlcoholConsump",
+                  "AnyHealthcare",
+                  "NoDocbcCost",
+                  "GenHlth",
+                  "MentHlth",
+                  "PhysHlth",
+                  "DiffWalk",
+                  "Sex",
+                  "Age",
+                  "Education",
+                  "Income"
+                ],
+                "dp-unit": "row",
+                "patient_column": {},
+                "patient-id-canonicalization": "trim-utf8-v2",
+                "target-preencoded": true,
+                "dp-track": "neural",
+                "num-server-rounds": 5,
+                "num-features": 20,
+                "loss-name": "mse",
+                "num-classes": 2,
+                "num-labels": 2,
+                "local-epochs": 5,
+                "batch-size": 32,
+                "learning-rate": 0.01,
+                "weight-decay": 0,
+                "l1-penalty": 0,
+                "optimizer-name": "sgd",
+                "scheduler-name": "none",
+                "optimizer-momentum": 0,
+                "optimizer-nesterov": false,
+                "feature-bounds": {
+                  "lower": [
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    0,
+                    0,
+                    0,
+                    0,
+                    1,
+                    1,
+                    1
+                  ],
+                  "upper": [
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    1,
+                    5,
+                    30,
+                    30,
+                    1,
+                    1,
+                    13,
+                    6,
+                    8
+                  ]
+                },
+                "target-bounds": {
+                  "lower": -1,
+                  "upper": 1
+                },
+                "dp_enabled": true,
+                "allow_per_node_metrics": false,
+                "allow_exact_num_examples": false,
+                "fixed_client_sampling": true,
+                "privacy-adjacency": "replace_one",
+                "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+                "privacy-epsilon": 4,
+                "privacy-delta": 1e-06,
+                "privacy-clipping_norm": 1,
+                "privacy-sample_aggregate": 0,
+                "privacy-sa_blocks": 8,
+                "privacy-egress_time_pad": 0,
+                "privacy-egress_timeout": 900,
+                "privacy-egress_memory_mb": 8192,
+                "privacy-egress_file_mb": 1024,
+                "privacy-egress_processes": 128,
+                "privacy-hook_enabled": 0
+              }
+            ]
+          }
+        ],
+        "artifact_dir": "/workspace/cells/runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep3/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_070945",
+        "cleanup_ok": true,
+        "n_clients": 1,
+        "n_failures": 0,
+        "n_rounds_run": 5,
+        "model_sha256": "4565d807c365ab4732525e083e9f8fefbb511bb645dfc6e1883569635e98455f",
+        "elapsed_s": 94.8723554611206
+      },
+      "central_fit": {
+        "method": "OLS",
+        "intercept": true,
+        "observation_unit": "row",
+        "n_training_rows": 36000,
+        "n_features": 20,
+        "rank": 21,
+        "singular_values": [579.556840558216, 230.593674104871, 200.265011467806, 184.949105851644, 182.021274625785, 162.564088546232, 151.095013588402, 137.469516176003, 134.283987767501, 111.785697301052, 104.511379714198, 96.9660785568187, 93.5952188846995, 82.342388799033, 81.1571397563714, 77.8358971261153, 73.0381519086139, 70.1057435251047, 68.2315253675, 62.6707057429529, 33.83472896442],
+        "coefficients": [-0.609434379833769, 0.027646635190004, 0.00811536984159122, 0.0074111793404623, -0.00483681776890522, -0.013227741472891, -0.00766626562060457, -0.0139984109629777, -0.00621825088353948, 0.00059373560150355, -0.0158637206494241, -0.000251884255956071, 0.00238729006404337, 0.0407247590856919, -0.00179764090694141, -0.0111732609863582, 0.0272948170900714, 0.00656381038167806, -0.0442628454697156, -0.0105861306955425, 0.000432722196694527],
+        "numpy_version": "2.4.6",
+        "pandas_version": "3.0.3",
+        "target_transform": {
+          "center": 55,
+          "scale": 43,
+          "forward": "(clip(BMI,12,98)-55)/43",
+          "inverse": "55+43*prediction"
+        }
+      },
+      "training_mean": 28.40875,
+      "baseline_provenance": {
+        "train_sha256": "13da4f1a503f464161080e7d3e9c877c7afecd70ec00a11d8b53344137cc1d64",
+        "test_sha256": "620378c354b9a7d59a0d2bb4549ff8a366e51b9b29e3793e3396df669a1fe9b7",
+        "frozen_sha256": "8bf420146ea160a96d5d6e00c9a71bb2241c2f2755b78647ffe09c6dc3ebcac6",
+        "fit_completed_before_test_load": true,
+        "script_sha256": "8854922e173298a40034497a4f648db4e397b51fe970b654f0503d69598d0826"
+      },
+      "federated_dp": {
+        "rmse": 6.22644201211246,
+        "mae": 4.27200517719322,
+        "r2": 0.0998010176711678,
+        "decomposition": {
+          "mean_residual": -0.696225033428934,
+          "residual_variance": 38.283850833026,
+          "mean_prediction": 27.6773305221266,
+          "target_mean": 28.3735555555556
+        }
+      },
+      "gap_rmse": 0.0559457778589607,
+      "diagnostics": {
+        "rmse_below_trivial": true,
+        "r2_positive": true,
+        "role": "annotation_only"
+      },
+      "node_privacy": [
+        {
+          "policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 4,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": {},
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "clipping_norm": 1,
+          "staged_configurations": [
+            {
+              "n_samples": 12000,
+              "n_units": 12000,
+              "target_column": "BMI",
+              "feature_columns": [
+                "HighBP",
+                "HighChol",
+                "CholCheck",
+                "Smoker",
+                "Stroke",
+                "HeartDiseaseorAttack",
+                "PhysActivity",
+                "Fruits",
+                "Veggies",
+                "HvyAlcoholConsump",
+                "AnyHealthcare",
+                "NoDocbcCost",
+                "GenHlth",
+                "MentHlth",
+                "PhysHlth",
+                "DiffWalk",
+                "Sex",
+                "Age",
+                "Education",
+                "Income"
+              ],
+              "dp-unit": "row",
+              "patient_column": {},
+              "patient-id-canonicalization": "trim-utf8-v2",
+              "target-preencoded": true,
+              "dp-track": "neural",
+              "num-server-rounds": 5,
+              "num-features": 20,
+              "loss-name": "mse",
+              "num-classes": 2,
+              "num-labels": 2,
+              "local-epochs": 5,
+              "batch-size": 32,
+              "learning-rate": 0.01,
+              "weight-decay": 0,
+              "l1-penalty": 0,
+              "optimizer-name": "sgd",
+              "scheduler-name": "none",
+              "optimizer-momentum": 0,
+              "optimizer-nesterov": false,
+              "feature-bounds": {
+                "lower": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ],
+                "upper": [
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  5,
+                  30,
+                  30,
+                  1,
+                  1,
+                  13,
+                  6,
+                  8
+                ]
+              },
+              "target-bounds": {
+                "lower": -1,
+                "upper": 1
+              },
+              "dp_enabled": true,
+              "allow_per_node_metrics": false,
+              "allow_exact_num_examples": false,
+              "fixed_client_sampling": true,
+              "privacy-adjacency": "replace_one",
+              "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+              "privacy-epsilon": 4,
+              "privacy-delta": 1e-06,
+              "privacy-clipping_norm": 1,
+              "privacy-sample_aggregate": 0,
+              "privacy-sa_blocks": 8,
+              "privacy-egress_time_pad": 0,
+              "privacy-egress_timeout": 900,
+              "privacy-egress_memory_mb": 8192,
+              "privacy-egress_file_mb": 1024,
+              "privacy-egress_processes": 128,
+              "privacy-hook_enabled": 0
+            }
+          ]
+        },
+        {
+          "policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 4,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": {},
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "clipping_norm": 1,
+          "staged_configurations": [
+            {
+              "n_samples": 12000,
+              "n_units": 12000,
+              "target_column": "BMI",
+              "feature_columns": [
+                "HighBP",
+                "HighChol",
+                "CholCheck",
+                "Smoker",
+                "Stroke",
+                "HeartDiseaseorAttack",
+                "PhysActivity",
+                "Fruits",
+                "Veggies",
+                "HvyAlcoholConsump",
+                "AnyHealthcare",
+                "NoDocbcCost",
+                "GenHlth",
+                "MentHlth",
+                "PhysHlth",
+                "DiffWalk",
+                "Sex",
+                "Age",
+                "Education",
+                "Income"
+              ],
+              "dp-unit": "row",
+              "patient_column": {},
+              "patient-id-canonicalization": "trim-utf8-v2",
+              "target-preencoded": true,
+              "dp-track": "neural",
+              "num-server-rounds": 5,
+              "num-features": 20,
+              "loss-name": "mse",
+              "num-classes": 2,
+              "num-labels": 2,
+              "local-epochs": 5,
+              "batch-size": 32,
+              "learning-rate": 0.01,
+              "weight-decay": 0,
+              "l1-penalty": 0,
+              "optimizer-name": "sgd",
+              "scheduler-name": "none",
+              "optimizer-momentum": 0,
+              "optimizer-nesterov": false,
+              "feature-bounds": {
+                "lower": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ],
+                "upper": [
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  5,
+                  30,
+                  30,
+                  1,
+                  1,
+                  13,
+                  6,
+                  8
+                ]
+              },
+              "target-bounds": {
+                "lower": -1,
+                "upper": 1
+              },
+              "dp_enabled": true,
+              "allow_per_node_metrics": false,
+              "allow_exact_num_examples": false,
+              "fixed_client_sampling": true,
+              "privacy-adjacency": "replace_one",
+              "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+              "privacy-epsilon": 4,
+              "privacy-delta": 1e-06,
+              "privacy-clipping_norm": 1,
+              "privacy-sample_aggregate": 0,
+              "privacy-sa_blocks": 8,
+              "privacy-egress_time_pad": 0,
+              "privacy-egress_timeout": 900,
+              "privacy-egress_memory_mb": 8192,
+              "privacy-egress_file_mb": 1024,
+              "privacy-egress_processes": 128,
+              "privacy-hook_enabled": 0
+            }
+          ]
+        },
+        {
+          "policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 4,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": {},
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "clipping_norm": 1,
+          "staged_configurations": [
+            {
+              "n_samples": 12000,
+              "n_units": 12000,
+              "target_column": "BMI",
+              "feature_columns": [
+                "HighBP",
+                "HighChol",
+                "CholCheck",
+                "Smoker",
+                "Stroke",
+                "HeartDiseaseorAttack",
+                "PhysActivity",
+                "Fruits",
+                "Veggies",
+                "HvyAlcoholConsump",
+                "AnyHealthcare",
+                "NoDocbcCost",
+                "GenHlth",
+                "MentHlth",
+                "PhysHlth",
+                "DiffWalk",
+                "Sex",
+                "Age",
+                "Education",
+                "Income"
+              ],
+              "dp-unit": "row",
+              "patient_column": {},
+              "patient-id-canonicalization": "trim-utf8-v2",
+              "target-preencoded": true,
+              "dp-track": "neural",
+              "num-server-rounds": 5,
+              "num-features": 20,
+              "loss-name": "mse",
+              "num-classes": 2,
+              "num-labels": 2,
+              "local-epochs": 5,
+              "batch-size": 32,
+              "learning-rate": 0.01,
+              "weight-decay": 0,
+              "l1-penalty": 0,
+              "optimizer-name": "sgd",
+              "scheduler-name": "none",
+              "optimizer-momentum": 0,
+              "optimizer-nesterov": false,
+              "feature-bounds": {
+                "lower": [
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  0,
+                  0,
+                  0,
+                  0,
+                  1,
+                  1,
+                  1
+                ],
+                "upper": [
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  1,
+                  5,
+                  30,
+                  30,
+                  1,
+                  1,
+                  13,
+                  6,
+                  8
+                ]
+              },
+              "target-bounds": {
+                "lower": -1,
+                "upper": 1
+              },
+              "dp_enabled": true,
+              "allow_per_node_metrics": false,
+              "allow_exact_num_examples": false,
+              "fixed_client_sampling": true,
+              "privacy-adjacency": "replace_one",
+              "privacy-policy-sha256": "fb6bac33ccc632d91bfc6607349f06aeb13e5adc7b93221760217cfe827b9b44",
+              "privacy-epsilon": 4,
+              "privacy-delta": 1e-06,
+              "privacy-clipping_norm": 1,
+              "privacy-sample_aggregate": 0,
+              "privacy-sa_blocks": 8,
+              "privacy-egress_time_pad": 0,
+              "privacy-egress_timeout": 900,
+              "privacy-egress_memory_mb": 8192,
+              "privacy-egress_file_mb": 1024,
+              "privacy-egress_processes": 128,
+              "privacy-hook_enabled": 0
+            }
+          ]
+        }
+      ],
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "cleanup_ok": true
+      },
+      "model_sha256": "8718b93c592c663e196341841f9d4a5d3506cd306576a8b2fff132e79f3c5a4d",
+      "federation_elapsed_s": 93.410163640976,
+      "elapsed_s": 188.521412849426
+    }
+  ],
+  "summary": {
+    "central_mean_sd": {
+      "rmse": {
+        "mean": 6.19572360888088,
+        "sd": 0.0509245340237168
+      },
+      "mae": {
+        "mean": 4.34988591467331,
+        "sd": 0.0441464018999181
+      },
+      "r2": {
+        "mean": 0.113335395892527,
+        "sd": 0.00369479460643721
+      }
+    },
+    "federated_mean_sd": {
+      "rmse": {
+        "mean": 6.24850245591673,
+        "sd": 0.0451649578441978
+      },
+      "mae": {
+        "mean": 4.29883134075889,
+        "sd": 0.0513277509627669
+      },
+      "r2": {
+        "mean": 0.0981523673689792,
+        "sd": 0.00478904518519692
+      }
+    },
+    "trivial_mean_sd": {
+      "rmse": {
+        "mean": 6.58003665360331,
+        "sd": 0.0617645325071567
+      },
+      "mae": {
+        "mean": 4.70445747942387,
+        "sd": 0.0445734835994525
+      },
+      "r2": {
+        "mean": -5.40371143760154e-05,
+        "sd": 4.60553579360934e-05
+      }
+    },
+    "nonprivate_federated_mean_sd": {
+      "rmse": {
+        "mean": 6.24420630230946,
+        "sd": 0.0531730654076777
+      },
+      "mae": {
+        "mean": 4.29110171226219,
+        "sd": 0.0430097436132889
+      },
+      "r2": {
+        "mean": 0.0994034737436619,
+        "sd": 0.00497768103485159
+      }
+    },
+    "pooled_dp_mean_sd": {
+      "rmse": {
+        "mean": 6.25363799878088,
+        "sd": 0.0760290734762763
+      },
+      "mae": {
+        "mean": 4.29413726593168,
+        "sd": 0.0414960244104215
+      },
+      "r2": {
+        "mean": 0.096716808044594,
+        "sd": 0.00702322404196503
+      }
+    },
+    "gap_rmse_mean_sd": {
+      "mean": 0.052778847035848,
+      "sd": 0.00576839605488313
+    },
+    "diagnostics": {
+      "rmse_below_trivial": true,
+      "r2_positive": true,
+      "role": "annotation_only"
+    }
+  },
+  "tooling_sha256": {
+    "run_corrected.R": "baf4c216db40a79d9e0f21d90858b210b34b9d48c30617a8616452d719067f35",
+    "comparators.py": "8854922e173298a40034497a4f648db4e397b51fe970b654f0503d69598d0826",
+    "emulate.py": "132fc26f64a6c83d17b2c3b9930e1985b37ec5c759c42e2edc6a92a8c3955d72",
+    "selection.json": "91912e3e74748933dd4112081304a1a6b8ec09f623e3e15bb83e61339ac8eecc",
+    "declaration_commit.txt": "6ad135bc76155973cbd3f65a5902d2b6cfa610314dbae4eb37ec2969ec415c58"
+  }
+}

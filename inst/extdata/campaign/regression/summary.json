@@ -834,6 +834,297 @@
             ]
           }
         }
+      ],
+      "r4_diagnosis": {
+        "file": "REGRESSION_DIAGNOSIS_R4.md",
+        "interpretation": "Training-only released-step emulation reproduces the above-trivial error without noise. The default one-local-epoch clipped schedule is optimization-limited and initialization-sensitive; no released-code shape, divisor or prediction-transform defect was found. Its DP-minus-OLS gap is not a noise-only privacy cost."
+      }
+    },
+    {
+      "id": "cdcbmi_r4",
+      "contract": "pytorch_linear_regression",
+      "dataset": "UCI CDC Diabetes Health Indicators",
+      "thesis_citation_key": "uci_cdc_diabetes_health_indicators",
+      "n": 45000,
+      "n_train": 36000,
+      "n_test": 9000,
+      "privacy_unit": "row",
+      "delta": 1e-06,
+      "selected_params": {
+        "optimizer": "sgd",
+        "learning_rate": 0.01,
+        "local_epochs": 5,
+        "batch_size": 32
+      },
+      "selection_file": "cdcbmi_r4_selection.json",
+      "effective_protocol_file": "cdcbmi_r4_protocol.json",
+      "protocol_inheritance_note": "Execution records retain the untouched public-unit base protocol and its checksum. Top-level model_params/model_params_overrides and node-reported configurations are the effective corrected schedule; the separate R4 protocol resolves that inheritance.",
+      "interpretation": "Schedule selected using real epsilon-8 federated-DP inner-validation RMSE on training rows only. OLS measures the optimum of the public-unit least-squares objective; the non-private finite-schedule twin exposes remaining optimization/clipping error. The federated-DP minus noiseless-twin difference also contains independent initialization and sampling variation, so it is not an exactly paired causal noise effect. Pooled DP uses one site with all 36000 training rows and recalibrates its complete horizon. SDs across overlapping splits are descriptive; privacy accounting is per training, with no composed-grid or private-selection guarantee.",
+      "budgets": [
+        {
+          "epsilon": 1,
+          "evidence": {
+            "file": "cdcbmi_r4_pytorch_linear_regression_eps1.json",
+            "sha256": "d1e0c46953a30fa6dbe89678a8fee2bb6af151319a163a024992b858ef9602f7"
+          },
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 6.19572360888088,
+                "sd": 0.0509245340237168
+              },
+              "mae": {
+                "mean": 4.34988591467331,
+                "sd": 0.0441464018999181
+              },
+              "r2": {
+                "mean": 0.113335395892527,
+                "sd": 0.00369479460643721
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 6.27600870711389,
+                "sd": 0.0862745342594966
+              },
+              "mae": {
+                "mean": 4.32258809874124,
+                "sd": 0.0437503764378132
+              },
+              "r2": {
+                "mean": 0.0902506420864548,
+                "sd": 0.00980737158780149
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 6.58003665360331,
+                "sd": 0.0617645325071567
+              },
+              "mae": {
+                "mean": 4.70445747942387,
+                "sd": 0.0445734835994525
+              },
+              "r2": {
+                "mean": -5.40371143760154e-05,
+                "sd": 4.60553579360934e-05
+              }
+            },
+            "nonprivate_federated_mean_sd": {
+              "rmse": {
+                "mean": 6.24420630230946,
+                "sd": 0.0531730654076777
+              },
+              "mae": {
+                "mean": 4.29110171226219,
+                "sd": 0.0430097436132889
+              },
+              "r2": {
+                "mean": 0.0994034737436619,
+                "sd": 0.00497768103485159
+              }
+            },
+            "pooled_dp_mean_sd": {
+              "rmse": {
+                "mean": 6.23460002308399,
+                "sd": 0.0649034303772922
+              },
+              "mae": {
+                "mean": 4.33836740257563,
+                "sd": 0.0301091055678095
+              },
+              "r2": {
+                "mean": 0.102195680261284,
+                "sd": 0.00438579087013791
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 0.0802850982330095,
+              "sd": 0.0357796758481662
+            },
+            "diagnostics": {
+              "rmse_below_trivial": true,
+              "r2_positive": true,
+              "role": "annotation_only"
+            }
+          }
+        },
+        {
+          "epsilon": 4,
+          "evidence": {
+            "file": "cdcbmi_r4_pytorch_linear_regression_eps4.json",
+            "sha256": "cb5a2dc6bc9d0d40f005a904933f03a11ab09cb4b22b6b77ca4979019a9f4f0f"
+          },
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 6.19572360888088,
+                "sd": 0.0509245340237168
+              },
+              "mae": {
+                "mean": 4.34988591467331,
+                "sd": 0.0441464018999181
+              },
+              "r2": {
+                "mean": 0.113335395892527,
+                "sd": 0.00369479460643721
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 6.24850245591673,
+                "sd": 0.0451649578441978
+              },
+              "mae": {
+                "mean": 4.29883134075889,
+                "sd": 0.0513277509627669
+              },
+              "r2": {
+                "mean": 0.0981523673689792,
+                "sd": 0.00478904518519692
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 6.58003665360331,
+                "sd": 0.0617645325071567
+              },
+              "mae": {
+                "mean": 4.70445747942387,
+                "sd": 0.0445734835994525
+              },
+              "r2": {
+                "mean": -5.40371143760154e-05,
+                "sd": 4.60553579360934e-05
+              }
+            },
+            "nonprivate_federated_mean_sd": {
+              "rmse": {
+                "mean": 6.24420630230946,
+                "sd": 0.0531730654076777
+              },
+              "mae": {
+                "mean": 4.29110171226219,
+                "sd": 0.0430097436132889
+              },
+              "r2": {
+                "mean": 0.0994034737436619,
+                "sd": 0.00497768103485159
+              }
+            },
+            "pooled_dp_mean_sd": {
+              "rmse": {
+                "mean": 6.25363799878088,
+                "sd": 0.0760290734762763
+              },
+              "mae": {
+                "mean": 4.29413726593168,
+                "sd": 0.0414960244104215
+              },
+              "r2": {
+                "mean": 0.096716808044594,
+                "sd": 0.00702322404196503
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 0.052778847035848,
+              "sd": 0.00576839605488313
+            },
+            "diagnostics": {
+              "rmse_below_trivial": true,
+              "r2_positive": true,
+              "role": "annotation_only"
+            }
+          }
+        },
+        {
+          "epsilon": 8,
+          "evidence": {
+            "file": "cdcbmi_r4_pytorch_linear_regression_eps8.json",
+            "sha256": "f7f896cb512dd02f939ad6ba520f1a6af11a0a0d334fef1cc8e0c0f146fcc244"
+          },
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 6.19572360888088,
+                "sd": 0.0509245340237168
+              },
+              "mae": {
+                "mean": 4.34988591467331,
+                "sd": 0.0441464018999181
+              },
+              "r2": {
+                "mean": 0.113335395892527,
+                "sd": 0.00369479460643721
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 6.24113308384796,
+                "sd": 0.0605173248928354
+              },
+              "mae": {
+                "mean": 4.29942490069954,
+                "sd": 0.0375840586977274
+              },
+              "r2": {
+                "mean": 0.10031097088129,
+                "sd": 0.00153744982771858
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 6.58003665360331,
+                "sd": 0.0617645325071567
+              },
+              "mae": {
+                "mean": 4.70445747942387,
+                "sd": 0.0445734835994525
+              },
+              "r2": {
+                "mean": -5.40371143760154e-05,
+                "sd": 4.60553579360934e-05
+              }
+            },
+            "nonprivate_federated_mean_sd": {
+              "rmse": {
+                "mean": 6.24420630230946,
+                "sd": 0.0531730654076777
+              },
+              "mae": {
+                "mean": 4.29110171226219,
+                "sd": 0.0430097436132889
+              },
+              "r2": {
+                "mean": 0.0994034737436619,
+                "sd": 0.00497768103485159
+              }
+            },
+            "pooled_dp_mean_sd": {
+              "rmse": {
+                "mean": 6.25237555945775,
+                "sd": 0.0656113970648812
+              },
+              "mae": {
+                "mean": 4.29571742843698,
+                "sd": 0.0338403661639329
+              },
+              "r2": {
+                "mean": 0.0970739343169686,
+                "sd": 0.00296016054516079
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 0.0454094749670843,
+              "sd": 0.0181926398703875
+            },
+            "diagnostics": {
+              "rmse_below_trivial": true,
+              "r2_positive": true,
+              "role": "annotation_only"
+            }
+          }
+        }
       ]
     }
   ],
@@ -851,5 +1142,5 @@
   ],
   "diagnostics_epsilon": 8,
   "diagnostics_role": "Annotations only; no acceptance gate",
-  "policy": "Original Parkinson and raw-BMI evidence is retained unchanged, with the existing Parkinson central correction preserved. The public-unit cell was declared before training and each epsilon/seed was scored once; no scored cell was rerun and no further alternative was selected."
+  "policy": "Historical scored artifacts are unchanged. R4 was separately authorized, selected on training-only inner validation, declared before scoring, and executed once per epsilon/seed. No post-test alternative or scored-cell rerun."
 }

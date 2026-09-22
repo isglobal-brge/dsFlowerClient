@@ -1,8 +1,9 @@
-# Regression schedule diagnosis
+# Regression schedule diagnosis and corrected cell
 
-These tools diagnose the existing `cdcbmi_public_units` results using only the
-original training rows. They do not declare or execute another evaluation cell.
-The package sources and the sealed test files are untouched.
+The original diagnostic tools below use only training rows. The separately
+authorized corrected-cell implementation is documented at the end of this
+file. Package sources remain unchanged; only the corrected-cell guarded
+scoring callback opens sealed test files.
 
 `prepare_training.py` reuses the original R cohort and split functions, verifies
 the UCI source and all frozen training/site checksums, and writes no test CSV.
@@ -54,3 +55,34 @@ from the already downloaded v0.5.0 source archives and verified wheel cache.
 It is a continuation script, not a general empty-machine provisioner; the
 track's original `provision.sh` and `install_dependencies.R` provide the initial
 system and R dependency setup.
+
+## Corrected-cell implementation
+
+`stage_selection.py` and `select_federated.R` reuse the diagnosis inner partition
+for each original training split and confirm the top two candidates under the
+real epsilon-8 contract. `select.sh` ran all six guarded fits in the foreground.
+`finish_selection.py` requires all six results and absence of sealed test CSVs,
+then selects by mean validation RMSE. `selection.json` retains every replicate,
+node policy, position/source-id hashes, and the selected schedule.
+
+The corrected cell was declared in both track READMEs and committed before
+execution; `declaration_commit.txt` identifies that commit. On the same pod:
+
+```sh
+bash /workspace/cells/r4-client/tools/campaign/regression/r4/run_corrected.sh
+```
+
+Do not rerun this command after execution: immutable budget and scoring guards
+refuse repeat runs. Each epsilon/seed trains real pooled DP at one site and
+real federated DP at three sites. `comparators.py fit` freezes OLS and the
+verified noiseless finite-schedule twin before scoring. Only the guarded final
+callback reconstructs and opens the exact original test CSV. All five arms
+are scored in BMI units; the three noiseless reference fits/scores are reused
+across budgets. There are no tuning branches after test scoring.
+
+`selected_accounting.py` records complete-horizon calibration without data.
+`execution_audit.py` records guards, timings and model byte hashes without
+rescoring. `package_evidence.py` validates saved metrics, mean/sample SD, gaps,
+node settings, split identities, tooling hashes and comparator reuse, then
+updates the four-cell track summary. Private runtime files, raw rows and
+prediction tables remain on the pod; only aggregate evidence is published.

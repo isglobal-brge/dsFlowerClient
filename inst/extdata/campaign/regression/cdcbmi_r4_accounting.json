@@ -1,0 +1,151 @@
+{
+  "selected_params": {
+    "optimizer": "sgd",
+    "learning_rate": 0.01,
+    "local_epochs": 5,
+    "batch_size": 32
+  },
+  "source": "unchanged released effective_dpsgd_mechanism; complete five-round horizon",
+  "calibrations": [
+    {
+      "n_units": 9600,
+      "epsilon": 8,
+      "delta": 1e-06,
+      "steps_per_epoch": 300,
+      "total_steps": 7500,
+      "expected_batch_size": 32,
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 0.7708740234375,
+        "clipping_norm": 1.0,
+        "accounting_population": 9600,
+        "steps_per_epoch": 300,
+        "sample_rate": 0.0033333333333333335,
+        "expected_batch_size": 32,
+        "total_epochs": 25,
+        "total_steps": 7500,
+        "policy_hash": "3e7efa4ad44d47a05b816bd6a286fe79156a001195fc40c925103ece1c07d7af"
+      }
+    },
+    {
+      "n_units": 12000,
+      "epsilon": 1,
+      "delta": 1e-06,
+      "steps_per_epoch": 375,
+      "total_steps": 9375,
+      "expected_batch_size": 32,
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 2.3828125,
+        "clipping_norm": 1.0,
+        "accounting_population": 12000,
+        "steps_per_epoch": 375,
+        "sample_rate": 0.0026666666666666666,
+        "expected_batch_size": 32,
+        "total_epochs": 25,
+        "total_steps": 9375,
+        "policy_hash": "cc77f7c0078ebf9c354a36c593ff56a3d906a980b3d13bb84ef1615797bf2c88"
+      }
+    },
+    {
+      "n_units": 12000,
+      "epsilon": 4,
+      "delta": 1e-06,
+      "steps_per_epoch": 375,
+      "total_steps": 9375,
+      "expected_batch_size": 32,
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 0.927734375,
+        "clipping_norm": 1.0,
+        "accounting_population": 12000,
+        "steps_per_epoch": 375,
+        "sample_rate": 0.0026666666666666666,
+        "expected_batch_size": 32,
+        "total_epochs": 25,
+        "total_steps": 9375,
+        "policy_hash": "32a2fc748b63e4aa77afcbad8367b0ab35c6e1e562f96f63d7b6cd357c876aa0"
+      }
+    },
+    {
+      "n_units": 12000,
+      "epsilon": 8,
+      "delta": 1e-06,
+      "steps_per_epoch": 375,
+      "total_steps": 9375,
+      "expected_batch_size": 32,
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 0.7415771484375,
+        "clipping_norm": 1.0,
+        "accounting_population": 12000,
+        "steps_per_epoch": 375,
+        "sample_rate": 0.0026666666666666666,
+        "expected_batch_size": 32,
+        "total_epochs": 25,
+        "total_steps": 9375,
+        "policy_hash": "d6b85810f75bfa2de00e7391ecfc595a4f6541183b0114c2774379a7ff464d5a"
+      }
+    },
+    {
+      "n_units": 36000,
+      "epsilon": 1,
+      "delta": 1e-06,
+      "steps_per_epoch": 1125,
+      "total_steps": 28125,
+      "expected_batch_size": 32,
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 1.484375,
+        "clipping_norm": 1.0,
+        "accounting_population": 36000,
+        "steps_per_epoch": 1125,
+        "sample_rate": 0.0008888888888888889,
+        "expected_batch_size": 32,
+        "total_epochs": 25,
+        "total_steps": 28125,
+        "policy_hash": "dee0185832c30b5a9c72e595629dfcebd84c8a16be9e7ee84cda73b73029ba7d"
+      }
+    },
+    {
+      "n_units": 36000,
+      "epsilon": 4,
+      "delta": 1e-06,
+      "steps_per_epoch": 1125,
+      "total_steps": 28125,
+      "expected_batch_size": 32,
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 0.7373046875,
+        "clipping_norm": 1.0,
+        "accounting_population": 36000,
+        "steps_per_epoch": 1125,
+        "sample_rate": 0.0008888888888888889,
+        "expected_batch_size": 32,
+        "total_epochs": 25,
+        "total_steps": 28125,
+        "policy_hash": "0eedc292b5e8883133018fb9278bc2108aed0fa2af262604866891909fbf605b"
+      }
+    },
+    {
+      "n_units": 36000,
+      "epsilon": 8,
+      "delta": 1e-06,
+      "steps_per_epoch": 1125,
+      "total_steps": 28125,
+      "expected_batch_size": 32,
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 0.638427734375,
+        "clipping_norm": 1.0,
+        "accounting_population": 36000,
+        "steps_per_epoch": 1125,
+        "sample_rate": 0.0008888888888888889,
+        "expected_batch_size": 32,
+        "total_epochs": 25,
+        "total_steps": 28125,
+        "policy_hash": "df1f393de77c7e7d33e91623a34eea027e0c92654a03ee640f9bda310635991c"
+      }
+    }
+  ]
+}

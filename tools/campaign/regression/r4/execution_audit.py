@@ -33,10 +33,22 @@ for record in records:
     for rep in record['per_replicate']:
         assert rep['model_sha256'] in model_files.values()
         assert rep['pooled_training']['model_sha256'] in model_files.values()
-result=dict(model_files_sha256=model_files, schema='dsflower-regression-r4-execution-audit-v1',
+dependency_paths = ['central_public_units.py','central_train.py','campaign_lib.R','cdcbmi_public_units_protocol.json']
+regression=root/'r4-client/tools/campaign/regression'
+result=dict(prefit_failure=dict(reason='Missing staged central_public_units.py dependency; fixed by copying unchanged repository helper before any final model training or test scoring',
+    guard_sha256=sha(root/'r4/prefit_missing_dependency.started'),
+    log_sha256=sha(root/'r4/prefit_missing_dependency.log'),
+    final_fits_or_scores_before_restart=0),
+    dependency_sha256={name:sha(regression/name) for name in dependency_paths},
+    model_files_sha256=model_files, schema='dsflower-regression-r4-execution-audit-v1',
     generated_at=datetime.datetime.now(datetime.timezone.utc).isoformat(),
     pod_id='n4emgxhiqzy5i4',pod_name='pod-flower-regression',left_running=True,
     declaration_commit=records[0]['predeclaration_commit'],guards=guards,
+    final_execution_started_at=guards[0]['value'],
+    final_records_completed_at=max(record['generated_at'] for record in records),
+    selection_federation_elapsed_s=sum(rep['federated']['elapsed_s']
+        for candidate in json.loads((regression/'r4/selection.json').read_text())['candidates']
+        for rep in candidate['replicates']),
     selection_trainings=len(selection),final_federated_trainings=9,final_pooled_trainings=9,
     final_scoring_callbacks=9,nonprivate_training_and_scoring_per_seed_once=True,
     noiseless_comparator_files={str(path.relative_to(root)):sha(path) for path in frozen+baselines},

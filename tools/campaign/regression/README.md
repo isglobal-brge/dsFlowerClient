@@ -374,3 +374,5 @@ post-test tuning, or further alternative. Package sources are unchanged.
 Privacy accounting is per training; no composed-grid or private-selection
 guarantee is claimed. Cohort citation: **`uci_cdc_diabetes_health_indicators`**,
 UCI DOI [10.24432/C53919](https://doi.org/10.24432/C53919).
+
+R4 execution completed once for all nine epsilon/seed pairs, with real pooled-DP and noiseless finite-schedule comparators. Full results and provenance are in `inst/extdata/campaign/regression/README.md` and `cdcbmi_r4_*.json`. Run `python3 tools/campaign/regression/r4/package_evidence.py` to validate saved evidence without retraining or rescoring. The missing-helper startup failure occurred before any final fit or score and is recorded in the execution audit.
