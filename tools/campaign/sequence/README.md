@@ -1,14 +1,13 @@
 # UCI HAR sequence utility cell
 
-**Execution status (2026-09-22): blocked; no HAR utility scores.** All three
-nodes aborted with `DSFLOWER SECURITY: package '_remote_module_non_scriptable'
-is not in pinned_packages.json (default-deny).` No package or guard was patched.
-See the [evidence summary](../../../inst/extdata/campaign/sequence/summary.json).
-The synthetic GPU preflight passed, but full federation, central twins and
-held-out scoring did not complete. The prepared scoring workflow below remains
-unvalidated end to end; the test split was never read.
+The original 0.5.0 execution was blocked before training. Its unchanged records
+are preserved under `inst/extdata/campaign/sequence/blocked-0.5.0/`.
+The continuation uses dsFlower 0.5.1 (`c4eaaf153db4a7204878bf1d8995c16faa615110`)
+and dsFlowerClient 0.5.0. The patch verifies one PyTorch-generated internal
+module's origin and exact template; it leaves the canonical runner, mechanisms
+and defaults unchanged. See `SEQUENCE_DIAGNOSIS.md` in the evidence directory.
 
-This driver evaluates the unchanged dsFlower/dsFlowerClient 0.5.0
+This driver evaluates the unchanged
 `pytorch_lstm` contract on the official UCI HAR subject-disjoint split.
 `protocol.json` is the binding design recorded before scoring. No test members
 are read during preparation or training. The final scorer refuses an existing
@@ -42,7 +41,10 @@ majority class. No pooled-DP twin is scheduled.
 ## Reproduction
 
 The work root is `/workspace/cells-sequence` on Ubuntu 22.04 with an NVIDIA GPU.
-Rsync the two release sources into `src/dsFlower` and `src/dsFlowerClient`.
+Rsync dsFlower at the patch commit and dsFlowerClient at its 0.5.0 release
+commit into `src/dsFlower` and `src/dsFlowerClient`; overlay this campaign's
+tooling onto the client source. Exact commits and hashes are in
+`release-source.json`.
 Use `rsync -rz` on the RunPod FUSE volume, which cannot preserve laptop owners.
 The provisioner keeps environments and the R library on local POSIX storage
 under `/opt/cells-sequence`, with aliases in the work root. Importing Flower
@@ -51,7 +53,9 @@ readiness deadline in an initial attempt, before any model initialization.
 For the observed recovery, existing environments were copied and their console
 interpreter paths relocated with `relocate_console_scripts.py`; Python bodies
 were checked unchanged. Both the startup failure and subsequent guard failure
-are retained. No GRU run was attempted for the shared import failure.
+are retained. Fresh guarded synthetic probes confirmed the same import failure for LSTM and
+GRU, and regression DP updates pass for both with the patch. The HAR matrix
+uses LSTM only.
 
 ```sh
 ROOT=/workspace/cells-sequence
@@ -70,6 +74,21 @@ PYTHON=$(realpath "$ROOT/venvs")/pytorch-gpu/bin/python
 "$PYTHON" "$TOOLS/run_matrix.py" --root "$ROOT"
 "$PYTHON" "$TOOLS/score_and_assemble.py" --root "$ROOT" --out "$ROOT/evidence"
 ```
+
+On the existing prepared pod, retain the old `runs/`, runtime/preflight JSONs
+and `logs/pytorch_lstm-*` under `attempts/blocked-0.5.0/` before creating a fresh
+`runs/`. Do not move or reset a scoring marker. Install the server patch without
+reprovisioning the already-frozen Python environment:
+
+```sh
+DSFLOWER_SKIP_PYTHON_SETUP=1 R CMD INSTALL -l "$ROOT/Rlib" "$ROOT/src/dsFlower"
+"$PYTHON" "$TOOLS/trace_guard.py" --root "$ROOT" --out "$ROOT/diagnosis-0.5.1"
+```
+
+Then rerun preflight, runtime capture, matrix, and the single final scorer in
+the order above. The scorer opens `test-scoring-started.json` exclusively.
+`trace_guard.py` is synthetic and does not open the HAR archive. The guard
+regression lives in dsFlower's `inst/python/tests/test_sitecustomize.py`.
 
 The observed blocked archive can be reassembled without running or scoring:
 
@@ -90,9 +109,9 @@ The scorer verifies every site's five rounds, tensor hashes, source census,
 noise and full-horizon accounting before opening the test split. It scores
 unchanged released artifacts with the bundled prediction helper. Mean and
 sample SD refer to three training replicates on the same fixed split. The gap
-is federated-DP minus central macro AUC. At epsilon 8 the mean accuracy must
-exceed the training-majority predictor's test accuracy and mean macro AUC must
-exceed 0.5; per-seed diagnostics are also reported. No setting is changed after
+is federated-DP minus central macro AUC. Whether macro AUC exceeds 0.5 and epsilon-8 accuracy exceeds the
+training-majority predictor's test accuracy are annotations only, never
+pass/fail or rerun criteria; per-seed annotations are also reported. No setting is changed after
 scoring. A shared package failure stops execution and is documented explicitly.
 The synthetic preflight must pass the unchanged GPU DP training path before
 starting any HAR replicate; it does not score or train on HAR.

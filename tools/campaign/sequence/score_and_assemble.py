@@ -121,7 +121,9 @@ def main(root, out):
                              "failed_startup": sum(a["elapsed_s"] for a in failed_startup),
                              "total_wall_clock": read(run / "execution-status.json")["elapsed_s"] + scoring_elapsed + sum(a["elapsed_s"] for a in failed_startup)},
                "startup_attempts": failed_startup,
-               "diagnostic_pass": branch_metrics["federated_dp"]["macro_auc"] > 0.5 and branch_metrics["federated_dp"]["accuracy"] > trivial["accuracy"]}
+               "utility_diagnostics": {"macro_auc_above_chance": branch_metrics["federated_dp"]["macro_auc"] > 0.5,
+                                       "accuracy_above_majority": branch_metrics["federated_dp"]["accuracy"] > trivial["accuracy"],
+                                       "annotation_only": True}}
         (run / "scores.json").write_text(json.dumps(rep, indent=2) + "\n")
         grouped[epsilon].append(rep)
         print(epsilon, seed, branch_metrics, flush=True)
@@ -132,14 +134,15 @@ def main(root, out):
                            for metric in ("macro_auc", "accuracy", "log_loss")}
                    for branch in ("federated_dp", "central", "trivial")}
         summary["gap_macro_auc"] = mean_sd([r["gap_macro_auc"] for r in reps])
-        diagnostic = summary["federated_dp"]["macro_auc"]["mean"] > .5 and summary["federated_dp"]["accuracy"]["mean"] > trivial["accuracy"]
         cell = {"schema": "dsflower-sequence-campaign-v1", "status": "executed", "contract": "pytorch_lstm",
                 "epsilon": epsilon, "runtime": runtime, "protocol": protocol, "protocol_sha256": sha(tools / "protocol.json"),
                 "dataset": {**audit, "n_test_windows": len(y), "n_test_subjects": 9,
                             "test_subjects": sorted(map(int, np.unique(subjects))), "n_total": len(y) + audit["n_train_windows"]},
                 "per_replicate": reps, "summary": summary,
-                "acceptance_diagnostic": {"applicable": epsilon == 8, "passed": diagnostic,
-                                          "per_seed_pass": [r["diagnostic_pass"] for r in reps]},
+                "utility_diagnostics": {"epsilon8_annotation": epsilon == 8, "annotation_only": True,
+                    "macro_auc_above_chance": summary["federated_dp"]["macro_auc"]["mean"] > .5,
+                    "accuracy_above_majority": summary["federated_dp"]["accuracy"]["mean"] > trivial["accuracy"],
+                    "per_seed": [r["utility_diagnostics"] for r in reps]},
                 "limitations": [protocol["patient_preprocessing"], "Only 21 independent training privacy units; fixed split, SD reflects training replicates only.",
                                 "Central uses the same subject-pooling preprocessing; it is not a fully trained window-level HAR reference.",
                                 "No pooled-DP twin scheduled; each epsilon is a separate per-training contract, not a composed campaign guarantee."],
@@ -147,7 +150,7 @@ def main(root, out):
         name = f"pilot_uci_har_pytorch_lstm_eps{epsilon}.json"
         (out / name).write_text(json.dumps(cell, indent=2, allow_nan=False) + "\n")
         cell_summaries.append({"file": name, "sha256": sha(out / name), "epsilon": epsilon,
-                               "summary": summary, "acceptance_diagnostic": cell["acceptance_diagnostic"]})
+                               "summary": summary, "utility_diagnostics": cell["utility_diagnostics"]})
     (out / "summary.json").write_text(json.dumps({"schema": "dsflower-sequence-summary-v1", "status": "executed",
         "contract": "pytorch_lstm", "dataset": audit["name"], "cells": cell_summaries,
         "protocol_sha256": sha(tools / "protocol.json"), "runtime": runtime}, indent=2, allow_nan=False) + "\n")

@@ -1,11 +1,14 @@
 {
   "dsFlower": {
-    "version": "0.5.0",
-    "source_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "version": "0.5.1",
+    "source_commit": "c4eaaf153db4a7204878bf1d8995c16faa615110",
     "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
     "release_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
     "release_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
-    "runtime_code_matches_release_tag": true
+    "runtime_code_matches_release_tag": false,
+    "patch_branch": "fix/import-guard-torch-generated-modules",
+    "guard_sha256": "3ae7c9ce6750c81c00e8c70e618d0bc52978486d7736587f39c716ff401fe98d",
+    "canonical_runner_changed": false
   },
   "dsFlowerClient": {
     "version": "0.5.0",

@@ -27,5 +27,5 @@ R CMD INSTALL -l "$ROOT/Rlib" "$ROOT/src/dsFlowerClient"
 uv pip freeze --python "$ROOT/venvs/pytorch-gpu/bin/python" > "$ROOT/python-runtime-requirements.txt"
 uv pip install --python "$ROOT/client/venv/bin/python" --torch-backend cu124 -r "$ROOT/python-runtime-requirements.txt"
 "$ROOT/venvs/pytorch/bin/python" -c 'import torch; assert torch.cuda.is_available(); print(torch.__version__, torch.cuda.get_device_name())'
-Rscript -e 'library(dsFlower); library(dsFlowerClient); stopifnot(packageVersion("dsFlower") == "0.5.0", packageVersion("dsFlowerClient") == "0.5.0"); a <- dsFlowerClient:::.compute_local_runner_hash(); b <- dsFlower:::.compute_harness_hash(); stopifnot(identical(a,b)); cat("RUNNER_SHA256",a,"\n")'
+Rscript -e 'library(dsFlower); library(dsFlowerClient); stopifnot(packageVersion("dsFlower") == "0.5.1", packageVersion("dsFlowerClient") == "0.5.0"); a <- dsFlowerClient:::.compute_local_runner_hash(); b <- dsFlower:::.compute_harness_hash(); stopifnot(identical(a,b)); cat("RUNNER_SHA256",a,"\n")'
 printf '%s\n' R_STACK_DONE

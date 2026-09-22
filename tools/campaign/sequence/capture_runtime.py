@@ -25,7 +25,10 @@ code = '''library(dsFlower); library(dsFlowerClient); cat(jsonlite::toJSON(list(
   client_runner_sha256 = dsFlowerClient:::.compute_local_runner_hash()), auto_unbox=TRUE))'''
 r = json.loads(subprocess.check_output(["Rscript", "-e", code], env=env, text=True))
 assert r["server_runner_sha256"] == r["client_runner_sha256"] == release["dsFlower"]["runner_sha256"]
-assert r["dsFlower"] == r["dsFlowerClient"] == "0.5.0"
+for package in ("dsFlower", "dsFlowerClient"):
+    assert r[package] == release[package]["version"]
+r["server_guard_sha256"] = hashlib.sha256((root / "Rlib/dsFlower/python/sitecustomize.py").read_bytes()).hexdigest()
+assert r["server_guard_sha256"] == release["dsFlower"]["guard_sha256"]
 assert torch.cuda.is_available()
 files = {}
 for path in sorted(tools.rglob("*")):
