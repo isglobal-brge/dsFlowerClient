@@ -1,12 +1,9 @@
 # dsFlowerClient 0.5.1
 
-* Fix rejection of native-tree ensembles whose binary64 leaf values cannot
-  round-trip through jsonlite's decimal writer. Validate canonical container
-  bytes with the emitter's isolated Python standard-library JSON serializer,
-  preserving all digest, size, schema, identity and sanitization checks and
-  requiring an integer container version. Add a real training-output regression
-  fixture and malformed-container checks; privacy mechanisms and runner bytes
-  are unchanged.
+* Write native-tree ensemble containers with an isolated canonical writer that
+  preserves exact binary64 leaf values instead of jsonlite's rounded output,
+  so client-side container validation accepts genuine ensembles. Add regression
+  tests for real training output and malformed containers.
 
 # dsFlowerClient 0.5.0
 
