@@ -1,0 +1,79 @@
+{
+  "schema": "dsflower-multiclass-cdcgenhlth-protocol-v1",
+  "declared_at_utc": "2026-09-22T01:13:18.972590+00:00",
+  "authorization": "FLOWER_CELLS_MULTICLASS_2026-09-22: user-declared CDC GenHlth alternative; CTG and HAR561 remain documented measurements; no further alternative.",
+  "contract": "pytorch_multiclass",
+  "dataset": {
+    "name": "cdc45k GenHlth",
+    "cohort_name": "cdc45k",
+    "uci_id": 891,
+    "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+    "landing_url": "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
+    "dataset_doi": "10.24432/C53919",
+    "citation": "CDC Diabetes Health Indicators [Dataset]. (2017). UCI Machine Learning Repository.",
+    "thesis_citation_key": "uci_cdc_diabetes_health_indicators",
+    "target": "GenHlth: 1 excellent, 2 very good, 3 good, 4 fair, 5 poor; treated as nominal multiclass",
+    "row_unit": "One row per survey respondent, as documented by UCI; row-level privacy is the contract default.",
+    "excluded": [
+      "ID",
+      "Diabetes_binary"
+    ],
+    "features": [
+      "HighBP",
+      "HighChol",
+      "CholCheck",
+      "BMI",
+      "Smoker",
+      "Stroke",
+      "HeartDiseaseorAttack",
+      "PhysActivity",
+      "Fruits",
+      "Veggies",
+      "HvyAlcoholConsump",
+      "AnyHealthcare",
+      "NoDocbcCost",
+      "MentHlth",
+      "PhysHlth",
+      "DiffWalk",
+      "Sex",
+      "Age",
+      "Education",
+      "Income"
+    ],
+    "cohort": "Exact logistic n-scaling cdc45k membership: R seed 20260819, sample rounded proportional counts within Diabetes_binary classes, concatenate and sort source row indices, trim only excess beyond 45000. Diabetes_binary is used only to reproduce cohort membership, never as a model feature.",
+    "size_choice": "cdc45k fixed at 45000 rows; 20 inputs and linear softmax on provisioned 32-vCPU pod. No timing pilot or scored fallback."
+  },
+  "download_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+  "legacy_logistic_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+  "split": {
+    "type": "80/20 split stratified by GenHlth using rounded per-class test counts, followed by shuffled per-class round-robin dealing into three sites; copied campaign_split algorithm.",
+    "seeds": [
+      20260820,
+      20260821,
+      20260822
+    ],
+    "paired_across_epsilon": true,
+    "seed_scope": "Cohort partitioning and central initialization; federated initialization and cryptographic sticky node DP randomness retain release behavior."
+  },
+  "bounds_policy": "Fixed public schema, copied from the CDC trees campaign declaration: binary [0,1], BMI [0,100] (declared clipping domain, not empirical extrema), MentHlth/PhysHlth [0,30], Age [1,13], Education [1,6], Income [1,8]. Clip and affine-scale to [-1,1] identically for central and federation; no empirical test or train bounds.",
+  "training": {
+    "sites": 3,
+    "rounds": 5,
+    "replicates": 3,
+    "execution_epsilon_order": [
+      1,
+      4,
+      8
+    ],
+    "delta": 1e-06,
+    "parameters": "All v0.5.0 registry optimization defaults: linear softmax, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, momentum 0, nesterov false, weight_decay 0, l1_penalty 0, scheduler none, hidden_layers []; only n_classes=5 supplies the public output schema.",
+    "privacy": "Row unit, clipping norm 1, replace-one adjacency, epsilon per node training. Nine fits do not constitute a single composed privacy guarantee.",
+    "inner_validation": "None; no tuning or model selection."
+  },
+  "central": "Unregularized multinomial logistic regression nnet::multinom(decay=0,maxit=3000,reltol=1e-10,MaxNWts=10000), identical training rows and public bounded transform. Require convergence=0; fit once per split seed and reuse scores across epsilon.",
+  "trivial": "Training class proportions for probabilities; their majority for hard prediction. No test prevalence used.",
+  "metrics": "Mean of five one-vs-rest rank AUCs with average ties, argmax accuracy with first-class tie break, natural-log log-loss with true-class probability floor 1e-15. Paired gap = federated-DP macro-AUC minus central; mean and sample SD over three replicates.",
+  "diagnostics": "Annotations only, not acceptance or pass/fail: epsilon-8 mean macro-AUC > 0.5 and accuracy strictly above majority predictor test accuracy; disclose replicate indicators too. Report any outcome; no further alternative.",
+  "test_use": "Preparation reads raw data only to reproduce the fixed cohort and stratified partitions, writes sealed held-out RDS and separate training RDS without examining or reporting test values/statistics. Training opens only training RDS. After all three central and nine federated models finish, create scoring marker and open sealed held-out RDS once in one final scoring phase. Score each fitted model once; reuse central scores across epsilon. Never rerun a scored cell or change settings after scoring.",
+  "failure_policy": "Refuse existing run directories, score markers and cell artifacts; preserve failures and artifacts. Release code and the shared/logistic/CTG/HAR tooling remain unchanged."
+}

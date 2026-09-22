@@ -160,3 +160,43 @@ The runner verifies both hashes, runs synthetic `check_har561.R`, and refuses
 existing run markers. `summarize_har561.py` validates saved metrics without
 rescoring and adds HAR alongside CTG. HAR results are reported in the
 [evidence README](../../../inst/extdata/campaign/multiclass/README.md).
+
+## Pre-declared CDC GenHlth alternative
+
+Authorization `FLOWER_CELLS_MULTICLASS_2026-09-22`. The new and final alternative
+is `pytorch_multiclass` on **cdc45k**, the exact fixed-seed 45,000-respondent
+cohort used by the logistic n-scaling arm. Its original diabetes-stratified
+membership is retained; the new 80/20 split and three sites are stratified by
+`GenHlth`. The five ordered health responses (excellent to poor) are treated
+as nominal classes. The other 20 indicators are inputs; ID and the diabetes
+label are excluded.
+
+[UCI CDC Diabetes Health Indicators, id 891](https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators),
+DOI [10.24432/C53919](https://doi.org/10.24432/C53919), is cited in the thesis as
+`uci_cdc_diabetes_health_indicators`. UCI documents one row per respondent.
+Raw CSV SHA-256: `9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964`.
+The legacy logistic prepared-cohort hash must match
+`5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b`.
+
+The frozen CDC protocol declares three sites, five rounds, three seeds
+20260820–20260822, epsilon 1/4/8 in that order, delta 1e-6, row privacy and
+clipping norm 1. Registry optimization defaults remain unchanged, with only
+`n_classes=5` supplying the output schema. Public bounds are binary [0,1],
+BMI [0,100], MentHlth/PhysHlth [0,30], Age [1,13], Education [1,6], Income [1,8];
+BMI is a declared clipping domain, not an empirical bound. These are copied
+from the existing CDC trees campaign, never estimated from held-out rows.
+
+Central multinomial logistic regression uses the same training rows and bounded
+transform. Trivial probabilities use training class proportions and predict
+their majority. Report macro one-vs-rest AUC, accuracy, log-loss and paired
+federated-minus-central macro-AUC gap, with mean and sample SD. Epsilon-8
+macro-AUC above 0.5 and accuracy above majority are **annotations, not pass/fail**.
+
+Partition preparation only assigns and seals held-out rows; no test values or
+statistics are inspected. All three central and nine federated models train
+before the sealed test partitions are opened once for final scoring. Each fit
+is scored once. No scored cell is rerun or changed, and no further alternative
+is authorized. CTG remains the ranking-retained, argmax-calibration-lost
+measurement at 1,701 training rows. HAR remains the subject-privacy utility
+boundary with seven units/site, outside the useful regime on this epsilon grid;
+this is the utility law, not a defect. Their scored evidence stays unchanged.
