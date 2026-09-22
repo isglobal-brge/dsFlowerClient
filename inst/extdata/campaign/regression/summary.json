@@ -1,0 +1,181 @@
+{
+  "schema": "dsflower-campaign-v2",
+  "track": "regression",
+  "cells": [
+    {
+      "file": "pilot_parkinsons_pytorch_linear_regression_eps1.json",
+      "sha256": "300d9a91acfcac23a9958fedc96567d6e8cd0ee41e6cb0008f4ac9a5104e099f",
+      "contract": "pytorch_linear_regression",
+      "epsilon": 1,
+      "n": 5875,
+      "n_subjects": 42,
+      "summary": {
+        "central_mean_sd": {
+          "rmse": {
+            "mean": 41.659714591434,
+            "sd": 9.84449784543462
+          },
+          "mae": {
+            "mean": 28.9749246501182,
+            "sd": 6.08195091211025
+          },
+          "r2": {
+            "mean": -14.8549415169064,
+            "sd": 5.9158763173107
+          }
+        },
+        "federated_mean_sd": {
+          "rmse": {
+            "mean": 29.5031635464728,
+            "sd": 1.66573482644697
+          },
+          "mae": {
+            "mean": 27.5711248051631,
+            "sd": 1.57112951495454
+          },
+          "r2": {
+            "mean": -6.87955433303079,
+            "sd": 0.487835432637205
+          }
+        },
+        "trivial_mean_sd": {
+          "rmse": {
+            "mean": 10.7711961962744,
+            "sd": 0.43156024354821
+          },
+          "mae": {
+            "mean": 8.88564373386843,
+            "sd": 0.118209561521582
+          },
+          "r2": {
+            "mean": -0.0508262975925578,
+            "sd": 0.0510189136410589
+          }
+        },
+        "gap_rmse_mean_sd": {
+          "mean": -12.1565510449612,
+          "sd": 9.03170794128006
+        },
+        "diagnostic_pass": false
+      }
+    },
+    {
+      "file": "pilot_parkinsons_pytorch_linear_regression_eps4.json",
+      "sha256": "aaceba52c95f92f497a70cbf31fdc639754c10ea7c1675130ef85ca3e89fcba5",
+      "contract": "pytorch_linear_regression",
+      "epsilon": 4,
+      "n": 5875,
+      "n_subjects": 42,
+      "summary": {
+        "central_mean_sd": {
+          "rmse": {
+            "mean": 41.659714591434,
+            "sd": 9.84449784543462
+          },
+          "mae": {
+            "mean": 28.9749246501182,
+            "sd": 6.08195091211025
+          },
+          "r2": {
+            "mean": -14.8549415169064,
+            "sd": 5.9158763173107
+          }
+        },
+        "federated_mean_sd": {
+          "rmse": {
+            "mean": 29.4562587134055,
+            "sd": 2.09534807444415
+          },
+          "mae": {
+            "mean": 27.4968701918224,
+            "sd": 2.14268358646019
+          },
+          "r2": {
+            "mean": -6.88387177635291,
+            "sd": 1.04864441097442
+          }
+        },
+        "trivial_mean_sd": {
+          "rmse": {
+            "mean": 10.7711961962744,
+            "sd": 0.43156024354821
+          },
+          "mae": {
+            "mean": 8.88564373386843,
+            "sd": 0.118209561521582
+          },
+          "r2": {
+            "mean": -0.0508262975925578,
+            "sd": 0.0510189136410589
+          }
+        },
+        "gap_rmse_mean_sd": {
+          "mean": -12.2034558780285,
+          "sd": 10.0080196869913
+        },
+        "diagnostic_pass": false
+      }
+    },
+    {
+      "file": "pilot_parkinsons_pytorch_linear_regression_eps8.json",
+      "sha256": "b6f6be14f238c8dfd8da9173a13f103cb1bcc82640ca825e4e32afcdc9c98fb4",
+      "contract": "pytorch_linear_regression",
+      "epsilon": 8,
+      "n": 5875,
+      "n_subjects": 42,
+      "summary": {
+        "central_mean_sd": {
+          "rmse": {
+            "mean": 41.659714591434,
+            "sd": 9.84449784543462
+          },
+          "mae": {
+            "mean": 28.9749246501182,
+            "sd": 6.08195091211025
+          },
+          "r2": {
+            "mean": -14.8549415169064,
+            "sd": 5.9158763173107
+          }
+        },
+        "federated_mean_sd": {
+          "rmse": {
+            "mean": 29.5495609646421,
+            "sd": 1.6134098299147
+          },
+          "mae": {
+            "mean": 27.6237205066758,
+            "sd": 1.59848442744865
+          },
+          "r2": {
+            "mean": -6.91901226263105,
+            "sd": 0.734257496323771
+          }
+        },
+        "trivial_mean_sd": {
+          "rmse": {
+            "mean": 10.7711961962744,
+            "sd": 0.43156024354821
+          },
+          "mae": {
+            "mean": 8.88564373386843,
+            "sd": 0.118209561521582
+          },
+          "r2": {
+            "mean": -0.0508262975925578,
+            "sd": 0.0510189136410589
+          }
+        },
+        "gap_rmse_mean_sd": {
+          "mean": -12.1101536267918,
+          "sd": 9.54364819584781
+        },
+        "diagnostic_pass": false
+      }
+    }
+  ],
+  "acceptance_epsilon": 8,
+  "diagnostic_pass": false,
+  "interpretation": "Representative subject-private regression measurement; no tuning or test-driven rerun.",
+  "alternative": "Not run: ridge is reserved for failure to execute the linear contract."
+}

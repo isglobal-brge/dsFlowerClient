@@ -39,6 +39,7 @@ def main():
                     assert configuration["dp-unit"] == "patient"
                     assert configuration["patient_column"] == "subject#"
                     assert configuration["n_units"] == split["n_subjects_per_site"][site_index]
+                    assert configuration["n_samples"] == split["n_per_site"][site_index]
                     assert configuration["privacy-epsilon"] == evidence["privacy"]["epsilon"]
                     assert configuration["privacy-delta"] == 1e-6
                     assert configuration["privacy-clipping_norm"] == 1
