@@ -1,0 +1,11 @@
+{
+  "benchmark_observer_enabled": false,
+  "data_staged": false,
+  "integrity_gate_modified": false,
+  "public_model_construction_called": true,
+  "returncode": 99,
+  "schema": "dsflower-vision-import-check-v1",
+  "stderr": "\nDSFLOWER SECURITY: package '_remote_module_non_scriptable' is not in pinned_packages.json (default-deny).\nAborting process.\n\n",
+  "stdout": "CLIENTAPP_IMPORT_PASSED\n",
+  "training_called": false
+}

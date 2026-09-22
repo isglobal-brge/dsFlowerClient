@@ -1,5 +1,32 @@
 # BUS-BRA frozen-backbone classification
 
+Execution is **blocked before DP training** on the fresh A40 pod. Both
+installed 0.5.0 runner hashes and all patient split hashes passed verification;
+the archive was freshly rehashed and dsImaging admission passed. The first
+epsilon-1 / seed-20260919 federation then aborted on all three nodes:
+
+```text
+DSFLOWER SECURITY: package '_remote_module_non_scriptable' is not in pinned_packages.json (default-deny).
+Aborting process.
+```
+
+The installed gate independently reproduces exit 99 during public model
+construction with the benchmark observer disabled and no data staged.
+`params.load_user_model` imports Opacus; its Torch dependency imports a
+generated module outside the trusted installation directories. The unchanged
+gate rejects that module. A plain ClientApp import passes. The tested runtime
+is torch 2.6.0+cu124, torchvision 0.21.0+cu124, Flower 1.31.0 and R 4.6.1;
+the complete resolved dependencies are in the evidence's `provisioning.json`.
+No alternate dependency stack or gate change was attempted.
+
+The failed federation took 735.409 seconds, including startup checks, and
+cleaned up its Flower processes successfully. No DP optimizer steps completed,
+no trained model was released, and no central/pooled twin or test scoring ran.
+All metric and gap fields remain null. The epsilon-8 diagnostic is unassessed.
+The drivers below are implemented, but training/twin/scoring execution has
+not been validated past this blocker; only admission, preflight and synthetic
+metric checks passed. The pod remains running.
+
 This driver evaluates `pytorch_resnet18` from dsFlower/dsFlowerClient 0.5.0:
 a frozen ImageNet ResNet-18 and a 1,026-parameter linear classification head.
 The [frozen protocol](protocol.json) declares three patient-disjoint sites,
@@ -25,6 +52,9 @@ fit is reused across epsilon values for each seed.
 
 ## Reproduction
 
+The commands below reproduce the frozen campaign and its current blocker;
+they do not establish a working scored cell.
+
 Use only the designated `pod-flower-vision` pod and `/workspace/cells-vision`.
 A fresh Ubuntu 22.04 GPU image needs `rsync` installed before source transfer.
 Use `rsync -rlzt` with the supplied wrapper: the volume does not support
@@ -47,9 +77,23 @@ python "$TOOLS/verify_runtime.py" --root "$ROOT" --library "$ROOT/Rlib" \
   --runner-sha256 2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724 \
   > "$ROOT/runtime_preflight.json"
 Rscript "$TOOLS/check_admission.R" "$ROOT"
-"$PY" "$TOOLS/install_public_observer.py"
+"$PY" "$TOOLS/install_public_observer.py" > "$ROOT/observer-install.json"
 "$PY" "$TOOLS/test_metrics.py"
 "$PY" "$TOOLS/run_matrix.py" --root "$ROOT" --epsilons 1 8 4
+```
+
+After the failed first matrix attempt, record the independent check and
+blocked evidence with:
+
+```sh
+"$PY" "$TOOLS/verify_import.py" --root "$ROOT" > "$ROOT/import-check.json"
+python "$TOOLS/record_blocked.py" --root "$ROOT" \
+  --out "$ROOT/src/dsFlowerClient/inst/extdata/campaign/vision"
+```
+
+The following downstream commands were not executed because training failed:
+
+```sh
 "$PY" "$TOOLS/score.py" --root "$ROOT" --epsilons 1 8 4
 "$PY" "$TOOLS/assemble_evidence.py" --root "$ROOT" \
   --out "$ROOT/src/dsFlowerClient/inst/extdata/campaign/vision" --epsilons 1 8 4
@@ -101,3 +145,6 @@ The pinned ImageNet checkpoint is `resnet18-f37072fd.pth`, SHA-256
 `f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec`.
 Evidence is written to `inst/extdata/campaign/vision/`; see its README and
 `summary.json` for execution status and measured outcomes.
+
+`release_integrity_check.json` additionally verifies that the installed and
+pod-source integrity gates match the v0.5.0 Git tag byte for byte.

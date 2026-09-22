@@ -1,38 +1,46 @@
 {
   "acceptance_diagnostic": {
-    "accuracy_above": "held-out majority-class rate",
+    "accuracy_above": "held-out majority rate",
     "assessed": false,
     "auc_above": 0.5,
     "epsilon": 8,
     "passed": null
   },
+  "aggregate": null,
   "alternative": {
     "attempted": false,
-    "reason": "Primary training never started; infrastructure blocker."
+    "reason": "Execution stopped at the unchanged integrity gate before any scored primary run."
   },
   "blocker": {
-    "diagnostics": "runtime_preflight.json",
-    "diagnostics_sha256": "b6643e784dda8c33e214db536712bc22bf8769e5d6948e3f3ec1d74b13c50da5",
-    "error": "Cannot access /workspace, the installed release, or prepared BUS-BRA; runtime verification and training cannot start.",
-    "kind": "workspace_unavailable",
-    "stage": "runtime_preflight"
+    "affected_nodes": 3,
+    "alternate_dependency_stack_tested": false,
+    "child_exit_code": 99,
+    "client_error": "Federated training failed (status 1); no model was accepted or saved.",
+    "diagnostics": "first_attempt.json",
+    "diagnostics_sha256": "182eea155ec0f6581b71c8f7538ac0712f1caaa811276d7c9b8dd75e9adbfd85",
+    "error": "DSFLOWER SECURITY: package '_remote_module_non_scriptable' is not in pinned_packages.json (default-deny).\nAborting process.",
+    "independent_check": "import_check.json",
+    "kind": "runtime_integrity_default_deny",
+    "package_or_gate_change_attempted": false,
+    "reproduced_without_benchmark_observer": true,
+    "stage": "public_model_construction"
   },
   "contract": "pytorch_resnet18",
   "dataset": {
     "archive_bytes": 133917740,
     "archive_sha256": "ba3e6ed19cc37c682d8d39e25435bbf8a555a12cb7e641b5f2117685c95580ff",
     "archive_url": "https://zenodo.org/api/records/8231412/files/BUSBRA.zip/content",
-    "archive_verification": "Previously archived segmentation provenance; inaccessible pod archive not rehashed.",
+    "archive_verification": "Fresh archive matched pinned SHA-256 and publisher MD5.",
     "citation_reference": "G\u00f3mez-Flores W, Gregorio-Calas MJ, Pereira WCA (2024). BUS-BRA: A Breast Ultrasound Dataset for Assessing Computer-aided Diagnosis Systems. Medical Physics 51:3110\u20133123. doi:10.1002/mp.16812.",
     "citation_url": "https://doi.org/10.1002/mp.16812",
     "dataset_doi": "10.5281/zenodo.8231412",
-    "licence": "Zenodo declares CC BY 4.0; archive also contains permissive attribution licence requiring citation.",
-    "licence_archive_path": "../segmentation/provenance/BUS-BRA-LICENSE.txt",
+    "licence": "Zenodo declares CC BY 4.0; archive attribution licence also requires citation.",
+    "licence_sha256": "e9e3ea607a53575d9d17c07cdb35972d9506a19dcafde49383fb0f875f01b92d",
     "name": "BUS-BRA",
-    "patient_audit_sha256": "2bbee3a014a328a117b5a5c99d9a276ec574a89f15e7abe75235719c64ef695c",
-    "provenance_sha256": "3e227fa8c41d6674e2a3c94b9803ad34e6d5ff1914ef42ad41e1dc68cae9967a",
-    "provenance_source": "../segmentation/provenance/release-manifest.json",
+    "patient_mapping": "released Case column, exact 1..1064, filename prefix agrees; publisher declares 1064 patients; both official CV folds keep Case together",
     "source_url": "https://zenodo.org/records/8231412",
+    "total_images": 1875,
+    "total_patients": 1064,
     "version": "1.0"
   },
   "declared_model": {
@@ -56,20 +64,28 @@
     "trainable_parameters": 1026,
     "weights": "IMAGENET1K_V1"
   },
+  "delta": 1e-06,
   "epsilon": 4,
-  "generated_at": "2026-09-22T00:11:22.170221+00:00",
+  "gap_auc": {
+    "mean": null,
+    "n": 0,
+    "sd": null
+  },
+  "generated_at": "2026-09-22T01:04:19.035015+00:00",
   "host": {
-    "gpu": [
+    "gpu": "NVIDIA A40",
+    "gpus": [
       {
         "memory.total [MiB]": "46068 MiB",
         "memory.used [MiB]": "0 MiB",
         "name": "NVIDIA A40",
-        "uuid": "GPU-268ecfda-8ff1-5212-148b-596526101dfb"
+        "uuid": "GPU-71ab6101-1d6b-147c-5ee3-af1fc7a677ee"
       }
     ],
-    "hostname": "7591502daeb8",
-    "pod_id": "7g8bohjp2o5ufh",
-    "pod_name": "thesis-dsflower-2",
+    "hostname": "5dc98e434db0",
+    "pod_id": "0nk8si7zupfczc",
+    "pod_name": "pod-flower-vision",
+    "root": "/workspace/cells-vision",
     "state_at_end": "left_running"
   },
   "model_params": {
@@ -87,82 +103,282 @@
   "per_replicate": [
     {
       "central": null,
+      "completed_rounds": null,
       "federated_dp": null,
       "gap_auc": null,
-      "n_per_site_patients_planned": [
-        284,
-        284,
-        284
-      ],
-      "n_test_images_observed": null,
-      "n_test_patients_planned": 212,
-      "n_train_images_observed": null,
-      "n_train_patients_planned": 852,
+      "n_test_images": 374,
+      "n_test_patients": 212,
+      "n_train_images": 1501,
+      "n_train_patients": 852,
+      "node_reported_contract": null,
+      "observed_optimizer_steps": null,
       "pooled_dp": null,
       "seed": 20260919,
+      "site_sizes": [
+        {
+          "images": 497,
+          "patients": 284,
+          "site": 1
+        },
+        {
+          "images": 498,
+          "patients": 284,
+          "site": 2
+        },
+        {
+          "images": 506,
+          "patients": 284,
+          "site": 3
+        }
+      ],
+      "sizes_source": "Prepared collection census; not a utility evaluation.",
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
       "status": "not_started",
       "trivial": null,
       "wall_clock_s": null
     },
     {
       "central": null,
+      "completed_rounds": null,
       "federated_dp": null,
       "gap_auc": null,
-      "n_per_site_patients_planned": [
-        284,
-        284,
-        284
-      ],
-      "n_test_images_observed": null,
-      "n_test_patients_planned": 212,
-      "n_train_images_observed": null,
-      "n_train_patients_planned": 852,
+      "n_test_images": 375,
+      "n_test_patients": 212,
+      "n_train_images": 1500,
+      "n_train_patients": 852,
+      "node_reported_contract": null,
+      "observed_optimizer_steps": null,
       "pooled_dp": null,
       "seed": 20260920,
+      "site_sizes": [
+        {
+          "images": 505,
+          "patients": 284,
+          "site": 1
+        },
+        {
+          "images": 491,
+          "patients": 284,
+          "site": 2
+        },
+        {
+          "images": 504,
+          "patients": 284,
+          "site": 3
+        }
+      ],
+      "sizes_source": "Prepared collection census; not a utility evaluation.",
+      "split_sha256": "6198d99eb33342cbfb78fedbed75dfe7d57e494921523d39560bae7d3f313873",
       "status": "not_started",
       "trivial": null,
       "wall_clock_s": null
     },
     {
       "central": null,
+      "completed_rounds": null,
       "federated_dp": null,
       "gap_auc": null,
-      "n_per_site_patients_planned": [
-        284,
-        284,
-        284
-      ],
-      "n_test_images_observed": null,
-      "n_test_patients_planned": 212,
-      "n_train_images_observed": null,
-      "n_train_patients_planned": 852,
+      "n_test_images": 368,
+      "n_test_patients": 212,
+      "n_train_images": 1507,
+      "n_train_patients": 852,
+      "node_reported_contract": null,
+      "observed_optimizer_steps": null,
       "pooled_dp": null,
       "seed": 20260921,
+      "site_sizes": [
+        {
+          "images": 509,
+          "patients": 284,
+          "site": 1
+        },
+        {
+          "images": 498,
+          "patients": 284,
+          "site": 2
+        },
+        {
+          "images": 500,
+          "patients": 284,
+          "site": 3
+        }
+      ],
+      "sizes_source": "Prepared collection census; not a utility evaluation.",
+      "split_sha256": "2a89fb47ee0a269843e1562d7f5a08aa339d806519ad90a0a5b796e0711491bd",
       "status": "not_started",
       "trivial": null,
       "wall_clock_s": null
     }
   ],
-  "privacy": {
-    "reason": "Node preparation could not start.",
-    "reported_by_node": null,
-    "requested": {
-      "clipping_norm": 1.0,
-      "delta": 1e-06,
-      "epsilon": 4,
-      "patient_column": "subject_id",
-      "unit": "patient"
-    }
+  "protocol": {
+    "class_mapping": {
+      "benign": 0,
+      "malignant": 1
+    },
+    "clipping_norm": 1.0,
+    "contract": "pytorch_resnet18",
+    "data_route": "dsImaging admission of image_root asset plus per-image metadata declaring pathology label, label levels and patient privacy unit; three DSLite custodians.",
+    "dataset": "BUS-BRA v1.0",
+    "delta": 1e-06,
+    "epsilon_order": [
+      1,
+      8,
+      4
+    ],
+    "evaluation": {
+      "aggregation": "arithmetic mean and sample SD across three seeds",
+      "alternative": "None predeclared: this task specifies one cohort and one contract, with no named fallback. Report any epsilon-8 diagnostic failure without a post-score configuration change.",
+      "central_schedule": "Five rounds of one local epoch, batch 32, SGD 0.001, same initial head, patient-mean frozen features and patient-modal label, pooled Poisson sampling, expected batch divisor; no clipping or noise. Reuse this central fit across epsilon values for a seed.",
+      "diagnostic": "AUC > 0.5 and accuracy > held-out majority-class rate; report per-replicate and three-seed mean comparison.",
+      "diagnostic_epsilon": 8,
+      "gap": "federated_dp AUC minus central AUC",
+      "metrics": [
+        "auc",
+        "accuracy",
+        "brier",
+        "log_loss"
+      ],
+      "pooled_dp": "Run unchanged released _dp_fit on the 852 pooled patient records, with the same five-round schedule and epsilon/delta/clip as federation.",
+      "positive_class": "malignant",
+      "test_policy": "Do not inspect held-out labels/images or score models before settings are fixed. One scoring pass for each trained replicate; never change a scored configuration.",
+      "threshold": 0.5,
+      "twins": [
+        "identical frozen backbone and head, same split and schedule, centrally without DP",
+        "pooled DP if feasible",
+        "training-majority class with training-prevalence probability"
+      ],
+      "unit": "image"
+    },
+    "frozen_at": "2026-09-22T00:27:58.584465+00:00",
+    "host": {
+      "gpu": "NVIDIA A40",
+      "pod_id": "0nk8si7zupfczc",
+      "pod_name": "pod-flower-vision",
+      "root": "/workspace/cells-vision"
+    },
+    "instrumentation": "Public-only observer copies of the segmentation/sequence harness: seed/capture analyst initialization; observe node accountant inputs/steps and public tensor hashes after the mandatory runner integrity gate. No replacement of training, privacy calibration, clipping or sampling.",
+    "model": {
+      "backbone": "resnet18",
+      "bounds_policy": "Released image transform and fixed feature totalization; no data-derived feature bounds.",
+      "extractor_profile": "dsflower-resnet18-imagenet1k-v1-extractor-v1",
+      "feature_domain": [
+        -1000000,
+        1000000
+      ],
+      "feature_shape": [
+        512
+      ],
+      "frozen": true,
+      "head": "linear 512 to 2; cross_entropy",
+      "image_shape": [
+        3,
+        224,
+        224
+      ],
+      "trainable_parameters": 1026,
+      "weights": "IMAGENET1K_V1"
+    },
+    "model_params": {
+      "batch_size": 32,
+      "image_size": 224,
+      "l1_penalty": 0,
+      "learning_rate": 0.001,
+      "local_epochs": 1,
+      "n_classes": 2,
+      "optimizer": "sgd",
+      "scheduler": "none",
+      "volumetric": false,
+      "weight_decay": 0
+    },
+    "model_params_policy": "Unchanged v0.5.0 registry defaults; no schedule search.",
+    "patient_column": "subject_id",
+    "patient_training": "Released runner averages frozen features within patient and takes deterministic modal label before patient DP-SGD. Source pathology labels are consistent within patient according to archived audit.",
+    "privacy_unit": "patient",
+    "randomness": "Seed controls patient split and analyst-side public initial head. DP noise/sampling use unchanged node-owned sticky cryptographic randomness. Node secrets are not published; seed alone cannot reconstruct them.",
+    "release": {
+      "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+      "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+      "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+      "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+      "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+      "version": "0.5.0"
+    },
+    "rounds": 5,
+    "schema": "dsflower-vision-protocol-v1",
+    "seeds": [
+      20260919,
+      20260920,
+      20260921
+    ],
+    "sites": 3,
+    "split": {
+      "n_per_site_patients": [
+        284,
+        284,
+        284
+      ],
+      "n_test_patients": 212,
+      "n_total_images": 1875,
+      "n_total_patients": 1064,
+      "n_train_patients": 852,
+      "policy": "Reuse byte-identical segmentation split JSON for each seed; split-v1 SHA256 patient ordering, first floor(n/5) patients held out, sites-v1 hash ordering dealt across three sites.",
+      "sha256_by_seed": {
+        "20260919": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+        "20260920": "6198d99eb33342cbfb78fedbed75dfe7d57e494921523d39560bae7d3f313873",
+        "20260921": "2a89fb47ee0a269843e1562d7f5a08aa339d806519ad90a0a5b796e0711491bd"
+      },
+      "source_directory": "/workspace/cells-vision/prepared/busbra",
+      "split_source": "Recreated by the unchanged segmentation prepare_busbra/split_subjects functions; require byte-identical archived hashes before execution."
+    },
+    "status": "frozen_before_training"
   },
-  "protocol_sha256": "ea50ef523288b93d4d4cf78909fd9170003b667b1112225a5caa06c125e66a49",
+  "protocol_sha256": "11ecd96902745fd73101d39c1a18c613097879e947c063781a7b1e65d13da6cc",
+  "release": {
+    "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+    "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+    "installed_runner_sha256": {
+      "dsFlower": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+      "dsFlowerClient": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+    },
+    "installed_versions": {
+      "dsFlower": "0.5.0",
+      "dsFlowerClient": "0.5.0"
+    },
+    "pretrained_checkpoint": {
+      "bytes": 46830571,
+      "filename": "resnet18-f37072fd.pth",
+      "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+      "url": "https://download.pytorch.org/models/resnet18-f37072fd.pth"
+    },
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "torch": {
+      "cuda": "12.4",
+      "gpu": "NVIDIA A40",
+      "torch": "2.6.0+cu124",
+      "torchvision": "0.21.0+cu124"
+    },
+    "version": "0.5.0"
+  },
+  "requested_privacy": {
+    "adjacency": "replace_one",
+    "clipping_norm": 1.0,
+    "delta": 1e-06,
+    "epsilon": 4,
+    "unit": "patient"
+  },
   "rounds": 5,
+  "schedule_search_performed": false,
   "schema": "dsflower-vision-cell-v1",
   "seeds": [
     20260919,
     20260920,
     20260921
   ],
-  "split": {
+  "sites": 3,
+  "split_policy": {
     "n_per_site_patients": [
       284,
       284,
@@ -178,37 +394,9 @@
       "20260920": "6198d99eb33342cbfb78fedbed75dfe7d57e494921523d39560bae7d3f313873",
       "20260921": "2a89fb47ee0a269843e1562d7f5a08aa339d806519ad90a0a5b796e0711491bd"
     },
-    "source_directory": "/workspace/segmentation/prepared/busbra",
-    "split_source": "Archived segmentation provenance; pod files not yet verified."
+    "source_directory": "/workspace/cells-vision/prepared/busbra",
+    "split_source": "Recreated by the unchanged segmentation prepare_busbra/split_subjects functions; require byte-identical archived hashes before execution."
   },
   "status": "blocked",
-  "summary": {
-    "central_mean_sd": null,
-    "federated_dp_mean_sd": null,
-    "gap_auc_mean_sd": null,
-    "n_completed_replicates": 0,
-    "pooled_dp_mean_sd": null,
-    "trivial_mean_sd": null
-  },
-  "test_access": {
-    "held_out_images_read": false,
-    "held_out_pathology_labels_read": false,
-    "scoring_runs": 0
-  },
-  "versions": {
-    "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
-    "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
-    "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
-    "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
-    "installed_runner_sha256": null,
-    "installed_versions": null,
-    "local_package_code_matches_v0_5_0": true,
-    "local_source_heads": {
-      "dsFlower": "408f08c539329e2711260050ab40a6567aa4d89e",
-      "dsFlowerClient": "50dda000a32ffcbdd039c2b74c909df451392bfb"
-    },
-    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
-    "runtime_verification": "Blocked before R could run; v0.5.0 is verified locally only.",
-    "version": "0.5.0"
-  }
+  "test_scoring_started": false
 }
