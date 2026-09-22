@@ -41,9 +41,13 @@ def verify_captures(root, run, cfg):
         seen.add((key, capture["round"]))
         assert capture["round"] in range(1, 6)
         mechanism = capture["mechanism"]
-        assert mechanism["sample_rate"] == 1.0
+        assert mechanism["sample_rate"] == 1.0 and mechanism["accounting_population"] == 7
+        assert mechanism["total_steps"] == 5 and mechanism["expected_batch_size"] == 7
         assert capture["observed_round_steps"] == 1
+        assert capture["accountant_type"] == "PRVAccountant"
+        assert capture["accountant_history"] == [[mechanism["noise_multiplier"], 1.0, 1]]
         assert capture["privacy_config"]["clipping_norm"] == 1.0
+        assert capture["privacy_config"]["delta"] == 1e-6
     assert len(seen) == 15
     return captures, (x, y, subjects)
 
