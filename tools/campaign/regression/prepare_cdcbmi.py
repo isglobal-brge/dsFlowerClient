@@ -130,6 +130,8 @@ def main():
             with source.with_suffix(".download").open("wb") as output:
                 shutil.copyfileobj(response, output)
         source.with_suffix(".download").replace(source)
+    if sha256(source) != protocol["dataset"]["source_sha256"]:
+        raise RuntimeError("CDC source checksum differs from the frozen source")
 
     with tempfile.TemporaryDirectory(prefix="cdcbmi_prep_", dir=cache) as temp:
         temporary = pathlib.Path(temp)

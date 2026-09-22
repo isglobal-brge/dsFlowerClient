@@ -6,6 +6,7 @@
     "n_total": 45000,
     "uci_id": 891,
     "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+    "source_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
     "landing_url": "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
     "doi": "10.24432/C53919",
     "citation": "CDC Diabetes Health Indicators [Dataset]. (2017). UCI Machine Learning Repository. https://doi.org/10.24432/C53919.",
