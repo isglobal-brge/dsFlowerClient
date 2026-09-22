@@ -129,6 +129,25 @@
   value
 }
 
+# Reproduce the artifact emitter's shortest-round-trip binary64 JSON spelling.
+# Request/schema JSON still uses .native_tree_json and its existing wire ABI.
+.native_tree_ensemble_json <- function(bytes) {
+  script <- system.file(
+    "python", "native_tree_canonical_json.py", package = "dsFlowerClient")
+  if (!nzchar(script)) {
+    script <- file.path("inst", "python", "native_tree_canonical_json.py")
+  }
+  input <- tempfile("dsflower-native-container-", fileext = ".json")
+  on.exit(unlink(input), add = TRUE)
+  writeBin(bytes, input)
+  result <- processx::run(
+    command = .client_python_cmd(), args = c("-I", "-S", script),
+    stdin = input, env = .client_venv_env(),
+    error_on_status = FALSE, timeout = 60)
+  if (result$status != 0L) return(raw())
+  charToRaw(result$stdout)
+}
+
 # Validate the public global ensemble before any DSI or private-data access.
 .validate_native_tree_ensemble_artifact <- function(
     meta, model_dir, task, engine, origin = c("internal", "external")) {
@@ -197,9 +216,10 @@
   # XGBoost's trusted Python sanitizer emits the shortest round-trippable
   # binary64 spelling. jsonlite cannot reproduce every such spelling, so the
   # isolated predictor re-checks canonical member bytes before any private I/O.
-  # The pure R/Python tree formats remain byte-round-trippable here.
+  # Pure engines also emit binary64 leaves that jsonlite rounds. Reproduce
+  # their canonical bytes in isolated stdlib Python, without changing values.
   r_canonical <- identical(engine, "xgboost") ||
-    identical(bytes, .native_tree_json(value))
+    identical(bytes, .native_tree_ensemble_json(bytes))
   if (!is.list(value) || !identical(
       sort(names(value)),
       c("aggregation", "contract", "engine", "models",
@@ -208,10 +228,8 @@
       !identical(value$engine, engine) ||
       !identical(value$task, task) ||
       !identical(value$aggregation, "mean_prediction") ||
-      !(is.integer(value$version) || is.numeric(value$version)) ||
-      is.logical(value$version) || length(value$version) != 1L ||
-      is.na(value$version) || !is.finite(value$version) ||
-      value$version != 1 || !is.list(value$models) || !length(value$models) ||
+      !identical(value$version, 1L) ||
+      !is.list(value$models) || !length(value$models) ||
       !all(vapply(value$models, is.list, logical(1))) ||
       !r_canonical) {
     stop("Saved native-tree ensemble violates its canonical container contract.",
