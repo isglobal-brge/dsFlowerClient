@@ -21,7 +21,7 @@ replicate is also disclosed. No fallback was specified for this track.
 Split seeds control cohort partitioning and central initialization. Node-owned
 DP randomness stays cryptographic and sticky, and is not reproducible from the
 published seeds. Each independent node training has its own epsilon contract;
-this campaign does not assert one composed epsilon for all nine trainings.
+this campaign does not assert one composed epsilon for all nine federated fits.
 Bounds follow the original public-cohort TRAIN-extrema rule, widened by 10%.
 They never use test extrema. This simulation does not treat private empirical
 bounds as freely publishable statistics.
@@ -73,3 +73,25 @@ artifact or started run. Each replicate retains model artifacts, history,
 node secrets and logs on the pod; secrets must not be copied into evidence.
 JSON metrics retain full numeric precision. All package and runner hashes,
 node-reported policies, split/site sizes, bounds and elapsed times are recorded.
+
+The gap compares a fully converged pooled central model with the fixed
+five-round DP federation; it includes optimization, federation and privacy
+costs, and is not a causal estimate of the privacy mechanism alone. This is a
+single public-data cell with three random partitions, not evidence about other
+multiclass datasets or non-IID site distributions.
+
+After the cells finish, validate and summarize their JSONs without rescoring:
+
+```sh
+python3 tools/campaign/multiclass/summarize.py inst/extdata/campaign/multiclass
+```
+
+`environment.py` captures installed dependency versions and provisioning
+start/end times. During this run the client CPU torch runtime was provisioned
+before scoring with `uv pip install --torch-backend cpu` and its remaining
+prediction dependencies checked with the unchanged package helper
+`dsFlowerClient:::.ensure_client_framework("pytorch")`.
+
+The measured epsilon-8 accuracy diagnostic failed in all three replicates;
+see the [committed results](../../../inst/extdata/campaign/multiclass/README.md).
+All nine planned replicates completed with unchanged settings and no reruns.

@@ -1,0 +1,936 @@
+{
+  "schema": "dsflower-campaign-v2",
+  "cell_id": "pilot_ctg_pytorch_multiclass_eps1",
+  "generated_at": "2026-09-22T00:22:08+0000",
+  "host": {
+    "nodename": "fd619c1c1fcd",
+    "sysname": "Linux",
+    "release": "6.17.0-14-generic",
+    "machine": "x86_64",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "pod_id": "6aq9cxaigfwlby",
+    "pod_name": "pod-flower-multiclass",
+    "vcpus": 32
+  },
+  "versions": {
+    "dsflower": "0.5.0",
+    "dsflowerclient": "0.5.0",
+    "flwr": "1.31.0",
+    "torch": "2.14.0+cpu",
+    "opacus": "1.6.0",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "dsflower_source_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsflowerclient_release_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "nnet": "7.3.21"
+  },
+  "tooling_sha256": {
+    "run_cell.R": "74df65d7f52ab4a0f3dcf036dde3a5eec04c8198b83a70fd4c040a0aa0e8c15e",
+    "campaign_lib.R": "e616e9e793f3698a931ce9c615079fb253982822325f2eb0f6e728456c7a8dab",
+    "multiclass.R": "e9eab02327434004014a14c8d67ccb5077976d186f3ead0bcf1dd953b973fd31",
+    "protocol.json": "749e7631f6460c29d07addce784b6e5cf30c43cec072d7022df23f41681c199f"
+  },
+  "contract": "pytorch_multiclass",
+  "dataset": {
+    "name": "UCI Cardiotocography",
+    "uci_id": 193,
+    "source_url": "https://archive.ics.uci.edu/static/public/193/data.csv",
+    "landing_url": "https://archive.ics.uci.edu/dataset/193/cardiotocography",
+    "dataset_doi": "10.24432/C51S4N",
+    "citation": "Ayres-de-Campos D, Bernardes J, Garrido A, Marques-de-Sa J, Pereira-Leite L. (2000). SisPorto 2.0: A program for automated analysis of cardiotocograms. Journal of Maternal-Fetal Medicine 9:311-318.",
+    "paper_doi": "10.1002/1520-6661(200009/10)9:5<311::AID-MFM12>3.0.CO;2-9",
+    "license": "CC BY 4.0",
+    "target": "NSP: 1 normal, 2 suspect, 3 pathologic; CLASS excluded",
+    "cohort": "All 2126 records, all 21 standard measurements; no subsampling, feature selection or missing-value exclusions",
+    "n_total": 2126,
+    "features": ["LB", "AC", "FM", "UC", "DL", "DS", "DP", "ASTV", "MSTV", "ALTV", "MLTV", "Width", "Min", "Max", "Nmax", "Nzeros", "Mode", "Mean", "Median", "Variance", "Tendency"],
+    "download_sha256": "4648b5bf338d18f0c7e030a5d2cfb2018c831695cdb90129912cf00367c7d751",
+    "n_train": 1701,
+    "n_test": 425,
+    "n_per_site": [566, 568, 567]
+  },
+  "split": {
+    "type": "80/20 stratified by NSP; within-class test size rounded; shuffled training classes dealt round-robin to three sites",
+    "test_fraction": 0.2,
+    "seeds": [
+      20260820,
+      20260821,
+      20260822
+    ],
+    "seed_scope": "R train/test/site split and central initialization only; node DP randomness is not researcher-seeded",
+    "paired_across_epsilon": true
+  },
+  "protocol": {
+    "schema": "dsflower-multiclass-protocol-v1",
+    "declared_at_utc": "2026-09-22T00:11:04Z",
+    "contract": "pytorch_multiclass",
+    "dataset": {
+      "name": "UCI Cardiotocography",
+      "uci_id": 193,
+      "source_url": "https://archive.ics.uci.edu/static/public/193/data.csv",
+      "landing_url": "https://archive.ics.uci.edu/dataset/193/cardiotocography",
+      "dataset_doi": "10.24432/C51S4N",
+      "citation": "Ayres-de-Campos D, Bernardes J, Garrido A, Marques-de-Sa J, Pereira-Leite L. (2000). SisPorto 2.0: A program for automated analysis of cardiotocograms. Journal of Maternal-Fetal Medicine 9:311-318.",
+      "paper_doi": "10.1002/1520-6661(200009/10)9:5<311::AID-MFM12>3.0.CO;2-9",
+      "license": "CC BY 4.0",
+      "target": "NSP: 1 normal, 2 suspect, 3 pathologic; CLASS excluded",
+      "cohort": "All 2126 records, all 21 standard measurements; no subsampling, feature selection or missing-value exclusions"
+    },
+    "split": {
+      "type": "80/20 stratified by NSP; within-class test size rounded; shuffled training classes dealt round-robin to three sites",
+      "test_fraction": 0.2,
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "seed_scope": "R train/test/site split and central initialization only; node DP randomness is not researcher-seeded",
+      "paired_across_epsilon": true
+    },
+    "bounds_policy": "Same campaign rule: public TRAIN cohort min/max widened by 10 percent of each range, plus/minus 0.5 for constants. Declared before training, never derived from test. This public-data utility simulation does not claim that private empirical extrema can be freely disclosed.",
+    "training": {
+      "sites": 3,
+      "rounds": 5,
+      "replicates": 3,
+      "execution_epsilon_order": [
+        1,
+        8,
+        4
+      ],
+      "delta": 1e-06,
+      "parameters": "All pytorch_multiclass v0.5.0 registry defaults: linear softmax, 3 classes, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, no scheduler, no regularization",
+      "privacy": "Unchanged node defaults except administrator per-training epsilon; delta 1e-6, row unit, clipping norm 1, replace-one adjacency",
+      "inner_validation": "None; no schedule selection or hyperparameter search"
+    },
+    "central": "nnet::multinom, decay=0, maxit=3000, reltol=1e-10, MaxNWts=10000. Same clipped affine bounds transform as federated model; fit pooled training data; require convergence=0.",
+    "trivial": "Training majority class for accuracy; training class proportions for probability metrics, yielding tied-score macro-AUC 0.5. No test prevalence used.",
+    "metrics": "Unweighted mean of three one-vs-rest rank AUCs with average ties; argmax accuracy; natural-log multiclass log-loss with true-class probability floor 1e-15. Gap is federated minus central macro-AUC. SD is sample SD over three paired seeds.",
+    "diagnostic": "At epsilon 8, mean accuracy strictly above mean majority accuracy AND mean macro-AUC > 0.5. Also disclose each replicate and whether all pass.",
+    "test_use": "One scoring pass per replicate, after settings are fixed; no rerun of a scored cell with changed settings.",
+    "alternative": "None: full specified cohort is used and no fallback multiclass contract is named. Report a failing diagnostic as a boundary."
+  },
+  "privacy": {
+    "epsilon": 1,
+    "delta": 1e-06,
+    "clipping_norm": 1,
+    "unit": "row",
+    "adjacency": "replace_one",
+    "guarantee_scope": "per-training",
+    "composition_note": "Epsilon is per node training; these separate runs are not a single composed release guarantee.",
+    "bounds_policy": "Same campaign rule: public TRAIN cohort min/max widened by 10 percent of each range, plus/minus 0.5 for constants. Declared before training, never derived from test. This public-data utility simulation does not claim that private empirical extrema can be freely disclosed.",
+    "randomness": "Split and central seeds are fixed; DP randomness remains node-owned, cryptographic and sticky. Secrets are never exported."
+  },
+  "rounds": 5,
+  "model_params_requested": [],
+  "model_params_resolved": {
+    "momentum": 0,
+    "nesterov": false,
+    "learning_rate": 0.1,
+    "batch_size": 32,
+    "local_epochs": 1,
+    "weight_decay": 0,
+    "l1_penalty": 0,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "hidden_layers": [],
+    "n_classes": 3
+  },
+  "per_replicate": [
+    {
+      "seed": 20260820,
+      "split": {
+        "n_train": 1701,
+        "n_test": 425,
+        "n_per_site": [566, 568, 567],
+        "class_counts_train": {
+          "1": 1324,
+          "2": 236,
+          "3": 141
+        },
+        "class_counts_test": {
+          "1": 331,
+          "2": 59,
+          "3": 35
+        },
+        "class_counts_sites": [
+          {
+            "1": 441,
+            "2": 78,
+            "3": 47
+          },
+          {
+            "1": 442,
+            "2": 79,
+            "3": 47
+          },
+          {
+            "1": 441,
+            "2": 79,
+            "3": 47
+          }
+        ],
+        "train_index_sha256": "42e165f6d631b5e950e4e7c06fe9cae26df75bd71ffdca403c65d64ca72e76df",
+        "test_index_sha256": "e4b4643a83f9e26f088e9d5e32491e4a5183693ccd8e7c3ef168d51b7812f670",
+        "site_index_sha256": [
+          "0d873d907210c355e0b5adb75100f6ae38bdfa2d9624167114f5697a6b7b4bd8",
+          "5b444e7bb324d0c59c81cbf3174953a9120c80e5835192025539ca005aa08278",
+          "0881886c8261cb98c79072d9847e9fb4bd54c087c2cadfcb0871f87ec57dd1ba"
+        ]
+      },
+      "central": {
+        "macro_auc": 0.964988375364347,
+        "acc": 0.889411764705882,
+        "logloss": 0.250692697620002,
+        "auc_by_class": {
+          "1": 0.970624156328341,
+          "2": 0.940677966101695,
+          "3": 0.983663003663004
+        },
+        "convergence": 0
+      },
+      "federated_dp": {
+        "macro_auc": 0.898464750059349,
+        "acc": 0.778823529411765,
+        "logloss": 0.660784698381809,
+        "auc_by_class": {
+          "1": 0.903869640676223,
+          "2": 0.832916550893767,
+          "3": 0.958608058608059
+        }
+      },
+      "trivial": {
+        "macro_auc": 0.5,
+        "acc": 0.778823529411765,
+        "logloss": 0.674413266654124,
+        "auc_by_class": {
+          "1": 0.5,
+          "2": 0.5,
+          "3": 0.5
+        },
+        "majority_class": 1,
+        "training_prevalence": [0.778365667254556, 0.138741916519694, 0.0828924162257496],
+        "probability_policy": "training class frequencies; argmax is majority"
+      },
+      "gap_macro_auc": -0.0665236253049971,
+      "feature_bounds": {
+        "lower": [100.7, -0.0018, -0.0481, -0.0013, -0.0015, -0.0001, -0.0005, 4.5, -0.48, -9.1, -4.18, -14.7, 39.2, 110.4, -1.8, -0.8, 47.4, 62.1, 66.1, -26.9, -1.2],
+        "upper": [164.3, 0.0198, 0.5291, 0.0143, 0.0165, 0.0011, 0.0055, 94.5, 7.68, 100.1, 45.98, 197.7, 168.8, 249.6, 19.8, 8.8, 198.6, 192.9, 196.9, 295.9, 1.2]
+      },
+      "node_privacy": {
+        "site1": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site2": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site3": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        }
+      },
+      "released_metadata": {
+        "model_id": "pytorch_multiclass_FedAvg_5r_20260922_001800",
+        "model": "pytorch_multiclass",
+        "framework": "pytorch",
+        "track": "neural",
+        "model_spec": {
+          "kind": "sequential",
+          "layers": [
+            {
+              "op": "linear",
+              "out": "@out"
+            }
+          ]
+        },
+        "model_params": {
+          "learning_rate": 0.1,
+          "batch_size": 32,
+          "local_epochs": 1,
+          "weight_decay": 0,
+          "l1_penalty": 0,
+          "optimizer": "sgd",
+          "scheduler": "none",
+          "hidden_layers": [],
+          "n_classes": 3,
+          "momentum": 0,
+          "nesterov": false
+        },
+        "loss_name": "cross_entropy",
+        "survival_config": {},
+        "target": "target",
+        "data_kind": "tabular",
+        "available": true,
+        "available_rounds": [1, 2, 3, 4, 5],
+        "strategy": "FedAvg",
+        "privacy": "server-enforced-dp",
+        "num_rounds": 5,
+        "requested_num_rounds": 5,
+        "n_clients": 3,
+        "features": ["LB", "AC", "FM", "UC", "DL", "DS", "DP", "ASTV", "MSTV", "ALTV", "MLTV", "Width", "Min", "Max", "Nmax", "Nzeros", "Mode", "Mean", "Median", "Variance", "Tendency"],
+        "feature_lower": [100.7, -0.0018, -0.0481, -0.0013, -0.0015, -0.0001, -0.0005, 4.5, -0.48, -9.1, -4.18, -14.7, 39.2, 110.4, -1.8, -0.8, 47.4, 62.1, 66.1, -26.9, -1.2],
+        "feature_upper": [164.3, 0.0198, 0.5291, 0.0143, 0.0165, 0.0011, 0.0055, 94.5, 7.68, 100.1, 45.98, 197.7, 168.8, 249.6, 19.8, 8.8, 198.6, 192.9, 196.9, 295.9, 1.2],
+        "target_levels": ["1", "2", "3"],
+        "target_bounds": {},
+        "created_at": "2026-09-22T00:18:00",
+        "holdout": {},
+        "holdout_contract": {},
+        "status": "success"
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "rounds": [
+          {
+            "round": 1,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 2,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 3,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 4,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 5,
+            "n_failures": 0,
+            "available": true
+          }
+        ]
+      },
+      "model_sha256": "1550d67bab9cf4075d4012a70ce9b3533ca4a1ab23f6cb5a57e4bb7793db5672",
+      "diagnostic": {
+        "accuracy_above_majority": false,
+        "macro_auc_above_half": true,
+        "passed": false
+      },
+      "wall_clock": {
+        "central_fit_s": 0.105170965194702,
+        "federated_s": 119.559340000153,
+        "total_s": 119.842221736908
+      },
+      "cleanup_ok": true
+    },
+    {
+      "seed": 20260821,
+      "split": {
+        "n_train": 1701,
+        "n_test": 425,
+        "n_per_site": [566, 568, 567],
+        "class_counts_train": {
+          "1": 1324,
+          "2": 236,
+          "3": 141
+        },
+        "class_counts_test": {
+          "1": 331,
+          "2": 59,
+          "3": 35
+        },
+        "class_counts_sites": [
+          {
+            "1": 441,
+            "2": 78,
+            "3": 47
+          },
+          {
+            "1": 442,
+            "2": 79,
+            "3": 47
+          },
+          {
+            "1": 441,
+            "2": 79,
+            "3": 47
+          }
+        ],
+        "train_index_sha256": "4f055974616602a6d9a648bb37d92f8c0415cd00d56790e6ba9c9b8090aa4169",
+        "test_index_sha256": "420a8dd7107d29d354b9e08eaa756f59ec24570149206a86e2a548a0a891b136",
+        "site_index_sha256": [
+          "57332985114fd01bf07d1be1206ffe1a95025a25cea340bb9cdcbd21d6f7978f",
+          "fd93ff30e3d85555116eeba6d02d8915a88afa41cea4f04e304013a476f35b59",
+          "08d33aa47d690d8855ddf6ef79b204699ff21d883b73cd857f27351e4ef6115c"
+        ]
+      },
+      "central": {
+        "macro_auc": 0.969171092917379,
+        "acc": 0.894117647058824,
+        "logloss": 0.231685416387821,
+        "auc_by_class": {
+          "1": 0.975541556855435,
+          "2": 0.949847179772159,
+          "3": 0.982124542124542
+        },
+        "convergence": 0
+      },
+      "federated_dp": {
+        "macro_auc": 0.810842598252466,
+        "acc": 0.778823529411765,
+        "logloss": 0.70561780005754,
+        "auc_by_class": {
+          "1": 0.843061001478434,
+          "2": 0.789247013059183,
+          "3": 0.80021978021978
+        }
+      },
+      "trivial": {
+        "macro_auc": 0.5,
+        "acc": 0.778823529411765,
+        "logloss": 0.674413266654124,
+        "auc_by_class": {
+          "1": 0.5,
+          "2": 0.5,
+          "3": 0.5
+        },
+        "majority_class": 1,
+        "training_prevalence": [0.778365667254556, 0.138741916519694, 0.0828924162257496],
+        "probability_policy": "training class frequencies; argmax is majority"
+      },
+      "gap_macro_auc": -0.158328494664913,
+      "feature_bounds": {
+        "lower": [100.6, -0.0018, -0.0481, -0.0015, -0.0015, -0.0001, -0.0005, 4.5, -0.47, -9.1, -5.07, -14.7, 39.1, 110.4, -1.8, -1, 47.3, 62.1, 66.1, -26.9, -1.2],
+        "upper": [165.4, 0.0198, 0.5291, 0.0165, 0.0165, 0.0011, 0.0055, 94.5, 7.57, 100.1, 55.77, 197.7, 169.9, 249.6, 19.8, 11, 199.7, 192.9, 196.9, 295.9, 1.2]
+      },
+      "node_privacy": {
+        "site1": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site2": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site3": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        }
+      },
+      "released_metadata": {
+        "model_id": "pytorch_multiclass_FedAvg_5r_20260922_001955",
+        "model": "pytorch_multiclass",
+        "framework": "pytorch",
+        "track": "neural",
+        "model_spec": {
+          "kind": "sequential",
+          "layers": [
+            {
+              "op": "linear",
+              "out": "@out"
+            }
+          ]
+        },
+        "model_params": {
+          "learning_rate": 0.1,
+          "batch_size": 32,
+          "local_epochs": 1,
+          "weight_decay": 0,
+          "l1_penalty": 0,
+          "optimizer": "sgd",
+          "scheduler": "none",
+          "hidden_layers": [],
+          "n_classes": 3,
+          "momentum": 0,
+          "nesterov": false
+        },
+        "loss_name": "cross_entropy",
+        "survival_config": {},
+        "target": "target",
+        "data_kind": "tabular",
+        "available": true,
+        "available_rounds": [1, 2, 3, 4, 5],
+        "strategy": "FedAvg",
+        "privacy": "server-enforced-dp",
+        "num_rounds": 5,
+        "requested_num_rounds": 5,
+        "n_clients": 3,
+        "features": ["LB", "AC", "FM", "UC", "DL", "DS", "DP", "ASTV", "MSTV", "ALTV", "MLTV", "Width", "Min", "Max", "Nmax", "Nzeros", "Mode", "Mean", "Median", "Variance", "Tendency"],
+        "feature_lower": [100.6, -0.0018, -0.0481, -0.0015, -0.0015, -0.0001, -0.0005, 4.5, -0.47, -9.1, -5.07, -14.7, 39.1, 110.4, -1.8, -1, 47.3, 62.1, 66.1, -26.9, -1.2],
+        "feature_upper": [165.4, 0.0198, 0.5291, 0.0165, 0.0165, 0.0011, 0.0055, 94.5, 7.57, 100.1, 55.77, 197.7, 169.9, 249.6, 19.8, 11, 199.7, 192.9, 196.9, 295.9, 1.2],
+        "target_levels": ["1", "2", "3"],
+        "target_bounds": {},
+        "created_at": "2026-09-22T00:19:55",
+        "holdout": {},
+        "holdout_contract": {},
+        "status": "success"
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "rounds": [
+          {
+            "round": 1,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 2,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 3,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 4,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 5,
+            "n_failures": 0,
+            "available": true
+          }
+        ]
+      },
+      "model_sha256": "713476a88660e544b7ef32a8f24a0222b96df4cddf16052ef5dcffa207056bdf",
+      "diagnostic": {
+        "accuracy_above_majority": false,
+        "macro_auc_above_half": true,
+        "passed": false
+      },
+      "wall_clock": {
+        "central_fit_s": 0.084125280380249,
+        "federated_s": 118.616228342056,
+        "total_s": 118.751658678055
+      },
+      "cleanup_ok": true
+    },
+    {
+      "seed": 20260822,
+      "split": {
+        "n_train": 1701,
+        "n_test": 425,
+        "n_per_site": [566, 568, 567],
+        "class_counts_train": {
+          "1": 1324,
+          "2": 236,
+          "3": 141
+        },
+        "class_counts_test": {
+          "1": 331,
+          "2": 59,
+          "3": 35
+        },
+        "class_counts_sites": [
+          {
+            "1": 441,
+            "2": 78,
+            "3": 47
+          },
+          {
+            "1": 442,
+            "2": 79,
+            "3": 47
+          },
+          {
+            "1": 441,
+            "2": 79,
+            "3": 47
+          }
+        ],
+        "train_index_sha256": "caae00c59ed135408ef18c289221bf07adfb0ae49912ec58b1c27edc125c6e37",
+        "test_index_sha256": "c94e4575d4ca95bad9a6fb6159119e55e1b579dd9d296f2156d66b97cabda854",
+        "site_index_sha256": [
+          "af173216d8ad81c46e7b6bdcffb932185dd9fc0c1252713909e5351062a36149",
+          "82cce314939e426f41bfed7248434c9bd55ecb4a88868685abd20c7352828b64",
+          "2d7d2ce86d3ac61cd2013a81266560ad63b1d5529e38d51d96076d62c97d81e3"
+        ]
+      },
+      "central": {
+        "macro_auc": 0.969450899293727,
+        "acc": 0.905882352941176,
+        "logloss": 0.246460598167665,
+        "auc_by_class": {
+          "1": 0.980587516873433,
+          "2": 0.945494118736686,
+          "3": 0.982271062271062
+        },
+        "convergence": 0
+      },
+      "federated_dp": {
+        "macro_auc": 0.716828924174523,
+        "acc": 0.778823529411765,
+        "logloss": 0.747776306648079,
+        "auc_by_class": {
+          "1": 0.717297679501189,
+          "2": 0.610771510604798,
+          "3": 0.822417582417582
+        }
+      },
+      "trivial": {
+        "macro_auc": 0.5,
+        "acc": 0.778823529411765,
+        "logloss": 0.674413266654124,
+        "auc_by_class": {
+          "1": 0.5,
+          "2": 0.5,
+          "3": 0.5
+        },
+        "majority_class": 1,
+        "training_prevalence": [0.778365667254556, 0.138741916519694, 0.0828924162257496],
+        "probability_policy": "training class frequencies; argmax is majority"
+      },
+      "gap_macro_auc": -0.252621975119204,
+      "feature_bounds": {
+        "lower": [100.6, -0.0019, -0.0481, -0.0015, -0.0015, -0.0001, -0.0005, 4.5, -0.48, -9.1, -5.07, -14.7, 39.2, 110.4, -1.8, -1, 47.3, 64.3, 67.2, -26.9, -1.2],
+        "upper": [165.4, 0.0209, 0.5291, 0.0165, 0.0165, 0.0011, 0.0055, 94.5, 7.68, 100.1, 55.77, 197.7, 168.8, 249.6, 19.8, 11, 199.7, 192.7, 196.8, 295.9, 1.2]
+      },
+      "node_privacy": {
+        "site1": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site2": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site3": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "c3228c168323e3b31a47b4ad2bd089a320a47ae26bf099e2aee6e0e08eb17bea"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        }
+      },
+      "released_metadata": {
+        "model_id": "pytorch_multiclass_FedAvg_5r_20260922_002155",
+        "model": "pytorch_multiclass",
+        "framework": "pytorch",
+        "track": "neural",
+        "model_spec": {
+          "kind": "sequential",
+          "layers": [
+            {
+              "op": "linear",
+              "out": "@out"
+            }
+          ]
+        },
+        "model_params": {
+          "learning_rate": 0.1,
+          "batch_size": 32,
+          "local_epochs": 1,
+          "weight_decay": 0,
+          "l1_penalty": 0,
+          "optimizer": "sgd",
+          "scheduler": "none",
+          "hidden_layers": [],
+          "n_classes": 3,
+          "momentum": 0,
+          "nesterov": false
+        },
+        "loss_name": "cross_entropy",
+        "survival_config": {},
+        "target": "target",
+        "data_kind": "tabular",
+        "available": true,
+        "available_rounds": [1, 2, 3, 4, 5],
+        "strategy": "FedAvg",
+        "privacy": "server-enforced-dp",
+        "num_rounds": 5,
+        "requested_num_rounds": 5,
+        "n_clients": 3,
+        "features": ["LB", "AC", "FM", "UC", "DL", "DS", "DP", "ASTV", "MSTV", "ALTV", "MLTV", "Width", "Min", "Max", "Nmax", "Nzeros", "Mode", "Mean", "Median", "Variance", "Tendency"],
+        "feature_lower": [100.6, -0.0019, -0.0481, -0.0015, -0.0015, -0.0001, -0.0005, 4.5, -0.48, -9.1, -5.07, -14.7, 39.2, 110.4, -1.8, -1, 47.3, 64.3, 67.2, -26.9, -1.2],
+        "feature_upper": [165.4, 0.0209, 0.5291, 0.0165, 0.0165, 0.0011, 0.0055, 94.5, 7.68, 100.1, 55.77, 197.7, 168.8, 249.6, 19.8, 11, 199.7, 192.7, 196.8, 295.9, 1.2],
+        "target_levels": ["1", "2", "3"],
+        "target_bounds": {},
+        "created_at": "2026-09-22T00:21:55",
+        "holdout": {},
+        "holdout_contract": {},
+        "status": "success"
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "rounds": [
+          {
+            "round": 1,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 2,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 3,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 4,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 5,
+            "n_failures": 0,
+            "available": true
+          }
+        ]
+      },
+      "model_sha256": "6b2e4431f8462565a8bae30b468dcb116e1729e7d5d47d1ef81ae2676687d626",
+      "diagnostic": {
+        "accuracy_above_majority": false,
+        "macro_auc_above_half": true,
+        "passed": false
+      },
+      "wall_clock": {
+        "central_fit_s": 0.0823392868041992,
+        "federated_s": 116.172369480133,
+        "total_s": 116.278960943222
+      },
+      "cleanup_ok": true
+    }
+  ],
+  "summary": {
+    "central_mean_sd": {
+      "macro_auc": {
+        "mean": 0.967870122525151,
+        "sd": 0.00249958455071314
+      },
+      "acc": {
+        "mean": 0.896470588235294,
+        "sd": 0.00848365005991527
+      },
+      "logloss": {
+        "mean": 0.242946237391829,
+        "sd": 0.00997908982356894
+      }
+    },
+    "federated_mean_sd": {
+      "macro_auc": {
+        "mean": 0.808712090828779,
+        "sd": 0.0908366534369664
+      },
+      "acc": {
+        "mean": 0.778823529411765,
+        "sd": 0
+      },
+      "logloss": {
+        "mean": 0.704726268362476,
+        "sd": 0.043502656226494
+      }
+    },
+    "trivial_mean_sd": {
+      "macro_auc": {
+        "mean": 0.5,
+        "sd": 0
+      },
+      "acc": {
+        "mean": 0.778823529411765,
+        "sd": 0
+      },
+      "logloss": {
+        "mean": 0.674413266654124,
+        "sd": 0
+      }
+    },
+    "gap_mean_sd": {
+      "macro_auc": {
+        "mean": -0.159158031696371,
+        "sd": 0.0930519481239252
+      }
+    },
+    "diagnostic": {
+      "applicable_epsilon": 8,
+      "mean_accuracy_above_majority": false,
+      "mean_macro_auc_above_half": true,
+      "all_replicates_pass": false
+    }
+  }
+}

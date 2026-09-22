@@ -1,0 +1,321 @@
+{
+  "schema": "dsflower-campaign-v2",
+  "track": "multiclass",
+  "contract": "pytorch_multiclass",
+  "dataset": {
+    "name": "UCI Cardiotocography",
+    "uci_id": 193,
+    "source_url": "https://archive.ics.uci.edu/static/public/193/data.csv",
+    "landing_url": "https://archive.ics.uci.edu/dataset/193/cardiotocography",
+    "dataset_doi": "10.24432/C51S4N",
+    "citation": "Ayres-de-Campos D, Bernardes J, Garrido A, Marques-de-Sa J, Pereira-Leite L. (2000). SisPorto 2.0: A program for automated analysis of cardiotocograms. Journal of Maternal-Fetal Medicine 9:311-318.",
+    "paper_doi": "10.1002/1520-6661(200009/10)9:5<311::AID-MFM12>3.0.CO;2-9",
+    "license": "CC BY 4.0",
+    "target": "NSP: 1 normal, 2 suspect, 3 pathologic; CLASS excluded",
+    "cohort": "All 2126 records, all 21 standard measurements; no subsampling, feature selection or missing-value exclusions",
+    "n_total": 2126,
+    "features": [
+      "LB",
+      "AC",
+      "FM",
+      "UC",
+      "DL",
+      "DS",
+      "DP",
+      "ASTV",
+      "MSTV",
+      "ALTV",
+      "MLTV",
+      "Width",
+      "Min",
+      "Max",
+      "Nmax",
+      "Nzeros",
+      "Mode",
+      "Mean",
+      "Median",
+      "Variance",
+      "Tendency"
+    ],
+    "download_sha256": "4648b5bf338d18f0c7e030a5d2cfb2018c831695cdb90129912cf00367c7d751",
+    "n_train": 1701,
+    "n_test": 425,
+    "n_per_site": [
+      566,
+      568,
+      567
+    ]
+  },
+  "host": {
+    "nodename": "fd619c1c1fcd",
+    "sysname": "Linux",
+    "release": "6.17.0-14-generic",
+    "machine": "x86_64",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "pod_id": "6aq9cxaigfwlby",
+    "pod_name": "pod-flower-multiclass",
+    "vcpus": 32
+  },
+  "versions": {
+    "dsflower": "0.5.0",
+    "dsflowerclient": "0.5.0",
+    "flwr": "1.31.0",
+    "torch": "2.14.0+cpu",
+    "opacus": "1.6.0",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "dsflower_source_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsflowerclient_release_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "nnet": "7.3.21"
+  },
+  "protocol": {
+    "schema": "dsflower-multiclass-protocol-v1",
+    "declared_at_utc": "2026-09-22T00:11:04Z",
+    "contract": "pytorch_multiclass",
+    "dataset": {
+      "name": "UCI Cardiotocography",
+      "uci_id": 193,
+      "source_url": "https://archive.ics.uci.edu/static/public/193/data.csv",
+      "landing_url": "https://archive.ics.uci.edu/dataset/193/cardiotocography",
+      "dataset_doi": "10.24432/C51S4N",
+      "citation": "Ayres-de-Campos D, Bernardes J, Garrido A, Marques-de-Sa J, Pereira-Leite L. (2000). SisPorto 2.0: A program for automated analysis of cardiotocograms. Journal of Maternal-Fetal Medicine 9:311-318.",
+      "paper_doi": "10.1002/1520-6661(200009/10)9:5<311::AID-MFM12>3.0.CO;2-9",
+      "license": "CC BY 4.0",
+      "target": "NSP: 1 normal, 2 suspect, 3 pathologic; CLASS excluded",
+      "cohort": "All 2126 records, all 21 standard measurements; no subsampling, feature selection or missing-value exclusions"
+    },
+    "split": {
+      "type": "80/20 stratified by NSP; within-class test size rounded; shuffled training classes dealt round-robin to three sites",
+      "test_fraction": 0.2,
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "seed_scope": "R train/test/site split and central initialization only; node DP randomness is not researcher-seeded",
+      "paired_across_epsilon": true
+    },
+    "bounds_policy": "Same campaign rule: public TRAIN cohort min/max widened by 10 percent of each range, plus/minus 0.5 for constants. Declared before training, never derived from test. This public-data utility simulation does not claim that private empirical extrema can be freely disclosed.",
+    "training": {
+      "sites": 3,
+      "rounds": 5,
+      "replicates": 3,
+      "execution_epsilon_order": [
+        1,
+        8,
+        4
+      ],
+      "delta": 1e-06,
+      "parameters": "All pytorch_multiclass v0.5.0 registry defaults: linear softmax, 3 classes, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, no scheduler, no regularization",
+      "privacy": "Unchanged node defaults except administrator per-training epsilon; delta 1e-6, row unit, clipping norm 1, replace-one adjacency",
+      "inner_validation": "None; no schedule selection or hyperparameter search"
+    },
+    "central": "nnet::multinom, decay=0, maxit=3000, reltol=1e-10, MaxNWts=10000. Same clipped affine bounds transform as federated model; fit pooled training data; require convergence=0.",
+    "trivial": "Training majority class for accuracy; training class proportions for probability metrics, yielding tied-score macro-AUC 0.5. No test prevalence used.",
+    "metrics": "Unweighted mean of three one-vs-rest rank AUCs with average ties; argmax accuracy; natural-log multiclass log-loss with true-class probability floor 1e-15. Gap is federated minus central macro-AUC. SD is sample SD over three paired seeds.",
+    "diagnostic": "At epsilon 8, mean accuracy strictly above mean majority accuracy AND mean macro-AUC > 0.5. Also disclose each replicate and whether all pass.",
+    "test_use": "One scoring pass per replicate, after settings are fixed; no rerun of a scored cell with changed settings.",
+    "alternative": "None: full specified cohort is used and no fallback multiclass contract is named. Report a failing diagnostic as a boundary."
+  },
+  "tooling_sha256": {
+    "run_cell.R": "74df65d7f52ab4a0f3dcf036dde3a5eec04c8198b83a70fd4c040a0aa0e8c15e",
+    "campaign_lib.R": "e616e9e793f3698a931ce9c615079fb253982822325f2eb0f6e728456c7a8dab",
+    "multiclass.R": "e9eab02327434004014a14c8d67ccb5077976d186f3ead0bcf1dd953b973fd31",
+    "protocol.json": "749e7631f6460c29d07addce784b6e5cf30c43cec072d7022df23f41681c199f"
+  },
+  "cells": [
+    {
+      "epsilon": 1,
+      "evidence_file": "pilot_ctg_pytorch_multiclass_eps1.json",
+      "evidence_sha256": "381259c6839086a91222583902926d2fb7a5a5b3f124e5eab7e814ff28d53197",
+      "summary": {
+        "central_mean_sd": {
+          "macro_auc": {
+            "mean": 0.967870122525151,
+            "sd": 0.00249958455071314
+          },
+          "acc": {
+            "mean": 0.896470588235294,
+            "sd": 0.00848365005991527
+          },
+          "logloss": {
+            "mean": 0.242946237391829,
+            "sd": 0.00997908982356894
+          }
+        },
+        "federated_mean_sd": {
+          "macro_auc": {
+            "mean": 0.808712090828779,
+            "sd": 0.0908366534369664
+          },
+          "acc": {
+            "mean": 0.778823529411765,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.704726268362476,
+            "sd": 0.043502656226494
+          }
+        },
+        "trivial_mean_sd": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0
+          },
+          "acc": {
+            "mean": 0.778823529411765,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.674413266654124,
+            "sd": 0
+          }
+        },
+        "gap_mean_sd": {
+          "macro_auc": {
+            "mean": -0.159158031696371,
+            "sd": 0.0930519481239252
+          }
+        },
+        "diagnostic": {
+          "applicable_epsilon": 8,
+          "mean_accuracy_above_majority": false,
+          "mean_macro_auc_above_half": true,
+          "all_replicates_pass": false
+        }
+      },
+      "wall_clock_total_s": 354.872841358185
+    },
+    {
+      "epsilon": 4,
+      "evidence_file": "pilot_ctg_pytorch_multiclass_eps4.json",
+      "evidence_sha256": "0dbc29c2253890edc00084820129b9dd837ef58e2949bf5ab20299f33bc59ea4",
+      "summary": {
+        "central_mean_sd": {
+          "macro_auc": {
+            "mean": 0.967870122525151,
+            "sd": 0.00249958455071314
+          },
+          "acc": {
+            "mean": 0.896470588235294,
+            "sd": 0.00848365005991527
+          },
+          "logloss": {
+            "mean": 0.242946237391829,
+            "sd": 0.00997908982356894
+          }
+        },
+        "federated_mean_sd": {
+          "macro_auc": {
+            "mean": 0.863732366857925,
+            "sd": 0.0215737110844825
+          },
+          "acc": {
+            "mean": 0.778823529411765,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.681181350054833,
+            "sd": 0.00934230273043881
+          }
+        },
+        "trivial_mean_sd": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0
+          },
+          "acc": {
+            "mean": 0.778823529411765,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.674413266654124,
+            "sd": 0
+          }
+        },
+        "gap_mean_sd": {
+          "macro_auc": {
+            "mean": -0.104137755667226,
+            "sd": 0.0211496135620381
+          }
+        },
+        "diagnostic": {
+          "applicable_epsilon": 8,
+          "mean_accuracy_above_majority": false,
+          "mean_macro_auc_above_half": true,
+          "all_replicates_pass": false
+        }
+      },
+      "wall_clock_total_s": 361.475170135498
+    },
+    {
+      "epsilon": 8,
+      "evidence_file": "pilot_ctg_pytorch_multiclass_eps8.json",
+      "evidence_sha256": "eb68e207d4d9a6d82aede5c04a84ba6bf319bc194debfb40a6ddd560dc2511b2",
+      "summary": {
+        "central_mean_sd": {
+          "macro_auc": {
+            "mean": 0.967870122525151,
+            "sd": 0.00249958455071314
+          },
+          "acc": {
+            "mean": 0.896470588235294,
+            "sd": 0.00848365005991527
+          },
+          "logloss": {
+            "mean": 0.242946237391829,
+            "sd": 0.00997908982356894
+          }
+        },
+        "federated_mean_sd": {
+          "macro_auc": {
+            "mean": 0.867435815016081,
+            "sd": 0.0470337930975351
+          },
+          "acc": {
+            "mean": 0.778823529411765,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.677368157868187,
+            "sd": 0.0259144160899873
+          }
+        },
+        "trivial_mean_sd": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0
+          },
+          "acc": {
+            "mean": 0.778823529411765,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.674413266654124,
+            "sd": 0
+          }
+        },
+        "gap_mean_sd": {
+          "macro_auc": {
+            "mean": -0.10043430750907,
+            "sd": 0.0456821339042561
+          }
+        },
+        "diagnostic": {
+          "applicable_epsilon": 8,
+          "mean_accuracy_above_majority": false,
+          "mean_macro_auc_above_half": true,
+          "all_replicates_pass": false
+        }
+      },
+      "wall_clock_total_s": 398.12189722061197
+    }
+  ],
+  "acceptance_epsilon8": {
+    "applicable_epsilon": 8,
+    "mean_accuracy_above_majority": false,
+    "mean_macro_auc_above_half": true,
+    "all_replicates_pass": false,
+    "passed": false
+  },
+  "validation": "All three cells: paired splits/bounds/baselines; 3 sites, 5 rounds, zero failures; node policies and runner hashes; means and sample SD independently recomputed."
+}

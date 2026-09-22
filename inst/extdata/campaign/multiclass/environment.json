@@ -1,0 +1,858 @@
+{
+  "schema": "dsflower-campaign-environment-v1",
+  "pod_id": "6aq9cxaigfwlby",
+  "pod_name": "pod-flower-multiclass",
+  "platform": "Linux-6.17.0-14-generic-x86_64-with-glibc2.35",
+  "provisioning_started_at": "2026-09-22T00:05:40Z",
+  "provisioning_finished_at": "2026-09-22T00:16:07Z",
+  "provisioning_elapsed_s": 627.0,
+  "memory_cgroup_bytes": "64000000000",
+  "cpu_cgroup": "max 100000",
+  "os_release": "PRETTY_NAME=\"Ubuntu 22.04.5 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"22.04\"\nVERSION=\"22.04.5 LTS (Jammy Jellyfish)\"\nVERSION_CODENAME=jammy\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=jammy",
+  "uv_version": "uv 0.12.17 (x86_64-unknown-linux-gnu)",
+  "python_packages": {
+    "node": [
+      {
+        "name": "alembic",
+        "version": "1.20.0"
+      },
+      {
+        "name": "certifi",
+        "version": "2026.7.22"
+      },
+      {
+        "name": "cffi",
+        "version": "2.1.1"
+      },
+      {
+        "name": "charset-normalizer",
+        "version": "3.5.1"
+      },
+      {
+        "name": "click",
+        "version": "8.5.0"
+      },
+      {
+        "name": "cryptography",
+        "version": "46.0.7"
+      },
+      {
+        "name": "filelock",
+        "version": "4.0.1"
+      },
+      {
+        "name": "flwr",
+        "version": "1.31.0"
+      },
+      {
+        "name": "fsspec",
+        "version": "2026.9.0"
+      },
+      {
+        "name": "greenlet",
+        "version": "3.5.6"
+      },
+      {
+        "name": "grpcio",
+        "version": "1.84.0"
+      },
+      {
+        "name": "grpcio-health-checking",
+        "version": "1.81.1"
+      },
+      {
+        "name": "idna",
+        "version": "3.20"
+      },
+      {
+        "name": "importlib-resources",
+        "version": "7.1.0"
+      },
+      {
+        "name": "iterators",
+        "version": "0.0.2"
+      },
+      {
+        "name": "jinja2",
+        "version": "3.1.6"
+      },
+      {
+        "name": "mako",
+        "version": "1.4.1"
+      },
+      {
+        "name": "markdown-it-py",
+        "version": "4.2.0"
+      },
+      {
+        "name": "markupsafe",
+        "version": "3.0.3"
+      },
+      {
+        "name": "mdurl",
+        "version": "0.1.2"
+      },
+      {
+        "name": "monai",
+        "version": "1.6.0"
+      },
+      {
+        "name": "mpmath",
+        "version": "1.3.0"
+      },
+      {
+        "name": "networkx",
+        "version": "3.6.1"
+      },
+      {
+        "name": "nibabel",
+        "version": "5.4.2"
+      },
+      {
+        "name": "numpy",
+        "version": "2.4.6"
+      },
+      {
+        "name": "opacus",
+        "version": "1.6.0"
+      },
+      {
+        "name": "opt-einsum",
+        "version": "3.4.0"
+      },
+      {
+        "name": "packaging",
+        "version": "25.0"
+      },
+      {
+        "name": "pandas",
+        "version": "3.0.6"
+      },
+      {
+        "name": "pathspec",
+        "version": "0.12.1"
+      },
+      {
+        "name": "pillow",
+        "version": "12.3.0"
+      },
+      {
+        "name": "protobuf",
+        "version": "6.33.6"
+      },
+      {
+        "name": "pyarrow",
+        "version": "25.0.1"
+      },
+      {
+        "name": "pycparser",
+        "version": "3.0"
+      },
+      {
+        "name": "pycryptodome",
+        "version": "3.23.0"
+      },
+      {
+        "name": "pydicom",
+        "version": "3.0.2"
+      },
+      {
+        "name": "pygments",
+        "version": "2.21.0"
+      },
+      {
+        "name": "pynrrd",
+        "version": "1.1.3"
+      },
+      {
+        "name": "python-dateutil",
+        "version": "2.9.0.post0"
+      },
+      {
+        "name": "pyyaml",
+        "version": "6.0.3"
+      },
+      {
+        "name": "requests",
+        "version": "2.34.2"
+      },
+      {
+        "name": "rich",
+        "version": "13.9.4"
+      },
+      {
+        "name": "scipy",
+        "version": "1.17.1"
+      },
+      {
+        "name": "setuptools",
+        "version": "84.0.0"
+      },
+      {
+        "name": "shellingham",
+        "version": "1.5.4"
+      },
+      {
+        "name": "simpleitk",
+        "version": "2.5.6"
+      },
+      {
+        "name": "six",
+        "version": "1.17.0"
+      },
+      {
+        "name": "sqlalchemy",
+        "version": "2.0.54"
+      },
+      {
+        "name": "sympy",
+        "version": "1.14.0"
+      },
+      {
+        "name": "tomli",
+        "version": "2.4.1"
+      },
+      {
+        "name": "tomli-w",
+        "version": "1.2.0"
+      },
+      {
+        "name": "torch",
+        "version": "2.14.0+cpu"
+      },
+      {
+        "name": "torchvision",
+        "version": "0.29.0+cpu"
+      },
+      {
+        "name": "typer",
+        "version": "0.20.1"
+      },
+      {
+        "name": "typing-extensions",
+        "version": "4.16.0"
+      },
+      {
+        "name": "urllib3",
+        "version": "2.8.0"
+      },
+      {
+        "name": "uv",
+        "version": "0.11.33"
+      }
+    ],
+    "client": [
+      {
+        "name": "alembic",
+        "version": "1.20.0"
+      },
+      {
+        "name": "certifi",
+        "version": "2026.7.22"
+      },
+      {
+        "name": "cffi",
+        "version": "2.1.1"
+      },
+      {
+        "name": "charset-normalizer",
+        "version": "3.5.1"
+      },
+      {
+        "name": "click",
+        "version": "8.5.0"
+      },
+      {
+        "name": "colorlog",
+        "version": "6.12.0"
+      },
+      {
+        "name": "cryptography",
+        "version": "46.0.7"
+      },
+      {
+        "name": "filelock",
+        "version": "4.0.1"
+      },
+      {
+        "name": "flwr",
+        "version": "1.31.0"
+      },
+      {
+        "name": "fsspec",
+        "version": "2026.9.0"
+      },
+      {
+        "name": "greenlet",
+        "version": "3.5.6"
+      },
+      {
+        "name": "grpcio",
+        "version": "1.84.0"
+      },
+      {
+        "name": "grpcio-health-checking",
+        "version": "1.81.1"
+      },
+      {
+        "name": "idna",
+        "version": "3.20"
+      },
+      {
+        "name": "iterators",
+        "version": "0.0.2"
+      },
+      {
+        "name": "jinja2",
+        "version": "3.1.6"
+      },
+      {
+        "name": "mako",
+        "version": "1.4.1"
+      },
+      {
+        "name": "markdown-it-py",
+        "version": "4.2.0"
+      },
+      {
+        "name": "markupsafe",
+        "version": "3.0.3"
+      },
+      {
+        "name": "mdurl",
+        "version": "0.1.2"
+      },
+      {
+        "name": "mpmath",
+        "version": "1.3.0"
+      },
+      {
+        "name": "networkx",
+        "version": "3.6.1"
+      },
+      {
+        "name": "numpy",
+        "version": "2.4.6"
+      },
+      {
+        "name": "opacus",
+        "version": "1.6.0"
+      },
+      {
+        "name": "opt-einsum",
+        "version": "3.4.0"
+      },
+      {
+        "name": "optuna",
+        "version": "4.8.0"
+      },
+      {
+        "name": "packaging",
+        "version": "25.0"
+      },
+      {
+        "name": "pandas",
+        "version": "3.0.6"
+      },
+      {
+        "name": "pathspec",
+        "version": "0.12.1"
+      },
+      {
+        "name": "protobuf",
+        "version": "6.33.6"
+      },
+      {
+        "name": "pyarrow",
+        "version": "25.0.1"
+      },
+      {
+        "name": "pycparser",
+        "version": "3.0"
+      },
+      {
+        "name": "pycryptodome",
+        "version": "3.23.0"
+      },
+      {
+        "name": "pygments",
+        "version": "2.21.0"
+      },
+      {
+        "name": "python-dateutil",
+        "version": "2.9.0.post0"
+      },
+      {
+        "name": "pyyaml",
+        "version": "6.0.3"
+      },
+      {
+        "name": "requests",
+        "version": "2.34.2"
+      },
+      {
+        "name": "rich",
+        "version": "13.9.4"
+      },
+      {
+        "name": "scipy",
+        "version": "1.17.1"
+      },
+      {
+        "name": "setuptools",
+        "version": "84.0.0"
+      },
+      {
+        "name": "shellingham",
+        "version": "1.5.4"
+      },
+      {
+        "name": "six",
+        "version": "1.17.0"
+      },
+      {
+        "name": "sqlalchemy",
+        "version": "2.0.54"
+      },
+      {
+        "name": "sympy",
+        "version": "1.14.0"
+      },
+      {
+        "name": "tomli",
+        "version": "2.4.1"
+      },
+      {
+        "name": "tomli-w",
+        "version": "1.2.0"
+      },
+      {
+        "name": "torch",
+        "version": "2.14.0+cpu"
+      },
+      {
+        "name": "tqdm",
+        "version": "4.70.1"
+      },
+      {
+        "name": "typer",
+        "version": "0.20.1"
+      },
+      {
+        "name": "typing-extensions",
+        "version": "4.16.0"
+      },
+      {
+        "name": "urllib3",
+        "version": "2.8.0"
+      },
+      {
+        "name": "uv",
+        "version": "0.11.33"
+      }
+    ]
+  },
+  "r_packages": [
+    {
+      "Package": "arrow",
+      "Version": "25.0.1",
+      "_row": "arrow"
+    },
+    {
+      "Package": "assertthat",
+      "Version": "0.2.1",
+      "_row": "assertthat"
+    },
+    {
+      "Package": "bit",
+      "Version": "4.6.0",
+      "_row": "bit"
+    },
+    {
+      "Package": "bit64",
+      "Version": "4.8.6",
+      "_row": "bit64"
+    },
+    {
+      "Package": "cli",
+      "Version": "3.6.6",
+      "_row": "cli"
+    },
+    {
+      "Package": "cpp11",
+      "Version": "0.5.5",
+      "_row": "cpp11"
+    },
+    {
+      "Package": "dsFlower",
+      "Version": "0.5.0",
+      "_row": "dsFlower"
+    },
+    {
+      "Package": "dsFlowerClient",
+      "Version": "0.5.0",
+      "_row": "dsFlowerClient"
+    },
+    {
+      "Package": "DSI",
+      "Version": "1.8.0",
+      "_row": "DSI"
+    },
+    {
+      "Package": "DSLite",
+      "Version": "1.4.1",
+      "_row": "DSLite"
+    },
+    {
+      "Package": "lifecycle",
+      "Version": "1.0.5",
+      "_row": "lifecycle"
+    },
+    {
+      "Package": "purrr",
+      "Version": "1.2.2",
+      "_row": "purrr"
+    },
+    {
+      "Package": "rlang",
+      "Version": "1.3.0",
+      "_row": "rlang"
+    },
+    {
+      "Package": "rly",
+      "Version": "1.7.8",
+      "_row": "rly"
+    },
+    {
+      "Package": "tidyselect",
+      "Version": "1.2.1",
+      "_row": "tidyselect"
+    },
+    {
+      "Package": "vctrs",
+      "Version": "0.7.3",
+      "_row": "vctrs"
+    },
+    {
+      "Package": "withr",
+      "Version": "3.0.3",
+      "_row": "withr"
+    },
+    {
+      "Package": "askpass",
+      "Version": "1.1",
+      "_row": "askpass"
+    },
+    {
+      "Package": "cellranger",
+      "Version": "1.1.0",
+      "_row": "cellranger"
+    },
+    {
+      "Package": "cli",
+      "Version": "3.2.0",
+      "_row": "cli.1"
+    },
+    {
+      "Package": "crayon",
+      "Version": "1.5.0",
+      "_row": "crayon"
+    },
+    {
+      "Package": "curl",
+      "Version": "4.3.2",
+      "_row": "curl"
+    },
+    {
+      "Package": "digest",
+      "Version": "0.6.29",
+      "_row": "digest"
+    },
+    {
+      "Package": "ellipsis",
+      "Version": "0.3.2",
+      "_row": "ellipsis"
+    },
+    {
+      "Package": "fansi",
+      "Version": "1.0.2",
+      "_row": "fansi"
+    },
+    {
+      "Package": "filelock",
+      "Version": "1.0.2",
+      "_row": "filelock"
+    },
+    {
+      "Package": "glue",
+      "Version": "1.6.1",
+      "_row": "glue"
+    },
+    {
+      "Package": "hms",
+      "Version": "1.1.1",
+      "_row": "hms"
+    },
+    {
+      "Package": "httr",
+      "Version": "1.4.2",
+      "_row": "httr"
+    },
+    {
+      "Package": "jsonlite",
+      "Version": "1.7.3",
+      "_row": "jsonlite"
+    },
+    {
+      "Package": "lifecycle",
+      "Version": "1.0.1",
+      "_row": "lifecycle.1"
+    },
+    {
+      "Package": "littler",
+      "Version": "0.3.23",
+      "_row": "littler"
+    },
+    {
+      "Package": "magrittr",
+      "Version": "2.0.2",
+      "_row": "magrittr"
+    },
+    {
+      "Package": "mime",
+      "Version": "0.12",
+      "_row": "mime"
+    },
+    {
+      "Package": "openssl",
+      "Version": "1.4.6",
+      "_row": "openssl"
+    },
+    {
+      "Package": "pillar",
+      "Version": "1.7.0",
+      "_row": "pillar"
+    },
+    {
+      "Package": "pkgconfig",
+      "Version": "2.0.3",
+      "_row": "pkgconfig"
+    },
+    {
+      "Package": "pkgKitten",
+      "Version": "0.2.2",
+      "_row": "pkgKitten"
+    },
+    {
+      "Package": "prettyunits",
+      "Version": "1.1.1",
+      "_row": "prettyunits"
+    },
+    {
+      "Package": "processx",
+      "Version": "3.5.2",
+      "_row": "processx"
+    },
+    {
+      "Package": "progress",
+      "Version": "1.2.2",
+      "_row": "progress"
+    },
+    {
+      "Package": "ps",
+      "Version": "1.6.0",
+      "_row": "ps"
+    },
+    {
+      "Package": "R6",
+      "Version": "2.5.1",
+      "_row": "R6"
+    },
+    {
+      "Package": "Rcpp",
+      "Version": "1.0.8",
+      "_row": "Rcpp"
+    },
+    {
+      "Package": "readxl",
+      "Version": "1.3.1",
+      "_row": "readxl"
+    },
+    {
+      "Package": "rematch",
+      "Version": "1.0.1",
+      "_row": "rematch"
+    },
+    {
+      "Package": "rlang",
+      "Version": "1.0.1",
+      "_row": "rlang.1"
+    },
+    {
+      "Package": "sys",
+      "Version": "3.4",
+      "_row": "sys"
+    },
+    {
+      "Package": "tibble",
+      "Version": "3.1.6",
+      "_row": "tibble"
+    },
+    {
+      "Package": "utf8",
+      "Version": "1.2.2",
+      "_row": "utf8"
+    },
+    {
+      "Package": "vctrs",
+      "Version": "0.3.8",
+      "_row": "vctrs.1"
+    },
+    {
+      "Package": "base",
+      "Version": "4.6.1",
+      "_row": "base"
+    },
+    {
+      "Package": "boot",
+      "Version": "1.3-32",
+      "_row": "boot"
+    },
+    {
+      "Package": "class",
+      "Version": "7.3-24",
+      "_row": "class"
+    },
+    {
+      "Package": "cluster",
+      "Version": "2.1.8.2",
+      "_row": "cluster"
+    },
+    {
+      "Package": "codetools",
+      "Version": "0.2-19",
+      "_row": "codetools"
+    },
+    {
+      "Package": "compiler",
+      "Version": "4.6.1",
+      "_row": "compiler"
+    },
+    {
+      "Package": "datasets",
+      "Version": "4.6.1",
+      "_row": "datasets"
+    },
+    {
+      "Package": "foreign",
+      "Version": "0.8-91",
+      "_row": "foreign"
+    },
+    {
+      "Package": "graphics",
+      "Version": "4.6.1",
+      "_row": "graphics"
+    },
+    {
+      "Package": "grDevices",
+      "Version": "4.6.1",
+      "_row": "grDevices"
+    },
+    {
+      "Package": "grid",
+      "Version": "4.6.1",
+      "_row": "grid"
+    },
+    {
+      "Package": "KernSmooth",
+      "Version": "2.23-27",
+      "_row": "KernSmooth"
+    },
+    {
+      "Package": "lattice",
+      "Version": "0.23-1",
+      "_row": "lattice"
+    },
+    {
+      "Package": "MASS",
+      "Version": "7.3-66",
+      "_row": "MASS"
+    },
+    {
+      "Package": "Matrix",
+      "Version": "1.7-6",
+      "_row": "Matrix"
+    },
+    {
+      "Package": "methods",
+      "Version": "4.6.1",
+      "_row": "methods"
+    },
+    {
+      "Package": "mgcv",
+      "Version": "1.9-4",
+      "_row": "mgcv"
+    },
+    {
+      "Package": "nlme",
+      "Version": "3.1-171",
+      "_row": "nlme"
+    },
+    {
+      "Package": "nnet",
+      "Version": "7.3-21",
+      "_row": "nnet"
+    },
+    {
+      "Package": "parallel",
+      "Version": "4.6.1",
+      "_row": "parallel"
+    },
+    {
+      "Package": "rpart",
+      "Version": "4.1.27",
+      "_row": "rpart"
+    },
+    {
+      "Package": "spatial",
+      "Version": "7.3-15",
+      "_row": "spatial"
+    },
+    {
+      "Package": "splines",
+      "Version": "4.6.1",
+      "_row": "splines"
+    },
+    {
+      "Package": "stats",
+      "Version": "4.6.1",
+      "_row": "stats"
+    },
+    {
+      "Package": "stats4",
+      "Version": "4.6.1",
+      "_row": "stats4"
+    },
+    {
+      "Package": "survival",
+      "Version": "3.8-12",
+      "_row": "survival"
+    },
+    {
+      "Package": "tcltk",
+      "Version": "4.6.1",
+      "_row": "tcltk"
+    },
+    {
+      "Package": "tools",
+      "Version": "4.6.1",
+      "_row": "tools"
+    },
+    {
+      "Package": "utils",
+      "Version": "4.6.1",
+      "_row": "utils"
+    }
+  ],
+  "provisioning_notes": "CRAN jammy apt R 4.6.1; R CMD INSTALL of unchanged v0.5.0 sources; configure-created external uv environments; CPU torch preinstalled for prediction, remaining prediction dependencies installed by the package helper."
+}
