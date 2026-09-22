@@ -1,0 +1,202 @@
+[
+  {
+    "id": "registry_default",
+    "learning_rate": 0.001,
+    "local_epochs": 1,
+    "batch_size": 32,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.01_e5_b32",
+    "learning_rate": 0.01,
+    "local_epochs": 5,
+    "batch_size": 32,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.01_e5_b128",
+    "learning_rate": 0.01,
+    "local_epochs": 5,
+    "batch_size": 128,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.01_e20_b32",
+    "learning_rate": 0.01,
+    "local_epochs": 20,
+    "batch_size": 32,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.01_e20_b128",
+    "learning_rate": 0.01,
+    "local_epochs": 20,
+    "batch_size": 128,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.03_e5_b32",
+    "learning_rate": 0.03,
+    "local_epochs": 5,
+    "batch_size": 32,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.03_e5_b128",
+    "learning_rate": 0.03,
+    "local_epochs": 5,
+    "batch_size": 128,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.03_e20_b32",
+    "learning_rate": 0.03,
+    "local_epochs": 20,
+    "batch_size": 32,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.03_e20_b128",
+    "learning_rate": 0.03,
+    "local_epochs": 20,
+    "batch_size": 128,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.1_e5_b32",
+    "learning_rate": 0.1,
+    "local_epochs": 5,
+    "batch_size": 32,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.1_e5_b128",
+    "learning_rate": 0.1,
+    "local_epochs": 5,
+    "batch_size": 128,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.1_e20_b32",
+    "learning_rate": 0.1,
+    "local_epochs": 20,
+    "batch_size": 32,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "sgd_lr0.1_e20_b128",
+    "learning_rate": 0.1,
+    "local_epochs": 20,
+    "batch_size": 128,
+    "optimizer": "sgd",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.001_e5_b32",
+    "learning_rate": 0.001,
+    "local_epochs": 5,
+    "batch_size": 32,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.001_e5_b128",
+    "learning_rate": 0.001,
+    "local_epochs": 5,
+    "batch_size": 128,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.001_e20_b32",
+    "learning_rate": 0.001,
+    "local_epochs": 20,
+    "batch_size": 32,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.001_e20_b128",
+    "learning_rate": 0.001,
+    "local_epochs": 20,
+    "batch_size": 128,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.003_e5_b32",
+    "learning_rate": 0.003,
+    "local_epochs": 5,
+    "batch_size": 32,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.003_e5_b128",
+    "learning_rate": 0.003,
+    "local_epochs": 5,
+    "batch_size": 128,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.003_e20_b32",
+    "learning_rate": 0.003,
+    "local_epochs": 20,
+    "batch_size": 32,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.003_e20_b128",
+    "learning_rate": 0.003,
+    "local_epochs": 20,
+    "batch_size": 128,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.01_e5_b32",
+    "learning_rate": 0.01,
+    "local_epochs": 5,
+    "batch_size": 32,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.01_e5_b128",
+    "learning_rate": 0.01,
+    "local_epochs": 5,
+    "batch_size": 128,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.01_e20_b32",
+    "learning_rate": 0.01,
+    "local_epochs": 20,
+    "batch_size": 32,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.01_e20_b128",
+    "learning_rate": 0.01,
+    "local_epochs": 20,
+    "batch_size": 128,
+    "optimizer": "adam",
+    "weight_decay": 0
+  }
+]

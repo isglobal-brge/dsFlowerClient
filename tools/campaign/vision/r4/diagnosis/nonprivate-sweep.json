@@ -1,0 +1,527 @@
+[
+  {
+    "candidate": {
+      "id": "registry_default",
+      "learning_rate": 0.001,
+      "local_epochs": 1,
+      "batch_size": 32,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.5181818181818182,
+      "accuracy": 0.6783625730994152,
+      "brier": 0.2211276473207585,
+      "log_loss": 0.6341077172790326
+    },
+    "steps": 40,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 0.9018870200961828,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.01_e5_b32",
+      "learning_rate": 0.01,
+      "local_epochs": 5,
+      "batch_size": 32,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.700626959247649,
+      "accuracy": 0.6842105263157895,
+      "brier": 0.1984932900600863,
+      "log_loss": 0.5839957892686186
+    },
+    "steps": 200,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 0.8678792174905539,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.01_e5_b128",
+      "learning_rate": 0.01,
+      "local_epochs": 5,
+      "batch_size": 128,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.6520376175548589,
+      "accuracy": 0.6783625730994152,
+      "brier": 0.21012703560784662,
+      "log_loss": 0.6105934952043107
+    },
+    "steps": 50,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.21976266242563725,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.01_e20_b32",
+      "learning_rate": 0.01,
+      "local_epochs": 20,
+      "batch_size": 32,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.731974921630094,
+      "accuracy": 0.7017543859649122,
+      "brier": 0.18674246079120638,
+      "log_loss": 0.5537678917420774
+    },
+    "steps": 800,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 3.4205041639506817,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.01_e20_b128",
+      "learning_rate": 0.01,
+      "local_epochs": 20,
+      "batch_size": 128,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.6912225705329154,
+      "accuracy": 0.7076023391812866,
+      "brier": 0.19949307744870987,
+      "log_loss": 0.5877136235175663
+    },
+    "steps": 200,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.8617920465767384,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.03_e5_b32",
+      "learning_rate": 0.03,
+      "local_epochs": 5,
+      "batch_size": 32,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7252351097178683,
+      "accuracy": 0.6842105263157895,
+      "brier": 0.24965470090493605,
+      "log_loss": 0.7955001771868795
+    },
+    "steps": 200,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 0.8600282110273838,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.03_e5_b128",
+      "learning_rate": 0.03,
+      "local_epochs": 5,
+      "batch_size": 128,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.6503134796238245,
+      "accuracy": 0.4853801169590643,
+      "brier": 0.2616398332664077,
+      "log_loss": 0.7185429096436539
+    },
+    "steps": 50,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.21938032284379005,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.03_e20_b32",
+      "learning_rate": 0.03,
+      "local_epochs": 20,
+      "batch_size": 32,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7459247648902821,
+      "accuracy": 0.6140350877192983,
+      "brier": 0.23992843294566024,
+      "log_loss": 0.6899824134376964
+    },
+    "steps": 800,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 3.451861271634698,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.03_e20_b128",
+      "learning_rate": 0.03,
+      "local_epochs": 20,
+      "batch_size": 128,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.6929467084639498,
+      "accuracy": 0.39766081871345027,
+      "brier": 0.37777677281013955,
+      "log_loss": 1.0310879883625363
+    },
+    "steps": 200,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.8572880756109953,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.1_e5_b32",
+      "learning_rate": 0.1,
+      "local_epochs": 5,
+      "batch_size": 32,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7101880877742947,
+      "accuracy": 0.7076023391812866,
+      "brier": 0.2329754097544033,
+      "log_loss": 0.9654881664281267
+    },
+    "steps": 200,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 0.8618496749550104,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.1_e5_b128",
+      "learning_rate": 0.1,
+      "local_epochs": 5,
+      "batch_size": 128,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.6239811912225706,
+      "accuracy": 0.3333333333333333,
+      "brier": 0.6131483027324706,
+      "log_loss": 3.39979768007817
+    },
+    "steps": 50,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.21614600345492363,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.1_e20_b32",
+      "learning_rate": 0.1,
+      "local_epochs": 20,
+      "batch_size": 32,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7561128526645768,
+      "accuracy": 0.7192982456140351,
+      "brier": 0.23067451750164764,
+      "log_loss": 1.0553843353970727
+    },
+    "steps": 800,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 3.40692837908864,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "sgd_lr0.1_e20_b128",
+      "learning_rate": 0.1,
+      "local_epochs": 20,
+      "batch_size": 128,
+      "optimizer": "sgd",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.6771943573667711,
+      "accuracy": 0.34502923976608185,
+      "brier": 0.6229892025768492,
+      "log_loss": 4.758068836686209
+    },
+    "steps": 200,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.8530533164739609,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.001_e5_b32",
+      "learning_rate": 0.001,
+      "local_epochs": 5,
+      "batch_size": 32,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7460815047021944,
+      "accuracy": 0.7134502923976608,
+      "brier": 0.18359248687865518,
+      "log_loss": 0.5469706827606106
+    },
+    "steps": 200,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 1.1753573305904865,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.001_e5_b128",
+      "learning_rate": 0.001,
+      "local_epochs": 5,
+      "batch_size": 128,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.6952978056426332,
+      "accuracy": 0.7076023391812866,
+      "brier": 0.20166945470408487,
+      "log_loss": 0.5926367765236368
+    },
+    "steps": 50,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.2432105839252472,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.001_e20_b32",
+      "learning_rate": 0.001,
+      "local_epochs": 20,
+      "batch_size": 32,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7681818181818182,
+      "accuracy": 0.7368421052631579,
+      "brier": 0.17767406821230303,
+      "log_loss": 0.526845619970998
+    },
+    "steps": 800,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 3.7652620300650597,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.001_e20_b128",
+      "learning_rate": 0.001,
+      "local_epochs": 20,
+      "batch_size": 128,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7448275862068966,
+      "accuracy": 0.7076023391812866,
+      "brier": 0.18516996650489448,
+      "log_loss": 0.5499941935665256
+    },
+    "steps": 200,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.9361017476767302,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.003_e5_b32",
+      "learning_rate": 0.003,
+      "local_epochs": 5,
+      "batch_size": 32,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7594043887147336,
+      "accuracy": 0.695906432748538,
+      "brier": 0.19711049728410932,
+      "log_loss": 0.5781346477757779
+    },
+    "steps": 200,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 0.8853629156947136,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.003_e5_b128",
+      "learning_rate": 0.003,
+      "local_epochs": 5,
+      "batch_size": 128,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7169278996865204,
+      "accuracy": 0.672514619883041,
+      "brier": 0.19577889245754523,
+      "log_loss": 0.576877317267619
+    },
+    "steps": 50,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.23117904737591743,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.003_e20_b32",
+      "learning_rate": 0.003,
+      "local_epochs": 20,
+      "batch_size": 32,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7763322884012539,
+      "accuracy": 0.7543859649122807,
+      "brier": 0.1768415219898038,
+      "log_loss": 0.5301166804160066
+    },
+    "steps": 800,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 3.1324544604867697,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.003_e20_b128",
+      "learning_rate": 0.003,
+      "local_epochs": 20,
+      "batch_size": 128,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7572100313479624,
+      "accuracy": 0.7309941520467836,
+      "brier": 0.18359247150803937,
+      "log_loss": 0.5447821338288389
+    },
+    "steps": 200,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.7233083806931973,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.01_e5_b32",
+      "learning_rate": 0.01,
+      "local_epochs": 5,
+      "batch_size": 32,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7683385579937304,
+      "accuracy": 0.6842105263157895,
+      "brier": 0.19404159234639562,
+      "log_loss": 0.5725804333284213
+    },
+    "steps": 200,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 0.9033680874854326,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.01_e5_b128",
+      "learning_rate": 0.01,
+      "local_epochs": 5,
+      "batch_size": 128,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7217868338557993,
+      "accuracy": 0.6842105263157895,
+      "brier": 0.20940066322984893,
+      "log_loss": 0.6158416930665996
+    },
+    "steps": 50,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.23446083441376686,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.01_e20_b32",
+      "learning_rate": 0.01,
+      "local_epochs": 20,
+      "batch_size": 32,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7727272727272727,
+      "accuracy": 0.7426900584795322,
+      "brier": 0.18082893869505268,
+      "log_loss": 0.5607871225668694
+    },
+    "steps": 800,
+    "sample_rate": 0.125,
+    "expected_batch_divisor": 85,
+    "elapsed_s": 3.769258175045252,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.01_e20_b128",
+      "learning_rate": 0.01,
+      "local_epochs": 20,
+      "batch_size": 128,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "metrics": {
+      "auc": 0.7617554858934169,
+      "accuracy": 0.7251461988304093,
+      "brier": 0.1852584999635441,
+      "log_loss": 0.549162216180212
+    },
+    "steps": 200,
+    "sample_rate": 0.5,
+    "expected_batch_divisor": 340,
+    "elapsed_s": 0.9536370243877172,
+    "interpretation": "Pooled nonprivate head, site-matched step count and Poisson rate; no clipping or noise."
+  }
+]

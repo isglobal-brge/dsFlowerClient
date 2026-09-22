@@ -1,5 +1,5 @@
 {
-  "schema": "dsflower-vision-summary-v2",
+  "schema": "dsflower-vision-summary-v1",
   "status": "executed",
   "contract": "pytorch_resnet18",
   "dataset": {
@@ -312,10 +312,7 @@
           "sd": 0.01949264638709563,
           "n": 3
         }
-      },
-      "phase": "registry_defaults",
-      "interpretation_status": "schedule_limited",
-      "interpretation": "Executed at registry defaults without training-only schedule selection; finite-schedule central twin AUC 0.596183 +/-0.041527. Raw record preserved; not a converged-central privacy-cost estimate."
+      }
     },
     {
       "epsilon": 8,
@@ -434,10 +431,7 @@
           "sd": 0.01949264638709563,
           "n": 3
         }
-      },
-      "phase": "registry_defaults",
-      "interpretation_status": "schedule_limited",
-      "interpretation": "Executed at registry defaults without training-only schedule selection; finite-schedule central twin AUC 0.596183 +/-0.041527. Raw record preserved; not a converged-central privacy-cost estimate."
+      }
     },
     {
       "epsilon": 4,
@@ -556,10 +550,7 @@
           "sd": 0.01949264638709563,
           "n": 3
         }
-      },
-      "phase": "registry_defaults",
-      "interpretation_status": "schedule_limited",
-      "interpretation": "Executed at registry defaults without training-only schedule selection; finite-schedule central twin AUC 0.596183 +/-0.041527. Raw record preserved; not a converged-central privacy-cost estimate."
+      }
     }
   ],
   "wall_clock": {
@@ -578,16 +569,5 @@
     "evidence_packaged_at": "2026-09-22T04:31:43.825816+00:00",
     "note": "Actual wall time; concurrent scoring durations are not summed. Central fits are reused across epsilons. Packaging and git delivery follow scoring."
   },
-  "verification": "verification-0.5.1/final-evidence-audit.json",
-  "r4_status": "declared_before_corrected_training",
-  "r4_protocol_sha256": "bc878fe9928af6ec2ec154c7fb53eb095768ecf1ee6c5fc52887729e9150979e",
-  "r4_selected_schedule": {
-    "id": "adam_lr0.003_e20_b32",
-    "learning_rate": 0.003,
-    "local_epochs": 20,
-    "batch_size": 32,
-    "optimizer": "adam",
-    "weight_decay": 0
-  },
-  "original_summary_archive": "summary-r1.json"
+  "verification": "verification-0.5.1/final-evidence-audit.json"
 }

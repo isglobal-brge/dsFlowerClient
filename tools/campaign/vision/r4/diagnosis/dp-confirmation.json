@@ -1,0 +1,84 @@
+[
+  {
+    "candidate": {
+      "id": "adam_lr0.003_e20_b32",
+      "learning_rate": 0.003,
+      "local_epochs": 20,
+      "batch_size": 32,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "inner_validation": {
+      "auc": 0.5009404388714733,
+      "accuracy": 0.6783625730994152,
+      "brier": 0.2901581478505546,
+      "log_loss": 1.502839654045715
+    },
+    "n_fit_patients": 681,
+    "n_validation_patients": 171,
+    "actual_federation": true,
+    "epsilon": 8,
+    "delta": 1e-06,
+    "clipping_norm": 1,
+    "rounds": 5,
+    "sites": 3,
+    "mechanism": {
+      "adjacency": "replace_one",
+      "noise_multiplier": 4.98046875,
+      "clipping_norm": 1.0,
+      "accounting_population": 227,
+      "steps_per_epoch": 8,
+      "sample_rate": 0.125,
+      "expected_batch_size": 28,
+      "total_epochs": 100,
+      "total_steps": 800,
+      "policy_hash": "1ada12b8463eb2b1b282fb0929d78f0637e707fa7d3f2b519da9a1d33c76d133"
+    },
+    "feature_parity": true,
+    "elapsed_s": 1090.44436502457,
+    "test_accessed": false,
+    "federation_status_sha256": "5826fae903b880b594d3faf02bc8653987fe7ebac2e602054f6f274330956d86",
+    "model_sha256": "bf3f1401ab339b6e2209ac50b29f1faa1feda714bb3815d677d7daf6eb4ccd8e"
+  },
+  {
+    "candidate": {
+      "id": "adam_lr0.01_e20_b32",
+      "learning_rate": 0.01,
+      "local_epochs": 20,
+      "batch_size": 32,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "inner_validation": {
+      "auc": 0.4786833855799373,
+      "accuracy": 0.6608187134502924,
+      "brier": 0.3134999036276474,
+      "log_loss": 2.215140676349707
+    },
+    "n_fit_patients": 681,
+    "n_validation_patients": 171,
+    "actual_federation": true,
+    "epsilon": 8,
+    "delta": 1e-06,
+    "clipping_norm": 1,
+    "rounds": 5,
+    "sites": 3,
+    "mechanism": {
+      "adjacency": "replace_one",
+      "noise_multiplier": 4.98046875,
+      "clipping_norm": 1.0,
+      "accounting_population": 227,
+      "steps_per_epoch": 8,
+      "sample_rate": 0.125,
+      "expected_batch_size": 28,
+      "total_epochs": 100,
+      "total_steps": 800,
+      "policy_hash": "1ada12b8463eb2b1b282fb0929d78f0637e707fa7d3f2b519da9a1d33c76d133"
+    },
+    "feature_parity": true,
+    "elapsed_s": 1135.64020800591,
+    "test_accessed": false,
+    "federation_status_sha256": "c72c1633ec3f74f8034549872a8d48d6a1da37eeb857be09bc4020746876b616",
+    "model_sha256": "9e0ab80156dcf64bde19fc6fc46e8b3cf74af338b5d6398b06a5d0133719df63"
+  }
+]

@@ -1,154 +1,63 @@
-# BUS-BRA frozen-backbone classification
+# BUS-BRA vision R4: declared corrected cell
 
-This campaign resumes the frozen protocol after installing the server-only
-import-guard patch from `fix/import-guard-torch-generated-modules`, commit
-`c4eaaf153db4a7204878bf1d8995c16faa615110`. It leaves the client at 0.5.0 and
-both canonical runners unchanged. The 0.5.0 failure evidence and original
-protocol are retained under `inst/extdata/campaign/vision/blocked-0.5.0/`.
-See the evidence README and summary for the measured execution outcome.
+Token: `FLOWER_CELLS_VISION_R4_2026-09-22`. Declared at 2026-09-22T05:36:23.774294+00:00, before corrected training and held-out scoring. The immutable declaration is [r4/protocol.json](r4/protocol.json).
 
-This driver evaluates `pytorch_resnet18` with dsFlower 0.5.1 and dsFlowerClient 0.5.0:
-a frozen ImageNet ResNet-18 and a 1,026-parameter linear classification head.
-The [frozen protocol](protocol.json) declares three patient-disjoint sites,
-five rounds, three seeds, epsilon 1/8/4, delta 1e-6, patient clipping norm 1,
-and unchanged model defaults (SGD 0.001, batch 32, one local epoch).
+## Training-only diagnosis and selection
 
-Every seed reuses the byte-identical segmentation split: 852 training and
-212 test patients, with 284 training patients per site. The released runner
-averages image features within each patient and uses the modal patient label.
-Metrics are evaluated per image, with malignant as the positive class.
-The epsilon-8 annotation compares AUC with 0.5 and accuracy with the held-out
-majority rate, for individual replicates and the three-seed means. These
-comparisons do not determine execution status or trigger configuration changes.
-No schedule search or post-score configuration changes are permitted. No
-alternative cohort or contract is predeclared.
+Exact released ResNet-18 features (224 pixels), patient mean pooling and modal labels yield a converged fixed-C=1 logistic **five-fold patient inner-CV AUC 0.779405 ± 0.025903**. Out-of-fold AUC is 0.777700. L-BFGS-B converged in every fold, with no fitted feature scaling or preprocessing change.
 
-The central reference uses the identical initial head, patient pooling,
-optimizer and five-round epoch schedule, with pooled Poisson sampling and
-no clipping/noise. It is a finite-schedule noiseless reference, not an
-optimized upper bound. The pooled-DP twin calls the unchanged released
-training function. The trivial classifier predicts the training-majority
-class and uses training prevalence for probability metrics. The same central
-fit is reused across epsilon values for each seed.
+A 25-candidate nonprivate search used the 681/171 patient inner split and the update count/Poisson rate of a 227-patient site, resetting optimizer state each round. Its top two candidates were confirmed through actual three-site dsImaging/DSLite federations at epsilon 8, delta 1e-6 and patient clipping norm 1.
 
-## Reproduction
+| Candidate | Nonprivate inner AUC | Actual DP inner AUC | DP accuracy | DP Brier | DP log-loss |
+|---|---:|---:|---:|---:|---:|
+| Adam .003, 20 epochs, batch 32 | 0.776332 | 0.500940 | 0.678363 | 0.290158 | 1.502840 |
+| Adam .01, 20 epochs, batch 32 | 0.772727 | 0.478683 | 0.660819 | 0.313500 | 2.215141 |
 
-Use only `pod-flower-vision` and `/workspace/cells-vision`. The prepared BUS-BRA
-collections and frozen checkpoint are reused. For a fresh pod, provision
-0.5.0 and run `prepare.py` as documented in the archived blocked README.
-Then fetch the server patch, verify its commit, and transfer it with the pod
-rsync wrapper (`-rlzt`, excluding `.git`, `*.o`, `*.so`, and `__pycache__`).
-Transfer this vision driver directory separately; no client reinstall is needed.
-From the client checkout, also run the CI source comparison:
-`python3 tools/check-runner-sync.py --server /path/to/dsFlower`.
+**Selected: Adam learning rate 0.003, 20 local epochs per round, batch 32, five rounds, weight decay 0, L1 0, scheduler none.** Highest actual inner-validation DP AUC at epsilon 8 selects .003. Both private confirmations are weak. This is retained as a finding; there is no diagnostic veto or post-test alternative. The parameter surface permits learning rates up to 10 and local epochs up to 1000; no parameter cap prevented the nonprivate head from learning. This search does not exhaust that surface.
+
+All [sweep results, convergence records and hashed identifiers](r4/diagnosis/) are retained. The diagnosis feature cache remains on the pod and is not used by final training.
+
+## Fixed split and final protocol
+
+The original seeds had different outer splits. To avoid training-selection leakage into another seed's test cohort, R4 fixes the existing **20260919 split: 852 training patients, 212 held-out patients, and the original three sites of 284**. Seeds 20260919, 20260920 and 20260921 now vary initialization/training randomness only. The original full split JSON, held-out labels, images and previous predictions are not read in R4 before final scoring; only prepared training-site collections are used. The archived split hash is `99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d` and is checked when scoring opens the split.
+
+Run the selected schedule once for epsilon 1, 4 and 8, delta 1e-6, patient privacy unit and clipping norm 1. Each site takes 180 updates per round, 900 over five rounds, with Poisson rate 1/9. Pooled-DP takes 2700 updates, Poisson rate 1/27. Each epsilon/seed is a separate public-cohort training budget; no end-to-end private model-selection or campaign-wide composition guarantee is claimed.
+
+## Declared comparators and scoring
+
+- Central: converged fixed-C=1 L2 logistic regression on all 852 patient feature vectors, unpenalized intercept; same affine model class represented as two logits. One deterministic fit is reused across seeds and epsilons.
+- Nonprivate federated finite-schedule twin: three-site FedAvg, identical seed initialization and selected schedule, optimizer reset each round, Poisson sampling and expected-batch divisor, without clipping or noise. One fit per seed, reused across epsilons.
+- Pooled-DP: unchanged released private fitter on all 852 patient features with the selected schedule and its own calibrated pooled mechanism.
+- Trivial: training-image prevalence for probability metrics and training-majority class for accuracy.
+
+Primary metrics remain per image: malignant-positive AUC, accuracy at 0.5, Brier and log-loss. Gap is federated-DP AUC minus converged-central AUC, paired within seed then summarized by arithmetic mean and sample SD. Patient-mean-feature metrics are secondary annotations from the same final scoring pass. The three seeds share one test cohort; SD is training variation, not population/split uncertainty. Central zero SD reflects reuse. The private-minus-nonprivate federated difference includes clipping and noise, not a pure noise effect.
+
+All nine fits and twins must pass tensor, schedule and independent accounting checks before an exclusive scoring lock opens any held-out records. Score each fixed model once. Diagnostics remain annotations. Never rerun a scored configuration or introduce another alternative.
+
+## Execution and reproduction
+
+Use only `pod-flower-vision`, root `/workspace/cells-vision`, NVIDIA A40; leave the pod running. Installed dsFlower 0.5.1 and dsFlowerClient 0.5.0 and canonical runner hashes are unchanged. Raw training images may be copied byte-for-byte to POSIX `/tmp` for repeated access; metadata path rewrites and image hashes are audited. Final twin extraction is fresh and shared only in process memory.
 
 ```sh
-ROOT=/workspace/cells-vision
-TOOLS="$ROOT/src/dsFlowerClient/tools/campaign/vision"
-source "$TOOLS/environment.sh"
-# The prepared runtime is retained; no dependency setup is needed.
-DSFLOWER_SKIP_PYTHON_SETUP=true R CMD INSTALL --preclean \
-  --library="$ROOT/Rlib" "$ROOT/src/dsFlower"
-PY="$ROOT/venvs/pytorch-gpu/bin/python"
-mkdir -p "$ROOT/verification-0.5.1"
-python3 "$TOOLS/verify_runtime.py" --root "$ROOT" --library "$ROOT/Rlib" \
-  --runner-sha256 2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724 \
-  > "$ROOT/runtime_preflight.json"
-"$PY" "$TOOLS/verify_import.py" --root "$ROOT" \
-  > "$ROOT/verification-0.5.1/import_check.json"
-"$PY" "$ROOT/src/dsFlower/inst/python/tests/test_sitecustomize.py"
-Rscript "$TOOLS/check_admission.R" "$ROOT"
-"$PY" "$TOOLS/test_metrics.py"
-# Needed on a fresh runtime; already installed on the prepared pod.
-"$PY" "$TOOLS/install_public_observer.py" > "$ROOT/observer-install.json"
+source /workspace/cells-vision/src/dsFlowerClient/tools/campaign/vision/environment.sh
+# In a fresh R4 workspace only; existing scored workspaces must not be rerun.
+PY=/workspace/cells-vision/venvs/pytorch-gpu/bin/python
+TOOLS=/workspace/cells-vision/src/dsFlowerClient/tools/campaign/vision/r4
+"$PY" "$TOOLS/diagnose.py" --root /workspace/cells-vision
+"$PY" "$TOOLS/confirm.py" --root /workspace/cells-vision
+# Freeze the selected schedule and this declaration before continuing.
+"$PY" "$TOOLS/run_matrix.py" --root /workspace/cells-vision
+"$PY" "$TOOLS/score.py" --root /workspace/cells-vision --verify-only
+"$PY" "$TOOLS/score.py" --root /workspace/cells-vision
+"$PY" "$TOOLS/report.py" --root /workspace/cells-vision --out /workspace/cells-vision/evidence-r4
 ```
 
-Capture the remaining data-free evidence inputs before running the matrix:
+The first inner .003 launch stopped before any head initialization/update because SuperLink exceeded its 15-second readiness timeout. It is retained, with clean teardown and no scoring. The driver now permits the same process an additional 90 seconds through the existing readiness helper only for that exact startup error; package functions and model settings are not changed. A separate untrained retry completed. Both candidate fits completed and were validated exactly once.
 
-```sh
-"$PY" - <<'PY' > "$ROOT/verification-0.5.1/python-packages.json"
-import importlib.metadata as m, json, platform
-print(json.dumps(dict(python=platform.python_version(), packages=dict(sorted(
-    (d.metadata['Name'], d.version) for d in m.distributions()))), indent=2))
-PY
-"$ROOT/client/venv/bin/python" - <<'PY' > "$ROOT/verification-0.5.1/prediction-numerics.json"
-import json, os, torch
-fixed = dict(matmul_allow_tf32=False, cudnn_allow_tf32=False, deterministic_algorithms=True)
-print(json.dumps(dict(torch=torch.__version__, cuda_available=torch.cuda.is_available(),
-    canonical_predictor_runtime=dict(matmul_allow_tf32=torch.backends.cuda.matmul.allow_tf32,
-        cudnn_allow_tf32=torch.backends.cudnn.allow_tf32,
-        deterministic_algorithms=torch.are_deterministic_algorithms_enabled(),
-        nvidia_tf32_override=os.environ.get('NVIDIA_TF32_OVERRIDE')),
-    node_and_twin_training=fixed, direct_twin_test_features=fixed,
-    policy='Retain the pushed numerical controls; test feature bitwise parity is not asserted.',
-    test_data_read=False), indent=2))
-PY
-```
+## Historical cell and provenance
 
-Before training, require the installed guard SHA-256 to equal the fetched
-commit's guard (`3ae7c9ce6750c81c00e8c70e618d0bc52978486d7736587f39c716ff401fe98d`),
-and recheck the archive, checkpoint and all three split hashes. If resuming
-the original failure, move its run directory into `runs/blocked-0.5.0/` after
-confirming its status is failed and no scoring marker exists. Retain it in full.
+The original registry-default cell is **schedule-limited**: SGD .001, batch32, one local epoch, five rounds; its central comparator was a finite-schedule twin with AUC **0.596183 ± 0.041527**, not a converged reference. Original cell JSONs and verification records remain byte-identical. The original evidence README and summary are archived as `README-r1.md` and `summary-r1.json`; the original driver README is [README-before-r4.md](r4/README-before-r4.md).
 
-```sh
-"$PY" "$TOOLS/run_matrix.py" --root "$ROOT" --epsilons 1 8 4
-"$PY" "$TOOLS/score.py" --root "$ROOT" --epsilons 1 8 4
-"$PY" "$TOOLS/assemble_evidence.py" --root "$ROOT" \
-  --out "$ROOT/evidence-0.5.1" --epsilons 1 8 4
-```
+[BUS-BRA v1.0](https://zenodo.org/records/8231412), 1875 images from 1064 patients. Gómez-Flores W, Gregorio-Calas MJ, Pereira WCA (2024), *BUS-BRA: A Breast Ultrasound Dataset for Assessing Computer-aided Diagnosis Systems*, Medical Physics 51:3110–3123, [doi:10.1002/mp.16812](https://doi.org/10.1002/mp.16812). Dataset DOI [10.5281/zenodo.8231412](https://doi.org/10.5281/zenodo.8231412). Thesis citation key: `gomezflores_busbra_2024`. CC BY 4.0; retained archive licence requires attribution. Archive and checkpoint hashes are in the protocol and original provenance records.
 
-All commands run in the foreground. The matrix stops on any failed run.
-Training and twin verification never read held-out images or summarize
-held-out labels. `score.py` requires all trained artifacts and writes an
-exclusive scoring marker with their hashes before test access; it refuses
-a second invocation. The scorer resolves each saved model from the federation
-status `output_dir`, including its model-named subdirectory; this path fix
-was validated on a synthetic image before any held-out data access. Retain
-failed attempts and their diagnostics. To bound scoring wall-clock time, the
-three independent epsilon predictions for a seed run concurrently within the
-foreground scoring process, through the same canonical predictor, once each.
-Model settings, training order and metric definitions are unchanged. Do not
-rerun this scored pod or change any scored configuration.
-
-The recorded prediction numerical controls preserve the pushed routes: the
-canonical predictor uses its default cuDNN TF32 setting, while direct twin
-feature extraction disables TF32 and enables deterministic algorithms.
-The checkpoint and transforms agree; exact tensor parity is verified for
-training. Test feature bitwise parity between these inference routes is not
-asserted. See `verification-0.5.1/prediction-numerics.json` in the evidence.
-
-`prepare.py` reuses segmentation preparation and requires byte-identical
-patient split hashes. Each site is admitted through an actual dsImaging
-resource with image assets, pathology vocabulary and patient roster.
-The released runner pools features and labels by patient before clipping.
-
-The public benchmark observer seeds and captures analyst-side public initial
-arrays. The observer in the isolated campaign venv attaches only after the
-mandatory runner integrity verifier and records node privacy settings,
-accountant steps and tensor hashes. It calls the original functions without
-replacing their results. Node keys live under POSIX `/tmp` and are never
-copied into evidence. Seeds alone do not reconstruct node-owned DP noise.
-Patient data and model artifacts stay on the pod; only aggregate evidence
-for this public cohort is committed.
-
-## Provenance
-
-[BUS-BRA v1.0](https://zenodo.org/records/8231412), 1,875 images from 1,064
-patients. The task uses `Pathology` (benign/malignant); privacy units use the
-released `Case` identifier. Archive SHA-256:
-`ba3e6ed19cc37c682d8d39e25435bbf8a555a12cb7e641b5f2117685c95580ff`.
-Source: `https://zenodo.org/api/records/8231412/files/BUSBRA.zip/content`.
-
-Gómez-Flores W, Gregorio-Calas MJ, Pereira WCA (2024). *BUS-BRA: A Breast
-Ultrasound Dataset for Assessing Computer-aided Diagnosis Systems*.
-Medical Physics 51:3110–3123. [doi:10.1002/mp.16812](https://doi.org/10.1002/mp.16812).
-Dataset DOI: [10.5281/zenodo.8231412](https://doi.org/10.5281/zenodo.8231412).
-Zenodo declares CC BY 4.0; the ZIP also contains an attribution licence
-requiring the paper citation. Both provenance and the archive licence are
-retained under the pod's `data/` and `prepared/busbra/` directories.
-
-The pinned ImageNet checkpoint is `resnet18-f37072fd.pth`, SHA-256
-`f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec`.
-Evidence is written to `inst/extdata/campaign/vision/`; see its README and
-`summary.json` for execution status and measured outcomes.
+Results and interpretations: [campaign evidence](../../../inst/extdata/campaign/vision/README.md). Patient records, feature caches, predictions, model arrays and node secrets remain on the pod.
