@@ -200,3 +200,33 @@ is authorized. CTG remains the ranking-retained, argmax-calibration-lost
 measurement at 1,701 training rows. HAR remains the subject-privacy utility
 boundary with seven units/site, outside the useful regime on this epsilon grid;
 this is the utility law, not a defect. Their scored evidence stays unchanged.
+
+The full frozen declaration is [cdcgenhlth_protocol.json](cdcgenhlth_protocol.json).
+`prepare_cdcgenhlth.R` copies the original logistic cohort sampling and checks
+its prepared-CSV checksum before changing the target. `cdcgenhlth.R` copies
+stratified splitting and adds five-class scoring and the public-bound transform.
+`cdcgenhlth_campaign.R` copies the federation lifecycle with row privacy and five
+output levels. These files do not modify the shared loader or released code.
+
+On the existing pod, run in the foreground:
+
+```sh
+cd /workspace/cells
+curl -fL https://archive.ics.uci.edu/static/public/891/data.csv \
+  -o data_cache/cdc_diabetes_health_indicators.csv
+printf '%s  %s\n' \
+  9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964 \
+  cdc_diabetes_health_indicators.csv > data_cache/cdcgenhlth_CHECKSUMS.sha256
+(cd data_cache && sha256sum -c cdcgenhlth_CHECKSUMS.sha256)
+bash dsFlowerClient/tools/campaign/multiclass/run_cdcgenhlth.sh /workspace/cells
+cd dsFlowerClient
+python3 tools/campaign/multiclass/summarize_cdcgenhlth.py inst/extdata/campaign/multiclass
+```
+
+The wrapper runs synthetic metric/partition/scaling checks, preparation, and
+then the fixed training and scoring matrix. Existing run markers or artifacts
+are refused. The final summarizer checks saved evidence without fitting or
+scoring. `cdcgenhlth_*.json` records results and environment; `summary.json`
+retains CTG and HAR and adds CDC. Epsilon comparisons are per node training,
+not a composed nine-fit privacy claim. The gap includes optimization,
+federation and privacy costs; it does not isolate a causal privacy penalty.
