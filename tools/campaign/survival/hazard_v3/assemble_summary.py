@@ -11,6 +11,7 @@ def main():
     summary=json.loads((root/'summary.json').read_text())
     selection=json.loads((root/'selection.json').read_text())
     audit=json.loads((root/'artifact_verification.json').read_text())
+    overlap=json.loads((root/'split_overlap.json').read_text())
     assert summary['status']=='executed' and audit['verified_confirmation_cells']==summary['expected_matrix_cells']
     cfg=selection['selected']
     path=root/'HAZARD_V3_SUMMARY.md'
@@ -43,8 +44,8 @@ def main():
         'This supports insufficient sequential optimization as the dominant tested explanation, rather than heavy clipping or equal-site weighting itself. '
         'It does not assign an exact causal fraction of the historical noisy test gap.', '',
         'At K10, first-bin event counts are 2761/2741; last-bin counts 19/16, with 221/216 exposed patients. '
-        'K5 quantiles redistribute events to roughly 772–831 per interval. K5 initial clipping fractions are23.52%/23.69%, '
-        'but only 0.150%/0.142% of sampled visits exceed1 over the clipped unnoised trajectories. '
+        'K5 quantiles redistribute events to roughly 772–831 per interval. K5 initial clipping fractions are 23.52%/23.69%, '
+        'but only 0.150%/0.142% of sampled visits exceed 1 over the clipped unnoised trajectories. '
         'Grid coarsening improves both pooled and federated controls; its effect is not simply removing clipping.','',
         '## Frozen development sweep','',
         f'{len(selection["ranked"])} configurations × two seeds (1101/1102), epsilon 8, '
@@ -68,9 +69,14 @@ def main():
         'Each twin matches the grid, architecture, public feature transform, initialization 0, local optimizer reset schedule and server post-processing; '
         'pooled q and sequential step counts differ by population. Seeds define subject splits, not published DP noise seeds.', '',
         '**This is the third confirmation of the hazard contract, after the v1 matrix and v2 schedule h06.** '
-        'The historical holdouts are reused, not new independent validation. Development opens only the training files for each split; '
-        'replicate subject splits overlap, so all intervals and the final verdict remain descriptive benchmark evidence. '
+        'The historical holdouts are reused, not new independent validation. Development opens only the training files for each split. '
+        'This is disjointness within each seed, not global disjointness across seeds: another seed’s training set can include a held-out patient. '
+        'The shared configuration is selected across development replicates, so this is not independent nested validation. '
+        'All intervals and the final verdict remain descriptive benchmark evidence. '
         'There was one selected configuration and one confirmation matrix, with no confirmation-driven tuning or repeat fit.', '',
+        'Training-ID-only overlap audit (no outer test file or outcome read): '+
+        '; '.join(f'development {r["development_seed"]} includes {r["development_outer_training_subjects_outside_confirmation_training"]} subjects held out by seed {r["confirmation_seed"]}'
+            for r in overlap['rows'] if r['development_seed']!=r['confirmation_seed'])+'. See `split_overlap.json`.', '',
         '| Arm | ε | Federated-DP C | Pooled-DP C | Pooled nonprivate C | Null C |',
         '|---|---:|---:|---:|---:|---:|']
     for row in summary['groups']:
