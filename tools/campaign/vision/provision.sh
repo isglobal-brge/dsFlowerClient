@@ -19,7 +19,7 @@ Rscript -e 'stopifnot(getRversion() >= "4.4"); library(DSI); library(DSLite); li
 R CMD INSTALL -l "$ROOT/Rlib" "$ROOT/src/dsHPC"
 DSIMAGING_SKIP_ANALYSIS_PROVISION=1 DSIMAGING_SKIP_HEAVY_PROVISION=1 R CMD INSTALL -l "$ROOT/Rlib" "$ROOT/src/dsImaging"
 R CMD INSTALL -l "$ROOT/Rlib" "$ROOT/src/dsFlower"
-R CMD INSTALL -l "$ROOT/Rlib" "$ROOT/src/dsFlowerClient"
+R CMD INSTALL --preclean -l "$ROOT/Rlib" "$ROOT/src/dsFlowerClient"
 uv pip freeze --python "$ROOT/venvs/pytorch-gpu/bin/python" > "$ROOT/python-runtime-requirements.txt"
 uv pip install --python "$ROOT/client/venv/bin/python" --torch-backend cu124 -r "$ROOT/python-runtime-requirements.txt"
 "$ROOT/venvs/pytorch/bin/python" -c 'import torch; assert torch.cuda.is_available(); print(torch.__version__, torch.cuda.get_device_name())'

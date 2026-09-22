@@ -28,7 +28,9 @@ fit is reused across epsilon values for each seed.
 Use only the designated `pod-flower-vision` pod and `/workspace/cells-vision`.
 A fresh Ubuntu 22.04 GPU image needs `rsync` installed before source transfer.
 Use `rsync -rlzt` with the supplied wrapper: the volume does not support
-preserving laptop ownership. Place unchanged v0.5.0 package sources at
+preserving laptop ownership. Exclude `.git`, `*.o`, `*.so` and `__pycache__`.
+The client install uses `--preclean` to rebuild native objects for Linux.
+Place unchanged v0.5.0 package sources at
 `src/dsFlower` and `src/dsFlowerClient`. Also place released dependency sources
 at `src/dsHPC` (v0.2.5, commit
 `2917ad168e2f1c6f191a9d964632744e52cc2d4b`) and `src/dsImaging` (v0.3.8,

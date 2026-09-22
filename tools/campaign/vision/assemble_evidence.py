@@ -64,7 +64,9 @@ def main(root, out, epsilons):
         'cat(jsonlite::toJSON(as.list(sapply(c("dsFlower","dsFlowerClient","dsImaging","dsHPC","DSI","DSLite"), function(p) as.character(packageVersion(p)))), auto_unbox=TRUE))'], text=True)
     release = dict(protocol["release"], installed_versions=json.loads(dependencies), r_version=runtime["r_version"],
                    installed_runner_sha256=runtime["installed_runner_sha256"],
-                   torch=json.loads(runtime["torch_probe"]["stdout"]))
+                   torch=json.loads(runtime["torch_probe"]["stdout"]),
+                   pretrained_checkpoint=next(r for r in source["sources"] if r["filename"] == "resnet18-f37072fd.pth"),
+                   public_observer=read(root / "observer-install.json"))
     out.mkdir(parents=True, exist_ok=True)
     summary = dict(schema="dsflower-vision-summary-v1", status="executed", contract=protocol["contract"],
         dataset=dataset, release=release, host=host, protocol_sha256=sha(tools / "protocol.json"),
