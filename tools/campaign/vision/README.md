@@ -1,63 +1,30 @@
-# BUS-BRA vision R4: declared corrected cell
+# BUS-BRA vision R5: declared corrected cell
 
-Token: `FLOWER_CELLS_VISION_R4_2026-09-22`. Declared at 2026-09-22T05:36:23.774294+00:00, before corrected training and held-out scoring. The immutable declaration is [r4/protocol.json](r4/protocol.json).
+Declared before corrected training and held-out scoring. The immutable protocol is [r5_impl/protocol.json](r5_impl/protocol.json).
 
-## Training-only diagnosis and selection
+Selected **SGD, learning rate 3, momentum 0.9, two local epochs, full-site batch, weight decay 0, L1 0, scheduler none, five rounds**. Full site means 284 on each outer training site and 852 for pooled DP. Both use q=1, expected-batch divisor equal to their population, and ten accounted updates. Each mechanism is recalibrated independently.
 
-Exact released ResNet-18 features (224 pixels), patient mean pooling and modal labels yield a converged fixed-C=1 logistic **five-fold patient inner-CV AUC 0.779405 ± 0.025903**. Out-of-fold AUC is 0.777700. L-BFGS-B converged in every fold, with no fitted feature scaling or preprocessing change.
+Selection was made under the real released privacy contract on training patients only: 736 schedules ranked by faithful DP emulation on the fixed 681/171 inner split; the top three each confirmed once in actual federations at epsilon 8. The selected real inner-validation AUC was **0.7054858934**, accuracy **0.6783625731**, Brier **0.3216374269**, log-loss **11.0760075525**. These are selection estimates, with selection optimism and poor calibration. See [diagnosis](../../../inst/extdata/campaign/vision/r5/VISION_DIAGNOSIS_R5.md).
 
-A 25-candidate nonprivate search used the 681/171 patient inner split and the update count/Poisson rate of a 227-patient site, resetting optimizer state each round. Its top two candidates were confirmed through actual three-site dsImaging/DSLite federations at epsilon 8, delta 1e-6 and patient clipping norm 1.
+## Fixed protocol and comparators
 
-| Candidate | Nonprivate inner AUC | Actual DP inner AUC | DP accuracy | DP Brier | DP log-loss |
-|---|---:|---:|---:|---:|---:|
-| Adam .003, 20 epochs, batch 32 | 0.776332 | 0.500940 | 0.678363 | 0.290158 | 1.502840 |
-| Adam .01, 20 epochs, batch 32 | 0.772727 | 0.478683 | 0.660819 | 0.313500 | 2.215141 |
+Retain the original 20260919 outer split: **852 training / 212 held-out patients**, three original sites of **284 training patients**. Seeds **20260919, 20260920, 20260921** vary initialization/training randomness only. Split SHA256: `99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d`.
 
-**Selected: Adam learning rate 0.003, 20 local epochs per round, batch 32, five rounds, weight decay 0, L1 0, scheduler none.** Highest actual inner-validation DP AUC at epsilon 8 selects .003. Both private confirmations are weak. This is retained as a finding; there is no diagnostic veto or post-test alternative. The parameter surface permits learning rates up to 10 and local epochs up to 1000; no parameter cap prevented the nonprivate head from learning. This search does not exhaust that surface.
+Run epsilon **8, 4, 1 in that order**, three seeds each, delta **1e-6**, patient privacy unit, clipping norm **1**, five rounds, equal site weights. Frozen ImageNet ResNet18, released image preprocessing, patient mean features/modal labels, two-logit affine head and architectural FiniteClamp remain unchanged. Extract training features afresh; diagnosis caches are not final training inputs.
 
-All [sweep results, convergence records and hashed identifiers](r4/diagnosis/) are retained. The diagnosis feature cache remains on the pod and is not used by final training.
+- **Central:** converged pooled C=1 L2 logistic head on 852 patient feature vectors, unpenalized intercept; same affine model class. One deterministic fit reused across seeds and budgets.
+- **Non-private federated finite-schedule twin:** three sites, selected schedule and identical seed initialization, optimizer reset each round, Poisson geometry and expected-batch division, equal weights; remove gradient clipping and Gaussian noise, retain architectural finite clamp, numerical totalization and selected regularization. One fit per seed reused across budgets.
+- **Pooled DP:** unchanged released private fitter, all 852 patients, batch 852, same selected schedule and five optimizer-reset rounds, separately calibrated accountant, same initialization and privacy operations.
+- **Trivial:** training-image majority/prevalence for primary image metrics; training-patient majority/prevalence for secondary patient metrics.
 
-## Fixed split and final protocol
+Primary metrics remain malignant-positive **per-image AUC, accuracy at 0.5, Brier, log-loss**. Patient-mean-feature metrics are secondary. Gap = federated-DP AUC minus converged central AUC. Report mean and sample SD across the three seeds; shared test patients mean SD measures training variation, not population uncertainty. Node-owned secure randomness is not determined by the public seed. Epsilon is per fit, not campaign-wide composition.
 
-The original seeds had different outer splits. To avoid training-selection leakage into another seed's test cohort, R4 fixes the existing **20260919 split: 852 training patients, 212 held-out patients, and the original three sites of 284**. Seeds 20260919, 20260920 and 20260921 now vary initialization/training randomness only. The original full split JSON, held-out labels, images and previous predictions are not read in R4 before final scoring; only prepared training-site collections are used. The archived split hash is `99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d` and is checked when scoring opens the split.
+Complete all nine federations and all comparators, verify exact training tensors, node optimizer pins and full-horizon accounting, then open held-out data in **one exclusive scoring pass**. Never rerun a scored cell; no further alternative. Diagnostics are annotations only. The non-private twin removes clipping as well as noise; AUC gaps are not pure noise effects.
 
-Run the selected schedule once for epsilon 1, 4 and 8, delta 1e-6, patient privacy unit and clipping norm 1. Each site takes 180 updates per round, 900 over five rounds, with Poisson rate 1/9. Pooled-DP takes 2700 updates, Poisson rate 1/27. Each epsilon/seed is a separate public-cohort training budget; no end-to-end private model-selection or campaign-wide composition guarantee is claimed.
+## Execution and provenance
 
-## Declared comparators and scoring
+Use `r5_impl/run_matrix.py`, then `r5_impl/score.py --verify-only`, then `r5_impl/score.py`, each with `--root /workspace/cells-vision` after sourcing `environment.sh`, using the existing GPU Python. Drivers refuse overwriting runs or repeating scoring. Reuse only pod-flower-vision (A40), leave it running. Packages remain dsFlower 0.5.1 / dsFlowerClient 0.5.0, runner SHA256 `2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724`. R3/R4 and R5 diagnosis records remain unchanged.
 
-- Central: converged fixed-C=1 L2 logistic regression on all 852 patient feature vectors, unpenalized intercept; same affine model class represented as two logits. One deterministic fit is reused across seeds and epsilons.
-- Nonprivate federated finite-schedule twin: three-site FedAvg, identical seed initialization and selected schedule, optimizer reset each round, Poisson sampling and expected-batch divisor, without clipping or noise. One fit per seed, reused across epsilons.
-- Pooled-DP: unchanged released private fitter on all 852 patient features with the selected schedule and its own calibrated pooled mechanism.
-- Trivial: training-image prevalence for probability metrics and training-majority class for accuracy.
+R3 is **schedule-limited at registry defaults** (finite-schedule central AUC 0.596 ± 0.042). R4 is a **selection lesson: non-private pruning does not transfer under DP**; its two actual inner DP AUCs were 0.501 and 0.479, and its final matrix was stopped before test access. R5 selects directly under DP and has no post-test alternative.
 
-Primary metrics remain per image: malignant-positive AUC, accuracy at 0.5, Brier and log-loss. Gap is federated-DP AUC minus converged-central AUC, paired within seed then summarized by arithmetic mean and sample SD. Patient-mean-feature metrics are secondary annotations from the same final scoring pass. The three seeds share one test cohort; SD is training variation, not population/split uncertainty. Central zero SD reflects reuse. The private-minus-nonprivate federated difference includes clipping and noise, not a pure noise effect.
-
-All nine fits and twins must pass tensor, schedule and independent accounting checks before an exclusive scoring lock opens any held-out records. Score each fixed model once. Diagnostics remain annotations. Never rerun a scored configuration or introduce another alternative.
-
-## Execution and reproduction
-
-Use only `pod-flower-vision`, root `/workspace/cells-vision`, NVIDIA A40; leave the pod running. Installed dsFlower 0.5.1 and dsFlowerClient 0.5.0 and canonical runner hashes are unchanged. Raw training images may be copied byte-for-byte to POSIX `/tmp` for repeated access; metadata path rewrites and image hashes are audited. Final twin extraction is fresh and shared only in process memory.
-
-```sh
-source /workspace/cells-vision/src/dsFlowerClient/tools/campaign/vision/environment.sh
-# In a fresh R4 workspace only; existing scored workspaces must not be rerun.
-PY=/workspace/cells-vision/venvs/pytorch-gpu/bin/python
-TOOLS=/workspace/cells-vision/src/dsFlowerClient/tools/campaign/vision/r4
-"$PY" "$TOOLS/diagnose.py" --root /workspace/cells-vision
-"$PY" "$TOOLS/confirm.py" --root /workspace/cells-vision
-# Freeze the selected schedule and this declaration before continuing.
-"$PY" "$TOOLS/run_matrix.py" --root /workspace/cells-vision
-"$PY" "$TOOLS/score.py" --root /workspace/cells-vision --verify-only
-"$PY" "$TOOLS/score.py" --root /workspace/cells-vision
-"$PY" "$TOOLS/report.py" --root /workspace/cells-vision --out /workspace/cells-vision/evidence-r4
-```
-
-The first inner .003 launch stopped before any head initialization/update because SuperLink exceeded its 15-second readiness timeout. It is retained, with clean teardown and no scoring. The driver now permits the same process an additional 90 seconds through the existing readiness helper only for that exact startup error; package functions and model settings are not changed. A separate untrained retry completed. Both candidate fits completed and were validated exactly once.
-
-## Historical cell and provenance
-
-The original registry-default cell is **schedule-limited**: SGD .001, batch32, one local epoch, five rounds; its central comparator was a finite-schedule twin with AUC **0.596183 ± 0.041527**, not a converged reference. Original cell JSONs and verification records remain byte-identical. The original evidence README and summary are archived as `README-r1.md` and `summary-r1.json`; the original driver README is [README-before-r4.md](r4/README-before-r4.md).
-
-[BUS-BRA v1.0](https://zenodo.org/records/8231412), 1875 images from 1064 patients. Gómez-Flores W, Gregorio-Calas MJ, Pereira WCA (2024), *BUS-BRA: A Breast Ultrasound Dataset for Assessing Computer-aided Diagnosis Systems*, Medical Physics 51:3110–3123, [doi:10.1002/mp.16812](https://doi.org/10.1002/mp.16812). Dataset DOI [10.5281/zenodo.8231412](https://doi.org/10.5281/zenodo.8231412). Thesis citation key: `gomezflores_busbra_2024`. CC BY 4.0; retained archive licence requires attribution. Archive and checkpoint hashes are in the protocol and original provenance records.
-
-Results and interpretations: [campaign evidence](../../../inst/extdata/campaign/vision/README.md). Patient records, feature caches, predictions, model arrays and node secrets remain on the pod.
+BUS-BRA v1.0: Gómez-Flores, Gregorio-Calas and Pereira (2024), *BUS-BRA: A Breast Ultrasound Dataset for Assessing Computer-aided Diagnosis Systems*, Medical Physics 51:3110–3123. Paper DOI `10.1002/mp.16812`; dataset DOI `10.5281/zenodo.8231412`; thesis citation key **`gomezflores_busbra_2024`**. CC BY 4.0; archive/checkpoint hashes are retained in the protocol. Patient records, features, predictions and secrets stay on the pod.

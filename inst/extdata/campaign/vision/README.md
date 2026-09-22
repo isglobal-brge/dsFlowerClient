@@ -1,9 +1,9 @@
 # BUS-BRA vision campaign
 
-The first executed cell is schedule-limited at registry defaults; its finite-schedule central twin AUC is **0.596183 ± 0.041527**. Original cell JSONs and verification files are preserved byte-for-byte; complete historical documentation is in [README-r1.md](README-r1.md) and [summary-r1.json](summary-r1.json).
+R5 is declared before training: SGD lr 3, momentum 0.9, two local epochs, full-site batches (284/site; 852 pooled), five rounds. Selected under the real DP contract on training patients only; real inner-validation AUC 0.705486.
 
-R4 has been selected on training patients only and declared before corrected training. See the [track declaration](../../../../tools/campaign/vision/README.md) and [frozen protocol](../../../../tools/campaign/vision/r4/protocol.json). No corrected test score exists yet.
+See the [complete declaration and comparator definitions](../../../../tools/campaign/vision/README.md) and [frozen protocol](../../../../tools/campaign/vision/r5_impl/protocol.json). Fixed 852/212 patient split, three sites of 284; three seeds; epsilon order 8, 4, 1; delta 1e-6; patient unit; clipping norm 1. All fits precede one held-out scoring pass.
 
-Selected Adam .003, batch32, 20 local epochs, five rounds. Converged logistic inner-CV AUC: **0.779405 ± 0.025903**. Actual private inner AUC at epsilon8: **0.500940**, versus **0.478683** for the second candidate. Both private results are weak and retained honestly.
+R3: schedule-limited at registry defaults. R4: selection lesson—non-private pruning does not transfer under DP; final scoring stopped before test access. Original records remain unchanged.
 
-BUS-BRA citation key: `gomezflores_busbra_2024`; [paper DOI](https://doi.org/10.1002/mp.16812), [dataset DOI](https://doi.org/10.5281/zenodo.8231412).
+BUS-BRA provenance: thesis key `gomezflores_busbra_2024`, paper DOI `10.1002/mp.16812`, dataset DOI `10.5281/zenodo.8231412`.

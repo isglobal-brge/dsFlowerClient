@@ -1,0 +1,210 @@
+{
+  "class_mapping": {
+    "benign": 0,
+    "malignant": 1
+  },
+  "clipping_norm": 1.0,
+  "contract": "pytorch_resnet18",
+  "data_route": "dsImaging admission of image_root asset plus per-image metadata declaring pathology label, label levels and patient privacy unit; three DSLite custodians.",
+  "dataset": "BUS-BRA v1.0",
+  "delta": 1e-06,
+  "epsilon_order": [
+    8,
+    4,
+    1
+  ],
+  "evaluation": {
+    "aggregation": "arithmetic mean and sample SD across three seeds",
+    "alternative": "None. One corrected schedule, no post-score alternative.",
+    "central_schedule": "Converged fixed C=1 L2 logistic head on pooled mean features of all 852 training patients, unpenalized intercept, L-BFGS-B maxiter10000 ftol1e-12 gtol1e-9. Equivalent symmetric 512-to-2 logits; shared deterministic fit across all seeds/epsilons.",
+    "diagnostic": "AUC > 0.5 and accuracy > held-out majority-class rate; report per-replicate and three-seed mean comparison.",
+    "diagnostic_epsilon": 8,
+    "gap": "federated_dp AUC minus central AUC",
+    "metrics": [
+      "auc",
+      "accuracy",
+      "brier",
+      "log_loss"
+    ],
+    "pooled_dp": "Unchanged released _dp_fit on all 852 pooled patient records, selected schedule and five rounds; same epsilon/delta/clip, freshly calibrated pooled geometry. Logical full-site batch is 852, q=1 and ten updates.",
+    "positive_class": "malignant",
+    "test_policy": "One locked scoring pass after all nine final fits and all twins are complete; no held-out metadata/images/split file access in R5 before that pass. No scored cell rerun and no further alternative.",
+    "threshold": 0.5,
+    "twins": [
+      "Converged fixed C=1 L2 logistic head on pooled mean features of all 852 training patients, unpenalized intercept, L-BFGS-B maxiter10000 ftol1e-12 gtol1e-9. Equivalent symmetric 512-to-2 logits; shared deterministic fit across all seeds/epsilons.",
+      "Three-site FedAvg with selected schedule and identical initial head; same Poisson sampling and expected-batch divisor; clipping and noise removed; optimizer reset every round. Shared across epsilon within each seed.",
+      "Unchanged released _dp_fit on all 852 pooled patient records, selected schedule and five rounds; same epsilon/delta/clip, freshly calibrated pooled geometry.",
+      "Training-image majority and prevalence for primary image metrics; training-patient majority and prevalence for secondary patient metrics."
+    ],
+    "unit": "image",
+    "nonprivate_federated": "Three-site FedAvg with selected schedule and identical initial head; same Poisson sampling and expected-batch divisor; clipping and noise removed; optimizer reset every round. Shared across epsilon within each seed.",
+    "secondary_unit": "patient-mean features and modal label; annotation only; same fixed models, evaluated within the one scoring pass"
+  },
+  "frozen_at": "2026-09-22T08:24:29.626060+00:00",
+  "host": {
+    "gpu": "NVIDIA A40",
+    "pod_id": "0nk8si7zupfczc",
+    "pod_name": "pod-flower-vision",
+    "root": "/workspace/cells-vision"
+  },
+  "instrumentation": "Public-only observer copies of the segmentation/sequence harness: seed/capture analyst initialization; observe node accountant inputs/steps and public tensor hashes after the mandatory runner integrity gate. No replacement of training, privacy calibration, clipping or sampling.",
+  "model": {
+    "backbone": "resnet18",
+    "bounds_policy": "Released image transform and fixed feature totalization; no data-derived feature bounds.",
+    "extractor_profile": "dsflower-resnet18-imagenet1k-v1-extractor-v1",
+    "feature_domain": [
+      -1000000,
+      1000000
+    ],
+    "feature_shape": [
+      512
+    ],
+    "frozen": true,
+    "head": "linear 512 to 2; cross_entropy",
+    "image_shape": [
+      3,
+      224,
+      224
+    ],
+    "trainable_parameters": 1026,
+    "weights": "IMAGENET1K_V1"
+  },
+  "model_params": {
+    "batch_size": 284,
+    "image_size": 224,
+    "l1_penalty": 0,
+    "learning_rate": 3,
+    "local_epochs": 2,
+    "n_classes": 2,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "volumetric": false,
+    "weight_decay": 0,
+    "momentum": 0.9
+  },
+  "model_params_policy": "DP-aware 736-schedule emulator ranking on training patients only; top three confirmed under actual epsilon-8 federation; select highest actual patient inner-validation AUC.",
+  "patient_column": "subject_id",
+  "patient_training": "Released runner averages frozen features within patient and takes deterministic modal label before patient DP-SGD. Source pathology labels are consistent within patient according to archived audit.",
+  "privacy_unit": "patient",
+  "randomness": "Outer split/site membership fixed at 20260919. Public seeds 20260919/20/21 control initial heads; node-owned cryptographic randomness controls DP sampling/noise. No campaign-wide privacy composition claim.",
+  "release": {
+    "change_scope": "Server import guard only; canonical runner and all training, sampling, clipping and privacy settings unchanged.",
+    "client_version": "0.5.0",
+    "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+    "dsFlower_patch_branch": "fix/import-guard-torch-generated-modules",
+    "dsFlower_patch_commit": "c4eaaf153db4a7204878bf1d8995c16faa615110",
+    "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "server_version": "0.5.1",
+    "version": "dsFlower 0.5.1 / dsFlowerClient 0.5.0"
+  },
+  "rounds": 5,
+  "schema": "dsflower-vision-protocol-v1",
+  "seeds": [
+    20260919,
+    20260920,
+    20260921
+  ],
+  "sites": 3,
+  "split": {
+    "n_per_site_patients": [
+      284,
+      284,
+      284
+    ],
+    "n_test_patients": 212,
+    "n_total_images": 1875,
+    "n_total_patients": 1064,
+    "n_train_patients": 852,
+    "policy": "Fix the archived 20260919 outer split and its three original sites for all three initialization/training seeds. No cross-seed repartitioning.",
+    "sha256_by_seed": {
+      "20260919": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d"
+    },
+    "source_directory": "/workspace/cells-vision/prepared/busbra",
+    "split_source": "Only prepared/vision/20260919 training collections were read during diagnosis. Original full split JSON is opened only after the final exclusive scoring lock.",
+    "sha256_by_training_seed": {
+      "20260919": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "20260920": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "20260921": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d"
+    }
+  },
+  "status": "declared_before_corrected_training",
+  "split_seed": 20260919,
+  "diagnosis": {
+    "selection_sha256": "c09470e04bf2ed5105d10c00bf5ee70084c9d9186624616c8144e39c79e3abe6",
+    "selected": {
+      "candidate": {
+        "id": "sgd_m0.9_lr3_e2_b227_wd0",
+        "optimizer": "sgd",
+        "learning_rate": 3,
+        "local_epochs": 2,
+        "batch_size": 227,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "batch_mode": "full_site"
+      },
+      "inner_validation": {
+        "auc": 0.7054858934169279,
+        "accuracy": 0.6783625730994152,
+        "brier": 0.32163742690058456,
+        "log_loss": 11.076007552498325
+      },
+      "n_fit_patients": 681,
+      "n_validation_patients": 171,
+      "actual_federation": true,
+      "epsilon": 8,
+      "delta": 1e-06,
+      "clipping_norm": 1,
+      "rounds": 5,
+      "sites": 3,
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 4.35546875,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 1,
+        "sample_rate": 1.0,
+        "expected_batch_size": 227,
+        "total_epochs": 10,
+        "total_steps": 10,
+        "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"
+      },
+      "feature_parity": true,
+      "elapsed_s": 1060.33093690872,
+      "test_accessed": false,
+      "federation_status_sha256": "6c80bfb978e479a931a2f7e9e0b3eb09215ff46c2a577180da4f405a3910ec43",
+      "model_sha256": "030889f5eeb9e4c600fa7a01b372ad0c681722cd9ea7239a859beccac71ed8aa",
+      "run_dir": "/workspace/cells-vision/r5/federations/sgd_m0.9_lr3_e2_b227_wd0-eps8",
+      "initialization_seed": 20260922
+    },
+    "selection_rule": "Maximum actual federated-DP patient inner-validation AUC at epsilon 8; tie candidate id ascending.",
+    "inner_fit_patients": 681,
+    "inner_validation_patients": 171,
+    "grid_schedules": 736,
+    "test_accessed": false
+  },
+  "provenance": {
+    "citation_key": "gomezflores_busbra_2024",
+    "dataset_url": "https://zenodo.org/records/8231412",
+    "paper_doi": "10.1002/mp.16812",
+    "archive_sha256": "ba3e6ed19cc37c682d8d39e25435bbf8a555a12cb7e641b5f2117685c95580ff",
+    "checkpoint_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+    "base_client_evidence_commit": "43d9489"
+  },
+  "logical_batch": "full_site: 227 inner, 284 federated outer, 852 pooled outer; q=1, ten updates",
+  "pooled_model_params": {
+    "batch_size": 852,
+    "image_size": 224,
+    "l1_penalty": 0,
+    "learning_rate": 3,
+    "local_epochs": 2,
+    "n_classes": 2,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "volumetric": false,
+    "weight_decay": 0,
+    "momentum": 0.9
+  }
+}
