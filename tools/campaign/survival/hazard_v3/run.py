@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import time
+import threading
 import urllib.request
 
 from protocol import (SEEDS,DEV_SEEDS,SOURCES,grid,sha,write,prepare_outer,
@@ -18,6 +19,24 @@ from protocol import (SEEDS,DEV_SEEDS,SOURCES,grid,sha,write,prepare_outer,
 
 
 def now(): return datetime.now(timezone.utc).isoformat()
+
+# Avoid contention on the unchanged server-global 10-second spawn lock.
+launch_lock=threading.Lock()
+last_launch=0.
+launch_number=0
+
+
+def launch_command(command):
+    global last_launch,launch_number
+    with launch_lock:
+        remaining=30-(time.monotonic()-last_launch)
+        if remaining>0:
+            threading.Event().wait(remaining)  # one fixed startup spacing, no polling
+        cpus=sorted(os.sched_getaffinity(0))
+        cpu=cpus[launch_number%len(cpus)]
+        launch_number+=1
+        last_launch=time.monotonic()
+    return ['taskset','-c',str(cpu)]+command,cpu
 
 
 def run_cell(root,base,archive,phase,identity,split,cfg,epsilon):
@@ -29,10 +48,10 @@ def run_cell(root,base,archive,phase,identity,split,cfg,epsilon):
     env.update(R_LIBS_USER=str(root/'runtime/rlib'),TMPDIR=str(root/'runtime/tmp'),
                OMP_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',MKL_NUM_THREADS='1')
     started=now()
+    command,cpu=launch_command(['Rscript',str(tools/'run_cell.R'),str(root),str(split),
+        str(epsilon),str(out),str(config_path),phase])
     with (base/'logs'/f'{identity}.log').open('x') as log:
-        result=subprocess.run(['Rscript',str(tools/'run_cell.R'),str(root),str(split),
-            str(epsilon),str(out),str(config_path),phase],cwd=root,env=env,
-            stdout=log,stderr=subprocess.STDOUT)
+        result=subprocess.run(command,cwd=root,env=env,stdout=log,stderr=subprocess.STDOUT)
     path=out/'evidence.json'
     if path.exists():
         record=json.loads(path.read_text())
@@ -42,7 +61,8 @@ def run_cell(root,base,archive,phase,identity,split,cfg,epsilon):
             delta=1e-5,clip=1,privacy_unit='patient',adjacency='replace_one',cleanup_ok=False,
             dataset=json.loads((split/'split.json').read_text()),
             started_utc=started,finished_utc=now(),error=f'R exit {result.returncode} before evidence; retained runtime log')
-    record.update(hazard_v3_phase=phase,hazard_v3_config=cfg,driver_returncode=result.returncode)
+    record.update(hazard_v3_phase=phase,hazard_v3_config=cfg,driver_returncode=result.returncode,
+        resource_policy=dict(cpu_affinity=[cpu],startup_spacing_seconds=30,reason='OS resource scheduling; package thread environment is intentionally sanitized'))
     dest=archive/('development' if phase=='development' else 'pilot' if phase=='pilot' else '')
     dest.mkdir(parents=True,exist_ok=True)
     write(dest/f'cell-{identity}.json',record)
@@ -66,6 +86,7 @@ def main():
     ap.add_argument('workspace',type=Path)
     ap.add_argument('phase',choices=['prepare','pilot','run'])
     ap.add_argument('--jobs',type=int,default=4)
+    ap.add_argument('--resume-after-startup-failure',action='store_true')
     ap.add_argument('--sweep-cutoff',default='2026-09-22T02:40:00+00:00')
     args=ap.parse_args()
     root=args.workspace.resolve()
@@ -100,13 +121,20 @@ def main():
         record=run_cell(root,base,archive,'pilot','synthetic-hazard-v3',base/'synthetic',cfg,8)
         assert record['status']=='executed'
         return
-    write(base/'run_started.json',dict(started_utc=now(),sweep_cutoff=args.sweep_cutoff,jobs=args.jobs,
+    if args.resume_after_startup_failure:
+        investigation=json.loads((archive/'infrastructure_investigation.json').read_text())
+        assert investigation['recovery_identity']=='dev-g01-seed1102'
+        assert not (archive/'selection.json').exists() and not (archive/'confirmation_started.json').exists()
+    write(base/('infrastructure_resume.json' if args.resume_after_startup_failure else 'run_started.json'),dict(started_utc=now(),sweep_cutoff=args.sweep_cutoff,jobs=args.jobs,
         tool_sha256={p.name:sha(p) for p in sorted(tools.glob('*')) if p.is_file()}))
     pilot=json.loads((archive/'pilot/cell-synthetic-hazard-v3.json').read_text())
     assert pilot['status']=='executed'
     allcfg=grid()
     configs={cfg['id']:{s:config_for_seed(cfg,base/'inner'/str(s)) for s in SEEDS} for cfg in allcfg}
-    write(archive/'frozen_configurations.json',configs)
+    if args.resume_after_startup_failure:
+        assert json.loads((archive/'frozen_configurations.json').read_text())==json.loads(json.dumps(configs))
+    else:
+        write(archive/'frozen_configurations.json',configs)
     rows=[]
     cutoff=datetime.fromisoformat(args.sweep_cutoff)
     for offset in range(0,len(allcfg),4):
@@ -116,7 +144,16 @@ def main():
         tasks=[(cfg,seed) for cfg in wave for seed in DEV_SEEDS]
         def dev(item):
             cfg,seed=item
-            return run_cell(root,base,archive,'development',f'dev-{cfg["id"]}-seed{seed}',
+            identity=f'dev-{cfg["id"]}-seed{seed}'
+            previous=archive/'development'/f'cell-{identity}.json'
+            if args.resume_after_startup_failure and previous.exists():
+                record=json.loads(previous.read_text())
+                assert record['status']=='executed' and record['hazard_v3_config']==configs[cfg['id']][seed]
+                print('REUSE_EXECUTED',identity,flush=True)
+                return record
+            if args.resume_after_startup_failure and identity==investigation['recovery_identity']:
+                identity+='-startup-recovery'
+            return run_cell(root,base,archive,'development',identity,
                 base/'inner'/str(seed),configs[cfg['id']][seed],8)
         with ThreadPoolExecutor(max_workers=args.jobs) as pool:
             records=list(pool.map(dev,tasks))

@@ -44,3 +44,22 @@ Only whitelisted released artifacts are archived. Runtime directories contain
 node secrets and must never be copied recursively into evidence. The public
 archive contains cell JSONs, all development scores, config grids, hashes,
 selected model files, provenance, summary and the complete sweep CSV.
+
+The first development wave encountered one startup failure before training.
+`infrastructure_investigation.json` retains the evidence and recovery scope.
+The driver amendment staggers starts by30seconds and uses `taskset` to assign
+each whole federation one CPU. This matters because the trusted launcher's
+clean environment intentionally excludes OMP/BLAS thread variables. A direct
+probe confirms PyTorch uses one thread under one-CPU affinity. This changes
+only OS scheduling. The original grid, models, split files and DP mechanism
+remain frozen. `--resume-after-startup-failure` reuses executed cells and
+permits only the named pre-training failure in a new attempt directory.
+It cannot run after selection or confirmation has begun. The initial driver
+and resumed driver hashes are both retained in provenance.
+
+`diagnose_development.py` is a separate public, unnoised linear-SGD control,
+planned before receiving a live development score. It compares full pooled
+steps, pooled training limited to the site step count, unnoised equal-site
+averaging, and its clipped counterpart. Direct per-patient gradients are checked
+against the frozen autograd loss. These controls open inner data only, make
+no DP or actual-federation claim, and cannot enter configuration selection.
