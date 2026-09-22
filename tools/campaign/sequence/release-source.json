@@ -1,0 +1,18 @@
+{
+  "dsFlower": {
+    "version": "0.5.0",
+    "source_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "release_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+    "release_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "runtime_code_matches_release_tag": true
+  },
+  "dsFlowerClient": {
+    "version": "0.5.0",
+    "source_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "release_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+    "release_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "runtime_code_matches_release_tag": true
+  }
+}

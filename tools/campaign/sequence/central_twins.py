@@ -4,6 +4,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import sys
 import time
 
 import numpy as np
@@ -86,6 +87,12 @@ def main(root, run):
         losses.append(float(loss.detach().cpu()))
     checkpoint = out / "model.pt"
     torch.save({name: p.detach().cpu() for name, p in torch.nn.Module.named_parameters(model)}, checkpoint)
+    # Exercise the unchanged local predictor on TRAIN inputs before test access.
+    sys.path.insert(0, str(root / "src/dsFlowerClient/inst/python"))
+    from predict_helper import predict_pytorch_spec
+    smoke = np.asarray(predict_pytorch_spec(str(checkpoint), x[:2], "prob",
+                       cfg["model-spec-b64"], "cross_entropy", num_classes=6))
+    assert smoke.shape == (2, 6) and np.isfinite(smoke).all() and np.allclose(smoke.sum(1), 1)
     result = {"status": "trained_unscored", "seed": initial["seed"], "n_subjects": 21,
               "training_loss": losses, "elapsed_s": time.monotonic() - started,
               "model_sha256": hashlib.sha256(checkpoint.read_bytes()).hexdigest(),
