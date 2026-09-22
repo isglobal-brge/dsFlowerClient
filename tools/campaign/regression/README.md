@@ -74,6 +74,22 @@ passes only training rows to the unchanged federation library; the held-out
 file is opened only in the final scoring callback. `central_rows.py` fits
 OLS before opening its test file. The original three regression scripts are
 unchanged. A size fallback cannot be used after any cdc45k score exists.
+The first scored cdc45k replicate completed in 83 seconds, so cdc45k remains
+the selected cohort; cdc9k was not run.
+
+## CDC BMI measured result
+
+The cdc45k grid completed once at all three budgets. At epsilon 8, mean DP
+RMSE is **10.414030**, trivial RMSE **6.580037**, and DP R² **−1.504846**.
+Both utility annotations are false in every replicate and in the means. OLS
+RMSE is **6.195724**; the paired gap is **4.218306 ± 0.120771**. These are
+retained measurements of the frozen five-round defaults; the gap also includes
+optimization and federation effects and cannot isolate DP noise. No settings
+were changed, no scored model was retrained, and no further alternative ran.
+All nine replicates took 75.76–94.83 seconds each. Full RMSE/MAE/R² statistics
+and both dataset interpretations are in the combined evidence `summary.json`.
+The execution-time declaration commit mapping after publication rebase is
+recorded in `cdcbmi_execution_audit.json`; all scored files remain immutable.
 
 ## Parkinsons correction and boundary interpretation
 
@@ -83,6 +99,15 @@ retained unchanged. Their 34-subject-mean central OLS is annotated as a
 The added corrected twin fits all training recordings on the same saved
 splits and seeds; only its central metrics and corresponding gaps are new.
 Federated-DP models and scores are preserved byte for byte.
+
+The corrected central RMSE is **11.309447 ± 2.925426** (sample SD across the
+three split seeds), versus the original **41.659715 ± 9.844498** and trivial
+baseline **10.771196 ± 0.431560**. Seed-specific corrected RMSE values are
+9.951068, 14.667110 and 9.310162, fitted on 4,751, 4,793 and 4,770 recordings.
+The correction is retained in `parkinsons_corrected_central_twin.json` with
+original artifact hashes, saved split hashes, coefficients and source audit.
+`correct_parkinsons_twin.py` performs this additive correction and refuses to
+overwrite it. It never loads or invokes a federated model.
 
 The source audit also matters: the released patient-mode runner really does
 pool each subject's features and continuous target before DP-SGD. Therefore

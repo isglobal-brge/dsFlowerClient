@@ -222,6 +222,9 @@ def cdcbmi(directory):
     assert provenance["n_source"] == 253680 and provenance["cohort_seed"] == 20260819
     assert provenance["logistic_prepared_sha256"] == "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b"
     assert provenance["protocol_sha256"] == reference(protocol_path)["sha256"]
+    assert provenance["checksums"]["cdc_diabetes_health_indicators.csv"] == protocol["dataset"]["source_sha256"]
+    assert provenance["loader_sha256"] == reference(protocol_path.with_name("prepare_cdcbmi.py"))["sha256"]
+    assert provenance["logistic_campaign_lib_sha256"] == reference(protocol_path.parent.parent / "campaign_lib.R")["sha256"]
     assert protocol["target"] == "BMI" and protocol["target_bounds"] == dict(lower=12, upper=98)
     assert len(protocol["features"]) == len(set(protocol["features"])) == 20
     assert not {"BMI", "ID", "Diabetes_binary", "Diabetes_012"} & set(protocol["features"])
@@ -237,6 +240,8 @@ def cdcbmi(directory):
         assert evidence["protocol"] == protocol
         assert evidence["protocol_sha256"] == provenance["protocol_sha256"]
         assert evidence["target_bounds"] == protocol["target_bounds"]
+        for name, checksum in evidence["tooling_sha256"].items():
+            assert reference(protocol_path.with_name(name))["sha256"] == checksum
         for rep in evidence["per_replicate"]:
             seed, split = rep["seed"], rep["split"]
             assert (split["n_train"], split["n_test"], split["n_per_site"]) == (36000, 9000, [12000] * 3)

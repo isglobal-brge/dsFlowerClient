@@ -1,181 +1,569 @@
 {
-  "schema": "dsflower-campaign-v2",
+  "schema": "dsflower-regression-track-v1",
   "track": "regression",
   "cells": [
     {
-      "file": "pilot_parkinsons_pytorch_linear_regression_eps1.json",
-      "sha256": "300d9a91acfcac23a9958fedc96567d6e8cd0ee41e6cb0008f4ac9a5104e099f",
+      "id": "parkinsons",
       "contract": "pytorch_linear_regression",
-      "epsilon": 1,
+      "dataset": "UCI Parkinsons Telemonitoring",
+      "uci_id": 189,
       "n": 5875,
-      "n_subjects": 42,
-      "summary": {
-        "central_mean_sd": {
-          "rmse": {
-            "mean": 41.659714591434,
-            "sd": 9.84449784543462
+      "n_privacy_units": 42,
+      "privacy_unit": "subject",
+      "training_privacy_units_per_site": [
+        12,
+        11,
+        11
+      ],
+      "delta": 1e-06,
+      "corrected_central_evidence": {
+        "file": "parkinsons_corrected_central_twin.json",
+        "sha256": "c4c327ad9207abfea4cd521fb9301091cc8377f31816f66e00f522eced44409f"
+      },
+      "central_scope_note": "The release patient-mode runner actually averages each subject's features and continuous target before DP-SGD. The original pooled OLS matched that preprocessing; the corrected all-row OLS is a recording-level reference, not an exact patient-pooling twin. The corrected gap includes this change of fitting unit and the optimizer/convergence difference.",
+      "original_central_annotation": "Twin-computation error: OLS fitted to 34 subject means. Original artifacts are retained byte-for-byte; the corrected reference fits every training recording.",
+      "original_central_mean_sd": {
+        "rmse": {
+          "mean": 41.659714591434,
+          "sd": 9.84449784543462
+        },
+        "mae": {
+          "mean": 28.9749246501182,
+          "sd": 6.08195091211025
+        },
+        "r2": {
+          "mean": -14.8549415169064,
+          "sd": 5.9158763173107
+        }
+      },
+      "interpretation": "Boundary measurement: subject-level privacy with tens of units per site is outside the useful regime observed in this epsilon grid. The 42-subject cohort nominally gives 14 subjects per site; the held-out-subject split leaves 12/11/11 training units. Frozen federated results are unchanged.",
+      "budgets": [
+        {
+          "epsilon": 1,
+          "original_evidence": {
+            "file": "pilot_parkinsons_pytorch_linear_regression_eps1.json",
+            "sha256": "300d9a91acfcac23a9958fedc96567d6e8cd0ee41e6cb0008f4ac9a5104e099f"
           },
-          "mae": {
-            "mean": 28.9749246501182,
-            "sd": 6.08195091211025
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 11.309446821554825,
+                "sd": 2.9254259258448077
+              },
+              "mae": {
+                "mean": 9.71029149920076,
+                "sd": 2.4064387304789276
+              },
+              "r2": {
+                "mean": -0.1819581054992606,
+                "sd": 0.5329942707635519
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 29.5031635464728,
+                "sd": 1.6657348264469762
+              },
+              "mae": {
+                "mean": 27.571124805163098,
+                "sd": 1.5711295149545692
+              },
+              "r2": {
+                "mean": -6.879554333030787,
+                "sd": 0.4878354326372075
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 10.7711961962744,
+                "sd": 0.4315602435482345
+              },
+              "mae": {
+                "mean": 8.885643733868434,
+                "sd": 0.11820956152158477
+              },
+              "r2": {
+                "mean": -0.05082629759255778,
+                "sd": 0.05101891364105879
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 18.193716724917973,
+              "sd": 3.082866158979757
+            },
+            "diagnostic_pass": false
           },
-          "r2": {
-            "mean": -14.8549415169064,
-            "sd": 5.9158763173107
+          "diagnostics": {
+            "role": "Annotations only; not acceptance criteria or rerun triggers",
+            "federated_rmse_below_trivial": false,
+            "federated_r2_positive": false,
+            "per_seed": [
+              {
+                "seed": 20260820,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260821,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260822,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              }
+            ]
           }
         },
-        "federated_mean_sd": {
-          "rmse": {
-            "mean": 29.5031635464728,
-            "sd": 1.66573482644697
+        {
+          "epsilon": 4,
+          "original_evidence": {
+            "file": "pilot_parkinsons_pytorch_linear_regression_eps4.json",
+            "sha256": "aaceba52c95f92f497a70cbf31fdc639754c10ea7c1675130ef85ca3e89fcba5"
           },
-          "mae": {
-            "mean": 27.5711248051631,
-            "sd": 1.57112951495454
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 11.309446821554825,
+                "sd": 2.9254259258448077
+              },
+              "mae": {
+                "mean": 9.71029149920076,
+                "sd": 2.4064387304789276
+              },
+              "r2": {
+                "mean": -0.1819581054992606,
+                "sd": 0.5329942707635519
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 29.4562587134055,
+                "sd": 2.095348074444155
+              },
+              "mae": {
+                "mean": 27.496870191822367,
+                "sd": 2.1426835864602203
+              },
+              "r2": {
+                "mean": -6.88387177635291,
+                "sd": 1.048644410974421
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 10.7711961962744,
+                "sd": 0.4315602435482345
+              },
+              "mae": {
+                "mean": 8.885643733868434,
+                "sd": 0.11820956152158477
+              },
+              "r2": {
+                "mean": -0.05082629759255778,
+                "sd": 0.05101891364105879
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 18.146811891850675,
+              "sd": 4.167443695308562
+            },
+            "diagnostic_pass": false
           },
-          "r2": {
-            "mean": -6.87955433303079,
-            "sd": 0.487835432637205
+          "diagnostics": {
+            "role": "Annotations only; not acceptance criteria or rerun triggers",
+            "federated_rmse_below_trivial": false,
+            "federated_r2_positive": false,
+            "per_seed": [
+              {
+                "seed": 20260820,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260821,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260822,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              }
+            ]
           }
         },
-        "trivial_mean_sd": {
-          "rmse": {
-            "mean": 10.7711961962744,
-            "sd": 0.43156024354821
+        {
+          "epsilon": 8,
+          "original_evidence": {
+            "file": "pilot_parkinsons_pytorch_linear_regression_eps8.json",
+            "sha256": "b6f6be14f238c8dfd8da9173a13f103cb1bcc82640ca825e4e32afcdc9c98fb4"
           },
-          "mae": {
-            "mean": 8.88564373386843,
-            "sd": 0.118209561521582
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 11.309446821554825,
+                "sd": 2.9254259258448077
+              },
+              "mae": {
+                "mean": 9.71029149920076,
+                "sd": 2.4064387304789276
+              },
+              "r2": {
+                "mean": -0.1819581054992606,
+                "sd": 0.5329942707635519
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 29.549560964642165,
+                "sd": 1.6134098299146786
+              },
+              "mae": {
+                "mean": 27.6237205066758,
+                "sd": 1.598484427448662
+              },
+              "r2": {
+                "mean": -6.919012262631053,
+                "sd": 0.7342574963237708
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 10.7711961962744,
+                "sd": 0.4315602435482345
+              },
+              "mae": {
+                "mean": 8.885643733868434,
+                "sd": 0.11820956152158477
+              },
+              "r2": {
+                "mean": -0.05082629759255778,
+                "sd": 0.05101891364105879
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 18.24011414308734,
+              "sd": 3.5161640974729664
+            },
+            "diagnostic_pass": false
           },
-          "r2": {
-            "mean": -0.0508262975925578,
-            "sd": 0.0510189136410589
+          "diagnostics": {
+            "role": "Annotations only; not acceptance criteria or rerun triggers",
+            "federated_rmse_below_trivial": false,
+            "federated_r2_positive": false,
+            "per_seed": [
+              {
+                "seed": 20260820,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260821,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260822,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              }
+            ]
           }
-        },
-        "gap_rmse_mean_sd": {
-          "mean": -12.1565510449612,
-          "sd": 9.03170794128006
-        },
-        "diagnostic_pass": false
-      }
+        }
+      ]
     },
     {
-      "file": "pilot_parkinsons_pytorch_linear_regression_eps4.json",
-      "sha256": "aaceba52c95f92f497a70cbf31fdc639754c10ea7c1675130ef85ca3e89fcba5",
+      "id": "cdcbmi",
       "contract": "pytorch_linear_regression",
-      "epsilon": 4,
-      "n": 5875,
-      "n_subjects": 42,
-      "summary": {
-        "central_mean_sd": {
-          "rmse": {
-            "mean": 41.659714591434,
-            "sd": 9.84449784543462
+      "dataset": "CDC Diabetes Health Indicators: BMI regression",
+      "uci_id": 891,
+      "cohort": "cdc45k",
+      "n": 45000,
+      "n_privacy_units": 45000,
+      "privacy_unit": "respondent row",
+      "training_privacy_units_per_site": [
+        12000,
+        12000,
+        12000
+      ],
+      "delta": 1e-06,
+      "provenance": {
+        "file": "cdcbmi_provenance.json",
+        "sha256": "869b2c4ec57f6b14e3b167a384ddb2271c2a164e65fd17fd5acb0798ccda2f39"
+      },
+      "target": "BMI",
+      "target_bounds": {
+        "lower": 12,
+        "upper": 98
+      },
+      "metric_units": "Original BMI units for RMSE/MAE; dimensionless R2",
+      "central_scope_note": "OLS with intercept on all 36000 training rows, using the runner's public feature transform and target clipping. The RMSE gap includes optimizer/convergence differences as well as differential privacy.",
+      "interpretation": "The predeclared one-row-per-respondent alternative uses the exact fixed logistic cdc45k cohort. At epsilon 8, mean federated RMSE is not below the trivial RMSE and mean R2 is nonpositive. These are annotations only; settings were frozen before scoring and no further alternative was run.",
+      "budgets": [
+        {
+          "epsilon": 1,
+          "evidence": {
+            "file": "cdcbmi_pytorch_linear_regression_eps1.json",
+            "sha256": "c5a29ea8b3f61a58f46d203b5375e2913b68ec39d753e99ad83ddb4a89a6c405"
           },
-          "mae": {
-            "mean": 28.9749246501182,
-            "sd": 6.08195091211025
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 6.19572360919139,
+                "sd": 0.0509245337162108
+              },
+              "mae": {
+                "mean": 4.34988592031201,
+                "sd": 0.0441464018629869
+              },
+              "r2": {
+                "mean": 0.113335395802906,
+                "sd": 0.00369479470195336
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 10.371562829071,
+                "sd": 0.113689745675495
+              },
+              "mae": {
+                "mean": 7.37493266650151,
+                "sd": 0.0461720569063348
+              },
+              "r2": {
+                "mean": -1.4845646558671,
+                "sd": 0.0136681360093555
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 6.58003665360331,
+                "sd": 0.0617645325071567
+              },
+              "mae": {
+                "mean": 4.70445747942387,
+                "sd": 0.0445734835994525
+              },
+              "r2": {
+                "mean": -5.40371143760154e-05,
+                "sd": 4.60553579360934e-05
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 4.17583921987958,
+              "sd": 0.0702291696552525
+            },
+            "diagnostics": {
+              "rmse_below_trivial": false,
+              "r2_positive": false,
+              "role": "annotation_only"
+            }
           },
-          "r2": {
-            "mean": -14.8549415169064,
-            "sd": 5.9158763173107
+          "diagnostics": {
+            "role": "Annotations only; not acceptance criteria or rerun triggers",
+            "federated_rmse_below_trivial": false,
+            "federated_r2_positive": false,
+            "per_seed": [
+              {
+                "seed": 20260820,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260821,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260822,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              }
+            ]
           }
         },
-        "federated_mean_sd": {
-          "rmse": {
-            "mean": 29.4562587134055,
-            "sd": 2.09534807444415
+        {
+          "epsilon": 4,
+          "evidence": {
+            "file": "cdcbmi_pytorch_linear_regression_eps4.json",
+            "sha256": "a3a4d0d321797161da63192caf57fda71ae782226f56d0b64c7e933f5472a87f"
           },
-          "mae": {
-            "mean": 27.4968701918224,
-            "sd": 2.14268358646019
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 6.19572360919139,
+                "sd": 0.0509245337162108
+              },
+              "mae": {
+                "mean": 4.34988592031201,
+                "sd": 0.0441464018629869
+              },
+              "r2": {
+                "mean": 0.113335395802906,
+                "sd": 0.00369479470195336
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 10.3988309248305,
+                "sd": 0.14146969332126
+              },
+              "mae": {
+                "mean": 7.39652840687059,
+                "sd": 0.0885286900536304
+              },
+              "r2": {
+                "mean": -1.49770797372031,
+                "sd": 0.0383656282483081
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 6.58003665360331,
+                "sd": 0.0617645325071567
+              },
+              "mae": {
+                "mean": 4.70445747942387,
+                "sd": 0.0445734835994525
+              },
+              "r2": {
+                "mean": -5.40371143760154e-05,
+                "sd": 4.60553579360934e-05
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 4.20310731563915,
+              "sd": 0.110651230135593
+            },
+            "diagnostics": {
+              "rmse_below_trivial": false,
+              "r2_positive": false,
+              "role": "annotation_only"
+            }
           },
-          "r2": {
-            "mean": -6.88387177635291,
-            "sd": 1.04864441097442
+          "diagnostics": {
+            "role": "Annotations only; not acceptance criteria or rerun triggers",
+            "federated_rmse_below_trivial": false,
+            "federated_r2_positive": false,
+            "per_seed": [
+              {
+                "seed": 20260820,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260821,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260822,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              }
+            ]
           }
         },
-        "trivial_mean_sd": {
-          "rmse": {
-            "mean": 10.7711961962744,
-            "sd": 0.43156024354821
+        {
+          "epsilon": 8,
+          "evidence": {
+            "file": "cdcbmi_pytorch_linear_regression_eps8.json",
+            "sha256": "64d4a989f9f1581fef20b02c9cc1c6d73b4858e013a6f30e7047539af3f575a7"
           },
-          "mae": {
-            "mean": 8.88564373386843,
-            "sd": 0.118209561521582
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 6.19572360919139,
+                "sd": 0.0509245337162108
+              },
+              "mae": {
+                "mean": 4.34988592031201,
+                "sd": 0.0441464018629869
+              },
+              "r2": {
+                "mean": 0.113335395802906,
+                "sd": 0.00369479470195336
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 10.4140301054715,
+                "sd": 0.170950299250074
+              },
+              "mae": {
+                "mean": 7.415811204115,
+                "sd": 0.100560994017254
+              },
+              "r2": {
+                "mean": -1.50484618578726,
+                "sd": 0.0353879834720263
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 6.58003665360331,
+                "sd": 0.0617645325071567
+              },
+              "mae": {
+                "mean": 4.70445747942387,
+                "sd": 0.0445734835994525
+              },
+              "r2": {
+                "mean": -5.40371143760154e-05,
+                "sd": 4.60553579360934e-05
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 4.21830649628012,
+              "sd": 0.120770998362482
+            },
+            "diagnostics": {
+              "rmse_below_trivial": false,
+              "r2_positive": false,
+              "role": "annotation_only"
+            }
           },
-          "r2": {
-            "mean": -0.0508262975925578,
-            "sd": 0.0510189136410589
+          "diagnostics": {
+            "role": "Annotations only; not acceptance criteria or rerun triggers",
+            "federated_rmse_below_trivial": false,
+            "federated_r2_positive": false,
+            "per_seed": [
+              {
+                "seed": 20260820,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260821,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260822,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              }
+            ]
           }
-        },
-        "gap_rmse_mean_sd": {
-          "mean": -12.2034558780285,
-          "sd": 10.0080196869913
-        },
-        "diagnostic_pass": false
-      }
-    },
-    {
-      "file": "pilot_parkinsons_pytorch_linear_regression_eps8.json",
-      "sha256": "b6f6be14f238c8dfd8da9173a13f103cb1bcc82640ca825e4e32afcdc9c98fb4",
-      "contract": "pytorch_linear_regression",
-      "epsilon": 8,
-      "n": 5875,
-      "n_subjects": 42,
-      "summary": {
-        "central_mean_sd": {
-          "rmse": {
-            "mean": 41.659714591434,
-            "sd": 9.84449784543462
-          },
-          "mae": {
-            "mean": 28.9749246501182,
-            "sd": 6.08195091211025
-          },
-          "r2": {
-            "mean": -14.8549415169064,
-            "sd": 5.9158763173107
-          }
-        },
-        "federated_mean_sd": {
-          "rmse": {
-            "mean": 29.5495609646421,
-            "sd": 1.6134098299147
-          },
-          "mae": {
-            "mean": 27.6237205066758,
-            "sd": 1.59848442744865
-          },
-          "r2": {
-            "mean": -6.91901226263105,
-            "sd": 0.734257496323771
-          }
-        },
-        "trivial_mean_sd": {
-          "rmse": {
-            "mean": 10.7711961962744,
-            "sd": 0.43156024354821
-          },
-          "mae": {
-            "mean": 8.88564373386843,
-            "sd": 0.118209561521582
-          },
-          "r2": {
-            "mean": -0.0508262975925578,
-            "sd": 0.0510189136410589
-          }
-        },
-        "gap_rmse_mean_sd": {
-          "mean": -12.1101536267918,
-          "sd": 9.54364819584781
-        },
-        "diagnostic_pass": false
-      }
+        }
+      ]
     }
   ],
-  "acceptance_epsilon": 8,
-  "diagnostic_pass": false,
-  "interpretation": "Representative subject-private regression measurement; no tuning or test-driven rerun.",
-  "alternative": "Not run: ridge is reserved for failure to execute the linear contract."
+  "rounds": 5,
+  "replicates": 3,
+  "seeds": [
+    20260820,
+    20260821,
+    20260822
+  ],
+  "epsilons": [
+    1,
+    4,
+    8
+  ],
+  "diagnostics_epsilon": 8,
+  "diagnostics_role": "Annotations only; no acceptance gate",
+  "policy": "Original Parkinson federated scores are retained unchanged. Only its central reference and associated gaps are corrected. CDC settings were predeclared and each replicate was scored once; no further alternative."
 }
