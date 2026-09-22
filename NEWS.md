@@ -1,3 +1,13 @@
+# dsFlowerClient 0.5.1
+
+* Fix rejection of native-tree ensembles whose binary64 leaf values cannot
+  round-trip through jsonlite's decimal writer. Validate canonical container
+  bytes with the emitter's isolated Python standard-library JSON serializer,
+  preserving all digest, size, schema, identity and sanitization checks and
+  requiring an integer container version. Add a real training-output regression
+  fixture and malformed-container checks; privacy mechanisms and runner bytes
+  are unchanged.
+
 # dsFlowerClient 0.5.0
 
 * Admit the subject-level Weibull and log-normal AFT survival contracts and
