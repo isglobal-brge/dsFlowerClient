@@ -1,3 +1,76 @@
+# Corrected UCI HAR sequence cells (R3 declaration)
+
+Token: `FLOWER_CELLS_SEQUENCE_2026-09-22`.
+This declaration precedes corrected central/federated training and test scoring.
+The binding design is [r3/protocol.json](r3/protocol.json).
+
+Central diagnosis used only the official TRAIN partition: 16 subjects / 5,564
+windows for fitting, and subjects 1, 8, 17, 25, 30 / 1,788 windows for validation.
+The unchanged contract-built GPU LSTM learns: Adam 0.01 after 20 epochs gives
+macro OVR AUC **0.988999812**, accuracy **0.937360179**, log-loss **0.240914434**.
+Adam 0.003 gives 0.965103476 / 0.786912752 / 0.550719321. The larger final
+validation macro AUC selects 0.01; TEST was not read. Both candidates use
+batch 256 and optimizer resets every four epochs to match round boundaries.
+
+The corrected schedule is **Adam 0.01, batch 256, four local epochs, five
+rounds**, no scheduler or penalties. Hidden size remains 32. Inputs remain
+128 x 9, C-order token-major; the exact recurrent input was checked. Stage raw
+windows and let the unchanged bounds transform apply `clip(x,-b,b)/b` once,
+with channel bounds `b=(1,1,1,1,1,1,2,2,2)`. Acceleration units are g and gyro
+units rad/s. These fixed public constants are design choices, not extrema
+estimated from data or guaranteed by archive documentation.
+
+Execute both units with three original subject-disjoint sites of seven subjects,
+three seeds 20260922–20260924, epsilon 1/4/8, delta 1e-6, clipping norm 1:
+
+- **Subject:** the released patient contract averages features and chooses a modal
+  label before clipping each subject's gradient. It has seven units/site and
+  20 updates/site. Original-window losses aggregated per subject are unsupported
+  by this contract. This is the supported subject-pooled surrogate, and its gap
+  includes a task/preprocessing mismatch against the full-window central model.
+- **Window:** the released row contract retains all windows, with 2,553/2,397/2,402
+  units/site and 200 updates/site. It measures the window mechanism; it does
+  **not** provide subject-level protection.
+
+The central reference is trained once per seed on all 7,352 TRAIN windows with
+identical architecture, initialization, bounds and nominal 20-epoch schedule,
+without privacy or federation (580 ordinary minibatch updates). It is shared
+across both units and all epsilon values. Trivial predictions use TRAIN class
+frequencies and the TRAIN majority class. Report macro OVR AUC, accuracy,
+log-loss, and paired AUC gaps with sample SD. Diagnostics never trigger reruns.
+
+The initial pilot records remain unchanged. Their chance-like central result is
+**a pipeline/specification failure, not a privacy utility result**. Layout and
+label row order were correct; old bounds already scaled inputs. Five updates at
+SGD 0.001 and pooling mixed activities into one modal-labelled example per
+subject explain why the original comparison was not informative. No package
+code or mechanism is changed for R3.
+
+All corrected training completes before the single exclusive R3 scoring marker;
+no TEST reads for selection and no retraining after scoring. Each privacy budget
+is per training run; the public TRAIN-only schedule selection is not claimed to
+be a private selection procedure. Preserve the existing scoring marker and old
+runs; use the separate `/workspace/cells-sequence/r3` artifact directory.
+
+```sh
+ROOT=/workspace/cells-sequence
+TOOLS=$ROOT/src/dsFlowerClient/tools/campaign/sequence/r3
+PYTHON=/opt/cells-sequence/venvs/pytorch-gpu/bin/python
+export PYTHONPATH=/opt/cells-sequence/Rlib/dsFlowerClient/flower_app
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
+# Copy the binding protocol into $ROOT/r3/protocol.json before training.
+"$PYTHON" "$TOOLS/central.py" --root "$ROOT"
+"$PYTHON" "$TOOLS/run_matrix.py" --root "$ROOT"
+"$PYTHON" "$TOOLS/score.py" --root "$ROOT" --verify-only
+"$PYTHON" "$TOOLS/score.py" --root "$ROOT"
+```
+
+Dataset and installed-release provenance are retained below. The official
+[archive documentation](https://archive.ics.uci.edu/ml/machine-learning-databases/00240/UCI%20HAR%20Dataset.names)
+specifies signal units; the raw-window bounds above are our declared constants.
+
+---
+
 # UCI HAR sequence utility cell
 
 The original 0.5.0 execution was blocked before training. Its unchanged records

@@ -1,0 +1,11 @@
+{
+  "scope": "TRAIN-only diagnosis",
+  "test_accessed": false,
+  "completed_candidates_retained": [
+    "public_adam_0.003",
+    "public_adam_0.01"
+  ],
+  "reason": "Pooled diagnostic arrays require float32 before recurrent forward, matching the released totalization step. Training helper corrected; partial old-default window ablation stopped after two epochs and restarted before any test scoring.",
+  "candidate_selection_changed": false,
+  "package_code_changed": false
+}
