@@ -131,6 +131,13 @@ def main():
         f'The two-site envelope changes federated C by {two_site["c_index"]["federated_dp"]["mean"]-c["mean"]:+.6f} '
         'relative to the selected three-site route. Configuration and runtime changes prevent treating these cross-version differences '
         'as an isolated causal effect of any single lever.']
+    small=next((r for r in summary['groups'] if r['arm']=='small600'),None)
+    if small:
+        text+=['', f'At 200 patients/site, federated C is {small["c_index"]["federated_dp"]["mean"]:.6f} '
+            f'versus pooled-DP {small["c_index"]["central_dp"]["mean"]:.6f}; '
+            f'the gap widens to {small["pooled_dp_minus_federated"]["mean"]:.6f}. '
+            'This is below the 0.60 absolute floor and retains a small-cohort boundary for this configuration. '
+            'The same frozen public grid is used; population changes alter both calibrated noise and sequential update counts.']
     text+=['',f'**Three-site verdict: {summary["three_site_verdict"]}.** Mean epsilon 8 C={c["mean"]:.6f}; '
         f'null={null:.6f}; required C≥0.600000 and C≥{null+.05:.6f}. '
         f'Split-replicate 95% t interval: [{c["ci95"][0]:.6f}, {c["ci95"][1]:.6f}]. '
