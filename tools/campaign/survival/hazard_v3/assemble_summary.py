@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Write the reviewable report from locked, verified public evidence."""
 import argparse
+import hashlib
 import json
 from pathlib import Path
 import statistics
@@ -13,9 +14,18 @@ def main():
     audit=json.loads((root/'artifact_verification.json').read_text())
     overlap=json.loads((root/'split_overlap.json').read_text())
     assert summary['status']=='executed' and audit['verified_confirmation_cells']==summary['expected_matrix_cells']
+    assert audit['verified_development_cells']==2*len(selection['ranked'])
     cfg=selection['selected']
+    strategy_settings={
+        'fedavg':'fixed unit site weights',
+        'fedavgm':'server learning rate 1, server momentum 0.9, fixed unit site weights',
+        'fedadam':'server eta 0.1, eta_l 0.1, beta1 0.9, beta2 0.99, tau 0.001, fixed unit site weights',
+        'fedyogi':'server eta 0.01, eta_l 0.0316, beta1 0.9, beta2 0.99, tau 0.001, fixed unit site weights'}
     path=root/'HAZARD_V3_SUMMARY.md'
-    diagnosis=path.read_text().split('## Development and confirmation')[0].rstrip()
+    initial=(root/'diagnosis_before_training.md').read_bytes()
+    preregistration=json.loads((root/'preregistration.json').read_text())
+    assert hashlib.sha256(initial).hexdigest()==preregistration['diagnosis_sha256']
+    diagnosis=initial.decode().split('## Development and confirmation')[0].rstrip()
     rows=json.loads((root/'development_diagnostics.json').read_text())['results']
     text=[diagnosis,'','## Development-only mechanism controls','',
         'These controls were declared before any live development score returned. They use only inner training/validation data. '
@@ -40,7 +50,7 @@ def main():
         'The hazard problem is weak /K signal relative to fixed unit-clip noise across many coordinates, not large raw covariate scales.', '',
         'For h06, reducing only the pooled sequential update count explains a 0.028008 C-index drop on these development splits; '
         'equal-site averaging differs from that step-matched pooled control by +0.000072. '
-        'The h06 initial mean gradient norm is 0.3070/0.3081 and maximum 0.7664/0.7647; no sampled gradient exceeds 1 throughout these unnoised controls. '
+        'The h06 initial mean patient-gradient norm is 0.3070/0.3081 and maximum 0.7664/0.7647; no sampled gradient exceeds 1 throughout these unnoised controls. '
         'This supports insufficient sequential optimization as the dominant tested explanation, rather than heavy clipping or equal-site weighting itself. '
         'It does not assign an exact causal fraction of the historical noisy test gap.', '',
         'At K10, first-bin event counts are 2761/2741; last-bin counts 19/16, with 221/216 exposed patients. '
@@ -66,6 +76,7 @@ def main():
         f'Selected **{cfg["id"]}: K={cfg["K"]}, {cfg["grid"]}, {cfg["strategy"]}, '
         f'{cfg["optimizer"]} LR {cfg["learning_rate"]}, {cfg["rounds"]} rounds × {cfg["local_epochs"]} local epochs, '
         f'batch {cfg["batch_size"]}**. Selection locked at {selection["selected_utc"]}. '
+        f'Aggregation settings: {strategy_settings[cfg["strategy"]]}. '
         'Each twin matches the grid, architecture, public feature transform, initialization 0, local optimizer reset schedule and server post-processing; '
         'pooled q and sequential step counts differ by population. Seeds define subject splits, not published DP noise seeds.', '',
         '**This is the third confirmation of the hazard contract, after the v1 matrix and v2 schedule h06.** '
@@ -93,6 +104,15 @@ def main():
         'it does not isolate a noise-only effect. Fixed unit weights remain equal patient weights for these equal-size partitions.']
     primary=next(r for r in summary['groups'] if r['arm']=='full' and r['epsilon']==8)
     c=primary['c_index']['federated_dp'];null=primary['c_index']['null']['mean']
+    two_site=next(r for r in summary['groups'] if r['arm']=='two-sites' and r['epsilon']==8)
+    text+=['',f'At epsilon 8 the selected three-site route changes mean C by {c["mean"]-.5951121873821673:+.6f} '
+        f'relative to historical h06. Its pooled-DP minus federated gap is '
+        f'{primary["pooled_dp_minus_federated"]["mean"]:.6f}, compared with the historical 0.025803. '
+        f'The selected pooled nonprivate fit reaches {primary["c_index"]["central"]["mean"]:.6f}, '
+        'so the historical 0.621839 ceiling should be interpreted as schedule/grid specific. '
+        f'The two-site envelope changes federated C by {two_site["c_index"]["federated_dp"]["mean"]-c["mean"]:+.6f} '
+        'relative to the selected three-site route. Configuration and runtime changes prevent treating these cross-version differences '
+        'as an isolated causal effect of any single lever.']
     text+=['',f'**Three-site verdict: {summary["three_site_verdict"]}.** Mean epsilon 8 C={c["mean"]:.6f}; '
         f'null={null:.6f}; required C≥0.600000 and C≥{null+.05:.6f}. '
         f'Split-replicate 95% t interval: [{c["ci95"][0]:.6f}, {c["ci95"][1]:.6f}]. '
@@ -115,6 +135,7 @@ def main():
         'A synthetic artifact-copy path error occurred after successful fitting/scoring; the existing model was exported without retraining. '
         'Unit-test import resolution and a NumPy alias in the test expectation were corrected before cohort fitting. '
         f'All {summary["expected_matrix_cells"]} confirmation cells were validated and all four model artifacts per cell were independently reloaded/rescored. '
+        f'The {audit["verified_development_cells"]} successful development models were also archived and independently reloaded/rescored. '
         'No confirmation fit was repeated. Details are in `artifact_verification.json` and `infrastructure_investigation.json`.', '',
         '## Provenance','',
         '- Packages: dsFlower 0.5.0 and dsFlowerClient 0.5.0. 101 server and 105 client source files match tag v0.5.0; full fingerprints and installed commits are in `provenance/`.',
@@ -124,6 +145,7 @@ def main():
         '- SUPPORT2 SHA256: `9da794bbd5c3a6a816e677cc17535e58c122d9ef4cbefd404489330a9f9cd2de`; UCI source and license attribution retained in each cell.',
         '- Development seeds 1101/1102; confirmation 1101/1102/1103. All three outer train/test file hashes reproduce the historical splits exactly.',
         '- `preregistration.json`, `frozen_configurations.json`, `selection.json`, confirmation start/completion records and per-cell hashes bind the execution order and settings.',
+        '- `diagnosis_before_training.md` preserves the exact initial summary bytes bound by the preregistration diagnosis hash.',
         '- Historical v2 ran on CUDA A40 with package labels 0.4.5/0.4.4 and runner `ac08384…e4ac8`; current 0.5.0 source and CPU runtime are recorded separately. Cross-version changes are not a controlled device-only comparison.',
         '- Each reported epsilon is a per-fit contract, not a privacy budget for the public development/confirmation campaign as a whole. Private-data selection would compose; data-derived private quantile grids would need their own accounted release.',
         '- Only public evidence and whitelisted released models are archived. No node secrets or staged private manifests are exported.','']

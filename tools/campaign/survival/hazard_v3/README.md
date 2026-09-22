@@ -44,11 +44,25 @@ v1 matrix validator is deliberately not modified to admit the new matrix.
 Only whitelisted released artifacts are archived. Runtime directories contain
 node secrets and must never be copied recursively into evidence. The public
 archive contains cell JSONs, all development scores, config grids, hashes,
-selected model files, provenance, summary and the complete sweep CSV.
+all successful development and confirmation models, provenance, summary and
+the complete sweep CSV. After confirmation completes, these commands verify
+the existing releases and assemble the report without fitting any model:
+
+```
+runtime/venv/bin/python dsFlowerClient/tools/campaign/survival/hazard_v3/verify_artifacts.py /workspace/hazard
+runtime/venv/bin/python dsFlowerClient/tools/campaign/survival/hazard_v3/assemble_summary.py dsFlowerClient/inst/extdata/campaign/survival/hazard-v3
+runtime/venv/bin/python dsFlowerClient/tools/campaign/survival/hazard_v3/capture_provenance.py /workspace/hazard
+```
+
+The initial diagnosis is preserved as `diagnosis_before_training.md`; its hash
+must match preregistration before the report is assembled. `split_overlap.json`
+quantifies cross-replicate overlap using training subject IDs only. Each seed's
+development set excludes its own holdout, but the historical replicates are not
+globally disjoint and do not constitute independent nested validation.
 
 The first development wave encountered one startup failure before training.
 `infrastructure_investigation.json` retains the evidence and recovery scope.
-The driver amendment staggers starts by30seconds and uses `taskset` to assign
+The driver amendment staggers starts by 30 seconds and uses `taskset` to assign
 each whole federation one CPU. This matters because the trusted launcher's
 clean environment intentionally excludes OMP/BLAS thread variables. A direct
 probe confirms PyTorch uses one thread under one-CPU affinity. This changes

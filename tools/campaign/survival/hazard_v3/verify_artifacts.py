@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Read-only model, configuration, split and score verification after confirmation."""
 import argparse
-import base64
 import json
 from pathlib import Path
+import shutil
 import sys
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
@@ -20,9 +20,26 @@ def main():
     ap=argparse.ArgumentParser();ap.add_argument('workspace',type=Path);args=ap.parse_args()
     root=args.workspace;archive=root/'dsFlowerClient/inst/extdata/campaign/survival/hazard-v3'
     selected=json.loads((archive/'selection.json').read_text())
-    verified=[]
+    verified=[];verified_development=[]
+    development=[]
+    for name,digest in selected['development_sha256'].items():
+        path=archive/'development'/name
+        require(sha(path)==digest,'locked development record')
+        record=json.loads(path.read_text())
+        require(record['status']=='executed','development execution')
+        identity=path.stem.removeprefix('cell-')
+        run=root/'runtime/hazard_v3/runs'/identity
+        models=list((run/'federation/artifact').glob('*/model.pt'))
+        require(len(models)==1 and sha(models[0])==record['artifact_checksum'],'development model hash')
+        dest=archive/'artifacts'/identity
+        dest.mkdir(exist_ok=True)
+        for item in ('model.pt','metadata.json','history.json'):
+            shutil.copyfile(models[0].parent/item,dest/item)
+        for item in ('config.json','scores.json'):
+            shutil.copyfile(run/item,dest/item)
+        development.append(path)
     torch.set_num_threads(1)
-    for path in sorted(archive.glob('cell-support2-*.json')):
+    for path in sorted(archive.glob('cell-support2-*.json'))+sorted(development):
         record=json.loads(path.read_text())
         if record['status']!='executed':continue
         identity=path.stem.removeprefix('cell-');meta=record['dataset'];cfg=dict(record['public_config'])
@@ -41,23 +58,30 @@ def main():
             same(model_params[key],expected,'released model parameters/'+key)
         same(metadata['feature_lower'],meta['feature_bounds']['lower'],'released lower bounds')
         same(metadata['feature_upper'],meta['feature_bounds']['upper'],'released upper bounds')
-        split=root/'runtime/hazard_v3/confirmation'/f'{meta["subset"]}-{meta["seed"]}'
+        is_development=record['hazard_v3_phase']=='development'
+        split=root/'runtime/hazard_v3'/('inner' if is_development else 'confirmation')/(
+            str(meta['seed']) if is_development else f'{meta["subset"]}-{meta["seed"]}')
         for part in ('train','test'):
             require(sha(split/f'{part}.csv')==meta[f'{part}_sha256'],'split hash')
         test=pd.read_csv(split/'test.csv',float_precision='round_trip')
         cfg['feature-bounds']=meta['feature_bounds']
         x=client_app._apply_feature_bounds(test[meta['features']].to_numpy(dtype=np.float32),cfg)
-        for branch,name in [('federated_dp','model.pt'),('central','central.pt'),('central_dp','central_dp.pt'),('null','null.pt')]:
+        branches=[('federated_dp','model.pt')]
+        if not is_development:
+            branches+=[('central','central.pt'),('central_dp','central_dp.pt'),('null','null.pt')]
+        for branch,name in branches:
             digest=record['artifact_checksum'] if branch=='federated_dp' else record['results'][branch+'_model_sha256']
             require(sha(files/name)==digest,'released model file hash')
             model=build(cfg);model.load_state_dict(torch.load(files/name,map_location='cpu',weights_only=True));model.eval()
             with torch.no_grad():output=model(torch.from_numpy(np.zeros_like(x) if branch=='null' else x)).numpy()
             same(score(output,test,conf),record['results'][branch],f'{identity}/{branch}')
-        verified.append(identity)
-    report=dict(status='verified',verified_confirmation_cells=len(verified),models_per_cell=4,identities=verified,
+        (verified_development if is_development else verified).append(identity)
+    report=dict(status='verified',verified_confirmation_cells=len(verified),confirmation_models_per_cell=4,
+                development_models_per_cell=1,identities=verified,
+                verified_development_cells=len(verified_development),development_identities=verified_development,
                 method='Read-only reload of archived released weights, independent NumPy metrics, frozen split/model/configuration hashes')
     (archive/'artifact_verification.json').write_text(json.dumps(report,indent=2)+'\n')
-    print('ARTIFACTS_VERIFIED',len(verified))
+    print('ARTIFACTS_VERIFIED',len(verified),'confirmation;',len(verified_development),'development')
 
 
 if __name__=='__main__':main()

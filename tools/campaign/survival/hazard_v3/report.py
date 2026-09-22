@@ -78,6 +78,21 @@ def main():
         require(record['started_utc']>=begun['started_utc'][:19]+'Z','confirmation predates lock')
         groups[key[:2]].append(record)
     output=[]
+    if not failures and seen==expected:
+        for seed in SEEDS:
+            full=[next(r for r in groups['full',eps] if r['dataset']['seed']==seed) for eps in (1,4,8)]
+            for record in full[1:]:
+                for field in ('train_sha256','test_sha256'):
+                    require(record['dataset'][field]==full[0]['dataset'][field],'full splits changed across epsilon')
+                for branch in ('central','null'):
+                    same(record['results'][branch],full[0]['results'][branch],'nonprivate baseline changed across epsilon')
+            for arm in selection['confirmation_arms']:
+                record=next(r for r in groups[arm,8] if r['dataset']['seed']==seed)
+                require(record['dataset']['test_sha256']==full[0]['dataset']['test_sha256'],'envelope holdout changed')
+                if arm=='two-sites':
+                    require(record['dataset']['train_sha256']==full[0]['dataset']['train_sha256'],'two-site pooled training changed')
+                    for branch in ('central','null'):
+                        same(record['results'][branch],full[0]['results'][branch],'two-site nonprivate baseline changed')
     for (arm,eps),records in sorted(groups.items()):
         require(sorted(r['dataset']['seed'] for r in records)==list(SEEDS),'incomplete seed group')
         result=dict(arm=arm,epsilon=eps,n_train=records[0]['dataset']['n_train'],
