@@ -33,6 +33,12 @@ def main():
         conf=survival.config_from_run(cfg,cfg['loss-name'])
         same(metadata['survival_config'],conf,'released grid')
         require(metadata['features']==meta['features'],'released features')
+        require(metadata['privacy']=='server-enforced-dp','released privacy enforcement')
+        model_params=metadata['model_params']
+        for key,expected in [('learning_rate',cfg['learning-rate']),('batch_size',cfg['batch-size']),
+            ('local_epochs',cfg['local-epochs']),('optimizer',cfg['optimizer-name']),
+            ('weight_decay',0),('scheduler','none')]:
+            same(model_params[key],expected,'released model parameters/'+key)
         same(metadata['feature_lower'],meta['feature_bounds']['lower'],'released lower bounds')
         same(metadata['feature_upper'],meta['feature_bounds']['upper'],'released upper bounds')
         split=root/'runtime/hazard_v3/confirmation'/f'{meta["subset"]}-{meta["seed"]}'

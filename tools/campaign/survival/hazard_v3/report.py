@@ -70,6 +70,8 @@ def main():
         status='executed' if seen==expected and not failures else 'incomplete',date_utc=datetime.now(timezone.utc).isoformat(),
         selected=selection['selected'],selection_sha256=sha(root/'selection.json'),confirmation_number=3,
         expected_matrix_cells=len(expected),observed_cells=len(seen),groups=output,failed_attempts=failures,
+        development_failed_attempts=[dict(file=str(p.relative_to(root)),error=json.loads(p.read_text()).get('error'))
+            for p in sorted((root/'failures').glob('cell-*.json'))],
         three_site_verdict=verdict,absolute_floor=.60,null_margin=.05,
         caveat='Third confirmation on reused outer holdouts; overlapping split replicates, not independent clinical validation; envelopes do not change admission.')
     (root/'summary.json').write_text(json.dumps(summary,indent=2,allow_nan=False)+'\n')
