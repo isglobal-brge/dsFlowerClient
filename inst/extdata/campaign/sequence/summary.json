@@ -1,13 +1,21 @@
 {
-  "schema": "dsflower-sequence-summary-v1",
+  "schema": "dsflower-sequence-summary-all-v1",
   "status": "executed",
+  "token": "FLOWER_CELLS_SEQUENCE_2026-09-22",
   "contract": "pytorch_lstm",
   "dataset": "UCI Human Activity Recognition Using Smartphones",
+  "n_scored_cells": 9,
   "cells": [
     {
       "file": "pilot_uci_har_pytorch_lstm_eps1.json",
       "sha256": "397b92c639d0d29d0431dcc32e01fe35349d22a4facba5cd4ec0d4af1c226204",
+      "revision": "original",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI HAR",
+      "unit": "subject",
       "epsilon": 1,
+      "interpretation": "Pipeline/specification did not learn: the noiseless central twin was at chance-like utility (macro AUC 0.435143, accuracy 0.169551, log-loss 1.799129). It trained 21 modal-labelled subject averages for only five SGD updates at learning rate 0.001. This is not a privacy utility result. Original records are preserved byte-for-byte.",
       "summary": {
         "federated_dp": {
           "macro_auc": {
@@ -56,7 +64,7 @@
           "sd": 0.006243232490938621
         }
       },
-      "utility_diagnostics": {
+      "diagnostics": {
         "epsilon8_annotation": false,
         "annotation_only": true,
         "macro_auc_above_chance": false,
@@ -78,88 +86,25 @@
             "annotation_only": true
           }
         ]
-      }
-    },
-    {
-      "file": "pilot_uci_har_pytorch_lstm_eps8.json",
-      "sha256": "185bbab1205ab8da754fae207313a7cabfb7be950de1b5882d23cf1ea733db03",
-      "epsilon": 8,
-      "summary": {
-        "federated_dp": {
-          "macro_auc": {
-            "mean": 0.4354505308353831,
-            "sd": 0.07776274359934472
-          },
-          "accuracy": {
-            "mean": 0.1695509557742337,
-            "sd": 0.010405447919562869
-          },
-          "log_loss": {
-            "mean": 1.7990823710438277,
-            "sd": 0.0009068119248026901
-          }
-        },
-        "central": {
-          "macro_auc": {
-            "mean": 0.435142921331875,
-            "sd": 0.07726846810301545
-          },
-          "accuracy": {
-            "mean": 0.1695509557742337,
-            "sd": 0.010405447919562869
-          },
-          "log_loss": {
-            "mean": 1.7991289686240062,
-            "sd": 0.0009504544370144952
-          }
-        },
-        "trivial": {
-          "macro_auc": {
-            "mean": 0.5,
-            "sd": 0.0
-          },
-          "accuracy": {
-            "mean": 0.18221920597217509,
-            "sd": 0.0
-          },
-          "log_loss": {
-            "mean": 1.7899413369434047,
-            "sd": 0.0
-          }
-        },
-        "gap_macro_auc": {
-          "mean": 0.0003076095035081476,
-          "sd": 0.0005440657103587429
-        }
       },
-      "utility_diagnostics": {
-        "epsilon8_annotation": true,
-        "annotation_only": true,
-        "macro_auc_above_chance": false,
-        "accuracy_above_majority": false,
-        "per_seed": [
-          {
-            "macro_auc_above_chance": true,
-            "accuracy_above_majority": false,
-            "annotation_only": true
-          },
-          {
-            "macro_auc_above_chance": false,
-            "accuracy_above_majority": false,
-            "annotation_only": true
-          },
-          {
-            "macro_auc_above_chance": false,
-            "accuracy_above_majority": false,
-            "annotation_only": true
-          }
-        ]
-      }
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Unmodified release bounds and totalizes each window, averages features over each subject and selects the modal activity with lowest-label tie break. Seven effective training sequences per site. This is not per-subject clipping of a loss evaluated on all windows.",
+        "Only 21 independent training privacy units; fixed split, SD reflects training replicates only.",
+        "Central uses the same subject-pooling preprocessing; it is not a fully trained window-level HAR reference.",
+        "No pooled-DP twin scheduled; each epsilon is a separate per-training contract, not a composed campaign guarantee."
+      ]
     },
     {
       "file": "pilot_uci_har_pytorch_lstm_eps4.json",
       "sha256": "663c10ad52c3f1f74514fa7226675a37409141dee7d86234c6b6bf7bd4e13a0d",
+      "revision": "original",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI HAR",
+      "unit": "subject",
       "epsilon": 4,
+      "interpretation": "Pipeline/specification did not learn: the noiseless central twin was at chance-like utility (macro AUC 0.435143, accuracy 0.169551, log-loss 1.799129). It trained 21 modal-labelled subject averages for only five SGD updates at learning rate 0.001. This is not a privacy utility result. Original records are preserved byte-for-byte.",
       "summary": {
         "federated_dp": {
           "macro_auc": {
@@ -208,7 +153,7 @@
           "sd": 0.0007952172782846071
         }
       },
-      "utility_diagnostics": {
+      "diagnostics": {
         "epsilon8_annotation": false,
         "annotation_only": true,
         "macro_auc_above_chance": false,
@@ -230,12 +175,1798 @@
             "annotation_only": true
           }
         ]
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Unmodified release bounds and totalizes each window, averages features over each subject and selects the modal activity with lowest-label tie break. Seven effective training sequences per site. This is not per-subject clipping of a loss evaluated on all windows.",
+        "Only 21 independent training privacy units; fixed split, SD reflects training replicates only.",
+        "Central uses the same subject-pooling preprocessing; it is not a fully trained window-level HAR reference.",
+        "No pooled-DP twin scheduled; each epsilon is a separate per-training contract, not a composed campaign guarantee."
+      ]
+    },
+    {
+      "file": "pilot_uci_har_pytorch_lstm_eps8.json",
+      "sha256": "185bbab1205ab8da754fae207313a7cabfb7be950de1b5882d23cf1ea733db03",
+      "revision": "original",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI HAR",
+      "unit": "subject",
+      "epsilon": 8,
+      "interpretation": "Pipeline/specification did not learn: the noiseless central twin was at chance-like utility (macro AUC 0.435143, accuracy 0.169551, log-loss 1.799129). It trained 21 modal-labelled subject averages for only five SGD updates at learning rate 0.001. This is not a privacy utility result. Original records are preserved byte-for-byte.",
+      "summary": {
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.4354505308353831,
+            "sd": 0.07776274359934472
+          },
+          "accuracy": {
+            "mean": 0.1695509557742337,
+            "sd": 0.010405447919562869
+          },
+          "log_loss": {
+            "mean": 1.7990823710438277,
+            "sd": 0.0009068119248026901
+          }
+        },
+        "central": {
+          "macro_auc": {
+            "mean": 0.435142921331875,
+            "sd": 0.07726846810301545
+          },
+          "accuracy": {
+            "mean": 0.1695509557742337,
+            "sd": 0.010405447919562869
+          },
+          "log_loss": {
+            "mean": 1.7991289686240062,
+            "sd": 0.0009504544370144952
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": 0.0003076095035081476,
+          "sd": 0.0005440657103587429
+        }
+      },
+      "diagnostics": {
+        "epsilon8_annotation": true,
+        "annotation_only": true,
+        "macro_auc_above_chance": false,
+        "accuracy_above_majority": false,
+        "per_seed": [
+          {
+            "macro_auc_above_chance": true,
+            "accuracy_above_majority": false,
+            "annotation_only": true
+          },
+          {
+            "macro_auc_above_chance": false,
+            "accuracy_above_majority": false,
+            "annotation_only": true
+          },
+          {
+            "macro_auc_above_chance": false,
+            "accuracy_above_majority": false,
+            "annotation_only": true
+          }
+        ]
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Unmodified release bounds and totalizes each window, averages features over each subject and selects the modal activity with lowest-label tie break. Seven effective training sequences per site. This is not per-subject clipping of a loss evaluated on all windows.",
+        "Only 21 independent training privacy units; fixed split, SD reflects training replicates only.",
+        "Central uses the same subject-pooling preprocessing; it is not a fully trained window-level HAR reference.",
+        "No pooled-DP twin scheduled; each epsilon is a separate per-training contract, not a composed campaign guarantee."
+      ]
+    },
+    {
+      "file": "har_subject_pytorch_lstm_eps1.json",
+      "sha256": "6b4c07b1a3b20e6c589bc399e9f4d65a4207e0a2b0de7cafbf8d88d2ee2ac3fd",
+      "revision": "R3",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI HAR",
+      "unit": "subject",
+      "epsilon": 1,
+      "interpretation": "Released patient contract: per-subject clipping after feature averaging and modal-label pooling; 7 subjects/site, 21 total. Original-window per-subject loss is unsupported by this contract. The central comparator learns all original windows, so its gap also includes the pooling/task mismatch.",
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.4604320832886393,
+            "sd": 0.06372944636426946
+          },
+          "accuracy": {
+            "mean": 0.1809750028277344,
+            "sd": 0.027010888622250876
+          },
+          "log_loss": {
+            "mean": 1.7995379048402,
+            "sd": 0.003274317371644957
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.5092325196021987,
+          "sd": 0.07431388122972923
+        }
+      },
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": false,
+        "federated_accuracy_above_majority": false
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Released patient contract: per-subject clipping after feature averaging and modal-label pooling; 7 subjects/site, 21 total. Original-window per-subject loss is unsupported by this contract. The central comparator learns all original windows, so its gap also includes the pooling/task mismatch.",
+        "Fixed split; SD measures training replicates only.",
+        "Each epsilon is a separate per-training contract, not a composed campaign guarantee.",
+        "AUC and accuracy use windows; the central comparator is shared once per seed across corrected cells."
+      ]
+    },
+    {
+      "file": "har_subject_pytorch_lstm_eps4.json",
+      "sha256": "cdce1b5c93632296085d04f0e558c2ac2f8c2ed392113984898cf996713acf1a",
+      "revision": "R3",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI HAR",
+      "unit": "subject",
+      "epsilon": 4,
+      "interpretation": "Released patient contract: per-subject clipping after feature averaging and modal-label pooling; 7 subjects/site, 21 total. Original-window per-subject loss is unsupported by this contract. The central comparator learns all original windows, so its gap also includes the pooling/task mismatch.",
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.4713546974633991,
+            "sd": 0.06516658853022057
+          },
+          "accuracy": {
+            "mean": 0.16468725257323832,
+            "sd": 0.004242732571770396
+          },
+          "log_loss": {
+            "mean": 1.7977850017564403,
+            "sd": 0.003310361082541973
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.4983099054274391,
+          "sd": 0.07603706987496744
+        }
+      },
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": false,
+        "federated_accuracy_above_majority": false
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Released patient contract: per-subject clipping after feature averaging and modal-label pooling; 7 subjects/site, 21 total. Original-window per-subject loss is unsupported by this contract. The central comparator learns all original windows, so its gap also includes the pooling/task mismatch.",
+        "Fixed split; SD measures training replicates only.",
+        "Each epsilon is a separate per-training contract, not a composed campaign guarantee.",
+        "AUC and accuracy use windows; the central comparator is shared once per seed across corrected cells."
+      ]
+    },
+    {
+      "file": "har_subject_pytorch_lstm_eps8.json",
+      "sha256": "7afb90460aab650f26ab85be72700975f1e4e743f5bb6f240e16cd45d0b0a0d3",
+      "revision": "R3",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI HAR",
+      "unit": "subject",
+      "epsilon": 8,
+      "interpretation": "Released patient contract: per-subject clipping after feature averaging and modal-label pooling; 7 subjects/site, 21 total. Original-window per-subject loss is unsupported by this contract. The central comparator learns all original windows, so its gap also includes the pooling/task mismatch.",
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.5341957353308907,
+            "sd": 0.027338815181631598
+          },
+          "accuracy": {
+            "mean": 0.15756136183689626,
+            "sd": 0.02714907801131685
+          },
+          "log_loss": {
+            "mean": 1.7945889919688964,
+            "sd": 0.0009791040785678948
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.43546886755994735,
+          "sd": 0.030243419067070242
+        }
+      },
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": false
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Released patient contract: per-subject clipping after feature averaging and modal-label pooling; 7 subjects/site, 21 total. Original-window per-subject loss is unsupported by this contract. The central comparator learns all original windows, so its gap also includes the pooling/task mismatch.",
+        "Fixed split; SD measures training replicates only.",
+        "Each epsilon is a separate per-training contract, not a composed campaign guarantee.",
+        "AUC and accuracy use windows; the central comparator is shared once per seed across corrected cells."
+      ]
+    },
+    {
+      "file": "har_window_pytorch_lstm_eps1.json",
+      "sha256": "cb7f6228018ddde55016ec7191e7c7a88076e5e573ca5f30d042a079f77b4c9d",
+      "revision": "R3",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI HAR",
+      "unit": "window",
+      "epsilon": 1,
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites. Each row/window is the privacy unit; this does not provide subject-level protection.",
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.7425786516947754,
+            "sd": 0.015190437234423777
+          },
+          "accuracy": {
+            "mean": 0.3570863024544735,
+            "sd": 0.004944574820584644
+          },
+          "log_loss": {
+            "mean": 1.3729987630663432,
+            "sd": 0.02752995611274679
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.22708595119606267,
+          "sd": 0.01921698200982302
+        }
+      },
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Window-level mechanism measurement on subject-disjoint sites. Each row/window is the privacy unit; this does not provide subject-level protection.",
+        "Fixed split; SD measures training replicates only.",
+        "Each epsilon is a separate per-training contract, not a composed campaign guarantee.",
+        "AUC and accuracy use windows; the central comparator is shared once per seed across corrected cells."
+      ]
+    },
+    {
+      "file": "har_window_pytorch_lstm_eps4.json",
+      "sha256": "039c6dd7f9faaea4eef1f464b4d8e0fb7f26c5b0e36ef21e5f0ed045dfb8d7bd",
+      "revision": "R3",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI HAR",
+      "unit": "window",
+      "epsilon": 4,
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites. Each row/window is the privacy unit; this does not provide subject-level protection.",
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.7889042124618243,
+            "sd": 0.005335844218168868
+          },
+          "accuracy": {
+            "mean": 0.41465897522904643,
+            "sd": 0.030068378577367803
+          },
+          "log_loss": {
+            "mean": 1.3631763048942123,
+            "sd": 0.049453129162356765
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.1807603904290137,
+          "sd": 0.018168509131340535
+        }
+      },
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Window-level mechanism measurement on subject-disjoint sites. Each row/window is the privacy unit; this does not provide subject-level protection.",
+        "Fixed split; SD measures training replicates only.",
+        "Each epsilon is a separate per-training contract, not a composed campaign guarantee.",
+        "AUC and accuracy use windows; the central comparator is shared once per seed across corrected cells."
+      ]
+    },
+    {
+      "file": "har_window_pytorch_lstm_eps8.json",
+      "sha256": "35e2fc4b299db780246da40e0342b90123cda6cbf38f3348885c9880c3d30188",
+      "revision": "R3",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI HAR",
+      "unit": "window",
+      "epsilon": 8,
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites. Each row/window is the privacy unit; this does not provide subject-level protection.",
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.8013640085860811,
+            "sd": 0.015542148754273311
+          },
+          "accuracy": {
+            "mean": 0.4842212419409569,
+            "sd": 0.03157575429571577
+          },
+          "log_loss": {
+            "mean": 1.3484978064194852,
+            "sd": 0.040035344819159824
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.16830059430475694,
+          "sd": 0.029491237025968786
+        }
+      },
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Window-level mechanism measurement on subject-disjoint sites. Each row/window is the privacy unit; this does not provide subject-level protection.",
+        "Fixed split; SD measures training replicates only.",
+        "Each epsilon is a separate per-training contract, not a composed campaign guarantee.",
+        "AUC and accuracy use windows; the central comparator is shared once per seed across corrected cells."
+      ]
+    }
+  ],
+  "interpretations": {
+    "original": "Pipeline/specification did not learn: the noiseless central twin was at chance-like utility (macro AUC 0.435143, accuracy 0.169551, log-loss 1.799129). It trained 21 modal-labelled subject averages for only five SGD updates at learning rate 0.001. This is not a privacy utility result. Original records are preserved byte-for-byte.",
+    "subject": "Released patient contract; subject is the privacy unit, with per-unit gradient clipping AFTER within-subject feature averaging and modal-label pooling. Seven units/site, 21 total. It does NOT average original-window losses or their gradients per subject; that requested task is unsupported without a mechanism change. This cell measures the supported subject-pooled surrogate.",
+    "window": "Released row contract, per-window clipping, subject-disjoint sites, populations 2553/2397/2402. Mechanism measurement at window level ONLY, not subject protection."
+  },
+  "shared_corrected_central": [
+    {
+      "seed": 20260922,
+      "metrics": {
+        "macro_auc": 0.9660119800008412,
+        "accuracy": 0.7125890736342043,
+        "log_loss": 0.5963698369669556,
+        "auc_per_class": [
+          0.9756238401705689,
+          0.9698549814953918,
+          0.9789181600618087,
+          0.9175658597424654,
+          0.9602017466025312,
+          0.9939072919322809
+        ]
+      },
+      "model_sha256": "55d13ecfbd4b41ee2c4b12269116850020016614f0a7cc73a145517778af42e8",
+      "training": {
+        "status": "trained_unscored",
+        "seed": 20260922,
+        "epochs": 20,
+        "learning_rate": 0.01,
+        "batch_size": 256,
+        "optimizer": "adam",
+        "optimizer_reset_every_epochs": 4,
+        "steps": 580,
+        "initial_tensor_sha256": [
+          "8f348a5745982e2c0c1c29d20873672ca672ff3e8ce03a2f0668e15077d05cce",
+          "f8cdfc69b1b787f4126003ab546c2e8388145bbbd8c171cf92034428fc0d3385",
+          "48cc581e39fb64b94ddbe0e07b18f0d8609ce46b1518143f720362e3b904a842",
+          "00805f5aab905bb1fe8f338405b033e80382b295bcd32c0f07294064bec36a37",
+          "d65fe155cd73a671ab5196086ecd38ee750662fda4f42cc17de86e88807640f9",
+          "f38551f43fd727e506af26a41a0f7e92be8bb37d75cd277d14d8514a0e9651b8"
+        ],
+        "history": [
+          {
+            "epoch": 1,
+            "training_loss": 1.4574373426108524,
+            "macro_auc": 0.8286854530446122,
+            "accuracy": 0.367791077257889,
+            "log_loss": 1.3348006010055542,
+            "auc_per_class": [
+              0.7204859360822664,
+              0.8296803395687777,
+              0.7252678571428571,
+              0.8828550759585242,
+              0.8280799197716578,
+              0.9857435897435898
+            ]
+          },
+          {
+            "epoch": 2,
+            "training_loss": 1.2423011393382632,
+            "macro_auc": 0.8508146110861841,
+            "accuracy": 0.39173014145810664,
+            "log_loss": 1.409696102142334,
+            "auc_per_class": [
+              0.7738851362704574,
+              0.8537018255578094,
+              0.7562815126050421,
+              0.8528735632183908,
+              0.8876880351770423,
+              0.9804575936883629
+            ]
+          },
+          {
+            "epoch": 3,
+            "training_loss": 1.6882973498311535,
+            "macro_auc": 0.7629517310834171,
+            "accuracy": 0.29053318824809576,
+            "log_loss": 1.5609103441238403,
+            "auc_per_class": [
+              0.7464714184897672,
+              0.8137207948313425,
+              0.6750735294117647,
+              0.6269672855879752,
+              0.7327239065031242,
+              0.9827534516765286
+            ]
+          },
+          {
+            "epoch": 4,
+            "training_loss": 1.3034243953639064,
+            "macro_auc": 0.8741952810231418,
+            "accuracy": 0.5865070729053319,
+            "log_loss": 1.1192145347595215,
+            "auc_per_class": [
+              0.8299223712067749,
+              0.8459356922845767,
+              0.7883718487394958,
+              0.8625432039225143,
+              0.9281184910900254,
+              0.9902800788954635
+            ]
+          },
+          {
+            "epoch": 5,
+            "training_loss": 1.12459194043587,
+            "macro_auc": 0.8728878784994599,
+            "accuracy": 0.5255712731229597,
+            "log_loss": 1.1253466606140137,
+            "auc_per_class": [
+              0.8129851799576571,
+              0.861045376004808,
+              0.797594537815126,
+              0.7959890684028615,
+              0.9714803671989508,
+              0.998232741617357
+            ]
+          },
+          {
+            "epoch": 6,
+            "training_loss": 1.0297605929703548,
+            "macro_auc": 0.9111743333733037,
+            "accuracy": 0.5745375408052231,
+            "log_loss": 0.9407027363777161,
+            "auc_per_class": [
+              0.8383069529858521,
+              0.8669427541131395,
+              0.8736344537815126,
+              0.9191061811751466,
+              0.9736789323459076,
+              0.9953767258382643
+            ]
+          },
+          {
+            "epoch": 7,
+            "training_loss": 0.7783338160350405,
+            "macro_auc": 0.9518763477258001,
+            "accuracy": 0.7268770402611534,
+            "log_loss": 0.688915491104126,
+            "auc_per_class": [
+              0.9404761904761905,
+              0.8832732326647134,
+              0.9628361344537815,
+              0.9502531950807813,
+              0.9758157833834761,
+              0.998603550295858
+            ]
+          },
+          {
+            "epoch": 8,
+            "training_loss": 0.7670374800418985,
+            "macro_auc": 0.950463288092104,
+            "accuracy": 0.6060935799782372,
+            "log_loss": 0.8863968849182129,
+            "auc_per_class": [
+              0.9182209228080788,
+              0.8947862669972203,
+              0.9774579831932773,
+              0.9691102001446829,
+              0.9614055388413176,
+              0.9817988165680474
+            ]
+          },
+          {
+            "epoch": 9,
+            "training_loss": 0.6062665653639826,
+            "macro_auc": 0.9735160424023587,
+            "accuracy": 0.8226332970620239,
+            "log_loss": 0.4985380172729492,
+            "auc_per_class": [
+              0.954447692979803,
+              0.9485294117647058,
+              0.995031512605042,
+              0.9684028615063098,
+              0.9762863534675615,
+              0.9983984220907298
+            ]
+          },
+          {
+            "epoch": 10,
+            "training_loss": 0.47430087574597063,
+            "macro_auc": 0.9776564815070873,
+            "accuracy": 0.8302502720348205,
+            "log_loss": 0.42814552783966064,
+            "auc_per_class": [
+              0.9749386698927983,
+              0.9694895199459094,
+              0.9944117647058823,
+              0.9478739651153444,
+              0.9806371981794337,
+              0.9985877712031558
+            ]
+          },
+          {
+            "epoch": 11,
+            "training_loss": 0.944660157992922,
+            "macro_auc": 0.9261924058011414,
+            "accuracy": 0.5930359085963003,
+            "log_loss": 0.9670165777206421,
+            "auc_per_class": [
+              0.873987633161945,
+              0.8858932461873639,
+              0.9735924369747899,
+              0.8971063419339281,
+              0.9293913445961582,
+              0.9971834319526627
+            ]
+          },
+          {
+            "epoch": 12,
+            "training_loss": 0.8380762174211699,
+            "macro_auc": 0.9642434683746138,
+            "accuracy": 0.7856365614798694,
+            "log_loss": 0.6311516165733337,
+            "auc_per_class": [
+              0.9626474442988204,
+              0.9231650514611975,
+              0.9995693277310924,
+              0.9282935455349248,
+              0.9736789323459076,
+              0.9981065088757396
+            ]
+          },
+          {
+            "epoch": 13,
+            "training_loss": 0.6571485112453329,
+            "macro_auc": 0.973091296441477,
+            "accuracy": 0.8269858541893362,
+            "log_loss": 0.4978940486907959,
+            "auc_per_class": [
+              0.974585811741775,
+              0.9551780482307866,
+              0.9986239495798319,
+              0.9609918816815368,
+              0.9826197639435316,
+              0.9665483234714004
+            ]
+          },
+          {
+            "epoch": 14,
+            "training_loss": 0.543878592293838,
+            "macro_auc": 0.982915996556932,
+            "accuracy": 0.8487486398258978,
+            "log_loss": 0.42341116070747375,
+            "auc_per_class": [
+              0.974921867123702,
+              0.9682687251145669,
+              0.9998949579831933,
+              0.9754521340728237,
+              0.9791792023451361,
+              0.9997790927021696
+            ]
+          },
+          {
+            "epoch": 15,
+            "training_loss": 0.37362501436266404,
+            "macro_auc": 0.9870778534352608,
+            "accuracy": 0.8846572361262242,
+            "log_loss": 0.31084299087524414,
+            "auc_per_class": [
+              0.9849531202742212,
+              0.9840545413567726,
+              0.999905462184874,
+              0.9723092998955067,
+              0.9813314819100517,
+              0.9999132149901381
+            ]
+          },
+          {
+            "epoch": 16,
+            "training_loss": 0.27547043459168796,
+            "macro_auc": 0.991005391111564,
+            "accuracy": 0.9031556039173014,
+            "log_loss": 0.25535106658935547,
+            "auc_per_class": [
+              0.9936317505124844,
+              0.992534370069867,
+              0.999905462184874,
+              0.9777750984647536,
+              0.9829746200725141,
+              0.9992110453648915
+            ]
+          },
+          {
+            "epoch": 17,
+            "training_loss": 0.2709115944032011,
+            "macro_auc": 0.9820150126994128,
+            "accuracy": 0.8955386289445049,
+            "log_loss": 0.3235713243484497,
+            "auc_per_class": [
+              0.9941946432772121,
+              0.9941495755390278,
+              1.0,
+              0.9323446668274255,
+              0.9846871866080382,
+              0.9867140039447732
+            ]
+          },
+          {
+            "epoch": 18,
+            "training_loss": 1.3536058129935429,
+            "macro_auc": 0.9062398187354179,
+            "accuracy": 0.5212187159956474,
+            "log_loss": 1.2400681972503662,
+            "auc_per_class": [
+              0.9075763685855429,
+              0.8939974457215837,
+              0.9272899159663865,
+              0.8257776706052569,
+              0.9102136851037569,
+              0.9725838264299803
+            ]
+          },
+          {
+            "epoch": 19,
+            "training_loss": 0.7925981468167799,
+            "macro_auc": 0.931420823574315,
+            "accuracy": 0.6996735582154516,
+            "log_loss": 0.9352352619171143,
+            "auc_per_class": [
+              0.9416859898511275,
+              0.9701468710089399,
+              0.9930462184873949,
+              0.9034000482276344,
+              0.802028851346139,
+              0.9782169625246548
+            ]
+          },
+          {
+            "epoch": 20,
+            "training_loss": 0.9149659943991694,
+            "macro_auc": 0.9729247654956708,
+            "accuracy": 0.70620239390642,
+            "log_loss": 0.5411474108695984,
+            "auc_per_class": [
+              0.9718889673018113,
+              0.9824111636991961,
+              0.9941806722689076,
+              0.9226428743670123,
+              0.9703617989662887,
+              0.9960631163708087
+            ]
+          }
+        ],
+        "elapsed_s": 96.0643009878695,
+        "test_accessed": false,
+        "n_training_windows": 7352,
+        "model_sha256": "55d13ecfbd4b41ee2c4b12269116850020016614f0a7cc73a145517778af42e8",
+        "history_evaluation": "TRAIN monitor every eighth window; not validation or test",
+        "protocol_sha256": "c47da840354af9a325ea0ef1f7da5a49619024aefd8c0a7e41bea15ac55f5238",
+        "privacy": "No DP, no gradient clipping, no federation; shuffled ordinary minibatches",
+        "comparison": "Same architecture/init, bounds and nominal epochs; central uses all original windows"
+      },
+      "diagnostics": {
+        "predicted_class_counts": [
+          556,
+          469,
+          414,
+          999,
+          11,
+          498
+        ],
+        "mean_class_probability": [
+          0.17555210049599554,
+          0.17194167569539914,
+          0.1279207849961925,
+          0.20873145849586702,
+          0.14057482646966646,
+          0.17527915447198045
+        ],
+        "max_probability_span_across_windows": 0.9977835767767829,
+        "macro_auc_above_chance": true,
+        "accuracy_above_majority": true,
+        "annotation_only": true
+      }
+    },
+    {
+      "seed": 20260923,
+      "metrics": {
+        "macro_auc": 0.9578344354263297,
+        "accuracy": 0.7746861214794707,
+        "log_loss": 0.7610509374036627,
+        "auc_per_class": [
+          0.9767260894170912,
+          0.9330146904979952,
+          0.898706352347033,
+          0.9633251955392504,
+          0.9774179236912156,
+          0.9978163610653933
+        ]
+      },
+      "model_sha256": "caf04aa43672d14904fd3654a488072529533590ffdbdb3e42b28abd099bb26f",
+      "training": {
+        "status": "trained_unscored",
+        "seed": 20260923,
+        "epochs": 20,
+        "learning_rate": 0.01,
+        "batch_size": 256,
+        "optimizer": "adam",
+        "optimizer_reset_every_epochs": 4,
+        "steps": 580,
+        "initial_tensor_sha256": [
+          "cf0aa117bb0ae06b415b8c67e40d2c726acd53157532354696e0006ad6ac4d7e",
+          "0f7f67266cea27affb765abd1b459445f72cbd6f9d71a7ef8743f59e479a6f0e",
+          "535ba33109060d7a8a0c574fb02c40158bfbce6ad80ed85fe9ea5149593298ac",
+          "98fcaa61b79c406178e6a8bcc39b890bf025f83b369511d5744a9d9db81f71ce",
+          "a49a67daa2e34cfc7c2c272f8dd6590ee125e33a6327027855a1bb760a626006",
+          "734830739fa2b36ea190efc60ca329ca6b141c12a129d7fa85ebefb77aa17d82"
+        ],
+        "history": [
+          {
+            "epoch": 1,
+            "training_loss": 1.5576033921077335,
+            "macro_auc": 0.7765388631622759,
+            "accuracy": 0.41131664853101196,
+            "log_loss": 1.3749079704284668,
+            "auc_per_class": [
+              0.6582694828107672,
+              0.8102415295620163,
+              0.6608193277310924,
+              0.7118961498271843,
+              0.8217542235593612,
+              0.9962524654832348
+            ]
+          },
+          {
+            "epoch": 2,
+            "training_loss": 1.3163014732558151,
+            "macro_auc": 0.8560817056584179,
+            "accuracy": 0.44940152339499456,
+            "log_loss": 1.2150142192840576,
+            "auc_per_class": [
+              0.7836643478845313,
+              0.8696472842010368,
+              0.7836659663865546,
+              0.887766256731774,
+              0.813592532592764,
+              0.9981538461538462
+            ]
+          },
+          {
+            "epoch": 3,
+            "training_loss": 1.1464180514730256,
+            "macro_auc": 0.8548703477019561,
+            "accuracy": 0.45375408052230687,
+            "log_loss": 1.3989838361740112,
+            "auc_per_class": [
+              0.7542679033504721,
+              0.8381789497408159,
+              0.7709873949579832,
+              0.910176030865686,
+              0.8615289670600941,
+              0.9940828402366864
+            ]
+          },
+          {
+            "epoch": 4,
+            "training_loss": 1.1360391933342506,
+            "macro_auc": 0.8816658157118694,
+            "accuracy": 0.5560391730141458,
+            "log_loss": 1.1090350151062012,
+            "auc_per_class": [
+              0.79889605807037,
+              0.8315397040042071,
+              0.8415021008403362,
+              0.9413150068322482,
+              0.8774126359638973,
+              0.9993293885601577
+            ]
+          },
+          {
+            "epoch": 5,
+            "training_loss": 1.0537474114319374,
+            "macro_auc": 0.9043964787748403,
+            "accuracy": 0.5647442872687704,
+            "log_loss": 0.8949452638626099,
+            "auc_per_class": [
+              0.845322109083577,
+              0.8657407407407407,
+              0.8630357142857142,
+              0.87480909894703,
+              0.9803903417418808,
+              0.9970808678500986
+            ]
+          },
+          {
+            "epoch": 6,
+            "training_loss": 0.9599604133901924,
+            "macro_auc": 0.9173603173456993,
+            "accuracy": 0.6017410228509249,
+            "log_loss": 0.8451362252235413,
+            "auc_per_class": [
+              0.8674681587525624,
+              0.8762865299376456,
+              0.887563025210084,
+              0.9051362430672776,
+              0.9734436473038649,
+              0.9942642998027613
+            ]
+          },
+          {
+            "epoch": 7,
+            "training_loss": 0.7851862085276636,
+            "macro_auc": 0.932445772880708,
+            "accuracy": 0.6713819368879217,
+            "log_loss": 0.7899101376533508,
+            "auc_per_class": [
+              0.859848102967369,
+              0.8928423859965442,
+              0.9200945378151261,
+              0.9609677678643196,
+              0.9653320990511456,
+              0.9955897435897436
+            ]
+          },
+          {
+            "epoch": 8,
+            "training_loss": 0.6609846332977558,
+            "macro_auc": 0.9630338837667883,
+            "accuracy": 0.7584330794341676,
+            "log_loss": 0.5340362787246704,
+            "auc_per_class": [
+              0.9253789024431226,
+              0.9159905341446923,
+              0.983876050420168,
+              0.9726468933365485,
+              0.9807606263982103,
+              0.9995502958579882
+            ]
+          },
+          {
+            "epoch": 9,
+            "training_loss": 0.6785300045177854,
+            "macro_auc": 0.9602301382455448,
+            "accuracy": 0.7682263329706203,
+            "log_loss": 0.5690560936927795,
+            "auc_per_class": [
+              0.9165490472829922,
+              0.9212211704605213,
+              0.963655462184874,
+              0.9779840848806366,
+              0.982002622849649,
+              0.9999684418145957
+            ]
+          },
+          {
+            "epoch": 10,
+            "training_loss": 0.543798580251891,
+            "macro_auc": 0.9619511697473954,
+            "accuracy": 0.7573449401523396,
+            "log_loss": 0.5581618547439575,
+            "auc_per_class": [
+              0.9218839264710824,
+              0.9196623093681917,
+              0.9753571428571428,
+              0.9782895265653886,
+              0.9791097739720743,
+              0.9974043392504931
+            ]
+          },
+          {
+            "epoch": 11,
+            "training_loss": 0.6187565336967337,
+            "macro_auc": 0.9389469566236665,
+            "accuracy": 0.7116430903155604,
+            "log_loss": 0.6979090571403503,
+            "auc_per_class": [
+              0.8887320630439897,
+              0.8961573135001127,
+              0.9214285714285714,
+              0.9508158508158508,
+              0.9772737792177737,
+              0.9992741617357002
+            ]
+          },
+          {
+            "epoch": 12,
+            "training_loss": 0.6526453001745816,
+            "macro_auc": 0.9341605980194053,
+            "accuracy": 0.6605005440696409,
+            "log_loss": 0.8816578984260559,
+            "auc_per_class": [
+              0.9080216419665961,
+              0.919296070918789,
+              0.9426575630252101,
+              0.8558797524314765,
+              0.9815937668749518,
+              0.9975147928994083
+            ]
+          },
+          {
+            "epoch": 13,
+            "training_loss": 0.6043963206225428,
+            "macro_auc": 0.9743213910957892,
+            "accuracy": 0.8346028291621328,
+            "log_loss": 0.4930535554885864,
+            "auc_per_class": [
+              0.9748126491245758,
+              0.9621741416873263,
+              0.9898634453781513,
+              0.9380274897516276,
+              0.982581192625164,
+              0.9984694280078895
+            ]
+          },
+          {
+            "epoch": 14,
+            "training_loss": 0.533411077384291,
+            "macro_auc": 0.9748980286766334,
+            "accuracy": 0.8335146898803046,
+            "log_loss": 0.4610944390296936,
+            "auc_per_class": [
+              0.966066807809927,
+              0.9466888287882202,
+              0.9876050420168068,
+              0.9665059078852183,
+              0.9831211910823112,
+              0.9994003944773175
+            ]
+          },
+          {
+            "epoch": 15,
+            "training_loss": 0.5394805515634602,
+            "macro_auc": 0.9335747469607334,
+            "accuracy": 0.6409140369967355,
+            "log_loss": 1.0325506925582886,
+            "auc_per_class": [
+              0.8701313976543334,
+              0.8859120276463076,
+              0.928686974789916,
+              0.936717305682823,
+              0.9808686260896398,
+              0.9991321499013807
+            ]
+          },
+          {
+            "epoch": 16,
+            "training_loss": 0.7307580401157511,
+            "macro_auc": 0.9538981270365395,
+            "accuracy": 0.720348204570185,
+            "log_loss": 0.6088411808013916,
+            "auc_per_class": [
+              0.9012081190980273,
+              0.9203853955375254,
+              0.9586134453781513,
+              0.9623904830801383,
+              0.9828820489084317,
+              0.9979092702169625
+            ]
+          },
+          {
+            "epoch": 17,
+            "training_loss": 0.4926450838302744,
+            "macro_auc": 0.9809520556159904,
+            "accuracy": 0.8574537540805223,
+            "log_loss": 0.37247464060783386,
+            "auc_per_class": [
+              0.9652686762778506,
+              0.960521373300278,
+              0.9972689075630252,
+              0.9763684591270798,
+              0.9865926097354007,
+              0.9996923076923077
+            ]
+          },
+          {
+            "epoch": 18,
+            "training_loss": 0.421696104880037,
+            "macro_auc": 0.9597882807748398,
+            "accuracy": 0.7421109902067464,
+            "log_loss": 0.7730979919433594,
+            "auc_per_class": [
+              0.9671337836475451,
+              0.9336451055517992,
+              0.9965231092436975,
+              0.894188570050639,
+              0.9702923705932269,
+              0.9969467455621301
+            ]
+          },
+          {
+            "epoch": 19,
+            "training_loss": 0.6198673803230812,
+            "macro_auc": 0.9879686694646566,
+            "accuracy": 0.8857453754080522,
+            "log_loss": 0.3312913775444031,
+            "auc_per_class": [
+              0.9825419229088954,
+              0.984026369168357,
+              0.998655462184874,
+              0.9786351579455028,
+              0.9840083314047674,
+              0.9999447731755424
+            ]
+          },
+          {
+            "epoch": 20,
+            "training_loss": 0.26322440443367795,
+            "macro_auc": 0.9796625653469162,
+            "accuracy": 0.8563656147986942,
+            "log_loss": 0.44008228182792664,
+            "auc_per_class": [
+              0.9866670027220485,
+              0.9715742618886635,
+              0.9663655462184874,
+              0.971818985612089,
+              0.9835377613206819,
+              0.9980118343195267
+            ]
+          }
+        ],
+        "elapsed_s": 95.53764670342207,
+        "test_accessed": false,
+        "n_training_windows": 7352,
+        "model_sha256": "caf04aa43672d14904fd3654a488072529533590ffdbdb3e42b28abd099bb26f",
+        "history_evaluation": "TRAIN monitor every eighth window; not validation or test",
+        "protocol_sha256": "c47da840354af9a325ea0ef1f7da5a49619024aefd8c0a7e41bea15ac55f5238",
+        "privacy": "No DP, no gradient clipping, no federation; shuffled ordinary minibatches",
+        "comparison": "Same architecture/init, bounds and nominal epochs; central uses all original windows"
+      },
+      "diagnostics": {
+        "predicted_class_counts": [
+          613,
+          668,
+          146,
+          552,
+          474,
+          494
+        ],
+        "mean_class_probability": [
+          0.22331187059228283,
+          0.20921974172672828,
+          0.052770221927027586,
+          0.1694930738248561,
+          0.18018819397098693,
+          0.16501689646675077
+        ],
+        "max_probability_span_across_windows": 0.9974682570900768,
+        "macro_auc_above_chance": true,
+        "accuracy_above_majority": true,
+        "annotation_only": true
+      }
+    },
+    {
+      "seed": 20260924,
+      "metrics": {
+        "macro_auc": 0.9851473932453434,
+        "accuracy": 0.8883610451306413,
+        "log_loss": 0.34332406729137305,
+        "auc_per_class": [
+          0.9741966741685422,
+          0.9926959104644503,
+          0.9948150451316261,
+          0.9724694335166548,
+          0.9767072961907876,
+          1.0
+        ]
+      },
+      "model_sha256": "e040bc29f492cee2ca06bd7fba4416b4af411bb5a79bd060b653b6f28bbb9a10",
+      "training": {
+        "status": "trained_unscored",
+        "seed": 20260924,
+        "epochs": 20,
+        "learning_rate": 0.01,
+        "batch_size": 256,
+        "optimizer": "adam",
+        "optimizer_reset_every_epochs": 4,
+        "steps": 580,
+        "initial_tensor_sha256": [
+          "c7f443ddfa1e3de774d92b1df71d14375d3522bc8b4fc2b5a25bd2f7cd6899e4",
+          "fa2bddb4bceb0c20a943e082eee092b4fbeecbec379b2df4a0e2f50ca2cbce70",
+          "f1a0f76b50d643ccbdcd33eac8775a37e9cf1f61af08d576a96168dde0fb7700",
+          "e68af6bd029c0474322df666616c6ae568ddfccb3872e2de55bd5a777432b3cc",
+          "9f5ac73b0869d3904196a1c17df2f957618866398bb3cee8d8c28935a7e13035",
+          "e6825be569b4db4267ddd05cb776bf4f1d6cc52731513c0eb953944abcdcde73"
+        ],
+        "history": [
+          {
+            "epoch": 1,
+            "training_loss": 1.4939161703504364,
+            "macro_auc": 0.8400192455993949,
+            "accuracy": 0.3764961915125136,
+            "log_loss": 1.342976689338684,
+            "auc_per_class": [
+              0.7161592230399569,
+              0.8000525880850424,
+              0.7969432773109244,
+              0.9511855960131822,
+              0.7817866234667901,
+              0.9939881656804733
+            ]
+          },
+          {
+            "epoch": 2,
+            "training_loss": 1.3589234228791862,
+            "macro_auc": 0.8949309175589025,
+            "accuracy": 0.4385201305767138,
+            "log_loss": 1.1406676769256592,
+            "auc_per_class": [
+              0.8195382599052324,
+              0.8319716775599129,
+              0.8597899159663865,
+              0.9300699300699301,
+              0.9474504358558975,
+              0.9807652859960553
+            ]
+          },
+          {
+            "epoch": 3,
+            "training_loss": 1.0441306870559166,
+            "macro_auc": 0.9151441741511452,
+            "accuracy": 0.573449401523395,
+            "log_loss": 0.8648408055305481,
+            "auc_per_class": [
+              0.8340642537890244,
+              0.8538990308767185,
+              0.8801575630252101,
+              0.9479945342014308,
+              0.9796806294839158,
+              0.995069033530572
+            ]
+          },
+          {
+            "epoch": 4,
+            "training_loss": 0.8071356929581741,
+            "macro_auc": 0.9354458940204875,
+            "accuracy": 0.5952121871599565,
+            "log_loss": 0.851169764995575,
+            "auc_per_class": [
+              0.8750714117686594,
+              0.8913962136578769,
+              0.9273949579831933,
+              0.9438469576400611,
+              0.9771117796806295,
+              0.9978540433925049
+            ]
+          },
+          {
+            "epoch": 5,
+            "training_loss": 0.7194276657597772,
+            "macro_auc": 0.9641022263465268,
+            "accuracy": 0.7693144722524483,
+            "log_loss": 0.5576080083847046,
+            "auc_per_class": [
+              0.9305793594784421,
+              0.9160374877920517,
+              0.9859033613445378,
+              0.973113093802749,
+              0.9830826197639435,
+              0.9958974358974358
+            ]
+          },
+          {
+            "epoch": 6,
+            "training_loss": 0.6537769560156197,
+            "macro_auc": 0.9626314497713558,
+            "accuracy": 0.7540805223068553,
+            "log_loss": 0.6287318468093872,
+            "auc_per_class": [
+              0.9319067782370535,
+              0.9125441364285177,
+              0.9779096638655462,
+              0.9748734024596094,
+              0.9823574789786315,
+              0.9961972386587771
+            ]
+          },
+          {
+            "epoch": 7,
+            "training_loss": 0.4879339727862128,
+            "macro_auc": 0.977834425467155,
+            "accuracy": 0.8346028291621328,
+            "log_loss": 0.41338926553726196,
+            "auc_per_class": [
+              0.9575478038780791,
+              0.9498159417023514,
+              0.9999789915966386,
+              0.9764006108833695,
+              0.9834683329476201,
+              0.9997948717948718
+            ]
+          },
+          {
+            "epoch": 8,
+            "training_loss": 0.42439158106672353,
+            "macro_auc": 0.976118119571479,
+            "accuracy": 0.8193688792165397,
+            "log_loss": 0.43561506271362305,
+            "auc_per_class": [
+              0.972796316833014,
+              0.9334760724213057,
+              0.9863445378151261,
+              0.979173699863355,
+              0.9852888991745737,
+              0.999629191321499
+            ]
+          },
+          {
+            "epoch": 9,
+            "training_loss": 0.5721151695169252,
+            "macro_auc": 0.9498958656304235,
+            "accuracy": 0.7301414581066377,
+            "log_loss": 1.0284051895141602,
+            "auc_per_class": [
+              0.995496857882179,
+              0.9813594019983473,
+              0.9874264705882353,
+              0.784679688127964,
+              0.9622155365270385,
+              0.9881972386587771
+            ]
+          },
+          {
+            "epoch": 10,
+            "training_loss": 0.517780367670388,
+            "macro_auc": 0.9914773498969333,
+            "accuracy": 0.9129488574537541,
+            "log_loss": 0.30733004212379456,
+            "auc_per_class": [
+              0.9995463252343987,
+              0.9975302381488994,
+              0.9977941176470588,
+              0.9783618680170404,
+              0.9818406233125048,
+              0.9937909270216962
+            ]
+          },
+          {
+            "epoch": 11,
+            "training_loss": 0.48938465940541237,
+            "macro_auc": 0.9879246095487901,
+            "accuracy": 0.8857453754080522,
+            "log_loss": 0.40271952748298645,
+            "auc_per_class": [
+              0.9970091071008502,
+              0.9711141161445421,
+              0.9947584033613446,
+              0.9811429949360984,
+              0.9838386176039497,
+              0.9996844181459567
+            ]
+          },
+          {
+            "epoch": 12,
+            "training_loss": 0.3044159484320673,
+            "macro_auc": 0.9909879301012213,
+            "accuracy": 0.9238302502720348,
+            "log_loss": 0.24813315272331238,
+            "auc_per_class": [
+              0.9910861309943879,
+              0.9993144767485538,
+              0.996313025210084,
+              0.9767623181416285,
+              0.9827277636349611,
+              0.999723865877712
+            ]
+          },
+          {
+            "epoch": 13,
+            "training_loss": 0.25064131412012824,
+            "macro_auc": 0.993970571470094,
+            "accuracy": 0.9270946681175191,
+            "log_loss": 0.1865842044353485,
+            "auc_per_class": [
+              0.9991934670833753,
+              0.9973705957478777,
+              0.9994642857142857,
+              0.9826460895426413,
+              0.9851963280104914,
+              0.9999526627218935
+            ]
+          },
+          {
+            "epoch": 14,
+            "training_loss": 0.20003750714762458,
+            "macro_auc": 0.993863606512075,
+            "accuracy": 0.9325353645266594,
+            "log_loss": 0.17898660898208618,
+            "auc_per_class": [
+              0.9985045535504251,
+              0.9976147547141462,
+              0.9996113445378151,
+              0.9819467888433405,
+              0.9855357556121268,
+              0.9999684418145957
+            ]
+          },
+          {
+            "epoch": 15,
+            "training_loss": 0.18661342278636736,
+            "macro_auc": 0.994372288105358,
+            "accuracy": 0.9390642002176278,
+            "log_loss": 0.18781626224517822,
+            "auc_per_class": [
+              0.998353328628558,
+              0.9980842911877394,
+              1.0,
+              0.9834659593280283,
+              0.9863380390341742,
+              0.9999921104536489
+            ]
+          },
+          {
+            "epoch": 16,
+            "training_loss": 0.15697513392259335,
+            "macro_auc": 0.9947643297204279,
+            "accuracy": 0.9368879216539717,
+            "log_loss": 0.1437598615884781,
+            "auc_per_class": [
+              0.9996807473871694,
+              0.9995680264442942,
+              1.0,
+              0.9843260188087775,
+              0.9850111856823266,
+              1.0
+            ]
+          },
+          {
+            "epoch": 17,
+            "training_loss": 0.18751186594880861,
+            "macro_auc": 0.9944275543820944,
+            "accuracy": 0.9249183895538629,
+            "log_loss": 0.18375958502292633,
+            "auc_per_class": [
+              0.9983617300131061,
+              0.9985068740139734,
+              0.9999474789915966,
+              0.9842134876617635,
+              0.9855357556121268,
+              1.0
+            ]
+          },
+          {
+            "epoch": 18,
+            "training_loss": 0.1605525564016967,
+            "macro_auc": 0.9943589094208448,
+            "accuracy": 0.9390642002176278,
+            "log_loss": 0.14457504451274872,
+            "auc_per_class": [
+              0.9992690795443089,
+              0.998253324318233,
+              1.0,
+              0.984414436138574,
+              0.9842166165239528,
+              1.0
+            ]
+          },
+          {
+            "epoch": 19,
+            "training_loss": 0.21541470006622118,
+            "macro_auc": 0.9938493018566704,
+            "accuracy": 0.9249183895538629,
+            "log_loss": 0.18149511516094208,
+            "auc_per_class": [
+              0.998496152165877,
+              0.9997652317632033,
+              1.0,
+              0.9808054014950567,
+              0.9851808994831444,
+              0.9988481262327417
+            ]
+          },
+          {
+            "epoch": 20,
+            "training_loss": 0.18106127607411351,
+            "macro_auc": 0.9949239796056563,
+            "accuracy": 0.955386289445049,
+            "log_loss": 0.13851876556873322,
+            "auc_per_class": [
+              0.9997479584635548,
+              0.9996619337390128,
+              1.0,
+              0.9841893738445463,
+              0.985944611586824,
+              1.0
+            ]
+          }
+        ],
+        "elapsed_s": 95.09505248814821,
+        "test_accessed": false,
+        "n_training_windows": 7352,
+        "model_sha256": "e040bc29f492cee2ca06bd7fba4416b4af411bb5a79bd060b653b6f28bbb9a10",
+        "history_evaluation": "TRAIN monitor every eighth window; not validation or test",
+        "protocol_sha256": "c47da840354af9a325ea0ef1f7da5a49619024aefd8c0a7e41bea15ac55f5238",
+        "privacy": "No DP, no gradient clipping, no federation; shuffled ordinary minibatches",
+        "comparison": "Same architecture/init, bounds and nominal epochs; central uses all original windows"
+      },
+      "diagnostics": {
+        "predicted_class_counts": [
+          425,
+          533,
+          427,
+          495,
+          530,
+          537
+        ],
+        "mean_class_probability": [
+          0.14874364359250808,
+          0.17440918154618956,
+          0.14707595761582637,
+          0.16353513414844387,
+          0.18293054343632825,
+          0.1833055383564764
+        ],
+        "max_probability_span_across_windows": 0.9999642195997804,
+        "macro_auc_above_chance": true,
+        "accuracy_above_majority": true,
+        "annotation_only": true
       }
     }
   ],
-  "protocol_sha256": "8c518e23b3eccdc026ad21022c1d062a7f8b91b3dc3db9f5e5a5d5d18a0f8b7e",
+  "declaration_commit": "c6136371e644bd0c9a9e945c53f8d5d544475115",
+  "scoring_marker_sha256": "1b9811dffab47bfea530a2892c46bc2defc846b9e1f92d8c4fdd7a8abc6cce2d",
+  "protocol_sha256": "c47da840354af9a325ea0ef1f7da5a49619024aefd8c0a7e41bea15ac55f5238",
+  "protocol": {
+    "schema": "dsflower-sequence-protocol-r3-v1",
+    "token": "FLOWER_CELLS_SEQUENCE_2026-09-22",
+    "dataset": "UCI Human Activity Recognition Using Smartphones (240)",
+    "contract": "pytorch_lstm",
+    "units": [
+      "subject",
+      "window"
+    ],
+    "seeds": [
+      20260922,
+      20260923,
+      20260924
+    ],
+    "epsilon_order": [
+      1,
+      4,
+      8
+    ],
+    "rounds": 5,
+    "sites": 3,
+    "delta": 1e-06,
+    "clipping_norm": 1,
+    "model_params": {
+      "n_tokens": 128,
+      "n_features": 9,
+      "n_classes": 6,
+      "hidden": 32,
+      "optimizer": "adam",
+      "learning_rate": 0.01,
+      "batch_size": 256,
+      "local_epochs": 4,
+      "scheduler": "none",
+      "weight_decay": 0,
+      "l1_penalty": 0
+    },
+    "channels": [
+      "body_acc_x",
+      "body_acc_y",
+      "body_acc_z",
+      "body_gyro_x",
+      "body_gyro_y",
+      "body_gyro_z",
+      "total_acc_x",
+      "total_acc_y",
+      "total_acc_z"
+    ],
+    "channel_abs_bounds": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      2,
+      2,
+      2
+    ],
+    "preprocessing": "Raw time-major flat rows staged; unchanged contract applies clip(x,-b,b)/b once. Fixed public design constants: body acceleration 1 g, gyro 1 rad/s, total acceleration 2 g. No empirical bounds or moments. These are not guaranteed archive extrema.",
+    "layout": "C-order token-major flattening: 128 timesteps x 9 channels; recurrent input [N,128,9]. Last hidden state, hidden 32, linear head of six logits.",
+    "split": "Official train/test subjects. Sorted 21 TRAIN subjects dealt round-robin into three sites of seven, 2553/2397/2402 windows. Original TEST is read only once after all artifacts and checks complete.",
+    "inner_selection": {
+      "train_subjects": [
+        3,
+        5,
+        6,
+        7,
+        11,
+        14,
+        15,
+        16,
+        19,
+        21,
+        22,
+        23,
+        26,
+        27,
+        28,
+        29
+      ],
+      "validation_subjects": [
+        1,
+        8,
+        17,
+        25,
+        30
+      ],
+      "n_inner_train_windows": 5564,
+      "n_validation_windows": 1788,
+      "seed": 20260922,
+      "candidates": [
+        0.003,
+        0.01
+      ],
+      "optimizer": "adam",
+      "total_epochs": 20,
+      "batch_size": 256,
+      "optimizer_reset_every_epochs": 4,
+      "criterion": "Maximum final-epoch inner-validation macro OVR AUC; tie chooses lower LR",
+      "selected_learning_rate": 0.01,
+      "selected_macro_auc": 0.9889998115142878,
+      "selected_accuracy": 0.9373601789709173,
+      "selected_log_loss": 0.24091443419456482,
+      "test_accessed": false
+    },
+    "subject_cell": "Released patient contract; subject is the privacy unit, with per-unit gradient clipping AFTER within-subject feature averaging and modal-label pooling. Seven units/site, 21 total. It does NOT average original-window losses or their gradients per subject; that requested task is unsupported without a mechanism change. This cell measures the supported subject-pooled surrogate.",
+    "window_cell": "Released row contract, per-window clipping, subject-disjoint sites, populations 2553/2397/2402. Mechanism measurement at window level ONLY, not subject protection.",
+    "central": "Shared once per seed: identical contract-built LSTM/init and public bounds, all 7352 original TRAIN windows, Adam .01, batch256, 20 epochs, optimizer reset each four epochs. No DP, gradient clipping or federation. Ordinary shuffled minibatches; 580 updates. Subject comparison includes pooling/task mismatch.",
+    "expected_geometry": {
+      "subject": {
+        "population_per_site": [
+          7,
+          7,
+          7
+        ],
+        "steps_per_epoch": 1,
+        "total_steps_per_site": 20,
+        "sample_rate": 1.0
+      },
+      "window": {
+        "population_per_site": [
+          2553,
+          2397,
+          2402
+        ],
+        "steps_per_epoch": 10,
+        "total_steps_per_site": 200,
+        "sample_rate": 0.1,
+        "expected_batch_size_per_site": [
+          255,
+          239,
+          240
+        ]
+      }
+    },
+    "scoring": "One exclusive R3 scoring marker after verifying all 18 federations, 270 node-round captures and three central models. One test load, each model predicted once. No changes or training after scoring; no alternative on low utility.",
+    "metrics": [
+      "macro_one_vs_rest_auc",
+      "accuracy",
+      "log_loss"
+    ],
+    "gap": "federated-DP macro-AUC minus paired central macro-AUC; mean and sample SD over three seeds",
+    "diagnostics": "AUC above .5 and accuracy above training-majority test accuracy, predicted class counts and probability spread: annotations only.",
+    "privacy_scope": "Budgets are conditional per-training mechanism contracts, separate across eps/seeds/cells. Inner selection uses public non-DP TRAIN data and is not an end-to-end private selection guarantee. No composition claim across campaign.",
+    "randomness": "Public seeds determine initialization; unchanged node-owned cryptographic noise/sampling retains release semantics; no deterministic noise replacement.",
+    "original_run": "Preserve all pilot JSON bytes. Pipeline did not learn, evidenced by chance-like central twin and five-step training on 21 modal-labelled subject averages; not a privacy utility finding.",
+    "package_changes": "None; dsFlower0.5.1 c4eaaf153db4a7204878bf1d8995c16faa615110 and dsFlowerClient0.5.0; canonical runners and mechanisms unchanged."
+  },
   "runtime": {
-    "recorded_at": "2026-09-22T01:21:51.596708+00:00",
+    "recorded_at": "2026-09-22T02:02:54.385224+00:00",
     "host": {
       "pod_id": "5abpdvx54g6uz2",
       "pod_name": "pod-flower-sequence",
@@ -349,7 +2080,7 @@
       }
     },
     "tooling_sha256": {
-      "README.md": "f3b54e770284e22669d7a31e42a68070d4b17ea47075dae56c84e36b6a5f44b5",
+      "README.md": "99b6a95b844ad183647e820d8ad5f3da5a664b2597968d8763b5796769b347c8",
       "assemble_blocked.py": "e87881fa327e863371086f2f317f1dd686fe6347ff0c39e3b75f3f0ead34f5ab",
       "benchmark_hooks/sequence_public_observer.py": "7bed0e5920103ccae88f94e228b8e54a01c9b63fc1010f37d11cde697b4d2bc0",
       "benchmark_hooks/sitecustomize.py": "8cf61d7bb0d8326f60b14f29479407f879ef796b5c8742192d6c71b39f6f3fda",
@@ -360,14 +2091,21 @@
       "prepare_public_data.py": "778c62e17e8e93fb7d93193e10dcc75be6101bee4ae021adea9eb1b85510d177",
       "protocol.json": "8c518e23b3eccdc026ad21022c1d062a7f8b91b3dc3db9f5e5a5d5d18a0f8b7e",
       "provision.sh": "86ac8eedaffc09ba8aa7c9e378e4d7731fa3728d42a91a7f60669e517eac7c9e",
+      "r3/capture_runtime.py": "f7bf76031b09a129594db8d51a00c0769a1659b6c3ec9efff4ec9d95ce4efea3",
+      "r3/central.py": "420f9e46abc13b66a4afcf04f6b269757506b17d44f98c8bdf1549f573805477",
+      "r3/diagnose.py": "03177bfe0494aba26f06171d58fa4df1096ea2ca3ea8128e66b0e06c52fc6cdf",
+      "r3/protocol.json": "c47da840354af9a325ea0ef1f7da5a49619024aefd8c0a7e41bea15ac55f5238",
+      "r3/run_federated.R": "36370ccaeba63c86e6753424817bea3f4bc6be3fc4d8c80eb21bec0e508baa89",
+      "r3/run_matrix.py": "5721a6f306c92ec368e1ea80f423355bb3bacf835c14a684ac3184ac5dfc5499",
+      "r3/score.py": "8a2b0775400310472cbe8050f7eb765738d3a00c484f1135e09eb5b7865c2b72",
       "release-source.json": "cd5d046a82dd000180d22c287a0bc93e1c8c8f534edd1470710d012a1b8faa03",
       "relocate_console_scripts.py": "2ec29bfb458c975324f406cef9fe112b9acd2d7013363830ed5fd443c3bad8b0",
       "run_federated.R": "bd1661c705b85f7e9b8267290338c3e14d4d6e0bb32cb50549e470628033bfe9",
       "run_matrix.py": "de7904592db5dedf86e76b3776a8aff1a9db7172d9c711e8e02ed11c6705f611",
-      "score_and_assemble.py": "40e461695860f7022cf580ff29abce4780d0a047af99df6bb92063859f1ce17b",
+      "score_and_assemble.py": "b2c07b70de9d594473155a45f783fd2789d664dd3216c0b3458347a1d62ce0f4",
       "trace_guard.py": "85a1e240502901de196e43bd7f470de1656423ac3ffa6534b1624549a9896558"
     },
-    "tooling_commit": "9557545f6649f440c43566b6dcf4553db38bef65",
+    "tooling_commit": "c613637",
     "runtime_storage": {
       "Rlib": "/opt/cells-sequence/Rlib",
       "venvs": "/opt/cells-sequence/venvs",
@@ -395,6 +2133,76 @@
       20260922,
       20260923,
       20260924
-    ]
+    ],
+    "predecessor_runtime_sha256": "13c8f3aba92eed674db51c90ece3f06cc0780ce376e5fb7a9fc6950114dc5d82",
+    "campaign_revision": "R3"
+  },
+  "original_evidence_integrity": {
+    "status": "verified",
+    "files_checked": 47,
+    "manifest": "r3/original-evidence-hashes.json",
+    "manifest_sha256": "7b8c8d1ff4ae2077633bde635efb11581e68174b50d9bf42a8f9fc8b1dd5040e",
+    "verified_sha256": {
+      "startup-attempts.json": "84aff17c4967c64a3d17dda99285af708678e4ab772e66260b56047be8331c57",
+      "summary-r1.json": "5703a2809c7763777324c9e3b385605fa82a7a80823c1858a04ea0d4b52d8efc",
+      "runtime.json": "13c8f3aba92eed674db51c90ece3f06cc0780ce376e5fb7a9fc6950114dc5d82",
+      "audit.json": "c1f629e9d3b2b8818655b18d42ab17a9603ecba8c3d739a4557840acf669d06c",
+      "SEQUENCE_DIAGNOSIS.md": "33d6327aa66af6532c990a6a866485671e07d0aac391bd7191d81e866e244dc1",
+      "execution-audit.json": "2e4016d67b9a2a29cea77d27cfd63f285a2c4fb2f29d475fd6f45fc7c9d18602",
+      "reporting-correction.json": "5c388ae6943f31974235b47b2a1aac6cf0eaea81790e85393fb64c289d4685c1",
+      "pilot_uci_har_pytorch_lstm_eps1.json": "397b92c639d0d29d0431dcc32e01fe35349d22a4facba5cd4ec0d4af1c226204",
+      "central-replay-verification.json": "314d171d0ac824f43a04ad5066c511610a646b7c3a7323fc4901b113b6ba06d8",
+      "README-r1.md": "d54f7bdaba4f9f4d9609131a75ad478e52819d0a1a1a07466e10fe142655c63b",
+      "tooling-recovery.json": "e6381c15de71251e4c044a750f59cc82557e46dc054da1f985a51ee3db25d621",
+      "test-scoring-started.json": "0f106d396ce7a10a2205dbb3d0de80782d7365f9504d42d1977956a5757faf9d",
+      "preflight.json": "9e3daac1def0d4dc71d74c1443188d3d00f86ab148e3bb5870be9cc005b97d17",
+      "pilot_uci_har_pytorch_lstm_eps4.json": "663c10ad52c3f1f74514fa7226675a37409141dee7d86234c6b6bf7bd4e13a0d",
+      "pilot_uci_har_pytorch_lstm_eps8.json": "185bbab1205ab8da754fae207313a7cabfb7be950de1b5882d23cf1ea733db03",
+      "blocked-0.5.0/startup-attempts.json": "84aff17c4967c64a3d17dda99285af708678e4ab772e66260b56047be8331c57",
+      "blocked-0.5.0/summary.json": "ae340c7a99b82973c65253643e5c747eaaeaceda5a0611d211f0ebf50ae4fcab",
+      "blocked-0.5.0/runtime.json": "c8850b0ae6b154abe131dfb3564865d1b37fbe1cd191c1a2f2c9d113d5c009f4",
+      "blocked-0.5.0/audit.json": "c1f629e9d3b2b8818655b18d42ab17a9603ecba8c3d739a4557840acf669d06c",
+      "blocked-0.5.0/node-contract.json": "ea1c1a5d12d9d32d057723bd9798a1c074e2798627be83f8dbb4a2240b7712a5",
+      "blocked-0.5.0/pilot_uci_har_pytorch_lstm_eps1.json": "d64584cc646877dd8d1b0ff0bfb8b7665beb9856b78279f70e7b2f1a814c40e7",
+      "blocked-0.5.0/initial-capture.json": "af19ff1f624ae43f47e81fe00aea3f4eb3636a8bc786e2a0323837e8a5e64901",
+      "blocked-0.5.0/BLOCKED_SEQUENCE.md": "afcfc5a58d85e9ff1df55363601d07be8eca294e034dcd40c7ad15c1d91a4c0c",
+      "blocked-0.5.0/README.md": "91335ad476bc1c743c63b3d8c508b96893c404b1ad8bc0a00d046f0ca58a6dce",
+      "blocked-0.5.0/preflight.json": "4955c4a6db9d10838ac68eaf417ddac277f0f1c5ea063c505d8789592a3248d5",
+      "blocked-0.5.0/pilot_uci_har_pytorch_lstm_eps4.json": "3f0c96a61a676dac77bf1d11a44db138904f8d013632e10415aca9e033713305",
+      "blocked-0.5.0/public-node-diagnostics.json": "8f2558b822ad0acd9a23cae91bb1835e731b5335d1e01305fbea6ccfe7d7390d",
+      "blocked-0.5.0/federation-status.json": "34b0d3601d37a977342fcc36f1cee9cab42484431d78fd238a5e48f4885031b3",
+      "blocked-0.5.0/pilot_uci_har_pytorch_lstm_eps8.json": "49da249c87bbdbc0b061eb58fe7c8f1c7038da76b142d811bd4242dd716178a3",
+      "blocked-0.5.0/diagnosis-0.5.0/trace.json": "fefadf8f708644cbfb94e6345a0e67cc8218e60c109e6be4733e217171179d39",
+      "blocked-0.5.0/diagnosis-0.5.0/gru.log": "0ab75cfbd210d66243ddfe400e9a886a0905f5c17beecda87f00996129729cda",
+      "blocked-0.5.0/diagnosis-0.5.0/lstm.log": "94e423510eb4ef1cb8de615d81154e270f6fd040a93b70c27e5e7bbd639f388c",
+      "diagnosis-0.5.1/trace.json": "5f3b4268c364b5ee061482969fe83ad66b57b8fa03bfa5faac79c7183ac73a14",
+      "diagnosis-0.5.1/gru.log": "0c6f0fce2ecd45f056631b18ab127cd917b6071cf5be359cf9841078852af21b",
+      "diagnosis-0.5.1/lstm.log": "27043b8a3348e6cf555c5bcd0f3be08cd80bcae3f56b30f2b25051b02bb393dc",
+      "tooling-interruption/label-dtype/pytorch_lstm-eps1-seed20260922-central.log": "5b931ec1a11d9de231c6a00373440552c1efbfc4e2bd2caf88f04ce43fc834cd",
+      "tooling-interruption/checkpoint-aliases/pytorch_lstm-eps1-seed20260922-central.log": "8de8c2bd874c816903f5d87116163c4c13ba12d28eabbe0ffd07238f189d1ef9",
+      "verification/python-env-runtime.log": "392185456d1d86d549d08cf0e313b6ddd2939143d047428f503fa00d5026d117",
+      "verification/summary.json": "f06417e37ef0ef8122b142fcdf3e700af59e8ecb483d23f0203888b46c6cab04",
+      "verification/evidence-integrity.json": "096fc91291911ffb6c4dafb206d32d5737df28e8301fd0db4e792d0554d793de",
+      "verification/release-guard-0.5.1.log": "e24a74fd76cbe70cec0c58dd7405d9f1ca0bc741ddfdfd40bc8fc657340516b2",
+      "verification/dpsgd-guards-0.5.1.log": "24b7b92d98d6549b4998526ca26cd5394d31b04d56fea9869889fcefd32aefcc",
+      "verification/guard-regression-0.5.1.log": "b6ba7bb066fcec7f56a1204cace491ef42901d9f93f9cfcb13779004b2348d04",
+      "verification/runner-contracts-0.5.1.log": "346c3c2e033e5c897ae2e1efd6fb7fc28c90627cd627ab60b0f422a340f88902",
+      "verification/install-0.5.1.log": "4d3adf7d96e28d1a1fcc9acd97cd58339b8fa103796689225595e3ab8e49a7ca",
+      "verification/audit_execution.py": "ab7457abebb7ee7951922039dad521c15819799f4d14bc744675607df065dcce",
+      "verification/dp-safety-0.5.1.log": "dd2838b8538709421db8f2cfa09d9e298e4d72c80306544960d0e6f5c0754207"
+    },
+    "original_name_to_backup": {
+      "README.md": "README-r1.md",
+      "summary.json": "summary-r1.json"
+    }
+  },
+  "blocked_archive": {
+    "file": "blocked-0.5.0/summary.json",
+    "sha256": "ae340c7a99b82973c65253643e5c747eaaeaceda5a0611d211f0ebf50ae4fcab",
+    "included_in_scored_cell_count": false
+  },
+  "reporting": {
+    "created_at": "2026-09-22T02:56:41.162801+00:00",
+    "source": "Existing score JSONs only; no data access or metric recomputation."
   }
 }

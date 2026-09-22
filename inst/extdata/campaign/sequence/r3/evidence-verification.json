@@ -1,0 +1,17 @@
+{
+  "status": "passed",
+  "scored_cells": 9,
+  "corrected_federated_replicates": 18,
+  "central_models": 3,
+  "corrected_node_rounds": 270,
+  "original_files_verified": 47,
+  "summary_statistics_independently_verified": true,
+  "source": "Recorded score JSONs only; no new data access or predictions",
+  "verification_tooling_sha256": {
+    "report.py": "86c801e4db5d143a52cf14f1d06f0bcd6b3c19cf18096c1a9e12396a6697bacf",
+    "verify_train_predictions.py": "4727f330a66fd50ce7748e085ad7ae321dc58ffcee8cb09fd82823d5177f999b",
+    "score.py": "8a2b0775400310472cbe8050f7eb765738d3a00c484f1135e09eb5b7865c2b72"
+  },
+  "prediction_smoke_sha256": "6d320fcd78def0090b556d339f2e02a432949353edc54fd1b927f517f6dd19bc",
+  "scoring_marker_sha256": "1b9811dffab47bfea530a2892c46bc2defc846b9e1f92d8c4fdd7a8abc6cce2d"
+}

@@ -1,0 +1,547 @@
+{
+  "schema": "dsflower-sequence-summary-r3-v1",
+  "status": "executed",
+  "contract": "pytorch_lstm",
+  "dataset": "UCI Human Activity Recognition Using Smartphones",
+  "cells": [
+    {
+      "file": "har_subject_pytorch_lstm_eps1.json",
+      "sha256": "6b4c07b1a3b20e6c589bc399e9f4d65a4207e0a2b0de7cafbf8d88d2ee2ac3fd",
+      "unit": "subject",
+      "epsilon": 1,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.4604320832886393,
+            "sd": 0.06372944636426946
+          },
+          "accuracy": {
+            "mean": 0.1809750028277344,
+            "sd": 0.027010888622250876
+          },
+          "log_loss": {
+            "mean": 1.7995379048402,
+            "sd": 0.003274317371644957
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.5092325196021987,
+          "sd": 0.07431388122972923
+        }
+      },
+      "interpretation": "Released patient contract: per-subject clipping after feature averaging and modal-label pooling; 7 subjects/site, 21 total. Original-window per-subject loss is unsupported by this contract. The central comparator learns all original windows, so its gap also includes the pooling/task mismatch.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": false,
+        "federated_accuracy_above_majority": false
+      }
+    },
+    {
+      "file": "har_subject_pytorch_lstm_eps4.json",
+      "sha256": "cdce1b5c93632296085d04f0e558c2ac2f8c2ed392113984898cf996713acf1a",
+      "unit": "subject",
+      "epsilon": 4,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.4713546974633991,
+            "sd": 0.06516658853022057
+          },
+          "accuracy": {
+            "mean": 0.16468725257323832,
+            "sd": 0.004242732571770396
+          },
+          "log_loss": {
+            "mean": 1.7977850017564403,
+            "sd": 0.003310361082541973
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.4983099054274391,
+          "sd": 0.07603706987496744
+        }
+      },
+      "interpretation": "Released patient contract: per-subject clipping after feature averaging and modal-label pooling; 7 subjects/site, 21 total. Original-window per-subject loss is unsupported by this contract. The central comparator learns all original windows, so its gap also includes the pooling/task mismatch.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": false,
+        "federated_accuracy_above_majority": false
+      }
+    },
+    {
+      "file": "har_subject_pytorch_lstm_eps8.json",
+      "sha256": "7afb90460aab650f26ab85be72700975f1e4e743f5bb6f240e16cd45d0b0a0d3",
+      "unit": "subject",
+      "epsilon": 8,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.5341957353308907,
+            "sd": 0.027338815181631598
+          },
+          "accuracy": {
+            "mean": 0.15756136183689626,
+            "sd": 0.02714907801131685
+          },
+          "log_loss": {
+            "mean": 1.7945889919688964,
+            "sd": 0.0009791040785678948
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.43546886755994735,
+          "sd": 0.030243419067070242
+        }
+      },
+      "interpretation": "Released patient contract: per-subject clipping after feature averaging and modal-label pooling; 7 subjects/site, 21 total. Original-window per-subject loss is unsupported by this contract. The central comparator learns all original windows, so its gap also includes the pooling/task mismatch.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": false
+      }
+    },
+    {
+      "file": "har_window_pytorch_lstm_eps1.json",
+      "sha256": "cb7f6228018ddde55016ec7191e7c7a88076e5e573ca5f30d042a079f77b4c9d",
+      "unit": "window",
+      "epsilon": 1,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.7425786516947754,
+            "sd": 0.015190437234423777
+          },
+          "accuracy": {
+            "mean": 0.3570863024544735,
+            "sd": 0.004944574820584644
+          },
+          "log_loss": {
+            "mean": 1.3729987630663432,
+            "sd": 0.02752995611274679
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.22708595119606267,
+          "sd": 0.01921698200982302
+        }
+      },
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites. Each row/window is the privacy unit; this does not provide subject-level protection.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      }
+    },
+    {
+      "file": "har_window_pytorch_lstm_eps4.json",
+      "sha256": "039c6dd7f9faaea4eef1f464b4d8e0fb7f26c5b0e36ef21e5f0ed045dfb8d7bd",
+      "unit": "window",
+      "epsilon": 4,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.7889042124618243,
+            "sd": 0.005335844218168868
+          },
+          "accuracy": {
+            "mean": 0.41465897522904643,
+            "sd": 0.030068378577367803
+          },
+          "log_loss": {
+            "mean": 1.3631763048942123,
+            "sd": 0.049453129162356765
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.1807603904290137,
+          "sd": 0.018168509131340535
+        }
+      },
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites. Each row/window is the privacy unit; this does not provide subject-level protection.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      }
+    },
+    {
+      "file": "har_window_pytorch_lstm_eps8.json",
+      "sha256": "35e2fc4b299db780246da40e0342b90123cda6cbf38f3348885c9880c3d30188",
+      "unit": "window",
+      "epsilon": 8,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.8013640085860811,
+            "sd": 0.015542148754273311
+          },
+          "accuracy": {
+            "mean": 0.4842212419409569,
+            "sd": 0.03157575429571577
+          },
+          "log_loss": {
+            "mean": 1.3484978064194852,
+            "sd": 0.040035344819159824
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.16830059430475694,
+          "sd": 0.029491237025968786
+        }
+      },
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites. Each row/window is the privacy unit; this does not provide subject-level protection.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      }
+    }
+  ],
+  "protocol_sha256": "c47da840354af9a325ea0ef1f7da5a49619024aefd8c0a7e41bea15ac55f5238",
+  "runtime": {
+    "recorded_at": "2026-09-22T02:02:54.385224+00:00",
+    "host": {
+      "pod_id": "5abpdvx54g6uz2",
+      "pod_name": "pod-flower-sequence",
+      "platform": "Linux-6.8.0-49-generic-x86_64-with-glibc2.35",
+      "gpu": "NVIDIA A40",
+      "gpu_total_memory_bytes": 47708110848,
+      "nvidia_smi": "NVIDIA A40, 570.195.03, 46068 MiB"
+    },
+    "packages": {
+      "R": "R version 4.6.1 (2026-06-24)",
+      "DSI": "1.8.0",
+      "DSLite": "1.4.1",
+      "dsFlower": "0.5.1",
+      "dsFlowerClient": "0.5.0",
+      "server_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+      "client_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+      "server_guard_sha256": "3ae7c9ce6750c81c00e8c70e618d0bc52978486d7736587f39c716ff401fe98d",
+      "python": "3.11.10 (main, Sep  7 2024, 18:35:41) [GCC 11.4.0]",
+      "python_packages": {
+        "opt_einsum": "3.4.0",
+        "nvidia-cusolver-cu12": "11.6.1.9",
+        "six": "1.17.0",
+        "certifi": "2026.7.22",
+        "typer": "0.20.1",
+        "mdurl": "0.1.2",
+        "pycparser": "3.0",
+        "filelock": "4.0.1",
+        "nvidia-nvjitlink-cu12": "12.4.127",
+        "pathspec": "0.12.1",
+        "rich": "13.9.4",
+        "pynrrd": "1.1.3",
+        "MarkupSafe": "3.0.3",
+        "alembic": "1.20.0",
+        "charset-normalizer": "3.5.1",
+        "grpcio-health-checking": "1.81.1",
+        "nvidia-cusparse-cu12": "12.3.1.170",
+        "protobuf": "6.33.6",
+        "grpcio": "1.84.0",
+        "typing_extensions": "4.16.0",
+        "nvidia-cusparselt-cu12": "0.6.2",
+        "nvidia-nvtx-cu12": "12.4.127",
+        "importlib_resources": "7.1.0",
+        "nvidia-cuda-nvrtc-cu12": "12.4.127",
+        "tomli_w": "1.2.0",
+        "iterators": "0.0.2",
+        "triton": "3.2.0",
+        "flwr": "1.31.0",
+        "pydicom": "3.0.2",
+        "nibabel": "5.4.2",
+        "tomli": "2.4.1",
+        "idna": "3.20",
+        "pycryptodome": "3.23.0",
+        "nvidia-curand-cu12": "10.3.5.147",
+        "click": "8.5.0",
+        "Jinja2": "3.1.6",
+        "torchvision": "0.21.0+cu124",
+        "nvidia-nccl-cu12": "2.21.5",
+        "python-dateutil": "2.9.0.post0",
+        "Pygments": "2.21.0",
+        "uv": "0.11.33",
+        "greenlet": "3.5.6",
+        "pyarrow": "25.0.1",
+        "pillow": "12.3.0",
+        "pandas": "3.0.6",
+        "nvidia-cudnn-cu12": "9.1.0.70",
+        "shellingham": "1.5.4",
+        "nvidia-cublas-cu12": "12.4.5.8",
+        "requests": "2.34.2",
+        "simpleitk": "2.5.6",
+        "nvidia-cuda-runtime-cu12": "12.4.127",
+        "sympy": "1.13.1",
+        "fsspec": "2026.9.0",
+        "packaging": "25.0",
+        "nvidia-cuda-cupti-cu12": "12.4.127",
+        "nvidia-cufft-cu12": "11.2.1.3",
+        "markdown-it-py": "4.2.0",
+        "Mako": "1.4.1",
+        "urllib3": "2.8.0",
+        "mpmath": "1.3.0",
+        "cffi": "2.1.1",
+        "monai": "1.5.2",
+        "cryptography": "46.0.7",
+        "PyYAML": "6.0.3",
+        "SQLAlchemy": "2.0.54",
+        "networkx": "3.6.1",
+        "numpy": "2.4.6",
+        "scipy": "1.17.1",
+        "torch": "2.6.0+cu124",
+        "opacus": "1.6.0"
+      }
+    },
+    "release_sources": {
+      "dsFlower": {
+        "version": "0.5.1",
+        "source_commit": "c4eaaf153db4a7204878bf1d8995c16faa615110",
+        "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+        "release_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+        "release_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+        "runtime_code_matches_release_tag": false,
+        "patch_branch": "fix/import-guard-torch-generated-modules",
+        "guard_sha256": "3ae7c9ce6750c81c00e8c70e618d0bc52978486d7736587f39c716ff401fe98d",
+        "canonical_runner_changed": false
+      },
+      "dsFlowerClient": {
+        "version": "0.5.0",
+        "source_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+        "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+        "release_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+        "release_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+        "runtime_code_matches_release_tag": true
+      }
+    },
+    "tooling_sha256": {
+      "README.md": "99b6a95b844ad183647e820d8ad5f3da5a664b2597968d8763b5796769b347c8",
+      "assemble_blocked.py": "e87881fa327e863371086f2f317f1dd686fe6347ff0c39e3b75f3f0ead34f5ab",
+      "benchmark_hooks/sequence_public_observer.py": "7bed0e5920103ccae88f94e228b8e54a01c9b63fc1010f37d11cde697b4d2bc0",
+      "benchmark_hooks/sitecustomize.py": "8cf61d7bb0d8326f60b14f29479407f879ef796b5c8742192d6c71b39f6f3fda",
+      "capture_runtime.py": "6eea9d0f560f144358b8b4d1d485c4b87d62506087b0436cca9c2f7c9190cf8f",
+      "central_twins.py": "05753dd42b46be8042b1b65deacf5c3714d067de7a733b5589363df821238291",
+      "install_public_observer.py": "7d077b3bb706a9a62ec3e45129539ee220f619337c78813fffd293cd381997bc",
+      "preflight.py": "9b9435af99c833f74b438656e3f968aea8faa335f875c8ba52489fa702225df9",
+      "prepare_public_data.py": "778c62e17e8e93fb7d93193e10dcc75be6101bee4ae021adea9eb1b85510d177",
+      "protocol.json": "8c518e23b3eccdc026ad21022c1d062a7f8b91b3dc3db9f5e5a5d5d18a0f8b7e",
+      "provision.sh": "86ac8eedaffc09ba8aa7c9e378e4d7731fa3728d42a91a7f60669e517eac7c9e",
+      "r3/capture_runtime.py": "f7bf76031b09a129594db8d51a00c0769a1659b6c3ec9efff4ec9d95ce4efea3",
+      "r3/central.py": "420f9e46abc13b66a4afcf04f6b269757506b17d44f98c8bdf1549f573805477",
+      "r3/diagnose.py": "03177bfe0494aba26f06171d58fa4df1096ea2ca3ea8128e66b0e06c52fc6cdf",
+      "r3/protocol.json": "c47da840354af9a325ea0ef1f7da5a49619024aefd8c0a7e41bea15ac55f5238",
+      "r3/run_federated.R": "36370ccaeba63c86e6753424817bea3f4bc6be3fc4d8c80eb21bec0e508baa89",
+      "r3/run_matrix.py": "5721a6f306c92ec368e1ea80f423355bb3bacf835c14a684ac3184ac5dfc5499",
+      "r3/score.py": "8a2b0775400310472cbe8050f7eb765738d3a00c484f1135e09eb5b7865c2b72",
+      "release-source.json": "cd5d046a82dd000180d22c287a0bc93e1c8c8f534edd1470710d012a1b8faa03",
+      "relocate_console_scripts.py": "2ec29bfb458c975324f406cef9fe112b9acd2d7013363830ed5fd443c3bad8b0",
+      "run_federated.R": "bd1661c705b85f7e9b8267290338c3e14d4d6e0bb32cb50549e470628033bfe9",
+      "run_matrix.py": "de7904592db5dedf86e76b3776a8aff1a9db7172d9c711e8e02ed11c6705f611",
+      "score_and_assemble.py": "b2c07b70de9d594473155a45f783fd2789d664dd3216c0b3458347a1d62ce0f4",
+      "trace_guard.py": "85a1e240502901de196e43bd7f470de1656423ac3ffa6534b1624549a9896558"
+    },
+    "tooling_commit": "c613637",
+    "runtime_storage": {
+      "Rlib": "/opt/cells-sequence/Rlib",
+      "venvs": "/opt/cells-sequence/venvs",
+      "client": "/opt/cells-sequence/client"
+    },
+    "startup_attempts": [
+      {
+        "status": "failed",
+        "error": "SuperLink did not become ready within 15 seconds.\nLog:\n",
+        "cleanup_ok": true,
+        "elapsed_s": 157.598314762115,
+        "epsilon": 1,
+        "seed": 20260922,
+        "contract": "pytorch_lstm",
+        "attempt_dir": "/workspace/cells-sequence/attempts/pytorch_lstm-eps1-seed20260922-superlink-startup",
+        "model_initialized": false,
+        "private_training_started": false,
+        "test_accessed": false,
+        "retry_reason": "Relocate unchanged Python dependencies to local POSIX storage; console interpreter paths adjusted without changing Python bodies.",
+        "archived_at": "2026-09-22T00:44:15.164160+00:00"
+      }
+    ],
+    "privacy_randomness": "Release-owned cryptographic secrets; no deterministic-noise replacement or secret publication.",
+    "initialization_seeds": [
+      20260922,
+      20260923,
+      20260924
+    ],
+    "predecessor_runtime_sha256": "13c8f3aba92eed674db51c90ece3f06cc0780ce376e5fb7a9fc6950114dc5d82",
+    "campaign_revision": "R3"
+  }
+}

@@ -1,15 +1,139 @@
-# UCI HAR corrected sequence cells: declared, not yet scored
+# UCI HAR sequence cells: original and corrected R3
 
-The original pilot pipeline did not learn, as shown by its chance-like central
-twin. Preserve its records; they are not a privacy utility result.
+Token: `FLOWER_CELLS_SEQUENCE_2026-09-22`. All nine scored cells are indexed in
+[summary.json](summary.json), with individual replicates and diagnostics in the
+linked JSON files. The original pipeline did not learn: its noiseless central
+twin gave **0.435143 / 0.169551 / 1.799129** (macro OVR AUC / accuracy /
+log-loss), near chance utility. These original results are a pipeline/specification
+failure, not a privacy utility finding. Their records remain unchanged.
 
-The corrected declaration precedes corrected training and scoring. See
-[the binding track declaration](../../../../tools/campaign/sequence/README.md),
-[protocol](../../../../tools/campaign/sequence/r3/protocol.json), and
-[central diagnosis with numbers](SEQUENCE_DIAGNOSIS_R3.md).
+## Diagnosis and declaration
 
-The subject cell measures the unchanged subject-pooled surrogate; original-window
-subject losses are unsupported by the released contract. The window cell measures
-row-level privacy only. Both use the same full-window noiseless central reference.
-Original completed report: [README-r1.md](README-r1.md). Original summary:
-[summary-r1.json](summary-r1.json). Original pilot JSONs remain byte-for-byte.
+TRAIN-only checks ruled out **(a) layout** and **(d) label misalignment**: the
+contract receives `[N,128,9]` from C-order token-major flat rows, and prepared
+features, targets and subjects match the archive exactly. **(b) unstandardised
+inputs was not the cause:** the old contract already applied clipped affine
+scaling using TRAIN-derived bounds. **(c) the schedule was inadequate:** only
+five updates at SGD 0.001. In addition, the patient path collapsed all activities
+within each subject to one average sequence and its modal label, leaving only
+21 central training examples. No package plumbing defect was found.
+
+The same contract-built GPU LSTM learned on 5,564 windows from 16 TRAIN subjects.
+On 1,788 inner-validation windows from TRAIN subjects 1, 8, 17, 25 and 30,
+the selected central-only run achieved **0.988999812 /
+0.937360179 / 0.240914434** after
+20 epochs. The schedule was selected by final inner-validation macro AUC between
+Adam learning rates 0.003 and 0.01. TEST was not accessed for diagnosis or selection.
+See [diagnostic audit](r3/diagnosis/audit.json),
+[recorded experiments](r3/diagnosis/experiments.json), and
+[the declaration committed before corrected training](../../../../tools/campaign/sequence/README.md)
+at `c6136371e644bd0c9a9e945c53f8d5d544475115`; the binding
+[protocol](../../../../tools/campaign/sequence/r3/protocol.json) is also embedded
+in every corrected cell.
+
+The corrected declaration is **Adam 0.01, batch
+256, 4 local epochs × five rounds**,
+hidden size 32, six classes, no scheduler or penalties. Inputs use the same
+128 × 9 time-major layout. Fixed public design bounds are ±1 g for body
+acceleration, ±1 rad/s for gyro, and ±2 g for total acceleration; the unchanged
+contract applies `clip(x,-b,b)/b` once. These constants are declared design
+choices, not empirical extrema or guaranteed archive limits.
+
+Three subject-disjoint sites contain seven subjects each (2,553 / 2,397 / 2,402
+windows). Both corrected units use seeds 20260922–20260924, epsilon 1 / 4 / 8,
+delta 1e-6 and clipping norm 1. **Subject:** the released patient contract clips
+each pooled subject's gradient, seven units/site and 20 steps/site. It does not
+aggregate losses or gradients over the original windows within each subject;
+that requested behavior is unsupported without a mechanism change. **Window:**
+the released row contract clips each window, with 200 steps/site. This is a
+window-level mechanism measurement and provides no subject-level protection.
+
+The corrected central comparator is trained and scored once per seed on all
+7,352 original TRAIN windows, without DP or federation, with identical
+architecture, initialization, bounds and nominal 20-epoch schedule. Adam resets
+every four epochs; ordinary shuffled minibatches give 580 updates. Its three
+models are shared across all six corrected cells. The subject comparison
+therefore includes the pooling/task mismatch. Trivial probabilities are TRAIN
+class frequencies; classification is the TRAIN majority class.
+
+## All scored cells
+
+Metric triples are mean **macro one-vs-rest AUC / accuracy / log-loss** over three
+training seeds. The gap is federated-DP minus paired central macro AUC, with
+sample SD. Diagnostic thresholds are annotations only. The original central
+comparator used 21 subject averages; corrected rows use the shared full-window
+central comparator described above.
+
+| Run | Contract | Dataset | Privacy unit | Epsilon | Central | Federated-DP | Trivial | AUC gap mean ± SD | Diagnostics |
+|---|---|---|---|---:|---|---|---|---|---|
+| [original](pilot_uci_har_pytorch_lstm_eps1.json) | pytorch_lstm | UCI HAR | subject pooled | 1 | 0.435143 / 0.169551 / 1.799129 | 0.434854 / 0.169551 / 1.799015 | 0.500000 / 0.182219 / 1.789941 | -0.000289 ± 0.006243 | AUC > .5: no; accuracy > majority: no |
+| [original](pilot_uci_har_pytorch_lstm_eps4.json) | pytorch_lstm | UCI HAR | subject pooled | 4 | 0.435143 / 0.169551 / 1.799129 | 0.434235 / 0.169551 / 1.799279 | 0.500000 / 0.182219 / 1.789941 | -0.000908 ± 0.000795 | AUC > .5: no; accuracy > majority: no |
+| [original](pilot_uci_har_pytorch_lstm_eps8.json) | pytorch_lstm | UCI HAR | subject pooled | 8 | 0.435143 / 0.169551 / 1.799129 | 0.435451 / 0.169551 / 1.799082 | 0.500000 / 0.182219 / 1.789941 | +0.000308 ± 0.000544 | AUC > .5: no; accuracy > majority: no |
+| [R3](har_subject_pytorch_lstm_eps1.json) | pytorch_lstm | UCI HAR | subject pooled | 1 | 0.969665 / 0.791879 / 0.566915 | 0.460432 / 0.180975 / 1.799538 | 0.500000 / 0.182219 / 1.789941 | -0.509233 ± 0.074314 | AUC > .5: no; accuracy > majority: no |
+| [R3](har_subject_pytorch_lstm_eps4.json) | pytorch_lstm | UCI HAR | subject pooled | 4 | 0.969665 / 0.791879 / 0.566915 | 0.471355 / 0.164687 / 1.797785 | 0.500000 / 0.182219 / 1.789941 | -0.498310 ± 0.076037 | AUC > .5: no; accuracy > majority: no |
+| [R3](har_subject_pytorch_lstm_eps8.json) | pytorch_lstm | UCI HAR | subject pooled | 8 | 0.969665 / 0.791879 / 0.566915 | 0.534196 / 0.157561 / 1.794589 | 0.500000 / 0.182219 / 1.789941 | -0.435469 ± 0.030243 | AUC > .5: yes; accuracy > majority: no |
+| [R3](har_window_pytorch_lstm_eps1.json) | pytorch_lstm | UCI HAR | window (row) | 1 | 0.969665 / 0.791879 / 0.566915 | 0.742579 / 0.357086 / 1.372999 | 0.500000 / 0.182219 / 1.789941 | -0.227086 ± 0.019217 | AUC > .5: yes; accuracy > majority: yes |
+| [R3](har_window_pytorch_lstm_eps4.json) | pytorch_lstm | UCI HAR | window (row) | 4 | 0.969665 / 0.791879 / 0.566915 | 0.788904 / 0.414659 / 1.363176 | 0.500000 / 0.182219 / 1.789941 | -0.180760 ± 0.018169 | AUC > .5: yes; accuracy > majority: yes |
+| [R3](har_window_pytorch_lstm_eps8.json) | pytorch_lstm | UCI HAR | window (row) | 8 | 0.969665 / 0.791879 / 0.566915 | 0.801364 / 0.484221 / 1.348498 | 0.500000 / 0.182219 / 1.789941 | -0.168301 ± 0.029491 | AUC > .5: yes; accuracy > majority: yes |
+
+Full per-seed predicted-class counts, mean probabilities, probability spans,
+metrics, timing, initialization hashes, release policies and accountant captures
+are in the corrected JSONs. Original diagnostics remain in their pilot JSONs.
+
+## Interpretation and limits
+
+- Original: no useful central learning, so near-zero DP-versus-central gaps do
+  not establish privacy utility.
+- Subject: a valid subject-unit measurement of the released pooled surrogate,
+  in the 21-unit regime. Its gap combines pooling/task change, federation,
+  clipping and noise; it cannot isolate the cost of privacy.
+- Window: window privacy only, despite subject-disjoint sites. The gap combines
+  federation, sampling, clipping and noise; no noiseless federated control or
+  pooled-DP twin was scheduled.
+- Metrics use held-out windows; the split is fixed. SD measures training
+  variation across three seeds, not split or population uncertainty. Central
+  results repeated across corrected table rows are the same three models.
+- Each epsilon/seed/unit is a separate per-training mechanism contract. No
+  composed campaign guarantee is claimed. Non-DP inner selection on public
+  TRAIN data does not provide an end-to-end private model-selection guarantee.
+- Public seeds determine initialization. Node-owned cryptographic sampling and
+  noise remain unchanged; no deterministic noise replacement is used.
+
+## Provenance and preservation
+
+dsFlower **0.5.1**, server patch
+`c4eaaf153db4a7204878bf1d8995c16faa615110` on
+`fix/import-guard-torch-generated-modules`; dsFlowerClient
+**0.5.0**, release
+`50dda000a32ffcbdd039c2b74c909df451392bfb`. Declaration commit:
+`c6136371e644bd0c9a9e945c53f8d5d544475115`. Runtime tooling commit:
+`c613637`. Both installed canonical runner hashes:
+`2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724`. No R3 package code, guard, privacy
+mechanism or accountant changes. Exact environment and tooling hashes are in
+[r3/runtime.json](r3/runtime.json).
+
+All 18 corrected federations and three central models were verified before the
+exclusive [R3 scoring marker](r3/test-scoring-started.json). The one final pass
+loaded TEST once and predicted each of those 21 models once. Every scored cell
+is retained; none was rerun or retuned after scoring. The public observer's
+270 node-round captures and independent accounting are included in the cells.
+The pod `pod-flower-sequence` remains running at `/workspace/cells-sequence`.
+
+All 47 original files match
+[the frozen hash manifest](r3/original-evidence-hashes.json). The original report
+and index are retained byte-for-byte as [README-r1.md](README-r1.md) and
+[summary-r1.json](summary-r1.json); pilot JSONs and both old scoring and failure
+records are unchanged. The pre-training dsFlower 0.5.0 import failure remains
+under [blocked-0.5.0](blocked-0.5.0/README.md) and is indexed separately from the
+nine scored cells. Report assembly reads recorded JSONs only and does not score
+or open any dataset split.
+
+## Dataset citation
+
+[UCI HAR, dataset 240](https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones),
+[official archive](https://archive.ics.uci.edu/static/public/240/human+activity+recognition+using+smartphones.zip),
+DOI [10.24432/C54S4K](https://doi.org/10.24432/C54S4K), CC BY 4.0.
+Archive SHA-256: `c00b803081a5c797cd5e4b83700a9810b38d53d9d84e01917e090e1fdbc81031`.
+
+Anguita, D., Ghio, A., Oneto, L., Parra, X., and Reyes-Ortiz, J. L. (2013).
+*A Public Domain Dataset for Human Activity Recognition Using Smartphones.* ESANN.

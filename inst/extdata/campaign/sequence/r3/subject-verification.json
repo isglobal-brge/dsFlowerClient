@@ -1,0 +1,35 @@
+{
+  "status": "verified_unscored",
+  "test_accessed": false,
+  "runs": 9,
+  "node_rounds": 135,
+  "budgets": [
+    {
+      "epsilon": 1,
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 20,
+      "sample_rate": 1.0,
+      "noise_multiplier": 38.75,
+      "epsilon_replace_one": 0.9954413687167296,
+      "delta_replace_one": 9.98582834407508e-07
+    },
+    {
+      "epsilon": 4,
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 20,
+      "sample_rate": 1.0,
+      "noise_multiplier": 10.9375,
+      "epsilon_replace_one": 3.997638356753629,
+      "delta_replace_one": 9.989605495882252e-07
+    },
+    {
+      "epsilon": 8,
+      "accountant": "PRVAccountant",
+      "full_horizon_steps": 20,
+      "sample_rate": 1.0,
+      "noise_multiplier": 6.15234375,
+      "epsilon_replace_one": 7.991725353890878,
+      "delta_replace_one": 9.959454849095343e-07
+    }
+  ]
+}
