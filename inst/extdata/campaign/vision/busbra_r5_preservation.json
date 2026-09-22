@@ -1,0 +1,9 @@
+{
+  "existing_files_verified": 206,
+  "all_prior_records_byte_identical": true,
+  "intentional_updated_indexes": [
+    "inst/extdata/campaign/vision/README.md",
+    "inst/extdata/campaign/vision/summary.json"
+  ],
+  "preexisting_r4_working_edits_preserved": true
+}

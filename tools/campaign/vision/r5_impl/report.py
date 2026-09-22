@@ -139,6 +139,7 @@ def replicate(root, protocol, score):
         node_training_manifests=manifests, node_accountant_captures=captures,
         public_initialization=read(run / "public-capture/public-initial.json"),
         execution_timing=read(run / "execution-timing.json"),
+        startup_wait=read(run / "startup-wait.json") if (run / "startup-wait.json").exists() else None,
         training_tensor_parity_verified=True)
     for key, prefix, total in (("metrics", "", "gap"), ("patient_metrics", "patient_", "patient_gap")):
         values = score[key]
@@ -193,6 +194,8 @@ def main(root, out):
     assert selection['selected'] == protocol['diagnosis']['selected']
     preflight = read(work / 'runtime-preflight.json')
     assert preflight['status'] == 'verified'
+    assert read(work / 'runtime-final.json')['status'] == 'verified'
+    assert not read(work / 'pod-final.json')['matching_processes']
     dataset = dict(name='BUS-BRA', version='1.0', total_patients=1064, total_images=1875, **protocol['provenance'])
     release = dict(protocol['release'], installed_versions=preflight['installed_versions'],
         installed_runner_sha256=preflight['installed_runner_sha256'], r_version=preflight['r_version'],
@@ -239,7 +242,7 @@ def main(root, out):
     publication_check(summary);save(out/'busbra_r5_summary.json',summary)
     (out/'busbra_r5_report.md').write_text(markdown(summary))
     snapshots = [protocol_path, work/'scores/results.json']
-    snapshots += [work/name for name in ['scoring-lock.json','matrix-start.json','matrix-complete.json','training-staging.json','runtime-preflight.json']]
+    snapshots += [work/name for name in ['scoring-lock.json','matrix-start.json','matrix-complete.json','training-staging.json','runtime-preflight.json','runtime-final.json','pod-final.json']]
     for source in snapshots:
         value=read(source);publication_check(value)
         target=out/'r5_impl'/source.name;target.parent.mkdir(parents=True,exist_ok=True)

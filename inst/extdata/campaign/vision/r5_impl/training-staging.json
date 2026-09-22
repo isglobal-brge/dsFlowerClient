@@ -1,0 +1,104 @@
+{
+  "schema": "dsflower-vision-r4-training-staging-v1",
+  "source": "/workspace/cells-vision/prepared/vision/20260919",
+  "destination": "/tmp/cells-vision-r5_impl/final-training",
+  "started_at": "2026-09-22T08:27:02.230953+00:00",
+  "finished_at": "2026-09-22T08:27:53.835925+00:00",
+  "sites": [
+    {
+      "site": 1,
+      "n_images": 497,
+      "n_rows": 497,
+      "n_patients": 284,
+      "image_hash_aggregate_sha256": "d9eb6ff10bb589c6149400c6ff8c49e9204330dc3044d57d403d97f80c266995",
+      "source_and_staged_image_hashes_identical": true,
+      "file_hashes": {
+        "samples.csv": {
+          "source_sha256": "abcbea28fd2546dceb09a336e1c127f630fd650f014591c5b8fd402c6f9f526d",
+          "staged_sha256": "abcbea28fd2546dceb09a336e1c127f630fd650f014591c5b8fd402c6f9f526d"
+        },
+        "sample_manifests.csv": {
+          "source_sha256": "a37f98dbe5c0ca28439847d921aef39e216e29c1fc33ff9c0296b31e4c6a09aa",
+          "staged_sha256": "a37f98dbe5c0ca28439847d921aef39e216e29c1fc33ff9c0296b31e4c6a09aa"
+        },
+        "content_hash_index.csv": {
+          "source_sha256": "f4d0aa0e4ab3e552860d875f8e1648801861404940b9e050b9168074b5c51862",
+          "staged_sha256": "5dd7a0c28a5d16cc3ee5916fbdf1cdd3c282a7ced000b959f162d3049182ce96"
+        },
+        "manifest.yaml": {
+          "source_sha256": "1d57ba7f2e41f71fa77e8c302058f0b3e8be99434e08d6953a397d1f257f5d02",
+          "staged_sha256": "a96f54053688ac0aaf2ff283ade9859c12e85387fd7df49fbd0c7db6ef0735e0"
+        },
+        "registry.yaml": {
+          "source_sha256": "2b8f0b4f86dd79f5318f631d5726c46e77501ce5f0000e1deec860837ec95c64",
+          "staged_sha256": "5f466388281210696c0592b6d2f986c2b0e3cb9651f124a65c3b53ef207a9b94"
+        }
+      }
+    },
+    {
+      "site": 2,
+      "n_images": 498,
+      "n_rows": 498,
+      "n_patients": 284,
+      "image_hash_aggregate_sha256": "7b715b919f4d5626cb7969335239cff19ca2a0cde8ff2ef91e255854aef8d0d3",
+      "source_and_staged_image_hashes_identical": true,
+      "file_hashes": {
+        "samples.csv": {
+          "source_sha256": "054f95ee444481143fc28a13503c6fbcd3627ae182c04bc4b27856d5c891de32",
+          "staged_sha256": "054f95ee444481143fc28a13503c6fbcd3627ae182c04bc4b27856d5c891de32"
+        },
+        "sample_manifests.csv": {
+          "source_sha256": "588e7110977c599801137f90f78b179bb285e996906c03a4683f431df2df7df3",
+          "staged_sha256": "588e7110977c599801137f90f78b179bb285e996906c03a4683f431df2df7df3"
+        },
+        "content_hash_index.csv": {
+          "source_sha256": "a2b4e3e68f2124c63fde2fe7b6cbc648c6ef6588fe27241d3db10123f41c45c1",
+          "staged_sha256": "8caa9df684d4c032a6858dd864d736b5251b71df2dcde3682999a165d81eb430"
+        },
+        "manifest.yaml": {
+          "source_sha256": "8c50f8f94e6ac9c8aa2b20d98f3b60d91b07f841522cff95a58e92c7b45945ae",
+          "staged_sha256": "d0905eb3bc5e5d75a140815db4a67de60d9b97ddd915855683a04a3d60e6c406"
+        },
+        "registry.yaml": {
+          "source_sha256": "6ce589fcabeeb8d4583e820120b7b4f8c3f53f8f97692774718cb39c04bfa43e",
+          "staged_sha256": "bfb1ea2bf4cafe1e2969bdbf066976b9df8168c9362f5b187e86af66c4ff0989"
+        }
+      }
+    },
+    {
+      "site": 3,
+      "n_images": 506,
+      "n_rows": 506,
+      "n_patients": 284,
+      "image_hash_aggregate_sha256": "6ac780eb745f4fb9e730447a326e79a46f48d57fdcb25d78cc3f6a47a3f93903",
+      "source_and_staged_image_hashes_identical": true,
+      "file_hashes": {
+        "samples.csv": {
+          "source_sha256": "41e79991dc988de30ef9bfb233dc9022b39843d3def970773f196ebff4b34022",
+          "staged_sha256": "41e79991dc988de30ef9bfb233dc9022b39843d3def970773f196ebff4b34022"
+        },
+        "sample_manifests.csv": {
+          "source_sha256": "63b56a0ea36d80ea352f65109f721ad48a887c112b849d34e65da5941b07f710",
+          "staged_sha256": "63b56a0ea36d80ea352f65109f721ad48a887c112b849d34e65da5941b07f710"
+        },
+        "content_hash_index.csv": {
+          "source_sha256": "56684e1c9294191b230460cbfc8f920dac944ef62528f4fb69266844249a77fd",
+          "staged_sha256": "cc8d3fe5698903b1393f337fbc014c3b7ab70d408cea94e4e6f4d531f174b9c4"
+        },
+        "manifest.yaml": {
+          "source_sha256": "7ca2a9f48ce4378dff2d139dc2918e48d84526788d3c342626848c3e05182611",
+          "staged_sha256": "9d093b7230132add6eff736797ff274d90cb0be94d991f42814382c935c6d441"
+        },
+        "registry.yaml": {
+          "source_sha256": "db7c8bcf5cd676f334cf397829c53f1a8bb02e9996e9be6a6f9885dca545bdc5",
+          "staged_sha256": "4063cfc07e687a6a7d136d617e21527821cd8c295c8d466c377cee3621f86e98"
+        }
+      }
+    }
+  ],
+  "n_images": 1501,
+  "n_patients": 852,
+  "image_hash_aggregate_sha256": "c6004cc4c806ef3cf10c504015090b9dfb716722b346e857382fa22410ce2bc6",
+  "policy": "Byte-identical raw training images; samples and sample manifests unchanged; only absolute collection paths rewritten. No feature cache.",
+  "test_accessed": false
+}
