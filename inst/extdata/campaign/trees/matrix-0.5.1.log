@@ -1,0 +1,172 @@
+START pilot_breast_random_forest_eps1 registry defaults: {"task":"binary","n_estimators":8,"max_depth":4,"max_features":"auto"} 
+starting worker pid=14759 on localhost:11860 at 00:45:18.549
+starting worker pid=14758 on localhost:11860 at 00:45:18.557
+starting worker pid=14757 on localhost:11860 at 00:45:18.580
+SuperLink started (PID: 14808)
+  Fleet API (SuperNodes): 127.0.0.1:58874
+  Control API (flwr run): 127.0.0.1:50848
+pilot_breast_random_forest_eps1 rep 1: central AUC 1.000000 | fed AUC 0.612125 acc 0.708029 | trivial acc 0.649635 | gap -0.387875 | 53.1s
+starting worker pid=15765 on localhost:11860 at 00:46:11.451
+starting worker pid=15766 on localhost:11860 at 00:46:11.463
+starting worker pid=15767 on localhost:11860 at 00:46:11.472
+SuperLink started (PID: 15816)
+  Fleet API (SuperNodes): 127.0.0.1:56769
+  Control API (flwr run): 127.0.0.1:11323
+pilot_breast_random_forest_eps1 rep 2: central AUC 0.994382 | fed AUC 0.862360 acc 0.715328 | trivial acc 0.649635 | gap -0.132022 | 53.8s
+starting worker pid=16794 on localhost:11860 at 00:47:05.355
+starting worker pid=16796 on localhost:11860 at 00:47:05.361
+starting worker pid=16795 on localhost:11860 at 00:47:05.366
+SuperLink started (PID: 16845)
+  Fleet API (SuperNodes): 127.0.0.1:21950
+  Control API (flwr run): 127.0.0.1:19353
+pilot_breast_random_forest_eps1 rep 3: central AUC 0.995318 | fed AUC 0.598315 acc 0.715328 | trivial acc 0.649635 | gap -0.397004 | 51.8s
+WROTE /workspace/cells/dsFlowerClient/inst/extdata/campaign/trees/pilot_breast_random_forest_eps1.json registered diagnostic PASS 
+START pilot_breast_random_forest_eps8 registry defaults: {"task":"binary","n_estimators":8,"max_depth":4,"max_features":"auto"} 
+starting worker pid=17822 on localhost:11408 at 00:48:02.829
+starting worker pid=17821 on localhost:11408 at 00:48:02.846
+starting worker pid=17823 on localhost:11408 at 00:48:02.846
+SuperLink started (PID: 17872)
+  Fleet API (SuperNodes): 127.0.0.1:58874
+  Control API (flwr run): 127.0.0.1:50848
+pilot_breast_random_forest_eps8 rep 1: central AUC 1.000000 | fed AUC 0.997893 acc 0.978102 | trivial acc 0.649635 | gap -0.002107 | 52.5s
+starting worker pid=18846 on localhost:11408 at 00:48:55.189
+starting worker pid=18844 on localhost:11408 at 00:48:55.192
+starting worker pid=18845 on localhost:11408 at 00:48:55.211
+SuperLink started (PID: 18895)
+  Fleet API (SuperNodes): 127.0.0.1:56769
+  Control API (flwr run): 127.0.0.1:11323
+pilot_breast_random_forest_eps8 rep 2: central AUC 0.994382 | fed AUC 0.994850 acc 0.941606 | trivial acc 0.649635 | gap +0.000468 | 54.5s
+starting worker pid=19853 on localhost:11408 at 00:49:49.790
+starting worker pid=19854 on localhost:11408 at 00:49:49.790
+starting worker pid=19852 on localhost:11408 at 00:49:49.810
+SuperLink started (PID: 19903)
+  Fleet API (SuperNodes): 127.0.0.1:21950
+  Control API (flwr run): 127.0.0.1:19353
+pilot_breast_random_forest_eps8 rep 3: central AUC 0.995318 | fed AUC 0.988998 acc 0.927007 | trivial acc 0.649635 | gap -0.006320 | 52.1s
+WROTE /workspace/cells/dsFlowerClient/inst/extdata/campaign/trees/pilot_breast_random_forest_eps8.json registered diagnostic PASS 
+START pilot_breast_random_forest_eps4 registry defaults: {"task":"binary","n_estimators":8,"max_depth":4,"max_features":"auto"} 
+starting worker pid=20875 on localhost:11957 at 00:50:47.718
+starting worker pid=20874 on localhost:11957 at 00:50:47.752
+starting worker pid=20873 on localhost:11957 at 00:50:47.757
+SuperLink started (PID: 20924)
+  Fleet API (SuperNodes): 127.0.0.1:58874
+  Control API (flwr run): 127.0.0.1:50848
+pilot_breast_random_forest_eps4 rep 1: central AUC 1.000000 | fed AUC 0.992041 acc 0.802920 | trivial acc 0.649635 | gap -0.007959 | 50.9s
+starting worker pid=21883 on localhost:11957 at 00:51:38.434
+starting worker pid=21882 on localhost:11957 at 00:51:38.434
+starting worker pid=21881 on localhost:11957 at 00:51:38.442
+SuperLink started (PID: 21932)
+  Fleet API (SuperNodes): 127.0.0.1:56769
+  Control API (flwr run): 127.0.0.1:11323
+pilot_breast_random_forest_eps4 rep 2: central AUC 0.994382 | fed AUC 0.977060 acc 0.839416 | trivial acc 0.649635 | gap -0.017322 | 57.4s
+starting worker pid=22888 on localhost:11957 at 00:52:35.891
+starting worker pid=22887 on localhost:11957 at 00:52:35.898
+starting worker pid=22889 on localhost:11957 at 00:52:35.899
+SuperLink started (PID: 22938)
+  Fleet API (SuperNodes): 127.0.0.1:21950
+  Control API (flwr run): 127.0.0.1:19353
+pilot_breast_random_forest_eps4 rep 3: central AUC 0.995318 | fed AUC 0.990403 acc 0.897810 | trivial acc 0.649635 | gap -0.004916 | 62.2s
+WROTE /workspace/cells/dsFlowerClient/inst/extdata/campaign/trees/pilot_breast_random_forest_eps4.json registered diagnostic PASS 
+START pilot_cdc9k_random_forest_eps1 registry defaults: {"task":"binary","n_estimators":8,"max_depth":4,"max_features":"auto"} 
+starting worker pid=23918 on localhost:11245 at 00:53:45.047
+starting worker pid=23920 on localhost:11245 at 00:53:45.053
+starting worker pid=23919 on localhost:11245 at 00:53:45.061
+SuperLink started (PID: 23969)
+  Fleet API (SuperNodes): 127.0.0.1:23106
+  Control API (flwr run): 127.0.0.1:49545
+pilot_cdc9k_random_forest_eps1 rep 1: central AUC 0.810911 | fed AUC 0.706935 acc 0.861111 | trivial acc 0.860556 | gap -0.103977 | 50.7s
+starting worker pid=24973 on localhost:11245 at 00:54:35.513
+starting worker pid=24972 on localhost:11245 at 00:54:35.529
+starting worker pid=24974 on localhost:11245 at 00:54:35.535
+SuperLink started (PID: 25023)
+  Fleet API (SuperNodes): 127.0.0.1:32371
+  Control API (flwr run): 127.0.0.1:59283
+pilot_cdc9k_random_forest_eps1 rep 2: central AUC 0.806287 | fed AUC 0.708856 acc 0.860556 | trivial acc 0.860556 | gap -0.097431 | 51.6s
+starting worker pid=26047 on localhost:11245 at 00:55:27.185
+starting worker pid=26048 on localhost:11245 at 00:55:27.187
+starting worker pid=26049 on localhost:11245 at 00:55:27.202
+SuperLink started (PID: 26098)
+  Fleet API (SuperNodes): 127.0.0.1:49322
+  Control API (flwr run): 127.0.0.1:17589
+pilot_cdc9k_random_forest_eps1 rep 3: central AUC 0.804045 | fed AUC 0.670641 acc 0.860556 | trivial acc 0.860556 | gap -0.133404 | 50.6s
+WROTE /workspace/cells/dsFlowerClient/inst/extdata/campaign/trees/pilot_cdc9k_random_forest_eps1.json registered diagnostic PASS 
+START pilot_cdc9k_random_forest_eps8 registry defaults: {"task":"binary","n_estimators":8,"max_depth":4,"max_features":"auto"} 
+starting worker pid=27109 on localhost:11777 at 00:56:24.716
+starting worker pid=27110 on localhost:11777 at 00:56:24.720
+starting worker pid=27108 on localhost:11777 at 00:56:24.722
+SuperLink started (PID: 27159)
+  Fleet API (SuperNodes): 127.0.0.1:23106
+  Control API (flwr run): 127.0.0.1:49545
+pilot_cdc9k_random_forest_eps8 rep 1: central AUC 0.810911 | fed AUC 0.771930 acc 0.860556 | trivial acc 0.860556 | gap -0.038982 | 51.0s
+starting worker pid=28155 on localhost:11777 at 00:57:15.457
+starting worker pid=28156 on localhost:11777 at 00:57:15.459
+starting worker pid=28157 on localhost:11777 at 00:57:15.464
+SuperLink started (PID: 28206)
+  Fleet API (SuperNodes): 127.0.0.1:32371
+  Control API (flwr run): 127.0.0.1:59283
+pilot_cdc9k_random_forest_eps8 rep 2: central AUC 0.806287 | fed AUC 0.755140 acc 0.860556 | trivial acc 0.860556 | gap -0.051147 | 50.6s
+starting worker pid=29195 on localhost:11777 at 00:58:06.135
+starting worker pid=29196 on localhost:11777 at 00:58:06.135
+starting worker pid=29197 on localhost:11777 at 00:58:06.140
+SuperLink started (PID: 29246)
+  Fleet API (SuperNodes): 127.0.0.1:49322
+  Control API (flwr run): 127.0.0.1:17589
+pilot_cdc9k_random_forest_eps8 rep 3: central AUC 0.804045 | fed AUC 0.745107 acc 0.860556 | trivial acc 0.860556 | gap -0.058938 | 51.7s
+WROTE /workspace/cells/dsFlowerClient/inst/extdata/campaign/trees/pilot_cdc9k_random_forest_eps8.json registered diagnostic FAIL 
+START pilot_cdc9k_random_forest_eps4 registry defaults: {"task":"binary","n_estimators":8,"max_depth":4,"max_features":"auto"} 
+starting worker pid=30339 on localhost:11312 at 00:59:04.933
+starting worker pid=30340 on localhost:11312 at 00:59:04.935
+starting worker pid=30338 on localhost:11312 at 00:59:04.950
+SuperLink started (PID: 30389)
+  Fleet API (SuperNodes): 127.0.0.1:23106
+  Control API (flwr run): 127.0.0.1:49545
+pilot_cdc9k_random_forest_eps4 rep 1: central AUC 0.810911 | fed AUC 0.744054 acc 0.860556 | trivial acc 0.860556 | gap -0.066857 | 50.8s
+starting worker pid=31383 on localhost:11312 at 00:59:55.529
+starting worker pid=31384 on localhost:11312 at 00:59:55.532
+starting worker pid=31385 on localhost:11312 at 00:59:55.548
+SuperLink started (PID: 31434)
+  Fleet API (SuperNodes): 127.0.0.1:32371
+  Control API (flwr run): 127.0.0.1:59283
+pilot_cdc9k_random_forest_eps4 rep 2: central AUC 0.806287 | fed AUC 0.760687 acc 0.860556 | trivial acc 0.860556 | gap -0.045599 | 53.9s
+starting worker pid=32428 on localhost:11312 at 01:00:49.517
+starting worker pid=32427 on localhost:11312 at 01:00:49.519
+starting worker pid=32429 on localhost:11312 at 01:00:49.544
+SuperLink started (PID: 32478)
+  Fleet API (SuperNodes): 127.0.0.1:49322
+  Control API (flwr run): 127.0.0.1:17589
+pilot_cdc9k_random_forest_eps4 rep 3: central AUC 0.804045 | fed AUC 0.730115 acc 0.860556 | trivial acc 0.860556 | gap -0.073930 | 50.7s
+WROTE /workspace/cells/dsFlowerClient/inst/extdata/campaign/trees/pilot_cdc9k_random_forest_eps4.json registered diagnostic FAIL 
+Primary epsilon-8 diagnostic failed; executing the single registered cdc45k alternative.
+START pilot_cdc45k_random_forest_eps8 registry defaults: {"task":"binary","n_estimators":8,"max_depth":4,"max_features":"auto"} 
+starting worker pid=33494 on localhost:11897 at 01:01:47.852
+starting worker pid=33492 on localhost:11897 at 01:01:47.863
+starting worker pid=33493 on localhost:11897 at 01:01:47.873
+SuperLink started (PID: 33550)
+  Fleet API (SuperNodes): 127.0.0.1:23861
+  Control API (flwr run): 127.0.0.1:41998
+pilot_cdc45k_random_forest_eps8 rep 1: central AUC 0.807718 | fed AUC 0.796331 acc 0.860667 | trivial acc 0.860667 | gap -0.011387 | 53.3s
+starting worker pid=34548 on localhost:11897 at 01:02:41.032
+starting worker pid=34547 on localhost:11897 at 01:02:41.038
+starting worker pid=34549 on localhost:11897 at 01:02:41.049
+SuperLink started (PID: 34598)
+  Fleet API (SuperNodes): 127.0.0.1:26611
+  Control API (flwr run): 127.0.0.1:19904
+pilot_cdc45k_random_forest_eps8 rep 2: central AUC 0.806500 | fed AUC 0.799976 acc 0.860667 | trivial acc 0.860667 | gap -0.006524 | 52.9s
+starting worker pid=35591 on localhost:11897 at 01:03:34.018
+starting worker pid=35590 on localhost:11897 at 01:03:34.019
+starting worker pid=35592 on localhost:11897 at 01:03:34.043
+SuperLink started (PID: 35641)
+  Fleet API (SuperNodes): 127.0.0.1:27612
+  Control API (flwr run): 127.0.0.1:43039
+pilot_cdc45k_random_forest_eps8 rep 3: central AUC 0.802324 | fed AUC 0.794524 acc 0.860667 | trivial acc 0.860667 | gap -0.007800 | 52.9s
+WROTE /workspace/cells/dsFlowerClient/inst/extdata/campaign/trees/pilot_cdc45k_random_forest_eps8.json registered diagnostic FAIL 
+Traceback (most recent call last):
+  File "/workspace/cells/dsFlowerClient/tools/campaign/trees/summarize.py", line 23, in <module>
+    assert rep["history"]["n_clients"] == 3 and rep["history"]["n_failures"] == 0
+AssertionError
+Traceback (most recent call last):
+  File "/workspace/cells/dsFlowerClient/tools/campaign/trees/run_matrix.py", line 29, in <module>
+    subprocess.run(["python3", str(TOOL.with_name("summarize.py")), str(OUTPUT)], check=True)
+  File "/usr/lib/python3.10/subprocess.py", line 526, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python3', '/workspace/cells/dsFlowerClient/tools/campaign/trees/summarize.py', '/workspace/cells/dsFlowerClient/inst/extdata/campaign/trees']' returned non-zero exit status 1.

@@ -1,0 +1,1326 @@
+{
+  "schema": "dsflower-campaign-v2",
+  "status": "completed",
+  "generated_at": "2026-09-22T00:50:41+0000",
+  "host": {
+    "nodename": "b85270415cca",
+    "sysname": "Linux",
+    "release": "6.8.0-100-generic",
+    "machine": "x86_64",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "pod_id": "2sy2g4pb3xwgqt",
+    "pod_name": "pod-flower-tabular",
+    "requested_vcpu": 32,
+    "requested_memory_gb": 64
+  },
+  "versions": {
+    "dsflower": "0.5.0",
+    "dsflowerclient": "0.5.1",
+    "flwr": "1.31.0",
+    "torch": "2.14.0+cpu",
+    "opacus": "1.6.0",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "node_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "jsonlite": "2.0.0",
+    "native_python": {
+      "python": "3.11.16 (main, Sep  1 2026, 14:18:37) [Clang 22.1.3 ]",
+      "numpy": "2.4.6",
+      "json": "2.0.9"
+    },
+    "sklearn": "1.9.1"
+  },
+  "release_commits": {
+    "dsFlower": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlowerClient": "598d21c4627496a65d44034440f2d221ce6e04a2"
+  },
+  "tool_sha256": {
+    "run_cell.R": "e2ddc130c3dc077269344a804d74e02520674202f91eaa6b21da8d9d98083114",
+    "campaign_lib.R": "24bf74cab7ceab83fb2db7f2d0966fc1a0c501b99def9f4badf9e4feae429dfc",
+    "central_train.py": "9f05015148a5dd9d8ae2a40a6c52eed5e4974e2dfe10d9c996c87a88d10c3b59",
+    "README.md": "94029bc0353409a44b35a286b36a264140fd1ec056a319f7768e0cd4774e07e2",
+    "protocol.json": "e1ffd4158ce53acb79a06507c84b23dcd18682114f9d2c9471d5b544af685dea"
+  },
+  "contract": "random_forest",
+  "dataset": {
+    "name": "breast",
+    "n_total": 683,
+    "features": [
+      "clump_thickness",
+      "cell_size_uniformity",
+      "cell_shape_uniformity",
+      "marginal_adhesion",
+      "epithelial_cell_size",
+      "bare_nuclei",
+      "bland_chromatin",
+      "normal_nucleoli",
+      "mitoses"
+    ],
+    "source_url": "https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data",
+    "sha_of_prepared": "73464282fed0596ec31fd5d59f2867aed49f895f119d1a3be2ab11282202f805",
+    "uci_id": 15,
+    "full_name": "Breast Cancer Wisconsin (Original)",
+    "raw_file": "breast-cancer-wisconsin.data",
+    "download_sha256": "402c585309c399237740f635ef9919dc512cca12cbeb20de5e563a4593f22b64",
+    "citation": "Wolberg, W. (1990). Breast Cancer Wisconsin (Original). UCI Machine Learning Repository. https://doi.org/10.24432/C5HP4Z",
+    "cohort_seed": null,
+    "n_train": 546,
+    "n_test": 137,
+    "n_per_site": [
+      181,
+      183,
+      182
+    ]
+  },
+  "split": {
+    "type": "uniform-stratified",
+    "test_fraction": 0.2,
+    "seeds": [
+      20260820,
+      20260821,
+      20260822
+    ],
+    "site_assignment": "round-robin per class on training rows; unchanged campaign_split"
+  },
+  "privacy": {
+    "epsilon": 8,
+    "delta": 1e-06,
+    "unit": "row",
+    "clipping_norm": 1,
+    "adjacency": "replace_one",
+    "guarantee_scope": "per-training",
+    "bounds_policy": "Fixed public domain bounds and cuts; frozen before scoring; see trees/README.md",
+    "randomness": "Node-owned sticky secret RNG; fresh persistent secret files per site/replicate; not seeded by analyst",
+    "native_clip_semantics": "Unit bounded statistics on public feature/target domains; clipping_norm=1 is the node pin, not a DP-SGD forest mechanism",
+    "reported_configuration": "See every replicate's node_privacy; native accounting is separately labelled public recomputation"
+  },
+  "rounds": 1,
+  "rounds_reason": "native-tree schedule",
+  "model_params": {
+    "task": "binary",
+    "n_estimators": 8,
+    "max_depth": 4,
+    "max_features": "auto"
+  },
+  "model_params_overrides": [],
+  "per_replicate": [
+    {
+      "seed": 20260820,
+      "central": {
+        "auc": 1,
+        "acc": 0.992700729927007,
+        "brier": 0.0152807267079472,
+        "logloss": 0.070012739196229
+      },
+      "federated_dp": {
+        "auc": 0.997893258426966,
+        "acc": 0.978102189781022,
+        "brier": 0.110574672384751,
+        "logloss": 0.389763886596095
+      },
+      "trivial": {
+        "auc": 0.5,
+        "acc": 0.64963503649635,
+        "brier": 0.22760965628135,
+        "logloss": 0.647672933339429
+      },
+      "gap": {
+        "auc": -0.0021067415730337,
+        "acc": -0.0145985401459854,
+        "brier": 0.0952939456768034,
+        "logloss": 0.319751147399866
+      },
+      "trivial_training_prevalence": 0.34981684981685,
+      "n_train": 546,
+      "n_test": 137,
+      "n_per_site": [
+        181,
+        183,
+        182
+      ],
+      "split_row_ids_sha256": "6f6d53d988ffbf9bf92e86a410e555be9eb13ab2e380cfe3d55b544a343fd034",
+      "central_train_csv_sha256": "07f84c0bb196cf2d257c79617ed5856c1ce1390a35437935857077bb15f6fa2b",
+      "feature_bounds": {
+        "lower": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "upper": [
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ]
+      },
+      "feature_cuts": [
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ]
+      ],
+      "node_privacy": [
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        }
+      ],
+      "central_configuration": {
+        "implementation": "RandomForestClassifier",
+        "sklearn": "1.9.1",
+        "params": {
+          "bootstrap": true,
+          "ccp_alpha": 0,
+          "class_weight": null,
+          "criterion": "gini",
+          "max_depth": 4,
+          "max_features": 3,
+          "max_leaf_nodes": null,
+          "max_samples": null,
+          "min_impurity_decrease": 0,
+          "min_samples_leaf": 1,
+          "min_samples_split": 2,
+          "min_weight_fraction_leaf": 0,
+          "monotonic_cst": null,
+          "n_estimators": 8,
+          "n_jobs": 1,
+          "oob_score": false,
+          "random_state": 20260820,
+          "verbose": 0,
+          "warm_start": false
+        },
+        "accounting_source": "Recomputed from installed, unmodified dsFlower forest_accounting.py; public inputs only",
+        "native_accounting": {
+          "candidate_schedule": "public-prf-mtry-without-replacement/v1",
+          "histogram_release": "joint-public-bin-node-histogram/v1",
+          "leaf_release": "joint-terminal-sufficient-vector/v1",
+          "leaf_sensitivity": 1.4142135623731,
+          "leaf_sigma": 2.34441382936232,
+          "mechanism": "random-forest/adaptive-level-gaussian/v1",
+          "num_releases": 5,
+          "partition": "record-prf-disjoint-tree/v1",
+          "split_sensitivity": 2.44948974278318,
+          "split_sigma": 4.06064386642265,
+          "transcript": "complete-depth-levels-plus-leaves/v1"
+        }
+      },
+      "release_metadata": {
+        "track": "native_tree",
+        "engine": "random_forest",
+        "task": "binary",
+        "data_kind": "tabular",
+        "features": [
+          "clump_thickness",
+          "cell_size_uniformity",
+          "cell_shape_uniformity",
+          "marginal_adhesion",
+          "epithelial_cell_size",
+          "bare_nuclei",
+          "bland_chromatin",
+          "normal_nucleoli",
+          "mitoses"
+        ],
+        "feature_lower": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "feature_upper": [
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "target_levels": [
+          "0",
+          "1"
+        ],
+        "target_bounds": null,
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbImNsdW1wX3RoaWNrbmVzcyIsImNlbGxfc2l6ZV91bmlmb3JtaXR5IiwiY2VsbF9zaGFwZV91bmlmb3JtaXR5IiwibWFyZ2luYWxfYWRoZXNpb24iLCJlcGl0aGVsaWFsX2NlbGxfc2l6ZSIsImJhcmVfbnVjbGVpIiwiYmxhbmRfY2hyb21hdGluIiwibm9ybWFsX251Y2xlb2xpIiwibWl0b3NlcyJdLCJsb3dlciI6WzEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wXSwidXBwZXIiOlsxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMF0sImN1dHMiOltbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XV0sInRhcmdldCI6eyJuYW1lIjoidGFyZ2V0Iiwia2luZCI6ImJpbmFyeSIsImxldmVscyI6W3sidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMCJ9LHsidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMSJ9XSwibG93ZXIiOjAuMCwidXBwZXIiOjEuMH0sInNoYTI1NiI6IjkyYzFjYzIxYmZiZWJjNzg4YjkxMTg5ODI3ZmMyYWFmYzYzZmE0ZWFmZWQ0ZWI0YmIzNTIwNjg0YTVkYWQ0NGUifSwicGFyYW1ldGVycyI6W3sibmFtZSI6Im1heF9kZXB0aCIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjR9LHsibmFtZSI6Im1heF9mZWF0dXJlcyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjN9LHsibmFtZSI6Im5fZXN0aW1hdG9ycyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjh9XSwicmVzb3VyY2VzIjp7Im1heF9mZWF0dXJlcyI6OSwibWF4X3RyZWVzIjo4LCJtYXhfZGVwdGgiOjQsIm1heF9iaW5zIjoxMCwibWF4X3RocmVhZHMiOjMyLCJtZW1vcnlfbWIiOjMyNzY4LCJ0aW1lb3V0X3NlY29uZHMiOjIxNjAwfX0=",
+        "native_tree_request_sha256": "d076cd8db8e054cdc7206d58070c3ba1ec10748c85736d333c6bf1ebb8602e2a",
+        "public_schema_sha256": "92c1cc21bfbebc788b91189827fc2aafc63fa4eafed4eb4bb3520684a5dad44e",
+        "artifact": {
+          "file": "model.random-forest-ensemble.json",
+          "format": "dsflower-forest-ensemble-json-v1",
+          "size_bytes": 12065,
+          "sha256": "672bf8c2c0fa14e8aa3309dd7985acd254247e25b535a9606ed802588b511245"
+        },
+        "sanitization": {
+          "profile": "dsflower-forest-ensemble-v1",
+          "privacy_basis": "direct-dp-training-postprocessing",
+          "contains_raw_records": false,
+          "contains_unnoised_statistics": false,
+          "contains_feature_names": false,
+          "contains_target_name": false,
+          "contains_training_history": false,
+          "contains_backend_logs": false,
+          "contains_paths": false,
+          "contains_executable_payload": false
+        }
+      },
+      "release_profile": {
+        "artifact": {
+          "format": "dsflower-forest-ensemble-json-v1",
+          "sha256": "672bf8c2c0fa14e8aa3309dd7985acd254247e25b535a9606ed802588b511245",
+          "size_bytes": 12065
+        },
+        "contract": "dsflower-native-tree-prediction-profile-v2",
+        "engine": "random_forest",
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbImNsdW1wX3RoaWNrbmVzcyIsImNlbGxfc2l6ZV91bmlmb3JtaXR5IiwiY2VsbF9zaGFwZV91bmlmb3JtaXR5IiwibWFyZ2luYWxfYWRoZXNpb24iLCJlcGl0aGVsaWFsX2NlbGxfc2l6ZSIsImJhcmVfbnVjbGVpIiwiYmxhbmRfY2hyb21hdGluIiwibm9ybWFsX251Y2xlb2xpIiwibWl0b3NlcyJdLCJsb3dlciI6WzEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wXSwidXBwZXIiOlsxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMF0sImN1dHMiOltbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XV0sInRhcmdldCI6eyJuYW1lIjoidGFyZ2V0Iiwia2luZCI6ImJpbmFyeSIsImxldmVscyI6W3sidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMCJ9LHsidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMSJ9XSwibG93ZXIiOjAuMCwidXBwZXIiOjEuMH0sInNoYTI1NiI6IjkyYzFjYzIxYmZiZWJjNzg4YjkxMTg5ODI3ZmMyYWFmYzYzZmE0ZWFmZWQ0ZWI0YmIzNTIwNjg0YTVkYWQ0NGUifSwicGFyYW1ldGVycyI6W3sibmFtZSI6Im1heF9kZXB0aCIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjR9LHsibmFtZSI6Im1heF9mZWF0dXJlcyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjN9LHsibmFtZSI6Im5fZXN0aW1hdG9ycyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjh9XSwicmVzb3VyY2VzIjp7Im1heF9mZWF0dXJlcyI6OSwibWF4X3RyZWVzIjo4LCJtYXhfZGVwdGgiOjQsIm1heF9iaW5zIjoxMCwibWF4X3RocmVhZHMiOjMyLCJtZW1vcnlfbWIiOjMyNzY4LCJ0aW1lb3V0X3NlY29uZHMiOjIxNjAwfX0=",
+        "native_tree_request_sha256": "d076cd8db8e054cdc7206d58070c3ba1ec10748c85736d333c6bf1ebb8602e2a",
+        "public_schema_sha256": "92c1cc21bfbebc788b91189827fc2aafc63fa4eafed4eb4bb3520684a5dad44e",
+        "task": "binary",
+        "version": 2
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 1,
+        "raw": [
+          {
+            "available": true,
+            "round": 1
+          }
+        ],
+        "n_clients_source": "saved training RDS and SHA-256-bound ensemble member count",
+        "n_clients_original": []
+      },
+      "model_sha256": "672bf8c2c0fa14e8aa3309dd7985acd254247e25b535a9606ed802588b511245",
+      "cleanup_ok": true,
+      "elapsed_s": 52.5061800479889,
+      "federated_elapsed_s": 51.1321005821228,
+      "central_elapsed_s": 1.14913415908813
+    },
+    {
+      "seed": 20260821,
+      "central": {
+        "auc": 0.99438202247191,
+        "acc": 0.956204379562044,
+        "brier": 0.0304693864609998,
+        "logloss": 0.0969915221070798
+      },
+      "federated_dp": {
+        "auc": 0.994850187265918,
+        "acc": 0.941605839416058,
+        "brier": 0.110648317659785,
+        "logloss": 0.387110708347314
+      },
+      "trivial": {
+        "auc": 0.5,
+        "acc": 0.64963503649635,
+        "brier": 0.22760965628135,
+        "logloss": 0.647672933339429
+      },
+      "gap": {
+        "auc": 0.000468164794007464,
+        "acc": -0.0145985401459855,
+        "brier": 0.080178931198785,
+        "logloss": 0.290119186240234
+      },
+      "trivial_training_prevalence": 0.34981684981685,
+      "n_train": 546,
+      "n_test": 137,
+      "n_per_site": [
+        181,
+        183,
+        182
+      ],
+      "split_row_ids_sha256": "d9acf6d63f0886194e30f56c88c079026301109ac0a8720b1a15fd0975333b82",
+      "central_train_csv_sha256": "1485e21a41ab7a4224100815751f8203b49919fa5b58446e747d1607219edb4e",
+      "feature_bounds": {
+        "lower": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "upper": [
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ]
+      },
+      "feature_cuts": [
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ]
+      ],
+      "node_privacy": [
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        }
+      ],
+      "central_configuration": {
+        "implementation": "RandomForestClassifier",
+        "sklearn": "1.9.1",
+        "params": {
+          "bootstrap": true,
+          "ccp_alpha": 0,
+          "class_weight": null,
+          "criterion": "gini",
+          "max_depth": 4,
+          "max_features": 3,
+          "max_leaf_nodes": null,
+          "max_samples": null,
+          "min_impurity_decrease": 0,
+          "min_samples_leaf": 1,
+          "min_samples_split": 2,
+          "min_weight_fraction_leaf": 0,
+          "monotonic_cst": null,
+          "n_estimators": 8,
+          "n_jobs": 1,
+          "oob_score": false,
+          "random_state": 20260821,
+          "verbose": 0,
+          "warm_start": false
+        },
+        "accounting_source": "Recomputed from installed, unmodified dsFlower forest_accounting.py; public inputs only",
+        "native_accounting": {
+          "candidate_schedule": "public-prf-mtry-without-replacement/v1",
+          "histogram_release": "joint-public-bin-node-histogram/v1",
+          "leaf_release": "joint-terminal-sufficient-vector/v1",
+          "leaf_sensitivity": 1.4142135623731,
+          "leaf_sigma": 2.34441382936232,
+          "mechanism": "random-forest/adaptive-level-gaussian/v1",
+          "num_releases": 5,
+          "partition": "record-prf-disjoint-tree/v1",
+          "split_sensitivity": 2.44948974278318,
+          "split_sigma": 4.06064386642265,
+          "transcript": "complete-depth-levels-plus-leaves/v1"
+        }
+      },
+      "release_metadata": {
+        "track": "native_tree",
+        "engine": "random_forest",
+        "task": "binary",
+        "data_kind": "tabular",
+        "features": [
+          "clump_thickness",
+          "cell_size_uniformity",
+          "cell_shape_uniformity",
+          "marginal_adhesion",
+          "epithelial_cell_size",
+          "bare_nuclei",
+          "bland_chromatin",
+          "normal_nucleoli",
+          "mitoses"
+        ],
+        "feature_lower": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "feature_upper": [
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "target_levels": [
+          "0",
+          "1"
+        ],
+        "target_bounds": null,
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbImNsdW1wX3RoaWNrbmVzcyIsImNlbGxfc2l6ZV91bmlmb3JtaXR5IiwiY2VsbF9zaGFwZV91bmlmb3JtaXR5IiwibWFyZ2luYWxfYWRoZXNpb24iLCJlcGl0aGVsaWFsX2NlbGxfc2l6ZSIsImJhcmVfbnVjbGVpIiwiYmxhbmRfY2hyb21hdGluIiwibm9ybWFsX251Y2xlb2xpIiwibWl0b3NlcyJdLCJsb3dlciI6WzEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wXSwidXBwZXIiOlsxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMF0sImN1dHMiOltbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XV0sInRhcmdldCI6eyJuYW1lIjoidGFyZ2V0Iiwia2luZCI6ImJpbmFyeSIsImxldmVscyI6W3sidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMCJ9LHsidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMSJ9XSwibG93ZXIiOjAuMCwidXBwZXIiOjEuMH0sInNoYTI1NiI6IjkyYzFjYzIxYmZiZWJjNzg4YjkxMTg5ODI3ZmMyYWFmYzYzZmE0ZWFmZWQ0ZWI0YmIzNTIwNjg0YTVkYWQ0NGUifSwicGFyYW1ldGVycyI6W3sibmFtZSI6Im1heF9kZXB0aCIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjR9LHsibmFtZSI6Im1heF9mZWF0dXJlcyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjN9LHsibmFtZSI6Im5fZXN0aW1hdG9ycyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjh9XSwicmVzb3VyY2VzIjp7Im1heF9mZWF0dXJlcyI6OSwibWF4X3RyZWVzIjo4LCJtYXhfZGVwdGgiOjQsIm1heF9iaW5zIjoxMCwibWF4X3RocmVhZHMiOjMyLCJtZW1vcnlfbWIiOjMyNzY4LCJ0aW1lb3V0X3NlY29uZHMiOjIxNjAwfX0=",
+        "native_tree_request_sha256": "d076cd8db8e054cdc7206d58070c3ba1ec10748c85736d333c6bf1ebb8602e2a",
+        "public_schema_sha256": "92c1cc21bfbebc788b91189827fc2aafc63fa4eafed4eb4bb3520684a5dad44e",
+        "artifact": {
+          "file": "model.random-forest-ensemble.json",
+          "format": "dsflower-forest-ensemble-json-v1",
+          "size_bytes": 12048,
+          "sha256": "8d544e235abe9f455a4ad91fbfc108f010eb0b439e4d8a6dec2157e32aadfce6"
+        },
+        "sanitization": {
+          "profile": "dsflower-forest-ensemble-v1",
+          "privacy_basis": "direct-dp-training-postprocessing",
+          "contains_raw_records": false,
+          "contains_unnoised_statistics": false,
+          "contains_feature_names": false,
+          "contains_target_name": false,
+          "contains_training_history": false,
+          "contains_backend_logs": false,
+          "contains_paths": false,
+          "contains_executable_payload": false
+        }
+      },
+      "release_profile": {
+        "artifact": {
+          "format": "dsflower-forest-ensemble-json-v1",
+          "sha256": "8d544e235abe9f455a4ad91fbfc108f010eb0b439e4d8a6dec2157e32aadfce6",
+          "size_bytes": 12048
+        },
+        "contract": "dsflower-native-tree-prediction-profile-v2",
+        "engine": "random_forest",
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbImNsdW1wX3RoaWNrbmVzcyIsImNlbGxfc2l6ZV91bmlmb3JtaXR5IiwiY2VsbF9zaGFwZV91bmlmb3JtaXR5IiwibWFyZ2luYWxfYWRoZXNpb24iLCJlcGl0aGVsaWFsX2NlbGxfc2l6ZSIsImJhcmVfbnVjbGVpIiwiYmxhbmRfY2hyb21hdGluIiwibm9ybWFsX251Y2xlb2xpIiwibWl0b3NlcyJdLCJsb3dlciI6WzEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wXSwidXBwZXIiOlsxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMF0sImN1dHMiOltbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XV0sInRhcmdldCI6eyJuYW1lIjoidGFyZ2V0Iiwia2luZCI6ImJpbmFyeSIsImxldmVscyI6W3sidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMCJ9LHsidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMSJ9XSwibG93ZXIiOjAuMCwidXBwZXIiOjEuMH0sInNoYTI1NiI6IjkyYzFjYzIxYmZiZWJjNzg4YjkxMTg5ODI3ZmMyYWFmYzYzZmE0ZWFmZWQ0ZWI0YmIzNTIwNjg0YTVkYWQ0NGUifSwicGFyYW1ldGVycyI6W3sibmFtZSI6Im1heF9kZXB0aCIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjR9LHsibmFtZSI6Im1heF9mZWF0dXJlcyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjN9LHsibmFtZSI6Im5fZXN0aW1hdG9ycyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjh9XSwicmVzb3VyY2VzIjp7Im1heF9mZWF0dXJlcyI6OSwibWF4X3RyZWVzIjo4LCJtYXhfZGVwdGgiOjQsIm1heF9iaW5zIjoxMCwibWF4X3RocmVhZHMiOjMyLCJtZW1vcnlfbWIiOjMyNzY4LCJ0aW1lb3V0X3NlY29uZHMiOjIxNjAwfX0=",
+        "native_tree_request_sha256": "d076cd8db8e054cdc7206d58070c3ba1ec10748c85736d333c6bf1ebb8602e2a",
+        "public_schema_sha256": "92c1cc21bfbebc788b91189827fc2aafc63fa4eafed4eb4bb3520684a5dad44e",
+        "task": "binary",
+        "version": 2
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 1,
+        "raw": [
+          {
+            "available": true,
+            "round": 1
+          }
+        ],
+        "n_clients_source": "saved training RDS and SHA-256-bound ensemble member count",
+        "n_clients_original": []
+      },
+      "model_sha256": "8d544e235abe9f455a4ad91fbfc108f010eb0b439e4d8a6dec2157e32aadfce6",
+      "cleanup_ok": true,
+      "elapsed_s": 54.5182385444641,
+      "federated_elapsed_s": 53.3010754585266,
+      "central_elapsed_s": 1.16536855697632
+    },
+    {
+      "seed": 20260822,
+      "central": {
+        "auc": 0.995318352059925,
+        "acc": 0.963503649635037,
+        "brier": 0.0261483198878418,
+        "logloss": 0.0927420900465912
+      },
+      "federated_dp": {
+        "auc": 0.988998127340824,
+        "acc": 0.927007299270073,
+        "brier": 0.108131811485042,
+        "logloss": 0.37756712866377
+      },
+      "trivial": {
+        "auc": 0.5,
+        "acc": 0.64963503649635,
+        "brier": 0.22760965628135,
+        "logloss": 0.647672933339429
+      },
+      "gap": {
+        "auc": -0.00632022471910121,
+        "acc": -0.0364963503649636,
+        "brier": 0.0819834915972001,
+        "logloss": 0.284825038617179
+      },
+      "trivial_training_prevalence": 0.34981684981685,
+      "n_train": 546,
+      "n_test": 137,
+      "n_per_site": [
+        181,
+        183,
+        182
+      ],
+      "split_row_ids_sha256": "746f0f5e2be61b3581b1835da621e115b0b0b4332105f1ac5b7abafb4be2244b",
+      "central_train_csv_sha256": "3e84a6b9997a66153f271ed1d8dfd392cb583a582d0e65b8c13a6b2c4502d7fa",
+      "feature_bounds": {
+        "lower": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "upper": [
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ]
+      },
+      "feature_cuts": [
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ]
+      ],
+      "node_privacy": [
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        }
+      ],
+      "central_configuration": {
+        "implementation": "RandomForestClassifier",
+        "sklearn": "1.9.1",
+        "params": {
+          "bootstrap": true,
+          "ccp_alpha": 0,
+          "class_weight": null,
+          "criterion": "gini",
+          "max_depth": 4,
+          "max_features": 3,
+          "max_leaf_nodes": null,
+          "max_samples": null,
+          "min_impurity_decrease": 0,
+          "min_samples_leaf": 1,
+          "min_samples_split": 2,
+          "min_weight_fraction_leaf": 0,
+          "monotonic_cst": null,
+          "n_estimators": 8,
+          "n_jobs": 1,
+          "oob_score": false,
+          "random_state": 20260822,
+          "verbose": 0,
+          "warm_start": false
+        },
+        "accounting_source": "Recomputed from installed, unmodified dsFlower forest_accounting.py; public inputs only",
+        "native_accounting": {
+          "candidate_schedule": "public-prf-mtry-without-replacement/v1",
+          "histogram_release": "joint-public-bin-node-histogram/v1",
+          "leaf_release": "joint-terminal-sufficient-vector/v1",
+          "leaf_sensitivity": 1.4142135623731,
+          "leaf_sigma": 2.34441382936232,
+          "mechanism": "random-forest/adaptive-level-gaussian/v1",
+          "num_releases": 5,
+          "partition": "record-prf-disjoint-tree/v1",
+          "split_sensitivity": 2.44948974278318,
+          "split_sigma": 4.06064386642265,
+          "transcript": "complete-depth-levels-plus-leaves/v1"
+        }
+      },
+      "release_metadata": {
+        "track": "native_tree",
+        "engine": "random_forest",
+        "task": "binary",
+        "data_kind": "tabular",
+        "features": [
+          "clump_thickness",
+          "cell_size_uniformity",
+          "cell_shape_uniformity",
+          "marginal_adhesion",
+          "epithelial_cell_size",
+          "bare_nuclei",
+          "bland_chromatin",
+          "normal_nucleoli",
+          "mitoses"
+        ],
+        "feature_lower": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "feature_upper": [
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ],
+        "target_levels": [
+          "0",
+          "1"
+        ],
+        "target_bounds": null,
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbImNsdW1wX3RoaWNrbmVzcyIsImNlbGxfc2l6ZV91bmlmb3JtaXR5IiwiY2VsbF9zaGFwZV91bmlmb3JtaXR5IiwibWFyZ2luYWxfYWRoZXNpb24iLCJlcGl0aGVsaWFsX2NlbGxfc2l6ZSIsImJhcmVfbnVjbGVpIiwiYmxhbmRfY2hyb21hdGluIiwibm9ybWFsX251Y2xlb2xpIiwibWl0b3NlcyJdLCJsb3dlciI6WzEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wXSwidXBwZXIiOlsxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMF0sImN1dHMiOltbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XV0sInRhcmdldCI6eyJuYW1lIjoidGFyZ2V0Iiwia2luZCI6ImJpbmFyeSIsImxldmVscyI6W3sidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMCJ9LHsidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMSJ9XSwibG93ZXIiOjAuMCwidXBwZXIiOjEuMH0sInNoYTI1NiI6IjkyYzFjYzIxYmZiZWJjNzg4YjkxMTg5ODI3ZmMyYWFmYzYzZmE0ZWFmZWQ0ZWI0YmIzNTIwNjg0YTVkYWQ0NGUifSwicGFyYW1ldGVycyI6W3sibmFtZSI6Im1heF9kZXB0aCIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjR9LHsibmFtZSI6Im1heF9mZWF0dXJlcyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjN9LHsibmFtZSI6Im5fZXN0aW1hdG9ycyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjh9XSwicmVzb3VyY2VzIjp7Im1heF9mZWF0dXJlcyI6OSwibWF4X3RyZWVzIjo4LCJtYXhfZGVwdGgiOjQsIm1heF9iaW5zIjoxMCwibWF4X3RocmVhZHMiOjMyLCJtZW1vcnlfbWIiOjMyNzY4LCJ0aW1lb3V0X3NlY29uZHMiOjIxNjAwfX0=",
+        "native_tree_request_sha256": "d076cd8db8e054cdc7206d58070c3ba1ec10748c85736d333c6bf1ebb8602e2a",
+        "public_schema_sha256": "92c1cc21bfbebc788b91189827fc2aafc63fa4eafed4eb4bb3520684a5dad44e",
+        "artifact": {
+          "file": "model.random-forest-ensemble.json",
+          "format": "dsflower-forest-ensemble-json-v1",
+          "size_bytes": 12160,
+          "sha256": "02f7f581c0de73ea3d636e699eb9c7638343ebb001728d07ea0c51ad6d7c10bf"
+        },
+        "sanitization": {
+          "profile": "dsflower-forest-ensemble-v1",
+          "privacy_basis": "direct-dp-training-postprocessing",
+          "contains_raw_records": false,
+          "contains_unnoised_statistics": false,
+          "contains_feature_names": false,
+          "contains_target_name": false,
+          "contains_training_history": false,
+          "contains_backend_logs": false,
+          "contains_paths": false,
+          "contains_executable_payload": false
+        }
+      },
+      "release_profile": {
+        "artifact": {
+          "format": "dsflower-forest-ensemble-json-v1",
+          "sha256": "02f7f581c0de73ea3d636e699eb9c7638343ebb001728d07ea0c51ad6d7c10bf",
+          "size_bytes": 12160
+        },
+        "contract": "dsflower-native-tree-prediction-profile-v2",
+        "engine": "random_forest",
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbImNsdW1wX3RoaWNrbmVzcyIsImNlbGxfc2l6ZV91bmlmb3JtaXR5IiwiY2VsbF9zaGFwZV91bmlmb3JtaXR5IiwibWFyZ2luYWxfYWRoZXNpb24iLCJlcGl0aGVsaWFsX2NlbGxfc2l6ZSIsImJhcmVfbnVjbGVpIiwiYmxhbmRfY2hyb21hdGluIiwibm9ybWFsX251Y2xlb2xpIiwibWl0b3NlcyJdLCJsb3dlciI6WzEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wXSwidXBwZXIiOlsxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMCwxMC4wLDEwLjAsMTAuMF0sImN1dHMiOltbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XSxbMS41LDIuNSwzLjUsNC41LDUuNSw2LjUsNy41LDguNSw5LjVdLFsxLjUsMi41LDMuNSw0LjUsNS41LDYuNSw3LjUsOC41LDkuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41XV0sInRhcmdldCI6eyJuYW1lIjoidGFyZ2V0Iiwia2luZCI6ImJpbmFyeSIsImxldmVscyI6W3sidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMCJ9LHsidHlwZSI6InN0cmluZyIsInZhbHVlIjoiMSJ9XSwibG93ZXIiOjAuMCwidXBwZXIiOjEuMH0sInNoYTI1NiI6IjkyYzFjYzIxYmZiZWJjNzg4YjkxMTg5ODI3ZmMyYWFmYzYzZmE0ZWFmZWQ0ZWI0YmIzNTIwNjg0YTVkYWQ0NGUifSwicGFyYW1ldGVycyI6W3sibmFtZSI6Im1heF9kZXB0aCIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjR9LHsibmFtZSI6Im1heF9mZWF0dXJlcyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjN9LHsibmFtZSI6Im5fZXN0aW1hdG9ycyIsInR5cGUiOiJpbnRlZ2VyIiwidmFsdWUiOjh9XSwicmVzb3VyY2VzIjp7Im1heF9mZWF0dXJlcyI6OSwibWF4X3RyZWVzIjo4LCJtYXhfZGVwdGgiOjQsIm1heF9iaW5zIjoxMCwibWF4X3RocmVhZHMiOjMyLCJtZW1vcnlfbWIiOjMyNzY4LCJ0aW1lb3V0X3NlY29uZHMiOjIxNjAwfX0=",
+        "native_tree_request_sha256": "d076cd8db8e054cdc7206d58070c3ba1ec10748c85736d333c6bf1ebb8602e2a",
+        "public_schema_sha256": "92c1cc21bfbebc788b91189827fc2aafc63fa4eafed4eb4bb3520684a5dad44e",
+        "task": "binary",
+        "version": 2
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 1,
+        "raw": [
+          {
+            "available": true,
+            "round": 1
+          }
+        ],
+        "n_clients_source": "saved training RDS and SHA-256-bound ensemble member count",
+        "n_clients_original": []
+      },
+      "model_sha256": "02f7f581c0de73ea3d636e699eb9c7638343ebb001728d07ea0c51ad6d7c10bf",
+      "cleanup_ok": true,
+      "elapsed_s": 52.0618970394135,
+      "federated_elapsed_s": 50.8416676521301,
+      "central_elapsed_s": 1.17251038551331
+    }
+  ],
+  "summary": {
+    "central_mean_sd": {
+      "auc": {
+        "mean": 0.996566791510612,
+        "sd": 0.00300987851466696
+      },
+      "acc": {
+        "mean": 0.970802919708029,
+        "sd": 0.0193120533654349
+      },
+      "brier": {
+        "mean": 0.0239661443522629,
+        "sd": 0.00782593533224997
+      },
+      "logloss": {
+        "mean": 0.0865821171166334,
+        "sd": 0.014505951596192
+      }
+    },
+    "federated_mean_sd": {
+      "auc": {
+        "mean": 0.993913857677903,
+        "sd": 0.00452088200276874
+      },
+      "acc": {
+        "mean": 0.948905109489051,
+        "sd": 0.026317892521635
+      },
+      "brier": {
+        "mean": 0.109784933843192,
+        "sd": 0.0014321194275956
+      },
+      "logloss": {
+        "mean": 0.38481390786906,
+        "sd": 0.00641456899118063
+      }
+    },
+    "trivial_mean_sd": {
+      "auc": {
+        "mean": 0.5,
+        "sd": 0
+      },
+      "acc": {
+        "mean": 0.64963503649635,
+        "sd": 0
+      },
+      "brier": {
+        "mean": 0.22760965628135,
+        "sd": 0
+      },
+      "logloss": {
+        "mean": 0.647672933339429,
+        "sd": 0
+      }
+    },
+    "delta_mean_sd": {
+      "auc": {
+        "mean": -0.00265293383270915,
+        "sd": 0.00342699613857646
+      },
+      "acc": {
+        "mean": -0.0218978102189781,
+        "sd": 0.0126427066245904
+      },
+      "brier": {
+        "mean": 0.0858187894909295,
+        "sd": 0.00825518310626183
+      },
+      "logloss": {
+        "mean": 0.298231790752426,
+        "sd": 0.0188233640100131
+      }
+    }
+  },
+  "diagnostic": {
+    "pass": true,
+    "criterion": "mean fed AUC > 0.5 AND mean fed accuracy > mean majority-class accuracy",
+    "alternative": "If either primary epsilon-8 diagnostic fails, run only random_forest cdc45k epsilon 8 with three registered seeds",
+    "per_replicate_pass": [
+      true,
+      true,
+      true
+    ],
+    "utility_floor_pass": true,
+    "utility_floor": "mean fed accuracy >= mean trivial accuracy - 0.02 OR mean fed AUC > 0.6",
+    "inherited_from": "vignettes/utility-campaign.Rmd",
+    "epsilon8_operating_point": true
+  },
+  "elapsed_s": 159.340272665024,
+  "provisioning": {
+    "reused": true,
+    "initial_elapsed_s": 97,
+    "reprovisioning_elapsed_s": 0
+  }
+}

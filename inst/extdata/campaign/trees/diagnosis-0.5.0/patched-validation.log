@@ -1,0 +1,47 @@
+$path
+[1] "/workspace/cells/trees-diagnosis-0.5.0/model.random-forest-ensemble.json"
+
+$format
+[1] "dsflower-forest-ensemble-json-v1"
+
+$sha256
+[1] "8c2d04a22f869ab9de1d11b802a013b4695047d76893360280bf0fcc115d74ed"
+
+$size_bytes
+[1] 12091
+
+$public_schema_sha256
+[1] "92c1cc21bfbebc788b91189827fc2aafc63fa4eafed4eb4bb3520684a5dad44e"
+
+$sanitization
+$sanitization$profile
+[1] "dsflower-forest-ensemble-v1"
+
+$sanitization$privacy_basis
+[1] "direct-dp-training-postprocessing"
+
+$sanitization$contains_raw_records
+[1] FALSE
+
+$sanitization$contains_unnoised_statistics
+[1] FALSE
+
+$sanitization$contains_feature_names
+[1] FALSE
+
+$sanitization$contains_target_name
+[1] FALSE
+
+$sanitization$contains_training_history
+[1] FALSE
+
+$sanitization$contains_backend_logs
+[1] FALSE
+
+$sanitization$contains_paths
+[1] FALSE
+
+$sanitization$contains_executable_payload
+[1] FALSE
+
+

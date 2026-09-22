@@ -576,6 +576,8 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
   }
   metadata <- jsonlite::fromJSON(file.path(persisted_dir, "metadata.json"))
   history <- jsonlite::fromJSON(file.path(persisted_dir, "history.json"))
+  n_clients <- length(jsonlite::fromJSON(model_path, simplifyVector = FALSE)$models)
+  stopifnot(identical(n_clients, as.integer(n_sites)), length(node_privacy) == n_sites)
 
   # Channel B: consume the released artifact locally on the held-out test set.
   if (!is.null(score_function)) {
@@ -607,7 +609,7 @@ campaign_run_federated <- function(site_data, test, features, feature_bounds,
     metrics = metrics,
     artifact_dir = persisted_dir,
     cleanup_ok = cleanup_ok,
-    n_clients = as.integer(fit$n_clients),
+    n_clients = n_clients,
     n_failures = as.integer(sum(!history$available)),
     node_privacy = node_privacy,
     metadata = metadata,

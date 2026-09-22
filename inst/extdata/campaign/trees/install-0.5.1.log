@@ -1,0 +1,20 @@
+* installing *source* package ‘dsFlowerClient’ ...
+** this is package ‘dsFlowerClient’ version ‘0.5.1’
+** using staged installation
+** libs
+using C compiler: ‘cc (Ubuntu 11.4.0-1ubuntu1~22.04.3) 11.4.0’
+make: Nothing to be done for 'all'.
+installing to /workspace/cells/Rlib/00LOCK-trees-fix-client/00new/dsFlowerClient/libs
+** R
+** inst
+** byte-compile and prepare package for lazy loading
+** help
+*** installing help indices
+*** copying figures
+** building package indices
+** installing vignettes
+** testing if installed package can be loaded from temporary location
+** checking absolute paths in shared objects and dynamic libraries
+** testing if installed package can be loaded from final location
+** testing if installed package keeps a record of temporary installation path
+* DONE (dsFlowerClient)

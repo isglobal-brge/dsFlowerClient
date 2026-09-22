@@ -1,0 +1,736 @@
+{
+  "schema": "dsflower-campaign-summary-v2",
+  "track": "trees",
+  "status": "measured",
+  "cells": [
+    {
+      "file": "pilot_breast_random_forest_eps1.json",
+      "sha256": "9156ea7deb643d37c63a1ab3776cf3e07b95f67c3dc2dd16000d4b11ff21f0e9",
+      "contract": "random_forest",
+      "dataset": "breast",
+      "n": 683,
+      "epsilon": 1,
+      "rounds": 1,
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "summary": {
+        "central_mean_sd": {
+          "auc": {
+            "mean": 0.996566791510612,
+            "sd": 0.00300987851466696
+          },
+          "acc": {
+            "mean": 0.970802919708029,
+            "sd": 0.0193120533654349
+          },
+          "brier": {
+            "mean": 0.0239661443522629,
+            "sd": 0.00782593533224997
+          },
+          "logloss": {
+            "mean": 0.0865821171166334,
+            "sd": 0.014505951596192
+          }
+        },
+        "federated_mean_sd": {
+          "auc": {
+            "mean": 0.690933208489388,
+            "sd": 0.148620079533547
+          },
+          "acc": {
+            "mean": 0.712895377128954,
+            "sd": 0.00421423554153011
+          },
+          "brier": {
+            "mean": 0.223679907316243,
+            "sd": 0.0185615735602906
+          },
+          "logloss": {
+            "mean": 0.639770040677976,
+            "sd": 0.0382358361487028
+          }
+        },
+        "trivial_mean_sd": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0
+          },
+          "acc": {
+            "mean": 0.64963503649635,
+            "sd": 0
+          },
+          "brier": {
+            "mean": 0.22760965628135,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.647672933339429,
+            "sd": 0
+          }
+        },
+        "delta_mean_sd": {
+          "auc": {
+            "mean": -0.305633583021224,
+            "sd": 0.150420906328313
+          },
+          "acc": {
+            "mean": -0.257907542579075,
+            "sd": 0.023463870464703
+          },
+          "brier": {
+            "mean": 0.19971376296398,
+            "sd": 0.0256383372107177
+          },
+          "logloss": {
+            "mean": 0.553187923561342,
+            "sd": 0.0504622381459967
+          }
+        }
+      },
+      "utility_floor_pass": true,
+      "diagnostic_pass": true,
+      "near_zero_cost_flag": false,
+      "minimum_site_near_zero_cost_flag": false,
+      "elapsed_s": 158.953125476837
+    },
+    {
+      "file": "pilot_breast_random_forest_eps4.json",
+      "sha256": "ee84bf671d231161c7563349d1055bc895ba999736197eba70d675b83b884679",
+      "contract": "random_forest",
+      "dataset": "breast",
+      "n": 683,
+      "epsilon": 4,
+      "rounds": 1,
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "summary": {
+        "central_mean_sd": {
+          "auc": {
+            "mean": 0.996566791510612,
+            "sd": 0.00300987851466696
+          },
+          "acc": {
+            "mean": 0.970802919708029,
+            "sd": 0.0193120533654349
+          },
+          "brier": {
+            "mean": 0.0239661443522629,
+            "sd": 0.00782593533224997
+          },
+          "logloss": {
+            "mean": 0.0865821171166334,
+            "sd": 0.014505951596192
+          }
+        },
+        "federated_mean_sd": {
+          "auc": {
+            "mean": 0.986501248439451,
+            "sd": 0.00821737022139099
+          },
+          "acc": {
+            "mean": 0.846715328467153,
+            "sd": 0.047864514775927
+          },
+          "brier": {
+            "mean": 0.144473886708571,
+            "sd": 0.0158366069582937
+          },
+          "logloss": {
+            "mean": 0.46867805206207,
+            "sd": 0.0373903094636562
+          }
+        },
+        "trivial_mean_sd": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0
+          },
+          "acc": {
+            "mean": 0.64963503649635,
+            "sd": 0
+          },
+          "brier": {
+            "mean": 0.22760965628135,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.647672933339429,
+            "sd": 0
+          }
+        },
+        "delta_mean_sd": {
+          "auc": {
+            "mean": -0.0100655430711611,
+            "sd": 0.00646593039182262
+          },
+          "acc": {
+            "mean": -0.124087591240876,
+            "sd": 0.0623649908417338
+          },
+          "brier": {
+            "mean": 0.120507742356308,
+            "sd": 0.0168575575022568
+          },
+          "logloss": {
+            "mean": 0.382095934945436,
+            "sd": 0.0403594838683345
+          }
+        }
+      },
+      "utility_floor_pass": true,
+      "diagnostic_pass": true,
+      "near_zero_cost_flag": false,
+      "minimum_site_near_zero_cost_flag": false,
+      "elapsed_s": 170.693663358688
+    },
+    {
+      "file": "pilot_breast_random_forest_eps8.json",
+      "sha256": "3f10bb627243fd3d1a71e05a64dc7de80dbf96a5c8ed502ee2fcfd590b104c06",
+      "contract": "random_forest",
+      "dataset": "breast",
+      "n": 683,
+      "epsilon": 8,
+      "rounds": 1,
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "summary": {
+        "central_mean_sd": {
+          "auc": {
+            "mean": 0.996566791510612,
+            "sd": 0.00300987851466696
+          },
+          "acc": {
+            "mean": 0.970802919708029,
+            "sd": 0.0193120533654349
+          },
+          "brier": {
+            "mean": 0.0239661443522629,
+            "sd": 0.00782593533224997
+          },
+          "logloss": {
+            "mean": 0.0865821171166334,
+            "sd": 0.014505951596192
+          }
+        },
+        "federated_mean_sd": {
+          "auc": {
+            "mean": 0.993913857677903,
+            "sd": 0.00452088200276874
+          },
+          "acc": {
+            "mean": 0.948905109489051,
+            "sd": 0.026317892521635
+          },
+          "brier": {
+            "mean": 0.109784933843192,
+            "sd": 0.0014321194275956
+          },
+          "logloss": {
+            "mean": 0.38481390786906,
+            "sd": 0.00641456899118063
+          }
+        },
+        "trivial_mean_sd": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0
+          },
+          "acc": {
+            "mean": 0.64963503649635,
+            "sd": 0
+          },
+          "brier": {
+            "mean": 0.22760965628135,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.647672933339429,
+            "sd": 0
+          }
+        },
+        "delta_mean_sd": {
+          "auc": {
+            "mean": -0.00265293383270915,
+            "sd": 0.00342699613857646
+          },
+          "acc": {
+            "mean": -0.0218978102189781,
+            "sd": 0.0126427066245904
+          },
+          "brier": {
+            "mean": 0.0858187894909295,
+            "sd": 0.00825518310626183
+          },
+          "logloss": {
+            "mean": 0.298231790752426,
+            "sd": 0.0188233640100131
+          }
+        }
+      },
+      "utility_floor_pass": true,
+      "diagnostic_pass": true,
+      "near_zero_cost_flag": false,
+      "minimum_site_near_zero_cost_flag": false,
+      "elapsed_s": 159.340272665024
+    },
+    {
+      "file": "pilot_cdc45k_random_forest_eps8.json",
+      "sha256": "13408b58b220298a83bd3d0af7698125d36a9ac6d31fde478254b93bca094f1b",
+      "contract": "random_forest",
+      "dataset": "cdc45k",
+      "n": 45000,
+      "epsilon": 8,
+      "rounds": 1,
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "summary": {
+        "central_mean_sd": {
+          "auc": {
+            "mean": 0.805514238420186,
+            "sd": 0.00282872283510368
+          },
+          "acc": {
+            "mean": 0.861259259259259,
+            "sd": 0.00061195228303181
+          },
+          "brier": {
+            "mean": 0.101943195295067,
+            "sd": 0.000413865598173778
+          },
+          "logloss": {
+            "mean": 0.332717617354636,
+            "sd": 0.00178922470728545
+          }
+        },
+        "federated_mean_sd": {
+          "auc": {
+            "mean": 0.796943695313992,
+            "sd": 0.0027770793755359
+          },
+          "acc": {
+            "mean": 0.860666666666667,
+            "sd": 0
+          },
+          "brier": {
+            "mean": 0.105378316485356,
+            "sd": 0.00053919984809322
+          },
+          "logloss": {
+            "mean": 0.348669109929031,
+            "sd": 0.00225356894296369
+          }
+        },
+        "trivial_mean_sd": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0
+          },
+          "acc": {
+            "mean": 0.860666666666667,
+            "sd": 0
+          },
+          "brier": {
+            "mean": 0.119919555555556,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.403751443594527,
+            "sd": 0
+          }
+        },
+        "delta_mean_sd": {
+          "auc": {
+            "mean": -0.00857054310619472,
+            "sd": 0.0025210367052092
+          },
+          "acc": {
+            "mean": -0.000592592592592552,
+            "sd": 0.00061195228303181
+          },
+          "brier": {
+            "mean": 0.00343512119028872,
+            "sd": 0.000768976239204954
+          },
+          "logloss": {
+            "mean": 0.0159514925743953,
+            "sd": 0.00309293073236201
+          }
+        }
+      },
+      "utility_floor_pass": true,
+      "diagnostic_pass": false,
+      "near_zero_cost_flag": false,
+      "minimum_site_near_zero_cost_flag": false,
+      "elapsed_s": 159.397036314011
+    },
+    {
+      "file": "pilot_cdc9k_random_forest_eps1.json",
+      "sha256": "64825c6d7e0e80231f12432fef29f300caefdd78db1ebf8b67c814cfd3603a91",
+      "contract": "random_forest",
+      "dataset": "cdc9k",
+      "n": 9000,
+      "epsilon": 1,
+      "rounds": 1,
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "summary": {
+        "central_mean_sd": {
+          "auc": {
+            "mean": 0.807081122465164,
+            "sd": 0.00350125098431748
+          },
+          "acc": {
+            "mean": 0.860925925925926,
+            "sd": 0.0013981174880131
+          },
+          "brier": {
+            "mean": 0.100972978902017,
+            "sd": 0.000859712086647177
+          },
+          "logloss": {
+            "mean": 0.331196721990716,
+            "sd": 0.00204490176813584
+          }
+        },
+        "federated_mean_sd": {
+          "auc": {
+            "mean": 0.695477183154621,
+            "sd": 0.0215303193443454
+          },
+          "acc": {
+            "mean": 0.860740740740741,
+            "sd": 0.000320750149549842
+          },
+          "brier": {
+            "mean": 0.11506902975588,
+            "sd": 0.00305336256452629
+          },
+          "logloss": {
+            "mean": 0.385554555902716,
+            "sd": 0.0109471650893824
+          }
+        },
+        "trivial_mean_sd": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0
+          },
+          "acc": {
+            "mean": 0.860555555555556,
+            "sd": 0
+          },
+          "brier": {
+            "mean": 0.119999710648148,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.403953787900397,
+            "sd": 0
+          }
+        },
+        "delta_mean_sd": {
+          "auc": {
+            "mean": -0.111603939310543,
+            "sd": 0.0191613454833142
+          },
+          "acc": {
+            "mean": -0.000185185185185214,
+            "sd": 0.0016972502573911
+          },
+          "brier": {
+            "mean": 0.0140960508538636,
+            "sd": 0.00230490186528258
+          },
+          "logloss": {
+            "mean": 0.054357833912,
+            "sd": 0.00990227175714614
+          }
+        }
+      },
+      "utility_floor_pass": true,
+      "diagnostic_pass": true,
+      "near_zero_cost_flag": false,
+      "minimum_site_near_zero_cost_flag": false,
+      "elapsed_s": 153.101651906967
+    },
+    {
+      "file": "pilot_cdc9k_random_forest_eps4.json",
+      "sha256": "12fa34d7688bf9d5f0da9788d2426619a057fb3e5dba32e5a219521cd5e8ef2b",
+      "contract": "random_forest",
+      "dataset": "cdc9k",
+      "n": 9000,
+      "epsilon": 4,
+      "rounds": 1,
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "summary": {
+        "central_mean_sd": {
+          "auc": {
+            "mean": 0.807081122465164,
+            "sd": 0.00350125098431748
+          },
+          "acc": {
+            "mean": 0.860925925925926,
+            "sd": 0.0013981174880131
+          },
+          "brier": {
+            "mean": 0.100972978902017,
+            "sd": 0.000859712086647177
+          },
+          "logloss": {
+            "mean": 0.331196721990716,
+            "sd": 0.00204490176813584
+          }
+        },
+        "federated_mean_sd": {
+          "auc": {
+            "mean": 0.744952190377719,
+            "sd": 0.0153059488892757
+          },
+          "acc": {
+            "mean": 0.860555555555556,
+            "sd": 0
+          },
+          "brier": {
+            "mean": 0.109755942927072,
+            "sd": 0.00156093837431019
+          },
+          "logloss": {
+            "mean": 0.367488542069302,
+            "sd": 0.00476848587071229
+          }
+        },
+        "trivial_mean_sd": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0
+          },
+          "acc": {
+            "mean": 0.860555555555556,
+            "sd": 0
+          },
+          "brier": {
+            "mean": 0.119999710648148,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.403953787900397,
+            "sd": 0
+          }
+        },
+        "delta_mean_sd": {
+          "auc": {
+            "mean": -0.0621289320874453,
+            "sd": 0.0147453789849698
+          },
+          "acc": {
+            "mean": -0.000370370370370428,
+            "sd": 0.0013981174880131
+          },
+          "brier": {
+            "mean": 0.00878296402505482,
+            "sd": 0.000743657380665025
+          },
+          "logloss": {
+            "mean": 0.0362918200785864,
+            "sd": 0.00457398434780299
+          }
+        }
+      },
+      "utility_floor_pass": true,
+      "diagnostic_pass": false,
+      "near_zero_cost_flag": false,
+      "minimum_site_near_zero_cost_flag": false,
+      "elapsed_s": 155.60373544693
+    },
+    {
+      "file": "pilot_cdc9k_random_forest_eps8.json",
+      "sha256": "13d6d825c5154edeec9167d0a7ffe236d827bfcdf2becb5413b42620b2ab92c8",
+      "contract": "random_forest",
+      "dataset": "cdc9k",
+      "n": 9000,
+      "epsilon": 8,
+      "rounds": 1,
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "summary": {
+        "central_mean_sd": {
+          "auc": {
+            "mean": 0.807081122465164,
+            "sd": 0.00350125098431748
+          },
+          "acc": {
+            "mean": 0.860925925925926,
+            "sd": 0.0013981174880131
+          },
+          "brier": {
+            "mean": 0.100972978902017,
+            "sd": 0.000859712086647177
+          },
+          "logloss": {
+            "mean": 0.331196721990716,
+            "sd": 0.00204490176813584
+          }
+        },
+        "federated_mean_sd": {
+          "auc": {
+            "mean": 0.757392208656229,
+            "sd": 0.0135523203213293
+          },
+          "acc": {
+            "mean": 0.860555555555556,
+            "sd": 0
+          },
+          "brier": {
+            "mean": 0.109706667760344,
+            "sd": 0.00145981312456115
+          },
+          "logloss": {
+            "mean": 0.366735580517364,
+            "sd": 0.00433832966154275
+          }
+        },
+        "trivial_mean_sd": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0
+          },
+          "acc": {
+            "mean": 0.860555555555556,
+            "sd": 0
+          },
+          "brier": {
+            "mean": 0.119999710648148,
+            "sd": 0
+          },
+          "logloss": {
+            "mean": 0.403953787900397,
+            "sd": 0
+          }
+        },
+        "delta_mean_sd": {
+          "auc": {
+            "mean": -0.0496889138089347,
+            "sd": 0.0100577734912708
+          },
+          "acc": {
+            "mean": -0.000370370370370428,
+            "sd": 0.0013981174880131
+          },
+          "brier": {
+            "mean": 0.00873368885832716,
+            "sd": 0.000710208665647917
+          },
+          "logloss": {
+            "mean": 0.0355388585266483,
+            "sd": 0.00327958856275778
+          }
+        }
+      },
+      "utility_floor_pass": true,
+      "diagnostic_pass": false,
+      "near_zero_cost_flag": false,
+      "minimum_site_near_zero_cost_flag": false,
+      "elapsed_s": 153.482794046402
+    }
+  ],
+  "epsilon8_diagnostic_pass": false,
+  "alternative": {
+    "dataset": "cdc45k",
+    "epsilon": 8,
+    "triggered": true,
+    "executed": true
+  },
+  "series_diagnostics": [
+    {
+      "contract": "random_forest",
+      "dataset": "breast",
+      "epsilon_comparisons": [
+        {
+          "epsilon_from": 1,
+          "epsilon_to": 4,
+          "gap_change": 0.2955680399500629,
+          "allowed_worsening": 0.150420906328313,
+          "pass": true
+        },
+        {
+          "epsilon_from": 4,
+          "epsilon_to": 8,
+          "gap_change": 0.00741260923845195,
+          "allowed_worsening": 0.00646593039182262,
+          "pass": true
+        }
+      ],
+      "epsilon_monotonicity_pass": true,
+      "seed_dispersion_check": "not applicable: original diagnostic is specific to heart",
+      "gap_sd_lowest_epsilon": 0.150420906328313,
+      "gap_sd_highest_epsilon": 0.00342699613857646
+    },
+    {
+      "contract": "random_forest",
+      "dataset": "cdc45k",
+      "epsilon_comparisons": [],
+      "epsilon_monotonicity_pass": null,
+      "seed_dispersion_check": "not applicable: original diagnostic is specific to heart",
+      "gap_sd_lowest_epsilon": 0.0025210367052092,
+      "gap_sd_highest_epsilon": 0.0025210367052092
+    },
+    {
+      "contract": "random_forest",
+      "dataset": "cdc9k",
+      "epsilon_comparisons": [
+        {
+          "epsilon_from": 1,
+          "epsilon_to": 4,
+          "gap_change": 0.049475007223097694,
+          "allowed_worsening": 0.0191613454833142,
+          "pass": true
+        },
+        {
+          "epsilon_from": 4,
+          "epsilon_to": 8,
+          "gap_change": 0.0124400182785106,
+          "allowed_worsening": 0.0147453789849698,
+          "pass": true
+        }
+      ],
+      "epsilon_monotonicity_pass": true,
+      "seed_dispersion_check": "not applicable: original diagnostic is specific to heart",
+      "gap_sd_lowest_epsilon": 0.0191613454833142,
+      "gap_sd_highest_epsilon": 0.0100577734912708
+    }
+  ],
+  "failures": [],
+  "utility_floor_epsilon8_pass": true,
+  "epsilon_monotonicity_pass": true,
+  "near_zero_cost_scan_pass": true,
+  "completed_cells": 7,
+  "unmeasured_primary_cells": [],
+  "provisioning": {
+    "reused": true,
+    "initial_elapsed_s": 97,
+    "reprovisioning_elapsed_s": 0
+  },
+  "interpretation": "Descriptive public benchmark evidence; gaps include algorithm, federation and DP costs. Three replicates do not establish general utility or prove privacy."
+}

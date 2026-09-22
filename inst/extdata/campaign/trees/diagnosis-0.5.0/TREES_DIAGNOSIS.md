@@ -32,6 +32,7 @@ JSON ending in `}` (byte 125), with no trailing newline. Re-encoding the
 original with the Python writer reproduces it exactly. The defect is
 jsonlite's lossy decimal serialization of binary64 leaves despite `digits=NA`,
 not key order, whitespace, NumPy scalar encoding, or integer spelling.
+The rewritten JSON changes 285 parsed binary64 leaf values.
 
 ## Runtime and emitter
 

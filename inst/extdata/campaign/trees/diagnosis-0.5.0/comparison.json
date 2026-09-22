@@ -18,7 +18,15 @@
   "r_size": 11714,
   "original_last_byte": 125,
   "r_last_byte": 125,
-  "key_order": ["aggregation", "contract", "engine", "models", "public_schema_sha256", "task", "version"],
+  "key_order": [
+    "aggregation",
+    "contract",
+    "engine",
+    "models",
+    "public_schema_sha256",
+    "task",
+    "version"
+  ],
   "jsonlite": "2.0.0",
   "r": "R version 4.6.1 (2026-06-24)",
   "artifact": {
@@ -26,5 +34,18 @@
     "format": "dsflower-forest-ensemble-json-v1",
     "size_bytes": 12091,
     "sha256": "8c2d04a22f869ab9de1d11b802a013b4695047d76893360280bf0fcc115d74ed"
+  },
+  "python_canonical_roundtrip": true,
+  "all_object_keys_sorted": true,
+  "changed_binary64_values": 285,
+  "first_numeric_change": {
+    "path": "/models/0/trees/0/leaf_values/3",
+    "python": "0.9021311641755351",
+    "r": "0.902131164175535"
+  },
+  "python": {
+    "version": "3.11.16",
+    "numpy": "2.4.6",
+    "stdlib_json": "2.0.9"
   }
 }

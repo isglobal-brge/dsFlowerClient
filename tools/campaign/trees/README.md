@@ -134,3 +134,27 @@ public ensemble and validation inputs before failure cleanup and does not
 call held-out prediction. Its preserved comparison and release bytes are in
 `inst/extdata/campaign/trees/diagnosis-0.5.0/`; see `TREES_DIAGNOSIS.md` there.
 The patched validator is also exercised directly on those exact saved bytes.
+
+## Evidence count correction
+
+The executed scoring tooling was frozen in commit
+`162a880ce83488855c1cc5fa63fc2598707f9c21`; each cell pins its exact tool hashes.
+That harness queried `fit$n_clients`, a field absent from the fit return value,
+so it serialized an empty array. Its equality assertion accepted an empty vector.
+`audit_releases.py` verifies the saved training RDS count, ensemble SHA-256 and
+size, three ensemble members, and three node privacy responses, then repairs
+only that reporting field. It records original/corrected JSON digests and the
+original field in `release-audit.json` and each replicate. No scored model,
+metric, split, parameter or prediction is altered, retrained or rescored.
+The current harness reads the count from the validated ensemble and requires
+one integer value. This reporting correction was applied after the scored matrix.
+
+To audit the original records once on their original pod, before summarizing:
+
+```sh
+R_LIBS=/workspace/cells/Rlib python3 tools/campaign/trees/audit_releases.py \
+  inst/extdata/campaign/trees /workspace/cells/runs/trees-0.5.1
+python3 tools/campaign/trees/summarize.py inst/extdata/campaign/trees
+```
+
+The fixed harness already records the count for new independent reproductions.

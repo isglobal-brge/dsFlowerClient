@@ -109,7 +109,7 @@ tryCatch({
       contract = opt$contract)
     # Save the single native scoring result before computing any comparator.
     saveRDS(fed, file.path(work_dir, "scored-native.rds"))
-    stopifnot(fed$n_clients == 3L, fed$n_failures == 0L, fed$n_rounds_run == 1L,
+    stopifnot(identical(fed$n_clients, 3L), fed$n_failures == 0L, fed$n_rounds_run == 1L,
               isTRUE(fed$cleanup_ok))
     central_dir <- file.path(work_dir, "central")
     dir.create(central_dir)

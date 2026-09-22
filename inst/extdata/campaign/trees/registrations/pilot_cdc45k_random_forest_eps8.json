@@ -1,0 +1,27 @@
+{
+  "cell_id": "pilot_cdc45k_random_forest_eps8",
+  "started_at": "2026-09-22T01:01:47+0000",
+  "options": {
+    "contract": "random_forest",
+    "dataset": "cdc45k",
+    "epsilon": 8,
+    "replicates": 3,
+    "rounds": 1,
+    "sites": 3,
+    "root": "/workspace/cells",
+    "out": "/workspace/cells/dsFlowerClient/inst/extdata/campaign/trees"
+  },
+  "model_params": {
+    "task": "binary",
+    "n_estimators": 8,
+    "max_depth": 4,
+    "max_features": "auto"
+  },
+  "tool_sha256": {
+    "run_cell.R": "e2ddc130c3dc077269344a804d74e02520674202f91eaa6b21da8d9d98083114",
+    "campaign_lib.R": "24bf74cab7ceab83fb2db7f2d0966fc1a0c501b99def9f4badf9e4feae429dfc",
+    "central_train.py": "9f05015148a5dd9d8ae2a40a6c52eed5e4974e2dfe10d9c996c87a88d10c3b59",
+    "README.md": "94029bc0353409a44b35a286b36a264140fd1ec056a319f7768e0cd4774e07e2",
+    "protocol.json": "e1ffd4158ce53acb79a06507c84b23dcd18682114f9d2c9471d5b544af685dea"
+  }
+}
