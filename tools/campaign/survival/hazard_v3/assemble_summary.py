@@ -44,7 +44,8 @@ def main():
     for name in ('hazard','lognormal','weibull'):
         entries=[r for r in geometry if r['variant']==name]
         avg=lambda key:statistics.mean(r[key] for r in entries)
-        text.append(f'| {name} | {entries[0]["n_parameters"]} | {100*avg("fraction_clipped_at_initialization"):.2f}% | {avg("norm_of_mean_clipped_gradient"):.6f} | {avg("site_noise_rms_l2"):.6f} |')
+        label='hazard h06 (K10)' if name=='hazard' else name
+        text.append(f'| {label} | {entries[0]["n_parameters"]} | {100*avg("fraction_clipped_at_initialization"):.2f}% | {avg("norm_of_mean_clipped_gradient"):.6f} | {avg("site_noise_rms_l2"):.6f} |')
     text+=['', 'This is an initial geometry diagnostic, not a final-model signal-to-noise decomposition. '
         'AFT clips far more patients initially yet has denser, stronger mean signal and much smaller total noise magnitude. '
         'The hazard problem is weak /K signal relative to fixed unit-clip noise across many coordinates, not large raw covariate scales.', '',
