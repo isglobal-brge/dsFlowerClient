@@ -30,6 +30,11 @@ env$host$pod_id <- "n4emgxhiqzy5i4"
 env$host$pod_name <- "pod-flower-regression"
 env$versions$runner_sha256 <- dsFlowerClient:::.compute_local_runner_hash()
 env$versions$release_tag <- "v0.5.0"
+env$versions$release_commits <- list(
+  dsFlower = "408f08c539329e2711260050ab40a6567aa4d89e",
+  dsFlowerClient = "50dda000a32ffcbdd039c2b74c909df451392bfb")
+stopifnot(identical(env$versions$runner_sha256,
+                    dsFlower:::.compute_app_pkg_hash("dsflower_runner")))
 defaults <- dsFlowerClient:::.dsflower_get_model(contract)$defaults
 stopifnot(defaults$learning_rate == 0.01, defaults$local_epochs == 1L,
           defaults$batch_size == 32L, defaults$weight_decay == 0)

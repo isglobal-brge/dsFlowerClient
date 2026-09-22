@@ -82,11 +82,19 @@ Rsync the release sources into `/workspace/cells/dsFlower` and
 ```sh
 bash /workspace/cells/dsFlowerClient/tools/campaign/regression/provision.sh
 python3 /workspace/cells/dsFlowerClient/tools/campaign/regression/prepare_data.py --root /workspace/cells
+export R_LIBS=/workspace/cells/Rlib
+export DSFLOWER_VENV_ROOT=/workspace/cells/venvs
+export DSFLOWER_CLIENT_VENV_ROOT=/workspace/cells/client
+export DSFLOWER_NODE_SECRET_FILE=/workspace/cells/smoke/parent-node-secret
+export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
+Rscript /workspace/cells/dsFlowerClient/tools/campaign/regression/preflight.R /workspace/cells
 bash /workspace/cells/dsFlowerClient/tools/campaign/regression/run.sh /workspace/cells
 ```
 
 Provisioning installs R from CRAN's Ubuntu jammy repository, system libraries,
-uv, R dependencies and both packages through their unmodified configure scripts.
+uv, current R dependencies from Posit's jammy binary repository, and both
+packages through their unmodified configure scripts. This avoids incompatible
+Ubuntu R 4.1 package binaries under R 4.6 and a full libarrow source build.
 CPU Torch uses `/workspace/cells/venvs/pytorch`; the client environment is
 `/workspace/cells/client/venv`; R packages are in `Rlib/`. Download checksums are
 in `data_cache/CHECKSUMS.sha256`. All emitted evidence is under

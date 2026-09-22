@@ -14,11 +14,14 @@ python3 -m pip install uv
 export R_LIBS="$ROOT/Rlib"
 export LIBARROW_BINARY=true
 export NOT_CRAN=true
-Rscript -e 'options(repos=c(CRAN="https://cloud.r-project.org"), Ncpus=8, timeout=900); install.packages(c("arrow","DSI","DSLite","resourcer"), lib=Sys.getenv("R_LIBS")); stopifnot(all(vapply(c("arrow","DSI","DSLite","resourcer"),requireNamespace,logical(1),quietly=TRUE)))'
+Rscript "$ROOT/dsFlowerClient/tools/campaign/regression/install_dependencies.R"
 export DSFLOWER_VENV_ROOT="$ROOT/venvs"
 export DSFLOWER_CLIENT_VENV_ROOT="$ROOT/client"
 export DSFLOWER_TORCH_BACKEND=cpu
 R CMD INSTALL --library="$ROOT/Rlib" "$ROOT/dsFlower"
 R CMD INSTALL --library="$ROOT/Rlib" "$ROOT/dsFlowerClient"
+uv pip install --python "$ROOT/client/venv/bin/python" --torch-backend cpu \
+  'torch>=2.0.0,<3.0.0' 'numpy>=1.21.0' 'pandas>=1.3.0' \
+  'pyarrow>=10.0.0' 'opacus>=1.4.0,<2.0.0' 'cryptography>=42.0.0'
 date -u +%FT%TZ > "$ROOT/logs/provision-end.txt"
 Rscript -e 'stopifnot(getRversion()>="4.4", packageVersion("dsFlower")=="0.5.0", packageVersion("dsFlowerClient")=="0.5.0"); cat(R.version.string,"\n"); cat(dsFlowerClient:::.compute_local_runner_hash(),"\n")'
