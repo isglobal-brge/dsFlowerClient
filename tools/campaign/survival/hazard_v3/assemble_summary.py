@@ -116,6 +116,10 @@ def main():
             text.append(f'| {arm} / {label} | {m["accounting_population"]} | {m["sample_rate"]:.8f} | {m["total_steps"]} | {m["noise_multiplier"]:.8f} | {m["noise_multiplier"]/m["expected_batch_size"]:.8f} |')
     text+=['', 'The two-site envelope changes per-site sampling, calibrated noise and sequential optimization steps together; '
         'it does not isolate a noise-only effect. Fixed unit weights remain equal patient weights for these equal-size partitions.']
+    if 'heterogeneous' in selection['confirmation_arms']:
+        text+=['', 'The heterogeneous arm sorts the same training patients by age before partitioning. '
+            'This also reorders the pooled input, so its deterministic nonprivate minibatch path differs from the full arm. '
+            'The pooled comparator is matched within each cell; the cross-arm comparison does not isolate site heterogeneity alone.']
     primary=next(r for r in summary['groups'] if r['arm']=='full' and r['epsilon']==8)
     c=primary['c_index']['federated_dp'];null=primary['c_index']['null']['mean']
     two_site=next(r for r in summary['groups'] if r['arm']=='two-sites' and r['epsilon']==8)
