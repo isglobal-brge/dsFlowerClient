@@ -92,7 +92,9 @@ def main(root, run):
         assert torch.isfinite(loss)
         losses.append(float(loss.detach().cpu()))
     checkpoint = out / "model.pt"
-    torch.save({name: p.detach().cpu() for name, p in torch.nn.Module.named_parameters(model)}, checkpoint)
+    # Match the released ServerApp artifact, including shared RNN aliases
+    # required by the unchanged predictor's strict load_state_dict.
+    torch.save(model.cpu().state_dict(), checkpoint)
     # Exercise the unchanged local predictor on TRAIN inputs before test access.
     sys.path.insert(0, str(root / "src/dsFlowerClient/inst/python"))
     from predict_helper import predict_pytorch_spec

@@ -96,7 +96,12 @@ The first completed federation exposed a checker-only label-dtype mismatch:
 node captures hash float32 targets, while the initial checker used int64.
 Matching the runner's dtype verified every feature and target hash without
 changing any data values, model settings or completed federation. The first
-central attempt had stopped before training. Its failure log is archived.
+central attempt had stopped before training. A subsequent TRAIN-only prediction
+smoke check found that the central checkpoint omitted shared recurrent aliases;
+central export now uses stock `state_dict`, exactly like the released ServerApp.
+The central fit was replayed unscored with identical settings, and its unique
+parameter tensors are checked against the retained first fit. Both failure logs
+are archived; the completed federation was never repeated.
 `trace_guard.py` is synthetic and does not open the HAR archive. The guard
 regression lives in dsFlower's `inst/python/tests/test_sitecustomize.py`.
 
