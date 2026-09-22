@@ -46,9 +46,9 @@ def aggregation(cfg):
     if name == 'fedavgm':
         return FedAvgM(**common, server_learning_rate=1., server_momentum=.9)
     if name in ('fedadam', 'fedyogi'):
-        eta, eta_l = (.1, .1) if name == 'fedadam' else (.01, .0316)
+        eta = .1 if name == 'fedadam' else .01
         return (FedAdam if name == 'fedadam' else FedYogi)(
-            **common, eta=eta, eta_l=eta_l, beta_1=.9, beta_2=.99, tau=.001)
+            **common, eta=eta, eta_l=cfg['learning-rate'], beta_1=.9, beta_2=.99, tau=.001)
     return FedAvg(**common)
 
 

@@ -19,8 +19,8 @@ def main():
     strategy_settings={
         'fedavg':'fixed unit site weights',
         'fedavgm':'server learning rate 1, server momentum 0.9, fixed unit site weights',
-        'fedadam':'server eta 0.1, eta_l 0.1, beta1 0.9, beta2 0.99, tau 0.001, fixed unit site weights',
-        'fedyogi':'server eta 0.01, eta_l 0.0316, beta1 0.9, beta2 0.99, tau 0.001, fixed unit site weights'}
+        'fedadam':f'server eta 0.1, eta_l {cfg["learning_rate"]}, beta1 0.9, beta2 0.99, tau 0.001, fixed unit site weights',
+        'fedyogi':f'server eta 0.01, eta_l {cfg["learning_rate"]}, beta1 0.9, beta2 0.99, tau 0.001, fixed unit site weights'}
     path=root/'HAZARD_V3_SUMMARY.md'
     initial=(root/'diagnosis_before_training.md').read_bytes()
     preregistration=json.loads((root/'preregistration.json').read_text())
@@ -134,6 +134,9 @@ def main():
         'The grid, split data, privacy mechanism and selection rule stayed fixed.', '',
         'A synthetic artifact-copy path error occurred after successful fitting/scoring; the existing model was exported without retraining. '
         'Unit-test import resolution and a NumPy alias in the test expectation were corrected before cohort fitting. '
+        'Before confirmation, the pooled adaptive-strategy eta_l setting was corrected to the local learning rate to match the R API; '
+        'development fits and scores do not use pooled aggregation, and the synthetic pilot used FedAvgM. '
+        'All 12 strategy/learning-rate settings were checked against the installed R API; see `strategy_parameter_audit.json`. '
         f'All {summary["expected_matrix_cells"]} confirmation cells were validated and all four model artifacts per cell were independently reloaded/rescored. '
         f'The {audit["verified_development_cells"]} successful development models were also archived and independently reloaded/rescored. '
         'No confirmation fit was repeated. Details are in `artifact_verification.json` and `infrastructure_investigation.json`.', '',
