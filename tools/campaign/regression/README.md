@@ -322,3 +322,55 @@ root for an independent replication; do not delete run guards to seek a better
 score. `summarize.py` checks split disjointness, identical central/trivial
 baselines across epsilons, node privacy settings, completed rounds, finite
 metrics, and the reported means/SDs before creating `summary.json`.
+
+## R4 corrected-cell declaration — 2026-09-22, before test scoring
+
+The corrected `cdcbmi_r4` cell is now frozen: **SGD, learning rate 0.01,
+five local epochs, batch 32, five FedAvg rounds**, no scheduler, momentum,
+weight decay or L1 penalty. All other released defaults remain unchanged.
+The only change from `cdcbmi_public_units` is local epochs from one to five.
+
+Selection used training rows only. The two top diagnosis candidates were run
+under the real federated-DP contract at epsilon 8 on each original training
+partition's fixed 28,800/7,200 inner split (three sites of 9,600). The diagnosis
+partition is reused: a PCG64 permutation with seed 20260922+site takes 2,400
+validation rows per original site. Original cohort/site stratification is
+preserved; the inner random split is not exactly restratified. No sealed test
+CSV existed at selection completion. Source-row and position hashes, all six
+node-reported configurations, validation results and the fixed selection rule
+are in `tools/campaign/regression/r4/selection.json`.
+
+| Candidate | Validation RMSE by split 20260820 / 21 / 22 | Mean ± sample SD |
+|---|---|---|
+| sgd_lr003_e5_b64 | 6.145394 / 6.070037 / 6.280040 | 6.165157 ± 0.106387 |
+| sgd_lr001_e5_b32 | 6.125072 / 6.034337 / 6.254240 | 6.137883 ± 0.110509 |
+
+The selected schedule has the smallest mean inner-validation federated-DP
+RMSE. Overlapping training partitions and uncontrolled private-fit initialization
+make these SDs descriptive; this small sweep is not a significance claim.
+
+The final cell uses exactly the original 45,000-row cohort, 36,000/9,000 split,
+three 12,000-row sites and seeds 20260820/20260821/20260822. Epsilon is 1/4/8,
+delta 1e-6, replace-one row privacy, coordinate and global unit clipping.
+Every training recalibrates noise for the complete five-round horizon. The
+public feature bounds and target transform `(clip(BMI,12,98)-55)/43` are
+unchanged; predictions return to BMI with `55+43*y_hat`.
+
+Declared comparators on the identical split: public-unit OLS, a noiseless
+federated finite-schedule twin using the verified emulator, real pooled DP
+with all 36,000 rows at one site, and the raw training mean. Pooled DP retains
+the selected local schedule and five rounds, recalibrated at its own population
+and horizon. The noiseless twin uses initialization/sampling seed equal to the
+split seed; released private fits retain their original uncontrolled random
+initialization and cryptographic noise. Thus DP-minus-noiseless differences are
+not exact paired noise effects. OLS and noiseless models are fitted before
+opening test rows, scored once per seed, and reused across epsilon budgets.
+
+The first opening of each sealed test CSV is inside the guarded final scoring
+callback, after all arms for that replicate are frozen. Report BMI RMSE, MAE,
+R², and paired federated-DP-minus-OLS RMSE, with means and sample SD over three
+seeds. Diagnostics are annotations only. There will be no scored-cell rerun,
+post-test tuning, or further alternative. Package sources are unchanged.
+Privacy accounting is per training; no composed-grid or private-selection
+guarantee is claimed. Cohort citation: **`uci_cdc_diabetes_health_indicators`**,
+UCI DOI [10.24432/C53919](https://doi.org/10.24432/C53919).
