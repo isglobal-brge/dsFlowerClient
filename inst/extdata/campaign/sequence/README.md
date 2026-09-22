@@ -1,3 +1,64 @@
+## R4 once-scored results
+
+Records: [ε=1](har_r4_window_pytorch_lstm_eps1.json), [ε=4](har_r4_window_pytorch_lstm_eps4.json), [ε=8](har_r4_window_pytorch_lstm_eps8.json).
+
+The selected R4 schedule did **not** improve held-out ε=8 AUC over R3:
+0.787685 versus 0.801364.
+At ε=8, the paired ordered AUC contrasts are
+-0.060526 ± 0.007338
+for finite schedule plus federation,
+-0.003144 ± 0.009037 for clipping, and
+-0.118309 ± 0.014971
+for added noise plus independent sampling variation. These are annotations,
+not an exact causal allocation. No training or alternative followed scoring.
+
+The selected schedule and all new training were frozen before the exclusive
+TEST scoring marker. All nine federations passed their 135 node-round checks;
+six matched noiseless twins were scored once. The R3 central model identities
+and scores are reused on the byte-identical split. No scored model was retrained.
+
+Values below are mean ± sample SD over three seeds. The AUC gap is paired
+federated-DP minus central. All scores use the held-out subjects’ windows.
+
+### Macro one-vs-rest AUC
+
+| ε | Central (R3) | Non-private federated | Clipped noiseless | Federated-DP | Trivial | DP − central |
+|---:|---:|---:|---:|---:|---:|---:|
+| 1 | 0.969665 ± 0.014018 | 0.909138 ± 0.012948 | 0.905994 ± 0.013402 | 0.743989 ± 0.007536 | 0.500000 ± 0.000000 | -0.225675 ± 0.019423 |
+| 4 | 0.969665 ± 0.014018 | 0.909138 ± 0.012948 | 0.905994 ± 0.013402 | 0.779427 ± 0.013191 | 0.500000 ± 0.000000 | -0.190238 ± 0.017454 |
+| 8 | 0.969665 ± 0.014018 | 0.909138 ± 0.012948 | 0.905994 ± 0.013402 | 0.787685 ± 0.011003 | 0.500000 ± 0.000000 | -0.181979 ± 0.023962 |
+
+### Accuracy
+
+| ε | Central (R3) | Non-private federated | Clipped noiseless | Federated-DP | Trivial |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 0.791879 ± 0.089138 | 0.612035 ± 0.059457 | 0.637032 ± 0.017555 | 0.357199 ± 0.005412 | 0.182219 ± 0.000000 |
+| 4 | 0.791879 ± 0.089138 | 0.612035 ± 0.059457 | 0.637032 ± 0.017555 | 0.385364 ± 0.016521 | 0.182219 ± 0.000000 |
+| 8 | 0.791879 ± 0.089138 | 0.612035 ± 0.059457 | 0.637032 ± 0.017555 | 0.410926 ± 0.050873 | 0.182219 ± 0.000000 |
+
+### Log-loss
+
+| ε | Central (R3) | Non-private federated | Clipped noiseless | Federated-DP | Trivial |
+|---:|---:|---:|---:|---:|---:|
+| 1 | 0.566915 ± 0.210415 | 0.864885 ± 0.094352 | 1.123201 ± 0.139061 | 1.480044 ± 0.056640 | 1.789941 ± 0.000000 |
+| 4 | 0.566915 ± 0.210415 | 0.864885 ± 0.094352 | 1.123201 ± 0.139061 | 1.339908 ± 0.013600 | 1.789941 ± 0.000000 |
+| 8 | 0.566915 ± 0.210415 | 0.864885 ± 0.094352 | 1.123201 ± 0.139061 | 1.302039 ± 0.073154 | 1.789941 ± 0.000000 |
+
+Pooled-DP was not run. Accuracy-versus-majority and chance-AUC checks are
+annotations only. No alternative schedule or rerun followed these outcomes.
+
+The R3 diagnosis measures clipping loss −0.076769 and a further marginal-noise
+estimate −0.086579 on the inner split. Its ordered schedule/federation terms
+depend on sampling and optimizer resets; they do not reallocate the historical
+held-out gap. See the [complete diagnosis](../../../../tools/campaign/sequence/r4/SEQUENCE_DIAGNOSIS_R4.md).
+
+Public evidence includes node-reported privacy settings, independent full-horizon
+accounting, all per-seed arm metrics, model/runner hashes and wall-clock timings.
+Declaration commit: `8c3e4451bc3338d169c59bbc7f435e05da69ad4a`.
+The sequence pod remains running. No package code was changed.
+
+---
+
 # Corrected R4 window-level cell: pre-run declaration
 
 Declared 2026-09-22T07:13:30.459226+00:00 before full-data R4 training or TEST scoring.
@@ -52,7 +113,7 @@ No package code changes; reuse `pod-flower-sequence-2` and leave it running.
 
 # UCI HAR sequence cells: original and corrected R3
 
-Token: `FLOWER_CELLS_SEQUENCE_2026-09-22`. All nine scored cells are indexed in
+Token: `FLOWER_CELLS_SEQUENCE_2026-09-22`. The nine pre-R4 scored cells are indexed in
 [summary.json](summary.json), with individual replicates and diagnostics in the
 linked JSON files. The original pipeline did not learn: its noiseless central
 twin gave **0.435143 / 0.169551 / 1.799129** (macro OVR AUC / accuracy /

@@ -57,3 +57,19 @@ and `uci_har`. This is a window-level mechanism measurement on subject-disjoint
 sites and provides no subject-level protection. Training-only public schedule
 selection is not an end-to-end private selection guarantee; the separate
 budgets/seeds do not establish a campaign-wide composition guarantee.
+
+## Completed execution
+
+The declaration was committed and pushed as `8c3e4451bc3338d169c59bbc7f435e05da69ad4a` before full-data training. All six selection federations, six noiseless twins and nine evaluation federations completed without a failed attempt or retry. The exclusive scoring pass completed at 2026-09-22T07:44:09.853045+00:00. No subsequent training or alternate cell was run.
+
+The selected R4 schedule did **not** improve held-out ε=8 AUC over R3:
+0.787685 versus 0.801364.
+At ε=8, the paired ordered AUC contrasts are
+-0.060526 ± 0.007338
+for finite schedule plus federation,
+-0.003144 ± 0.009037 for clipping, and
+-0.118309 ± 0.014971
+for added noise plus independent sampling variation. These are annotations,
+not an exact causal allocation. No training or alternative followed scoring.
+
+Public outcome records and the execution audit are under `inst/extdata/campaign/sequence/`. The shared release checkout contained unrelated regression edits, so this work used an isolated clone of the same evidence branch; those edits were left untouched.

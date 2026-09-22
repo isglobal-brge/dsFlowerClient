@@ -1,0 +1,321 @@
+{
+  "cells": [
+    {
+      "file": "har_r4_window_pytorch_lstm_eps1.json",
+      "sha256": "a20a02a36916172850e43d13c6111d841783cda9d8112b5f93916049dc243e42",
+      "revision": "R4",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI Human Activity Recognition Using Smartphones",
+      "unit": "window",
+      "epsilon": 1,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "nonprivate_federated": {
+          "macro_auc": {
+            "mean": 0.909138231574043,
+            "sd": 0.012948093719797946
+          },
+          "accuracy": {
+            "mean": 0.6120348376880443,
+            "sd": 0.05945735088944781
+          },
+          "log_loss": {
+            "mean": 0.8648845143145713,
+            "sd": 0.09435168860938219
+          }
+        },
+        "clipped_noiseless": {
+          "macro_auc": {
+            "mean": 0.9059939365393809,
+            "sd": 0.013401594597874425
+          },
+          "accuracy": {
+            "mean": 0.6370320099536252,
+            "sd": 0.01755456069833359
+          },
+          "log_loss": {
+            "mean": 1.1232009948221326,
+            "sd": 0.13906147931423926
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.7439893050234493,
+            "sd": 0.0075356973245607915
+          },
+          "accuracy": {
+            "mean": 0.3571994118312409,
+            "sd": 0.005411547885490637
+          },
+          "log_loss": {
+            "mean": 1.4800438148493356,
+            "sd": 0.05663984921637593
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.22567529786738882,
+          "sd": 0.019423256905249965
+        },
+        "noise_contrast_macro_auc": {
+          "mean": -0.16200463151593159,
+          "sd": 0.010926335916803946
+        }
+      },
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+        "Fixed split; sample SD describes three training replicates only.",
+        "No end-to-end private selection or campaign-wide composition guarantee.",
+        "No pooled-DP arm; three-site DP and both noiseless controls prioritized.",
+        "Central metrics reused from R3; twins shared across epsilons."
+      ]
+    },
+    {
+      "file": "har_r4_window_pytorch_lstm_eps4.json",
+      "sha256": "26dbca54a00971bd39cb3eab7f746fa3ebd23e95a7d736ec7d490a110d7dc08f",
+      "revision": "R4",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI Human Activity Recognition Using Smartphones",
+      "unit": "window",
+      "epsilon": 4,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "nonprivate_federated": {
+          "macro_auc": {
+            "mean": 0.909138231574043,
+            "sd": 0.012948093719797946
+          },
+          "accuracy": {
+            "mean": 0.6120348376880443,
+            "sd": 0.05945735088944781
+          },
+          "log_loss": {
+            "mean": 0.8648845143145713,
+            "sd": 0.09435168860938219
+          }
+        },
+        "clipped_noiseless": {
+          "macro_auc": {
+            "mean": 0.9059939365393809,
+            "sd": 0.013401594597874425
+          },
+          "accuracy": {
+            "mean": 0.6370320099536252,
+            "sd": 0.01755456069833359
+          },
+          "log_loss": {
+            "mean": 1.1232009948221326,
+            "sd": 0.13906147931423926
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.779426595033886,
+            "sd": 0.013190859007947812
+          },
+          "accuracy": {
+            "mean": 0.385363646646307,
+            "sd": 0.01652055283055372
+          },
+          "log_loss": {
+            "mean": 1.339908194154697,
+            "sd": 0.013600041560382975
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.19023800785695208,
+          "sd": 0.01745446847612209
+        },
+        "noise_contrast_macro_auc": {
+          "mean": -0.12656734150549484,
+          "sd": 0.001962223438381102
+        }
+      },
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+        "Fixed split; sample SD describes three training replicates only.",
+        "No end-to-end private selection or campaign-wide composition guarantee.",
+        "No pooled-DP arm; three-site DP and both noiseless controls prioritized.",
+        "Central metrics reused from R3; twins shared across epsilons."
+      ]
+    },
+    {
+      "file": "har_r4_window_pytorch_lstm_eps8.json",
+      "sha256": "9f630226024ed4dd55f37945bee39cde7f2af392aadec908e29100e2e44afadd",
+      "revision": "R4",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI Human Activity Recognition Using Smartphones",
+      "unit": "window",
+      "epsilon": 8,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "nonprivate_federated": {
+          "macro_auc": {
+            "mean": 0.909138231574043,
+            "sd": 0.012948093719797946
+          },
+          "accuracy": {
+            "mean": 0.6120348376880443,
+            "sd": 0.05945735088944781
+          },
+          "log_loss": {
+            "mean": 0.8648845143145713,
+            "sd": 0.09435168860938219
+          }
+        },
+        "clipped_noiseless": {
+          "macro_auc": {
+            "mean": 0.9059939365393809,
+            "sd": 0.013401594597874425
+          },
+          "accuracy": {
+            "mean": 0.6370320099536252,
+            "sd": 0.01755456069833359
+          },
+          "log_loss": {
+            "mean": 1.1232009948221326,
+            "sd": 0.13906147931423926
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.7876852058906175,
+            "sd": 0.011003477140165495
+          },
+          "accuracy": {
+            "mean": 0.4109263657957245,
+            "sd": 0.050873197736925814
+          },
+          "log_loss": {
+            "mean": 1.3020392684572994,
+            "sd": 0.07315364299085439
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.1819793970002206,
+          "sd": 0.023962166375579894
+        },
+        "noise_contrast_macro_auc": {
+          "mean": -0.11830873064876335,
+          "sd": 0.014970529704269714
+        }
+      },
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+        "Fixed split; sample SD describes three training replicates only.",
+        "No end-to-end private selection or campaign-wide composition guarantee.",
+        "No pooled-DP arm; three-site DP and both noiseless controls prioritized.",
+        "Central metrics reused from R3; twins shared across epsilons."
+      ]
+    }
+  ],
+  "scored_at": "2026-09-22T07:44:09.927881+00:00",
+  "scoring_elapsed_s": 4.35495433100732
+}

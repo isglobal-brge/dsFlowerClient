@@ -1,0 +1,58 @@
+{
+  "verified_at": "2026-09-22T07:46:51.579869+00:00",
+  "status": "passed",
+  "indexed_cells": 12,
+  "new_cell_records": 3,
+  "selection_federations": 6,
+  "selection_node_round_captures": 90,
+  "final_federations": 9,
+  "final_node_round_captures": 135,
+  "noiseless_twins": 6,
+  "indexed_cell_hashes_verified": true,
+  "means_and_sample_sd_verified": true,
+  "paired_gaps_verified": true,
+  "original_scored_cell_bytes_unchanged": true,
+  "runner_and_guard_identity_verified": true,
+  "declared_before_full_training": true,
+  "held_out_read_once": true,
+  "new_models_scored_once": 15,
+  "training_failures": 0,
+  "retries": 0,
+  "pooled_dp_run": false,
+  "package_code_changed": false,
+  "pod": {
+    "id": "fad5nedghbctap",
+    "name": "pod-flower-sequence-2",
+    "left_running": true,
+    "final_gpu_memory_mib": 0,
+    "final_gpu_utilization_percent": 0
+  },
+  "elapsed_s": {
+    "selection_federated_training_sum": 949.478161334992,
+    "final_federated_training_sum": 1236.259808301927,
+    "noiseless_twin_training_sum": 316.64386856992496,
+    "scoring_and_assembly": 4.35495433100732
+  },
+  "elapsed_scope": "Sum of sequential arm wall clocks, excluding orchestration, verification, reporting and transfers.",
+  "outcome": {
+    "epsilon8_macro_auc": 0.7876852058906175,
+    "r3_epsilon8_macro_auc": 0.8013640085860811,
+    "exceeds_r3_epsilon8": false,
+    "matched_epsilon8_auc_contrasts": {
+      "finite_schedule_and_federation": {
+        "mean": -0.06052637131679506,
+        "sd": 0.007338415427486836
+      },
+      "clipping": {
+        "mean": -0.003144295034662181,
+        "sd": 0.00903679676145857
+      },
+      "marginal_noise_estimate": {
+        "mean": -0.11830873064876335,
+        "sd": 0.014970529704269715
+      }
+    },
+    "annotation_only": true,
+    "interpretation": "Schedule selection did not improve held-out epsilon-8 utility over R3. Ordered comparator contrasts combine finite schedule/federation; the noise contrast also includes independent sampling variation. No rerun or alternative followed scoring."
+  }
+}

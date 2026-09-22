@@ -1,0 +1,9 @@
+starting worker pid=29547 on localhost:11904 at 07:29:39.630
+starting worker pid=29545 on localhost:11904 at 07:29:39.630
+starting worker pid=29546 on localhost:11904 at 07:29:39.630
+SuperLink started (PID: 29596)
+  Fleet API (SuperNodes): 127.0.0.1:48833
+  Control API (flwr run): 127.0.0.1:32075
+No SuperLink is running.
+No SuperLink is running.
+trained_unscored window epsilon 4 seed 20260923 elapsed 144.8647 

@@ -4,7 +4,7 @@
   "token": "FLOWER_CELLS_SEQUENCE_2026-09-22",
   "contract": "pytorch_lstm",
   "dataset": "UCI Human Activity Recognition Using Smartphones",
-  "n_scored_cells": 9,
+  "n_scored_cells": 12,
   "cells": [
     {
       "file": "pilot_uci_har_pytorch_lstm_eps1.json",
@@ -559,7 +559,35 @@
         "Fixed split; SD measures training replicates only.",
         "Each epsilon is a separate per-training contract, not a composed campaign guarantee.",
         "AUC and accuracy use windows; the central comparator is shared once per seed across corrected cells."
-      ]
+      ],
+      "r4_diagnosis_annotation": "R4 TRAIN-only one-seed diagnosis: finite-schedule -0.070398, net federation-path +0.034791, clipping -0.076769, marginal-noise estimate -0.086579 macro-AUC; total -0.198954. The Poisson/normalization bridge is +0.042903, followed by a remaining federation contrast -0.008112. Ordered controls do not reallocate the historical held-out gap, and sampling variation remains in the noise contrast. Full central-to-DP gap is not pure privacy cost.",
+      "r4_training_only_decomposition": {
+        "test_accessed": false,
+        "diagnostic_only": true,
+        "seed": 20260922,
+        "auc": {
+          "full_central": 0.9889998115142878,
+          "a_finite_central": 0.9186021951141292,
+          "central_poisson_bridge": 0.9615053879663752,
+          "b_unclipped_federated": 0.9533935568202407,
+          "c_clipped_noiseless_federated": 0.8766244103959554,
+          "d_real_dp": 0.7900454798025013
+        },
+        "ordered_terms": {
+          "schedule": -0.07039761640015862,
+          "federation_path_net": 0.03479136170611152,
+          "clipping": -0.07676914642428534,
+          "noise_marginal_estimate": -0.08657893059345412
+        },
+        "sampling_normalization_bridge": 0.042903192852245975,
+        "federation_after_sampling_bridge": -0.008111831146134452,
+        "total_gap": -0.19895433171178656,
+        "historical_held_out_gap_reallocated": false,
+        "candidate_ranking_complete": true,
+        "verification_passed": true,
+        "proceed": true,
+        "completed_at": "2026-09-22T06:48:17.281230+00:00"
+      }
     },
     {
       "file": "har_window_pytorch_lstm_eps4.json",
@@ -631,7 +659,35 @@
         "Fixed split; SD measures training replicates only.",
         "Each epsilon is a separate per-training contract, not a composed campaign guarantee.",
         "AUC and accuracy use windows; the central comparator is shared once per seed across corrected cells."
-      ]
+      ],
+      "r4_diagnosis_annotation": "R4 TRAIN-only one-seed diagnosis: finite-schedule -0.070398, net federation-path +0.034791, clipping -0.076769, marginal-noise estimate -0.086579 macro-AUC; total -0.198954. The Poisson/normalization bridge is +0.042903, followed by a remaining federation contrast -0.008112. Ordered controls do not reallocate the historical held-out gap, and sampling variation remains in the noise contrast. Full central-to-DP gap is not pure privacy cost.",
+      "r4_training_only_decomposition": {
+        "test_accessed": false,
+        "diagnostic_only": true,
+        "seed": 20260922,
+        "auc": {
+          "full_central": 0.9889998115142878,
+          "a_finite_central": 0.9186021951141292,
+          "central_poisson_bridge": 0.9615053879663752,
+          "b_unclipped_federated": 0.9533935568202407,
+          "c_clipped_noiseless_federated": 0.8766244103959554,
+          "d_real_dp": 0.7900454798025013
+        },
+        "ordered_terms": {
+          "schedule": -0.07039761640015862,
+          "federation_path_net": 0.03479136170611152,
+          "clipping": -0.07676914642428534,
+          "noise_marginal_estimate": -0.08657893059345412
+        },
+        "sampling_normalization_bridge": 0.042903192852245975,
+        "federation_after_sampling_bridge": -0.008111831146134452,
+        "total_gap": -0.19895433171178656,
+        "historical_held_out_gap_reallocated": false,
+        "candidate_ranking_complete": true,
+        "verification_passed": true,
+        "proceed": true,
+        "completed_at": "2026-09-22T06:48:17.281230+00:00"
+      }
     },
     {
       "file": "har_window_pytorch_lstm_eps8.json",
@@ -703,13 +759,358 @@
         "Fixed split; SD measures training replicates only.",
         "Each epsilon is a separate per-training contract, not a composed campaign guarantee.",
         "AUC and accuracy use windows; the central comparator is shared once per seed across corrected cells."
+      ],
+      "r4_diagnosis_annotation": "R4 TRAIN-only one-seed diagnosis: finite-schedule -0.070398, net federation-path +0.034791, clipping -0.076769, marginal-noise estimate -0.086579 macro-AUC; total -0.198954. The Poisson/normalization bridge is +0.042903, followed by a remaining federation contrast -0.008112. Ordered controls do not reallocate the historical held-out gap, and sampling variation remains in the noise contrast. Full central-to-DP gap is not pure privacy cost.",
+      "r4_training_only_decomposition": {
+        "test_accessed": false,
+        "diagnostic_only": true,
+        "seed": 20260922,
+        "auc": {
+          "full_central": 0.9889998115142878,
+          "a_finite_central": 0.9186021951141292,
+          "central_poisson_bridge": 0.9615053879663752,
+          "b_unclipped_federated": 0.9533935568202407,
+          "c_clipped_noiseless_federated": 0.8766244103959554,
+          "d_real_dp": 0.7900454798025013
+        },
+        "ordered_terms": {
+          "schedule": -0.07039761640015862,
+          "federation_path_net": 0.03479136170611152,
+          "clipping": -0.07676914642428534,
+          "noise_marginal_estimate": -0.08657893059345412
+        },
+        "sampling_normalization_bridge": 0.042903192852245975,
+        "federation_after_sampling_bridge": -0.008111831146134452,
+        "total_gap": -0.19895433171178656,
+        "historical_held_out_gap_reallocated": false,
+        "candidate_ranking_complete": true,
+        "verification_passed": true,
+        "proceed": true,
+        "completed_at": "2026-09-22T06:48:17.281230+00:00"
+      }
+    },
+    {
+      "file": "har_r4_window_pytorch_lstm_eps1.json",
+      "sha256": "a20a02a36916172850e43d13c6111d841783cda9d8112b5f93916049dc243e42",
+      "revision": "R4",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI Human Activity Recognition Using Smartphones",
+      "unit": "window",
+      "epsilon": 1,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "nonprivate_federated": {
+          "macro_auc": {
+            "mean": 0.909138231574043,
+            "sd": 0.012948093719797946
+          },
+          "accuracy": {
+            "mean": 0.6120348376880443,
+            "sd": 0.05945735088944781
+          },
+          "log_loss": {
+            "mean": 0.8648845143145713,
+            "sd": 0.09435168860938219
+          }
+        },
+        "clipped_noiseless": {
+          "macro_auc": {
+            "mean": 0.9059939365393809,
+            "sd": 0.013401594597874425
+          },
+          "accuracy": {
+            "mean": 0.6370320099536252,
+            "sd": 0.01755456069833359
+          },
+          "log_loss": {
+            "mean": 1.1232009948221326,
+            "sd": 0.13906147931423926
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.7439893050234493,
+            "sd": 0.0075356973245607915
+          },
+          "accuracy": {
+            "mean": 0.3571994118312409,
+            "sd": 0.005411547885490637
+          },
+          "log_loss": {
+            "mean": 1.4800438148493356,
+            "sd": 0.05663984921637593
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.22567529786738882,
+          "sd": 0.019423256905249965
+        },
+        "noise_contrast_macro_auc": {
+          "mean": -0.16200463151593159,
+          "sd": 0.010926335916803946
+        }
+      },
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+        "Fixed split; sample SD describes three training replicates only.",
+        "No end-to-end private selection or campaign-wide composition guarantee.",
+        "No pooled-DP arm; three-site DP and both noiseless controls prioritized.",
+        "Central metrics reused from R3; twins shared across epsilons."
+      ]
+    },
+    {
+      "file": "har_r4_window_pytorch_lstm_eps4.json",
+      "sha256": "26dbca54a00971bd39cb3eab7f746fa3ebd23e95a7d736ec7d490a110d7dc08f",
+      "revision": "R4",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI Human Activity Recognition Using Smartphones",
+      "unit": "window",
+      "epsilon": 4,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "nonprivate_federated": {
+          "macro_auc": {
+            "mean": 0.909138231574043,
+            "sd": 0.012948093719797946
+          },
+          "accuracy": {
+            "mean": 0.6120348376880443,
+            "sd": 0.05945735088944781
+          },
+          "log_loss": {
+            "mean": 0.8648845143145713,
+            "sd": 0.09435168860938219
+          }
+        },
+        "clipped_noiseless": {
+          "macro_auc": {
+            "mean": 0.9059939365393809,
+            "sd": 0.013401594597874425
+          },
+          "accuracy": {
+            "mean": 0.6370320099536252,
+            "sd": 0.01755456069833359
+          },
+          "log_loss": {
+            "mean": 1.1232009948221326,
+            "sd": 0.13906147931423926
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.779426595033886,
+            "sd": 0.013190859007947812
+          },
+          "accuracy": {
+            "mean": 0.385363646646307,
+            "sd": 0.01652055283055372
+          },
+          "log_loss": {
+            "mean": 1.339908194154697,
+            "sd": 0.013600041560382975
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.19023800785695208,
+          "sd": 0.01745446847612209
+        },
+        "noise_contrast_macro_auc": {
+          "mean": -0.12656734150549484,
+          "sd": 0.001962223438381102
+        }
+      },
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+        "Fixed split; sample SD describes three training replicates only.",
+        "No end-to-end private selection or campaign-wide composition guarantee.",
+        "No pooled-DP arm; three-site DP and both noiseless controls prioritized.",
+        "Central metrics reused from R3; twins shared across epsilons."
+      ]
+    },
+    {
+      "file": "har_r4_window_pytorch_lstm_eps8.json",
+      "sha256": "9f630226024ed4dd55f37945bee39cde7f2af392aadec908e29100e2e44afadd",
+      "revision": "R4",
+      "status": "executed",
+      "contract": "pytorch_lstm",
+      "dataset": "UCI Human Activity Recognition Using Smartphones",
+      "unit": "window",
+      "epsilon": 8,
+      "summary": {
+        "central": {
+          "macro_auc": {
+            "mean": 0.9696646028908381,
+            "sd": 0.014018047534810327
+          },
+          "accuracy": {
+            "mean": 0.7918787467481053,
+            "sd": 0.08913829852345644
+          },
+          "log_loss": {
+            "mean": 0.5669149472206637,
+            "sd": 0.21041536873747382
+          }
+        },
+        "nonprivate_federated": {
+          "macro_auc": {
+            "mean": 0.909138231574043,
+            "sd": 0.012948093719797946
+          },
+          "accuracy": {
+            "mean": 0.6120348376880443,
+            "sd": 0.05945735088944781
+          },
+          "log_loss": {
+            "mean": 0.8648845143145713,
+            "sd": 0.09435168860938219
+          }
+        },
+        "clipped_noiseless": {
+          "macro_auc": {
+            "mean": 0.9059939365393809,
+            "sd": 0.013401594597874425
+          },
+          "accuracy": {
+            "mean": 0.6370320099536252,
+            "sd": 0.01755456069833359
+          },
+          "log_loss": {
+            "mean": 1.1232009948221326,
+            "sd": 0.13906147931423926
+          }
+        },
+        "federated_dp": {
+          "macro_auc": {
+            "mean": 0.7876852058906175,
+            "sd": 0.011003477140165495
+          },
+          "accuracy": {
+            "mean": 0.4109263657957245,
+            "sd": 0.050873197736925814
+          },
+          "log_loss": {
+            "mean": 1.3020392684572994,
+            "sd": 0.07315364299085439
+          }
+        },
+        "trivial": {
+          "macro_auc": {
+            "mean": 0.5,
+            "sd": 0.0
+          },
+          "accuracy": {
+            "mean": 0.18221920597217509,
+            "sd": 0.0
+          },
+          "log_loss": {
+            "mean": 1.7899413369434047,
+            "sd": 0.0
+          }
+        },
+        "gap_macro_auc": {
+          "mean": -0.1819793970002206,
+          "sd": 0.023962166375579894
+        },
+        "noise_contrast_macro_auc": {
+          "mean": -0.11830873064876335,
+          "sd": 0.014970529704269714
+        }
+      },
+      "interpretation": "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+      "diagnostics": {
+        "annotation_only": true,
+        "central_learned": true,
+        "federated_auc_above_chance": true,
+        "federated_accuracy_above_majority": true
+      },
+      "diagnostics_annotation_only": true,
+      "limitations": [
+        "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams.",
+        "Fixed split; sample SD describes three training replicates only.",
+        "No end-to-end private selection or campaign-wide composition guarantee.",
+        "No pooled-DP arm; three-site DP and both noiseless controls prioritized.",
+        "Central metrics reused from R3; twins shared across epsilons."
       ]
     }
   ],
   "interpretations": {
     "original": "Pipeline/specification did not learn: the noiseless central twin was at chance-like utility (macro AUC 0.435143, accuracy 0.169551, log-loss 1.799129). It trained 21 modal-labelled subject averages for only five SGD updates at learning rate 0.001. This is not a privacy utility result. Original records are preserved byte-for-byte.",
     "subject": "Released patient contract; subject is the privacy unit, with per-unit gradient clipping AFTER within-subject feature averaging and modal-label pooling. Seven units/site, 21 total. It does NOT average original-window losses or their gradients per subject; that requested task is unsupported without a mechanism change. This cell measures the supported subject-pooled surrogate.",
-    "window": "Released row contract, per-window clipping, subject-disjoint sites, populations 2553/2397/2402. Mechanism measurement at window level ONLY, not subject protection."
+    "window": "Released row contract, per-window clipping, subject-disjoint sites, populations 2553/2397/2402. Mechanism measurement at window level ONLY, not subject protection.",
+    "r3_window_diagnosis": "R4 TRAIN-only one-seed diagnosis: finite-schedule -0.070398, net federation-path +0.034791, clipping -0.076769, marginal-noise estimate -0.086579 macro-AUC; total -0.198954. The Poisson/normalization bridge is +0.042903, followed by a remaining federation contrast -0.008112. Ordered controls do not reallocate the historical held-out gap, and sampling variation remains in the noise contrast. Full central-to-DP gap is not pure privacy cost.",
+    "r4_window": "Window-level mechanism measurement on subject-disjoint sites; no subject-level protection. Schedule selected on TRAIN subjects by real epsilon-8 inner-validation mean macro-AUC. The central gap includes finite-schedule, federation, clipping and noise effects; the matched clipped-noiseless contrast estimates marginal noise cost with independent sampling streams."
   },
   "shared_corrected_central": [
     {
@@ -2202,7 +2603,37 @@
     "included_in_scored_cell_count": false
   },
   "reporting": {
-    "created_at": "2026-09-22T02:56:41.162801+00:00",
-    "source": "Existing score JSONs only; no data access or metric recomputation."
+    "created_at": "2026-09-22T07:44:36.676218+00:00",
+    "source": "Existing R1/R3 records plus once-scored R4 records only; no data access or recomputation."
+  },
+  "r4": {
+    "declaration_commit": "8c3e4451bc3338d169c59bbc7f435e05da69ad4a",
+    "selection_file": "../../../../tools/campaign/sequence/r4/selection/selection.json",
+    "protocol_sha256": "548d406245dab7e263eded1e0faeffe7e01ad5f2a98ec0deed12bb25e16d8b9e",
+    "scoring_marker_sha256": "876b798ebd1b3289026badeee3ecd9d3d109ff14146a95065157e81ac330d683",
+    "central_reuse": "Identical R3 central model identities and scores; no retraining or rescoring.",
+    "optional_pooled_dp": "Not run; prioritized three-site DP and both matched noiseless twins.",
+    "pod_left_running": true,
+    "outcome": {
+      "epsilon8_macro_auc": 0.7876852058906175,
+      "r3_epsilon8_macro_auc": 0.8013640085860811,
+      "exceeds_r3_epsilon8": false,
+      "matched_epsilon8_auc_contrasts": {
+        "finite_schedule_and_federation": {
+          "mean": -0.06052637131679506,
+          "sd": 0.007338415427486836
+        },
+        "clipping": {
+          "mean": -0.003144295034662181,
+          "sd": 0.00903679676145857
+        },
+        "marginal_noise_estimate": {
+          "mean": -0.11830873064876335,
+          "sd": 0.014970529704269715
+        }
+      },
+      "annotation_only": true,
+      "interpretation": "Schedule selection did not improve held-out epsilon-8 utility over R3. Ordered comparator contrasts combine finite schedule/federation; the noise contrast also includes independent sampling variation. No rerun or alternative followed scoring."
+    }
   }
 }
