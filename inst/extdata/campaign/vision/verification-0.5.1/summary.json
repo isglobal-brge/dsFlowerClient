@@ -1,0 +1,28 @@
+{
+  "status": "verified",
+  "server_version": "0.5.1",
+  "client_version": "0.5.0",
+  "installed_runner_sha256": {
+    "dsFlower": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "dsFlowerClient": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+  },
+  "runner_sync": "Installed R package hashes equal the canonical source pin; CI file-by-file source sync also passed.",
+  "guard_sha256": "3ae7c9ce6750c81c00e8c70e618d0bc52978486d7736587f39c716ff401fe98d",
+  "guarded_data_free_vision_construction": "passed",
+  "guard_tests": 9,
+  "guard_tests_skipped": 0,
+  "synthetic_metric_tests": 3,
+  "dsimaging_admission": "passed",
+  "input_hashes_rechecked": true,
+  "protocol_training_settings_changed": false,
+  "early_preflight_failure": "Staged installation was still underway; verification repeated successfully after installation completed.",
+  "campaign_python_dependencies_unchanged_from_0_5_0": true,
+  "cohort_predictions_or_test_scoring_in_verification": false,
+  "synthetic_prediction_interface_check": "passed after correcting the driver artifact path; no model or training settings changed",
+  "pre_score_driver_corrections": [
+    "Resolve federation-status output_dir rather than assuming model.pt is directly under artifact/. Lock both model and metadata hashes before scoring.",
+    "Run the three independent canonical epsilon predictions concurrently per seed to bound scoring wall time; each model is predicted once after the global artifact lock."
+  ],
+  "pre_score_training_audit": "pre-score-audit.json: 9 completed groups, 135 node-rounds, 1215 observed DP steps, cleanup and hashes passed before any test access.",
+  "prediction_numerics": "Original canonical and direct twin runtime controls retained; see prediction-numerics.json. Training tensor parity verified; test bitwise feature parity not asserted."
+}

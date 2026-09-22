@@ -1,0 +1,329 @@
+{
+  "plan": {
+    "created_utc": "2026-09-22T00:32:12.334126+00:00",
+    "seeds": [
+      1101,
+      1102
+    ],
+    "configurations": [
+      "g01",
+      "g02"
+    ],
+    "controls": [
+      "pooled_full_steps",
+      "pooled_site_step_count",
+      "three_site_unclipped",
+      "three_site_clipped_noiseless"
+    ],
+    "purpose": "Public unnoised mechanism diagnostics only; no scores enter selection; no DP claim",
+    "script_sha256": "d1649fcf4ea355e7ff83141969d7659f21a366be05cf9389ba610de4892b9111"
+  },
+  "results": [
+    {
+      "config": "g01",
+      "seed": 1101,
+      "K": 10,
+      "edges": [
+        0.0,
+        182.5,
+        365.0,
+        547.5,
+        730.0,
+        912.5,
+        1095.0,
+        1277.5,
+        1460.0,
+        1642.5,
+        1825.0
+      ],
+      "train_sha256": "622538571afb97acb57faa64e1a8d7ce07ee4f704f3859baa435c3ac2562f4cb",
+      "initial_gradient": {
+        "mean": 0.3070302903652191,
+        "maximum": 0.7664470076560974,
+        "fraction_over_one": 0.0
+      },
+      "exposure_per_interval": [
+        5826.0,
+        3026.0,
+        2220.0,
+        1645.0,
+        1249.0,
+        922.0,
+        852.0,
+        636.0,
+        422.0,
+        221.0
+      ],
+      "events_per_interval": [
+        2761.0,
+        495.0,
+        263.0,
+        143.0,
+        108.0,
+        70.0,
+        60.0,
+        43.0,
+        23.0,
+        19.0
+      ],
+      "site_steps_per_epoch": 31,
+      "pooled_steps_per_epoch": 92,
+      "controls": {
+        "pooled_full_steps": {
+          "c_index": 0.6235165865255629,
+          "heldout_nll": 0.12790825701613648,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233310,
+          "gradient_fraction_over_one": 0.0
+        },
+        "pooled_site_step_count": {
+          "c_index": 0.6002002888802986,
+          "heldout_nll": 0.1338250136513458,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 78899,
+          "gradient_fraction_over_one": 0.0
+        },
+        "three_site_unclipped": {
+          "c_index": 0.5998049674708519,
+          "heldout_nll": 0.13362589226737556,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233105,
+          "gradient_fraction_over_one": 0.0
+        },
+        "three_site_clipped_noiseless": {
+          "c_index": 0.5998049674708519,
+          "heldout_nll": 0.13362589226737556,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233105,
+          "gradient_fraction_over_one": 0.0
+        }
+      }
+    },
+    {
+      "config": "g01",
+      "seed": 1102,
+      "K": 10,
+      "edges": [
+        0.0,
+        182.5,
+        365.0,
+        547.5,
+        730.0,
+        912.5,
+        1095.0,
+        1277.5,
+        1460.0,
+        1642.5,
+        1825.0
+      ],
+      "train_sha256": "1eaa1c0e5c9bfa49c8549f8c83e3544d239d5f25fea1df6df156111523f5aa4c",
+      "initial_gradient": {
+        "mean": 0.3081403076648712,
+        "maximum": 0.7646516561508179,
+        "fraction_over_one": 0.0
+      },
+      "exposure_per_interval": [
+        5826.0,
+        3039.0,
+        2245.0,
+        1666.0,
+        1265.0,
+        931.0,
+        857.0,
+        635.0,
+        406.0,
+        216.0
+      ],
+      "events_per_interval": [
+        2741.0,
+        499.0,
+        264.0,
+        137.0,
+        98.0,
+        74.0,
+        54.0,
+        46.0,
+        29.0,
+        16.0
+      ],
+      "site_steps_per_epoch": 31,
+      "pooled_steps_per_epoch": 92,
+      "controls": {
+        "pooled_full_steps": {
+          "c_index": 0.6190856933461407,
+          "heldout_nll": 0.12449517650088844,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233473,
+          "gradient_fraction_over_one": 0.0
+        },
+        "pooled_site_step_count": {
+          "c_index": 0.5863855756075032,
+          "heldout_nll": 0.1312488660652147,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 78447,
+          "gradient_fraction_over_one": 0.0
+        },
+        "three_site_unclipped": {
+          "c_index": 0.5869243979175656,
+          "heldout_nll": 0.1311097312859073,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233395,
+          "gradient_fraction_over_one": 0.0
+        },
+        "three_site_clipped_noiseless": {
+          "c_index": 0.5869243979175656,
+          "heldout_nll": 0.1311097312859073,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233395,
+          "gradient_fraction_over_one": 0.0
+        }
+      }
+    },
+    {
+      "config": "g02",
+      "seed": 1101,
+      "K": 5,
+      "edges": [
+        0.0,
+        10.0,
+        30.0,
+        103.40000000000009,
+        327.2000000000003,
+        1825.0
+      ],
+      "train_sha256": "622538571afb97acb57faa64e1a8d7ce07ee4f704f3859baa435c3ac2562f4cb",
+      "initial_gradient": {
+        "mean": 0.7951268553733826,
+        "maximum": 1.1987560987472534,
+        "fraction_over_one": 0.2351527634740817
+      },
+      "exposure_per_interval": [
+        5826.0,
+        5005.0,
+        4217.0,
+        3435.0,
+        999.0
+      ],
+      "events_per_interval": [
+        821.0,
+        788.0,
+        782.0,
+        797.0,
+        797.0
+      ],
+      "site_steps_per_epoch": 31,
+      "pooled_steps_per_epoch": 92,
+      "controls": {
+        "pooled_full_steps": {
+          "c_index": 0.6327885709404817,
+          "heldout_nll": 0.27977352039262504,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233310,
+          "gradient_fraction_over_one": 0.0004629034332004629
+        },
+        "pooled_site_step_count": {
+          "c_index": 0.6086224965258804,
+          "heldout_nll": 0.28758823272689893,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 78899,
+          "gradient_fraction_over_one": 0.001368838641807881
+        },
+        "three_site_unclipped": {
+          "c_index": 0.6074420076633219,
+          "heldout_nll": 0.2872147306631374,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233105,
+          "gradient_fraction_over_one": 0.001475729821325154
+        },
+        "three_site_clipped_noiseless": {
+          "c_index": 0.6074474830291038,
+          "heldout_nll": 0.28721591664028284,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233105,
+          "gradient_fraction_over_one": 0.0015014692949529183
+        }
+      }
+    },
+    {
+      "config": "g02",
+      "seed": 1102,
+      "K": 5,
+      "edges": [
+        0.0,
+        10.0,
+        31.0,
+        106.0,
+        324.0,
+        1825.0
+      ],
+      "train_sha256": "1eaa1c0e5c9bfa49c8549f8c83e3544d239d5f25fea1df6df156111523f5aa4c",
+      "initial_gradient": {
+        "mean": 0.7935043573379517,
+        "maximum": 1.209032416343689,
+        "fraction_over_one": 0.2368692070030896
+      },
+      "exposure_per_interval": [
+        5826.0,
+        4995.0,
+        4219.0,
+        3447.0,
+        991.0
+      ],
+      "events_per_interval": [
+        831.0,
+        776.0,
+        772.0,
+        788.0,
+        791.0
+      ],
+      "site_steps_per_epoch": 31,
+      "pooled_steps_per_epoch": 92,
+      "controls": {
+        "pooled_full_steps": {
+          "c_index": 0.6308454631595153,
+          "heldout_nll": 0.2883444167205986,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233473,
+          "gradient_fraction_over_one": 0.000488279158617913
+        },
+        "pooled_site_step_count": {
+          "c_index": 0.5931354905017661,
+          "heldout_nll": 0.2969979543499476,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 78447,
+          "gradient_fraction_over_one": 0.0014532104478182722
+        },
+        "three_site_unclipped": {
+          "c_index": 0.593852113332654,
+          "heldout_nll": 0.29645876206242616,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233395,
+          "gradient_fraction_over_one": 0.0013882045459414297
+        },
+        "three_site_clipped_noiseless": {
+          "c_index": 0.5938597023792745,
+          "heldout_nll": 0.2964603220714097,
+          "n_evaluated_public_subjects": 1458,
+          "n_invalid_public_subjects": 0,
+          "sampled_patient_visits": 233395,
+          "gradient_fraction_over_one": 0.0014181966194648558
+        }
+      }
+    }
+  ]
+}

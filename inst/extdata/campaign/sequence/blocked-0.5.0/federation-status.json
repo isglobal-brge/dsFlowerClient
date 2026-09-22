@@ -1,0 +1,9 @@
+{
+  "status": "failed",
+  "error": "Federated training failed (status 1); no model was accepted or saved.",
+  "cleanup_ok": true,
+  "elapsed_s": 123.299695730209,
+  "epsilon": 1,
+  "seed": 20260922,
+  "contract": "pytorch_lstm"
+}

@@ -1,0 +1,58 @@
+[
+  {
+    "name": "adam01_e4_b256",
+    "optimizer": "adam",
+    "lr": 0.01,
+    "epochs": 4,
+    "batch": 256
+  },
+  {
+    "name": "adam003_e4_b256",
+    "optimizer": "adam",
+    "lr": 0.003,
+    "epochs": 4,
+    "batch": 256
+  },
+  {
+    "name": "adam001_e4_b256",
+    "optimizer": "adam",
+    "lr": 0.001,
+    "epochs": 4,
+    "batch": 256
+  },
+  {
+    "name": "adam01_e4_b512",
+    "optimizer": "adam",
+    "lr": 0.01,
+    "epochs": 4,
+    "batch": 512
+  },
+  {
+    "name": "adam003_e4_b512",
+    "optimizer": "adam",
+    "lr": 0.003,
+    "epochs": 4,
+    "batch": 512
+  },
+  {
+    "name": "adam003_e8_b256",
+    "optimizer": "adam",
+    "lr": 0.003,
+    "epochs": 8,
+    "batch": 256
+  },
+  {
+    "name": "adam003_e8_b512",
+    "optimizer": "adam",
+    "lr": 0.003,
+    "epochs": 8,
+    "batch": 512
+  },
+  {
+    "name": "sgd01_e8_b256",
+    "optimizer": "sgd",
+    "lr": 0.1,
+    "epochs": 8,
+    "batch": 256
+  }
+]

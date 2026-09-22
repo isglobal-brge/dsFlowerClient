@@ -1,0 +1,40 @@
+{
+  "status": "inner_validation_scored",
+  "test_accessed": false,
+  "seed": 20260922,
+  "epsilon": 8,
+  "delta": 1e-06,
+  "clipping_norm": 1,
+  "unit": "window",
+  "n_inner_training_windows": 5564,
+  "n_validation_windows": 1788,
+  "validation_subjects": [
+    1,
+    8,
+    17,
+    25,
+    30
+  ],
+  "model_sha256": "aa30c326bda3975dfe0786d14228d0a7d72fa6b3f3a24e667e15b66325e42d8c",
+  "metrics": {
+    "macro_auc": 0.7900454798025013,
+    "accuracy": 0.44686800894854584,
+    "log_loss": 1.1987214088439941,
+    "auc_per_class": [
+      0.6704439759096916,
+      0.7370450488902686,
+      0.7041778784874664,
+      0.9118056075816602,
+      0.7168003679459205,
+      1.0
+    ]
+  },
+  "initial_tensor_sha256": [
+    "8f348a5745982e2c0c1c29d20873672ca672ff3e8ce03a2f0668e15077d05cce",
+    "f8cdfc69b1b787f4126003ab546c2e8388145bbbd8c171cf92034428fc0d3385",
+    "48cc581e39fb64b94ddbe0e07b18f0d8609ce46b1518143f720362e3b904a842",
+    "00805f5aab905bb1fe8f338405b033e80382b295bcd32c0f07294064bec36a37",
+    "d65fe155cd73a671ab5196086ecd38ee750662fda4f42cc17de86e88807640f9",
+    "f38551f43fd727e506af26a41a0f7e92be8bb37d75cd277d14d8514a0e9651b8"
+  ]
+}

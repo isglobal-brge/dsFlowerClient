@@ -1,0 +1,12 @@
+{
+  "lstm": {
+    "exit_code": 0,
+    "stdout": "{\"python\": \"3.11.10 (main, Sep  7 2024, 18:35:41) [GCC 11.4.0]\", \"versions\": {\"torch\": \"2.6.0+cu124\", \"opacus\": \"1.6.0\", \"flwr\": \"1.31.0\"}, \"kind\": \"lstm\"}\nPHASE client_app import\nPHASE recurrent model construction\nPHASE optimizer construction\nPASS guarded recurrent import and ordinary optimizer step\n",
+    "stderr": ""
+  },
+  "gru": {
+    "exit_code": 0,
+    "stdout": "{\"python\": \"3.11.10 (main, Sep  7 2024, 18:35:41) [GCC 11.4.0]\", \"versions\": {\"torch\": \"2.6.0+cu124\", \"opacus\": \"1.6.0\", \"flwr\": \"1.31.0\"}, \"kind\": \"gru\"}\nPHASE client_app import\nPHASE recurrent model construction\nPHASE optimizer construction\nPASS guarded recurrent import and ordinary optimizer step\n",
+    "stderr": ""
+  }
+}

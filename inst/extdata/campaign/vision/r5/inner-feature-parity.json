@@ -1,0 +1,58 @@
+{
+  "passed": true,
+  "test_accessed": false,
+  "source": "/tmp/cells-vision-r4/inner-training",
+  "n_inner_training_patients": 681,
+  "site_sizes": [
+    227,
+    227,
+    227
+  ],
+  "feature_parity_with_all_r4_captures": true,
+  "feature_hashes": [
+    {
+      "site": 1,
+      "features_sha256": "8d4b7d269c6333e6a8851d01438427b4f1f2b0fa881e8599385e04a641b76870",
+      "targets_sha256": "1c157c10838ea6b667c25aea10b1a5d0c746248ba19bd5e4aaf8ecd673814f40",
+      "manifest_sha256": "487b6f805efb8b0a98b3e7a4008e70896a23ff12f58e5dc884a15a7519351492"
+    },
+    {
+      "site": 2,
+      "features_sha256": "61bbef6199777f1311bf90cade9ecbc5519827cc68cb1606d2acd8c69a0e6020",
+      "targets_sha256": "c94e0e3831bcd4389b2e7865b1cc7cc1142457df8f20cfd6613fe67ee80a5ca2",
+      "manifest_sha256": "7f8e397ca38a8b662526157266aba9063070123651e1d8ed4f4683d6c4f259f2"
+    },
+    {
+      "site": 3,
+      "features_sha256": "bcd8187efa888214b5d977470a65f6181608d4c1861935c961c7686ad51f74e3",
+      "targets_sha256": "ecce99de16f79939f0967600005da4f66fd37f70f300e981cad38c9d54264676",
+      "manifest_sha256": "2a3368a3b1a96fe126071ef27ed2a7643ecea38cd3bdc89cac8e60d311e62111"
+    }
+  ],
+  "cache_sha256": "c325490333db761b455109d403f89a9fc0b95aa9c4c0f7c40b6a1fe5d9ac93b8",
+  "outer_cache_comparison": [
+    {
+      "site": 1,
+      "feature_max_abs_difference": 8.821487426757812e-06,
+      "changed_coordinates": 5774,
+      "total_coordinates": 116224,
+      "targets_identical": true
+    },
+    {
+      "site": 2,
+      "feature_max_abs_difference": 9.298324584960938e-06,
+      "changed_coordinates": 7247,
+      "total_coordinates": 116224,
+      "targets_identical": true
+    },
+    {
+      "site": 3,
+      "feature_max_abs_difference": 7.62939453125e-06,
+      "changed_coordinates": 10255,
+      "total_coordinates": 116224,
+      "targets_identical": true
+    }
+  ],
+  "validation_features": "Unchanged R4 outer training cache on its 171 inner-validation indices.",
+  "interpretation": "CUDA frozen-backbone features depend numerically on image batch composition. Re-extraction uses the exact R4 staged inner manifests; no representation or preprocessing change."
+}

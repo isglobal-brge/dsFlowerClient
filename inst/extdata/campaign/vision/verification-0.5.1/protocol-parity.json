@@ -1,0 +1,25 @@
+{
+  "status": "verified",
+  "reference_commit": "88e1fe8",
+  "protocol_changes": [
+    "execution_token",
+    "release"
+  ],
+  "statistical_protocol_unchanged": true,
+  "original_protocol_sha256": "11ecd96902745fd73101d39c1a18c613097879e947c063781a7b1e65d13da6cc",
+  "execution_protocol_sha256": "7bd9ade83e17f617c9dc153835ebab46cb41acceb0a9802f9bbdd328586950a8",
+  "unchanged_training_and_prediction_drivers": {
+    "run_federated.R": "b58766fc37dd23e6c3e3b80287a21dd2cfa2b00cb40bdd29b848f2ffbf7c01f0",
+    "run_matrix.py": "d7f69c82fc811fc284e2f00596d272235989b5cf8e99c73300af5f5160d7bcf8",
+    "central_twins.py": "61d2cce45d97bbe57f860a148a8c91cca46c6ee0fff8ff0342b8f93ef5abdacc",
+    "prepare.py": "9c43ca865c7dc612e6add245a9d877f5ce652bd0c516142dc3efd51546740c71",
+    "environment.sh": "1d163df44a87bc713dfea86ee179e6c7f364dd21120e35dd05c043b38677d585",
+    "benchmark_hooks/sitecustomize.py": "24a64e616a8892893fde17d0923b3bf1d7b486965ff841fd03f44c73f64da6b3",
+    "benchmark_hooks/vision_public_observer.py": "70989543107b44a9a60887dd1ad6879d02afa9d386e3ed901c38c4cac3e1f904",
+    "predict.R": "1569faaff423ba8034d9d04a95097402051ab5af0454bce81f9c2c90e893d35f"
+  },
+  "scoring_orchestration_changes": [
+    "Use the saved artifact output_dir; lock model and metadata hashes.",
+    "Run each of three independent epsilon predictions concurrently per seed after the single scoring lock; unchanged canonical predictor and metric definitions."
+  ]
+}

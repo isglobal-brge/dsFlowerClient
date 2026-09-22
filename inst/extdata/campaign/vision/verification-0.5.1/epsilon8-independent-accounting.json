@@ -1,0 +1,48 @@
+{
+  "status": "verified",
+  "test_scoring_started": false,
+  "per_seed": {
+    "20260919": {
+      "federated_site": {
+        "accountant": "PRVAccountant",
+        "epsilon_replace_one": 7.995637607855232,
+        "delta_replace_one": 9.978603697030375e-07,
+        "delta_add_remove": 1.7986209962091557e-08
+      },
+      "pooled_dp": {
+        "accountant": "PRVAccountant",
+        "epsilon_replace_one": 7.9813668314398925,
+        "delta_replace_one": 9.908934724959314e-07,
+        "delta_add_remove": 1.7986209962091557e-08
+      }
+    },
+    "20260920": {
+      "federated_site": {
+        "accountant": "PRVAccountant",
+        "epsilon_replace_one": 7.995637607855232,
+        "delta_replace_one": 9.978603697030375e-07,
+        "delta_add_remove": 1.7986209962091557e-08
+      },
+      "pooled_dp": {
+        "accountant": "PRVAccountant",
+        "epsilon_replace_one": 7.9813668314398925,
+        "delta_replace_one": 9.908934724959314e-07,
+        "delta_add_remove": 1.7986209962091557e-08
+      }
+    },
+    "20260921": {
+      "federated_site": {
+        "accountant": "PRVAccountant",
+        "epsilon_replace_one": 7.995637607855232,
+        "delta_replace_one": 9.978603697030375e-07,
+        "delta_add_remove": 1.7986209962091557e-08
+      },
+      "pooled_dp": {
+        "accountant": "PRVAccountant",
+        "epsilon_replace_one": 7.9813668314398925,
+        "delta_replace_one": 9.908934724959314e-07,
+        "delta_add_remove": 1.7986209962091557e-08
+      }
+    }
+  }
+}

@@ -1,0 +1,170 @@
+{
+  "class_mapping": {
+    "benign": 0,
+    "malignant": 1
+  },
+  "clipping_norm": 1.0,
+  "contract": "pytorch_resnet18",
+  "data_route": "dsImaging admission of image_root asset plus per-image metadata declaring pathology label, label levels and patient privacy unit; three DSLite custodians.",
+  "dataset": "BUS-BRA v1.0",
+  "delta": 1e-06,
+  "epsilon_order": [
+    1,
+    8,
+    4
+  ],
+  "evaluation": {
+    "aggregation": "arithmetic mean and sample SD across three seeds",
+    "alternative": "None. The weak inner private results are retained; no post-score schedule change.",
+    "central_schedule": "Converged fixed C=1 L2 logistic head on pooled mean features of all 852 training patients, unpenalized intercept, L-BFGS-B maxiter10000 ftol1e-12 gtol1e-9. Equivalent symmetric 512-to-2 logits; shared deterministic fit across all seeds/epsilons.",
+    "diagnostic": "AUC > 0.5 and accuracy > held-out majority-class rate; report per-replicate and three-seed mean comparison.",
+    "diagnostic_epsilon": 8,
+    "gap": "federated_dp AUC minus central AUC",
+    "metrics": [
+      "auc",
+      "accuracy",
+      "brier",
+      "log_loss"
+    ],
+    "pooled_dp": "Unchanged released _dp_fit on all 852 pooled patient records, selected schedule and five rounds; same epsilon/delta/clip, freshly calibrated pooled geometry.",
+    "positive_class": "malignant",
+    "test_policy": "One locked scoring pass after all nine final fits and all twins are complete; no held-out metadata/images/split file access in R4 before that pass. No scored cell rerun and no further alternative.",
+    "threshold": 0.5,
+    "twins": [
+      "Converged fixed C=1 L2 logistic head on pooled mean features of all 852 training patients, unpenalized intercept, L-BFGS-B maxiter10000 ftol1e-12 gtol1e-9. Equivalent symmetric 512-to-2 logits; shared deterministic fit across all seeds/epsilons.",
+      "Three-site FedAvg with selected schedule and identical initial head; same Poisson sampling and expected-batch divisor; clipping and noise removed; optimizer reset every round. Shared across epsilon within each seed.",
+      "Unchanged released _dp_fit on all 852 pooled patient records, selected schedule and five rounds; same epsilon/delta/clip, freshly calibrated pooled geometry.",
+      "Training-image prevalence probability and training-majority class."
+    ],
+    "unit": "image",
+    "nonprivate_federated": "Three-site FedAvg with selected schedule and identical initial head; same Poisson sampling and expected-batch divisor; clipping and noise removed; optimizer reset every round. Shared across epsilon within each seed.",
+    "secondary_unit": "patient-mean features and modal label; annotation only; same fixed models, evaluated within the one scoring pass"
+  },
+  "execution_token": "FLOWER_CELLS_VISION_R4_2026-09-22",
+  "frozen_at": "2026-09-22T05:36:23.774294+00:00",
+  "host": {
+    "gpu": "NVIDIA A40",
+    "pod_id": "0nk8si7zupfczc",
+    "pod_name": "pod-flower-vision",
+    "root": "/workspace/cells-vision"
+  },
+  "instrumentation": "Public-only observer copies of the segmentation/sequence harness: seed/capture analyst initialization; observe node accountant inputs/steps and public tensor hashes after the mandatory runner integrity gate. No replacement of training, privacy calibration, clipping or sampling.",
+  "model": {
+    "backbone": "resnet18",
+    "bounds_policy": "Released image transform and fixed feature totalization; no data-derived feature bounds.",
+    "extractor_profile": "dsflower-resnet18-imagenet1k-v1-extractor-v1",
+    "feature_domain": [
+      -1000000,
+      1000000
+    ],
+    "feature_shape": [
+      512
+    ],
+    "frozen": true,
+    "head": "linear 512 to 2; cross_entropy",
+    "image_shape": [
+      3,
+      224,
+      224
+    ],
+    "trainable_parameters": 1026,
+    "weights": "IMAGENET1K_V1"
+  },
+  "model_params": {
+    "batch_size": 32,
+    "image_size": 224,
+    "l1_penalty": 0,
+    "learning_rate": 0.003,
+    "local_epochs": 20,
+    "n_classes": 2,
+    "optimizer": "adam",
+    "scheduler": "none",
+    "volumetric": false,
+    "weight_decay": 0
+  },
+  "model_params_policy": "Selected by actual epsilon-8 federated-DP patient inner-validation AUC among the two highest-AUC nonprivate site-step-matched candidates; TRAIN patients only; no post-score alternative.",
+  "patient_column": "subject_id",
+  "patient_training": "Released runner averages frozen features within patient and takes deterministic modal label before patient DP-SGD. Source pathology labels are consistent within patient according to archived audit.",
+  "privacy_unit": "patient",
+  "randomness": "Outer split/site membership fixed at 20260919. Public seeds 20260919/20/21 control initial heads; node-owned cryptographic randomness controls DP sampling/noise. No campaign-wide privacy composition claim.",
+  "release": {
+    "change_scope": "Server import guard only; canonical runner and all training, sampling, clipping and privacy settings unchanged.",
+    "client_version": "0.5.0",
+    "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+    "dsFlower_patch_branch": "fix/import-guard-torch-generated-modules",
+    "dsFlower_patch_commit": "c4eaaf153db4a7204878bf1d8995c16faa615110",
+    "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "server_version": "0.5.1",
+    "version": "dsFlower 0.5.1 / dsFlowerClient 0.5.0"
+  },
+  "rounds": 5,
+  "schema": "dsflower-vision-protocol-v1",
+  "seeds": [
+    20260919,
+    20260920,
+    20260921
+  ],
+  "sites": 3,
+  "split": {
+    "n_per_site_patients": [
+      284,
+      284,
+      284
+    ],
+    "n_test_patients": 212,
+    "n_total_images": 1875,
+    "n_total_patients": 1064,
+    "n_train_patients": 852,
+    "policy": "Fix the archived 20260919 outer split and its three original sites for all three initialization/training seeds. No cross-seed repartitioning.",
+    "sha256_by_seed": {
+      "20260919": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d"
+    },
+    "source_directory": "/workspace/cells-vision/prepared/busbra",
+    "split_source": "Only prepared/vision/20260919 training collections were read during diagnosis. Original full split JSON is opened only after the final exclusive scoring lock.",
+    "sha256_by_training_seed": {
+      "20260919": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "20260920": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "20260921": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d"
+    }
+  },
+  "status": "declared_before_corrected_training",
+  "split_seed": 20260919,
+  "diagnosis": {
+    "seed": 20260922,
+    "inner_fit_patients": 681,
+    "inner_validation_patients": 171,
+    "cv_folds": 5,
+    "central_logistic_C": 1.0,
+    "central_solver": "scipy L-BFGS-B; tol=1e-9; maxiter=10000; intercept unpenalized",
+    "selection_rule": "Prune to top two by patient inner-validation nonprivate site-step-matched AUC; choose highest actual federated-DP patient inner-validation AUC at epsilon 8; ties candidate id ascending.",
+    "logistic_cv_mean_auc": 0.7794049692325554,
+    "logistic_cv_sd_auc": 0.02590272111808856,
+    "selected": {
+      "id": "adam_lr0.003_e20_b32",
+      "learning_rate": 0.003,
+      "local_epochs": 20,
+      "batch_size": 32,
+      "optimizer": "adam",
+      "weight_decay": 0
+    },
+    "selected_inner_validation": {
+      "auc": 0.5009404388714733,
+      "accuracy": 0.6783625730994152,
+      "brier": 0.2901581478505546,
+      "log_loss": 1.502839654045715
+    },
+    "selection_sha256": "fb83cd53384dd981da3cb750a1dbd9f84a9a300258267d9916bab336c8dd3ada",
+    "interpretation": "Representation signal is established. Both actual private confirmations were near/below chance; this limited search does not establish that all allowed schedules are untrainable."
+  },
+  "provenance": {
+    "citation_key": "gomezflores_busbra_2024",
+    "dataset_url": "https://zenodo.org/records/8231412",
+    "paper_doi": "10.1002/mp.16812",
+    "archive_sha256": "ba3e6ed19cc37c682d8d39e25435bbf8a555a12cb7e641b5f2117685c95580ff",
+    "checkpoint_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+    "base_client_evidence_commit": "43d9489"
+  }
+}

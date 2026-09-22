@@ -1,0 +1,52 @@
+{
+  "schema": "dsflower-multiclass-har561-protocol-v1",
+  "declared_at_utc": "2026-09-22T00:46:21.523715+00:00",
+  "authorization": "FLOWER_CELLS_MULTICLASS_2026-09-22: one user-declared HAR561 alternative after the CTG accuracy diagnostic failed; original CTG protocol and evidence remain unchanged.",
+  "contract": "pytorch_multiclass",
+  "dataset": {
+    "name": "UCI Human Activity Recognition Using Smartphones (561 engineered features)",
+    "uci_id": 240,
+    "source_url": "https://archive.ics.uci.edu/static/public/240/human+activity+recognition+using+smartphones.zip",
+    "landing_url": "https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones",
+    "dataset_doi": "10.24432/C54S4K",
+    "citation": "Anguita D, Ghio A, Oneto L, Parra X, Reyes-Ortiz JL. (2013). A Public Domain Dataset for Human Activity Recognition Using Smartphones. ESANN 2013.",
+    "license": "UCI landing page: CC BY 4.0; historical archive README separately states noncommercial use and required citation.",
+    "target": "1 WALKING, 2 WALKING_UPSTAIRS, 3 WALKING_DOWNSTAIRS, 4 SITTING, 5 STANDING, 6 LAYING",
+    "cohort": "All 10299 engineered-feature windows from 30 subjects; 7352 official training windows and 2947 official held-out windows; all 561 features in official order, named feature_001 through feature_561; no exclusions, subsampling or feature selection.",
+    "relationship_to_sequence": "Same collection as sequence track; this cell uses engineered feature vectors, not raw inertial windows."
+  },
+  "split": {
+    "type": "Official subject-disjoint train/test split; 21 training subjects, 9 held-out subjects. For each seed, shuffle sorted training subjects with R sample and assign consecutive groups of seven to three sites.",
+    "seeds": [
+      20260820,
+      20260821,
+      20260822
+    ],
+    "paired_across_epsilon": true,
+    "seed_scope": "Subject-to-site partition and central initialization only. Generic federated Torch initialization and node cryptographic DP randomness retain release behavior; published seeds do not fully reproduce federated fits."
+  },
+  "bounds_policy": "Declared public bounds [-1,1] for every feature, from official archive README. Clip and affine-scale identically in central and released federated preprocessing. No data-derived bounds.",
+  "released_patient_semantics": "Unchanged dsFlower 0.5.0 generic patient path clips/transforms each window to public bounds, averages features within subject, selects the modal class (smallest class breaks ties), then applies DP-SGD clipping to each pooled subject. Thus 7 effective training units/site and 21 overall, not gradients of all window losses grouped by subject. Central reference is trained on all official training windows; it shares split/model family/bounds but not this pooling.",
+  "training": {
+    "sites": 3,
+    "rounds": 5,
+    "replicates": 3,
+    "execution_epsilon_order": [
+      1,
+      8,
+      4
+    ],
+    "delta": 1e-06,
+    "parameters": "All pytorch_multiclass v0.5.0 optimization defaults: linear softmax, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, no scheduler, no regularization. Sole schema override n_classes=6 for six public activities.",
+    "privacy": "patient unit with subject column, clipping norm 1, replace-one adjacency; per-node per-training epsilon 1/4/8, delta 1e-6. Seven pooled subjects and batch size32 imply full-unit sampling and one update/round.",
+    "inner_validation": "None; no optimization search, validation split or post-score changes."
+  },
+  "central": "Unregularized multinomial logistic regression (nnet::multinom decay=0, maxit=3000, reltol=1e-10, MaxNWts=10000), fit all 7352 official training windows with public bounded transform; require convergence=0. Fit once per seed and reuse across epsilon. This is a window-trained central reference, not a subject-pooling-matched preprocessing twin.",
+  "trivial": "Training-window majority class for accuracy; training-window class proportions for probabilities. No test prevalence used.",
+  "metrics": "Window-level unweighted mean of six one-vs-rest rank AUCs with average ties; argmax accuracy with first-class tie break; natural-log multiclass log-loss with true-class probability floor1e-15. Gap is federated-DP minus central macro-AUC, sample SD across three replicate seeds on one fixed official split.",
+  "diagnostic": "At epsilon8, mean accuracy strictly above training-majority predictor test accuracy AND mean macro-AUC >0.5. Disclose every replicate and whether all pass. No alternative after this one.",
+  "test_use": "Train all three central and nine federated models without opening test members; training callback never forces its test promise. Create scoring marker, open official X_test/y_test/subject_test once in one final scoring run, then score each fitted model once. Never rerun a scored cell with changed settings.",
+  "failure_policy": "Retain started run markers and any failure; no overwrite. Report whatever diagnostic outcome occurs.",
+  "archive_sha256": "c00b803081a5c797cd5e4b83700a9810b38d53d9d84e01917e090e1fdbc81031",
+  "inner_archive_sha256": "2045e435c955214b38145fb5fa00776c72814f01b203fec405152dac7d5bfeb0"
+}

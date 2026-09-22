@@ -1,0 +1,35 @@
+{
+  "round": 3,
+  "manifest": {
+    "data_type": "image",
+    "n_samples": 405,
+    "n_units": 227,
+    "dp-unit": "patient",
+    "patient_column": "subject_id",
+    "patient-id-canonicalization": "trim-utf8-v2",
+    "num-features": 512,
+    "backbone": "resnet18",
+    "image-size": 224,
+    "vision-extractor-profile": "dsflower-resnet18-imagenet1k-v1-extractor-v1",
+    "target-levels": {
+      "type": "character",
+      "values": [
+        "benign",
+        "malignant"
+      ]
+    },
+    "privacy-adjacency": "replace_one",
+    "privacy-policy-sha256": "dd310d42a5e8fff28aa5d116dfcadf640333bca9526405091db9a29c9abcf0a4",
+    "privacy-epsilon": 8,
+    "privacy-delta": 1e-06,
+    "privacy-clipping_norm": 1,
+    "privacy-sample_aggregate": 0,
+    "privacy-sa_blocks": 8,
+    "privacy-egress_time_pad": 0,
+    "privacy-egress_timeout": 900,
+    "privacy-egress_memory_mb": 8192,
+    "privacy-egress_file_mb": 1024,
+    "privacy-egress_processes": 128,
+    "privacy-hook_enabled": 0
+  }
+}

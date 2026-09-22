@@ -1,0 +1,116 @@
+{
+  "schema": "dsflower-regression-execution-audit-v1",
+  "verified_at": "2026-09-22T01:38:37.657492+00:00",
+  "predeclaration": {
+    "execution_commit": "97966152d839c1eb8f822dfc049f3adca4cc637b",
+    "published_commit": "604de020f5c88e6b8d13ca30ddb6c478729da781",
+    "committed_at": "2026-09-22T03:13:24+02:00",
+    "readme": "tools/campaign/regression/README.md",
+    "readme_sha256": "f9523e7d47faea1b7383f56bde00b6dd387234069e277aaeffa396eb291af61c",
+    "content_identical_after_rebase": true,
+    "note": "Scored artifacts preserve the execution-time commit. Required non-force publication rebase changed commit identifiers only."
+  },
+  "publication_rebase_map": [
+    {
+      "subject": "Declare CDC BMI regression protocol and Parkinsons correction",
+      "execution_commit": "97966152d839c1eb8f822dfc049f3adca4cc637b",
+      "published_commit": "604de020f5c88e6b8d13ca30ddb6c478729da781",
+      "patch_sha256": "9258ab3777cf45a6e3ca7b1e568f8be406247cc7bdcf89b164e2541f8e074b91",
+      "identical_patch": true
+    },
+    {
+      "subject": "Add CDC BMI runner and correct Parkinsons central reference",
+      "execution_commit": "47f2e6d2a2aad1d81dd9b72217fe517491d86716",
+      "published_commit": "6ae1a9d99b2ec17f11fcb59b975522ee5c48e1ec",
+      "patch_sha256": "1e3f6e6ef5af4b0345f1fe544da4816161032e024a66f860e18fe69690a7c590",
+      "identical_patch": true
+    },
+    {
+      "subject": "Pin CDC source checksum and add combined regression audit",
+      "execution_commit": "d12142c120c6a8c88c3df0de5c7c63a594db007c",
+      "published_commit": "9c6102c8734857f2b7e7e9edc46b89625bd0314c",
+      "patch_sha256": "1db38ec0abdeafe5be4a1aa30cd46172de5d0c6650a70f89991afdb218b4ea3f",
+      "identical_patch": true
+    },
+    {
+      "subject": "Preserve numeric sampling arithmetic in CDC preparation",
+      "execution_commit": "656b51de5d87a05498f5df9a362304edaadcce97",
+      "published_commit": "64b73ab5bd2dbf6c9b859346167078a46b5a172e",
+      "patch_sha256": "fa23df12b9d77846bd97216d6cb9fbecdb753f9db60f47c7d229046a69ff0727",
+      "identical_patch": true
+    }
+  ],
+  "release": {
+    "dsflower": "0.5.0",
+    "dsflowerclient": "0.5.0",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "protected_file_sha256": {
+      "tools/campaign/regression/run_cell.R": "70426c987abaf440cde696c217e415bb8b0cd0ba97ea106daaa3b6e1a0839532",
+      "tools/campaign/regression/campaign_lib.R": "d6e8d3cadc7d70497b781cdbf8c60f3f17e478eba7a79d442dbd5f88808cfcec",
+      "tools/campaign/regression/central_train.py": "de3e96b8361674a3772a8a13c077a6ac6aefc60422b254216f2810b187f783e0",
+      "inst/flower_app/dsflower_runner/client_app.py": "20ea05162a1e026e7a065d62d83bda6e1b04b4f83f1eb1bb89af60f475471998",
+      "inst/flower_app/dsflower_runner/task.py": "1b53823fb13f6ed2203f22759125aa6534a2e24ae0ab164933e9a8f4966d027f"
+    },
+    "protected_files_equal_original_commit": "52f3d08",
+    "release_paths_unchanged": [
+      "R",
+      "inst/flower_app",
+      "inst/python",
+      "DESCRIPTION"
+    ],
+    "pod_source_hashes_match": true
+  },
+  "preservation": {
+    "original_parkinsons_sha256": {
+      "pilot_parkinsons_pytorch_linear_regression_eps1.json": "300d9a91acfcac23a9958fedc96567d6e8cd0ee41e6cb0008f4ac9a5104e099f",
+      "pilot_parkinsons_pytorch_linear_regression_eps4.json": "aaceba52c95f92f497a70cbf31fdc639754c10ea7c1675130ef85ca3e89fcba5",
+      "pilot_parkinsons_pytorch_linear_regression_eps8.json": "b6f6be14f238c8dfd8da9173a13f103cb1bcc82640ca825e4e32afcdc9c98fb4"
+    },
+    "no_parkinsons_federated_retraining_or_rescoring": true,
+    "cdc_scores_immutable": true
+  },
+  "execution": {
+    "pod_name": "pod-flower-regression",
+    "pod_id": "n4emgxhiqzy5i4",
+    "root": "/workspace/cells",
+    "foreground": true,
+    "cohort": "cdc45k",
+    "fallback_used": false,
+    "additional_alternatives_run": false,
+    "replicates_completed": 9,
+    "budgets": [
+      1,
+      4,
+      8
+    ],
+    "started_at_utc": {
+      "1": "2026-09-22 01:22:42 UTC",
+      "4": "2026-09-22 01:26:51 UTC",
+      "8": "2026-09-22 01:31:36 UTC"
+    },
+    "completed_at": "2026-09-22T01:36:06Z",
+    "replicate_elapsed_s": {
+      "mean": 88.42004516389633,
+      "sd": 6.196137498765274,
+      "min": 75.7598223686218,
+      "max": 94.8275754451752,
+      "sum": 795.780406475067
+    },
+    "pod_left_running": true
+  },
+  "verification": {
+    "command": "python3 -B tools/campaign/regression/summarize_regression.py inst/extdata/campaign/regression",
+    "status": "passed_after_rebase",
+    "validator_sha256": "ba9a9166681101be44fccc9d67eb3987583a4af8d88de45f66d5c291745f6a27",
+    "checks": [
+      "Original Parkinson bytes and corrected paired gaps",
+      "Exact logistic cdc45k cohort hash and stable cohort identities",
+      "Disjoint training/test/site respondent membership",
+      "Identical baselines and split membership across budgets",
+      "Node-reported row privacy, 12000 units/site, clipping 1, epsilon/delta and registry defaults",
+      "Three clients, five rounds, zero failures and successful cleanup per replicate",
+      "All metrics, sample SDs and diagnostic annotations",
+      "Frozen protocol, source, split and scientific tooling hashes"
+    ]
+  }
+}

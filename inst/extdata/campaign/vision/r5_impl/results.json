@@ -1,0 +1,866 @@
+{
+  "status": "scored",
+  "records": [
+    {
+      "status": "scored",
+      "epsilon": 8,
+      "seed": 20260919,
+      "split_seed": 20260919,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "metrics": {
+        "federated_dp": {
+          "auc": 0.6539487379651314,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614926,
+          "log_loss": 11.238004846777987
+        },
+        "central": {
+          "auc": 0.7573185011709602,
+          "accuracy": 0.7433155080213903,
+          "brier": 0.1851114883432635,
+          "log_loss": 0.5794443023599514
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614976,
+          "log_loss": 11.266659679623272
+        },
+        "pooled_dp": {
+          "auc": 0.6802302888368462,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.3261882492255308,
+          "log_loss": 4.095307577775545
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.2198041943397998,
+          "log_loss": 0.6314788665672426
+        }
+      },
+      "scoring_unit": "image",
+      "patient_metrics": {
+        "federated_dp": {
+          "auc": 0.6942655935613682,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.400042460670077
+        },
+        "central": {
+          "auc": 0.8106639839034205,
+          "accuracy": 0.7594339622641509,
+          "brier": 0.16025825962173587,
+          "log_loss": 0.4979180250577258
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.404312960583715
+        },
+        "pooled_dp": {
+          "auc": 0.7052313883299799,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.33017741106412785,
+          "log_loss": 4.124193358675701
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.2212837957476276,
+          "log_loss": 0.6345858884660425
+        }
+      },
+      "patient_metric_definition": "Frozen features averaged within held-out patient, modal label; training-patient prevalence trivial forecast. Direct fixed-numerics head inference.",
+      "n_train_patients": 852,
+      "n_test_patients": 212,
+      "n_test_images": 374,
+      "test_prevalence": 0.32620320855614976,
+      "test_majority_rate": 0.6737967914438503,
+      "patient_test_prevalence": 0.33018869161605835,
+      "training_prevalence": 0.3231179118156433,
+      "patient_training_prevalence": 0.31924882531166077,
+      "gap": -0.1033697632058288,
+      "patient_gap": -0.11639839034205235,
+      "acceptance_diagnostic": false,
+      "diagnostic_annotation_only": true,
+      "prediction_elapsed_s": 167.68285022862256,
+      "independent_accounting": {
+        "accountant": "PRVAccountant",
+        "full_horizon_steps": 10,
+        "sample_rate": 1.0,
+        "noise_multiplier": 4.35546875,
+        "epsilon_replace_one": 7.981487940381418,
+        "delta_replace_one": 9.909523881641008e-07
+      },
+      "test_prediction_sha256": "ddae9380dd197f9229256d3700f6f719401d23d91fd5ab06ec17856a5af7417d"
+    },
+    {
+      "status": "scored",
+      "epsilon": 4,
+      "seed": 20260919,
+      "split_seed": 20260919,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "metrics": {
+        "federated_dp": {
+          "auc": 0.667447306791569,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.3262032085561497,
+          "log_loss": 11.262580095598622
+        },
+        "central": {
+          "auc": 0.7573185011709602,
+          "accuracy": 0.7433155080213903,
+          "brier": 0.1851114883432635,
+          "log_loss": 0.5794443023599514
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614976,
+          "log_loss": 11.266659679623272
+        },
+        "pooled_dp": {
+          "auc": 0.6627634660421545,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855609475,
+          "log_loss": 10.810739094467092
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.2198041943397998,
+          "log_loss": 0.6314788665672426
+        }
+      },
+      "scoring_unit": "image",
+      "patient_metrics": {
+        "federated_dp": {
+          "auc": 0.7299798792756539,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.404312960583715
+        },
+        "central": {
+          "auc": 0.8106639839034205,
+          "accuracy": 0.7594339622641509,
+          "brier": 0.16025825962173587,
+          "log_loss": 0.4979180250577258
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.404312960583715
+        },
+        "pooled_dp": {
+          "auc": 0.7061368209255533,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.3301886792452738,
+          "log_loss": 11.073884217791113
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.2212837957476276,
+          "log_loss": 0.6345858884660425
+        }
+      },
+      "patient_metric_definition": "Frozen features averaged within held-out patient, modal label; training-patient prevalence trivial forecast. Direct fixed-numerics head inference.",
+      "n_train_patients": 852,
+      "n_test_patients": 212,
+      "n_test_images": 374,
+      "test_prevalence": 0.32620320855614976,
+      "test_majority_rate": 0.6737967914438503,
+      "patient_test_prevalence": 0.33018869161605835,
+      "training_prevalence": 0.3231179118156433,
+      "patient_training_prevalence": 0.31924882531166077,
+      "gap": -0.08987119437939117,
+      "patient_gap": -0.08068410462776665,
+      "acceptance_diagnostic": false,
+      "diagnostic_annotation_only": true,
+      "prediction_elapsed_s": 167.79886941239238,
+      "independent_accounting": {
+        "accountant": "PRVAccountant",
+        "full_horizon_steps": 10,
+        "sample_rate": 1.0,
+        "noise_multiplier": 7.734375,
+        "epsilon_replace_one": 3.997419273348756,
+        "delta_replace_one": 9.988641847180525e-07
+      },
+      "test_prediction_sha256": "d0ccb2ac1d8b925bcd3fd4513dd3b70fbfd1c40993e92a404e650a2ff2d97abf"
+    },
+    {
+      "status": "scored",
+      "epsilon": 1,
+      "seed": 20260919,
+      "split_seed": 20260919,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "metrics": {
+        "federated_dp": {
+          "auc": 0.5766653655997919,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.3262019834700338,
+          "log_loss": 10.483694042822632
+        },
+        "central": {
+          "auc": 0.7573185011709602,
+          "accuracy": 0.7433155080213903,
+          "brier": 0.1851114883432635,
+          "log_loss": 0.5794443023599514
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614976,
+          "log_loss": 11.266659679623272
+        },
+        "pooled_dp": {
+          "auc": 0.5124251886546969,
+          "accuracy": 0.606951871657754,
+          "brier": 0.3394427609870548,
+          "log_loss": 1.6647783492301291
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.2198041943397998,
+          "log_loss": 0.6314788665672426
+        }
+      },
+      "scoring_unit": "image",
+      "patient_metrics": {
+        "federated_dp": {
+          "auc": 0.5874245472837022,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.3301886781754249,
+          "log_loss": 10.721039154035443
+        },
+        "central": {
+          "auc": 0.8106639839034205,
+          "accuracy": 0.7594339622641509,
+          "brier": 0.16025825962173587,
+          "log_loss": 0.4979180250577258
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.404312960583715
+        },
+        "pooled_dp": {
+          "auc": 0.5132796780684105,
+          "accuracy": 0.6179245283018868,
+          "brier": 0.33865668646768077,
+          "log_loss": 1.592178280927233
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.2212837957476276,
+          "log_loss": 0.6345858884660425
+        }
+      },
+      "patient_metric_definition": "Frozen features averaged within held-out patient, modal label; training-patient prevalence trivial forecast. Direct fixed-numerics head inference.",
+      "n_train_patients": 852,
+      "n_test_patients": 212,
+      "n_test_images": 374,
+      "test_prevalence": 0.32620320855614976,
+      "test_majority_rate": 0.6737967914438503,
+      "patient_test_prevalence": 0.33018869161605835,
+      "training_prevalence": 0.3231179118156433,
+      "patient_training_prevalence": 0.31924882531166077,
+      "gap": -0.18065313557116836,
+      "patient_gap": -0.22323943661971835,
+      "acceptance_diagnostic": false,
+      "diagnostic_annotation_only": true,
+      "prediction_elapsed_s": 167.79896603152156,
+      "independent_accounting": {
+        "accountant": "PRVAccountant",
+        "full_horizon_steps": 10,
+        "sample_rate": 1.0,
+        "noise_multiplier": 27.5,
+        "epsilon_replace_one": 0.9916813560637626,
+        "delta_replace_one": 9.974163680327972e-07
+      },
+      "test_prediction_sha256": "3b72fe0883a211fbe6e0a4672a8f88a0f2b7a63c20c6bd9cb6158cd10b505750"
+    },
+    {
+      "status": "scored",
+      "epsilon": 8,
+      "seed": 20260920,
+      "split_seed": 20260919,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "metrics": {
+        "federated_dp": {
+          "auc": 0.6560304449648712,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.3262032085520393,
+          "log_loss": 10.419355885787516
+        },
+        "central": {
+          "auc": 0.7573185011709602,
+          "accuracy": 0.7433155080213903,
+          "brier": 0.1851114883432635,
+          "log_loss": 0.5794443023599514
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614976,
+          "log_loss": 11.266659679623272
+        },
+        "pooled_dp": {
+          "auc": 0.6974043715846995,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32617328134055984,
+          "log_loss": 3.8070881782667714
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.2198041943397998,
+          "log_loss": 0.6314788665672426
+        }
+      },
+      "scoring_unit": "image",
+      "patient_metrics": {
+        "federated_dp": {
+          "auc": 0.6735412474849095,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.3301886792416242,
+          "log_loss": 10.552840700429462
+        },
+        "central": {
+          "auc": 0.8106639839034205,
+          "accuracy": 0.7594339622641509,
+          "brier": 0.16025825962173587,
+          "log_loss": 0.4979180250577258
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.404312960583715
+        },
+        "pooled_dp": {
+          "auc": 0.7265593561368209,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.3301639841903096,
+          "log_loss": 3.8429870304556015
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.2212837957476276,
+          "log_loss": 0.6345858884660425
+        }
+      },
+      "patient_metric_definition": "Frozen features averaged within held-out patient, modal label; training-patient prevalence trivial forecast. Direct fixed-numerics head inference.",
+      "n_train_patients": 852,
+      "n_test_patients": 212,
+      "n_test_images": 374,
+      "test_prevalence": 0.32620320855614976,
+      "test_majority_rate": 0.6737967914438503,
+      "patient_test_prevalence": 0.33018869161605835,
+      "training_prevalence": 0.3231179118156433,
+      "patient_training_prevalence": 0.31924882531166077,
+      "gap": -0.10128805620608905,
+      "patient_gap": -0.13712273641851103,
+      "acceptance_diagnostic": false,
+      "diagnostic_annotation_only": true,
+      "prediction_elapsed_s": 125.13421871513128,
+      "independent_accounting": {
+        "accountant": "PRVAccountant",
+        "full_horizon_steps": 10,
+        "sample_rate": 1.0,
+        "noise_multiplier": 4.35546875,
+        "epsilon_replace_one": 7.981487940381418,
+        "delta_replace_one": 9.909523881641008e-07
+      },
+      "test_prediction_sha256": "70f9d5ed3c646966a782d85d9b1b755e83690d2b96a650473d01e52cc9056fd9"
+    },
+    {
+      "status": "scored",
+      "epsilon": 4,
+      "seed": 20260920,
+      "split_seed": 20260919,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "metrics": {
+        "federated_dp": {
+          "auc": 0.5213049700754618,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.3261721787239391,
+          "log_loss": 4.071998167535964
+        },
+        "central": {
+          "auc": 0.7573185011709602,
+          "accuracy": 0.7433155080213903,
+          "brier": 0.1851114883432635,
+          "log_loss": 0.5794443023599514
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614976,
+          "log_loss": 11.266659679623272
+        },
+        "pooled_dp": {
+          "auc": 0.6090294041113713,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32618289521627264,
+          "log_loss": 3.8839749697048638
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.2198041943397998,
+          "log_loss": 0.6314788665672426
+        }
+      },
+      "scoring_unit": "image",
+      "patient_metrics": {
+        "federated_dp": {
+          "auc": 0.5420523138832998,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.3301776992194697,
+          "log_loss": 4.124997483249798
+        },
+        "central": {
+          "auc": 0.8106639839034205,
+          "accuracy": 0.7594339622641509,
+          "brier": 0.16025825962173587,
+          "log_loss": 0.4979180250577258
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.404312960583715
+        },
+        "pooled_dp": {
+          "auc": 0.6320925553319919,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.33017679134029226,
+          "log_loss": 3.926829416482674
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.2212837957476276,
+          "log_loss": 0.6345858884660425
+        }
+      },
+      "patient_metric_definition": "Frozen features averaged within held-out patient, modal label; training-patient prevalence trivial forecast. Direct fixed-numerics head inference.",
+      "n_train_patients": 852,
+      "n_test_patients": 212,
+      "n_test_images": 374,
+      "test_prevalence": 0.32620320855614976,
+      "test_majority_rate": 0.6737967914438503,
+      "patient_test_prevalence": 0.33018869161605835,
+      "training_prevalence": 0.3231179118156433,
+      "patient_training_prevalence": 0.31924882531166077,
+      "gap": -0.23601353109549839,
+      "patient_gap": -0.26861167002012076,
+      "acceptance_diagnostic": false,
+      "diagnostic_annotation_only": true,
+      "prediction_elapsed_s": 127.00631384924054,
+      "independent_accounting": {
+        "accountant": "PRVAccountant",
+        "full_horizon_steps": 10,
+        "sample_rate": 1.0,
+        "noise_multiplier": 7.734375,
+        "epsilon_replace_one": 3.997419273348756,
+        "delta_replace_one": 9.988641847180525e-07
+      },
+      "test_prediction_sha256": "54b0b79f0386132472765173a6b615e587e37d9fb312f34c452542d09ebd1861"
+    },
+    {
+      "status": "scored",
+      "epsilon": 1,
+      "seed": 20260920,
+      "split_seed": 20260919,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "metrics": {
+        "federated_dp": {
+          "auc": 0.5057084309133489,
+          "accuracy": 0.5748663101604278,
+          "brier": 0.3797964075862258,
+          "log_loss": 3.241875972019038
+        },
+        "central": {
+          "auc": 0.7573185011709602,
+          "accuracy": 0.7433155080213903,
+          "brier": 0.1851114883432635,
+          "log_loss": 0.5794443023599514
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614976,
+          "log_loss": 11.266659679623272
+        },
+        "pooled_dp": {
+          "auc": 0.5761774655217278,
+          "accuracy": 0.6764705882352942,
+          "brier": 0.3206852220825174,
+          "log_loss": 3.673933383520312
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.2198041943397998,
+          "log_loss": 0.6314788665672426
+        }
+      },
+      "scoring_unit": "image",
+      "patient_metrics": {
+        "federated_dp": {
+          "auc": 0.5147887323943662,
+          "accuracy": 0.5754716981132075,
+          "brier": 0.3817021042951771,
+          "log_loss": 3.0503873775528456
+        },
+        "central": {
+          "auc": 0.8106639839034205,
+          "accuracy": 0.7594339622641509,
+          "brier": 0.16025825962173587,
+          "log_loss": 0.4979180250577258
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.404312960583715
+        },
+        "pooled_dp": {
+          "auc": 0.5926559356136821,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.32909420888034485,
+          "log_loss": 3.805331898675829
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.2212837957476276,
+          "log_loss": 0.6345858884660425
+        }
+      },
+      "patient_metric_definition": "Frozen features averaged within held-out patient, modal label; training-patient prevalence trivial forecast. Direct fixed-numerics head inference.",
+      "n_train_patients": 852,
+      "n_test_patients": 212,
+      "n_test_images": 374,
+      "test_prevalence": 0.32620320855614976,
+      "test_majority_rate": 0.6737967914438503,
+      "patient_test_prevalence": 0.33018869161605835,
+      "training_prevalence": 0.3231179118156433,
+      "patient_training_prevalence": 0.31924882531166077,
+      "gap": -0.2516100702576113,
+      "patient_gap": -0.29587525150905436,
+      "acceptance_diagnostic": false,
+      "diagnostic_annotation_only": true,
+      "prediction_elapsed_s": 122.73314053937793,
+      "independent_accounting": {
+        "accountant": "PRVAccountant",
+        "full_horizon_steps": 10,
+        "sample_rate": 1.0,
+        "noise_multiplier": 27.5,
+        "epsilon_replace_one": 0.9916813560637626,
+        "delta_replace_one": 9.974163680327972e-07
+      },
+      "test_prediction_sha256": "63c4e30763e5f2bedd12e0e7c66c05f975c46fd9ea528cf34ca30e78ae8c3a66"
+    },
+    {
+      "status": "scored",
+      "epsilon": 8,
+      "seed": 20260921,
+      "split_seed": 20260919,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "metrics": {
+        "federated_dp": {
+          "auc": 0.6693663804319542,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.3262032085561231,
+          "log_loss": 10.90657261149866
+        },
+        "central": {
+          "auc": 0.7573185011709602,
+          "accuracy": 0.7433155080213903,
+          "brier": 0.1851114883432635,
+          "log_loss": 0.5794443023599514
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614976,
+          "log_loss": 11.266659679623272
+        },
+        "pooled_dp": {
+          "auc": 0.6810434556336196,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320853418183,
+          "log_loss": 8.720284978490586
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.2198041943397998,
+          "log_loss": 0.6314788665672426
+        }
+      },
+      "scoring_unit": "image",
+      "patient_metrics": {
+        "federated_dp": {
+          "auc": 0.7154929577464789,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.3301886792452756,
+          "log_loss": 11.116790104813056
+        },
+        "central": {
+          "auc": 0.8106639839034205,
+          "accuracy": 0.7594339622641509,
+          "brier": 0.16025825962173587,
+          "log_loss": 0.4979180250577258
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.404312960583715
+        },
+        "pooled_dp": {
+          "auc": 0.7259557344064387,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.3301886792342837,
+          "log_loss": 8.85469717415601
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.2212837957476276,
+          "log_loss": 0.6345858884660425
+        }
+      },
+      "patient_metric_definition": "Frozen features averaged within held-out patient, modal label; training-patient prevalence trivial forecast. Direct fixed-numerics head inference.",
+      "n_train_patients": 852,
+      "n_test_patients": 212,
+      "n_test_images": 374,
+      "test_prevalence": 0.32620320855614976,
+      "test_majority_rate": 0.6737967914438503,
+      "patient_test_prevalence": 0.33018869161605835,
+      "training_prevalence": 0.3231179118156433,
+      "patient_training_prevalence": 0.31924882531166077,
+      "gap": -0.08795212073900605,
+      "patient_gap": -0.09517102615694162,
+      "acceptance_diagnostic": false,
+      "diagnostic_annotation_only": true,
+      "prediction_elapsed_s": 129.38255692832172,
+      "independent_accounting": {
+        "accountant": "PRVAccountant",
+        "full_horizon_steps": 10,
+        "sample_rate": 1.0,
+        "noise_multiplier": 4.35546875,
+        "epsilon_replace_one": 7.981487940381418,
+        "delta_replace_one": 9.909523881641008e-07
+      },
+      "test_prediction_sha256": "b32217aec7756dc68098396a81da6eb343d3fec3f4e7ccdc8a2affff2d364ec1"
+    },
+    {
+      "status": "scored",
+      "epsilon": 4,
+      "seed": 20260921,
+      "split_seed": 20260919,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "metrics": {
+        "federated_dp": {
+          "auc": 0.6621779859484778,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614904,
+          "log_loss": 11.23467865010116
+        },
+        "central": {
+          "auc": 0.7573185011709602,
+          "accuracy": 0.7433155080213903,
+          "brier": 0.1851114883432635,
+          "log_loss": 0.5794443023599514
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614976,
+          "log_loss": 11.266659679623272
+        },
+        "pooled_dp": {
+          "auc": 0.6670569867291178,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.3262032085531031,
+          "log_loss": 9.845395889417945
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.2198041943397998,
+          "log_loss": 0.6314788665672426
+        }
+      },
+      "scoring_unit": "image",
+      "patient_metrics": {
+        "federated_dp": {
+          "auc": 0.6960764587525151,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.3301886792452825,
+          "log_loss": 11.385288165593662
+        },
+        "central": {
+          "auc": 0.8106639839034205,
+          "accuracy": 0.7594339622641509,
+          "brier": 0.16025825962173587,
+          "log_loss": 0.4979180250577258
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.404312960583715
+        },
+        "pooled_dp": {
+          "auc": 0.6930583501006036,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.3301886792430482,
+          "log_loss": 9.979571133799155
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.2212837957476276,
+          "log_loss": 0.6345858884660425
+        }
+      },
+      "patient_metric_definition": "Frozen features averaged within held-out patient, modal label; training-patient prevalence trivial forecast. Direct fixed-numerics head inference.",
+      "n_train_patients": 852,
+      "n_test_patients": 212,
+      "n_test_images": 374,
+      "test_prevalence": 0.32620320855614976,
+      "test_majority_rate": 0.6737967914438503,
+      "patient_test_prevalence": 0.33018869161605835,
+      "training_prevalence": 0.3231179118156433,
+      "patient_training_prevalence": 0.31924882531166077,
+      "gap": -0.09514051522248246,
+      "patient_gap": -0.11458752515090542,
+      "acceptance_diagnostic": false,
+      "diagnostic_annotation_only": true,
+      "prediction_elapsed_s": 129.48107320070267,
+      "independent_accounting": {
+        "accountant": "PRVAccountant",
+        "full_horizon_steps": 10,
+        "sample_rate": 1.0,
+        "noise_multiplier": 7.734375,
+        "epsilon_replace_one": 3.997419273348756,
+        "delta_replace_one": 9.988641847180525e-07
+      },
+      "test_prediction_sha256": "8654c6e218bbfab9d568b3b59026ab4f82023acbb6ff459e8ea1637a1e8a52f2"
+    },
+    {
+      "status": "scored",
+      "epsilon": 1,
+      "seed": 20260921,
+      "split_seed": 20260919,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "metrics": {
+        "federated_dp": {
+          "auc": 0.5208170699973979,
+          "accuracy": 0.679144385026738,
+          "brier": 0.31085568584131584,
+          "log_loss": 2.670635418683845
+        },
+        "central": {
+          "auc": 0.7573185011709602,
+          "accuracy": 0.7433155080213903,
+          "brier": 0.1851114883432635,
+          "log_loss": 0.5794443023599514
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32620320855614976,
+          "log_loss": 11.266659679623272
+        },
+        "pooled_dp": {
+          "auc": 0.6009627894873797,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.32428525240067857,
+          "log_loss": 4.832726714036338
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6737967914438503,
+          "brier": 0.2198041943397998,
+          "log_loss": 0.6314788665672426
+        }
+      },
+      "scoring_unit": "image",
+      "patient_metrics": {
+        "federated_dp": {
+          "auc": 0.5365191146881287,
+          "accuracy": 0.660377358490566,
+          "brier": 0.3242027315062963,
+          "log_loss": 2.584079825611164
+        },
+        "central": {
+          "auc": 0.8106639839034205,
+          "accuracy": 0.7594339622641509,
+          "brier": 0.16025825962173587,
+          "log_loss": 0.4979180250577258
+        },
+        "nonprivate_federated": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.330188679245283,
+          "log_loss": 11.404312960583715
+        },
+        "pooled_dp": {
+          "auc": 0.6284708249496982,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.32997778300997205,
+          "log_loss": 4.7804387381608135
+        },
+        "trivial": {
+          "auc": 0.5,
+          "accuracy": 0.6698113207547169,
+          "brier": 0.2212837957476276,
+          "log_loss": 0.6345858884660425
+        }
+      },
+      "patient_metric_definition": "Frozen features averaged within held-out patient, modal label; training-patient prevalence trivial forecast. Direct fixed-numerics head inference.",
+      "n_train_patients": 852,
+      "n_test_patients": 212,
+      "n_test_images": 374,
+      "test_prevalence": 0.32620320855614976,
+      "test_majority_rate": 0.6737967914438503,
+      "patient_test_prevalence": 0.33018869161605835,
+      "training_prevalence": 0.3231179118156433,
+      "patient_training_prevalence": 0.31924882531166077,
+      "gap": -0.23650143117356237,
+      "patient_gap": -0.2741448692152918,
+      "acceptance_diagnostic": true,
+      "diagnostic_annotation_only": true,
+      "prediction_elapsed_s": 129.48012083396316,
+      "independent_accounting": {
+        "accountant": "PRVAccountant",
+        "full_horizon_steps": 10,
+        "sample_rate": 1.0,
+        "noise_multiplier": 27.5,
+        "epsilon_replace_one": 0.9916813560637626,
+        "delta_replace_one": 9.974163680327972e-07
+      },
+      "test_prediction_sha256": "39736cdea7fa8376d4e3185acf08875f80412fdf26e6ced5e484e67a1463000a"
+    }
+  ],
+  "scoring_unit": "image",
+  "split_seed": 20260919,
+  "protocol_sha256": "9081ce33e85db5ecf46c39586ec1824c6d5938a130a12c8176a2876e0c387a5c",
+  "scoring_lock_sha256": "8cdc64bbb833915ddebb70d3dc117536f950fd2a83276c9cef8dc0fb13d39724",
+  "elapsed_s": 465.3760094027966,
+  "finished_at": "2026-09-22T11:30:42.708592+00:00"
+}

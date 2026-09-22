@@ -1,0 +1,14 @@
+{
+  "status": "passed",
+  "completed_at_utc": "2026-09-22T01:06:18.134695+00:00",
+  "completed_cells": 7,
+  "completed_replicates": 21,
+  "three_clients_verified_from_saved_releases": true,
+  "original_tool_hashes_verified_against_commit": "162a880ce83488855c1cc5fa63fc2598707f9c21",
+  "split_and_central_identities_match_across_epsilon": true,
+  "metrics_recomputed_from_replicate_records": true,
+  "alternative_count": 1,
+  "no_retraining_or_rescoring": true,
+  "primary_epsilon8_diagnostic_pass": false,
+  "alternative_epsilon8_diagnostic_pass": false
+}

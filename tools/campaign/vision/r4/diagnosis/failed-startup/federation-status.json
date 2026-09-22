@@ -1,0 +1,13 @@
+{
+  "status": "failed",
+  "error": "SuperLink did not become ready within 15 seconds.\nLog:\n\u001b[92mINFO \u001b[0m:      Starting Flower SuperLink\n\u001b[93mWARNING \u001b[0m:   Option `--insecure` was set. Starting insecure HTTP server with unencrypted communication (TLS disabled). Proceed only if you understand the risks.\n\u001b[93mWARNING \u001b[0m:   SuperNode authentication is disabled. The SuperLink will accept connections from any SuperNode.\n\u001b[92mINFO \u001b[0m:      Flower Deployment Runtime: Starting Control API on 127.0.0.1:22861\n\u001b[92mINFO \u001b[0m:      Flower Deployment Runtime: Starting ServerAppIo API on 127.0.0.1:35860\n\u001b[92mINFO \u001b[0m:      Flower Deployment Runtime: Starting Fleet API (gRPC-rere) on 127.0.0.1:19287",
+  "cleanup_ok": true,
+  "elapsed_s": 204.940620183945,
+  "epsilon": 8,
+  "split_sha256": "b44664c4f1e5cfc08c2e20fa48f49eaebee046c3cfee62745c444928b486b397",
+  "job_sha256": "d5af12741c2dae0416515f10238bac7c48a87df6f7b2d78bc6b09036a295c07d",
+  "n_patients_per_site": [227, 227, 227],
+  "test_accessed": false,
+  "seed": 20260922,
+  "contract": "pytorch_resnet18"
+}

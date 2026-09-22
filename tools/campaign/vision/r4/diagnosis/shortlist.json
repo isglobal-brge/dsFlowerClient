@@ -1,0 +1,18 @@
+[
+  {
+    "id": "adam_lr0.003_e20_b32",
+    "learning_rate": 0.003,
+    "local_epochs": 20,
+    "batch_size": 32,
+    "optimizer": "adam",
+    "weight_decay": 0
+  },
+  {
+    "id": "adam_lr0.01_e20_b32",
+    "learning_rate": 0.01,
+    "local_epochs": 20,
+    "batch_size": 32,
+    "optimizer": "adam",
+    "weight_decay": 0
+  }
+]

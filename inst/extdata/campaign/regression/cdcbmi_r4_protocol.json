@@ -1,0 +1,181 @@
+{
+  "schema": "dsflower-regression-public-units-protocol-v1",
+  "dataset": {
+    "name": "CDC Diabetes Health Indicators: BMI regression",
+    "cohort": "cdc45k",
+    "n_total": 45000,
+    "uci_id": 891,
+    "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+    "source_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+    "landing_url": "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
+    "doi": "10.24432/C53919",
+    "citation": "CDC Diabetes Health Indicators [Dataset]. (2017). UCI Machine Learning Repository. https://doi.org/10.24432/C53919.",
+    "thesis_citation_key": "uci_cdc_diabetes_health_indicators",
+    "cohort_seed": 20260819,
+    "logistic_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+    "cohort_reuse": "Exact fixed-seed stratified cdc45k cohort from tools/campaign/campaign_lib.R; verify its original logistic prepared CSV SHA256 before changing target to BMI. Diabetes_binary is used only to preserve the original sampling and split strata."
+  },
+  "contract": "pytorch_linear_regression",
+  "seeds": [
+    20260820,
+    20260821,
+    20260822
+  ],
+  "epsilon_order": [
+    1,
+    4,
+    8
+  ],
+  "sites": 3,
+  "rounds": 5,
+  "replicates": 3,
+  "split": {
+    "unit": "respondent row",
+    "stratification": "Diabetes_binary; BMI is never used for cohort selection or splitting",
+    "test_fraction": 0.2,
+    "n_train": 36000,
+    "n_test": 9000,
+    "method": "Reuse the original campaign_split: R set.seed(seed), sample 20% within each diabetes stratum for test, then shuffle each training stratum and deal round-robin to three sites.",
+    "overlap": "No source row shared between training/test or between sites"
+  },
+  "features": [
+    "HighBP",
+    "HighChol",
+    "CholCheck",
+    "Smoker",
+    "Stroke",
+    "HeartDiseaseorAttack",
+    "PhysActivity",
+    "Fruits",
+    "Veggies",
+    "HvyAlcoholConsump",
+    "AnyHealthcare",
+    "NoDocbcCost",
+    "GenHlth",
+    "MentHlth",
+    "PhysHlth",
+    "DiffWalk",
+    "Sex",
+    "Age",
+    "Education",
+    "Income"
+  ],
+  "excluded_columns": [
+    "ID",
+    "Diabetes_binary"
+  ],
+  "target": "BMI",
+  "feature_bounds": {
+    "lower": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1,
+      1
+    ],
+    "upper": [
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      5,
+      30,
+      30,
+      1,
+      1,
+      13,
+      6,
+      8
+    ]
+  },
+  "target_bounds": {
+    "lower": -1,
+    "upper": 1
+  },
+  "bounds_policy": "Reuse the previously declared public clipping interval BMI [12,98]; client harness transforms training targets to (clip(BMI,12,98)-55)/43. Unchanged runner clips these targets to [-1,1], scales features through the original public bounds to [-1,1], and returns public-unit predictions. Harness inverts predictions with 55+43*prediction. No empirical centering, scaling or prediction clipping.",
+  "model_params_overrides": {
+    "optimizer": "sgd",
+    "learning_rate": 0.01,
+    "local_epochs": 5,
+    "batch_size": 32
+  },
+  "registry_defaults": {
+    "learning_rate": 0.01,
+    "batch_size": 32,
+    "local_epochs": 1,
+    "weight_decay": 0,
+    "l1_penalty": 0,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "hidden_layers": []
+  },
+  "privacy": {
+    "epsilon": "per cell",
+    "delta": 1e-06,
+    "unit": "row",
+    "clipping_norm": 1,
+    "adjacency": "replace_one",
+    "randomness": "Unchanged node secrets and canonical sticky seeding; replicate split seeds are not DP noise seeds; no composition claim across trainings"
+  },
+  "central": "OLS with intercept on all 36000 original training rows using the same public feature transform and float32 public-unit targets; predictions mapped back to BMI units.",
+  "trivial": "Mean of the original BMI values of all training rows",
+  "metrics": {
+    "unit": "held-out respondent rows",
+    "names": [
+      "rmse",
+      "mae",
+      "r2"
+    ],
+    "prediction_postprocessing": "55+43*prediction; no clipping; raw held-out BMI truth",
+    "gap": "federated_dp.rmse - central.rmse"
+  },
+  "diagnostics": {
+    "epsilon": 8,
+    "criteria": [
+      "federated-DP RMSE below training-mean predictor RMSE",
+      "federated-DP R2 above zero"
+    ],
+    "interpretation": "Annotations only, never pass/fail gates or reasons to rerun"
+  },
+  "selection": "Smallest mean real federated-DP inner-validation RMSE across the three original training partitions; no test rows used",
+  "bounds_references": [
+    "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
+    "https://www.cdc.gov/brfss/annual_data/2015/pdf/CODEBOOK15_LLCP.pdf"
+  ],
+  "cell": "cdcbmi_r4",
+  "original_target_bounds": {
+    "lower": 12,
+    "upper": 98
+  },
+  "public_target_transform": {
+    "center": 55,
+    "scale": 43,
+    "forward": "(clip(BMI,12,98)-55)/43",
+    "inverse": "55+43*prediction"
+  },
+  "schedule_rationale": "Training-only real-DP selection increased local epochs from one to five. Five rounds, SGD .01, batch 32; 9375 steps per 12000-row site. No post-test choice.",
+  "base_protocol_sha256": "ed78789be0fd48185ad291208c2afcf819c2bf3618100d67e8a91326e82ab4a5"
+}

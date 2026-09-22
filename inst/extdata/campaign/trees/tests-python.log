@@ -1,0 +1,19 @@
+test_invalid_json_fails_closed (inst.python.tests.test_native_tree_canonical_json.NativeTreeCanonicalJsonTests.test_invalid_json_fails_closed) ... ok
+test_noncanonical_bytes_are_not_reproduced (inst.python.tests.test_native_tree_canonical_json.NativeTreeCanonicalJsonTests.test_noncanonical_bytes_are_not_reproduced) ... ok
+test_real_training_output_round_trips (inst.python.tests.test_native_tree_canonical_json.NativeTreeCanonicalJsonTests.test_real_training_output_round_trips) ... ok
+test_every_engine_reopens_and_predicts_under_isolated_stdlib (inst.python.tests.test_native_tree_predict_helper.NativeTreePredictHelperTests.test_every_engine_reopens_and_predicts_under_isolated_stdlib) ... ok
+test_binary_and_regression_known_answers_under_isolated_python (inst.python.tests.test_import_xgboost_model.ExternalXGBoostImporterTests.test_binary_and_regression_known_answers_under_isolated_python) ... ok
+test_cli_requires_isolated_python_without_site (inst.python.tests.test_import_xgboost_model.ExternalXGBoostImporterTests.test_cli_requires_isolated_python_without_site) ... ok
+test_malformed_artifact_and_tampered_request_fail_with_fixed_error (inst.python.tests.test_import_xgboost_model.ExternalXGBoostImporterTests.test_malformed_artifact_and_tampered_request_fail_with_fixed_error) ... ok
+test_output_is_byte_deterministic_and_contains_no_state_files (inst.python.tests.test_import_xgboost_model.ExternalXGBoostImporterTests.test_output_is_byte_deterministic_and_contains_no_state_files) ... ok
+test_oversized_symlink_and_nonempty_destinations_are_rejected (inst.python.tests.test_import_xgboost_model.ExternalXGBoostImporterTests.test_oversized_symlink_and_nonempty_destinations_are_rejected) ... ok
+test_request_must_be_a_bounded_regular_canonical_file (inst.python.tests.test_import_xgboost_model.ExternalXGBoostImporterTests.test_request_must_be_a_bounded_regular_canonical_file) ... ok
+test_second_install_failure_removes_every_file_it_created (inst.python.tests.test_import_xgboost_model.ExternalXGBoostImporterTests.test_second_install_failure_removes_every_file_it_created) ... ok
+test_extractor_failure_returns_nonzero_status (inst.python.tests.test_validate_model_artifact.ValidateModelArtifactTests.test_extractor_failure_returns_nonzero_status) ... ok
+test_image_loads_public_arrays_then_preflights_extractor (inst.python.tests.test_validate_model_artifact.ValidateModelArtifactTests.test_image_loads_public_arrays_then_preflights_extractor) ... ok
+test_tabular_artifact_does_not_construct_an_extractor (inst.python.tests.test_validate_model_artifact.ValidateModelArtifactTests.test_tabular_artifact_does_not_construct_an_extractor) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 1.699s
+
+OK

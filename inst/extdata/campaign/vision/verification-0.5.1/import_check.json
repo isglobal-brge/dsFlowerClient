@@ -1,0 +1,11 @@
+{
+  "schema": "dsflower-vision-import-check-v1",
+  "returncode": 0,
+  "stdout": "CLIENTAPP_IMPORT_PASSED\nPUBLIC_MODEL_BUILD_PASSED\n",
+  "stderr": "",
+  "benchmark_observer_enabled": false,
+  "public_model_construction_called": true,
+  "training_called": false,
+  "data_staged": false,
+  "integrity_gate_modified": false
+}

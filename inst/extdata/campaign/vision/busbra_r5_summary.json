@@ -1,0 +1,1134 @@
+{
+  "schema": "dsflower-vision-r5-summary-v1",
+  "status": "executed",
+  "generated_at": "2026-09-22T11:32:19.634014+00:00",
+  "contract": "pytorch_resnet18",
+  "dataset": {
+    "name": "BUS-BRA",
+    "version": "1.0",
+    "total_patients": 1064,
+    "total_images": 1875,
+    "citation_key": "gomezflores_busbra_2024",
+    "dataset_url": "https://zenodo.org/records/8231412",
+    "paper_doi": "10.1002/mp.16812",
+    "archive_sha256": "ba3e6ed19cc37c682d8d39e25435bbf8a555a12cb7e641b5f2117685c95580ff",
+    "checkpoint_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+    "base_client_evidence_commit": "43d9489"
+  },
+  "release": {
+    "change_scope": "Server import guard only; canonical runner and all training, sampling, clipping and privacy settings unchanged.",
+    "client_version": "0.5.0",
+    "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+    "dsFlower_patch_branch": "fix/import-guard-torch-generated-modules",
+    "dsFlower_patch_commit": "c4eaaf153db4a7204878bf1d8995c16faa615110",
+    "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "server_version": "0.5.1",
+    "version": "dsFlower 0.5.1 / dsFlowerClient 0.5.0",
+    "installed_versions": {
+      "dsFlower": "0.5.1",
+      "dsFlowerClient": "0.5.0"
+    },
+    "installed_runner_sha256": {
+      "dsFlower": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+      "dsFlowerClient": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+    },
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "torch": {
+      "torch": "2.6.0+cu124",
+      "torchvision": "0.21.0+cu124",
+      "cuda": "12.4",
+      "gpu": "NVIDIA A40"
+    }
+  },
+  "host": {
+    "gpu": "NVIDIA A40",
+    "pod_id": "0nk8si7zupfczc",
+    "pod_name": "pod-flower-vision",
+    "root": "/workspace/cells-vision",
+    "hostname": "5dc98e434db0",
+    "gpus": [
+      {
+        "memory.total [MiB]": "46068 MiB",
+        "memory.used [MiB]": "0 MiB",
+        "name": "NVIDIA A40",
+        "uuid": "GPU-71ab6101-1d6b-147c-5ee3-af1fc7a677ee"
+      }
+    ],
+    "state_at_end": "left_running"
+  },
+  "protocol_sha256": "9081ce33e85db5ecf46c39586ec1824c6d5938a130a12c8176a2876e0c387a5c",
+  "scoring_lock_sha256": "8cdc64bbb833915ddebb70d3dc117536f950fd2a83276c9cef8dc0fb13d39724",
+  "scores_sha256": "94e64898b140f96554f11afaadcd6d9b2e1c1048fe5d50f74bafa9275e63f638",
+  "scored_replicates": 9,
+  "model_params": {
+    "batch_size": 284,
+    "image_size": 224,
+    "l1_penalty": 0,
+    "learning_rate": 3,
+    "local_epochs": 2,
+    "n_classes": 2,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "volumetric": false,
+    "weight_decay": 0,
+    "momentum": 0.9
+  },
+  "split_seed": 20260919,
+  "no_test_access_before_scoring": true,
+  "selection": {
+    "selected": {
+      "candidate": {
+        "id": "sgd_m0.9_lr3_e2_b227_wd0",
+        "optimizer": "sgd",
+        "learning_rate": 3,
+        "local_epochs": 2,
+        "batch_size": 227,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "batch_mode": "full_site"
+      },
+      "inner_validation": {
+        "auc": 0.7054858934169279,
+        "accuracy": 0.6783625730994152,
+        "brier": 0.32163742690058456,
+        "log_loss": 11.076007552498325
+      },
+      "n_fit_patients": 681,
+      "n_validation_patients": 171,
+      "actual_federation": true,
+      "epsilon": 8,
+      "delta": 1e-06,
+      "clipping_norm": 1,
+      "rounds": 5,
+      "sites": 3,
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 4.35546875,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 1,
+        "sample_rate": 1.0,
+        "expected_batch_size": 227,
+        "total_epochs": 10,
+        "total_steps": 10,
+        "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"
+      },
+      "feature_parity": true,
+      "elapsed_s": 1060.33093690872,
+      "test_accessed": false,
+      "federation_status_sha256": "6c80bfb978e479a931a2f7e9e0b3eb09215ff46c2a577180da4f405a3910ec43",
+      "model_sha256": "030889f5eeb9e4c600fa7a01b372ad0c681722cd9ea7239a859beccac71ed8aa",
+      "run_dir": "/workspace/cells-vision/r5/federations/sgd_m0.9_lr3_e2_b227_wd0-eps8",
+      "initialization_seed": 20260922
+    },
+    "all_candidates": [
+      {
+        "candidate": {
+          "id": "adam_m0_lr0.03_e1_b227_wd0",
+          "optimizer": "adam",
+          "learning_rate": 0.03,
+          "local_epochs": 1,
+          "batch_size": 227,
+          "momentum": 0,
+          "weight_decay": 0,
+          "batch_mode": "full_site"
+        },
+        "inner_validation": {
+          "auc": 0.6700626959247649,
+          "accuracy": 0.6783625730994152,
+          "brier": 0.32131069848550037,
+          "log_loss": 2.4915224762281754
+        },
+        "n_fit_patients": 681,
+        "n_validation_patients": 171,
+        "actual_federation": true,
+        "epsilon": 8,
+        "delta": 1e-06,
+        "clipping_norm": 1,
+        "rounds": 5,
+        "sites": 3,
+        "mechanism": {
+          "adjacency": "replace_one",
+          "noise_multiplier": 3.076171875,
+          "clipping_norm": 1.0,
+          "accounting_population": 227,
+          "steps_per_epoch": 1,
+          "sample_rate": 1.0,
+          "expected_batch_size": 227,
+          "total_epochs": 5,
+          "total_steps": 5,
+          "policy_hash": "8ac4f358373308a95e6f1564791fbbbee35a0e436d85b868adf424d244cb085d"
+        },
+        "feature_parity": true,
+        "elapsed_s": 1106.46826219559,
+        "test_accessed": false,
+        "federation_status_sha256": "3a5185b4bf291aca75b16a5f5883cde8171dc3cb6fe2f313b9a68d1ae98640a2",
+        "model_sha256": "ed6e85830320e3b1d962f05dab2701308a6c79249d66c63915362336d66fb9e2",
+        "run_dir": "/workspace/cells-vision/r5/federations/adam_m0_lr0.03_e1_b227_wd0-eps8",
+        "initialization_seed": 20260922
+      },
+      {
+        "candidate": {
+          "id": "sgd_m0.9_lr3_e2_b227_wd0",
+          "optimizer": "sgd",
+          "learning_rate": 3,
+          "local_epochs": 2,
+          "batch_size": 227,
+          "momentum": 0.9,
+          "weight_decay": 0,
+          "batch_mode": "full_site"
+        },
+        "inner_validation": {
+          "auc": 0.7054858934169279,
+          "accuracy": 0.6783625730994152,
+          "brier": 0.32163742690058456,
+          "log_loss": 11.076007552498325
+        },
+        "n_fit_patients": 681,
+        "n_validation_patients": 171,
+        "actual_federation": true,
+        "epsilon": 8,
+        "delta": 1e-06,
+        "clipping_norm": 1,
+        "rounds": 5,
+        "sites": 3,
+        "mechanism": {
+          "adjacency": "replace_one",
+          "noise_multiplier": 4.35546875,
+          "clipping_norm": 1.0,
+          "accounting_population": 227,
+          "steps_per_epoch": 1,
+          "sample_rate": 1.0,
+          "expected_batch_size": 227,
+          "total_epochs": 10,
+          "total_steps": 10,
+          "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"
+        },
+        "feature_parity": true,
+        "elapsed_s": 1060.33093690872,
+        "test_accessed": false,
+        "federation_status_sha256": "6c80bfb978e479a931a2f7e9e0b3eb09215ff46c2a577180da4f405a3910ec43",
+        "model_sha256": "030889f5eeb9e4c600fa7a01b372ad0c681722cd9ea7239a859beccac71ed8aa",
+        "run_dir": "/workspace/cells-vision/r5/federations/sgd_m0.9_lr3_e2_b227_wd0-eps8",
+        "initialization_seed": 20260922
+      },
+      {
+        "candidate": {
+          "id": "sgd_m0.9_lr3_e2_b227_wd0.0001",
+          "optimizer": "sgd",
+          "learning_rate": 3,
+          "local_epochs": 2,
+          "batch_size": 227,
+          "momentum": 0.9,
+          "weight_decay": 0.0001,
+          "batch_mode": "full_site"
+        },
+        "inner_validation": {
+          "auc": 0.6122257053291537,
+          "accuracy": 0.6783625730994152,
+          "brier": 0.3216374269005848,
+          "log_loss": 11.108963167953728
+        },
+        "n_fit_patients": 681,
+        "n_validation_patients": 171,
+        "actual_federation": true,
+        "epsilon": 8,
+        "delta": 1e-06,
+        "clipping_norm": 1,
+        "rounds": 5,
+        "sites": 3,
+        "mechanism": {
+          "adjacency": "replace_one",
+          "noise_multiplier": 4.35546875,
+          "clipping_norm": 1.0,
+          "accounting_population": 227,
+          "steps_per_epoch": 1,
+          "sample_rate": 1.0,
+          "expected_batch_size": 227,
+          "total_epochs": 10,
+          "total_steps": 10,
+          "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"
+        },
+        "feature_parity": true,
+        "elapsed_s": 1136.76592540741,
+        "test_accessed": false,
+        "federation_status_sha256": "b983c9a1b82bb99f25778e9ccf7aecdd5a45bd0898857a36411ee176e402c8dd",
+        "model_sha256": "eff3ca75f91bff385746121feb9b5d4cdd17b4549ba846b6881872c0384f5ff2",
+        "run_dir": "/workspace/cells-vision/r5/federations/sgd_m0.9_lr3_e2_b227_wd0.0001-eps8",
+        "initialization_seed": 20260922
+      }
+    ],
+    "test_accessed": false,
+    "selected_at": "2026-09-22T08:12:04.548796+00:00",
+    "elapsed_s": 3339.057979043573,
+    "selection_rule": "Maximum actual federated-DP patient inner-validation AUC at epsilon 8; tie candidate id ascending.",
+    "budget_dependence_run": false
+  },
+  "limitations": [
+    "Primary evaluation is per image; partitioning, head training and privacy are per patient. Patient-mean-feature evaluation is secondary.",
+    "All three R5 seeds use the same 852/212 patient split (split seed 20260919). SD describes three training realizations, not split or population uncertainty.",
+    "The converged central fit is deterministic and reused across all seeds and epsilons; its zero SD is not an uncertainty estimate.",
+    "The nonprivate federated twin removes both clipping and noise, retaining the finite schedule, Poisson sampling, expected-batch divisor and FedAvg structure.",
+    "Nonprivate-twin Poisson draws use independent benchmark randomness; initialization and sampling law are matched, not individual sampling draws.",
+    "Canonical federated image prediction retains the released numerical defaults; direct twins and secondary patient inference disable TF32 and use deterministic controls. Training tensor parity is verified; test-feature bitwise parity across these inference routes is not asserted.",
+    "The central-to-private AUC gap combines finite optimization, federation, clipping and noise; it is not a pure noise effect.",
+    "The derived private-training gap (federated-DP minus nonprivate federated) includes clipping, noise and their resulting training trajectories; it is not a pure noise effect.",
+    "Selection used one 681/171 patient inner split, three emulated noise seeds over 736 candidates, then three actual epsilon-8 confirmations; selection uncertainty is not estimated.",
+    "The original cell had already scored this cohort. R5 did not access held-out records before the locked final scoring pass; no claim of a previously unused external test cohort is made.",
+    "Epsilon is the per-training five-round guarantee. No campaign-wide privacy composition claim is made across diagnosis, cells, twins or repeated public-cohort fits.",
+    "Node-owned secret randomness is not published; the public seed alone does not reproduce DP sampling or noise."
+  ],
+  "wall_clock": {
+    "matrix_start": {
+      "started_at": "2026-09-22T08:27:02.192506+00:00",
+      "protocol_sha256": "9081ce33e85db5ecf46c39586ec1824c6d5938a130a12c8176a2876e0c387a5c",
+      "readme_sha256": "6a7efa118b583ce1798f5be74d7e857b9733e81ade03186f3adc8367e508e030",
+      "test_accessed": false
+    },
+    "matrix_complete": {
+      "completed_at": "2026-09-22T11:20:41.738004+00:00",
+      "elapsed_s": 10325.827904563397,
+      "test_accessed": false
+    },
+    "scoring_started_at": "2026-09-22T11:22:57.324624+00:00",
+    "scoring_finished_at": "2026-09-22T11:30:42.708592+00:00",
+    "scoring_elapsed_s": 465.3760094027966,
+    "matrix_start_to_scoring_finish_s": 11020.516086
+  },
+  "cells": [
+    {
+      "epsilon": 8,
+      "file": "busbra_r5_pytorch_resnet18_eps8.json",
+      "status": "executed",
+      "phase": "dp_aware_selected_schedule",
+      "aggregate": {
+        "central": {
+          "auc": {
+            "mean": 0.7573185011709602,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.7433155080213903,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.1851114883432635,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.5794443023599514,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "nonprivate_federated": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6737967914438503,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.32620320855614976,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 11.266659679623272,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "federated_dp": {
+          "auc": {
+            "mean": 0.6597818544539856,
+            "sd": 0.008365448563882117,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6737967914438503,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.3262032085547706,
+            "sd": 2.365360353565723e-12,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 10.854644448021388,
+            "sd": 0.41178748275571236,
+            "n": 3
+          }
+        },
+        "pooled_dp": {
+          "auc": {
+            "mean": 0.686226038685055,
+            "sd": 0.00968925460865271,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6737967914438503,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.3261882463667575,
+            "sd": 1.496359701580791e-05,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 5.540893578177634,
+            "sd": 2.7572023616070083,
+            "n": 3
+          }
+        },
+        "trivial": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6737967914438503,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.2198041943397998,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6314788665672426,
+            "sd": 0.0,
+            "n": 3
+          }
+        }
+      },
+      "patient_aggregate": {
+        "central": {
+          "auc": {
+            "mean": 0.8106639839034205,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.7594339622641509,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.16025825962173587,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.4979180250577258,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "nonprivate_federated": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6698113207547169,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.330188679245283,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 11.404312960583715,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "federated_dp": {
+          "auc": {
+            "mean": 0.6944332662642522,
+            "sd": 0.020976357740778936,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6698113207547169,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.3301886792440609,
+            "sd": 2.1102785054756393e-12,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 11.023224421970864,
+            "sd": 0.43128135641712295,
+            "n": 3
+          }
+        },
+        "pooled_dp": {
+          "auc": {
+            "mean": 0.7192488262910798,
+            "sd": 0.012143208597537609,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6698113207547169,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.3301766914962404,
+            "sd": 1.2363237143999008e-05,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 5.607292521095771,
+            "sd": 2.815847471951513,
+            "n": 3
+          }
+        },
+        "trivial": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6698113207547169,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.2212837957476276,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6345858884660425,
+            "sd": 0.0,
+            "n": 3
+          }
+        }
+      },
+      "gap_auc": {
+        "mean": -0.09753664671697464,
+        "sd": 0.008365448563882117,
+        "n": 3
+      },
+      "patient_gap_auc": {
+        "mean": -0.11623071763916833,
+        "sd": 0.020976357740778936,
+        "n": 3
+      },
+      "majority_accuracy": {
+        "mean": 0.6737967914438503,
+        "sd": 0.0,
+        "n": 3
+      },
+      "diagnostic": {
+        "role": "annotation_only",
+        "affects_execution_status": false,
+        "mean_passed": false,
+        "per_seed_passed": [
+          false,
+          false,
+          false
+        ]
+      },
+      "interpretation": "DP-aware selected schedule: federated-DP AUC 0.659782; central gap -0.097537; accuracy 0.673797 versus majority 0.673797. Diagnostic does not pass; annotation only. Brier 0.326203, log-loss 10.854644; discrimination and calibration must be interpreted separately.",
+      "scored_replicates": 3,
+      "optimization_gap_auc": {
+        "mean": -0.2573185011709602,
+        "sd": 0.0,
+        "n": 3
+      },
+      "private_training_gap_auc": {
+        "mean": 0.1597818544539856,
+        "sd": 0.008365448563882117,
+        "n": 3
+      },
+      "patient_optimization_gap_auc": {
+        "mean": -0.31066398390342054,
+        "sd": 0.0,
+        "n": 3
+      },
+      "patient_private_training_gap_auc": {
+        "mean": 0.1944332662642522,
+        "sd": 0.020976357740778936,
+        "n": 3
+      }
+    },
+    {
+      "epsilon": 4,
+      "file": "busbra_r5_pytorch_resnet18_eps4.json",
+      "status": "executed",
+      "phase": "dp_aware_selected_schedule",
+      "aggregate": {
+        "central": {
+          "auc": {
+            "mean": 0.7573185011709602,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.7433155080213903,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.1851114883432635,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.5794443023599514,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "nonprivate_federated": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6737967914438503,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.32620320855614976,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 11.266659679623272,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "federated_dp": {
+          "auc": {
+            "mean": 0.6169767542718362,
+            "sd": 0.08289607441866642,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6737967914438503,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.32619286527874597,
+            "sd": 1.791508197950305e-05,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 8.856418971078583,
+            "sd": 4.143453443891189,
+            "n": 3
+          }
+        },
+        "pooled_dp": {
+          "auc": {
+            "mean": 0.6462832856275479,
+            "sd": 0.03233415138809643,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6737967914438503,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.3261964374418235,
+            "sd": 1.1727911350816459e-05,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 8.180036651196634,
+            "sd": 3.7516771388633723,
+            "n": 3
+          }
+        },
+        "trivial": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6737967914438503,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.2198041943397998,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6314788665672426,
+            "sd": 0.0,
+            "n": 3
+          }
+        }
+      },
+      "patient_aggregate": {
+        "central": {
+          "auc": {
+            "mean": 0.8106639839034205,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.7594339622641509,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.16025825962173587,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.4979180250577258,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "nonprivate_federated": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6698113207547169,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.330188679245283,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 11.404312960583715,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "federated_dp": {
+          "auc": {
+            "mean": 0.6560362173038229,
+            "sd": 0.10015791611263963,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6698113207547169,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.3301850192366784,
+            "sd": 6.339320858867636e-06,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 8.971532869809058,
+            "sd": 4.197233544322312,
+            "n": 3
+          }
+        },
+        "pooled_dp": {
+          "auc": {
+            "mean": 0.6770959087860496,
+            "sd": 0.039518830528785874,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6698113207547169,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.3301847166095381,
+            "sd": 6.863484498704864e-06,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 8.326761589357647,
+            "sd": 3.849536676779975,
+            "n": 3
+          }
+        },
+        "trivial": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6698113207547169,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.2212837957476276,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6345858884660425,
+            "sd": 0.0,
+            "n": 3
+          }
+        }
+      },
+      "gap_auc": {
+        "mean": -0.14034174689912401,
+        "sd": 0.08289607441866642,
+        "n": 3
+      },
+      "patient_gap_auc": {
+        "mean": -0.15462776659959762,
+        "sd": 0.10015791611263963,
+        "n": 3
+      },
+      "majority_accuracy": {
+        "mean": 0.6737967914438503,
+        "sd": 0.0,
+        "n": 3
+      },
+      "diagnostic": {
+        "role": "annotation_only",
+        "affects_execution_status": false,
+        "mean_passed": false,
+        "per_seed_passed": [
+          false,
+          false,
+          false
+        ]
+      },
+      "interpretation": "DP-aware selected schedule: federated-DP AUC 0.616977; central gap -0.140342; accuracy 0.673797 versus majority 0.673797. Diagnostic does not pass; annotation only. Brier 0.326193, log-loss 8.856419; discrimination and calibration must be interpreted separately.",
+      "scored_replicates": 3,
+      "optimization_gap_auc": {
+        "mean": -0.2573185011709602,
+        "sd": 0.0,
+        "n": 3
+      },
+      "private_training_gap_auc": {
+        "mean": 0.11697675427183622,
+        "sd": 0.08289607441866642,
+        "n": 3
+      },
+      "patient_optimization_gap_auc": {
+        "mean": -0.31066398390342054,
+        "sd": 0.0,
+        "n": 3
+      },
+      "patient_private_training_gap_auc": {
+        "mean": 0.15603621730382292,
+        "sd": 0.10015791611263963,
+        "n": 3
+      }
+    },
+    {
+      "epsilon": 1,
+      "file": "busbra_r5_pytorch_resnet18_eps1.json",
+      "status": "executed",
+      "phase": "dp_aware_selected_schedule",
+      "aggregate": {
+        "central": {
+          "auc": {
+            "mean": 0.7573185011709602,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.7433155080213903,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.1851114883432635,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.5794443023599514,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "nonprivate_federated": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6737967914438503,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.32620320855614976,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 11.266659679623272,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "federated_dp": {
+          "auc": {
+            "mean": 0.5343969555035128,
+            "sd": 0.03737688607673768,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.642602495543672,
+            "sd": 0.05872216188958697,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.3389513589658585,
+            "sd": 0.036195520583732814,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 5.465401811175171,
+            "sd": 4.355344031658534,
+            "n": 3
+          }
+        },
+        "pooled_dp": {
+          "auc": {
+            "mean": 0.5631884812212681,
+            "sd": 0.04567561685593375,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6524064171122995,
+            "sd": 0.039387486263786756,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.32813774515675026,
+            "sd": 0.009954526194927468,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 3.3904794822622595,
+            "sd": 1.6028829639507027,
+            "n": 3
+          }
+        },
+        "trivial": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6737967914438503,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.2198041943397998,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6314788665672426,
+            "sd": 0.0,
+            "n": 3
+          }
+        }
+      },
+      "patient_aggregate": {
+        "central": {
+          "auc": {
+            "mean": 0.8106639839034205,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.7594339622641509,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.16025825962173587,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.4979180250577258,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "nonprivate_federated": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6698113207547169,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.330188679245283,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 11.404312960583715,
+            "sd": 0.0,
+            "n": 3
+          }
+        },
+        "federated_dp": {
+          "auc": {
+            "mean": 0.5462441314553991,
+            "sd": 0.037281662576959175,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6352201257861635,
+            "sd": 0.051958212710246234,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.3453645046589661,
+            "sd": 0.031611291493271576,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 5.451835452399818,
+            "sd": 4.569216718459237,
+            "n": 3
+          }
+        },
+        "pooled_dp": {
+          "auc": {
+            "mean": 0.5781354795439303,
+            "sd": 0.05895237750347136,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6525157232704403,
+            "sd": 0.029956853590027713,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.3325762261193326,
+            "sd": 0.005284332914050056,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 3.3926496392546253,
+            "sd": 1.6337016775472084,
+            "n": 3
+          }
+        },
+        "trivial": {
+          "auc": {
+            "mean": 0.5,
+            "sd": 0.0,
+            "n": 3
+          },
+          "accuracy": {
+            "mean": 0.6698113207547169,
+            "sd": 0.0,
+            "n": 3
+          },
+          "brier": {
+            "mean": 0.2212837957476276,
+            "sd": 0.0,
+            "n": 3
+          },
+          "log_loss": {
+            "mean": 0.6345858884660425,
+            "sd": 0.0,
+            "n": 3
+          }
+        }
+      },
+      "gap_auc": {
+        "mean": -0.22292154566744735,
+        "sd": 0.03737688607673768,
+        "n": 3
+      },
+      "patient_gap_auc": {
+        "mean": -0.2644198524480215,
+        "sd": 0.037281662576959175,
+        "n": 3
+      },
+      "majority_accuracy": {
+        "mean": 0.6737967914438503,
+        "sd": 0.0,
+        "n": 3
+      },
+      "diagnostic": {
+        "role": "annotation_only",
+        "affects_execution_status": false,
+        "mean_passed": false,
+        "per_seed_passed": [
+          false,
+          false,
+          true
+        ]
+      },
+      "interpretation": "DP-aware selected schedule: federated-DP AUC 0.534397; central gap -0.222922; accuracy 0.642602 versus majority 0.673797. Diagnostic does not pass; annotation only. Brier 0.338951, log-loss 5.465402; discrimination and calibration must be interpreted separately.",
+      "scored_replicates": 3,
+      "optimization_gap_auc": {
+        "mean": -0.2573185011709602,
+        "sd": 0.0,
+        "n": 3
+      },
+      "private_training_gap_auc": {
+        "mean": 0.034396955503512884,
+        "sd": 0.03737688607673768,
+        "n": 3
+      },
+      "patient_optimization_gap_auc": {
+        "mean": -0.31066398390342054,
+        "sd": 0.0,
+        "n": 3
+      },
+      "patient_private_training_gap_auc": {
+        "mean": 0.04624413145539904,
+        "sd": 0.037281662576959175,
+        "n": 3
+      }
+    }
+  ]
+}

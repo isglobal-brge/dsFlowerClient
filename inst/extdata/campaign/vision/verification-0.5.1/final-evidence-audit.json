@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "checked_at": "2026-09-22T04:31:43.844738+00:00",
+  "cells": 3,
+  "scored_replicates": 9,
+  "branches": 4,
+  "metrics_per_branch": 4,
+  "node_rounds": 135,
+  "observed_federated_node_steps": 1215,
+  "all_metrics_finite": true,
+  "means_and_sample_sd_recomputed": true,
+  "paired_auc_gaps_verified": true,
+  "central_and_trivial_reuse_verified": true,
+  "privacy_composition_verified": true,
+  "installed_versions_and_runner_hash_verified": true,
+  "scoring_driver_hashes_verified": true,
+  "model_artifact_lock_verified_on_pod": true,
+  "cleanup_all": true,
+  "test_predictions_recomputed": false,
+  "scoring_invocations": 1,
+  "cell_sha256": {
+    "pilot_busbra_pytorch_resnet18_eps8.json": "ecae638be94fbc97c74826213a601b89883b07085c469004c07fc018a6b4d1c5",
+    "pilot_busbra_pytorch_resnet18_eps4.json": "9756f0cdbfe41bc927f3d74d5d860f786c0c5cb85927ed32f027c10fd0ed07d9",
+    "pilot_busbra_pytorch_resnet18_eps1.json": "24520d5e3486f5f66fbd885ca1bc895d106bd4eefc19de7f121ace13e3687623"
+  },
+  "diff_whitespace_check": {
+    "authored_files": "passed",
+    "verbatim_exceptions": [
+      "matrix-0.5.1.log",
+      "provenance/BUS-BRA-LICENSE.txt",
+      "provenance/CC-BY-4.0.txt",
+      "provenance/torchvision-LICENSE.txt"
+    ],
+    "reason": "Preserve raw log trailing spaces, publisher licence CRLF and licence whitespace verbatim; no source-code whitespace errors."
+  }
+}

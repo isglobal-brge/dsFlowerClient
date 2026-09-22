@@ -1,0 +1,7 @@
+{
+  "time": "2026-09-22T11:32:19.104071+00:00",
+  "matching_processes": [],
+  "terminated_pids": [],
+  "gpu": "name, memory.used [MiB]\nNVIDIA A40, 0 MiB\n",
+  "pod_left_running": true
+}

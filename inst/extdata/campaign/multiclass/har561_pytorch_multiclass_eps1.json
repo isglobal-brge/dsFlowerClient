@@ -1,0 +1,1051 @@
+{
+  "schema": "dsflower-campaign-v2",
+  "cell_id": "har561_pytorch_multiclass_eps1",
+  "generated_at": "2026-09-22T01:04:12Z",
+  "host": {
+    "nodename": "fd619c1c1fcd",
+    "sysname": "Linux",
+    "release": "6.17.0-14-generic",
+    "machine": "x86_64",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "pod_id": "6aq9cxaigfwlby",
+    "pod_name": "pod-flower-multiclass",
+    "vcpus": 32
+  },
+  "versions": {
+    "dsflower": "0.5.0",
+    "dsflowerclient": "0.5.0",
+    "flwr": "1.31.0",
+    "torch": "2.14.0+cpu",
+    "opacus": "1.6.0",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "dsflower_source_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsflowerclient_release_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "nnet": "7.3.21"
+  },
+  "tooling_sha256": {
+    "run_har561.R": "d5b2eec0ea6bad82c579444b80b09fac5ff28b675b683e25b5adb95af489f70c",
+    "har561_campaign.R": "62fafa17df9cb7ca27754fbb472e7ef9077a5bb8f93fdc9698248976e55d5be9",
+    "har561.R": "0ddebfa755e84ff2e1d9ee11ab7f92f561bcec3d63948c6b408557408dd5141e",
+    "har561_protocol.json": "4d1d128e83e9dca1155c531e3ac12aa27dea5f0dfca633ba81cb401fc9b59969"
+  },
+  "contract": "pytorch_multiclass",
+  "dataset": {
+    "name": "UCI Human Activity Recognition Using Smartphones (561 engineered features)",
+    "uci_id": 240,
+    "source_url": "https://archive.ics.uci.edu/static/public/240/human+activity+recognition+using+smartphones.zip",
+    "landing_url": "https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones",
+    "dataset_doi": "10.24432/C54S4K",
+    "citation": "Anguita D, Ghio A, Oneto L, Parra X, Reyes-Ortiz JL. (2013). A Public Domain Dataset for Human Activity Recognition Using Smartphones. ESANN 2013.",
+    "license": "UCI landing page: CC BY 4.0; historical archive README separately states noncommercial use and required citation.",
+    "target": "1 WALKING, 2 WALKING_UPSTAIRS, 3 WALKING_DOWNSTAIRS, 4 SITTING, 5 STANDING, 6 LAYING",
+    "cohort": "All 10299 engineered-feature windows from 30 subjects; 7352 official training windows and 2947 official held-out windows; all 561 features in official order, named feature_001 through feature_561; no exclusions, subsampling or feature selection.",
+    "relationship_to_sequence": "Same collection as sequence track; this cell uses engineered feature vectors, not raw inertial windows.",
+    "n_total": 10299,
+    "features": ["feature_001", "feature_002", "feature_003", "feature_004", "feature_005", "feature_006", "feature_007", "feature_008", "feature_009", "feature_010", "feature_011", "feature_012", "feature_013", "feature_014", "feature_015", "feature_016", "feature_017", "feature_018", "feature_019", "feature_020", "feature_021", "feature_022", "feature_023", "feature_024", "feature_025", "feature_026", "feature_027", "feature_028", "feature_029", "feature_030", "feature_031", "feature_032", "feature_033", "feature_034", "feature_035", "feature_036", "feature_037", "feature_038", "feature_039", "feature_040", "feature_041", "feature_042", "feature_043", "feature_044", "feature_045", "feature_046", "feature_047", "feature_048", "feature_049", "feature_050", "feature_051", "feature_052", "feature_053", "feature_054", "feature_055", "feature_056", "feature_057", "feature_058", "feature_059", "feature_060", "feature_061", "feature_062", "feature_063", "feature_064", "feature_065", "feature_066", "feature_067", "feature_068", "feature_069", "feature_070", "feature_071", "feature_072", "feature_073", "feature_074", "feature_075", "feature_076", "feature_077", "feature_078", "feature_079", "feature_080", "feature_081", "feature_082", "feature_083", "feature_084", "feature_085", "feature_086", "feature_087", "feature_088", "feature_089", "feature_090", "feature_091", "feature_092", "feature_093", "feature_094", "feature_095", "feature_096", "feature_097", "feature_098", "feature_099", "feature_100", "feature_101", "feature_102", "feature_103", "feature_104", "feature_105", "feature_106", "feature_107", "feature_108", "feature_109", "feature_110", "feature_111", "feature_112", "feature_113", "feature_114", "feature_115", "feature_116", "feature_117", "feature_118", "feature_119", "feature_120", "feature_121", "feature_122", "feature_123", "feature_124", "feature_125", "feature_126", "feature_127", "feature_128", "feature_129", "feature_130", "feature_131", "feature_132", "feature_133", "feature_134", "feature_135", "feature_136", "feature_137", "feature_138", "feature_139", "feature_140", "feature_141", "feature_142", "feature_143", "feature_144", "feature_145", "feature_146", "feature_147", "feature_148", "feature_149", "feature_150", "feature_151", "feature_152", "feature_153", "feature_154", "feature_155", "feature_156", "feature_157", "feature_158", "feature_159", "feature_160", "feature_161", "feature_162", "feature_163", "feature_164", "feature_165", "feature_166", "feature_167", "feature_168", "feature_169", "feature_170", "feature_171", "feature_172", "feature_173", "feature_174", "feature_175", "feature_176", "feature_177", "feature_178", "feature_179", "feature_180", "feature_181", "feature_182", "feature_183", "feature_184", "feature_185", "feature_186", "feature_187", "feature_188", "feature_189", "feature_190", "feature_191", "feature_192", "feature_193", "feature_194", "feature_195", "feature_196", "feature_197", "feature_198", "feature_199", "feature_200", "feature_201", "feature_202", "feature_203", "feature_204", "feature_205", "feature_206", "feature_207", "feature_208", "feature_209", "feature_210", "feature_211", "feature_212", "feature_213", "feature_214", "feature_215", "feature_216", "feature_217", "feature_218", "feature_219", "feature_220", "feature_221", "feature_222", "feature_223", "feature_224", "feature_225", "feature_226", "feature_227", "feature_228", "feature_229", "feature_230", "feature_231", "feature_232", "feature_233", "feature_234", "feature_235", "feature_236", "feature_237", "feature_238", "feature_239", "feature_240", "feature_241", "feature_242", "feature_243", "feature_244", "feature_245", "feature_246", "feature_247", "feature_248", "feature_249", "feature_250", "feature_251", "feature_252", "feature_253", "feature_254", "feature_255", "feature_256", "feature_257", "feature_258", "feature_259", "feature_260", "feature_261", "feature_262", "feature_263", "feature_264", "feature_265", "feature_266", "feature_267", "feature_268", "feature_269", "feature_270", "feature_271", "feature_272", "feature_273", "feature_274", "feature_275", "feature_276", "feature_277", "feature_278", "feature_279", "feature_280", "feature_281", "feature_282", "feature_283", "feature_284", "feature_285", "feature_286", "feature_287", "feature_288", "feature_289", "feature_290", "feature_291", "feature_292", "feature_293", "feature_294", "feature_295", "feature_296", "feature_297", "feature_298", "feature_299", "feature_300", "feature_301", "feature_302", "feature_303", "feature_304", "feature_305", "feature_306", "feature_307", "feature_308", "feature_309", "feature_310", "feature_311", "feature_312", "feature_313", "feature_314", "feature_315", "feature_316", "feature_317", "feature_318", "feature_319", "feature_320", "feature_321", "feature_322", "feature_323", "feature_324", "feature_325", "feature_326", "feature_327", "feature_328", "feature_329", "feature_330", "feature_331", "feature_332", "feature_333", "feature_334", "feature_335", "feature_336", "feature_337", "feature_338", "feature_339", "feature_340", "feature_341", "feature_342", "feature_343", "feature_344", "feature_345", "feature_346", "feature_347", "feature_348", "feature_349", "feature_350", "feature_351", "feature_352", "feature_353", "feature_354", "feature_355", "feature_356", "feature_357", "feature_358", "feature_359", "feature_360", "feature_361", "feature_362", "feature_363", "feature_364", "feature_365", "feature_366", "feature_367", "feature_368", "feature_369", "feature_370", "feature_371", "feature_372", "feature_373", "feature_374", "feature_375", "feature_376", "feature_377", "feature_378", "feature_379", "feature_380", "feature_381", "feature_382", "feature_383", "feature_384", "feature_385", "feature_386", "feature_387", "feature_388", "feature_389", "feature_390", "feature_391", "feature_392", "feature_393", "feature_394", "feature_395", "feature_396", "feature_397", "feature_398", "feature_399", "feature_400", "feature_401", "feature_402", "feature_403", "feature_404", "feature_405", "feature_406", "feature_407", "feature_408", "feature_409", "feature_410", "feature_411", "feature_412", "feature_413", "feature_414", "feature_415", "feature_416", "feature_417", "feature_418", "feature_419", "feature_420", "feature_421", "feature_422", "feature_423", "feature_424", "feature_425", "feature_426", "feature_427", "feature_428", "feature_429", "feature_430", "feature_431", "feature_432", "feature_433", "feature_434", "feature_435", "feature_436", "feature_437", "feature_438", "feature_439", "feature_440", "feature_441", "feature_442", "feature_443", "feature_444", "feature_445", "feature_446", "feature_447", "feature_448", "feature_449", "feature_450", "feature_451", "feature_452", "feature_453", "feature_454", "feature_455", "feature_456", "feature_457", "feature_458", "feature_459", "feature_460", "feature_461", "feature_462", "feature_463", "feature_464", "feature_465", "feature_466", "feature_467", "feature_468", "feature_469", "feature_470", "feature_471", "feature_472", "feature_473", "feature_474", "feature_475", "feature_476", "feature_477", "feature_478", "feature_479", "feature_480", "feature_481", "feature_482", "feature_483", "feature_484", "feature_485", "feature_486", "feature_487", "feature_488", "feature_489", "feature_490", "feature_491", "feature_492", "feature_493", "feature_494", "feature_495", "feature_496", "feature_497", "feature_498", "feature_499", "feature_500", "feature_501", "feature_502", "feature_503", "feature_504", "feature_505", "feature_506", "feature_507", "feature_508", "feature_509", "feature_510", "feature_511", "feature_512", "feature_513", "feature_514", "feature_515", "feature_516", "feature_517", "feature_518", "feature_519", "feature_520", "feature_521", "feature_522", "feature_523", "feature_524", "feature_525", "feature_526", "feature_527", "feature_528", "feature_529", "feature_530", "feature_531", "feature_532", "feature_533", "feature_534", "feature_535", "feature_536", "feature_537", "feature_538", "feature_539", "feature_540", "feature_541", "feature_542", "feature_543", "feature_544", "feature_545", "feature_546", "feature_547", "feature_548", "feature_549", "feature_550", "feature_551", "feature_552", "feature_553", "feature_554", "feature_555", "feature_556", "feature_557", "feature_558", "feature_559", "feature_560", "feature_561"],
+    "download_sha256": "c00b803081a5c797cd5e4b83700a9810b38d53d9d84e01917e090e1fdbc81031",
+    "inner_archive_sha256": "2045e435c955214b38145fb5fa00776c72814f01b203fec405152dac7d5bfeb0",
+    "n_train": 7352,
+    "n_test": 2947,
+    "n_per_site": [2338, 2504, 2510]
+  },
+  "split": {
+    "type": "Official subject-disjoint train/test split; 21 training subjects, 9 held-out subjects. For each seed, shuffle sorted training subjects with R sample and assign consecutive groups of seven to three sites.",
+    "seeds": [
+      20260820,
+      20260821,
+      20260822
+    ],
+    "paired_across_epsilon": true,
+    "seed_scope": "Subject-to-site partition and central initialization only. Generic federated Torch initialization and node cryptographic DP randomness retain release behavior; published seeds do not fully reproduce federated fits."
+  },
+  "protocol": {
+    "schema": "dsflower-multiclass-har561-protocol-v1",
+    "declared_at_utc": "2026-09-22T00:46:21.523715+00:00",
+    "authorization": "FLOWER_CELLS_MULTICLASS_2026-09-22: one user-declared HAR561 alternative after the CTG accuracy diagnostic failed; original CTG protocol and evidence remain unchanged.",
+    "contract": "pytorch_multiclass",
+    "dataset": {
+      "name": "UCI Human Activity Recognition Using Smartphones (561 engineered features)",
+      "uci_id": 240,
+      "source_url": "https://archive.ics.uci.edu/static/public/240/human+activity+recognition+using+smartphones.zip",
+      "landing_url": "https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones",
+      "dataset_doi": "10.24432/C54S4K",
+      "citation": "Anguita D, Ghio A, Oneto L, Parra X, Reyes-Ortiz JL. (2013). A Public Domain Dataset for Human Activity Recognition Using Smartphones. ESANN 2013.",
+      "license": "UCI landing page: CC BY 4.0; historical archive README separately states noncommercial use and required citation.",
+      "target": "1 WALKING, 2 WALKING_UPSTAIRS, 3 WALKING_DOWNSTAIRS, 4 SITTING, 5 STANDING, 6 LAYING",
+      "cohort": "All 10299 engineered-feature windows from 30 subjects; 7352 official training windows and 2947 official held-out windows; all 561 features in official order, named feature_001 through feature_561; no exclusions, subsampling or feature selection.",
+      "relationship_to_sequence": "Same collection as sequence track; this cell uses engineered feature vectors, not raw inertial windows."
+    },
+    "split": {
+      "type": "Official subject-disjoint train/test split; 21 training subjects, 9 held-out subjects. For each seed, shuffle sorted training subjects with R sample and assign consecutive groups of seven to three sites.",
+      "seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "paired_across_epsilon": true,
+      "seed_scope": "Subject-to-site partition and central initialization only. Generic federated Torch initialization and node cryptographic DP randomness retain release behavior; published seeds do not fully reproduce federated fits."
+    },
+    "bounds_policy": "Declared public bounds [-1,1] for every feature, from official archive README. Clip and affine-scale identically in central and released federated preprocessing. No data-derived bounds.",
+    "released_patient_semantics": "Unchanged dsFlower 0.5.0 generic patient path clips/transforms each window to public bounds, averages features within subject, selects the modal class (smallest class breaks ties), then applies DP-SGD clipping to each pooled subject. Thus 7 effective training units/site and 21 overall, not gradients of all window losses grouped by subject. Central reference is trained on all official training windows; it shares split/model family/bounds but not this pooling.",
+    "training": {
+      "sites": 3,
+      "rounds": 5,
+      "replicates": 3,
+      "execution_epsilon_order": [
+        1,
+        8,
+        4
+      ],
+      "delta": 1e-06,
+      "parameters": "All pytorch_multiclass v0.5.0 optimization defaults: linear softmax, SGD, learning_rate 0.1, batch_size 32, local_epochs 1, no scheduler, no regularization. Sole schema override n_classes=6 for six public activities.",
+      "privacy": "patient unit with subject column, clipping norm 1, replace-one adjacency; per-node per-training epsilon 1/4/8, delta 1e-6. Seven pooled subjects and batch size32 imply full-unit sampling and one update/round.",
+      "inner_validation": "None; no optimization search, validation split or post-score changes."
+    },
+    "central": "Unregularized multinomial logistic regression (nnet::multinom decay=0, maxit=3000, reltol=1e-10, MaxNWts=10000), fit all 7352 official training windows with public bounded transform; require convergence=0. Fit once per seed and reuse across epsilon. This is a window-trained central reference, not a subject-pooling-matched preprocessing twin.",
+    "trivial": "Training-window majority class for accuracy; training-window class proportions for probabilities. No test prevalence used.",
+    "metrics": "Window-level unweighted mean of six one-vs-rest rank AUCs with average ties; argmax accuracy with first-class tie break; natural-log multiclass log-loss with true-class probability floor1e-15. Gap is federated-DP minus central macro-AUC, sample SD across three replicate seeds on one fixed official split.",
+    "diagnostic": "At epsilon8, mean accuracy strictly above training-majority predictor test accuracy AND mean macro-AUC >0.5. Disclose every replicate and whether all pass. No alternative after this one.",
+    "test_use": "Train all three central and nine federated models without opening test members; training callback never forces its test promise. Create scoring marker, open official X_test/y_test/subject_test once in one final scoring run, then score each fitted model once. Never rerun a scored cell with changed settings.",
+    "failure_policy": "Retain started run markers and any failure; no overwrite. Report whatever diagnostic outcome occurs.",
+    "archive_sha256": "c00b803081a5c797cd5e4b83700a9810b38d53d9d84e01917e090e1fdbc81031",
+    "inner_archive_sha256": "2045e435c955214b38145fb5fa00776c72814f01b203fec405152dac7d5bfeb0"
+  },
+  "privacy": {
+    "epsilon": 1,
+    "delta": 1e-06,
+    "clipping_norm": 1,
+    "unit": "patient",
+    "patient_column": "subject",
+    "adjacency": "replace_one",
+    "guarantee_scope": "per-training",
+    "composition_note": "Epsilon is per node training; the nine fits are not a single composed release guarantee.",
+    "bounds_policy": "Declared public bounds [-1,1] for every feature, from official archive README. Clip and affine-scale identically in central and released federated preprocessing. No data-derived bounds.",
+    "released_patient_semantics": "Unchanged dsFlower 0.5.0 generic patient path clips/transforms each window to public bounds, averages features within subject, selects the modal class (smallest class breaks ties), then applies DP-SGD clipping to each pooled subject. Thus 7 effective training units/site and 21 overall, not gradients of all window losses grouped by subject. Central reference is trained on all official training windows; it shares split/model family/bounds but not this pooling.",
+    "randomness": "Published seeds control subject-to-site partition and central initialization; federated initialization and node cryptographic DP noise retain release behavior."
+  },
+  "scoring": {
+    "training_completed_at_utc": "2026-09-22T01:03:52Z",
+    "started_at_utc": "2026-09-22T01:03:52Z",
+    "test_table_loads": 1,
+    "central_fits": 3,
+    "federated_fits": 9,
+    "central_scores_reused_across_epsilon": true,
+    "changed_settings_after_scoring": false
+  },
+  "rounds": 5,
+  "model_params_requested": {
+    "n_classes": 6
+  },
+  "model_params_resolved": {
+    "momentum": 0,
+    "nesterov": false,
+    "learning_rate": 0.1,
+    "batch_size": 32,
+    "local_epochs": 1,
+    "weight_decay": 0,
+    "l1_penalty": 0,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "hidden_layers": [],
+    "n_classes": 6
+  },
+  "per_replicate": [
+    {
+      "seed": 20260820,
+      "split": {
+        "n_train": 7352,
+        "n_test": 2947,
+        "n_per_site": [2338, 2504, 2510],
+        "train_subjects": [1, 3, 5, 6, 7, 8, 11, 14, 15, 16, 17, 19, 21, 22, 23, 25, 26, 27, 28, 29, 30],
+        "test_subjects": [2, 4, 9, 10, 12, 13, 18, 20, 24],
+        "site_subjects": [
+          [1, 6, 8, 15, 22, 26, 29],
+          [7, 11, 14, 17, 21, 23, 25],
+          [3, 5, 16, 19, 27, 28, 30]
+        ],
+        "training_effective_units": [7, 7, 7],
+        "class_counts_train": {
+          "1": 1226,
+          "2": 1073,
+          "3": 986,
+          "4": 1286,
+          "5": 1374,
+          "6": 1407
+        },
+        "class_counts_test": {
+          "1": 496,
+          "2": 471,
+          "3": 420,
+          "4": 491,
+          "5": 532,
+          "6": 537
+        },
+        "class_counts_sites": [
+          {
+            "1": 412,
+            "2": 339,
+            "3": 311,
+            "4": 407,
+            "5": 419,
+            "6": 450
+          },
+          {
+            "1": 421,
+            "2": 370,
+            "3": 341,
+            "4": 437,
+            "5": 469,
+            "6": 466
+          },
+          {
+            "1": 393,
+            "2": 364,
+            "3": 334,
+            "4": 442,
+            "5": 486,
+            "6": 491
+          }
+        ],
+        "train_index_sha256": "add13b31216a6d54a1ab8f28645090884ace270f338abbb76aa21cd23f79ecf3",
+        "test_index_sha256": "50e76cd9f91f44b0da285729dc778e1f8685aecbed51504ee2f50a38af8fd2fe",
+        "site_index_sha256": [
+          "df4ed4e5cd8863d1a4c1a53dca7a6b5415c059932a06752e5e99ed0dc4b3f8f4",
+          "9ba978f605c702056a93167f9873966462af5c03b5a6298ececc9c99af92a187",
+          "e6e3cccef712221edbdbcf6c1dbbbb58e03c959ea0a549177eb125fd5ef1a87d"
+        ]
+      },
+      "central": {
+        "macro_auc": 0.977948122806893,
+        "acc": 0.894468951476077,
+        "logloss": 3.39880376489101,
+        "auc_by_class": {
+          "1": 0.991360915886866,
+          "2": 0.988780187892944,
+          "3": 0.989464733261726,
+          "4": 0.932612762626296,
+          "5": 0.972895359516804,
+          "6": 0.992574777656722
+        },
+        "convergence": 0
+      },
+      "federated_dp": {
+        "macro_auc": 0.513500815442865,
+        "acc": 0.178486596538853,
+        "logloss": 12.3828387009256,
+        "auc_by_class": {
+          "1": 0.565768086758532,
+          "2": 0.766323156656343,
+          "3": 0.922220965948706,
+          "4": 0.243462122770123,
+          "5": 0.131362567910459,
+          "6": 0.451867992613026
+        }
+      },
+      "trivial": {
+        "macro_auc": 0.5,
+        "acc": 0.182219205972175,
+        "logloss": 1.7899413369434,
+        "auc_by_class": {
+          "1": 0.5,
+          "2": 0.5,
+          "3": 0.5,
+          "4": 0.5,
+          "5": 0.5,
+          "6": 0.5
+        },
+        "majority_class": 6,
+        "training_prevalence": [0.166757344940152, 0.14594668117519, 0.13411316648531, 0.174918389553863, 0.186887921653972, 0.191376496191513],
+        "probability_policy": "training window class frequencies; argmax is training majority"
+      },
+      "gap_macro_auc": -0.464447307364028,
+      "feature_bounds": {
+        "lower": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      },
+      "node_privacy": {
+        "site1": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "0bbb2ea00b071c83cbff3d6c5d01e9d14e6f0a7d014c7dd059775e393614d573"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site2": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "0bbb2ea00b071c83cbff3d6c5d01e9d14e6f0a7d014c7dd059775e393614d573"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site3": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "0bbb2ea00b071c83cbff3d6c5d01e9d14e6f0a7d014c7dd059775e393614d573"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        }
+      },
+      "released_metadata": {
+        "model_id": "pytorch_multiclass_FedAvg_5r_20260922_005047",
+        "model": "pytorch_multiclass",
+        "framework": "pytorch",
+        "track": "neural",
+        "model_spec": {
+          "kind": "sequential",
+          "layers": [
+            {
+              "op": "linear",
+              "out": "@out"
+            }
+          ]
+        },
+        "model_params": {
+          "learning_rate": 0.1,
+          "batch_size": 32,
+          "local_epochs": 1,
+          "weight_decay": 0,
+          "l1_penalty": 0,
+          "optimizer": "sgd",
+          "scheduler": "none",
+          "hidden_layers": [],
+          "n_classes": 6,
+          "momentum": 0,
+          "nesterov": false
+        },
+        "loss_name": "cross_entropy",
+        "survival_config": {},
+        "target": "target",
+        "data_kind": "tabular",
+        "available": true,
+        "available_rounds": [1, 2, 3, 4, 5],
+        "strategy": "FedAvg",
+        "privacy": "server-enforced-dp",
+        "num_rounds": 5,
+        "requested_num_rounds": 5,
+        "n_clients": 3,
+        "features": ["feature_001", "feature_002", "feature_003", "feature_004", "feature_005", "feature_006", "feature_007", "feature_008", "feature_009", "feature_010", "feature_011", "feature_012", "feature_013", "feature_014", "feature_015", "feature_016", "feature_017", "feature_018", "feature_019", "feature_020", "feature_021", "feature_022", "feature_023", "feature_024", "feature_025", "feature_026", "feature_027", "feature_028", "feature_029", "feature_030", "feature_031", "feature_032", "feature_033", "feature_034", "feature_035", "feature_036", "feature_037", "feature_038", "feature_039", "feature_040", "feature_041", "feature_042", "feature_043", "feature_044", "feature_045", "feature_046", "feature_047", "feature_048", "feature_049", "feature_050", "feature_051", "feature_052", "feature_053", "feature_054", "feature_055", "feature_056", "feature_057", "feature_058", "feature_059", "feature_060", "feature_061", "feature_062", "feature_063", "feature_064", "feature_065", "feature_066", "feature_067", "feature_068", "feature_069", "feature_070", "feature_071", "feature_072", "feature_073", "feature_074", "feature_075", "feature_076", "feature_077", "feature_078", "feature_079", "feature_080", "feature_081", "feature_082", "feature_083", "feature_084", "feature_085", "feature_086", "feature_087", "feature_088", "feature_089", "feature_090", "feature_091", "feature_092", "feature_093", "feature_094", "feature_095", "feature_096", "feature_097", "feature_098", "feature_099", "feature_100", "feature_101", "feature_102", "feature_103", "feature_104", "feature_105", "feature_106", "feature_107", "feature_108", "feature_109", "feature_110", "feature_111", "feature_112", "feature_113", "feature_114", "feature_115", "feature_116", "feature_117", "feature_118", "feature_119", "feature_120", "feature_121", "feature_122", "feature_123", "feature_124", "feature_125", "feature_126", "feature_127", "feature_128", "feature_129", "feature_130", "feature_131", "feature_132", "feature_133", "feature_134", "feature_135", "feature_136", "feature_137", "feature_138", "feature_139", "feature_140", "feature_141", "feature_142", "feature_143", "feature_144", "feature_145", "feature_146", "feature_147", "feature_148", "feature_149", "feature_150", "feature_151", "feature_152", "feature_153", "feature_154", "feature_155", "feature_156", "feature_157", "feature_158", "feature_159", "feature_160", "feature_161", "feature_162", "feature_163", "feature_164", "feature_165", "feature_166", "feature_167", "feature_168", "feature_169", "feature_170", "feature_171", "feature_172", "feature_173", "feature_174", "feature_175", "feature_176", "feature_177", "feature_178", "feature_179", "feature_180", "feature_181", "feature_182", "feature_183", "feature_184", "feature_185", "feature_186", "feature_187", "feature_188", "feature_189", "feature_190", "feature_191", "feature_192", "feature_193", "feature_194", "feature_195", "feature_196", "feature_197", "feature_198", "feature_199", "feature_200", "feature_201", "feature_202", "feature_203", "feature_204", "feature_205", "feature_206", "feature_207", "feature_208", "feature_209", "feature_210", "feature_211", "feature_212", "feature_213", "feature_214", "feature_215", "feature_216", "feature_217", "feature_218", "feature_219", "feature_220", "feature_221", "feature_222", "feature_223", "feature_224", "feature_225", "feature_226", "feature_227", "feature_228", "feature_229", "feature_230", "feature_231", "feature_232", "feature_233", "feature_234", "feature_235", "feature_236", "feature_237", "feature_238", "feature_239", "feature_240", "feature_241", "feature_242", "feature_243", "feature_244", "feature_245", "feature_246", "feature_247", "feature_248", "feature_249", "feature_250", "feature_251", "feature_252", "feature_253", "feature_254", "feature_255", "feature_256", "feature_257", "feature_258", "feature_259", "feature_260", "feature_261", "feature_262", "feature_263", "feature_264", "feature_265", "feature_266", "feature_267", "feature_268", "feature_269", "feature_270", "feature_271", "feature_272", "feature_273", "feature_274", "feature_275", "feature_276", "feature_277", "feature_278", "feature_279", "feature_280", "feature_281", "feature_282", "feature_283", "feature_284", "feature_285", "feature_286", "feature_287", "feature_288", "feature_289", "feature_290", "feature_291", "feature_292", "feature_293", "feature_294", "feature_295", "feature_296", "feature_297", "feature_298", "feature_299", "feature_300", "feature_301", "feature_302", "feature_303", "feature_304", "feature_305", "feature_306", "feature_307", "feature_308", "feature_309", "feature_310", "feature_311", "feature_312", "feature_313", "feature_314", "feature_315", "feature_316", "feature_317", "feature_318", "feature_319", "feature_320", "feature_321", "feature_322", "feature_323", "feature_324", "feature_325", "feature_326", "feature_327", "feature_328", "feature_329", "feature_330", "feature_331", "feature_332", "feature_333", "feature_334", "feature_335", "feature_336", "feature_337", "feature_338", "feature_339", "feature_340", "feature_341", "feature_342", "feature_343", "feature_344", "feature_345", "feature_346", "feature_347", "feature_348", "feature_349", "feature_350", "feature_351", "feature_352", "feature_353", "feature_354", "feature_355", "feature_356", "feature_357", "feature_358", "feature_359", "feature_360", "feature_361", "feature_362", "feature_363", "feature_364", "feature_365", "feature_366", "feature_367", "feature_368", "feature_369", "feature_370", "feature_371", "feature_372", "feature_373", "feature_374", "feature_375", "feature_376", "feature_377", "feature_378", "feature_379", "feature_380", "feature_381", "feature_382", "feature_383", "feature_384", "feature_385", "feature_386", "feature_387", "feature_388", "feature_389", "feature_390", "feature_391", "feature_392", "feature_393", "feature_394", "feature_395", "feature_396", "feature_397", "feature_398", "feature_399", "feature_400", "feature_401", "feature_402", "feature_403", "feature_404", "feature_405", "feature_406", "feature_407", "feature_408", "feature_409", "feature_410", "feature_411", "feature_412", "feature_413", "feature_414", "feature_415", "feature_416", "feature_417", "feature_418", "feature_419", "feature_420", "feature_421", "feature_422", "feature_423", "feature_424", "feature_425", "feature_426", "feature_427", "feature_428", "feature_429", "feature_430", "feature_431", "feature_432", "feature_433", "feature_434", "feature_435", "feature_436", "feature_437", "feature_438", "feature_439", "feature_440", "feature_441", "feature_442", "feature_443", "feature_444", "feature_445", "feature_446", "feature_447", "feature_448", "feature_449", "feature_450", "feature_451", "feature_452", "feature_453", "feature_454", "feature_455", "feature_456", "feature_457", "feature_458", "feature_459", "feature_460", "feature_461", "feature_462", "feature_463", "feature_464", "feature_465", "feature_466", "feature_467", "feature_468", "feature_469", "feature_470", "feature_471", "feature_472", "feature_473", "feature_474", "feature_475", "feature_476", "feature_477", "feature_478", "feature_479", "feature_480", "feature_481", "feature_482", "feature_483", "feature_484", "feature_485", "feature_486", "feature_487", "feature_488", "feature_489", "feature_490", "feature_491", "feature_492", "feature_493", "feature_494", "feature_495", "feature_496", "feature_497", "feature_498", "feature_499", "feature_500", "feature_501", "feature_502", "feature_503", "feature_504", "feature_505", "feature_506", "feature_507", "feature_508", "feature_509", "feature_510", "feature_511", "feature_512", "feature_513", "feature_514", "feature_515", "feature_516", "feature_517", "feature_518", "feature_519", "feature_520", "feature_521", "feature_522", "feature_523", "feature_524", "feature_525", "feature_526", "feature_527", "feature_528", "feature_529", "feature_530", "feature_531", "feature_532", "feature_533", "feature_534", "feature_535", "feature_536", "feature_537", "feature_538", "feature_539", "feature_540", "feature_541", "feature_542", "feature_543", "feature_544", "feature_545", "feature_546", "feature_547", "feature_548", "feature_549", "feature_550", "feature_551", "feature_552", "feature_553", "feature_554", "feature_555", "feature_556", "feature_557", "feature_558", "feature_559", "feature_560", "feature_561"],
+        "feature_lower": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+        "feature_upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        "target_levels": ["1", "2", "3", "4", "5", "6"],
+        "target_bounds": {},
+        "created_at": "2026-09-22T00:50:47",
+        "holdout": {},
+        "holdout_contract": {},
+        "status": "success"
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "rounds": [
+          {
+            "round": 1,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 2,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 3,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 4,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 5,
+            "n_failures": 0,
+            "available": true
+          }
+        ]
+      },
+      "model_sha256": "b44893466cec895e6d559f148015f008c46843d32d4c0b7192d4f6fd5a6b6c81",
+      "diagnostic": {
+        "accuracy_above_majority": false,
+        "macro_auc_above_half": true,
+        "passed": false
+      },
+      "wall_clock": {
+        "central_fit_s": 24.9318261146545,
+        "federated_s": 103.252956390381,
+        "total_s": 128.184782505035,
+        "central_reused_across_epsilon": true
+      },
+      "cleanup_ok": true
+    },
+    {
+      "seed": 20260821,
+      "split": {
+        "n_train": 7352,
+        "n_test": 2947,
+        "n_per_site": [2510, 2343, 2499],
+        "train_subjects": [1, 3, 5, 6, 7, 8, 11, 14, 15, 16, 17, 19, 21, 22, 23, 25, 26, 27, 28, 29, 30],
+        "test_subjects": [2, 4, 9, 10, 12, 13, 18, 20, 24],
+        "site_subjects": [
+          [6, 7, 11, 17, 21, 25, 27],
+          [3, 5, 8, 16, 19, 22, 23],
+          [1, 14, 15, 26, 28, 29, 30]
+        ],
+        "training_effective_units": [7, 7, 7],
+        "class_counts_train": {
+          "1": 1226,
+          "2": 1073,
+          "3": 986,
+          "4": 1286,
+          "5": 1374,
+          "6": 1407
+        },
+        "class_counts_test": {
+          "1": 496,
+          "2": 471,
+          "3": 420,
+          "4": 491,
+          "5": 532,
+          "6": 537
+        },
+        "class_counts_sites": [
+          {
+            "1": 417,
+            "2": 367,
+            "3": 334,
+            "4": 440,
+            "5": 478,
+            "6": 474
+          },
+          {
+            "1": 370,
+            "2": 331,
+            "3": 310,
+            "4": 414,
+            "5": 453,
+            "6": 465
+          },
+          {
+            "1": 439,
+            "2": 375,
+            "3": 342,
+            "4": 432,
+            "5": 443,
+            "6": 468
+          }
+        ],
+        "train_index_sha256": "add13b31216a6d54a1ab8f28645090884ace270f338abbb76aa21cd23f79ecf3",
+        "test_index_sha256": "50e76cd9f91f44b0da285729dc778e1f8685aecbed51504ee2f50a38af8fd2fe",
+        "site_index_sha256": [
+          "e7e97725f54341f371277496809b63db368a9e49aa5636ea80e1acabb75ccbe3",
+          "456ac06f143f79d1395a6151130b51ebf71efa71e3c697d5baef2cee7cfde03f",
+          "4867557ec5e2a78ad7c9bc556ac3cc43f5821dcc6bdcc8123398e63377654037"
+        ]
+      },
+      "central": {
+        "macro_auc": 0.977948122806893,
+        "acc": 0.894468951476077,
+        "logloss": 3.39880376489101,
+        "auc_by_class": {
+          "1": 0.991360915886866,
+          "2": 0.988780187892944,
+          "3": 0.989464733261726,
+          "4": 0.932612762626296,
+          "5": 0.972895359516804,
+          "6": 0.992574777656722
+        },
+        "convergence": 0
+      },
+      "federated_dp": {
+        "macro_auc": 0.382436965618724,
+        "acc": 0.0648116728876824,
+        "logloss": 5.57292483641199,
+        "auc_by_class": {
+          "1": 0.1932900988405,
+          "2": 0.807243379329032,
+          "3": 0.613344451353949,
+          "4": 0.206341177016924,
+          "5": 0.14267578885101,
+          "6": 0.331726898320932
+        }
+      },
+      "trivial": {
+        "macro_auc": 0.5,
+        "acc": 0.182219205972175,
+        "logloss": 1.7899413369434,
+        "auc_by_class": {
+          "1": 0.5,
+          "2": 0.5,
+          "3": 0.5,
+          "4": 0.5,
+          "5": 0.5,
+          "6": 0.5
+        },
+        "majority_class": 6,
+        "training_prevalence": [0.166757344940152, 0.14594668117519, 0.13411316648531, 0.174918389553863, 0.186887921653972, 0.191376496191513],
+        "probability_policy": "training window class frequencies; argmax is training majority"
+      },
+      "gap_macro_auc": -0.595511157188169,
+      "feature_bounds": {
+        "lower": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      },
+      "node_privacy": {
+        "site1": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "0bbb2ea00b071c83cbff3d6c5d01e9d14e6f0a7d014c7dd059775e393614d573"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site2": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "0bbb2ea00b071c83cbff3d6c5d01e9d14e6f0a7d014c7dd059775e393614d573"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site3": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "0bbb2ea00b071c83cbff3d6c5d01e9d14e6f0a7d014c7dd059775e393614d573"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        }
+      },
+      "released_metadata": {
+        "model_id": "pytorch_multiclass_FedAvg_5r_20260922_005223",
+        "model": "pytorch_multiclass",
+        "framework": "pytorch",
+        "track": "neural",
+        "model_spec": {
+          "kind": "sequential",
+          "layers": [
+            {
+              "op": "linear",
+              "out": "@out"
+            }
+          ]
+        },
+        "model_params": {
+          "learning_rate": 0.1,
+          "batch_size": 32,
+          "local_epochs": 1,
+          "weight_decay": 0,
+          "l1_penalty": 0,
+          "optimizer": "sgd",
+          "scheduler": "none",
+          "hidden_layers": [],
+          "n_classes": 6,
+          "momentum": 0,
+          "nesterov": false
+        },
+        "loss_name": "cross_entropy",
+        "survival_config": {},
+        "target": "target",
+        "data_kind": "tabular",
+        "available": true,
+        "available_rounds": [1, 2, 3, 4, 5],
+        "strategy": "FedAvg",
+        "privacy": "server-enforced-dp",
+        "num_rounds": 5,
+        "requested_num_rounds": 5,
+        "n_clients": 3,
+        "features": ["feature_001", "feature_002", "feature_003", "feature_004", "feature_005", "feature_006", "feature_007", "feature_008", "feature_009", "feature_010", "feature_011", "feature_012", "feature_013", "feature_014", "feature_015", "feature_016", "feature_017", "feature_018", "feature_019", "feature_020", "feature_021", "feature_022", "feature_023", "feature_024", "feature_025", "feature_026", "feature_027", "feature_028", "feature_029", "feature_030", "feature_031", "feature_032", "feature_033", "feature_034", "feature_035", "feature_036", "feature_037", "feature_038", "feature_039", "feature_040", "feature_041", "feature_042", "feature_043", "feature_044", "feature_045", "feature_046", "feature_047", "feature_048", "feature_049", "feature_050", "feature_051", "feature_052", "feature_053", "feature_054", "feature_055", "feature_056", "feature_057", "feature_058", "feature_059", "feature_060", "feature_061", "feature_062", "feature_063", "feature_064", "feature_065", "feature_066", "feature_067", "feature_068", "feature_069", "feature_070", "feature_071", "feature_072", "feature_073", "feature_074", "feature_075", "feature_076", "feature_077", "feature_078", "feature_079", "feature_080", "feature_081", "feature_082", "feature_083", "feature_084", "feature_085", "feature_086", "feature_087", "feature_088", "feature_089", "feature_090", "feature_091", "feature_092", "feature_093", "feature_094", "feature_095", "feature_096", "feature_097", "feature_098", "feature_099", "feature_100", "feature_101", "feature_102", "feature_103", "feature_104", "feature_105", "feature_106", "feature_107", "feature_108", "feature_109", "feature_110", "feature_111", "feature_112", "feature_113", "feature_114", "feature_115", "feature_116", "feature_117", "feature_118", "feature_119", "feature_120", "feature_121", "feature_122", "feature_123", "feature_124", "feature_125", "feature_126", "feature_127", "feature_128", "feature_129", "feature_130", "feature_131", "feature_132", "feature_133", "feature_134", "feature_135", "feature_136", "feature_137", "feature_138", "feature_139", "feature_140", "feature_141", "feature_142", "feature_143", "feature_144", "feature_145", "feature_146", "feature_147", "feature_148", "feature_149", "feature_150", "feature_151", "feature_152", "feature_153", "feature_154", "feature_155", "feature_156", "feature_157", "feature_158", "feature_159", "feature_160", "feature_161", "feature_162", "feature_163", "feature_164", "feature_165", "feature_166", "feature_167", "feature_168", "feature_169", "feature_170", "feature_171", "feature_172", "feature_173", "feature_174", "feature_175", "feature_176", "feature_177", "feature_178", "feature_179", "feature_180", "feature_181", "feature_182", "feature_183", "feature_184", "feature_185", "feature_186", "feature_187", "feature_188", "feature_189", "feature_190", "feature_191", "feature_192", "feature_193", "feature_194", "feature_195", "feature_196", "feature_197", "feature_198", "feature_199", "feature_200", "feature_201", "feature_202", "feature_203", "feature_204", "feature_205", "feature_206", "feature_207", "feature_208", "feature_209", "feature_210", "feature_211", "feature_212", "feature_213", "feature_214", "feature_215", "feature_216", "feature_217", "feature_218", "feature_219", "feature_220", "feature_221", "feature_222", "feature_223", "feature_224", "feature_225", "feature_226", "feature_227", "feature_228", "feature_229", "feature_230", "feature_231", "feature_232", "feature_233", "feature_234", "feature_235", "feature_236", "feature_237", "feature_238", "feature_239", "feature_240", "feature_241", "feature_242", "feature_243", "feature_244", "feature_245", "feature_246", "feature_247", "feature_248", "feature_249", "feature_250", "feature_251", "feature_252", "feature_253", "feature_254", "feature_255", "feature_256", "feature_257", "feature_258", "feature_259", "feature_260", "feature_261", "feature_262", "feature_263", "feature_264", "feature_265", "feature_266", "feature_267", "feature_268", "feature_269", "feature_270", "feature_271", "feature_272", "feature_273", "feature_274", "feature_275", "feature_276", "feature_277", "feature_278", "feature_279", "feature_280", "feature_281", "feature_282", "feature_283", "feature_284", "feature_285", "feature_286", "feature_287", "feature_288", "feature_289", "feature_290", "feature_291", "feature_292", "feature_293", "feature_294", "feature_295", "feature_296", "feature_297", "feature_298", "feature_299", "feature_300", "feature_301", "feature_302", "feature_303", "feature_304", "feature_305", "feature_306", "feature_307", "feature_308", "feature_309", "feature_310", "feature_311", "feature_312", "feature_313", "feature_314", "feature_315", "feature_316", "feature_317", "feature_318", "feature_319", "feature_320", "feature_321", "feature_322", "feature_323", "feature_324", "feature_325", "feature_326", "feature_327", "feature_328", "feature_329", "feature_330", "feature_331", "feature_332", "feature_333", "feature_334", "feature_335", "feature_336", "feature_337", "feature_338", "feature_339", "feature_340", "feature_341", "feature_342", "feature_343", "feature_344", "feature_345", "feature_346", "feature_347", "feature_348", "feature_349", "feature_350", "feature_351", "feature_352", "feature_353", "feature_354", "feature_355", "feature_356", "feature_357", "feature_358", "feature_359", "feature_360", "feature_361", "feature_362", "feature_363", "feature_364", "feature_365", "feature_366", "feature_367", "feature_368", "feature_369", "feature_370", "feature_371", "feature_372", "feature_373", "feature_374", "feature_375", "feature_376", "feature_377", "feature_378", "feature_379", "feature_380", "feature_381", "feature_382", "feature_383", "feature_384", "feature_385", "feature_386", "feature_387", "feature_388", "feature_389", "feature_390", "feature_391", "feature_392", "feature_393", "feature_394", "feature_395", "feature_396", "feature_397", "feature_398", "feature_399", "feature_400", "feature_401", "feature_402", "feature_403", "feature_404", "feature_405", "feature_406", "feature_407", "feature_408", "feature_409", "feature_410", "feature_411", "feature_412", "feature_413", "feature_414", "feature_415", "feature_416", "feature_417", "feature_418", "feature_419", "feature_420", "feature_421", "feature_422", "feature_423", "feature_424", "feature_425", "feature_426", "feature_427", "feature_428", "feature_429", "feature_430", "feature_431", "feature_432", "feature_433", "feature_434", "feature_435", "feature_436", "feature_437", "feature_438", "feature_439", "feature_440", "feature_441", "feature_442", "feature_443", "feature_444", "feature_445", "feature_446", "feature_447", "feature_448", "feature_449", "feature_450", "feature_451", "feature_452", "feature_453", "feature_454", "feature_455", "feature_456", "feature_457", "feature_458", "feature_459", "feature_460", "feature_461", "feature_462", "feature_463", "feature_464", "feature_465", "feature_466", "feature_467", "feature_468", "feature_469", "feature_470", "feature_471", "feature_472", "feature_473", "feature_474", "feature_475", "feature_476", "feature_477", "feature_478", "feature_479", "feature_480", "feature_481", "feature_482", "feature_483", "feature_484", "feature_485", "feature_486", "feature_487", "feature_488", "feature_489", "feature_490", "feature_491", "feature_492", "feature_493", "feature_494", "feature_495", "feature_496", "feature_497", "feature_498", "feature_499", "feature_500", "feature_501", "feature_502", "feature_503", "feature_504", "feature_505", "feature_506", "feature_507", "feature_508", "feature_509", "feature_510", "feature_511", "feature_512", "feature_513", "feature_514", "feature_515", "feature_516", "feature_517", "feature_518", "feature_519", "feature_520", "feature_521", "feature_522", "feature_523", "feature_524", "feature_525", "feature_526", "feature_527", "feature_528", "feature_529", "feature_530", "feature_531", "feature_532", "feature_533", "feature_534", "feature_535", "feature_536", "feature_537", "feature_538", "feature_539", "feature_540", "feature_541", "feature_542", "feature_543", "feature_544", "feature_545", "feature_546", "feature_547", "feature_548", "feature_549", "feature_550", "feature_551", "feature_552", "feature_553", "feature_554", "feature_555", "feature_556", "feature_557", "feature_558", "feature_559", "feature_560", "feature_561"],
+        "feature_lower": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+        "feature_upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        "target_levels": ["1", "2", "3", "4", "5", "6"],
+        "target_bounds": {},
+        "created_at": "2026-09-22T00:52:23",
+        "holdout": {},
+        "holdout_contract": {},
+        "status": "success"
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "rounds": [
+          {
+            "round": 1,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 2,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 3,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 4,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 5,
+            "n_failures": 0,
+            "available": true
+          }
+        ]
+      },
+      "model_sha256": "73f9113e1e1d88b64521cf556fab04ca2b57538c1ef7e97ad66f74bf5e5e6e2d",
+      "diagnostic": {
+        "accuracy_above_majority": false,
+        "macro_auc_above_half": false,
+        "passed": false
+      },
+      "wall_clock": {
+        "central_fit_s": 24.5913982391357,
+        "federated_s": 92.1838295459747,
+        "total_s": 116.77522778511,
+        "central_reused_across_epsilon": true
+      },
+      "cleanup_ok": true
+    },
+    {
+      "seed": 20260822,
+      "split": {
+        "n_train": 7352,
+        "n_test": 2947,
+        "n_per_site": [2580, 2355, 2417],
+        "train_subjects": [1, 3, 5, 6, 7, 8, 11, 14, 15, 16, 17, 19, 21, 22, 23, 25, 26, 27, 28, 29, 30],
+        "test_subjects": [2, 4, 9, 10, 12, 13, 18, 20, 24],
+        "site_subjects": [
+          [3, 8, 16, 21, 25, 26, 30],
+          [1, 6, 7, 15, 22, 28, 29],
+          [5, 11, 14, 17, 19, 23, 27]
+        ],
+        "training_effective_units": [7, 7, 7],
+        "class_counts_train": {
+          "1": 1226,
+          "2": 1073,
+          "3": 986,
+          "4": 1286,
+          "5": 1374,
+          "6": 1407
+        },
+        "class_counts_test": {
+          "1": 496,
+          "2": 471,
+          "3": 420,
+          "4": 491,
+          "5": 532,
+          "6": 537
+        },
+        "class_counts_sites": [
+          {
+            "1": 407,
+            "2": 383,
+            "3": 349,
+            "4": 457,
+            "5": 489,
+            "6": 495
+          },
+          {
+            "1": 416,
+            "2": 345,
+            "3": 316,
+            "4": 403,
+            "5": 423,
+            "6": 452
+          },
+          {
+            "1": 403,
+            "2": 345,
+            "3": 321,
+            "4": 426,
+            "5": 462,
+            "6": 460
+          }
+        ],
+        "train_index_sha256": "add13b31216a6d54a1ab8f28645090884ace270f338abbb76aa21cd23f79ecf3",
+        "test_index_sha256": "50e76cd9f91f44b0da285729dc778e1f8685aecbed51504ee2f50a38af8fd2fe",
+        "site_index_sha256": [
+          "2d6e2895bd8bdecdd13d5da74a75a34a30f72fd024d7262c363473e70708702d",
+          "054fac07326e7bf2de72d5ff5ae9769879277bf9671034649486d209fa8f6bbd",
+          "41640a2813e1bd96c05eb57daac3f51c0ac868148cc70aacb9ba10a1585252a4"
+        ]
+      },
+      "central": {
+        "macro_auc": 0.977948122806893,
+        "acc": 0.894468951476077,
+        "logloss": 3.39880376489101,
+        "auc_by_class": {
+          "1": 0.991360915886866,
+          "2": 0.988780187892944,
+          "3": 0.989464733261726,
+          "4": 0.932612762626296,
+          "5": 0.972895359516804,
+          "6": 0.992574777656722
+        },
+        "convergence": 0
+      },
+      "federated_dp": {
+        "macro_auc": 0.608005553114056,
+        "acc": 0.195453003053953,
+        "logloss": 7.99378137191944,
+        "auc_by_class": {
+          "1": 0.813566055987681,
+          "2": 0.738886087758833,
+          "3": 0.898599883166563,
+          "4": 0.261599673603694,
+          "5": 0.347905088808979,
+          "6": 0.587476529358585
+        }
+      },
+      "trivial": {
+        "macro_auc": 0.5,
+        "acc": 0.182219205972175,
+        "logloss": 1.7899413369434,
+        "auc_by_class": {
+          "1": 0.5,
+          "2": 0.5,
+          "3": 0.5,
+          "4": 0.5,
+          "5": 0.5,
+          "6": 0.5
+        },
+        "majority_class": 6,
+        "training_prevalence": [0.166757344940152, 0.14594668117519, 0.13411316648531, 0.174918389553863, 0.186887921653972, 0.191376496191513],
+        "probability_policy": "training window class frequencies; argmax is training majority"
+      },
+      "gap_macro_auc": -0.369942569692837,
+      "feature_bounds": {
+        "lower": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+        "upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+      },
+      "node_privacy": {
+        "site1": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "0bbb2ea00b071c83cbff3d6c5d01e9d14e6f0a7d014c7dd059775e393614d573"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site2": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "0bbb2ea00b071c83cbff3d6c5d01e9d14e6f0a7d014c7dd059775e393614d573"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        },
+        "site3": {
+          "reported_policy": {
+            "accountant": "stateless-per-training-v1",
+            "guarantee_scope": "per-training",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one"
+          },
+          "contract": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 1,
+            "per_training_delta": 1e-06,
+            "dp_unit": "patient",
+            "patient_column": "subject",
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "0bbb2ea00b071c83cbff3d6c5d01e9d14e6f0a7d014c7dd059775e393614d573"
+          },
+          "clipping_norm": 1,
+          "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+        }
+      },
+      "released_metadata": {
+        "model_id": "pytorch_multiclass_FedAvg_5r_20260922_005358",
+        "model": "pytorch_multiclass",
+        "framework": "pytorch",
+        "track": "neural",
+        "model_spec": {
+          "kind": "sequential",
+          "layers": [
+            {
+              "op": "linear",
+              "out": "@out"
+            }
+          ]
+        },
+        "model_params": {
+          "learning_rate": 0.1,
+          "batch_size": 32,
+          "local_epochs": 1,
+          "weight_decay": 0,
+          "l1_penalty": 0,
+          "optimizer": "sgd",
+          "scheduler": "none",
+          "hidden_layers": [],
+          "n_classes": 6,
+          "momentum": 0,
+          "nesterov": false
+        },
+        "loss_name": "cross_entropy",
+        "survival_config": {},
+        "target": "target",
+        "data_kind": "tabular",
+        "available": true,
+        "available_rounds": [1, 2, 3, 4, 5],
+        "strategy": "FedAvg",
+        "privacy": "server-enforced-dp",
+        "num_rounds": 5,
+        "requested_num_rounds": 5,
+        "n_clients": 3,
+        "features": ["feature_001", "feature_002", "feature_003", "feature_004", "feature_005", "feature_006", "feature_007", "feature_008", "feature_009", "feature_010", "feature_011", "feature_012", "feature_013", "feature_014", "feature_015", "feature_016", "feature_017", "feature_018", "feature_019", "feature_020", "feature_021", "feature_022", "feature_023", "feature_024", "feature_025", "feature_026", "feature_027", "feature_028", "feature_029", "feature_030", "feature_031", "feature_032", "feature_033", "feature_034", "feature_035", "feature_036", "feature_037", "feature_038", "feature_039", "feature_040", "feature_041", "feature_042", "feature_043", "feature_044", "feature_045", "feature_046", "feature_047", "feature_048", "feature_049", "feature_050", "feature_051", "feature_052", "feature_053", "feature_054", "feature_055", "feature_056", "feature_057", "feature_058", "feature_059", "feature_060", "feature_061", "feature_062", "feature_063", "feature_064", "feature_065", "feature_066", "feature_067", "feature_068", "feature_069", "feature_070", "feature_071", "feature_072", "feature_073", "feature_074", "feature_075", "feature_076", "feature_077", "feature_078", "feature_079", "feature_080", "feature_081", "feature_082", "feature_083", "feature_084", "feature_085", "feature_086", "feature_087", "feature_088", "feature_089", "feature_090", "feature_091", "feature_092", "feature_093", "feature_094", "feature_095", "feature_096", "feature_097", "feature_098", "feature_099", "feature_100", "feature_101", "feature_102", "feature_103", "feature_104", "feature_105", "feature_106", "feature_107", "feature_108", "feature_109", "feature_110", "feature_111", "feature_112", "feature_113", "feature_114", "feature_115", "feature_116", "feature_117", "feature_118", "feature_119", "feature_120", "feature_121", "feature_122", "feature_123", "feature_124", "feature_125", "feature_126", "feature_127", "feature_128", "feature_129", "feature_130", "feature_131", "feature_132", "feature_133", "feature_134", "feature_135", "feature_136", "feature_137", "feature_138", "feature_139", "feature_140", "feature_141", "feature_142", "feature_143", "feature_144", "feature_145", "feature_146", "feature_147", "feature_148", "feature_149", "feature_150", "feature_151", "feature_152", "feature_153", "feature_154", "feature_155", "feature_156", "feature_157", "feature_158", "feature_159", "feature_160", "feature_161", "feature_162", "feature_163", "feature_164", "feature_165", "feature_166", "feature_167", "feature_168", "feature_169", "feature_170", "feature_171", "feature_172", "feature_173", "feature_174", "feature_175", "feature_176", "feature_177", "feature_178", "feature_179", "feature_180", "feature_181", "feature_182", "feature_183", "feature_184", "feature_185", "feature_186", "feature_187", "feature_188", "feature_189", "feature_190", "feature_191", "feature_192", "feature_193", "feature_194", "feature_195", "feature_196", "feature_197", "feature_198", "feature_199", "feature_200", "feature_201", "feature_202", "feature_203", "feature_204", "feature_205", "feature_206", "feature_207", "feature_208", "feature_209", "feature_210", "feature_211", "feature_212", "feature_213", "feature_214", "feature_215", "feature_216", "feature_217", "feature_218", "feature_219", "feature_220", "feature_221", "feature_222", "feature_223", "feature_224", "feature_225", "feature_226", "feature_227", "feature_228", "feature_229", "feature_230", "feature_231", "feature_232", "feature_233", "feature_234", "feature_235", "feature_236", "feature_237", "feature_238", "feature_239", "feature_240", "feature_241", "feature_242", "feature_243", "feature_244", "feature_245", "feature_246", "feature_247", "feature_248", "feature_249", "feature_250", "feature_251", "feature_252", "feature_253", "feature_254", "feature_255", "feature_256", "feature_257", "feature_258", "feature_259", "feature_260", "feature_261", "feature_262", "feature_263", "feature_264", "feature_265", "feature_266", "feature_267", "feature_268", "feature_269", "feature_270", "feature_271", "feature_272", "feature_273", "feature_274", "feature_275", "feature_276", "feature_277", "feature_278", "feature_279", "feature_280", "feature_281", "feature_282", "feature_283", "feature_284", "feature_285", "feature_286", "feature_287", "feature_288", "feature_289", "feature_290", "feature_291", "feature_292", "feature_293", "feature_294", "feature_295", "feature_296", "feature_297", "feature_298", "feature_299", "feature_300", "feature_301", "feature_302", "feature_303", "feature_304", "feature_305", "feature_306", "feature_307", "feature_308", "feature_309", "feature_310", "feature_311", "feature_312", "feature_313", "feature_314", "feature_315", "feature_316", "feature_317", "feature_318", "feature_319", "feature_320", "feature_321", "feature_322", "feature_323", "feature_324", "feature_325", "feature_326", "feature_327", "feature_328", "feature_329", "feature_330", "feature_331", "feature_332", "feature_333", "feature_334", "feature_335", "feature_336", "feature_337", "feature_338", "feature_339", "feature_340", "feature_341", "feature_342", "feature_343", "feature_344", "feature_345", "feature_346", "feature_347", "feature_348", "feature_349", "feature_350", "feature_351", "feature_352", "feature_353", "feature_354", "feature_355", "feature_356", "feature_357", "feature_358", "feature_359", "feature_360", "feature_361", "feature_362", "feature_363", "feature_364", "feature_365", "feature_366", "feature_367", "feature_368", "feature_369", "feature_370", "feature_371", "feature_372", "feature_373", "feature_374", "feature_375", "feature_376", "feature_377", "feature_378", "feature_379", "feature_380", "feature_381", "feature_382", "feature_383", "feature_384", "feature_385", "feature_386", "feature_387", "feature_388", "feature_389", "feature_390", "feature_391", "feature_392", "feature_393", "feature_394", "feature_395", "feature_396", "feature_397", "feature_398", "feature_399", "feature_400", "feature_401", "feature_402", "feature_403", "feature_404", "feature_405", "feature_406", "feature_407", "feature_408", "feature_409", "feature_410", "feature_411", "feature_412", "feature_413", "feature_414", "feature_415", "feature_416", "feature_417", "feature_418", "feature_419", "feature_420", "feature_421", "feature_422", "feature_423", "feature_424", "feature_425", "feature_426", "feature_427", "feature_428", "feature_429", "feature_430", "feature_431", "feature_432", "feature_433", "feature_434", "feature_435", "feature_436", "feature_437", "feature_438", "feature_439", "feature_440", "feature_441", "feature_442", "feature_443", "feature_444", "feature_445", "feature_446", "feature_447", "feature_448", "feature_449", "feature_450", "feature_451", "feature_452", "feature_453", "feature_454", "feature_455", "feature_456", "feature_457", "feature_458", "feature_459", "feature_460", "feature_461", "feature_462", "feature_463", "feature_464", "feature_465", "feature_466", "feature_467", "feature_468", "feature_469", "feature_470", "feature_471", "feature_472", "feature_473", "feature_474", "feature_475", "feature_476", "feature_477", "feature_478", "feature_479", "feature_480", "feature_481", "feature_482", "feature_483", "feature_484", "feature_485", "feature_486", "feature_487", "feature_488", "feature_489", "feature_490", "feature_491", "feature_492", "feature_493", "feature_494", "feature_495", "feature_496", "feature_497", "feature_498", "feature_499", "feature_500", "feature_501", "feature_502", "feature_503", "feature_504", "feature_505", "feature_506", "feature_507", "feature_508", "feature_509", "feature_510", "feature_511", "feature_512", "feature_513", "feature_514", "feature_515", "feature_516", "feature_517", "feature_518", "feature_519", "feature_520", "feature_521", "feature_522", "feature_523", "feature_524", "feature_525", "feature_526", "feature_527", "feature_528", "feature_529", "feature_530", "feature_531", "feature_532", "feature_533", "feature_534", "feature_535", "feature_536", "feature_537", "feature_538", "feature_539", "feature_540", "feature_541", "feature_542", "feature_543", "feature_544", "feature_545", "feature_546", "feature_547", "feature_548", "feature_549", "feature_550", "feature_551", "feature_552", "feature_553", "feature_554", "feature_555", "feature_556", "feature_557", "feature_558", "feature_559", "feature_560", "feature_561"],
+        "feature_lower": [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+        "feature_upper": [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        "target_levels": ["1", "2", "3", "4", "5", "6"],
+        "target_bounds": {},
+        "created_at": "2026-09-22T00:53:58",
+        "holdout": {},
+        "holdout_contract": {},
+        "status": "success"
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 5,
+        "rounds": [
+          {
+            "round": 1,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 2,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 3,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 4,
+            "n_failures": 0,
+            "available": true
+          },
+          {
+            "round": 5,
+            "n_failures": 0,
+            "available": true
+          }
+        ]
+      },
+      "model_sha256": "8a0dd88456cf13d50dcb75a44c3de70543dec174c65e89d63b83ddc19ff4650c",
+      "diagnostic": {
+        "accuracy_above_majority": true,
+        "macro_auc_above_half": true,
+        "passed": true
+      },
+      "wall_clock": {
+        "central_fit_s": 24.4091529846191,
+        "federated_s": 95.1245861053467,
+        "total_s": 119.533739089966,
+        "central_reused_across_epsilon": true
+      },
+      "cleanup_ok": true
+    }
+  ],
+  "summary": {
+    "central_mean_sd": {
+      "macro_auc": {
+        "mean": 0.977948122806893,
+        "sd": 0
+      },
+      "acc": {
+        "mean": 0.894468951476077,
+        "sd": 0
+      },
+      "logloss": {
+        "mean": 3.39880376489101,
+        "sd": 0
+      }
+    },
+    "federated_mean_sd": {
+      "macro_auc": {
+        "mean": 0.501314444725215,
+        "sd": 0.113276995191481
+      },
+      "acc": {
+        "mean": 0.146250424160163,
+        "sd": 0.0710363807786166
+      },
+      "logloss": {
+        "mean": 8.64984830308567,
+        "sd": 3.45203556965322
+      }
+    },
+    "trivial_mean_sd": {
+      "macro_auc": {
+        "mean": 0.5,
+        "sd": 0
+      },
+      "acc": {
+        "mean": 0.182219205972175,
+        "sd": 0
+      },
+      "logloss": {
+        "mean": 1.7899413369434,
+        "sd": 0
+      }
+    },
+    "gap_mean_sd": {
+      "macro_auc": {
+        "mean": -0.476633678081678,
+        "sd": 0.113276995191481
+      }
+    },
+    "diagnostic": {
+      "applicable_epsilon": 8,
+      "mean_accuracy_above_majority": false,
+      "mean_macro_auc_above_half": true,
+      "all_replicates_pass": false
+    }
+  }
+}

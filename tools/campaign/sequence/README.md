@@ -1,0 +1,271 @@
+# Corrected R4 window-level cell: pre-run declaration
+
+Declared 2026-09-22T07:13:30.459226+00:00 before full-data R4 training or TEST scoring.
+Selected **Adam 0.01, batch 512, 4 local epochs × five rounds**,
+hidden32, no scheduler or penalties. Selection uses TRAIN subjects only,
+with the diagnosis’s unchanged subject-disjoint inner split: fit subjects
+3, 5, 6, 7, 11, 14, 15, 16, 19, 21, 22, 23, 26, 27, 28, 29; validation subjects 1, 8, 17, 25, 30.
+Three subject-disjoint sites retain their original membership after removing
+inner-validation subjects. The two highest noiseless-clipped diagnosis
+candidates were compared using the REAL window-DP contract at ε=8 across
+seeds 20260922–20260924; final-round mean inner-validation macro-AUC selects
+the winner. No early checkpoint selection or held-out access was used.
+
+| Adam LR / local epochs / batch | Inner AUC mean ± SD | Accuracy mean ± SD | Log-loss mean ± SD |
+|---|---:|---:|---:|
+| 0.01 / 4 / 512 | 0.771937 ± 0.030525 | 0.386652 ± 0.027010 | 1.288269 ± 0.069811 |
+| 0.003 / 8 / 256 | 0.754319 ± 0.005975 | 0.356078 ± 0.000323 | 1.365349 ± 0.015789 |
+
+The corrected cell uses ε∈{1,4,8}, δ=1e-6, window unit, unit clipping, the
+same 21 TRAIN and nine held-out subjects, original three sites (2,553 /
+2,397 / 2,402 windows), split and three seeds as `har_window_*`.
+The selected schedule has [100, 100, 100] optimizer steps per site.
+Raw 128×9 token-major windows receive the public channel-bound transform
+`clip(x,-b,b)/b` once, with `b=(1,1,1,1,1,1,2,2,2)`.
+**This is a window-level mechanism measurement on subject-disjoint sites
+and provides no subject-level protection.**
+
+Comparators on the identical split: the same network centrally trained
+without privacy under the R3 nominal schedule (Adam .01, batch256, 20 epochs,
+Adam reset every four epochs, 580 steps); selected-schedule non-private
+federated twin without clipping or noise; selected-schedule clipped noiseless
+federated twin; and TRAIN-frequency/majority trivial predictor. Reuse the
+frozen R3 central model identities and metrics after exact split, bounds and
+initialization verification. The two noiseless twins use matched public
+Poisson streams and equal site weights; real DP retains node-owned randomness.
+The optional pooled-DP twin is not scheduled.
+
+Report macro one-vs-rest AUC, accuracy and log-loss, mean ± sample SD over
+three seeds, and paired federated-DP minus central AUC gaps. Diagnostics
+are annotations. Complete all training before the exclusive scoring marker;
+read held-out windows once, score each new model once, then make no further
+alternative or rerun. Selection supplies no end-to-end private guarantee.
+No campaign-wide composition guarantee is claimed.
+
+HAR provenance: Anguita et al. (2013), *A Public Domain Dataset for Human
+Activity Recognition Using Smartphones*, ESANN; UCI dataset 240, DOI
+10.24432/C54S4K. Thesis citation keys: `anguita_har_2013` and `uci_har`.
+The existing official archive SHA-256 and all R3 evidence are preserved.
+No package code changes; reuse `pod-flower-sequence-2` and leave it running.
+
+---
+
+# Corrected UCI HAR sequence cells (R3 declaration)
+
+Token: `FLOWER_CELLS_SEQUENCE_2026-09-22`.
+This declaration precedes corrected central/federated training and test scoring.
+The binding design is [r3/protocol.json](r3/protocol.json).
+
+Central diagnosis used only the official TRAIN partition: 16 subjects / 5,564
+windows for fitting, and subjects 1, 8, 17, 25, 30 / 1,788 windows for validation.
+The unchanged contract-built GPU LSTM learns: Adam 0.01 after 20 epochs gives
+macro OVR AUC **0.988999812**, accuracy **0.937360179**, log-loss **0.240914434**.
+Adam 0.003 gives 0.965103476 / 0.786912752 / 0.550719321. The larger final
+validation macro AUC selects 0.01; TEST was not read. Both candidates use
+batch 256 and optimizer resets every four epochs to match round boundaries.
+
+The corrected schedule is **Adam 0.01, batch 256, four local epochs, five
+rounds**, no scheduler or penalties. Hidden size remains 32. Inputs remain
+128 x 9, C-order token-major; the exact recurrent input was checked. Stage raw
+windows and let the unchanged bounds transform apply `clip(x,-b,b)/b` once,
+with channel bounds `b=(1,1,1,1,1,1,2,2,2)`. Acceleration units are g and gyro
+units rad/s. These fixed public constants are design choices, not extrema
+estimated from data or guaranteed by archive documentation.
+
+Execute both units with three original subject-disjoint sites of seven subjects,
+three seeds 20260922–20260924, epsilon 1/4/8, delta 1e-6, clipping norm 1:
+
+- **Subject:** the released patient contract averages features and chooses a modal
+  label before clipping each subject's gradient. It has seven units/site and
+  20 updates/site. Original-window losses aggregated per subject are unsupported
+  by this contract. This is the supported subject-pooled surrogate, and its gap
+  includes a task/preprocessing mismatch against the full-window central model.
+- **Window:** the released row contract retains all windows, with 2,553/2,397/2,402
+  units/site and 200 updates/site. It measures the window mechanism; it does
+  **not** provide subject-level protection.
+
+The central reference is trained once per seed on all 7,352 TRAIN windows with
+identical architecture, initialization, bounds and nominal 20-epoch schedule,
+without privacy or federation (580 ordinary minibatch updates). It is shared
+across both units and all epsilon values. Trivial predictions use TRAIN class
+frequencies and the TRAIN majority class. Report macro OVR AUC, accuracy,
+log-loss, and paired AUC gaps with sample SD. Diagnostics never trigger reruns.
+
+The initial pilot records remain unchanged. Their chance-like central result is
+**a pipeline/specification failure, not a privacy utility result**. Layout and
+label row order were correct; old bounds already scaled inputs. Five updates at
+SGD 0.001 and pooling mixed activities into one modal-labelled example per
+subject explain why the original comparison was not informative. No package
+code or mechanism is changed for R3.
+
+All corrected training completes before the single exclusive R3 scoring marker;
+no TEST reads for selection and no retraining after scoring. Each privacy budget
+is per training run; the public TRAIN-only schedule selection is not claimed to
+be a private selection procedure. Preserve the existing scoring marker and old
+runs; use the separate `/workspace/cells-sequence/r3` artifact directory.
+
+```sh
+ROOT=/workspace/cells-sequence
+TOOLS=$ROOT/src/dsFlowerClient/tools/campaign/sequence/r3
+PYTHON=/opt/cells-sequence/venvs/pytorch-gpu/bin/python
+export PYTHONPATH=/opt/cells-sequence/Rlib/dsFlowerClient/flower_app
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
+# Copy the binding protocol into $ROOT/r3/protocol.json before training.
+"$PYTHON" "$TOOLS/central.py" --root "$ROOT"
+"$PYTHON" "$TOOLS/run_matrix.py" --root "$ROOT"
+"$PYTHON" "$TOOLS/score.py" --root "$ROOT" --verify-only
+"$PYTHON" "$TOOLS/score.py" --root "$ROOT"
+```
+
+Dataset and installed-release provenance are retained below. The official
+[archive documentation](https://archive.ics.uci.edu/ml/machine-learning-databases/00240/UCI%20HAR%20Dataset.names)
+specifies signal units; the raw-window bounds above are our declared constants.
+
+---
+
+# UCI HAR sequence utility cell
+
+The original 0.5.0 execution was blocked before training. Its unchanged records
+are preserved under `inst/extdata/campaign/sequence/blocked-0.5.0/`.
+The continuation uses dsFlower 0.5.1 (`c4eaaf153db4a7204878bf1d8995c16faa615110`)
+and dsFlowerClient 0.5.0. The patch verifies one PyTorch-generated internal
+module's origin and exact template; it leaves the canonical runner, mechanisms
+and defaults unchanged. See `SEQUENCE_DIAGNOSIS.md` in the evidence directory.
+
+This driver evaluates the unchanged
+`pytorch_lstm` contract on the official UCI HAR subject-disjoint split.
+`protocol.json` is the binding design recorded before scoring. No test members
+are read during preparation or training. The final scorer refuses an existing
+scoring marker, and the training driver refuses existing run directories.
+
+There are 7,352 training windows from 21 subjects. Sorted training subjects are
+dealt round-robin into three sites of seven subjects: 2,553, 2,397 and 2,402
+windows. Each window has 128 time steps and nine inertial channels, flattened in
+time-major order. Bounds are training-only channel minima/maxima expanded by
+10%, repeated across time steps. Labels are the six activities encoded 0–5.
+
+## Release limitation
+
+The released generic patient path averages all feature vectors within a subject
+and assigns its modal class (lowest class breaks ties), then applies per-unit
+DP-SGD. Consequently each site trains on seven pooled sequences. It does not
+compute a subject gradient from losses over the original individual windows.
+The central twin uses exactly the same bounded, pooled tensors and initial
+model arrays. This comparison characterizes that released behavior; it is not
+a claim about a conventional window-trained HAR classifier. Held-out metrics
+are window-level macro OVR AUC, accuracy and log-loss.
+
+Defaults remain hidden size 32, SGD 0.001, batch size 32, one local epoch and
+no scheduler. Five rounds give five full-subject-batch updates per site. Epsilon
+1, 8 and 4 execute in that order with delta 1e-6 and clipping norm 1. Seeds
+20260922–20260924 set public initialization. Node secrets and cryptographic DP
+randomness retain release behavior; these seeds do not make DP noise publicly
+replayable. The trivial predictor uses training window frequencies and their
+majority class. No pooled-DP twin is scheduled.
+
+## Reproduction
+
+The work root is `/workspace/cells-sequence` on Ubuntu 22.04 with an NVIDIA GPU.
+Rsync dsFlower at the patch commit and dsFlowerClient at its 0.5.0 release
+commit into `src/dsFlower` and `src/dsFlowerClient`; overlay this campaign's
+tooling onto the client source. Exact commits and hashes are in
+`release-source.json`.
+Use `rsync -rz` on the RunPod FUSE volume, which cannot preserve laptop owners.
+The provisioner keeps environments and the R library on local POSIX storage
+under `/opt/cells-sequence`, with aliases in the work root. Importing Flower
+from the network volume exceeded the release's fixed 15-second SuperLink
+readiness deadline in an initial attempt, before any model initialization.
+For the observed recovery, existing environments were copied and their console
+interpreter paths relocated with `relocate_console_scripts.py`; Python bodies
+were checked unchanged. Both the startup failure and subsequent guard failure
+are retained. Fresh guarded synthetic probes confirmed the same import failure for LSTM and
+GRU, and regression DP updates pass for both with the patch. The HAR matrix
+uses LSTM only.
+
+```sh
+ROOT=/workspace/cells-sequence
+TOOLS=$ROOT/src/dsFlowerClient/tools/campaign/sequence
+bash "$TOOLS/provision.sh"
+export R_LIBS_USER=$ROOT/Rlib
+export DSFLOWER_VENV_ROOT=$ROOT/venvs
+export DSFLOWER_CLIENT_VENV_ROOT=$ROOT/client
+export PYTHONPATH=$ROOT/Rlib/dsFlowerClient/flower_app
+export CUBLAS_WORKSPACE_CONFIG=:4096:8
+PYTHON=$(realpath "$ROOT/venvs")/pytorch-gpu/bin/python
+"$PYTHON" "$TOOLS/prepare_public_data.py" --root "$ROOT"
+"$PYTHON" "$TOOLS/preflight.py" "$ROOT"
+"$PYTHON" "$TOOLS/install_public_observer.py"
+"$PYTHON" "$TOOLS/capture_runtime.py" "$ROOT"
+"$PYTHON" "$TOOLS/run_matrix.py" --root "$ROOT"
+"$PYTHON" "$TOOLS/score_and_assemble.py" --root "$ROOT" --out "$ROOT/evidence"
+```
+
+On the existing prepared pod, retain the old `runs/`, runtime/preflight JSONs
+and `logs/pytorch_lstm-*` under `attempts/blocked-0.5.0/` before creating a fresh
+`runs/`. Do not move or reset a scoring marker. Install the server patch without
+reprovisioning the already-frozen Python environment:
+
+```sh
+DSFLOWER_SKIP_PYTHON_SETUP=1 R CMD INSTALL -l "$ROOT/Rlib" "$ROOT/src/dsFlower"
+"$PYTHON" "$TOOLS/trace_guard.py" --root "$ROOT" --out "$ROOT/diagnosis-0.5.1"
+```
+
+Then rerun preflight, runtime capture, matrix, and the single final scorer in
+the order above. The scorer opens `test-scoring-started.json` exclusively. The execution driver
+also refuses further training once that marker exists. An unscored tooling
+interruption can be resumed with `run_matrix.py --root "$ROOT" --resume-unscored`;
+it retains completed phases only after checking their model hashes and cleanup
+status. Preserve the failed phase's empty directory/log under `attempts/` first.
+
+The first completed federation exposed a checker-only label-dtype mismatch:
+node captures hash float32 targets, while the initial checker used int64.
+Matching the runner's dtype verified every feature and target hash without
+changing any data values, model settings or completed federation. The first
+central attempt had stopped before training. A subsequent TRAIN-only prediction
+smoke check found that the central checkpoint omitted shared recurrent aliases;
+central export now uses stock `state_dict`, exactly like the released ServerApp.
+The central fit was replayed unscored with identical settings, and its unique
+parameter tensors are checked against the retained first fit. Both failure logs
+are archived; the completed federation was never repeated.
+`trace_guard.py` is synthetic and does not open the HAR archive. The guard
+regression lives in dsFlower's `inst/python/tests/test_sitecustomize.py`.
+
+The observed blocked archive can be reassembled without running or scoring:
+
+```sh
+python assemble_blocked.py --raw /path/to/archived/raw-jsons --out /path/to/evidence
+```
+
+Run in the foreground. `logs/` retains provisioning and per-replicate output;
+`runs/` retains models, initialization, node policy/capabilities, node-round
+accountant observations, and status. Publish only public JSON evidence, not
+secrets or data/model caches. The runtime recorder verifies both installed
+runner hashes against `release-source.json`. All instrumentation is isolated
+under this campaign directory and its dedicated virtual environment, adapted
+from the segmentation campaign. The node observer attaches only after the
+mandatory runner integrity verifier and delegates unchanged training calls.
+
+The scorer verifies every site's five rounds, tensor hashes, source census,
+noise and full-horizon accounting before opening the test split. It scores
+unchanged released artifacts with the bundled prediction helper. Mean and
+sample SD refer to three training replicates on the same fixed split. The gap
+is federated-DP minus central macro AUC. Whether macro AUC exceeds 0.5 and epsilon-8 accuracy exceeds the
+training-majority predictor's test accuracy are annotations only, never
+pass/fail or rerun criteria; per-seed annotations are also reported. No setting is changed after
+scoring. A shared package failure stops execution and is documented explicitly.
+The synthetic preflight must pass the unchanged GPU DP training path before
+starting any HAR replicate; it does not score or train on HAR.
+
+## Dataset provenance
+
+[UCI dataset 240](https://archive.ics.uci.edu/dataset/240/human+activity+recognition+using+smartphones)
+provides the [official archive](https://archive.ics.uci.edu/static/public/240/human+activity+recognition+using+smartphones.zip).
+Its SHA-256 is
+`c00b803081a5c797cd5e4b83700a9810b38d53d9d84e01917e090e1fdbc81031`.
+The UCI repository identifies its licence as CC BY 4.0. Dataset DOI:
+[10.24432/C54S4K](https://doi.org/10.24432/C54S4K).
+
+Anguita, D., Ghio, A., Oneto, L., Parra, X., and Reyes-Ortiz, J. L. (2013).
+*A Public Domain Dataset for Human Activity Recognition Using Smartphones.*
+European Symposium on Artificial Neural Networks, Computational Intelligence
+and Machine Learning (ESANN).

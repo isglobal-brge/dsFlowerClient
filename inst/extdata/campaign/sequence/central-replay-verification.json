@@ -1,0 +1,15 @@
+{
+  "central_replay_unique_parameters_bit_identical": true,
+  "unique_parameter_count": 6,
+  "added_shared_aliases": [
+    "_mods.h.rnn.l0.hh.bias",
+    "_mods.h.rnn.l0.hh.weight",
+    "_mods.h.rnn.l0.ih.bias",
+    "_mods.h.rnn.l0.ih.weight"
+  ],
+  "previous_checkpoint_sha256": "204acbaa5c01ed181379dd62394c95604d2d25fcdc0ac307be041e5b84a31a45",
+  "corrected_checkpoint_sha256": "e3c073b0efff69133789df3c7f5d5b33e28cc680e10f7b5fb57403bb4d80e901",
+  "federated_checkpoint_sha256": "d03242a4f568250c25456e8d87a6d6352e4f31e156ee684c48a8ead2077f4a46",
+  "federated_predictor_train_smoke": "passed",
+  "test_accessed": false
+}

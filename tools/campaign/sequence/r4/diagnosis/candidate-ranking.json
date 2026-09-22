@@ -1,0 +1,1074 @@
+{
+  "diagnostic_only": true,
+  "test_accessed": false,
+  "emulation_sha256": "f6107524ebe7fb1f81314afe24abaa1aeae14105fdb3afc26848ebb266acd57c",
+  "parameter_count": 5702,
+  "sqrt_parameter_count": 75.51158851461145,
+  "epsilon": 8,
+  "delta": 1e-06,
+  "clipping_norm": 1,
+  "rounds": 5,
+  "interpretation": "Noiseless scores use public deterministic diagnostic streams and have no DP guarantee. Noise ranks use the worst site's per-step mean-gradient coordinate SD, sigma/expected_batch_size. sqrt(P)*sigma/expected_batch_size is the Gaussian vector's root-mean-square L2 norm before Adam/SGD transformation, not a predicted parameter displacement or validation AUC. Lower gradient noise alone is not the optimization objective; the objective is epsilon-8 federated-DP inner-validation macro-AUC. Equal noise values share a competition rank.",
+  "candidates": [
+    {
+      "name": "adam01_e4_b512",
+      "schedule": {
+        "name": "adam01_e4_b512",
+        "optimizer": "adam",
+        "lr": 0.01,
+        "epochs": 4,
+        "batch": 512
+      },
+      "macro_auc": 0.9191005648605807,
+      "accuracy": 0.6062639821029083,
+      "inner": {
+        "sites": [
+          {
+            "population": 1797,
+            "sample_rate": 0.25,
+            "steps": 80,
+            "noise_multiplier": 3.3203125,
+            "expected_batch_size": 449,
+            "mean_gradient_coordinate_noise_sd": 0.007394905345211581,
+            "mean_gradient_noise_l2_rms": 0.5584010495321176
+          },
+          {
+            "population": 2029,
+            "sample_rate": 0.25,
+            "steps": 80,
+            "noise_multiplier": 3.3203125,
+            "expected_batch_size": 507,
+            "mean_gradient_coordinate_noise_sd": 0.006548939842209073,
+            "mean_gradient_noise_l2_rms": 0.4945208505718359
+          },
+          {
+            "population": 1738,
+            "sample_rate": 0.25,
+            "steps": 80,
+            "noise_multiplier": 3.3203125,
+            "expected_batch_size": 434,
+            "mean_gradient_coordinate_noise_sd": 0.007650489631336406,
+            "mean_gradient_noise_l2_rms": 0.5777006249767761
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.007650489631336406,
+        "max_site_noise_l2_rms": 0.5777006249767761
+      },
+      "full": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.2,
+            "steps": 100,
+            "noise_multiplier": 2.998046875,
+            "expected_batch_size": 510,
+            "mean_gradient_coordinate_noise_sd": 0.005878523284313725,
+            "mean_gradient_noise_l2_rms": 0.44389663131866025
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.2,
+            "steps": 100,
+            "noise_multiplier": 2.998046875,
+            "expected_batch_size": 479,
+            "mean_gradient_coordinate_noise_sd": 0.006258970511482255,
+            "mean_gradient_noise_l2_rms": 0.47262480578813515
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.2,
+            "steps": 100,
+            "noise_multiplier": 2.998046875,
+            "expected_batch_size": 480,
+            "mean_gradient_coordinate_noise_sd": 0.006245930989583333,
+            "mean_gradient_noise_l2_rms": 0.4716401707760765
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.006258970511482255,
+        "max_site_noise_l2_rms": 0.47262480578813515
+      },
+      "rank_noiseless_auc": 1,
+      "rank_inner_noise": 1,
+      "rank_full_noise": 1
+    },
+    {
+      "name": "adam003_e8_b256",
+      "schedule": {
+        "name": "adam003_e8_b256",
+        "optimizer": "adam",
+        "lr": 0.003,
+        "epochs": 8,
+        "batch": 256
+      },
+      "macro_auc": 0.9082547902056074,
+      "accuracy": 0.6946308724832215,
+      "inner": {
+        "sites": [
+          {
+            "population": 1797,
+            "sample_rate": 0.125,
+            "steps": 320,
+            "noise_multiplier": 3.26171875,
+            "expected_batch_size": 224,
+            "mean_gradient_coordinate_noise_sd": 0.014561244419642858,
+            "mean_gradient_noise_l2_rms": 1.0995426968767537
+          },
+          {
+            "population": 2029,
+            "sample_rate": 0.125,
+            "steps": 320,
+            "noise_multiplier": 3.26171875,
+            "expected_batch_size": 253,
+            "mean_gradient_coordinate_noise_sd": 0.012892168972332016,
+            "mean_gradient_noise_l2_rms": 0.9735081584995763
+          },
+          {
+            "population": 1738,
+            "sample_rate": 0.14285714285714285,
+            "steps": 280,
+            "noise_multiplier": 3.4716796875,
+            "expected_batch_size": 248,
+            "mean_gradient_coordinate_noise_sd": 0.013998708417338709,
+            "mean_gradient_noise_l2_rms": 1.0570647097461083
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.014561244419642858,
+        "max_site_noise_l2_rms": 1.0995426968767537
+      },
+      "full": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.1,
+            "steps": 400,
+            "noise_multiplier": 2.9345703125,
+            "expected_batch_size": 255,
+            "mean_gradient_coordinate_noise_sd": 0.01150811887254902,
+            "mean_gradient_noise_l2_rms": 0.8689963368811559
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.1,
+            "steps": 400,
+            "noise_multiplier": 2.9345703125,
+            "expected_batch_size": 239,
+            "mean_gradient_coordinate_noise_sd": 0.012278536872384936,
+            "mean_gradient_noise_l2_rms": 0.9271718238690155
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.1,
+            "steps": 400,
+            "noise_multiplier": 2.9345703125,
+            "expected_batch_size": 240,
+            "mean_gradient_coordinate_noise_sd": 0.012227376302083334,
+            "mean_gradient_noise_l2_rms": 0.923308607936228
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.012278536872384936,
+        "max_site_noise_l2_rms": 0.9271718238690155
+      },
+      "rank_noiseless_auc": 2,
+      "rank_inner_noise": 7,
+      "rank_full_noise": 7
+    },
+    {
+      "name": "adam01_e4_b256",
+      "schedule": {
+        "name": "adam01_e4_b256",
+        "optimizer": "adam",
+        "lr": 0.01,
+        "epochs": 4,
+        "batch": 256
+      },
+      "macro_auc": 0.8766244103959554,
+      "accuracy": 0.6152125279642058,
+      "inner": {
+        "sites": [
+          {
+            "population": 1797,
+            "sample_rate": 0.125,
+            "steps": 160,
+            "noise_multiplier": 2.4267578125,
+            "expected_batch_size": 224,
+            "mean_gradient_coordinate_noise_sd": 0.010833740234375,
+            "mean_gradient_noise_l2_rms": 0.8180729346523151
+          },
+          {
+            "population": 2029,
+            "sample_rate": 0.125,
+            "steps": 160,
+            "noise_multiplier": 2.4267578125,
+            "expected_batch_size": 253,
+            "mean_gradient_coordinate_noise_sd": 0.009591928112648222,
+            "mean_gradient_noise_l2_rms": 0.7243017287040261
+          },
+          {
+            "population": 1738,
+            "sample_rate": 0.14285714285714285,
+            "steps": 140,
+            "noise_multiplier": 2.578125,
+            "expected_batch_size": 248,
+            "mean_gradient_coordinate_noise_sd": 0.010395665322580645,
+            "mean_gradient_noise_l2_rms": 0.7849932021743251
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.010833740234375,
+        "max_site_noise_l2_rms": 0.8180729346523151
+      },
+      "full": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 255,
+            "mean_gradient_coordinate_noise_sd": 0.008616727941176471,
+            "mean_gradient_noise_l2_rms": 0.6506628146364728
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 239,
+            "mean_gradient_coordinate_noise_sd": 0.009193580020920501,
+            "mean_gradient_noise_l2_rms": 0.6942218315159018
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 240,
+            "mean_gradient_coordinate_noise_sd": 0.0091552734375,
+            "mean_gradient_noise_l2_rms": 0.6913292405512522
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.009193580020920501,
+        "max_site_noise_l2_rms": 0.6942218315159018
+      },
+      "rank_noiseless_auc": 3,
+      "rank_inner_noise": 4,
+      "rank_full_noise": 4
+    },
+    {
+      "name": "adam003_e4_b256",
+      "schedule": {
+        "name": "adam003_e4_b256",
+        "optimizer": "adam",
+        "lr": 0.003,
+        "epochs": 4,
+        "batch": 256
+      },
+      "macro_auc": 0.8602659617760621,
+      "accuracy": 0.5715883668903803,
+      "inner": {
+        "sites": [
+          {
+            "population": 1797,
+            "sample_rate": 0.125,
+            "steps": 160,
+            "noise_multiplier": 2.4267578125,
+            "expected_batch_size": 224,
+            "mean_gradient_coordinate_noise_sd": 0.010833740234375,
+            "mean_gradient_noise_l2_rms": 0.8180729346523151
+          },
+          {
+            "population": 2029,
+            "sample_rate": 0.125,
+            "steps": 160,
+            "noise_multiplier": 2.4267578125,
+            "expected_batch_size": 253,
+            "mean_gradient_coordinate_noise_sd": 0.009591928112648222,
+            "mean_gradient_noise_l2_rms": 0.7243017287040261
+          },
+          {
+            "population": 1738,
+            "sample_rate": 0.14285714285714285,
+            "steps": 140,
+            "noise_multiplier": 2.578125,
+            "expected_batch_size": 248,
+            "mean_gradient_coordinate_noise_sd": 0.010395665322580645,
+            "mean_gradient_noise_l2_rms": 0.7849932021743251
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.010833740234375,
+        "max_site_noise_l2_rms": 0.8180729346523151
+      },
+      "full": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 255,
+            "mean_gradient_coordinate_noise_sd": 0.008616727941176471,
+            "mean_gradient_noise_l2_rms": 0.6506628146364728
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 239,
+            "mean_gradient_coordinate_noise_sd": 0.009193580020920501,
+            "mean_gradient_noise_l2_rms": 0.6942218315159018
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 240,
+            "mean_gradient_coordinate_noise_sd": 0.0091552734375,
+            "mean_gradient_noise_l2_rms": 0.6913292405512522
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.009193580020920501,
+        "max_site_noise_l2_rms": 0.6942218315159018
+      },
+      "rank_noiseless_auc": 4,
+      "rank_inner_noise": 4,
+      "rank_full_noise": 4
+    },
+    {
+      "name": "adam003_e8_b512",
+      "schedule": {
+        "name": "adam003_e8_b512",
+        "optimizer": "adam",
+        "lr": 0.003,
+        "epochs": 8,
+        "batch": 512
+      },
+      "macro_auc": 0.859590658805704,
+      "accuracy": 0.581096196868009,
+      "inner": {
+        "sites": [
+          {
+            "population": 1797,
+            "sample_rate": 0.25,
+            "steps": 160,
+            "noise_multiplier": 4.53125,
+            "expected_batch_size": 449,
+            "mean_gradient_coordinate_noise_sd": 0.010091870824053452,
+            "mean_gradient_noise_l2_rms": 0.7620531970085369
+          },
+          {
+            "population": 2029,
+            "sample_rate": 0.25,
+            "steps": 160,
+            "noise_multiplier": 4.53125,
+            "expected_batch_size": 507,
+            "mean_gradient_coordinate_noise_sd": 0.008937376725838265,
+            "mean_gradient_noise_l2_rms": 0.6748755137215644
+          },
+          {
+            "population": 1738,
+            "sample_rate": 0.25,
+            "steps": 160,
+            "noise_multiplier": 4.53125,
+            "expected_batch_size": 434,
+            "mean_gradient_coordinate_noise_sd": 0.010440668202764977,
+            "mean_gradient_noise_l2_rms": 0.7883914411447768
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.010440668202764977,
+        "max_site_noise_l2_rms": 0.7883914411447768
+      },
+      "full": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.2,
+            "steps": 200,
+            "noise_multiplier": 4.072265625,
+            "expected_batch_size": 510,
+            "mean_gradient_coordinate_noise_sd": 0.007984834558823529,
+            "mean_gradient_noise_l2_rms": 0.6029475415631314
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.2,
+            "steps": 200,
+            "noise_multiplier": 4.072265625,
+            "expected_batch_size": 479,
+            "mean_gradient_coordinate_noise_sd": 0.008501598382045929,
+            "mean_gradient_noise_l2_rms": 0.6419691987415386
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.2,
+            "steps": 200,
+            "noise_multiplier": 4.072265625,
+            "expected_batch_size": 480,
+            "mean_gradient_coordinate_noise_sd": 0.00848388671875,
+            "mean_gradient_noise_l2_rms": 0.6406317629108271
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.008501598382045929,
+        "max_site_noise_l2_rms": 0.6419691987415386
+      },
+      "rank_noiseless_auc": 5,
+      "rank_inner_noise": 3,
+      "rank_full_noise": 3
+    },
+    {
+      "name": "adam001_e4_b256",
+      "schedule": {
+        "name": "adam001_e4_b256",
+        "optimizer": "adam",
+        "lr": 0.001,
+        "epochs": 4,
+        "batch": 256
+      },
+      "macro_auc": 0.7906180643162316,
+      "accuracy": 0.44351230425055926,
+      "inner": {
+        "sites": [
+          {
+            "population": 1797,
+            "sample_rate": 0.125,
+            "steps": 160,
+            "noise_multiplier": 2.4267578125,
+            "expected_batch_size": 224,
+            "mean_gradient_coordinate_noise_sd": 0.010833740234375,
+            "mean_gradient_noise_l2_rms": 0.8180729346523151
+          },
+          {
+            "population": 2029,
+            "sample_rate": 0.125,
+            "steps": 160,
+            "noise_multiplier": 2.4267578125,
+            "expected_batch_size": 253,
+            "mean_gradient_coordinate_noise_sd": 0.009591928112648222,
+            "mean_gradient_noise_l2_rms": 0.7243017287040261
+          },
+          {
+            "population": 1738,
+            "sample_rate": 0.14285714285714285,
+            "steps": 140,
+            "noise_multiplier": 2.578125,
+            "expected_batch_size": 248,
+            "mean_gradient_coordinate_noise_sd": 0.010395665322580645,
+            "mean_gradient_noise_l2_rms": 0.7849932021743251
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.010833740234375,
+        "max_site_noise_l2_rms": 0.8180729346523151
+      },
+      "full": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 255,
+            "mean_gradient_coordinate_noise_sd": 0.008616727941176471,
+            "mean_gradient_noise_l2_rms": 0.6506628146364728
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 239,
+            "mean_gradient_coordinate_noise_sd": 0.009193580020920501,
+            "mean_gradient_noise_l2_rms": 0.6942218315159018
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 240,
+            "mean_gradient_coordinate_noise_sd": 0.0091552734375,
+            "mean_gradient_noise_l2_rms": 0.6913292405512522
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.009193580020920501,
+        "max_site_noise_l2_rms": 0.6942218315159018
+      },
+      "rank_noiseless_auc": 6,
+      "rank_inner_noise": 4,
+      "rank_full_noise": 4
+    },
+    {
+      "name": "adam003_e4_b512",
+      "schedule": {
+        "name": "adam003_e4_b512",
+        "optimizer": "adam",
+        "lr": 0.003,
+        "epochs": 4,
+        "batch": 512
+      },
+      "macro_auc": 0.7855403587467539,
+      "accuracy": 0.43400447427293065,
+      "inner": {
+        "sites": [
+          {
+            "population": 1797,
+            "sample_rate": 0.25,
+            "steps": 80,
+            "noise_multiplier": 3.3203125,
+            "expected_batch_size": 449,
+            "mean_gradient_coordinate_noise_sd": 0.007394905345211581,
+            "mean_gradient_noise_l2_rms": 0.5584010495321176
+          },
+          {
+            "population": 2029,
+            "sample_rate": 0.25,
+            "steps": 80,
+            "noise_multiplier": 3.3203125,
+            "expected_batch_size": 507,
+            "mean_gradient_coordinate_noise_sd": 0.006548939842209073,
+            "mean_gradient_noise_l2_rms": 0.4945208505718359
+          },
+          {
+            "population": 1738,
+            "sample_rate": 0.25,
+            "steps": 80,
+            "noise_multiplier": 3.3203125,
+            "expected_batch_size": 434,
+            "mean_gradient_coordinate_noise_sd": 0.007650489631336406,
+            "mean_gradient_noise_l2_rms": 0.5777006249767761
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.007650489631336406,
+        "max_site_noise_l2_rms": 0.5777006249767761
+      },
+      "full": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.2,
+            "steps": 100,
+            "noise_multiplier": 2.998046875,
+            "expected_batch_size": 510,
+            "mean_gradient_coordinate_noise_sd": 0.005878523284313725,
+            "mean_gradient_noise_l2_rms": 0.44389663131866025
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.2,
+            "steps": 100,
+            "noise_multiplier": 2.998046875,
+            "expected_batch_size": 479,
+            "mean_gradient_coordinate_noise_sd": 0.006258970511482255,
+            "mean_gradient_noise_l2_rms": 0.47262480578813515
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.2,
+            "steps": 100,
+            "noise_multiplier": 2.998046875,
+            "expected_batch_size": 480,
+            "mean_gradient_coordinate_noise_sd": 0.006245930989583333,
+            "mean_gradient_noise_l2_rms": 0.4716401707760765
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.006258970511482255,
+        "max_site_noise_l2_rms": 0.47262480578813515
+      },
+      "rank_noiseless_auc": 7,
+      "rank_inner_noise": 1,
+      "rank_full_noise": 1
+    },
+    {
+      "name": "sgd01_e8_b256",
+      "schedule": {
+        "name": "sgd01_e8_b256",
+        "optimizer": "sgd",
+        "lr": 0.1,
+        "epochs": 8,
+        "batch": 256
+      },
+      "macro_auc": 0.7373778027040419,
+      "accuracy": 0.35570469798657717,
+      "inner": {
+        "sites": [
+          {
+            "population": 1797,
+            "sample_rate": 0.125,
+            "steps": 320,
+            "noise_multiplier": 3.26171875,
+            "expected_batch_size": 224,
+            "mean_gradient_coordinate_noise_sd": 0.014561244419642858,
+            "mean_gradient_noise_l2_rms": 1.0995426968767537
+          },
+          {
+            "population": 2029,
+            "sample_rate": 0.125,
+            "steps": 320,
+            "noise_multiplier": 3.26171875,
+            "expected_batch_size": 253,
+            "mean_gradient_coordinate_noise_sd": 0.012892168972332016,
+            "mean_gradient_noise_l2_rms": 0.9735081584995763
+          },
+          {
+            "population": 1738,
+            "sample_rate": 0.14285714285714285,
+            "steps": 280,
+            "noise_multiplier": 3.4716796875,
+            "expected_batch_size": 248,
+            "mean_gradient_coordinate_noise_sd": 0.013998708417338709,
+            "mean_gradient_noise_l2_rms": 1.0570647097461083
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.014561244419642858,
+        "max_site_noise_l2_rms": 1.0995426968767537
+      },
+      "full": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.1,
+            "steps": 400,
+            "noise_multiplier": 2.9345703125,
+            "expected_batch_size": 255,
+            "mean_gradient_coordinate_noise_sd": 0.01150811887254902,
+            "mean_gradient_noise_l2_rms": 0.8689963368811559
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.1,
+            "steps": 400,
+            "noise_multiplier": 2.9345703125,
+            "expected_batch_size": 239,
+            "mean_gradient_coordinate_noise_sd": 0.012278536872384936,
+            "mean_gradient_noise_l2_rms": 0.9271718238690155
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.1,
+            "steps": 400,
+            "noise_multiplier": 2.9345703125,
+            "expected_batch_size": 240,
+            "mean_gradient_coordinate_noise_sd": 0.012227376302083334,
+            "mean_gradient_noise_l2_rms": 0.923308607936228
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.012278536872384936,
+        "max_site_noise_l2_rms": 0.9271718238690155
+      },
+      "rank_noiseless_auc": 8,
+      "rank_inner_noise": 7,
+      "rank_full_noise": 7
+    }
+  ],
+  "order_by_noiseless_auc": [
+    "adam01_e4_b512",
+    "adam003_e8_b256",
+    "adam01_e4_b256",
+    "adam003_e4_b256",
+    "adam003_e8_b512",
+    "adam001_e4_b256",
+    "adam003_e4_b512",
+    "sgd01_e8_b256"
+  ],
+  "order_by_inner_noise": [
+    "adam01_e4_b512",
+    "adam003_e4_b512",
+    "adam003_e8_b512",
+    "adam01_e4_b256",
+    "adam003_e4_b256",
+    "adam001_e4_b256",
+    "adam003_e8_b256",
+    "sgd01_e8_b256"
+  ],
+  "order_by_full_noise": [
+    "adam01_e4_b512",
+    "adam003_e4_b512",
+    "adam003_e8_b512",
+    "adam01_e4_b256",
+    "adam003_e4_b256",
+    "adam001_e4_b256",
+    "adam003_e8_b256",
+    "sgd01_e8_b256"
+  ],
+  "same_q_full_training_accountant": [
+    {
+      "local_epochs": 1,
+      "batch_size": 256,
+      "rounds": 5,
+      "noise": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.1,
+            "steps": 50,
+            "noise_multiplier": 1.40869140625,
+            "expected_batch_size": 255,
+            "mean_gradient_coordinate_noise_sd": 0.005524280024509804,
+            "mean_gradient_noise_l2_rms": 0.41714716005027197
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.1,
+            "steps": 50,
+            "noise_multiplier": 1.40869140625,
+            "expected_batch_size": 239,
+            "mean_gradient_coordinate_noise_sd": 0.005894106302301255,
+            "mean_gradient_noise_l2_rms": 0.44507332976075037
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.1,
+            "steps": 50,
+            "noise_multiplier": 1.40869140625,
+            "expected_batch_size": 240,
+            "mean_gradient_coordinate_noise_sd": 0.005869547526041667,
+            "mean_gradient_noise_l2_rms": 0.44321885755341395
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.005894106302301255,
+        "max_site_noise_l2_rms": 0.44507332976075037
+      },
+      "mechanisms": [
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 1.40869140625,
+          "clipping_norm": 1.0,
+          "accounting_population": 2553,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 255,
+          "total_epochs": 5,
+          "total_steps": 50,
+          "policy_hash": "cb615474c9419135b26cf4ece72749ef91c3b725e01dabcb7b768005335cca69"
+        },
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 1.40869140625,
+          "clipping_norm": 1.0,
+          "accounting_population": 2397,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 239,
+          "total_epochs": 5,
+          "total_steps": 50,
+          "policy_hash": "b34f0adfd6a7dad9851649982c097a29a193318d203332daf961694c3a662359"
+        },
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 1.40869140625,
+          "clipping_norm": 1.0,
+          "accounting_population": 2402,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 240,
+          "total_epochs": 5,
+          "total_steps": 50,
+          "policy_hash": "8aaba30533b99f8ad065739632c301b9cd3107c92bc91d85dabf26c235d8ea44"
+        }
+      ]
+    },
+    {
+      "local_epochs": 2,
+      "batch_size": 256,
+      "rounds": 5,
+      "noise": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.1,
+            "steps": 100,
+            "noise_multiplier": 1.7138671875,
+            "expected_batch_size": 255,
+            "mean_gradient_coordinate_noise_sd": 0.0067210477941176475,
+            "mean_gradient_noise_l2_rms": 0.5075169954164488
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.1,
+            "steps": 100,
+            "noise_multiplier": 1.7138671875,
+            "expected_batch_size": 239,
+            "mean_gradient_coordinate_noise_sd": 0.0071709924163179915,
+            "mean_gradient_noise_l2_rms": 0.5414930285824034
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.1,
+            "steps": 100,
+            "noise_multiplier": 1.7138671875,
+            "expected_batch_size": 240,
+            "mean_gradient_coordinate_noise_sd": 0.00714111328125,
+            "mean_gradient_noise_l2_rms": 0.5392368076299767
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.0071709924163179915,
+        "max_site_noise_l2_rms": 0.5414930285824034
+      },
+      "mechanisms": [
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 1.7138671875,
+          "clipping_norm": 1.0,
+          "accounting_population": 2553,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 255,
+          "total_epochs": 10,
+          "total_steps": 100,
+          "policy_hash": "3ae6addaf25389fa2c669dd271448cd9d8d814d90ed54085202b420e070bd323"
+        },
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 1.7138671875,
+          "clipping_norm": 1.0,
+          "accounting_population": 2397,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 239,
+          "total_epochs": 10,
+          "total_steps": 100,
+          "policy_hash": "7f23f480d83235e25c1ff65d135f7ea37a79b3891eecfdcd6a7ae23ac229378d"
+        },
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 1.7138671875,
+          "clipping_norm": 1.0,
+          "accounting_population": 2402,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 240,
+          "total_epochs": 10,
+          "total_steps": 100,
+          "policy_hash": "219f339e075f6563ae0ce8bdbe98d3f5f7e16776fc52669a8ee9908deefcfe55"
+        }
+      ]
+    },
+    {
+      "local_epochs": 4,
+      "batch_size": 256,
+      "rounds": 5,
+      "noise": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 255,
+            "mean_gradient_coordinate_noise_sd": 0.008616727941176471,
+            "mean_gradient_noise_l2_rms": 0.6506628146364728
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 239,
+            "mean_gradient_coordinate_noise_sd": 0.009193580020920501,
+            "mean_gradient_noise_l2_rms": 0.6942218315159018
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.1,
+            "steps": 200,
+            "noise_multiplier": 2.197265625,
+            "expected_batch_size": 240,
+            "mean_gradient_coordinate_noise_sd": 0.0091552734375,
+            "mean_gradient_noise_l2_rms": 0.6913292405512522
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.009193580020920501,
+        "max_site_noise_l2_rms": 0.6942218315159018
+      },
+      "mechanisms": [
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 2.197265625,
+          "clipping_norm": 1.0,
+          "accounting_population": 2553,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 255,
+          "total_epochs": 20,
+          "total_steps": 200,
+          "policy_hash": "3facda2a9a2a05d0ced4aed0e5c77b520dc53e10e2b43413dd3f25856f3f6ec5"
+        },
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 2.197265625,
+          "clipping_norm": 1.0,
+          "accounting_population": 2397,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 239,
+          "total_epochs": 20,
+          "total_steps": 200,
+          "policy_hash": "780c4bccca1a61a8a2c7503d24b034fb118249a141a52f6973435f0bfddf6463"
+        },
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 2.197265625,
+          "clipping_norm": 1.0,
+          "accounting_population": 2402,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 240,
+          "total_epochs": 20,
+          "total_steps": 200,
+          "policy_hash": "2b08fb95113787245b2a75878e1605f27dabdc06c4be2398f10d2c214de5a3e2"
+        }
+      ]
+    },
+    {
+      "local_epochs": 8,
+      "batch_size": 256,
+      "rounds": 5,
+      "noise": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.1,
+            "steps": 400,
+            "noise_multiplier": 2.9345703125,
+            "expected_batch_size": 255,
+            "mean_gradient_coordinate_noise_sd": 0.01150811887254902,
+            "mean_gradient_noise_l2_rms": 0.8689963368811559
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.1,
+            "steps": 400,
+            "noise_multiplier": 2.9345703125,
+            "expected_batch_size": 239,
+            "mean_gradient_coordinate_noise_sd": 0.012278536872384936,
+            "mean_gradient_noise_l2_rms": 0.9271718238690155
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.1,
+            "steps": 400,
+            "noise_multiplier": 2.9345703125,
+            "expected_batch_size": 240,
+            "mean_gradient_coordinate_noise_sd": 0.012227376302083334,
+            "mean_gradient_noise_l2_rms": 0.923308607936228
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.012278536872384936,
+        "max_site_noise_l2_rms": 0.9271718238690155
+      },
+      "mechanisms": [
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 2.9345703125,
+          "clipping_norm": 1.0,
+          "accounting_population": 2553,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 255,
+          "total_epochs": 40,
+          "total_steps": 400,
+          "policy_hash": "da680f8b847e3e9d511b951892beadd995cbb668fbbfbee5f47617fcda9352c0"
+        },
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 2.9345703125,
+          "clipping_norm": 1.0,
+          "accounting_population": 2397,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 239,
+          "total_epochs": 40,
+          "total_steps": 400,
+          "policy_hash": "cf33986e784c25c98ab491ea0e00014424c0c80d02fb387a0cc5d246864a27a2"
+        },
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 2.9345703125,
+          "clipping_norm": 1.0,
+          "accounting_population": 2402,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 240,
+          "total_epochs": 40,
+          "total_steps": 400,
+          "policy_hash": "fe348a2f04057420593ff1a0a6e83414e095a15e3e020d53b7f6908194b90f00"
+        }
+      ]
+    },
+    {
+      "local_epochs": 12,
+      "batch_size": 256,
+      "rounds": 5,
+      "noise": {
+        "sites": [
+          {
+            "population": 2553,
+            "sample_rate": 0.1,
+            "steps": 600,
+            "noise_multiplier": 3.5205078125,
+            "expected_batch_size": 255,
+            "mean_gradient_coordinate_noise_sd": 0.013805912990196078,
+            "mean_gradient_noise_l2_rms": 1.0425064207842152
+          },
+          {
+            "population": 2397,
+            "sample_rate": 0.1,
+            "steps": 600,
+            "noise_multiplier": 3.5205078125,
+            "expected_batch_size": 239,
+            "mean_gradient_coordinate_noise_sd": 0.014730158211297072,
+            "mean_gradient_noise_l2_rms": 1.1122976456065894
+          },
+          {
+            "population": 2402,
+            "sample_rate": 0.1,
+            "steps": 600,
+            "noise_multiplier": 3.5205078125,
+            "expected_batch_size": 240,
+            "mean_gradient_coordinate_noise_sd": 0.014668782552083334,
+            "mean_gradient_noise_l2_rms": 1.1076630720832286
+          }
+        ],
+        "max_site_coordinate_noise_sd": 0.014730158211297072,
+        "max_site_noise_l2_rms": 1.1122976456065894
+      },
+      "mechanisms": [
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 3.5205078125,
+          "clipping_norm": 1.0,
+          "accounting_population": 2553,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 255,
+          "total_epochs": 60,
+          "total_steps": 600,
+          "policy_hash": "607d744e5a8ed86b349ddad10dcecd7b31f75dc9ee82687754a3e69e4b5814eb"
+        },
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 3.5205078125,
+          "clipping_norm": 1.0,
+          "accounting_population": 2397,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 239,
+          "total_epochs": 60,
+          "total_steps": 600,
+          "policy_hash": "58e992e446ef22f8f31e0315066a9a52bfff1f267d4765d84739cd7d2679195b"
+        },
+        {
+          "adjacency": "replace_one",
+          "noise_multiplier": 3.5205078125,
+          "clipping_norm": 1.0,
+          "accounting_population": 2402,
+          "steps_per_epoch": 10,
+          "sample_rate": 0.1,
+          "expected_batch_size": 240,
+          "total_epochs": 60,
+          "total_steps": 600,
+          "policy_hash": "821f22bf6f1145e8c70c307db8c1161699d6189973637465d5c4273dac014bfe"
+        }
+      ]
+    }
+  ]
+}

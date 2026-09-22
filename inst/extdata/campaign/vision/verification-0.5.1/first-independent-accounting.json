@@ -1,0 +1,14 @@
+{
+  "federated_site": {
+    "accountant": "PRVAccountant",
+    "epsilon_replace_one": 0.9893582036542031,
+    "delta_replace_one": 9.966967531952933e-07,
+    "delta_add_remove": 3.775406687981454e-07
+  },
+  "pooled_dp": {
+    "accountant": "PRVAccountant",
+    "epsilon_replace_one": 0.988442954873641,
+    "delta_replace_one": 9.964134770916528e-07,
+    "delta_add_remove": 3.775406687981454e-07
+  }
+}

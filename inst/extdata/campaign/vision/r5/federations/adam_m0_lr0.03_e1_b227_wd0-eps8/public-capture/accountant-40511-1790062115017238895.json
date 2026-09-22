@@ -1,0 +1,77 @@
+{
+  "schema": "dsflower-vision-benchmark-accountant-v1",
+  "public_fixture_only": true,
+  "dataset": "busbra",
+  "round": 2,
+  "source_rows": 405,
+  "mechanism": {
+    "adjacency": "replace_one",
+    "noise_multiplier": 3.076171875,
+    "clipping_norm": 1.0,
+    "accounting_population": 227,
+    "steps_per_epoch": 1,
+    "sample_rate": 1.0,
+    "expected_batch_size": 227,
+    "total_epochs": 5,
+    "total_steps": 5,
+    "policy_hash": "8ac4f358373308a95e6f1564791fbbbee35a0e436d85b868adf424d244cb085d"
+  },
+  "privacy_config": {
+    "epsilon": 8.0,
+    "delta": 1e-06,
+    "clipping_norm": 1.0,
+    "policy_hash": "dd310d42a5e8fff28aa5d116dfcadf640333bca9526405091db9a29c9abcf0a4",
+    "adjacency": "replace_one",
+    "sample_aggregate": false,
+    "sa_blocks": 8,
+    "egress_time_pad": 0.0,
+    "egress_timeout": 900,
+    "egress_memory_mb": 8192,
+    "egress_file_mb": 1024,
+    "egress_processes": 128,
+    "hook_enabled": false,
+    "allow_per_node_metrics": false,
+    "allow_exact_num_examples": false,
+    "n_samples": 405
+  },
+  "training_pins": {
+    "loss_name": "cross_entropy",
+    "batch_size": 227,
+    "local_epochs": 1,
+    "num_rounds": 5,
+    "n_classes": 2,
+    "learning_rate": 0.03,
+    "optimizer": {
+      "name": "adam",
+      "weight_decay": 0.0,
+      "l1_penalty": 0.0,
+      "momentum": 0.0,
+      "nesterov": false,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "eps": 1e-08,
+      "amsgrad": false,
+      "rmsprop_alpha": 0.99
+    },
+    "scheduler": {
+      "name": "none",
+      "step_size": 1,
+      "gamma": 0.1,
+      "min_lr": 0.0
+    },
+    "round_index": 2
+  },
+  "observed_round_steps": 1,
+  "accountant_type": "PRVAccountant",
+  "accountant_history": [
+    [
+      3.076171875,
+      1.0,
+      1
+    ]
+  ],
+  "elapsed_s": 0.729276031255722,
+  "peak_cuda_bytes": 269548544,
+  "features_sha256": "bcd8187efa888214b5d977470a65f6181608d4c1861935c961c7686ad51f74e3",
+  "targets_sha256": "ecce99de16f79939f0967600005da4f66fd37f70f300e981cad38c9d54264676"
+}

@@ -1,0 +1,427 @@
+{
+  "schema": "dsflower-campaign-attempts-v2",
+  "status": "blocked",
+  "host": {
+    "nodename": "b85270415cca",
+    "sysname": "Linux",
+    "release": "6.8.0-100-generic",
+    "machine": "x86_64",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "pod_id": "2sy2g4pb3xwgqt",
+    "pod_name": "pod-flower-tabular",
+    "requested_vcpu": 32,
+    "requested_memory_gb": 64
+  },
+  "versions": {
+    "dsflower": "0.5.0",
+    "dsflowerclient": "0.5.0",
+    "flwr": "1.31.0",
+    "torch": "2.14.0+cpu",
+    "opacus": "1.6.0",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "node_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "sklearn": "1.9.1"
+  },
+  "release_commits": {
+    "dsFlower": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlowerClient": "50dda000a32ffcbdd039c2b74c909df451392bfb"
+  },
+  "tooling_commit": "99e6928",
+  "attempts": [
+    {
+      "contract": "random_forest",
+      "dataset": "breast",
+      "n": 683,
+      "epsilon": 1,
+      "status": "blocked_before_prediction",
+      "exact_error": "Saved native-tree ensemble violates its canonical container contract.",
+      "requested_replicates": 3,
+      "attempted_replicate": 1,
+      "completed_replicates": 0,
+      "planned_seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "attempted_split_seed": 20260820,
+      "rounds": 1,
+      "rounds_reason": "native-tree schedule",
+      "model_params": {
+        "task": "binary",
+        "n_estimators": 8,
+        "max_depth": 4,
+        "max_features": "auto"
+      },
+      "model_params_overrides": {},
+      "started_at": "2026-09-22T00:19:44+0000",
+      "elapsed_s": 49.9379732608795,
+      "split_policy": "Unchanged campaign_split: stratified 80/20; training rows dealt round-robin per class across three sites",
+      "requested_sites": 3,
+      "per_site_sizes": null,
+      "per_site_sizes_note": "Not retained in failure record; no completed replicate artifact",
+      "public_feature_bounds": {
+        "lower": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "upper": [
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ]
+      },
+      "public_feature_cuts": [
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ]
+      ],
+      "privacy": {
+        "requested_epsilon": 1,
+        "requested_delta": 1e-06,
+        "default_clipping_norm": 1,
+        "default_unit": "row",
+        "default_adjacency": "replace_one",
+        "guarantee_scope": "per-training",
+        "node_reported_configuration": null,
+        "capture_limitation": "The harness asserted node-reported epsilon, delta, row unit and clipping norm before starting SuperLink; the complete node responses were not saved on this failure path."
+      },
+      "scores": {
+        "central": null,
+        "federated_dp": null,
+        "trivial": null,
+        "gap_mean_sd": null
+      },
+      "heldout_prediction_reached": false,
+      "failure_record": "failure_pilot_breast_random_forest_eps1.json",
+      "registration_record": "registration_random_forest.json",
+      "sanitized_trace": "diagnostics_random_forest.log"
+    },
+    {
+      "contract": "extra_trees",
+      "dataset": "breast",
+      "n": 683,
+      "epsilon": 1,
+      "status": "blocked_before_prediction",
+      "exact_error": "Saved native-tree ensemble violates its canonical container contract.",
+      "requested_replicates": 3,
+      "attempted_replicate": 1,
+      "completed_replicates": 0,
+      "planned_seeds": [
+        20260820,
+        20260821,
+        20260822
+      ],
+      "attempted_split_seed": 20260820,
+      "rounds": 1,
+      "rounds_reason": "native-tree schedule",
+      "model_params": {
+        "task": "binary",
+        "n_estimators": 32,
+        "max_depth": 3
+      },
+      "model_params_overrides": {},
+      "started_at": "2026-09-22T00:21:13+0000",
+      "elapsed_s": 51.1931998729706,
+      "split_policy": "Unchanged campaign_split: stratified 80/20; training rows dealt round-robin per class across three sites",
+      "requested_sites": 3,
+      "per_site_sizes": null,
+      "per_site_sizes_note": "Not retained in failure record; no completed replicate artifact",
+      "public_feature_bounds": {
+        "lower": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ],
+        "upper": [
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10,
+          10
+        ]
+      },
+      "public_feature_cuts": [
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5
+        ]
+      ],
+      "privacy": {
+        "requested_epsilon": 1,
+        "requested_delta": 1e-06,
+        "default_clipping_norm": 1,
+        "default_unit": "row",
+        "default_adjacency": "replace_one",
+        "guarantee_scope": "per-training",
+        "node_reported_configuration": null,
+        "capture_limitation": "The harness asserted node-reported epsilon, delta, row unit and clipping norm before starting SuperLink; the complete node responses were not saved on this failure path."
+      },
+      "scores": {
+        "central": null,
+        "federated_dp": null,
+        "trivial": null,
+        "gap_mean_sd": null
+      },
+      "heldout_prediction_reached": false,
+      "failure_record": "failure_pilot_breast_extra_trees_eps1.json",
+      "registration_record": "registration_extra_trees.json",
+      "sanitized_trace": "diagnostics_extra_trees.log"
+    }
+  ],
+  "datasets": [
+    {
+      "name": "breast",
+      "full_name": "Breast Cancer Wisconsin (Original)",
+      "uci_id": 15,
+      "n_after_complete_cases": 683,
+      "source_url": "https://archive.ics.uci.edu/ml/machine-learning-databases/breast-cancer-wisconsin/breast-cancer-wisconsin.data",
+      "download_sha256": "402c585309c399237740f635ef9919dc512cca12cbeb20de5e563a4593f22b64",
+      "citation": "Wolberg, W. (1990). Breast Cancer Wisconsin (Original). UCI Machine Learning Repository. https://doi.org/10.24432/C5HP4Z"
+    },
+    {
+      "name": "cdc9k",
+      "full_name": "CDC Diabetes Health Indicators",
+      "uci_id": 891,
+      "planned_n": 9000,
+      "cohort_seed": 20260819,
+      "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+      "download_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+      "citation": "CDC Diabetes Health Indicators (2017). UCI Machine Learning Repository. https://doi.org/10.24432/C53919",
+      "evaluation_status": "not started"
+    }
+  ],
+  "provisioning": {
+    "reused": true,
+    "initial_started_at": "2026-09-22T00:06:28Z",
+    "initial_ended_at": "2026-09-22T00:08:05Z",
+    "initial_elapsed_s": 97,
+    "reprovisioning_elapsed_s": 0
+  },
+  "stop_reason": "Primary and authorized fallback both rejected by the unchanged client ensemble validator. Package changes or validator bypasses are outside scope.",
+  "root_cause_limit": "Exact error and guard location retained; failing container subcheck not established.",
+  "validation": {
+    "r_syntax": "passed",
+    "python_syntax": "passed",
+    "raw_download_checksums": "passed",
+    "installed_runner_hash_match": "passed",
+    "federated_test_scoring": "not reached",
+    "central_comparator_end_to_end": "not reached",
+    "full_node_report_capture": "not retained on failure",
+    "process_cleanup": "no remaining Flower or PSOCK processes"
+  },
+  "pod_left_running": true
+}

@@ -1,0 +1,57 @@
+{
+  "schema": "dsflower-trees-protocol-v3",
+  "frozen_before_scoring": true,
+  "primary_contract": "random_forest",
+  "execution_failure_fallback": "extra_trees",
+  "primary_datasets": {
+    "breast": 683,
+    "cdc9k": 9000
+  },
+  "epsilon": [
+    1,
+    4,
+    8
+  ],
+  "replicate_seeds": [
+    20260820,
+    20260821,
+    20260822
+  ],
+  "sites": 3,
+  "rounds": 1,
+  "delta": 1e-06,
+  "clipping_norm": 1,
+  "parameters": "registry defaults; no overrides",
+  "bounds": "public declarations in run_cell.R and README.md",
+  "diagnostic": "At epsilon 8: mean fed AUC > 0.5 AND mean fed accuracy > mean majority-class accuracy",
+  "alternative": {
+    "trigger": "either primary epsilon-8 diagnostic fails",
+    "maximum_cells": 1,
+    "contract": "random_forest",
+    "dataset": "cdc45k",
+    "n": 45000,
+    "epsilon": 8,
+    "seeds": [
+      20260820,
+      20260821,
+      20260822
+    ],
+    "cohort_seed": 20260819
+  },
+  "versions": {
+    "dsFlower": "0.5.0",
+    "dsFlowerClient": "0.5.1"
+  },
+  "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+  "central": "sklearn RandomForestClassifier 8 trees, depth 4, ceil(sqrt(p)) features, same public bins and pooled training split",
+  "trivial": "training prevalence probabilities and training majority class",
+  "metrics": [
+    "auc",
+    "acc",
+    "brier",
+    "logloss"
+  ],
+  "gap": "federated-DP AUC minus central AUC; sample SD across paired replicates",
+  "frozen_at_utc": "2026-09-22T00:45:04.434766+00:00",
+  "client_patch_commit": "598d21c4627496a65d44034440f2d221ce6e04a2"
+}

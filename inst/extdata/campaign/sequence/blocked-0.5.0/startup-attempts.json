@@ -1,0 +1,17 @@
+[
+  {
+    "status": "failed",
+    "error": "SuperLink did not become ready within 15 seconds.\nLog:\n",
+    "cleanup_ok": true,
+    "elapsed_s": 157.598314762115,
+    "epsilon": 1,
+    "seed": 20260922,
+    "contract": "pytorch_lstm",
+    "attempt_dir": "/workspace/cells-sequence/attempts/pytorch_lstm-eps1-seed20260922-superlink-startup",
+    "model_initialized": false,
+    "private_training_started": false,
+    "test_accessed": false,
+    "retry_reason": "Relocate unchanged Python dependencies to local POSIX storage; console interpreter paths adjusted without changing Python bodies.",
+    "archived_at": "2026-09-22T00:44:15.164160+00:00"
+  }
+]

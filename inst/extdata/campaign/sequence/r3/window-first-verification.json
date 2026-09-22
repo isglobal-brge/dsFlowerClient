@@ -1,0 +1,17 @@
+{
+  "captures": 15,
+  "accounting": {
+    "accountant": "PRVAccountant",
+    "full_horizon_steps": 200,
+    "sample_rate": 0.1,
+    "noise_multiplier": 12.5,
+    "epsilon_replace_one": 0.9872122347618042,
+    "delta_replace_one": 9.960327646353678e-07
+  },
+  "populations": [
+    2397,
+    2402,
+    2553
+  ],
+  "test_accessed": false
+}

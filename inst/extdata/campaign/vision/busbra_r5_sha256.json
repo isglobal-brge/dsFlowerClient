@@ -1,0 +1,17 @@
+{
+  "busbra_r5_preservation.json": "d1c88013f53687f6e84d268c267cd30b19d7041443a061283f377eb069c6199d",
+  "busbra_r5_pytorch_resnet18_eps1.json": "60efc12557b73e77a04ea18c29c2b16b217f89daa2befe4df703796994a5c72e",
+  "busbra_r5_pytorch_resnet18_eps4.json": "ff60ce8c5a1f44b44ced2a994d466685bf7e7e28649764ab12617a750f7c9d58",
+  "busbra_r5_pytorch_resnet18_eps8.json": "003780a2b29dcd4b5793d25c246d06fa903542a58cdad4dcf6701e7fe225bed5",
+  "busbra_r5_report.md": "db4bfceb9adf1ae7835a87bb08a7d826b72ab26fcab92471cf34da1b6085cc92",
+  "busbra_r5_summary.json": "8ef6d60a1abf583b1cd24625ef78756616603d0b8c0650812fd0c8bd2ae666e7",
+  "r5_impl/matrix-complete.json": "30626060317b0f494d3fbff7a1177bb025af952572b19c38326d216251623a4f",
+  "r5_impl/matrix-start.json": "8f6459cab9371e7e7b14aad1ed4bacc16cfb381c3d248970db0b3b1b0204c054",
+  "r5_impl/pod-final.json": "6e90194b49a4894681d57957d434a187e120a93d1120124b520467fbafe04717",
+  "r5_impl/protocol.json": "9081ce33e85db5ecf46c39586ec1824c6d5938a130a12c8176a2876e0c387a5c",
+  "r5_impl/results.json": "94e64898b140f96554f11afaadcd6d9b2e1c1048fe5d50f74bafa9275e63f638",
+  "r5_impl/runtime-final.json": "5d3dcfb17048e955355cd5b34936f7904aa2131abd08dfb26612e94204daae3f",
+  "r5_impl/runtime-preflight.json": "3f2719928f24a9be7c26299adbc55bc96aa3f2729016bffb6bea5f2726375d11",
+  "r5_impl/scoring-lock.json": "8cdc64bbb833915ddebb70d3dc117536f950fd2a83276c9cef8dc0fb13d39724",
+  "r5_impl/training-staging.json": "86632cf3f810928185b52102f2d43c25da6d3d9b01b547f963ce167c77495f0e"
+}

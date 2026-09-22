@@ -1,0 +1,148 @@
+{
+  "schema": "dsflower-sequence-protocol-r3-v1",
+  "token": "FLOWER_CELLS_SEQUENCE_2026-09-22",
+  "dataset": "UCI Human Activity Recognition Using Smartphones (240)",
+  "contract": "pytorch_lstm",
+  "units": [
+    "subject",
+    "window"
+  ],
+  "seeds": [
+    20260922,
+    20260923,
+    20260924
+  ],
+  "epsilon_order": [
+    1,
+    4,
+    8
+  ],
+  "rounds": 5,
+  "sites": 3,
+  "delta": 1e-06,
+  "clipping_norm": 1,
+  "model_params": {
+    "n_tokens": 128,
+    "n_features": 9,
+    "n_classes": 6,
+    "hidden": 32,
+    "optimizer": "adam",
+    "learning_rate": 0.01,
+    "batch_size": 256,
+    "local_epochs": 4,
+    "scheduler": "none",
+    "weight_decay": 0,
+    "l1_penalty": 0
+  },
+  "channels": [
+    "body_acc_x",
+    "body_acc_y",
+    "body_acc_z",
+    "body_gyro_x",
+    "body_gyro_y",
+    "body_gyro_z",
+    "total_acc_x",
+    "total_acc_y",
+    "total_acc_z"
+  ],
+  "channel_abs_bounds": [
+    1,
+    1,
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2
+  ],
+  "preprocessing": "Raw time-major flat rows staged; unchanged contract applies clip(x,-b,b)/b once. Fixed public design constants: body acceleration 1 g, gyro 1 rad/s, total acceleration 2 g. No empirical bounds or moments. These are not guaranteed archive extrema.",
+  "layout": "C-order token-major flattening: 128 timesteps x 9 channels; recurrent input [N,128,9]. Last hidden state, hidden 32, linear head of six logits.",
+  "split": "Official train/test subjects. Sorted 21 TRAIN subjects dealt round-robin into three sites of seven, 2553/2397/2402 windows. Original TEST is read only once after all artifacts and checks complete.",
+  "inner_selection": {
+    "train_subjects": [
+      3,
+      5,
+      6,
+      7,
+      11,
+      14,
+      15,
+      16,
+      19,
+      21,
+      22,
+      23,
+      26,
+      27,
+      28,
+      29
+    ],
+    "validation_subjects": [
+      1,
+      8,
+      17,
+      25,
+      30
+    ],
+    "n_inner_train_windows": 5564,
+    "n_validation_windows": 1788,
+    "seed": 20260922,
+    "candidates": [
+      0.003,
+      0.01
+    ],
+    "optimizer": "adam",
+    "total_epochs": 20,
+    "batch_size": 256,
+    "optimizer_reset_every_epochs": 4,
+    "criterion": "Maximum final-epoch inner-validation macro OVR AUC; tie chooses lower LR",
+    "selected_learning_rate": 0.01,
+    "selected_macro_auc": 0.9889998115142878,
+    "selected_accuracy": 0.9373601789709173,
+    "selected_log_loss": 0.24091443419456482,
+    "test_accessed": false
+  },
+  "subject_cell": "Released patient contract; subject is the privacy unit, with per-unit gradient clipping AFTER within-subject feature averaging and modal-label pooling. Seven units/site, 21 total. It does NOT average original-window losses or their gradients per subject; that requested task is unsupported without a mechanism change. This cell measures the supported subject-pooled surrogate.",
+  "window_cell": "Released row contract, per-window clipping, subject-disjoint sites, populations 2553/2397/2402. Mechanism measurement at window level ONLY, not subject protection.",
+  "central": "Shared once per seed: identical contract-built LSTM/init and public bounds, all 7352 original TRAIN windows, Adam .01, batch256, 20 epochs, optimizer reset each four epochs. No DP, gradient clipping or federation. Ordinary shuffled minibatches; 580 updates. Subject comparison includes pooling/task mismatch.",
+  "expected_geometry": {
+    "subject": {
+      "population_per_site": [
+        7,
+        7,
+        7
+      ],
+      "steps_per_epoch": 1,
+      "total_steps_per_site": 20,
+      "sample_rate": 1.0
+    },
+    "window": {
+      "population_per_site": [
+        2553,
+        2397,
+        2402
+      ],
+      "steps_per_epoch": 10,
+      "total_steps_per_site": 200,
+      "sample_rate": 0.1,
+      "expected_batch_size_per_site": [
+        255,
+        239,
+        240
+      ]
+    }
+  },
+  "scoring": "One exclusive R3 scoring marker after verifying all 18 federations, 270 node-round captures and three central models. One test load, each model predicted once. No changes or training after scoring; no alternative on low utility.",
+  "metrics": [
+    "macro_one_vs_rest_auc",
+    "accuracy",
+    "log_loss"
+  ],
+  "gap": "federated-DP macro-AUC minus paired central macro-AUC; mean and sample SD over three seeds",
+  "diagnostics": "AUC above .5 and accuracy above training-majority test accuracy, predicted class counts and probability spread: annotations only.",
+  "privacy_scope": "Budgets are conditional per-training mechanism contracts, separate across eps/seeds/cells. Inner selection uses public non-DP TRAIN data and is not an end-to-end private selection guarantee. No composition claim across campaign.",
+  "randomness": "Public seeds determine initialization; unchanged node-owned cryptographic noise/sampling retains release semantics; no deterministic noise replacement.",
+  "original_run": "Preserve all pilot JSON bytes. Pipeline did not learn, evidenced by chance-like central twin and five-step training on 21 modal-labelled subject averages; not a privacy utility finding.",
+  "package_changes": "None; dsFlower0.5.1 c4eaaf153db4a7204878bf1d8995c16faa615110 and dsFlowerClient0.5.0; canonical runners and mechanisms unchanged."
+}

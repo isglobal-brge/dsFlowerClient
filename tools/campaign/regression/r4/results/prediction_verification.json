@@ -1,0 +1,19 @@
+{
+  "method": "manual public feature transform and released linear coefficients",
+  "training": {
+    "n": 28800,
+    "rmse": 6.915142121313494,
+    "mean_residual": -0.04173634802405205,
+    "max_public_prediction_error": 2.384185795456517e-07,
+    "max_BMI_prediction_error": 1.025199893334161e-05,
+    "prediction_path_matches": true
+  },
+  "validation": {
+    "n": 7200,
+    "rmse": 6.854918361127385,
+    "mean_residual": -0.10922224839942322,
+    "max_public_prediction_error": 2.384185795456517e-07,
+    "max_BMI_prediction_error": 1.0251998947552465e-05,
+    "prediction_path_matches": true
+  }
+}

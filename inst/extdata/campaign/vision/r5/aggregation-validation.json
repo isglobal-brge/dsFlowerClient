@@ -1,0 +1,3460 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "candidate": {
+        "id": "adam_m0_lr0.03_e1_b227_wd0",
+        "optimizer": "adam",
+        "learning_rate": 0.03,
+        "local_epochs": 1,
+        "batch_size": 227,
+        "momentum": 0,
+        "weight_decay": 0,
+        "batch_mode": "full_site"
+      },
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 3.076171875,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 1,
+        "sample_rate": 1.0,
+        "expected_batch_size": 227,
+        "total_epochs": 5,
+        "total_steps": 5,
+        "policy_hash": "8ac4f358373308a95e6f1564791fbbbee35a0e436d85b868adf424d244cb085d"
+      },
+      "replications": [
+        {
+          "seed": 20260923,
+          "rounds": [
+            {
+              "round": 1,
+              "parameter_max_abs": 1.1175870895385742e-08,
+              "probability_max_abs": 9.313225746154785e-10,
+              "log_probability_max_abs": 1.9195370839497627e-06,
+              "actual_metrics": {
+                "auc": 0.6731974921630094,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32129547590896607,
+                "log_loss": 2.4844824121804203
+              },
+              "emulator_metrics": {
+                "auc": 0.6731974921630094,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3212954758159147,
+                "log_loss": 2.4844823284679483
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                6.25825923634693e-05,
+                0.001939536421559751
+              ],
+              "emulator_probability_range": [
+                6.25825923634693e-05,
+                0.0019395373528823256
+              ],
+              "passed": true
+            },
+            {
+              "round": 2,
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 1.4901161193847656e-07,
+              "log_probability_max_abs": 3.607158897134255e-07,
+              "actual_metrics": {
+                "auc": 0.5722570532915361,
+                "accuracy": 0.6257309941520468,
+                "brier": 0.23601766284448442,
+                "log_loss": 0.6648597684387416
+              },
+              "emulator_metrics": {
+                "auc": 0.5722570532915361,
+                "accuracy": 0.6257309941520468,
+                "brier": 0.23601767579101884,
+                "log_loss": 0.664859795041164
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.33262068033218384,
+                0.6431198716163635
+              ],
+              "emulator_probability_range": [
+                0.332620769739151,
+                0.6431199312210083
+              ],
+              "passed": true
+            },
+            {
+              "round": 3,
+              "parameter_max_abs": 2.9802322387695312e-08,
+              "probability_max_abs": 1.6298145055770874e-09,
+              "log_probability_max_abs": 1.9202440455501346e-06,
+              "actual_metrics": {
+                "auc": 0.7045454545454546,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3212545976665842,
+                "log_loss": 2.4511936917719064
+              },
+              "emulator_metrics": {
+                "auc": 0.7045454545454546,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32125459752847674,
+                "log_loss": 2.451193572741981
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                9.291827882407233e-05,
+                0.0026470478624105453
+              ],
+              "emulator_probability_range": [
+                9.291827882407233e-05,
+                0.0026470478624105453
+              ],
+              "passed": true
+            },
+            {
+              "round": 4,
+              "parameter_max_abs": 1.6763806343078613e-07,
+              "probability_max_abs": 2.384185791015625e-07,
+              "log_probability_max_abs": 5.885832752294817e-07,
+              "actual_metrics": {
+                "auc": 0.54858934169279,
+                "accuracy": 0.5555555555555556,
+                "brier": 0.25194991682873774,
+                "log_loss": 0.6976829427343293
+              },
+              "emulator_metrics": {
+                "auc": 0.54858934169279,
+                "accuracy": 0.5555555555555556,
+                "brier": 0.25194996276221737,
+                "log_loss": 0.6976830368598735
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.32908159494400024,
+                0.7581439018249512
+              ],
+              "emulator_probability_range": [
+                0.3290817141532898,
+                0.758143961429596
+              ],
+              "passed": true
+            },
+            {
+              "round": 5,
+              "parameter_max_abs": 1.7136335372924805e-07,
+              "probability_max_abs": 1.280568540096283e-09,
+              "log_probability_max_abs": 2.9031091486331206e-06,
+              "actual_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32136579740710186,
+                "log_loss": 2.557847261618006
+              },
+              "emulator_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32136579720885095,
+                "log_loss": 2.5578469903619996
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "emulator_probability_range": [
+                7.831479160813615e-05,
+                0.0019139415817335248
+              ],
+              "passed": true
+            }
+          ],
+          "final_round_reply_orders": [
+            {
+              "site_order": [
+                0,
+                1,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32136579740710186,
+                "log_loss": 2.557847261618006
+              },
+              "emulator_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32136579740710186,
+                "log_loss": 2.557847261618006
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "emulator_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                0,
+                2,
+                1
+              ],
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 4.3655745685100555e-10,
+              "log_probability_max_abs": 1.0214865309166044e-06,
+              "actual_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32136579740710186,
+                "log_loss": 2.557847261618006
+              },
+              "emulator_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213657974190047,
+                "log_loss": 2.5578472732569284
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "emulator_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                0,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32136579740710186,
+                "log_loss": 2.557847261618006
+              },
+              "emulator_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32136579740710186,
+                "log_loss": 2.557847261618006
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "emulator_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                2,
+                0
+              ],
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 4.3655745685100555e-10,
+              "log_probability_max_abs": 1.0026888546121882e-06,
+              "actual_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32136579740710186,
+                "log_loss": 2.557847261618006
+              },
+              "emulator_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213657974164466,
+                "log_loss": 2.557847258733039
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "emulator_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                0,
+                1
+              ],
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 4.3655745685100555e-10,
+              "log_probability_max_abs": 1.0214865309166044e-06,
+              "actual_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32136579740710186,
+                "log_loss": 2.557847261618006
+              },
+              "emulator_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213657974190047,
+                "log_loss": 2.5578472732569284
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "emulator_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                1,
+                0
+              ],
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 4.3655745685100555e-10,
+              "log_probability_max_abs": 1.0026888546121882e-06,
+              "actual_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32136579740710186,
+                "log_loss": 2.557847261618006
+              },
+              "emulator_metrics": {
+                "auc": 0.704858934169279,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213657974164466,
+                "log_loss": 2.557847258733039
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "emulator_probability_range": [
+                7.831471884856e-05,
+                0.0019139415817335248
+              ],
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260924,
+          "rounds": [
+            {
+              "round": 1,
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 8.731149137020111e-10,
+              "log_probability_max_abs": 1.983835169028225e-06,
+              "actual_metrics": {
+                "auc": 0.6647335423197492,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32134916721377643,
+                "log_loss": 2.544135749973216
+              },
+              "emulator_metrics": {
+                "auc": 0.6647335423197492,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32134916712512984,
+                "log_loss": 2.5441356536985245
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                5.6958513596327975e-05,
+                0.0015958537114784122
+              ],
+              "emulator_probability_range": [
+                5.6958513596327975e-05,
+                0.001595854526385665
+              ],
+              "passed": true
+            },
+            {
+              "round": 2,
+              "parameter_max_abs": 2.2351741790771484e-08,
+              "probability_max_abs": 1.7881393432617188e-07,
+              "log_probability_max_abs": 4.0770125930844614e-07,
+              "actual_metrics": {
+                "auc": 0.538871473354232,
+                "accuracy": 0.5321637426900585,
+                "brier": 0.25054030436284336,
+                "log_loss": 0.6949999312453324
+              },
+              "emulator_metrics": {
+                "auc": 0.538871473354232,
+                "accuracy": 0.5321637426900585,
+                "brier": 0.250540331197633,
+                "log_loss": 0.6949999857428302
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.3177872598171234,
+                0.7572845816612244
+              ],
+              "emulator_probability_range": [
+                0.3177873194217682,
+                0.7572845816612244
+              ],
+              "passed": true
+            },
+            {
+              "round": 3,
+              "parameter_max_abs": 2.9802322387695312e-08,
+              "probability_max_abs": 8.731149137020111e-10,
+              "log_probability_max_abs": 1.9617544424477273e-06,
+              "actual_metrics": {
+                "auc": 0.7155172413793104,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213374495513878,
+                "log_loss": 2.521239815778198
+              },
+              "emulator_metrics": {
+                "auc": 0.7155172413793104,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32133744941656833,
+                "log_loss": 2.5212396763098286
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.00010147789726033807,
+                0.0017146734753623605
+              ],
+              "emulator_probability_range": [
+                0.00010147799184778705,
+                0.0017146734753623605
+              ],
+              "passed": true
+            },
+            {
+              "round": 4,
+              "parameter_max_abs": 2.9802322387695312e-08,
+              "probability_max_abs": 2.384185791015625e-07,
+              "log_probability_max_abs": 4.876018691035711e-07,
+              "actual_metrics": {
+                "auc": 0.5666144200626959,
+                "accuracy": 0.52046783625731,
+                "brier": 0.2561308812892751,
+                "log_loss": 0.7071005925461925
+              },
+              "emulator_metrics": {
+                "auc": 0.5666144200626959,
+                "accuracy": 0.52046783625731,
+                "brier": 0.2561309381257814,
+                "log_loss": 0.7071007098652842
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.3617154657840729,
+                0.8506553173065186
+              ],
+              "emulator_probability_range": [
+                0.3617155849933624,
+                0.8506553769111633
+              ],
+              "passed": true
+            },
+            {
+              "round": 5,
+              "parameter_max_abs": 3.725290298461914e-08,
+              "probability_max_abs": 1.979060471057892e-09,
+              "log_probability_max_abs": 2.0018372417496266e-06,
+              "actual_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568654822,
+                "log_loss": 2.52480587845756
+              },
+              "emulator_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430565940633,
+                "log_loss": 2.5248055946170487
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "emulator_probability_range": [
+                0.00010120354272658005,
+                0.0018105694325640798
+              ],
+              "passed": true
+            }
+          ],
+          "final_round_reply_orders": [
+            {
+              "site_order": [
+                0,
+                1,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568654822,
+                "log_loss": 2.52480587845756
+              },
+              "emulator_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568654822,
+                "log_loss": 2.52480587845756
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "emulator_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                0,
+                2,
+                1
+              ],
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 6.984919309616089e-10,
+              "log_probability_max_abs": 1.0258374256721936e-06,
+              "actual_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568654822,
+                "log_loss": 2.52480587845756
+              },
+              "emulator_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568568149,
+                "log_loss": 2.524805877642649
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "emulator_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                0,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568654822,
+                "log_loss": 2.52480587845756
+              },
+              "emulator_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568654822,
+                "log_loss": 2.52480587845756
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "emulator_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                2,
+                0
+              ],
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 3.4924596548080444e-10,
+              "log_probability_max_abs": 1.0258374256721936e-06,
+              "actual_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568654822,
+                "log_loss": 2.52480587845756
+              },
+              "emulator_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568583409,
+                "log_loss": 2.5248058721902
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "emulator_probability_range": [
+                0.00010120344813913107,
+                0.0018105685012415051
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                0,
+                1
+              ],
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 6.984919309616089e-10,
+              "log_probability_max_abs": 1.0258374256721936e-06,
+              "actual_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568654822,
+                "log_loss": 2.52480587845756
+              },
+              "emulator_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568568149,
+                "log_loss": 2.524805877642649
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "emulator_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                1,
+                0
+              ],
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 3.4924596548080444e-10,
+              "log_probability_max_abs": 1.0258374256721936e-06,
+              "actual_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568654822,
+                "log_loss": 2.52480587845756
+              },
+              "emulator_metrics": {
+                "auc": 0.7401253918495297,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213430568583409,
+                "log_loss": 2.5248058721902
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.00010120354272658005,
+                0.0018105685012415051
+              ],
+              "emulator_probability_range": [
+                0.00010120344813913107,
+                0.0018105685012415051
+              ],
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260925,
+          "rounds": [
+            {
+              "round": 1,
+              "parameter_max_abs": 2.3096799850463867e-07,
+              "probability_max_abs": 1.0477378964424133e-09,
+              "log_probability_max_abs": 1.0254231703754613e-06,
+              "actual_metrics": {
+                "auc": 0.6547021943573668,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213830667992557,
+                "log_loss": 2.5871967045929236
+              },
+              "emulator_metrics": {
+                "auc": 0.6547021943573668,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3213830667642418,
+                "log_loss": 2.587196649889242
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                5.066650192020461e-05,
+                0.0015418373513966799
+              ],
+              "emulator_probability_range": [
+                5.066650192020461e-05,
+                0.0015418373513966799
+              ],
+              "passed": true
+            },
+            {
+              "round": 2,
+              "parameter_max_abs": 2.738088369369507e-07,
+              "probability_max_abs": 1.1920928955078125e-07,
+              "log_probability_max_abs": 3.6243809931058024e-07,
+              "actual_metrics": {
+                "auc": 0.50141065830721,
+                "accuracy": 0.672514619883041,
+                "brier": 0.22334965913217011,
+                "log_loss": 0.6388253441023987
+              },
+              "emulator_metrics": {
+                "auc": 0.50141065830721,
+                "accuracy": 0.672514619883041,
+                "brier": 0.22334966522575872,
+                "log_loss": 0.6388253573076754
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.24668198823928833,
+                0.5034050941467285
+              ],
+              "emulator_probability_range": [
+                0.2466820776462555,
+                0.5034051537513733
+              ],
+              "passed": true
+            },
+            {
+              "round": 3,
+              "parameter_max_abs": 2.7567148208618164e-07,
+              "probability_max_abs": 1.862645149230957e-09,
+              "log_probability_max_abs": 1.901025887818264e-06,
+              "actual_metrics": {
+                "auc": 0.6716300940438872,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3212948823768452,
+                "log_loss": 2.481291232261798
+              },
+              "emulator_metrics": {
+                "auc": 0.6716300940438872,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32129488228937325,
+                "log_loss": 2.4812911621133518
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.00010157296492252499,
+                0.001958065666258335
+              ],
+              "emulator_probability_range": [
+                0.00010157296492252499,
+                0.0019580675289034843
+              ],
+              "passed": true
+            },
+            {
+              "round": 4,
+              "parameter_max_abs": 2.7939677238464355e-07,
+              "probability_max_abs": 2.384185791015625e-07,
+              "log_probability_max_abs": 5.966997305151267e-07,
+              "actual_metrics": {
+                "auc": 0.48667711598746083,
+                "accuracy": 0.5964912280701754,
+                "brier": 0.24304796235902387,
+                "log_loss": 0.6795966579280767
+              },
+              "emulator_metrics": {
+                "auc": 0.48667711598746083,
+                "accuracy": 0.5964912280701754,
+                "brier": 0.24304798530322402,
+                "log_loss": 0.6795967045615308
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.2749023139476776,
+                0.7471060156822205
+              ],
+              "emulator_probability_range": [
+                0.27490234375,
+                0.7471060156822205
+              ],
+              "passed": true
+            },
+            {
+              "round": 5,
+              "parameter_max_abs": 2.789311110973358e-07,
+              "probability_max_abs": 7.566995918750763e-10,
+              "log_probability_max_abs": 1.9936367454675974e-06,
+              "actual_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3214218742511365,
+                "log_loss": 2.622678021356321
+              },
+              "emulator_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3214218741105969,
+                "log_loss": 2.6226778113489924
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "emulator_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "passed": true
+            }
+          ],
+          "final_round_reply_orders": [
+            {
+              "site_order": [
+                0,
+                1,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3214218742511365,
+                "log_loss": 2.622678021356321
+              },
+              "emulator_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3214218742511365,
+                "log_loss": 2.622678021356321
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "emulator_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                0,
+                2,
+                1
+              ],
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 4.0745362639427185e-10,
+              "log_probability_max_abs": 9.96542496523034e-07,
+              "actual_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3214218742511365,
+                "log_loss": 2.622678021356321
+              },
+              "emulator_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32142187424705165,
+                "log_loss": 2.6226780236775036
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "emulator_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                0,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3214218742511365,
+                "log_loss": 2.622678021356321
+              },
+              "emulator_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3214218742511365,
+                "log_loss": 2.622678021356321
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "emulator_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                2,
+                0
+              ],
+              "parameter_max_abs": 7.450580596923828e-09,
+              "probability_max_abs": 3.4924596548080444e-10,
+              "log_probability_max_abs": 1.9000854543094192e-06,
+              "actual_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3214218742511365,
+                "log_loss": 2.622678021356321
+              },
+              "emulator_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.321421874253689,
+                "log_loss": 2.622678037408592
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "emulator_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                0,
+                1
+              ],
+              "parameter_max_abs": 1.4901161193847656e-08,
+              "probability_max_abs": 4.0745362639427185e-10,
+              "log_probability_max_abs": 9.96542496523034e-07,
+              "actual_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3214218742511365,
+                "log_loss": 2.622678021356321
+              },
+              "emulator_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32142187424705165,
+                "log_loss": 2.6226780236775036
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "emulator_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                1,
+                0
+              ],
+              "parameter_max_abs": 7.450580596923828e-09,
+              "probability_max_abs": 3.4924596548080444e-10,
+              "log_probability_max_abs": 1.9000854543094192e-06,
+              "actual_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3214218742511365,
+                "log_loss": 2.622678021356321
+              },
+              "emulator_metrics": {
+                "auc": 0.6849529780564263,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.321421874253689,
+                "log_loss": 2.622678037408592
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "emulator_probability_range": [
+                6.813585059717298e-05,
+                0.0012481011217460036
+              ],
+              "passed": true
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "candidate": {
+        "id": "sgd_m0.9_lr3_e2_b227_wd0",
+        "optimizer": "sgd",
+        "learning_rate": 3,
+        "local_epochs": 2,
+        "batch_size": 227,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "batch_mode": "full_site"
+      },
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 4.35546875,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 1,
+        "sample_rate": 1.0,
+        "expected_batch_size": 227,
+        "total_epochs": 10,
+        "total_steps": 10,
+        "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"
+      },
+      "replications": [
+        {
+          "seed": 20260923,
+          "rounds": [
+            {
+              "round": 1,
+              "parameter_max_abs": 4.470348358154297e-08,
+              "probability_max_abs": 2.4868995751603507e-14,
+              "log_probability_max_abs": 3.8640306492254695e-06,
+              "actual_metrics": {
+                "auc": 0.6909090909090909,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374262375834,
+                "log_loss": 7.134119344240158
+              },
+              "emulator_metrics": {
+                "auc": 0.6909090909090909,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32163742623758346,
+                "log_loss": 7.1341191346862125
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                2.4081622113092394e-12,
+                1.610276356700524e-08
+              ],
+              "emulator_probability_range": [
+                2.4081622113092394e-12,
+                1.610276356700524e-08
+              ],
+              "passed": true
+            },
+            {
+              "round": 2,
+              "parameter_max_abs": 1.2479722499847412e-07,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.47492163009404387,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783552464491949,
+                "log_loss": 10.200883892400661
+              },
+              "emulator_metrics": {
+                "auc": 0.47492163009404387,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783552464491949,
+                "log_loss": 10.200883892400661
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9999082088470459,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9999082088470459,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 3,
+              "parameter_max_abs": 1.341104507446289e-07,
+              "probability_max_abs": 5.082197683525802e-20,
+              "log_probability_max_abs": 1.9121727000026567e-05,
+              "actual_metrics": {
+                "auc": 0.7089341692789969,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089111706539365
+              },
+              "emulator_metrics": {
+                "auc": 0.7089341692789969,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089111884796743
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                2.371119284335006e-21,
+                6.684374479300941e-15
+              ],
+              "emulator_probability_range": [
+                2.371083135572885e-21,
+                6.6843236573241056e-15
+              ],
+              "passed": true
+            },
+            {
+              "round": 4,
+              "parameter_max_abs": 1.4901161193847656e-07,
+              "probability_max_abs": 1.1920928955078125e-07,
+              "log_probability_max_abs": 1.1942393951980441e-07,
+              "actual_metrics": {
+                "auc": 0.5130877742946709,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6780455709460743,
+                "log_loss": 6.989981012056478
+              },
+              "emulator_metrics": {
+                "auc": 0.5130877742946709,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6780455681616017,
+                "log_loss": 6.989979994165282
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 0.9999999999999999,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9958534240722656,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9958534240722656,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 5,
+              "parameter_max_abs": 1.7881393432617188e-07,
+              "probability_max_abs": 1.9058241313221758e-21,
+              "log_probability_max_abs": 1.1465018623368906e-05,
+              "actual_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "emulator_probability_range": [
+                1.2829191890156484e-22,
+                4.998176250322912e-16
+              ],
+              "passed": true
+            }
+          ],
+          "final_round_reply_orders": [
+            {
+              "site_order": [
+                0,
+                1,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "emulator_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                0,
+                2,
+                1
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 8.205631676526035e-22,
+              "log_probability_max_abs": 7.667445402148587e-06,
+              "actual_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "emulator_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                0,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "emulator_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                2,
+                0
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.6543612251060553e-22,
+              "log_probability_max_abs": 3.89394840993873e-06,
+              "actual_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "emulator_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                0,
+                1
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 8.205631676526035e-22,
+              "log_probability_max_abs": 7.667445402148587e-06,
+              "actual_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "emulator_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                1,
+                0
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.6543612251060553e-22,
+              "log_probability_max_abs": 3.89394840993873e-06,
+              "actual_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7040752351097179,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "emulator_probability_range": [
+                1.2829143927413447e-22,
+                4.998195308564225e-16
+              ],
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260924,
+          "rounds": [
+            {
+              "round": 1,
+              "parameter_max_abs": 4.470348358154297e-08,
+              "probability_max_abs": 3.375077994860476e-14,
+              "log_probability_max_abs": 3.861854594333636e-06,
+              "actual_metrics": {
+                "auc": 0.6760188087774295,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374257544033,
+                "log_loss": 6.957834611875916
+              },
+              "emulator_metrics": {
+                "auc": 0.6760188087774295,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32163742575440313,
+                "log_loss": 6.957834501214904
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                5.521187673718231e-12,
+                1.8859175554553076e-08
+              ],
+              "emulator_probability_range": [
+                5.521187673718231e-12,
+                1.8859175554553076e-08
+              ],
+              "passed": true
+            },
+            {
+              "round": 2,
+              "parameter_max_abs": 8.940696716308594e-08,
+              "probability_max_abs": 1.1920928955078125e-07,
+              "log_probability_max_abs": 1.2019554372633134e-07,
+              "actual_metrics": {
+                "auc": 0.4736677115987461,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6776444610909639,
+                "log_loss": 6.255437740877942
+              },
+              "emulator_metrics": {
+                "auc": 0.4736677115987461,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6776444541407701,
+                "log_loss": 6.255435804397613
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9917946457862854,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9917945265769958,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 3,
+              "parameter_max_abs": 1.1920928955078125e-07,
+              "probability_max_abs": 9.740878893424454e-21,
+              "log_probability_max_abs": 1.526028501075416e-05,
+              "actual_metrics": {
+                "auc": 0.7355799373040752,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.083293780166839
+              },
+              "emulator_metrics": {
+                "auc": 0.7355799373040752,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.08329380246613
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.7541590715924793e-21,
+                4.605838212451245e-15
+              ],
+              "emulator_probability_range": [
+                1.7541457429986247e-21,
+                4.605838212451245e-15
+              ],
+              "passed": true
+            },
+            {
+              "round": 4,
+              "parameter_max_abs": 1.341104507446289e-07,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.5012539184952978,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783056913119454,
+                "log_loss": 9.474873499077415
+              },
+              "emulator_metrics": {
+                "auc": 0.5012539184952978,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783056913119454,
+                "log_loss": 9.474873499077415
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 0.9999999999999999,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9991201758384705,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9991201758384705,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 5,
+              "parameter_max_abs": 1.7881393432617188e-07,
+              "probability_max_abs": 5.293955920339377e-20,
+              "log_probability_max_abs": 1.147353633257353e-05,
+              "actual_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077277043327486
+              },
+              "emulator_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077277109967893
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.970794967911668e-21,
+                6.919617551610089e-15
+              ],
+              "emulator_probability_range": [
+                1.9707874958211737e-21,
+                6.919564612050885e-15
+              ],
+              "passed": true
+            }
+          ],
+          "final_round_reply_orders": [
+            {
+              "site_order": [
+                0,
+                1,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077277043327486
+              },
+              "emulator_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077277043327486
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.970794967911668e-21,
+                6.919617551610089e-15
+              ],
+              "emulator_probability_range": [
+                1.970794967911668e-21,
+                6.919617551610089e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                0,
+                2,
+                1
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.0164395367051604e-20,
+              "log_probability_max_abs": 7.70775201175411e-06,
+              "actual_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077277043327486
+              },
+              "emulator_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.07727706522709
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.970794967911668e-21,
+                6.919617551610089e-15
+              ],
+              "emulator_probability_range": [
+                1.9707874958211737e-21,
+                6.919617551610089e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                0,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077277043327486
+              },
+              "emulator_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077277043327486
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.970794967911668e-21,
+                6.919617551610089e-15
+              ],
+              "emulator_probability_range": [
+                1.970794967911668e-21,
+                6.919617551610089e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                2,
+                0
+              ],
+              "parameter_max_abs": 2.9802322387695312e-08,
+              "probability_max_abs": 1.0164395367051604e-20,
+              "log_probability_max_abs": 7.6010506617762985e-06,
+              "actual_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077277043327486
+              },
+              "emulator_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.07727706522709
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.970794967911668e-21,
+                6.919617551610089e-15
+              ],
+              "emulator_probability_range": [
+                1.9707874958211737e-21,
+                6.919617551610089e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                0,
+                1
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.0164395367051604e-20,
+              "log_probability_max_abs": 7.70775201175411e-06,
+              "actual_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077277043327486
+              },
+              "emulator_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.07727706522709
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.970794967911668e-21,
+                6.919617551610089e-15
+              ],
+              "emulator_probability_range": [
+                1.9707874958211737e-21,
+                6.919617551610089e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                1,
+                0
+              ],
+              "parameter_max_abs": 2.9802322387695312e-08,
+              "probability_max_abs": 1.0164395367051604e-20,
+              "log_probability_max_abs": 7.6010506617762985e-06,
+              "actual_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077277043327486
+              },
+              "emulator_metrics": {
+                "auc": 0.7191222570532916,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.07727706522709
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.970794967911668e-21,
+                6.919617551610089e-15
+              ],
+              "emulator_probability_range": [
+                1.9707874958211737e-21,
+                6.919617551610089e-15
+              ],
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260925,
+          "rounds": [
+            {
+              "round": 1,
+              "parameter_max_abs": 4.470348358154297e-08,
+              "probability_max_abs": 1.509903313490213e-14,
+              "log_probability_max_abs": 3.880106699938324e-06,
+              "actual_metrics": {
+                "auc": 0.6321316614420063,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374266155319,
+                "log_loss": 7.6334619792251726
+              },
+              "emulator_metrics": {
+                "auc": 0.6321316614420063,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32163742661553174,
+                "log_loss": 7.633461835500668
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                9.217964933028178e-13,
+                9.146213564292793e-09
+              ],
+              "emulator_probability_range": [
+                9.217982280262937e-13,
+                9.146213564292793e-09
+              ],
+              "passed": true
+            },
+            {
+              "round": 2,
+              "parameter_max_abs": 1.4528632164001465e-07,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.44177115987460813,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783625605510721,
+                "log_loss": 22.556258146218855
+              },
+              "emulator_metrics": {
+                "auc": 0.44177115987460813,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783625605510721,
+                "log_loss": 22.556258146218855
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9999996423721313,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9999996423721313,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 3,
+              "parameter_max_abs": 1.9371509552001953e-07,
+              "probability_max_abs": 3.2959746043559335e-17,
+              "log_probability_max_abs": 1.531541574451012e-05,
+              "actual_metrics": {
+                "auc": 0.6885579937304075,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32163742690045133,
+                "log_loss": 10.589215987228016
+              },
+              "emulator_metrics": {
+                "auc": 0.6885579937304075,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32163742690045133,
+                "log_loss": 10.589217883362956
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                4.555420118130595e-18,
+                5.748237823233193e-12
+              ],
+              "emulator_probability_range": [
+                4.5553853765448674e-18,
+                5.74820486348715e-12
+              ],
+              "passed": true
+            },
+            {
+              "round": 4,
+              "parameter_max_abs": 1.862645149230957e-07,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.43189655172413793,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783591125945753,
+                "log_loss": 11.536702802101825
+              },
+              "emulator_metrics": {
+                "auc": 0.43189655172413793,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783591125945753,
+                "log_loss": 11.536702802101825
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9999607801437378,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9999607801437378,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 5,
+              "parameter_max_abs": 2.384185791015625e-07,
+              "probability_max_abs": 3.8539999100070665e-20,
+              "log_probability_max_abs": 1.528296349562197e-05,
+              "actual_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172450821511
+              },
+              "emulator_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172608149566
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "emulator_probability_range": [
+                1.484437001537496e-21,
+                5.040686292846763e-15
+              ],
+              "passed": true
+            }
+          ],
+          "final_round_reply_orders": [
+            {
+              "site_order": [
+                0,
+                1,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172450821511
+              },
+              "emulator_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172450821511
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "emulator_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                0,
+                2,
+                1
+              ],
+              "parameter_max_abs": 2.9802322387695312e-08,
+              "probability_max_abs": 1.6093625997831706e-20,
+              "log_probability_max_abs": 3.908129819762962e-06,
+              "actual_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172450821511
+              },
+              "emulator_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172428879293
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "emulator_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                0,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172450821511
+              },
+              "emulator_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172450821511
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "emulator_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                2,
+                0
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 4.446922973085077e-21,
+              "log_probability_max_abs": 7.64145254805726e-06,
+              "actual_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172450821511
+              },
+              "emulator_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172473636987
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "emulator_probability_range": [
+                1.4844483106474333e-21,
+                5.040724832845863e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                0,
+                1
+              ],
+              "parameter_max_abs": 2.9802322387695312e-08,
+              "probability_max_abs": 1.6093625997831706e-20,
+              "log_probability_max_abs": 3.908129819762962e-06,
+              "actual_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172450821511
+              },
+              "emulator_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172428879293
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "emulator_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                1,
+                0
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 4.446922973085077e-21,
+              "log_probability_max_abs": 7.64145254805726e-06,
+              "actual_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172450821511
+              },
+              "emulator_metrics": {
+                "auc": 0.7042319749216301,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089172473636987
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.4844426560924647e-21,
+                5.040724832845863e-15
+              ],
+              "emulator_probability_range": [
+                1.4844483106474333e-21,
+                5.040724832845863e-15
+              ],
+              "passed": true
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "candidate": {
+        "id": "sgd_m0.9_lr3_e2_b227_wd0.0001",
+        "optimizer": "sgd",
+        "learning_rate": 3,
+        "local_epochs": 2,
+        "batch_size": 227,
+        "momentum": 0.9,
+        "weight_decay": 0.0001,
+        "batch_mode": "full_site"
+      },
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 4.35546875,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 1,
+        "sample_rate": 1.0,
+        "expected_batch_size": 227,
+        "total_epochs": 10,
+        "total_steps": 10,
+        "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"
+      },
+      "replications": [
+        {
+          "seed": 20260923,
+          "rounds": [
+            {
+              "round": 1,
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 3.019806626980426e-14,
+              "log_probability_max_abs": 3.864721623614287e-06,
+              "actual_metrics": {
+                "auc": 0.6909090909090909,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32163742623420094,
+                "log_loss": 7.132216426231037
+              },
+              "emulator_metrics": {
+                "auc": 0.6909090909090909,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374262341996,
+                "log_loss": 7.132216069766753
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                2.4245189189642247e-12,
+                1.6175997430423195e-08
+              ],
+              "emulator_probability_range": [
+                2.424523472613349e-12,
+                1.6176027628489464e-08
+              ],
+              "passed": true
+            },
+            {
+              "round": 2,
+              "parameter_max_abs": 9.872019290924072e-08,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.4744514106583072,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783553050050432,
+                "log_loss": 10.207434891779595
+              },
+              "emulator_metrics": {
+                "auc": 0.4744514106583072,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783553050050432,
+                "log_loss": 10.207434891779595
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9999090433120728,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9999090433120728,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 3,
+              "parameter_max_abs": 1.1920928955078125e-07,
+              "probability_max_abs": 5.124549330888517e-20,
+              "log_probability_max_abs": 1.906371730342471e-05,
+              "actual_metrics": {
+                "auc": 0.7087774294670847,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.08903795551466
+              },
+              "emulator_metrics": {
+                "auc": 0.7087774294670847,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089038089578489
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                2.3941050502824634e-21,
+                6.701480733187215e-15
+              ],
+              "emulator_probability_range": [
+                2.394077585301187e-21,
+                6.701429487693906e-15
+              ],
+              "passed": true
+            },
+            {
+              "round": 4,
+              "parameter_max_abs": 1.1920928955078125e-07,
+              "probability_max_abs": 1.1920928955078125e-07,
+              "log_probability_max_abs": 1.1934418935803486e-07,
+              "actual_metrics": {
+                "auc": 0.5123824451410658,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6780582521956998,
+                "log_loss": 7.013490612532162
+              },
+              "emulator_metrics": {
+                "auc": 0.5123824451410658,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6780582521986556,
+                "log_loss": 7.013490613927901
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9960260391235352,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9960260391235352,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 5,
+              "parameter_max_abs": 1.4901161193847656e-07,
+              "probability_max_abs": 1.9587636905255695e-21,
+              "log_probability_max_abs": 1.1470377266675769e-05,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.326317267311115e-22,
+                5.11572907092964e-16
+              ],
+              "emulator_probability_range": [
+                1.326317267311115e-22,
+                5.115709483292734e-16
+              ],
+              "passed": true
+            }
+          ],
+          "final_round_reply_orders": [
+            {
+              "site_order": [
+                0,
+                1,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.326317267311115e-22,
+                5.11572907092964e-16
+              ],
+              "emulator_probability_range": [
+                1.326317267311115e-22,
+                5.11572907092964e-16
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                0,
+                2,
+                1
+              ],
+              "parameter_max_abs": 2.9802322387695312e-08,
+              "probability_max_abs": 1.9587636905255695e-21,
+              "log_probability_max_abs": 7.649327656622518e-06,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.326317267311115e-22,
+                5.11572907092964e-16
+              ],
+              "emulator_probability_range": [
+                1.3263122186013217e-22,
+                5.115709483292734e-16
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                0,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.326317267311115e-22,
+                5.11572907092964e-16
+              ],
+              "emulator_probability_range": [
+                1.326317267311115e-22,
+                5.11572907092964e-16
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                2,
+                0
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.9587636905255695e-21,
+              "log_probability_max_abs": 3.921226678471612e-06,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.326317267311115e-22,
+                5.11572907092964e-16
+              ],
+              "emulator_probability_range": [
+                1.3263122186013217e-22,
+                5.115709483292734e-16
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                0,
+                1
+              ],
+              "parameter_max_abs": 2.9802322387695312e-08,
+              "probability_max_abs": 1.9587636905255695e-21,
+              "log_probability_max_abs": 7.649327656622518e-06,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.326317267311115e-22,
+                5.11572907092964e-16
+              ],
+              "emulator_probability_range": [
+                1.3263122186013217e-22,
+                5.115709483292734e-16
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                1,
+                0
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.9587636905255695e-21,
+              "log_probability_max_abs": 3.921226678471612e-06,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005848,
+                "log_loss": 11.108963167953728
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.326317267311115e-22,
+                5.11572907092964e-16
+              ],
+              "emulator_probability_range": [
+                1.3263122186013217e-22,
+                5.115709483292734e-16
+              ],
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260924,
+          "rounds": [
+            {
+              "round": 1,
+              "parameter_max_abs": 4.470348358154297e-08,
+              "probability_max_abs": 3.552713678800501e-14,
+              "log_probability_max_abs": 3.820254384834243e-06,
+              "actual_metrics": {
+                "auc": 0.6760188087774295,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32163742574850096,
+                "log_loss": 6.955955629009165
+              },
+              "emulator_metrics": {
+                "auc": 0.6760188087774295,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374257485006,
+                "log_loss": 6.955955327639084
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                5.5590592892840185e-12,
+                1.8955823577471165e-08
+              ],
+              "emulator_probability_range": [
+                5.559070131305743e-12,
+                1.8955788050334377e-08
+              ],
+              "passed": true
+            },
+            {
+              "round": 2,
+              "parameter_max_abs": 1.341104507446289e-07,
+              "probability_max_abs": 1.1920928955078125e-07,
+              "log_probability_max_abs": 1.1944015057096906e-07,
+              "actual_metrics": {
+                "auc": 0.47405956112852665,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6776115487590816,
+                "log_loss": 6.223826784478392
+              },
+              "emulator_metrics": {
+                "auc": 0.47405956112852665,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.67761154389381,
+                "log_loss": 6.223825232517616
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9914268255233765,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9914268255233765,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 3,
+              "parameter_max_abs": 2.384185791015625e-07,
+              "probability_max_abs": 1.334076891925523e-20,
+              "log_probability_max_abs": 7.726206654012913e-06,
+              "actual_metrics": {
+                "auc": 0.7357366771159874,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.083934826876527
+              },
+              "emulator_metrics": {
+                "auc": 0.7357366771159874,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.083934805121917
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.6960823492000904e-21,
+                4.480475642191714e-15
+              ],
+              "emulator_probability_range": [
+                1.6960823492000904e-21,
+                4.480475642191714e-15
+              ],
+              "passed": true
+            },
+            {
+              "round": 4,
+              "parameter_max_abs": 2.2724270820617676e-07,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.5011755485893417,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783059421286574,
+                "log_loss": 9.475480474339252
+              },
+              "emulator_metrics": {
+                "auc": 0.5011755485893417,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783059421286574,
+                "log_loss": 9.475480474339252
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 0.9999999999999999,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.999126136302948,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.999126136302948,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 5,
+              "parameter_max_abs": 3.129243850708008e-07,
+              "probability_max_abs": 2.625802136488331e-20,
+              "log_probability_max_abs": 7.67503734522279e-06,
+              "actual_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378211124001
+              },
+              "emulator_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378166990076
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "emulator_probability_range": [
+                1.977195722187759e-21,
+                6.862129001963466e-15
+              ],
+              "passed": true
+            }
+          ],
+          "final_round_reply_orders": [
+            {
+              "site_order": [
+                0,
+                1,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378211124001
+              },
+              "emulator_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378211124001
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "emulator_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                0,
+                2,
+                1
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.079967007749233e-20,
+              "log_probability_max_abs": 3.882069840699387e-06,
+              "actual_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378211124001
+              },
+              "emulator_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378188946009
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "emulator_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                0,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378211124001
+              },
+              "emulator_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378211124001
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "emulator_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                2,
+                0
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.0164395367051604e-20,
+              "log_probability_max_abs": 7.576280879106889e-06,
+              "actual_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378211124001
+              },
+              "emulator_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378189124758
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "emulator_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                0,
+                1
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.079967007749233e-20,
+              "log_probability_max_abs": 3.882069840699387e-06,
+              "actual_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378211124001
+              },
+              "emulator_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378188946009
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "emulator_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                1,
+                0
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.0164395367051604e-20,
+              "log_probability_max_abs": 7.576280879106889e-06,
+              "actual_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378211124001
+              },
+              "emulator_metrics": {
+                "auc": 0.7192789968652038,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.077378189124758
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "emulator_probability_range": [
+                1.977195722187759e-21,
+                6.862102743942101e-15
+              ],
+              "passed": true
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260925,
+          "rounds": [
+            {
+              "round": 1,
+              "parameter_max_abs": 4.470348358154297e-08,
+              "probability_max_abs": 1.687538997430238e-14,
+              "log_probability_max_abs": 3.853411683962804e-06,
+              "actual_metrics": {
+                "auc": 0.6322884012539185,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.32163742661406586,
+                "log_loss": 7.631441996989061
+              },
+              "emulator_metrics": {
+                "auc": 0.6322884012539185,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374266140657,
+                "log_loss": 7.63144197540658
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                9.2860278928103e-13,
+                9.190018523952403e-09
+              ],
+              "emulator_probability_range": [
+                9.286046324247232e-13,
+                9.190035399342378e-09
+              ],
+              "passed": true
+            },
+            {
+              "round": 2,
+              "parameter_max_abs": 1.0058283805847168e-07,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.4416144200626959,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783625605510729,
+                "log_loss": 22.556258147613118
+              },
+              "emulator_metrics": {
+                "auc": 0.4416144200626959,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783625605510729,
+                "log_loss": 22.556258147613118
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9999996423721313,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9999996423721313,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 3,
+              "parameter_max_abs": 1.043081283569336e-07,
+              "probability_max_abs": 4.0766001685454967e-17,
+              "log_probability_max_abs": 1.5335941128569175e-05,
+              "actual_metrics": {
+                "auc": 0.6885579937304075,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269004557,
+                "log_loss": 10.597220592395377
+              },
+              "emulator_metrics": {
+                "auc": 0.6885579937304075,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269004557,
+                "log_loss": 10.597222322697224
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                4.378565594444307e-18,
+                5.562304956907571e-12
+              ],
+              "emulator_probability_range": [
+                4.378515550017248e-18,
+                5.5622728645232655e-12
+              ],
+              "passed": true
+            },
+            {
+              "round": 4,
+              "parameter_max_abs": 1.1920928955078125e-07,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.43009404388714734,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783590735561166,
+                "log_loss": 11.528201166447305
+              },
+              "emulator_metrics": {
+                "auc": 0.43009404388714734,
+                "accuracy": 0.3216374269005848,
+                "brier": 0.6783590735561166,
+                "log_loss": 11.528201166447305
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                0.9999606609344482,
+                1.0
+              ],
+              "emulator_probability_range": [
+                0.9999606609344482,
+                1.0
+              ],
+              "passed": true
+            },
+            {
+              "round": 5,
+              "parameter_max_abs": 1.564621925354004e-07,
+              "probability_max_abs": 3.218725199566341e-20,
+              "log_probability_max_abs": 1.530014665007684e-05,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497771978511
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "emulator_probability_range": [
+                1.4686490801683138e-21,
+                4.96549178998721e-15
+              ],
+              "passed": true
+            }
+          ],
+          "final_round_reply_orders": [
+            {
+              "site_order": [
+                0,
+                1,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "emulator_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                0,
+                2,
+                1
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.9058241313221758e-20,
+              "log_probability_max_abs": 7.684725282786076e-06,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497593432906
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "emulator_probability_range": [
+                1.468665841884828e-21,
+                4.9655299064698365e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                0,
+                2
+              ],
+              "parameter_max_abs": 0.0,
+              "probability_max_abs": 0.0,
+              "log_probability_max_abs": 0.0,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "emulator_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                1,
+                2,
+                0
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 2.117582368135751e-21,
+              "log_probability_max_abs": 7.684725282786076e-06,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "emulator_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                0,
+                1
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 1.9058241313221758e-20,
+              "log_probability_max_abs": 7.684725282786076e-06,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497593432906
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "emulator_probability_range": [
+                1.468665841884828e-21,
+                4.9655299064698365e-15
+              ],
+              "passed": true
+            },
+            {
+              "site_order": [
+                2,
+                1,
+                0
+              ],
+              "parameter_max_abs": 5.960464477539063e-08,
+              "probability_max_abs": 2.117582368135751e-21,
+              "log_probability_max_abs": 7.684725282786076e-06,
+              "actual_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "emulator_metrics": {
+                "auc": 0.7039184952978056,
+                "accuracy": 0.6783625730994152,
+                "brier": 0.3216374269005846,
+                "log_loss": 11.089497615878026
+              },
+              "auc_abs_difference": 0.0,
+              "spearman_rank_correlation": 1.0,
+              "pair_order_disagreements": 0,
+              "cross_class_pair_order_disagreements": 0,
+              "actual_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "emulator_probability_range": [
+                1.468665841884828e-21,
+                4.965510848228523e-15
+              ],
+              "passed": true
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "feature_hash_parity_with_all_15_r4_captures": true,
+  "test_accessed": false,
+  "flower_version": "1.31.0",
+  "aggregation_source": "/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/flwr/serverapp/strategy/strategy_utils.py",
+  "aggregation_source_sha256": "b0d25f3d0fa7c615906f9f2234395261368e5ff772418f8023937f0093126036",
+  "installed_arithmetic": "Normalize unit weights to 1/3; scale each node tensor before sequential addition in reply order.",
+  "emulated_arithmetic": "Sum three node tensors in site order, then divide by 3.",
+  "parameter_probability_absolute_tolerance": 0.0001,
+  "auc_absolute_tolerance": 0.001,
+  "noise_seeds": [
+    20260923,
+    20260924,
+    20260925
+  ],
+  "elapsed_s": 34.705030696466565,
+  "scope": "All three shortlisted schedules and three search noise seeds, five full rounds with unchanged CUDA _dp_fit and installed Flower aggregation versus CPU analytical emulator; identical diagnostic secure streams.",
+  "reply_order_scope": "Canonical site order for five-round comparison; all six orders evaluated separately for the final aggregation of the same node models. This does not replay historical custodial randomness or exhaust all arrival-order sequences."
+}

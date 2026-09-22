@@ -1,0 +1,18 @@
+{
+  "schema": "dsflower-campaign-v2",
+  "cell_id": "pilot_breast_random_forest_eps1",
+  "status": "failed",
+  "exact_error": "Saved native-tree ensemble violates its canonical container contract.",
+  "contract": "random_forest",
+  "dataset": "breast",
+  "epsilon": 1,
+  "rounds": 1,
+  "tool_sha256": {
+    "run_cell.R": "6ac2830bf01139721a0905b71a773d429011f2c62daee2d66343303d1a672853",
+    "campaign_lib.R": "24bf74cab7ceab83fb2db7f2d0966fc1a0c501b99def9f4badf9e4feae429dfc",
+    "central_train.py": "9f05015148a5dd9d8ae2a40a6c52eed5e4974e2dfe10d9c996c87a88d10c3b59",
+    "README.md": "806922b548e9ec574f45daf455a0da5a769209b6173ce4406b900abffdd3fecd"
+  },
+  "completed_replicates": [],
+  "elapsed_s": 49.9379732608795
+}

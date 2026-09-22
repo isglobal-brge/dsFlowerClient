@@ -1,0 +1,8 @@
+{
+  "checked_at_utc": "2026-09-22 01:07:06 UTC",
+  "dsFlower": "0.5.0",
+  "dsFlowerClient": "0.5.1",
+  "client_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+  "node_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+  "installed_canonical_helper_sha256": "b5ac10ea0bc6f60bc97e4724b6c34ad5e50cecb7a59d88f749437027eebfe2bd"
+}

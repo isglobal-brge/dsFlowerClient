@@ -1,0 +1,1566 @@
+{
+  "schema": "dsflower-campaign-v2",
+  "status": "completed",
+  "generated_at": "2026-09-22T01:04:26+0000",
+  "host": {
+    "nodename": "b85270415cca",
+    "sysname": "Linux",
+    "release": "6.8.0-100-generic",
+    "machine": "x86_64",
+    "r_version": "R version 4.6.1 (2026-06-24)",
+    "pod_id": "2sy2g4pb3xwgqt",
+    "pod_name": "pod-flower-tabular",
+    "requested_vcpu": 32,
+    "requested_memory_gb": 64
+  },
+  "versions": {
+    "dsflower": "0.5.0",
+    "dsflowerclient": "0.5.1",
+    "flwr": "1.31.0",
+    "torch": "2.14.0+cpu",
+    "opacus": "1.6.0",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "node_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "jsonlite": "2.0.0",
+    "native_python": {
+      "python": "3.11.16 (main, Sep  1 2026, 14:18:37) [Clang 22.1.3 ]",
+      "numpy": "2.4.6",
+      "json": "2.0.9"
+    },
+    "sklearn": "1.9.1"
+  },
+  "release_commits": {
+    "dsFlower": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlowerClient": "598d21c4627496a65d44034440f2d221ce6e04a2"
+  },
+  "tool_sha256": {
+    "run_cell.R": "e2ddc130c3dc077269344a804d74e02520674202f91eaa6b21da8d9d98083114",
+    "campaign_lib.R": "24bf74cab7ceab83fb2db7f2d0966fc1a0c501b99def9f4badf9e4feae429dfc",
+    "central_train.py": "9f05015148a5dd9d8ae2a40a6c52eed5e4974e2dfe10d9c996c87a88d10c3b59",
+    "README.md": "94029bc0353409a44b35a286b36a264140fd1ec056a319f7768e0cd4774e07e2",
+    "protocol.json": "e1ffd4158ce53acb79a06507c84b23dcd18682114f9d2c9471d5b544af685dea"
+  },
+  "contract": "random_forest",
+  "dataset": {
+    "name": "cdc45k",
+    "n_total": 45000,
+    "features": [
+      "HighBP",
+      "HighChol",
+      "CholCheck",
+      "BMI",
+      "Smoker",
+      "Stroke",
+      "HeartDiseaseorAttack",
+      "PhysActivity",
+      "Fruits",
+      "Veggies",
+      "HvyAlcoholConsump",
+      "AnyHealthcare",
+      "NoDocbcCost",
+      "GenHlth",
+      "MentHlth",
+      "PhysHlth",
+      "DiffWalk",
+      "Sex",
+      "Age",
+      "Education",
+      "Income"
+    ],
+    "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+    "sha_of_prepared": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+    "uci_id": 891,
+    "full_name": "CDC Diabetes Health Indicators",
+    "raw_file": "cdc_diabetes_health_indicators.csv",
+    "download_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+    "citation": "CDC Diabetes Health Indicators (2017). UCI Machine Learning Repository. https://doi.org/10.24432/C53919",
+    "cohort_seed": 20260819,
+    "n_train": 36000,
+    "n_test": 9000,
+    "n_per_site": [
+      12000,
+      12000,
+      12000
+    ]
+  },
+  "split": {
+    "type": "uniform-stratified",
+    "test_fraction": 0.2,
+    "seeds": [
+      20260820,
+      20260821,
+      20260822
+    ],
+    "site_assignment": "round-robin per class on training rows; unchanged campaign_split"
+  },
+  "privacy": {
+    "epsilon": 8,
+    "delta": 1e-06,
+    "unit": "row",
+    "clipping_norm": 1,
+    "adjacency": "replace_one",
+    "guarantee_scope": "per-training",
+    "bounds_policy": "Fixed public domain bounds and cuts; frozen before scoring; see trees/README.md",
+    "randomness": "Node-owned sticky secret RNG; fresh persistent secret files per site/replicate; not seeded by analyst",
+    "native_clip_semantics": "Unit bounded statistics on public feature/target domains; clipping_norm=1 is the node pin, not a DP-SGD forest mechanism",
+    "reported_configuration": "See every replicate's node_privacy; native accounting is separately labelled public recomputation"
+  },
+  "rounds": 1,
+  "rounds_reason": "native-tree schedule",
+  "model_params": {
+    "task": "binary",
+    "n_estimators": 8,
+    "max_depth": 4,
+    "max_features": "auto"
+  },
+  "model_params_overrides": [],
+  "per_replicate": [
+    {
+      "seed": 20260820,
+      "central": {
+        "auc": 0.807718013433697,
+        "acc": 0.860555555555556,
+        "brier": 0.101733942429459,
+        "logloss": 0.331024698540899
+      },
+      "federated_dp": {
+        "auc": 0.79633121339367,
+        "acc": 0.860666666666667,
+        "brier": 0.104921550477188,
+        "logloss": 0.347536727255538
+      },
+      "trivial": {
+        "auc": 0.5,
+        "acc": 0.860666666666667,
+        "brier": 0.119919555555556,
+        "logloss": 0.403751443594527
+      },
+      "gap": {
+        "auc": -0.0113868000400268,
+        "acc": 0.000111111111111173,
+        "brier": 0.00318760804772872,
+        "logloss": 0.0165120287146388
+      },
+      "trivial_training_prevalence": 0.139333333333333,
+      "n_train": 36000,
+      "n_test": 9000,
+      "n_per_site": [
+        12000,
+        12000,
+        12000
+      ],
+      "split_row_ids_sha256": "a53f3ff8662d29310c4934251758fc8e3dfc182f13c6ba13394d5a0c1720115e",
+      "central_train_csv_sha256": "98369db2b8a61e38919cd9e5432714babdf0cfe818da0d4ea019c4ae220037a0",
+      "feature_bounds": {
+        "lower": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1
+        ],
+        "upper": [
+          1,
+          1,
+          1,
+          100,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          5,
+          30,
+          30,
+          1,
+          1,
+          13,
+          6,
+          8
+        ]
+      },
+      "feature_cuts": [
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          5,
+          10,
+          15,
+          20,
+          25,
+          30,
+          35,
+          40,
+          45,
+          50,
+          55,
+          60,
+          65,
+          70,
+          75,
+          80,
+          85,
+          90,
+          95
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5
+        ],
+        [
+          4.5,
+          9.5,
+          14.5,
+          19.5,
+          24.5,
+          29.5
+        ],
+        [
+          4.5,
+          9.5,
+          14.5,
+          19.5,
+          24.5,
+          29.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5,
+          10.5,
+          11.5,
+          12.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5
+        ]
+      ],
+      "node_privacy": [
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        }
+      ],
+      "central_configuration": {
+        "implementation": "RandomForestClassifier",
+        "sklearn": "1.9.1",
+        "params": {
+          "bootstrap": true,
+          "ccp_alpha": 0,
+          "class_weight": null,
+          "criterion": "gini",
+          "max_depth": 4,
+          "max_features": 5,
+          "max_leaf_nodes": null,
+          "max_samples": null,
+          "min_impurity_decrease": 0,
+          "min_samples_leaf": 1,
+          "min_samples_split": 2,
+          "min_weight_fraction_leaf": 0,
+          "monotonic_cst": null,
+          "n_estimators": 8,
+          "n_jobs": 1,
+          "oob_score": false,
+          "random_state": 20260820,
+          "verbose": 0,
+          "warm_start": false
+        },
+        "accounting_source": "Recomputed from installed, unmodified dsFlower forest_accounting.py; public inputs only",
+        "native_accounting": {
+          "candidate_schedule": "public-prf-mtry-without-replacement/v1",
+          "histogram_release": "joint-public-bin-node-histogram/v1",
+          "leaf_release": "joint-terminal-sufficient-vector/v1",
+          "leaf_sensitivity": 1.4142135623731,
+          "leaf_sigma": 2.34441382936232,
+          "mechanism": "random-forest/adaptive-level-gaussian/v1",
+          "num_releases": 5,
+          "partition": "record-prf-disjoint-tree/v1",
+          "split_sensitivity": 3.16227766016838,
+          "split_sigma": 5.24226868984474,
+          "transcript": "complete-depth-levels-plus-leaves/v1"
+        }
+      },
+      "release_metadata": {
+        "track": "native_tree",
+        "engine": "random_forest",
+        "task": "binary",
+        "data_kind": "tabular",
+        "features": [
+          "HighBP",
+          "HighChol",
+          "CholCheck",
+          "BMI",
+          "Smoker",
+          "Stroke",
+          "HeartDiseaseorAttack",
+          "PhysActivity",
+          "Fruits",
+          "Veggies",
+          "HvyAlcoholConsump",
+          "AnyHealthcare",
+          "NoDocbcCost",
+          "GenHlth",
+          "MentHlth",
+          "PhysHlth",
+          "DiffWalk",
+          "Sex",
+          "Age",
+          "Education",
+          "Income"
+        ],
+        "feature_lower": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1
+        ],
+        "feature_upper": [
+          1,
+          1,
+          1,
+          100,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          5,
+          30,
+          30,
+          1,
+          1,
+          13,
+          6,
+          8
+        ],
+        "target_levels": [
+          "0",
+          "1"
+        ],
+        "target_bounds": null,
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbIkhpZ2hCUCIsIkhpZ2hDaG9sIiwiQ2hvbENoZWNrIiwiQk1JIiwiU21va2VyIiwiU3Ryb2tlIiwiSGVhcnREaXNlYXNlb3JBdHRhY2siLCJQaHlzQWN0aXZpdHkiLCJGcnVpdHMiLCJWZWdnaWVzIiwiSHZ5QWxjb2hvbENvbnN1bXAiLCJBbnlIZWFsdGhjYXJlIiwiTm9Eb2NiY0Nvc3QiLCJHZW5IbHRoIiwiTWVudEhsdGgiLCJQaHlzSGx0aCIsIkRpZmZXYWxrIiwiU2V4IiwiQWdlIiwiRWR1Y2F0aW9uIiwiSW5jb21lIl0sImxvd2VyIjpbMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDEuMCwwLjAsMC4wLDAuMCwwLjAsMS4wLDEuMCwxLjBdLCJ1cHBlciI6WzEuMCwxLjAsMS4wLDEwMC4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDUuMCwzMC4wLDMwLjAsMS4wLDEuMCwxMy4wLDYuMCw4LjBdLCJjdXRzIjpbWzAuNV0sWzAuNV0sWzAuNV0sWzUuMCwxMC4wLDE1LjAsMjAuMCwyNS4wLDMwLjAsMzUuMCw0MC4wLDQ1LjAsNTAuMCw1NS4wLDYwLjAsNjUuMCw3MC4wLDc1LjAsODAuMCw4NS4wLDkwLjAsOTUuMF0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41LDEwLjUsMTEuNSwxMi41XSxbMS41LDIuNSwzLjUsNC41LDUuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNV1dLCJ0YXJnZXQiOnsibmFtZSI6InRhcmdldCIsImtpbmQiOiJiaW5hcnkiLCJsZXZlbHMiOlt7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjAifSx7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjEifV0sImxvd2VyIjowLjAsInVwcGVyIjoxLjB9LCJzaGEyNTYiOiIwYjU5MGY4M2EzMmNmZGZjYjg3OGE5MGJhOTIwOTU5YmFlMTE3OWY1YzY2YzhiZDEyMWZlMTgwZDI1MmM3OTdiIn0sInBhcmFtZXRlcnMiOlt7Im5hbWUiOiJtYXhfZGVwdGgiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo0fSx7Im5hbWUiOiJtYXhfZmVhdHVyZXMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo1fSx7Im5hbWUiOiJuX2VzdGltYXRvcnMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo4fV0sInJlc291cmNlcyI6eyJtYXhfZmVhdHVyZXMiOjIxLCJtYXhfdHJlZXMiOjgsIm1heF9kZXB0aCI6NCwibWF4X2JpbnMiOjIwLCJtYXhfdGhyZWFkcyI6MzIsIm1lbW9yeV9tYiI6MzI3NjgsInRpbWVvdXRfc2Vjb25kcyI6MjE2MDB9fQ==",
+        "native_tree_request_sha256": "38a3d426536b7e69b2ba02e40aa0b86505f1f7e8e9dd9dd52baf8942fc08f977",
+        "public_schema_sha256": "0b590f83a32cfdfcb878a90ba920959bae1179f5c66c8bd121fe180d252c797b",
+        "artifact": {
+          "file": "model.random-forest-ensemble.json",
+          "format": "dsflower-forest-ensemble-json-v1",
+          "size_bytes": 13201,
+          "sha256": "a3bed227c4954a3e15f329925d7db90e9fa404c3f0734c4efa2bcfc8d196cd9e"
+        },
+        "sanitization": {
+          "profile": "dsflower-forest-ensemble-v1",
+          "privacy_basis": "direct-dp-training-postprocessing",
+          "contains_raw_records": false,
+          "contains_unnoised_statistics": false,
+          "contains_feature_names": false,
+          "contains_target_name": false,
+          "contains_training_history": false,
+          "contains_backend_logs": false,
+          "contains_paths": false,
+          "contains_executable_payload": false
+        }
+      },
+      "release_profile": {
+        "artifact": {
+          "format": "dsflower-forest-ensemble-json-v1",
+          "sha256": "a3bed227c4954a3e15f329925d7db90e9fa404c3f0734c4efa2bcfc8d196cd9e",
+          "size_bytes": 13201
+        },
+        "contract": "dsflower-native-tree-prediction-profile-v2",
+        "engine": "random_forest",
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbIkhpZ2hCUCIsIkhpZ2hDaG9sIiwiQ2hvbENoZWNrIiwiQk1JIiwiU21va2VyIiwiU3Ryb2tlIiwiSGVhcnREaXNlYXNlb3JBdHRhY2siLCJQaHlzQWN0aXZpdHkiLCJGcnVpdHMiLCJWZWdnaWVzIiwiSHZ5QWxjb2hvbENvbnN1bXAiLCJBbnlIZWFsdGhjYXJlIiwiTm9Eb2NiY0Nvc3QiLCJHZW5IbHRoIiwiTWVudEhsdGgiLCJQaHlzSGx0aCIsIkRpZmZXYWxrIiwiU2V4IiwiQWdlIiwiRWR1Y2F0aW9uIiwiSW5jb21lIl0sImxvd2VyIjpbMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDEuMCwwLjAsMC4wLDAuMCwwLjAsMS4wLDEuMCwxLjBdLCJ1cHBlciI6WzEuMCwxLjAsMS4wLDEwMC4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDUuMCwzMC4wLDMwLjAsMS4wLDEuMCwxMy4wLDYuMCw4LjBdLCJjdXRzIjpbWzAuNV0sWzAuNV0sWzAuNV0sWzUuMCwxMC4wLDE1LjAsMjAuMCwyNS4wLDMwLjAsMzUuMCw0MC4wLDQ1LjAsNTAuMCw1NS4wLDYwLjAsNjUuMCw3MC4wLDc1LjAsODAuMCw4NS4wLDkwLjAsOTUuMF0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41LDEwLjUsMTEuNSwxMi41XSxbMS41LDIuNSwzLjUsNC41LDUuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNV1dLCJ0YXJnZXQiOnsibmFtZSI6InRhcmdldCIsImtpbmQiOiJiaW5hcnkiLCJsZXZlbHMiOlt7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjAifSx7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjEifV0sImxvd2VyIjowLjAsInVwcGVyIjoxLjB9LCJzaGEyNTYiOiIwYjU5MGY4M2EzMmNmZGZjYjg3OGE5MGJhOTIwOTU5YmFlMTE3OWY1YzY2YzhiZDEyMWZlMTgwZDI1MmM3OTdiIn0sInBhcmFtZXRlcnMiOlt7Im5hbWUiOiJtYXhfZGVwdGgiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo0fSx7Im5hbWUiOiJtYXhfZmVhdHVyZXMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo1fSx7Im5hbWUiOiJuX2VzdGltYXRvcnMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo4fV0sInJlc291cmNlcyI6eyJtYXhfZmVhdHVyZXMiOjIxLCJtYXhfdHJlZXMiOjgsIm1heF9kZXB0aCI6NCwibWF4X2JpbnMiOjIwLCJtYXhfdGhyZWFkcyI6MzIsIm1lbW9yeV9tYiI6MzI3NjgsInRpbWVvdXRfc2Vjb25kcyI6MjE2MDB9fQ==",
+        "native_tree_request_sha256": "38a3d426536b7e69b2ba02e40aa0b86505f1f7e8e9dd9dd52baf8942fc08f977",
+        "public_schema_sha256": "0b590f83a32cfdfcb878a90ba920959bae1179f5c66c8bd121fe180d252c797b",
+        "task": "binary",
+        "version": 2
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 1,
+        "raw": [
+          {
+            "available": true,
+            "round": 1
+          }
+        ],
+        "n_clients_source": "saved training RDS and SHA-256-bound ensemble member count",
+        "n_clients_original": []
+      },
+      "model_sha256": "a3bed227c4954a3e15f329925d7db90e9fa404c3f0734c4efa2bcfc8d196cd9e",
+      "cleanup_ok": true,
+      "elapsed_s": 53.3316700458527,
+      "federated_elapsed_s": 50.7432024478912,
+      "central_elapsed_s": 1.49428629875183
+    },
+    {
+      "seed": 20260821,
+      "central": {
+        "auc": 0.806500221753595,
+        "acc": 0.861666666666667,
+        "brier": 0.102419903253921,
+        "logloss": 0.33458967145276
+      },
+      "federated_dp": {
+        "auc": 0.799975889186619,
+        "acc": 0.860666666666667,
+        "brier": 0.105240284306183,
+        "logloss": 0.347206297793314
+      },
+      "trivial": {
+        "auc": 0.5,
+        "acc": 0.860666666666667,
+        "brier": 0.119919555555556,
+        "logloss": 0.403751443594527
+      },
+      "gap": {
+        "auc": -0.00652433256697593,
+        "acc": -0.001,
+        "brier": 0.00282038105226201,
+        "logloss": 0.0126166263405538
+      },
+      "trivial_training_prevalence": 0.139333333333333,
+      "n_train": 36000,
+      "n_test": 9000,
+      "n_per_site": [
+        12000,
+        12000,
+        12000
+      ],
+      "split_row_ids_sha256": "998bb0cdaaec35a86dee9339998e9e99f0ac0e079867dbfb01ca66c983a662e1",
+      "central_train_csv_sha256": "d73315053ca6f6a55664a8b5c43622574923602fe70c396e9c8c264a47653f09",
+      "feature_bounds": {
+        "lower": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1
+        ],
+        "upper": [
+          1,
+          1,
+          1,
+          100,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          5,
+          30,
+          30,
+          1,
+          1,
+          13,
+          6,
+          8
+        ]
+      },
+      "feature_cuts": [
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          5,
+          10,
+          15,
+          20,
+          25,
+          30,
+          35,
+          40,
+          45,
+          50,
+          55,
+          60,
+          65,
+          70,
+          75,
+          80,
+          85,
+          90,
+          95
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5
+        ],
+        [
+          4.5,
+          9.5,
+          14.5,
+          19.5,
+          24.5,
+          29.5
+        ],
+        [
+          4.5,
+          9.5,
+          14.5,
+          19.5,
+          24.5,
+          29.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5,
+          10.5,
+          11.5,
+          12.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5
+        ]
+      ],
+      "node_privacy": [
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        }
+      ],
+      "central_configuration": {
+        "implementation": "RandomForestClassifier",
+        "sklearn": "1.9.1",
+        "params": {
+          "bootstrap": true,
+          "ccp_alpha": 0,
+          "class_weight": null,
+          "criterion": "gini",
+          "max_depth": 4,
+          "max_features": 5,
+          "max_leaf_nodes": null,
+          "max_samples": null,
+          "min_impurity_decrease": 0,
+          "min_samples_leaf": 1,
+          "min_samples_split": 2,
+          "min_weight_fraction_leaf": 0,
+          "monotonic_cst": null,
+          "n_estimators": 8,
+          "n_jobs": 1,
+          "oob_score": false,
+          "random_state": 20260821,
+          "verbose": 0,
+          "warm_start": false
+        },
+        "accounting_source": "Recomputed from installed, unmodified dsFlower forest_accounting.py; public inputs only",
+        "native_accounting": {
+          "candidate_schedule": "public-prf-mtry-without-replacement/v1",
+          "histogram_release": "joint-public-bin-node-histogram/v1",
+          "leaf_release": "joint-terminal-sufficient-vector/v1",
+          "leaf_sensitivity": 1.4142135623731,
+          "leaf_sigma": 2.34441382936232,
+          "mechanism": "random-forest/adaptive-level-gaussian/v1",
+          "num_releases": 5,
+          "partition": "record-prf-disjoint-tree/v1",
+          "split_sensitivity": 3.16227766016838,
+          "split_sigma": 5.24226868984474,
+          "transcript": "complete-depth-levels-plus-leaves/v1"
+        }
+      },
+      "release_metadata": {
+        "track": "native_tree",
+        "engine": "random_forest",
+        "task": "binary",
+        "data_kind": "tabular",
+        "features": [
+          "HighBP",
+          "HighChol",
+          "CholCheck",
+          "BMI",
+          "Smoker",
+          "Stroke",
+          "HeartDiseaseorAttack",
+          "PhysActivity",
+          "Fruits",
+          "Veggies",
+          "HvyAlcoholConsump",
+          "AnyHealthcare",
+          "NoDocbcCost",
+          "GenHlth",
+          "MentHlth",
+          "PhysHlth",
+          "DiffWalk",
+          "Sex",
+          "Age",
+          "Education",
+          "Income"
+        ],
+        "feature_lower": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1
+        ],
+        "feature_upper": [
+          1,
+          1,
+          1,
+          100,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          5,
+          30,
+          30,
+          1,
+          1,
+          13,
+          6,
+          8
+        ],
+        "target_levels": [
+          "0",
+          "1"
+        ],
+        "target_bounds": null,
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbIkhpZ2hCUCIsIkhpZ2hDaG9sIiwiQ2hvbENoZWNrIiwiQk1JIiwiU21va2VyIiwiU3Ryb2tlIiwiSGVhcnREaXNlYXNlb3JBdHRhY2siLCJQaHlzQWN0aXZpdHkiLCJGcnVpdHMiLCJWZWdnaWVzIiwiSHZ5QWxjb2hvbENvbnN1bXAiLCJBbnlIZWFsdGhjYXJlIiwiTm9Eb2NiY0Nvc3QiLCJHZW5IbHRoIiwiTWVudEhsdGgiLCJQaHlzSGx0aCIsIkRpZmZXYWxrIiwiU2V4IiwiQWdlIiwiRWR1Y2F0aW9uIiwiSW5jb21lIl0sImxvd2VyIjpbMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDEuMCwwLjAsMC4wLDAuMCwwLjAsMS4wLDEuMCwxLjBdLCJ1cHBlciI6WzEuMCwxLjAsMS4wLDEwMC4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDUuMCwzMC4wLDMwLjAsMS4wLDEuMCwxMy4wLDYuMCw4LjBdLCJjdXRzIjpbWzAuNV0sWzAuNV0sWzAuNV0sWzUuMCwxMC4wLDE1LjAsMjAuMCwyNS4wLDMwLjAsMzUuMCw0MC4wLDQ1LjAsNTAuMCw1NS4wLDYwLjAsNjUuMCw3MC4wLDc1LjAsODAuMCw4NS4wLDkwLjAsOTUuMF0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41LDEwLjUsMTEuNSwxMi41XSxbMS41LDIuNSwzLjUsNC41LDUuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNV1dLCJ0YXJnZXQiOnsibmFtZSI6InRhcmdldCIsImtpbmQiOiJiaW5hcnkiLCJsZXZlbHMiOlt7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjAifSx7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjEifV0sImxvd2VyIjowLjAsInVwcGVyIjoxLjB9LCJzaGEyNTYiOiIwYjU5MGY4M2EzMmNmZGZjYjg3OGE5MGJhOTIwOTU5YmFlMTE3OWY1YzY2YzhiZDEyMWZlMTgwZDI1MmM3OTdiIn0sInBhcmFtZXRlcnMiOlt7Im5hbWUiOiJtYXhfZGVwdGgiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo0fSx7Im5hbWUiOiJtYXhfZmVhdHVyZXMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo1fSx7Im5hbWUiOiJuX2VzdGltYXRvcnMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo4fV0sInJlc291cmNlcyI6eyJtYXhfZmVhdHVyZXMiOjIxLCJtYXhfdHJlZXMiOjgsIm1heF9kZXB0aCI6NCwibWF4X2JpbnMiOjIwLCJtYXhfdGhyZWFkcyI6MzIsIm1lbW9yeV9tYiI6MzI3NjgsInRpbWVvdXRfc2Vjb25kcyI6MjE2MDB9fQ==",
+        "native_tree_request_sha256": "38a3d426536b7e69b2ba02e40aa0b86505f1f7e8e9dd9dd52baf8942fc08f977",
+        "public_schema_sha256": "0b590f83a32cfdfcb878a90ba920959bae1179f5c66c8bd121fe180d252c797b",
+        "artifact": {
+          "file": "model.random-forest-ensemble.json",
+          "format": "dsflower-forest-ensemble-json-v1",
+          "size_bytes": 13084,
+          "sha256": "2a7beeb8c63fef578d7d200cf3ed4d596a22d84646eb142e26fd941f23435adf"
+        },
+        "sanitization": {
+          "profile": "dsflower-forest-ensemble-v1",
+          "privacy_basis": "direct-dp-training-postprocessing",
+          "contains_raw_records": false,
+          "contains_unnoised_statistics": false,
+          "contains_feature_names": false,
+          "contains_target_name": false,
+          "contains_training_history": false,
+          "contains_backend_logs": false,
+          "contains_paths": false,
+          "contains_executable_payload": false
+        }
+      },
+      "release_profile": {
+        "artifact": {
+          "format": "dsflower-forest-ensemble-json-v1",
+          "sha256": "2a7beeb8c63fef578d7d200cf3ed4d596a22d84646eb142e26fd941f23435adf",
+          "size_bytes": 13084
+        },
+        "contract": "dsflower-native-tree-prediction-profile-v2",
+        "engine": "random_forest",
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbIkhpZ2hCUCIsIkhpZ2hDaG9sIiwiQ2hvbENoZWNrIiwiQk1JIiwiU21va2VyIiwiU3Ryb2tlIiwiSGVhcnREaXNlYXNlb3JBdHRhY2siLCJQaHlzQWN0aXZpdHkiLCJGcnVpdHMiLCJWZWdnaWVzIiwiSHZ5QWxjb2hvbENvbnN1bXAiLCJBbnlIZWFsdGhjYXJlIiwiTm9Eb2NiY0Nvc3QiLCJHZW5IbHRoIiwiTWVudEhsdGgiLCJQaHlzSGx0aCIsIkRpZmZXYWxrIiwiU2V4IiwiQWdlIiwiRWR1Y2F0aW9uIiwiSW5jb21lIl0sImxvd2VyIjpbMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDEuMCwwLjAsMC4wLDAuMCwwLjAsMS4wLDEuMCwxLjBdLCJ1cHBlciI6WzEuMCwxLjAsMS4wLDEwMC4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDUuMCwzMC4wLDMwLjAsMS4wLDEuMCwxMy4wLDYuMCw4LjBdLCJjdXRzIjpbWzAuNV0sWzAuNV0sWzAuNV0sWzUuMCwxMC4wLDE1LjAsMjAuMCwyNS4wLDMwLjAsMzUuMCw0MC4wLDQ1LjAsNTAuMCw1NS4wLDYwLjAsNjUuMCw3MC4wLDc1LjAsODAuMCw4NS4wLDkwLjAsOTUuMF0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41LDEwLjUsMTEuNSwxMi41XSxbMS41LDIuNSwzLjUsNC41LDUuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNV1dLCJ0YXJnZXQiOnsibmFtZSI6InRhcmdldCIsImtpbmQiOiJiaW5hcnkiLCJsZXZlbHMiOlt7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjAifSx7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjEifV0sImxvd2VyIjowLjAsInVwcGVyIjoxLjB9LCJzaGEyNTYiOiIwYjU5MGY4M2EzMmNmZGZjYjg3OGE5MGJhOTIwOTU5YmFlMTE3OWY1YzY2YzhiZDEyMWZlMTgwZDI1MmM3OTdiIn0sInBhcmFtZXRlcnMiOlt7Im5hbWUiOiJtYXhfZGVwdGgiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo0fSx7Im5hbWUiOiJtYXhfZmVhdHVyZXMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo1fSx7Im5hbWUiOiJuX2VzdGltYXRvcnMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo4fV0sInJlc291cmNlcyI6eyJtYXhfZmVhdHVyZXMiOjIxLCJtYXhfdHJlZXMiOjgsIm1heF9kZXB0aCI6NCwibWF4X2JpbnMiOjIwLCJtYXhfdGhyZWFkcyI6MzIsIm1lbW9yeV9tYiI6MzI3NjgsInRpbWVvdXRfc2Vjb25kcyI6MjE2MDB9fQ==",
+        "native_tree_request_sha256": "38a3d426536b7e69b2ba02e40aa0b86505f1f7e8e9dd9dd52baf8942fc08f977",
+        "public_schema_sha256": "0b590f83a32cfdfcb878a90ba920959bae1179f5c66c8bd121fe180d252c797b",
+        "task": "binary",
+        "version": 2
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 1,
+        "raw": [
+          {
+            "available": true,
+            "round": 1
+          }
+        ],
+        "n_clients_source": "saved training RDS and SHA-256-bound ensemble member count",
+        "n_clients_original": []
+      },
+      "model_sha256": "2a7beeb8c63fef578d7d200cf3ed4d596a22d84646eb142e26fd941f23435adf",
+      "cleanup_ok": true,
+      "elapsed_s": 52.943202495575,
+      "federated_elapsed_s": 50.4645998477936,
+      "central_elapsed_s": 1.52365970611572
+    },
+    {
+      "seed": 20260822,
+      "central": {
+        "auc": 0.802324480073267,
+        "acc": 0.861555555555556,
+        "brier": 0.10167574020182,
+        "logloss": 0.332538482070248
+      },
+      "federated_dp": {
+        "auc": 0.794523983361686,
+        "acc": 0.860666666666667,
+        "brier": 0.105973114672696,
+        "logloss": 0.351264304738241
+      },
+      "trivial": {
+        "auc": 0.5,
+        "acc": 0.860666666666667,
+        "brier": 0.119919555555556,
+        "logloss": 0.403751443594527
+      },
+      "gap": {
+        "auc": -0.00780049671158145,
+        "acc": -0.000888888888888828,
+        "brier": 0.00429737447087544,
+        "logloss": 0.0187258226679933
+      },
+      "trivial_training_prevalence": 0.139333333333333,
+      "n_train": 36000,
+      "n_test": 9000,
+      "n_per_site": [
+        12000,
+        12000,
+        12000
+      ],
+      "split_row_ids_sha256": "81e9c46d22f2e736a64c6271ed0a688909e09c23356e5996b9752fdc7bc5f01b",
+      "central_train_csv_sha256": "fa3718bef626ddc6f7fd62a40a4d419785cf2be2ef0fb5dc94699e7f78901343",
+      "feature_bounds": {
+        "lower": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1
+        ],
+        "upper": [
+          1,
+          1,
+          1,
+          100,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          5,
+          30,
+          30,
+          1,
+          1,
+          13,
+          6,
+          8
+        ]
+      },
+      "feature_cuts": [
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          5,
+          10,
+          15,
+          20,
+          25,
+          30,
+          35,
+          40,
+          45,
+          50,
+          55,
+          60,
+          65,
+          70,
+          75,
+          80,
+          85,
+          90,
+          95
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5
+        ],
+        [
+          4.5,
+          9.5,
+          14.5,
+          19.5,
+          24.5,
+          29.5
+        ],
+        [
+          4.5,
+          9.5,
+          14.5,
+          19.5,
+          24.5,
+          29.5
+        ],
+        [
+          0.5
+        ],
+        [
+          0.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5,
+          8.5,
+          9.5,
+          10.5,
+          11.5,
+          12.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5
+        ],
+        [
+          1.5,
+          2.5,
+          3.5,
+          4.5,
+          5.5,
+          6.5,
+          7.5
+        ]
+      ],
+      "node_privacy": [
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        },
+        {
+          "policy": {
+            "contract_version": "per-training-v1",
+            "per_training_epsilon": 8,
+            "per_training_delta": 1e-06,
+            "dp_unit": "row",
+            "patient_column": null,
+            "unit_canonicalization": "trim-utf8-v2",
+            "adjacency": "replace_one",
+            "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d"
+          },
+          "reported": {
+            "dp_required": true,
+            "privacy_accountant": "stateless-per-training-v1",
+            "privacy_scope": "per-training",
+            "privacy_per_training_epsilon": 8,
+            "privacy_per_training_delta": 1e-06,
+            "privacy_policy_sha256": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+            "privacy_clipping_norm": 1,
+            "privacy_unit": "row",
+            "privacy_patient_column": null,
+            "runner_abi": 3,
+            "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724"
+          }
+        }
+      ],
+      "central_configuration": {
+        "implementation": "RandomForestClassifier",
+        "sklearn": "1.9.1",
+        "params": {
+          "bootstrap": true,
+          "ccp_alpha": 0,
+          "class_weight": null,
+          "criterion": "gini",
+          "max_depth": 4,
+          "max_features": 5,
+          "max_leaf_nodes": null,
+          "max_samples": null,
+          "min_impurity_decrease": 0,
+          "min_samples_leaf": 1,
+          "min_samples_split": 2,
+          "min_weight_fraction_leaf": 0,
+          "monotonic_cst": null,
+          "n_estimators": 8,
+          "n_jobs": 1,
+          "oob_score": false,
+          "random_state": 20260822,
+          "verbose": 0,
+          "warm_start": false
+        },
+        "accounting_source": "Recomputed from installed, unmodified dsFlower forest_accounting.py; public inputs only",
+        "native_accounting": {
+          "candidate_schedule": "public-prf-mtry-without-replacement/v1",
+          "histogram_release": "joint-public-bin-node-histogram/v1",
+          "leaf_release": "joint-terminal-sufficient-vector/v1",
+          "leaf_sensitivity": 1.4142135623731,
+          "leaf_sigma": 2.34441382936232,
+          "mechanism": "random-forest/adaptive-level-gaussian/v1",
+          "num_releases": 5,
+          "partition": "record-prf-disjoint-tree/v1",
+          "split_sensitivity": 3.16227766016838,
+          "split_sigma": 5.24226868984474,
+          "transcript": "complete-depth-levels-plus-leaves/v1"
+        }
+      },
+      "release_metadata": {
+        "track": "native_tree",
+        "engine": "random_forest",
+        "task": "binary",
+        "data_kind": "tabular",
+        "features": [
+          "HighBP",
+          "HighChol",
+          "CholCheck",
+          "BMI",
+          "Smoker",
+          "Stroke",
+          "HeartDiseaseorAttack",
+          "PhysActivity",
+          "Fruits",
+          "Veggies",
+          "HvyAlcoholConsump",
+          "AnyHealthcare",
+          "NoDocbcCost",
+          "GenHlth",
+          "MentHlth",
+          "PhysHlth",
+          "DiffWalk",
+          "Sex",
+          "Age",
+          "Education",
+          "Income"
+        ],
+        "feature_lower": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+          1,
+          1
+        ],
+        "feature_upper": [
+          1,
+          1,
+          1,
+          100,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          5,
+          30,
+          30,
+          1,
+          1,
+          13,
+          6,
+          8
+        ],
+        "target_levels": [
+          "0",
+          "1"
+        ],
+        "target_bounds": null,
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbIkhpZ2hCUCIsIkhpZ2hDaG9sIiwiQ2hvbENoZWNrIiwiQk1JIiwiU21va2VyIiwiU3Ryb2tlIiwiSGVhcnREaXNlYXNlb3JBdHRhY2siLCJQaHlzQWN0aXZpdHkiLCJGcnVpdHMiLCJWZWdnaWVzIiwiSHZ5QWxjb2hvbENvbnN1bXAiLCJBbnlIZWFsdGhjYXJlIiwiTm9Eb2NiY0Nvc3QiLCJHZW5IbHRoIiwiTWVudEhsdGgiLCJQaHlzSGx0aCIsIkRpZmZXYWxrIiwiU2V4IiwiQWdlIiwiRWR1Y2F0aW9uIiwiSW5jb21lIl0sImxvd2VyIjpbMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDEuMCwwLjAsMC4wLDAuMCwwLjAsMS4wLDEuMCwxLjBdLCJ1cHBlciI6WzEuMCwxLjAsMS4wLDEwMC4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDUuMCwzMC4wLDMwLjAsMS4wLDEuMCwxMy4wLDYuMCw4LjBdLCJjdXRzIjpbWzAuNV0sWzAuNV0sWzAuNV0sWzUuMCwxMC4wLDE1LjAsMjAuMCwyNS4wLDMwLjAsMzUuMCw0MC4wLDQ1LjAsNTAuMCw1NS4wLDYwLjAsNjUuMCw3MC4wLDc1LjAsODAuMCw4NS4wLDkwLjAsOTUuMF0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41LDEwLjUsMTEuNSwxMi41XSxbMS41LDIuNSwzLjUsNC41LDUuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNV1dLCJ0YXJnZXQiOnsibmFtZSI6InRhcmdldCIsImtpbmQiOiJiaW5hcnkiLCJsZXZlbHMiOlt7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjAifSx7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjEifV0sImxvd2VyIjowLjAsInVwcGVyIjoxLjB9LCJzaGEyNTYiOiIwYjU5MGY4M2EzMmNmZGZjYjg3OGE5MGJhOTIwOTU5YmFlMTE3OWY1YzY2YzhiZDEyMWZlMTgwZDI1MmM3OTdiIn0sInBhcmFtZXRlcnMiOlt7Im5hbWUiOiJtYXhfZGVwdGgiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo0fSx7Im5hbWUiOiJtYXhfZmVhdHVyZXMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo1fSx7Im5hbWUiOiJuX2VzdGltYXRvcnMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo4fV0sInJlc291cmNlcyI6eyJtYXhfZmVhdHVyZXMiOjIxLCJtYXhfdHJlZXMiOjgsIm1heF9kZXB0aCI6NCwibWF4X2JpbnMiOjIwLCJtYXhfdGhyZWFkcyI6MzIsIm1lbW9yeV9tYiI6MzI3NjgsInRpbWVvdXRfc2Vjb25kcyI6MjE2MDB9fQ==",
+        "native_tree_request_sha256": "38a3d426536b7e69b2ba02e40aa0b86505f1f7e8e9dd9dd52baf8942fc08f977",
+        "public_schema_sha256": "0b590f83a32cfdfcb878a90ba920959bae1179f5c66c8bd121fe180d252c797b",
+        "artifact": {
+          "file": "model.random-forest-ensemble.json",
+          "format": "dsflower-forest-ensemble-json-v1",
+          "size_bytes": 13153,
+          "sha256": "5b83fc1f124f38a33b2ae1851ab6da015dbe0ea7bc6d7c9ce5001fe4a6cac94e"
+        },
+        "sanitization": {
+          "profile": "dsflower-forest-ensemble-v1",
+          "privacy_basis": "direct-dp-training-postprocessing",
+          "contains_raw_records": false,
+          "contains_unnoised_statistics": false,
+          "contains_feature_names": false,
+          "contains_target_name": false,
+          "contains_training_history": false,
+          "contains_backend_logs": false,
+          "contains_paths": false,
+          "contains_executable_payload": false
+        }
+      },
+      "release_profile": {
+        "artifact": {
+          "format": "dsflower-forest-ensemble-json-v1",
+          "sha256": "5b83fc1f124f38a33b2ae1851ab6da015dbe0ea7bc6d7c9ce5001fe4a6cac94e",
+          "size_bytes": 13153
+        },
+        "contract": "dsflower-native-tree-prediction-profile-v2",
+        "engine": "random_forest",
+        "native_tree_request_b64": "eyJjb250cmFjdCI6ImRzZmxvd2VyLW5hdGl2ZS10cmVlLXJlcXVlc3QtdjEiLCJlbmdpbmUiOiJyYW5kb21fZm9yZXN0IiwibW9kZSI6Im5hdGl2ZS10aWdodCIsInRhc2siOiJiaW5hcnkiLCJwdWJsaWNfc2NoZW1hIjp7InZlcnNpb24iOjEsImZlYXR1cmVzIjpbIkhpZ2hCUCIsIkhpZ2hDaG9sIiwiQ2hvbENoZWNrIiwiQk1JIiwiU21va2VyIiwiU3Ryb2tlIiwiSGVhcnREaXNlYXNlb3JBdHRhY2siLCJQaHlzQWN0aXZpdHkiLCJGcnVpdHMiLCJWZWdnaWVzIiwiSHZ5QWxjb2hvbENvbnN1bXAiLCJBbnlIZWFsdGhjYXJlIiwiTm9Eb2NiY0Nvc3QiLCJHZW5IbHRoIiwiTWVudEhsdGgiLCJQaHlzSGx0aCIsIkRpZmZXYWxrIiwiU2V4IiwiQWdlIiwiRWR1Y2F0aW9uIiwiSW5jb21lIl0sImxvd2VyIjpbMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDAuMCwwLjAsMC4wLDEuMCwwLjAsMC4wLDAuMCwwLjAsMS4wLDEuMCwxLjBdLCJ1cHBlciI6WzEuMCwxLjAsMS4wLDEwMC4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDEuMCwxLjAsMS4wLDUuMCwzMC4wLDMwLjAsMS4wLDEuMCwxMy4wLDYuMCw4LjBdLCJjdXRzIjpbWzAuNV0sWzAuNV0sWzAuNV0sWzUuMCwxMC4wLDE1LjAsMjAuMCwyNS4wLDMwLjAsMzUuMCw0MC4wLDQ1LjAsNTAuMCw1NS4wLDYwLjAsNjUuMCw3MC4wLDc1LjAsODAuMCw4NS4wLDkwLjAsOTUuMF0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzQuNSw5LjUsMTQuNSwxOS41LDI0LjUsMjkuNV0sWzAuNV0sWzAuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNSw4LjUsOS41LDEwLjUsMTEuNSwxMi41XSxbMS41LDIuNSwzLjUsNC41LDUuNV0sWzEuNSwyLjUsMy41LDQuNSw1LjUsNi41LDcuNV1dLCJ0YXJnZXQiOnsibmFtZSI6InRhcmdldCIsImtpbmQiOiJiaW5hcnkiLCJsZXZlbHMiOlt7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjAifSx7InR5cGUiOiJzdHJpbmciLCJ2YWx1ZSI6IjEifV0sImxvd2VyIjowLjAsInVwcGVyIjoxLjB9LCJzaGEyNTYiOiIwYjU5MGY4M2EzMmNmZGZjYjg3OGE5MGJhOTIwOTU5YmFlMTE3OWY1YzY2YzhiZDEyMWZlMTgwZDI1MmM3OTdiIn0sInBhcmFtZXRlcnMiOlt7Im5hbWUiOiJtYXhfZGVwdGgiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo0fSx7Im5hbWUiOiJtYXhfZmVhdHVyZXMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo1fSx7Im5hbWUiOiJuX2VzdGltYXRvcnMiLCJ0eXBlIjoiaW50ZWdlciIsInZhbHVlIjo4fV0sInJlc291cmNlcyI6eyJtYXhfZmVhdHVyZXMiOjIxLCJtYXhfdHJlZXMiOjgsIm1heF9kZXB0aCI6NCwibWF4X2JpbnMiOjIwLCJtYXhfdGhyZWFkcyI6MzIsIm1lbW9yeV9tYiI6MzI3NjgsInRpbWVvdXRfc2Vjb25kcyI6MjE2MDB9fQ==",
+        "native_tree_request_sha256": "38a3d426536b7e69b2ba02e40aa0b86505f1f7e8e9dd9dd52baf8942fc08f977",
+        "public_schema_sha256": "0b590f83a32cfdfcb878a90ba920959bae1179f5c66c8bd121fe180d252c797b",
+        "task": "binary",
+        "version": 2
+      },
+      "history": {
+        "n_clients": 3,
+        "n_failures": 0,
+        "n_rounds": 1,
+        "raw": [
+          {
+            "available": true,
+            "round": 1
+          }
+        ],
+        "n_clients_source": "saved training RDS and SHA-256-bound ensemble member count",
+        "n_clients_original": []
+      },
+      "model_sha256": "5b83fc1f124f38a33b2ae1851ab6da015dbe0ea7bc6d7c9ce5001fe4a6cac94e",
+      "cleanup_ok": true,
+      "elapsed_s": 52.9383928775787,
+      "federated_elapsed_s": 50.4546549320221,
+      "central_elapsed_s": 1.54602813720703
+    }
+  ],
+  "summary": {
+    "central_mean_sd": {
+      "auc": {
+        "mean": 0.805514238420186,
+        "sd": 0.00282872283510368
+      },
+      "acc": {
+        "mean": 0.861259259259259,
+        "sd": 0.00061195228303181
+      },
+      "brier": {
+        "mean": 0.101943195295067,
+        "sd": 0.000413865598173778
+      },
+      "logloss": {
+        "mean": 0.332717617354636,
+        "sd": 0.00178922470728545
+      }
+    },
+    "federated_mean_sd": {
+      "auc": {
+        "mean": 0.796943695313992,
+        "sd": 0.0027770793755359
+      },
+      "acc": {
+        "mean": 0.860666666666667,
+        "sd": 0
+      },
+      "brier": {
+        "mean": 0.105378316485356,
+        "sd": 0.00053919984809322
+      },
+      "logloss": {
+        "mean": 0.348669109929031,
+        "sd": 0.00225356894296369
+      }
+    },
+    "trivial_mean_sd": {
+      "auc": {
+        "mean": 0.5,
+        "sd": 0
+      },
+      "acc": {
+        "mean": 0.860666666666667,
+        "sd": 0
+      },
+      "brier": {
+        "mean": 0.119919555555556,
+        "sd": 0
+      },
+      "logloss": {
+        "mean": 0.403751443594527,
+        "sd": 0
+      }
+    },
+    "delta_mean_sd": {
+      "auc": {
+        "mean": -0.00857054310619472,
+        "sd": 0.0025210367052092
+      },
+      "acc": {
+        "mean": -0.000592592592592552,
+        "sd": 0.00061195228303181
+      },
+      "brier": {
+        "mean": 0.00343512119028872,
+        "sd": 0.000768976239204954
+      },
+      "logloss": {
+        "mean": 0.0159514925743953,
+        "sd": 0.00309293073236201
+      }
+    }
+  },
+  "diagnostic": {
+    "pass": false,
+    "criterion": "mean fed AUC > 0.5 AND mean fed accuracy > mean majority-class accuracy",
+    "alternative": "If either primary epsilon-8 diagnostic fails, run only random_forest cdc45k epsilon 8 with three registered seeds",
+    "per_replicate_pass": [
+      false,
+      false,
+      false
+    ],
+    "utility_floor_pass": true,
+    "utility_floor": "mean fed accuracy >= mean trivial accuracy - 0.02 OR mean fed AUC > 0.6",
+    "inherited_from": "vignettes/utility-campaign.Rmd",
+    "epsilon8_operating_point": true
+  },
+  "elapsed_s": 159.397036314011,
+  "provisioning": {
+    "reused": true,
+    "initial_elapsed_s": 97,
+    "reprovisioning_elapsed_s": 0
+  }
+}

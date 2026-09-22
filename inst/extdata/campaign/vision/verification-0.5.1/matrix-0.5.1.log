@@ -1,0 +1,144 @@
+2026-09-22T01:23:04.330573+00:00 TRAIN 1 20260919
+starting worker pid=11595 on localhost:11178 at 01:23:05.691
+starting worker pid=11594 on localhost:11178 at 01:23:05.691
+starting worker pid=11596 on localhost:11178 at 01:23:05.707
+SuperLink started (PID: 11702)
+  Fleet API (SuperNodes): 127.0.0.1:39229
+  Control API (flwr run): 127.0.0.1:25504
+No SuperLink is running.
+No SuperLink is running.
+trained_unscored epsilon 1 seed 20260919 elapsed 1124.837 
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+{"central": {"status": "trained_unscored", "elapsed_s": 1.5436677262187004}, "pooled_dp": {"status": "trained_unscored", "elapsed_s": 1.7802124004811049}}
+2026-09-22T01:43:30.347976+00:00 TRAINED_UNSCORED 1 20260919
+2026-09-22T01:43:30.348299+00:00 TRAIN 1 20260920
+starting worker pid=13543 on localhost:11062 at 01:43:31.774
+starting worker pid=13541 on localhost:11062 at 01:43:31.778
+starting worker pid=13542 on localhost:11062 at 01:43:31.781
+SuperLink started (PID: 13661)
+  Fleet API (SuperNodes): 127.0.0.1:41284
+  Control API (flwr run): 127.0.0.1:29180
+No SuperLink is running.
+No SuperLink is running.
+trained_unscored epsilon 1 seed 20260920 elapsed 1120.917 
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+{"central": {"status": "trained_unscored", "elapsed_s": 0.7714234683662653}, "pooled_dp": {"status": "trained_unscored", "elapsed_s": 1.8092827424407005}}
+2026-09-22T02:03:51.874244+00:00 TRAINED_UNSCORED 1 20260920
+2026-09-22T02:03:51.874477+00:00 TRAIN 1 20260921
+starting worker pid=15486 on localhost:11881 at 02:03:53.323
+starting worker pid=15484 on localhost:11881 at 02:03:53.326
+starting worker pid=15485 on localhost:11881 at 02:03:53.330
+SuperLink started (PID: 15588)
+  Fleet API (SuperNodes): 127.0.0.1:44744
+  Control API (flwr run): 127.0.0.1:26123
+No SuperLink is running.
+No SuperLink is running.
+trained_unscored epsilon 1 seed 20260921 elapsed 1137.184 
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+{"central": {"status": "trained_unscored", "elapsed_s": 0.7683614324778318}, "pooled_dp": {"status": "trained_unscored", "elapsed_s": 1.8233111277222633}}
+2026-09-22T02:24:26.261805+00:00 TRAINED_UNSCORED 1 20260921
+2026-09-22T02:24:26.261953+00:00 TRAIN 8 20260919
+starting worker pid=17390 on localhost:11573 at 02:24:27.540
+starting worker pid=17389 on localhost:11573 at 02:24:27.541
+starting worker pid=17391 on localhost:11573 at 02:24:27.556
+SuperLink started (PID: 17479)
+  Fleet API (SuperNodes): 127.0.0.1:25773
+  Control API (flwr run): 127.0.0.1:44358
+No SuperLink is running.
+No SuperLink is running.
+trained_unscored epsilon 8 seed 20260919 elapsed 1149.529 
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+{"central": {"status": "trained_unscored", "elapsed_s": 1.5436677262187004}, "pooled_dp": {"status": "trained_unscored", "elapsed_s": 2.395319266244769}}
+2026-09-22T02:44:40.811314+00:00 TRAINED_UNSCORED 8 20260919
+2026-09-22T02:44:40.811543+00:00 TRAIN 8 20260920
+starting worker pid=19287 on localhost:11193 at 02:44:42.109
+starting worker pid=19285 on localhost:11193 at 02:44:42.111
+starting worker pid=19286 on localhost:11193 at 02:44:42.112
+SuperLink started (PID: 19401)
+  Fleet API (SuperNodes): 127.0.0.1:10047
+  Control API (flwr run): 127.0.0.1:23926
+No SuperLink is running.
+No SuperLink is running.
+trained_unscored epsilon 8 seed 20260920 elapsed 1145.662 
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+{"central": {"status": "trained_unscored", "elapsed_s": 0.7714234683662653}, "pooled_dp": {"status": "trained_unscored", "elapsed_s": 2.4164592307060957}}
+2026-09-22T03:04:52.833558+00:00 TRAINED_UNSCORED 8 20260920
+2026-09-22T03:04:52.833762+00:00 TRAIN 8 20260921
+starting worker pid=21208 on localhost:11559 at 03:04:54.012
+starting worker pid=21209 on localhost:11559 at 03:04:54.023
+starting worker pid=21207 on localhost:11559 at 03:04:54.025
+SuperLink started (PID: 21284)
+  Fleet API (SuperNodes): 127.0.0.1:22549
+  Control API (flwr run): 127.0.0.1:15279
+No SuperLink is running.
+No SuperLink is running.
+trained_unscored epsilon 8 seed 20260921 elapsed 1124.94 
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+{"central": {"status": "trained_unscored", "elapsed_s": 0.7683614324778318}, "pooled_dp": {"status": "trained_unscored", "elapsed_s": 2.6448559500277042}}
+2026-09-22T03:24:45.929190+00:00 TRAINED_UNSCORED 8 20260921
+2026-09-22T03:24:45.929419+00:00 TRAIN 4 20260919
+starting worker pid=23104 on localhost:11731 at 03:24:47.343
+starting worker pid=23105 on localhost:11731 at 03:24:47.344
+starting worker pid=23103 on localhost:11731 at 03:24:47.353
+SuperLink started (PID: 23195)
+  Fleet API (SuperNodes): 127.0.0.1:38190
+  Control API (flwr run): 127.0.0.1:20905
+No SuperLink is running.
+No SuperLink is running.
+trained_unscored epsilon 4 seed 20260919 elapsed 1046.513 
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+{"central": {"status": "trained_unscored", "elapsed_s": 1.5436677262187004}, "pooled_dp": {"status": "trained_unscored", "elapsed_s": 2.3616816997528076}}
+2026-09-22T03:43:22.018181+00:00 TRAINED_UNSCORED 4 20260919
+2026-09-22T03:43:22.018334+00:00 TRAIN 4 20260920
+starting worker pid=24998 on localhost:11267 at 03:43:23.299
+starting worker pid=25000 on localhost:11267 at 03:43:23.307
+starting worker pid=24999 on localhost:11267 at 03:43:23.307
+SuperLink started (PID: 25090)
+  Fleet API (SuperNodes): 127.0.0.1:20588
+  Control API (flwr run): 127.0.0.1:50999
+No SuperLink is running.
+No SuperLink is running.
+trained_unscored epsilon 4 seed 20260920 elapsed 1105.441 
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+{"central": {"status": "trained_unscored", "elapsed_s": 0.7714234683662653}, "pooled_dp": {"status": "trained_unscored", "elapsed_s": 2.5380310993641615}}
+2026-09-22T04:02:42.861932+00:00 TRAINED_UNSCORED 4 20260920
+2026-09-22T04:02:42.862095+00:00 TRAIN 4 20260921
+starting worker pid=26868 on localhost:11608 at 04:02:44.138
+starting worker pid=26867 on localhost:11608 at 04:02:44.138
+starting worker pid=26866 on localhost:11608 at 04:02:44.148
+SuperLink started (PID: 26942)
+  Fleet API (SuperNodes): 127.0.0.1:52006
+  Control API (flwr run): 127.0.0.1:32092
+No SuperLink is running.
+No SuperLink is running.
+trained_unscored epsilon 4 seed 20260921 elapsed 1135.582 
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+{"central": {"status": "trained_unscored", "elapsed_s": 0.7683614324778318}, "pooled_dp": {"status": "trained_unscored", "elapsed_s": 2.15486678481102}}
+2026-09-22T04:22:46.136087+00:00 TRAINED_UNSCORED 4 20260921

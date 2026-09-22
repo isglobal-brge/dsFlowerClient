@@ -1,0 +1,122 @@
+{
+  "class_mapping": {
+    "benign": 0,
+    "malignant": 1
+  },
+  "clipping_norm": 1.0,
+  "contract": "pytorch_resnet18",
+  "data_route": "dsImaging admission of image_root asset plus per-image metadata declaring pathology label, label levels and patient privacy unit; three DSLite custodians.",
+  "dataset": "BUS-BRA v1.0",
+  "delta": 1e-06,
+  "epsilon_order": [
+    1,
+    8,
+    4
+  ],
+  "evaluation": {
+    "aggregation": "arithmetic mean and sample SD across three seeds",
+    "alternative": "None predeclared: this task specifies one cohort and one contract, with no named fallback. Report any epsilon-8 diagnostic failure without a post-score configuration change.",
+    "central_schedule": "Five rounds of one local epoch, batch 32, SGD 0.001, same initial head, patient-mean frozen features and patient-modal label, pooled Poisson sampling, expected batch divisor; no clipping or noise. Reuse this central fit across epsilon values for a seed.",
+    "diagnostic": "AUC > 0.5 and accuracy > held-out majority-class rate; report per-replicate and three-seed mean comparison.",
+    "diagnostic_epsilon": 8,
+    "gap": "federated_dp AUC minus central AUC",
+    "metrics": [
+      "auc",
+      "accuracy",
+      "brier",
+      "log_loss"
+    ],
+    "pooled_dp": "Run unchanged released _dp_fit on the 852 pooled patient records, with the same five-round schedule and epsilon/delta/clip as federation.",
+    "positive_class": "malignant",
+    "test_policy": "Do not inspect held-out labels/images or score models before settings are fixed. One scoring pass for each trained replicate; never change a scored configuration.",
+    "threshold": 0.5,
+    "twins": [
+      "identical frozen backbone and head, same split and schedule, centrally without DP",
+      "pooled DP if feasible",
+      "training-majority class with training-prevalence probability"
+    ],
+    "unit": "image"
+  },
+  "frozen_at": "2026-09-22T00:27:58.584465+00:00",
+  "host": {
+    "gpu": "NVIDIA A40",
+    "pod_id": "0nk8si7zupfczc",
+    "pod_name": "pod-flower-vision",
+    "root": "/workspace/cells-vision"
+  },
+  "instrumentation": "Public-only observer copies of the segmentation/sequence harness: seed/capture analyst initialization; observe node accountant inputs/steps and public tensor hashes after the mandatory runner integrity gate. No replacement of training, privacy calibration, clipping or sampling.",
+  "model": {
+    "backbone": "resnet18",
+    "bounds_policy": "Released image transform and fixed feature totalization; no data-derived feature bounds.",
+    "extractor_profile": "dsflower-resnet18-imagenet1k-v1-extractor-v1",
+    "feature_domain": [
+      -1000000,
+      1000000
+    ],
+    "feature_shape": [
+      512
+    ],
+    "frozen": true,
+    "head": "linear 512 to 2; cross_entropy",
+    "image_shape": [
+      3,
+      224,
+      224
+    ],
+    "trainable_parameters": 1026,
+    "weights": "IMAGENET1K_V1"
+  },
+  "model_params": {
+    "batch_size": 32,
+    "image_size": 224,
+    "l1_penalty": 0,
+    "learning_rate": 0.001,
+    "local_epochs": 1,
+    "n_classes": 2,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "volumetric": false,
+    "weight_decay": 0
+  },
+  "model_params_policy": "Unchanged v0.5.0 registry defaults; no schedule search.",
+  "patient_column": "subject_id",
+  "patient_training": "Released runner averages frozen features within patient and takes deterministic modal label before patient DP-SGD. Source pathology labels are consistent within patient according to archived audit.",
+  "privacy_unit": "patient",
+  "randomness": "Seed controls patient split and analyst-side public initial head. DP noise/sampling use unchanged node-owned sticky cryptographic randomness. Node secrets are not published; seed alone cannot reconstruct them.",
+  "release": {
+    "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+    "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "version": "0.5.0"
+  },
+  "rounds": 5,
+  "schema": "dsflower-vision-protocol-v1",
+  "seeds": [
+    20260919,
+    20260920,
+    20260921
+  ],
+  "sites": 3,
+  "split": {
+    "n_per_site_patients": [
+      284,
+      284,
+      284
+    ],
+    "n_test_patients": 212,
+    "n_total_images": 1875,
+    "n_total_patients": 1064,
+    "n_train_patients": 852,
+    "policy": "Reuse byte-identical segmentation split JSON for each seed; split-v1 SHA256 patient ordering, first floor(n/5) patients held out, sites-v1 hash ordering dealt across three sites.",
+    "sha256_by_seed": {
+      "20260919": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "20260920": "6198d99eb33342cbfb78fedbed75dfe7d57e494921523d39560bae7d3f313873",
+      "20260921": "2a89fb47ee0a269843e1562d7f5a08aa339d806519ad90a0a5b796e0711491bd"
+    },
+    "source_directory": "/workspace/cells-vision/prepared/busbra",
+    "split_source": "Recreated by the unchanged segmentation prepare_busbra/split_subjects functions; require byte-identical archived hashes before execution."
+  },
+  "status": "frozen_before_training"
+}

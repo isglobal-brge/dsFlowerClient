@@ -1,0 +1,25 @@
+{
+  "run_dir": "/workspace/cells-vision/r4/diagnosis/federations/adam_lr0.003_e20_b32-startup-retry",
+  "collection_root": "/tmp/cells-vision-r4/inner-training",
+  "epsilon": 8,
+  "seed": 20260922,
+  "model_params": {
+    "batch_size": 32,
+    "image_size": 224,
+    "l1_penalty": 0,
+    "learning_rate": 0.003,
+    "local_epochs": 20,
+    "n_classes": 2,
+    "optimizer": "adam",
+    "scheduler": "none",
+    "volumetric": false,
+    "weight_decay": 0
+  },
+  "n_patients_per_site": [
+    227,
+    227,
+    227
+  ],
+  "split_sha256": "b44664c4f1e5cfc08c2e20fa48f49eaebee046c3cfee62745c444928b486b397",
+  "candidate_id": "adam_lr0.003_e20_b32"
+}

@@ -1,0 +1,21 @@
+{
+  "learning-rate": 0.02,
+  "weight-decay": 0,
+  "l1-penalty": 0,
+  "optimizer-name": "adam",
+  "scheduler-name": "none",
+  "survival-config-b64": "eyJzY2hlbWFfdmVyc2lvbiI6MSwidGltZV91bml0IjoiZGF5cyIsInRpbWVfb3JpZ2luIjoiYmFzZWxpbmUiLCJ0X21pbiI6MSwiaG9yaXpvbiI6MTgyNSwiZWRnZXMiOlswLDEwLDMwLDEwMy40MDAwMDAwMDAwMDAwOSwzMjcuMjAwMDAwMDAwMDAwMjcsMTgyNV19",
+  "optimizer-beta1": 0.9,
+  "optimizer-beta2": 0.999,
+  "optimizer-eps": 1e-08,
+  "optimizer-amsgrad": false,
+  "model-spec-b64": "eyJraW5kIjoic2VxdWVudGlhbCIsImxheWVycyI6W3sib3AiOiJsaW5lYXIiLCJvdXQiOiJAb3V0In1dfQ==",
+  "loss-name": "discrete_hazard_nll",
+  "num-features": 15,
+  "num-classes": 2,
+  "num-labels": 2,
+  "num-server-rounds": 10,
+  "batch-size": 64,
+  "local-epochs": 1,
+  "strategy": "fedavg"
+}

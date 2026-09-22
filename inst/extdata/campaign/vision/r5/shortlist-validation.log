@@ -1,0 +1,17 @@
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/prv/prvs.py:67: RuntimeWarning: divide by zero encountered in log
+  z = np.log(np.where(t > np.log(1 - q), (np.exp(t) + q - 1) / q, 1))
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/prv/prvs.py:70: RuntimeWarning: divide by zero encountered in log
+  t > np.log(1 - q),
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+SHORTLIST_PARITY adam_m0_lr0.03_e1_b227_wd0 20260923 passed True runner_auc 0.704858934169279 cpu_auc_delta 0.0 cuda_auc_delta 0.0
+SHORTLIST_PARITY adam_m0_lr0.03_e1_b227_wd0 20260924 passed True runner_auc 0.7401253918495297 cpu_auc_delta 0.0 cuda_auc_delta 0.0
+SHORTLIST_PARITY adam_m0_lr0.03_e1_b227_wd0 20260925 passed True runner_auc 0.6849529780564263 cpu_auc_delta 0.0 cuda_auc_delta 0.0
+SHORTLIST_PARITY sgd_m0.9_lr3_e2_b227_wd0 20260923 passed True runner_auc 0.7040752351097179 cpu_auc_delta 0.0 cuda_auc_delta 0.0
+SHORTLIST_PARITY sgd_m0.9_lr3_e2_b227_wd0 20260924 passed True runner_auc 0.7191222570532916 cpu_auc_delta 0.0 cuda_auc_delta 0.0
+SHORTLIST_PARITY sgd_m0.9_lr3_e2_b227_wd0 20260925 passed True runner_auc 0.7042319749216301 cpu_auc_delta 0.0 cuda_auc_delta 0.0
+SHORTLIST_PARITY sgd_m0.9_lr3_e2_b227_wd0.0001 20260923 passed True runner_auc 0.7039184952978056 cpu_auc_delta 0.0 cuda_auc_delta 0.0
+SHORTLIST_PARITY sgd_m0.9_lr3_e2_b227_wd0.0001 20260924 passed True runner_auc 0.7192789968652038 cpu_auc_delta 0.0 cuda_auc_delta 0.0
+SHORTLIST_PARITY sgd_m0.9_lr3_e2_b227_wd0.0001 20260925 passed True runner_auc 0.7039184952978056 cpu_auc_delta 0.0 cuda_auc_delta 0.0

@@ -1,0 +1,53 @@
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/prv/prvs.py:67: RuntimeWarning: divide by zero encountered in log
+  z = np.log(np.where(t > np.log(1 - q), (np.exp(t) + q - 1) / q, 1))
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/prv/prvs.py:70: RuntimeWarning: divide by zero encountered in log
+  t > np.log(1 - q),
+SEARCH 16 736 elapsed 4.5 best 0.4869905956112852
+SEARCH 32 736 elapsed 16.8 best 0.5564785788923721
+SEARCH 48 736 elapsed 20.0 best 0.5929989550679206
+SEARCH 64 736 elapsed 32.3 best 0.5937826541274817
+SEARCH 80 736 elapsed 35.5 best 0.5991118077324974
+SEARCH 96 736 elapsed 48.3 best 0.5991118077324974
+SEARCH 112 736 elapsed 51.5 best 0.5991118077324974
+SEARCH 128 736 elapsed 64.0 best 0.5991118077324974
+SEARCH 144 736 elapsed 67.5 best 0.5991118077324974
+SEARCH 160 736 elapsed 80.2 best 0.5991118077324974
+SEARCH 176 736 elapsed 83.9 best 0.5991118077324974
+SEARCH 192 736 elapsed 97.0 best 0.5991118077324974
+SEARCH 208 736 elapsed 100.1 best 0.6747648902821316
+SEARCH 224 736 elapsed 112.9 best 0.6747648902821316
+SEARCH 240 736 elapsed 116.1 best 0.6747648902821316
+SEARCH 256 736 elapsed 128.4 best 0.6747648902821316
+SEARCH 272 736 elapsed 131.7 best 0.6747648902821316
+SEARCH 288 736 elapsed 146.0 best 0.6747648902821316
+SEARCH 304 736 elapsed 149.9 best 0.6747648902821316
+SEARCH 320 736 elapsed 162.8 best 0.6747648902821316
+SEARCH 336 736 elapsed 166.2 best 0.6747648902821316
+SEARCH 352 736 elapsed 179.1 best 0.6747648902821316
+SEARCH 368 736 elapsed 182.5 best 0.6747648902821316
+SEARCH 384 736 elapsed 195.5 best 0.6747648902821316
+SEARCH 400 736 elapsed 198.9 best 0.6747648902821316
+SEARCH 416 736 elapsed 211.9 best 0.6747648902821316
+SEARCH 432 736 elapsed 215.3 best 0.6747648902821316
+SEARCH 448 736 elapsed 228.2 best 0.6747648902821316
+SEARCH 464 736 elapsed 231.6 best 0.7091431556948798
+SEARCH 480 736 elapsed 244.6 best 0.7091431556948798
+SEARCH 496 736 elapsed 248.0 best 0.7091431556948798
+SEARCH 512 736 elapsed 261.1 best 0.7091431556948798
+SEARCH 528 736 elapsed 266.1 best 0.7091431556948798
+SEARCH 544 736 elapsed 280.4 best 0.7091431556948798
+SEARCH 560 736 elapsed 284.2 best 0.7091431556948798
+SEARCH 576 736 elapsed 298.6 best 0.7091431556948798
+SEARCH 592 736 elapsed 302.4 best 0.7091431556948798
+SEARCH 608 736 elapsed 317.2 best 0.7091431556948798
+SEARCH 624 736 elapsed 321.5 best 0.7091431556948798
+SEARCH 640 736 elapsed 336.1 best 0.7091431556948798
+SEARCH 656 736 elapsed 339.9 best 0.7091431556948798
+SEARCH 672 736 elapsed 354.4 best 0.7091431556948798
+SEARCH 688 736 elapsed 358.3 best 0.7099791013584117
+SEARCH 704 736 elapsed 372.8 best 0.7099791013584117
+SEARCH 720 736 elapsed 376.7 best 0.7099791013584117
+SEARCH 736 736 elapsed 391.3 best 0.7099791013584117
+SHORTLIST [{"candidate": {"id": "adam_m0_lr0.03_e1_b227_wd0", "optimizer": "adam", "learning_rate": 0.03, "local_epochs": 1, "batch_size": 227, "momentum": 0, "weight_decay": 0, "batch_mode": "full_site"}, "mechanism": {"adjacency": "replace_one", "noise_multiplier": 3.076171875, "clipping_norm": 1.0, "accounting_population": 227, "steps_per_epoch": 1, "sample_rate": 1.0, "expected_batch_size": 227, "total_epochs": 5, "total_steps": 5, "policy_hash": "8ac4f358373308a95e6f1564791fbbbee35a0e436d85b868adf424d244cb085d"}, "seeds": [20260923, 20260924, 20260925], "metrics": [{"auc": 0.704858934169279, "accuracy": 0.6783625730994152, "brier": 0.32136579720885095, "log_loss": 2.5578469903619996}, {"auc": 0.7401253918495297, "accuracy": 0.6783625730994152, "brier": 0.3213430565940633, "log_loss": 2.5248055946170487}, {"auc": 0.6849529780564263, "accuracy": 0.6783625730994152, "brier": 0.3214218741105969, "log_loss": 2.6226778113489924}], "mean_auc": 0.7099791013584117, "sd_auc": 0.027940309500305485}, {"candidate": {"id": "sgd_m0.9_lr3_e2_b227_wd0", "optimizer": "sgd", "learning_rate": 3, "local_epochs": 2, "batch_size": 227, "momentum": 0.9, "weight_decay": 0, "batch_mode": "full_site"}, "mechanism": {"adjacency": "replace_one", "noise_multiplier": 4.35546875, "clipping_norm": 1.0, "accounting_population": 227, "steps_per_epoch": 1, "sample_rate": 1.0, "expected_batch_size": 227, "total_epochs": 10, "total_steps": 10, "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"}, "seeds": [20260923, 20260924, 20260925], "metrics": [{"auc": 0.7040752351097179, "accuracy": 0.6783625730994152, "brier": 0.3216374269005848, "log_loss": 11.108963167953728}, {"auc": 0.7191222570532916, "accuracy": 0.6783625730994152, "brier": 0.3216374269005846, "log_loss": 11.077277109967893}, {"auc": 0.7042319749216301, "accuracy": 0.6783625730994152, "brier": 0.3216374269005846, "log_loss": 11.089172608149566}], "mean_auc": 0.7091431556948798, "sd_auc": 0.008642510618058286}, {"candidate": {"id": "sgd_m0.9_lr3_e2_b227_wd0.0001", "optimizer": "sgd", "learning_rate": 3, "local_epochs": 2, "batch_size": 227, "momentum": 0.9, "weight_decay": 0.0001, "batch_mode": "full_site"}, "mechanism": {"adjacency": "replace_one", "noise_multiplier": 4.35546875, "clipping_norm": 1.0, "accounting_population": 227, "steps_per_epoch": 1, "sample_rate": 1.0, "expected_batch_size": 227, "total_epochs": 10, "total_steps": 10, "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"}, "seeds": [20260923, 20260924, 20260925], "metrics": [{"auc": 0.7039184952978056, "accuracy": 0.6783625730994152, "brier": 0.3216374269005848, "log_loss": 11.108963167953728}, {"auc": 0.7192789968652038, "accuracy": 0.6783625730994152, "brier": 0.3216374269005846, "log_loss": 11.077378166990076}, {"auc": 0.7039184952978056, "accuracy": 0.6783625730994152, "brier": 0.3216374269005846, "log_loss": 11.089497771978511}], "mean_auc": 0.7090386624869384, "sd_auc": 0.008868389714825025}]

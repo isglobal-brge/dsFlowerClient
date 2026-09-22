@@ -1,0 +1,13 @@
+{
+  "checked_at": "2026-09-22T01:10:25.714265+00:00",
+  "matched": true,
+  "observed_sha256": {
+    "/workspace/cells-vision/Rlib/dsFlower/python/sitecustomize.py": "6729d804b379667641b37b043670694b4a39d957671dbebed666cbc9dec43072",
+    "/workspace/cells-vision/src/dsFlower/inst/python/sitecustomize.py": "6729d804b379667641b37b043670694b4a39d957671dbebed666cbc9dec43072"
+  },
+  "pod_id": "0nk8si7zupfczc",
+  "release": "v0.5.0",
+  "release_file": "inst/python/sitecustomize.py",
+  "release_sha256": "6729d804b379667641b37b043670694b4a39d957671dbebed666cbc9dec43072",
+  "schema": "dsflower-vision-release-integrity-check-v1"
+}

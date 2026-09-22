@@ -1,0 +1,80 @@
+{
+  "name": "CDC Diabetes Health Indicators: BMI regression",
+  "cohort": "cdc45k",
+  "n_total": 45000,
+  "uci_id": 891,
+  "source_url": "https://archive.ics.uci.edu/static/public/891/data.csv",
+  "source_sha256": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+  "landing_url": "https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators",
+  "doi": "10.24432/C53919",
+  "citation": "CDC Diabetes Health Indicators [Dataset]. (2017). UCI Machine Learning Repository. https://doi.org/10.24432/C53919.",
+  "thesis_citation_key": "uci_cdc_diabetes_health_indicators",
+  "cohort_seed": 20260819,
+  "logistic_prepared_sha256": "5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b",
+  "cohort_reuse": "Exact fixed-seed stratified cdc45k cohort from tools/campaign/campaign_lib.R; verify its original logistic prepared CSV SHA256 before changing target to BMI. Diabetes_binary is used only to preserve the original sampling and split strata.",
+  "n_source": 253680,
+  "r_version": "R version 4.6.1 (2026-06-24)",
+  "rng_kind": [
+    "Mersenne-Twister",
+    "Inversion",
+    "Rejection"
+  ],
+  "splits": {
+    "20260820": {
+      "seed": 20260820,
+      "n_train": 36000,
+      "n_test": 9000,
+      "n_per_site": [
+        12000,
+        12000,
+        12000
+      ]
+    },
+    "20260821": {
+      "seed": 20260821,
+      "n_train": 36000,
+      "n_test": 9000,
+      "n_per_site": [
+        12000,
+        12000,
+        12000
+      ]
+    },
+    "20260822": {
+      "seed": 20260822,
+      "n_train": 36000,
+      "n_test": 9000,
+      "n_per_site": [
+        12000,
+        12000,
+        12000
+      ]
+    }
+  },
+  "prepared_at": "2026-09-22T01:22:17.925109+00:00",
+  "protocol_sha256": "46f158164316f4bffcd1a7941b810ff903ec5ccf092d1dd787fda794bfbe55f0",
+  "loader_sha256": "9f39ddbf7760960e0521bd68028d8eb482312f652601fdd4bf740dc29e90a876",
+  "logistic_campaign_lib_sha256": "f0d8ed207a29f66b2280294e49a3d76894a3cb9d484a997b76342a19bb910a0a",
+  "checksums": {
+    "cdc_diabetes_health_indicators.csv": "9f71fda9d4ae5f4878c99b9233b6a16accfa9a17c194116a6b78100540934964",
+    "cdcbmi_seed20260820/site1.csv": "7a1dc2fa2cd82e0453ccd30951a6459c4c88fef0bfd60ec16dd1fae79a131c7c",
+    "cdcbmi_seed20260820/site2.csv": "7f9db575dfc410d17f3fbc90a9cd8271be87b3e250c6d40da7e4dd3bac1b1556",
+    "cdcbmi_seed20260820/site3.csv": "7828c38a108bd5e83f723a65b536eb0a7c15ec8a7cf85253b865e409a6454414",
+    "cdcbmi_seed20260820/split.json": "06e64a86fc14927dc861156d58495a5b5c082d4f3a53b567ec532442137025e6",
+    "cdcbmi_seed20260820/test.csv": "a63ed01b915388f82d5533cd12e71bc2865f11674691f8e8bba684978a7ef24e",
+    "cdcbmi_seed20260820/train.csv": "9aaf164e06bd3170c8dba86be9efde202390ac8932584cf94e2b059fe2160301",
+    "cdcbmi_seed20260821/site1.csv": "c34710c9c5ae00e4a6ed2663c826ed0383b0bc18800abd23875073aa3cbeea9a",
+    "cdcbmi_seed20260821/site2.csv": "6f0d1b80c6258b69ae5b289f9b9e7b148005e4e97867e52bac48128e50fe13da",
+    "cdcbmi_seed20260821/site3.csv": "702d46a84131dd12e6ed71ddf125ac3c57ec5b3b42685a099d0d96cbf9fe22f8",
+    "cdcbmi_seed20260821/split.json": "8ed7999946072883402244c5427aa69544f174f933fd69f3112dc91a61298ff7",
+    "cdcbmi_seed20260821/test.csv": "0de7936a8c02a09c5b58a6481c67365aba9c0ea064744275553832d26b4c88d0",
+    "cdcbmi_seed20260821/train.csv": "9c72247236705c1dc1677d902e29fdf028b73001a3d7003f2fdd1e7d5dd2a41f",
+    "cdcbmi_seed20260822/site1.csv": "6413da416905c17fcb4eab4b12098acdf0f0f9fb0f10d485927e452da2dae745",
+    "cdcbmi_seed20260822/site2.csv": "de324b096e17f0f53cfabbda38f197ceebdeaea6c64c9031d272b84519deaa65",
+    "cdcbmi_seed20260822/site3.csv": "e43d250ddc2819fb21df99fefbc26ac433fd962d07ca42aba4563092125027f4",
+    "cdcbmi_seed20260822/split.json": "c614e1549024eebed476516913765d42349a787a800081ccf94f97b51cb51767",
+    "cdcbmi_seed20260822/test.csv": "620378c354b9a7d59a0d2bb4549ff8a366e51b9b29e3793e3396df669a1fe9b7",
+    "cdcbmi_seed20260822/train.csv": "13da4f1a503f464161080e7d3e9c877c7afecd70ec00a11d8b53344137cc1d64"
+  },
+  "heldout_policy": "Preparation only routes rows; no held-out BMI summaries, model fitting, predictions, metrics, or setting selection"
+}

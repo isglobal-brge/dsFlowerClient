@@ -1,0 +1,109 @@
+clean_stdout
+🎊 Successfully started run 14666149993997330410
+INFO :      Start `flwr-serverapp` process
+Successfully installed dsflower-app to /tmp/RtmpXUNswK/dsflower_superlink/apps/dsflower.dsflower-app.1.0.0.61068a10.
+clean_stderr
+INFO :      Starting logstream for run_id `14666149993997330410`
+SuperLink
+INFO :      Starting Flower SuperLink
+WARNING :   Option `--insecure` was set. Starting insecure HTTP server with unencrypted communication (TLS disabled). Proceed only if you understand the risks.
+WARNING :   SuperNode authentication is disabled. The SuperLink will accept connections from any SuperNode.
+INFO :      Flower Deployment Runtime: Starting Control API on 127.0.0.1:50848
+INFO :      Flower Deployment Runtime: Starting ServerAppIo API on 127.0.0.1:57748
+INFO :      Flower Deployment Runtime: Starting Fleet API (gRPC-rere) on 127.0.0.1:58874
+╭────────────────── Update available ───────────────────╮
+│ A newer Flower version is available: 1.31.0 -> 1.37.0 │
+│ Upgrade: python -m pip install -U flwr                │
+╰───────────────────────────────────────────────────────╯
+INFO :      Starting Flower SuperExec
+INFO :      ControlServicer.StartRun
+INFO :      Created serverapp run 14666149993997330410
+INFO :      ControlServicer.StreamLogs
+INFO :      [Fleet.ActivateNode] Activated node_id=64309794684598656
+INFO :      [Fleet.ActivateNode] Activated node_id=9609585178514733189
+INFO :      [Fleet.ActivateNode] Activated node_id=726490356366567927
+INFO :      [Fleet.PullMessages] node_id=9609585178514733189
+INFO :      [Fleet.PullMessages] node_id=64309794684598656
+INFO :      [Fleet.PullMessages] node_id=726490356366567927
+INFO :      Started task 2409096966991632003 of run 14666149993997330410
+INFO :      [Fleet.PullMessages] node_id=64309794684598656
+INFO :      [Fleet.PullMessages] node_id=9609585178514733189
+INFO :      [Fleet.PullMessages] node_id=726490356366567927
+INFO :      [Fleet.GetRun] Requesting `Run` for run_id=14666149993997330410
+INFO :      [Fleet.GetRun] Requesting `Run` for run_id=14666149993997330410
+INFO :      [Fleet.GetRun] Requesting `Run` for run_id=14666149993997330410
+INFO :      [Fleet.GetFab] Requesting FAB for fab_hash=61068a10c36a7eef98f49c8198c24e4cb82b7559dd7ecb0fa0629b92a6ac2ef2
+INFO :      [Fleet.GetFab] Requesting FAB for fab_hash=61068a10c36a7eef98f49c8198c24e4cb82b7559dd7ecb0fa0629b92a6ac2ef2
+INFO :      [Fleet.GetFab] Requesting FAB for fab_hash=61068a10c36a7eef98f49c8198c24e4cb82b7559dd7ecb0fa0629b92a6ac2ef2
+INFO :      [Fleet.PushMessages] Push replies from node_id=64309794684598656
+INFO :      [Fleet.PushMessages] Push replies from node_id=726490356366567927
+INFO :      [Fleet.PushMessages] Push replies from node_id=9609585178514733189
+INFO :      [Fleet.PullMessages] node_id=64309794684598656
+INFO :      [Fleet.PullMessages] node_id=726490356366567927
+INFO :      [Fleet.PullMessages] node_id=9609585178514733189
+INFO :      ControlServicer.StopRun
+INFO :      All logs for run ID `14666149993997330410` returned
+INFO :      [Fleet.PullMessages] node_id=726490356366567927
+INFO :      [Fleet.PullMessages] node_id=9609585178514733189
+INFO :      [Fleet.PullMessages] node_id=64309794684598656
+SuperNodes
+INFO :      Starting Flower SuperNode
+WARNING :   Option `--insecure` was set. Starting insecure HTTP channel to 127.0.0.1:38088.
+INFO :      Flower Deployment Runtime: Starting ClientAppIo API on 127.0.0.1:28774
+╭────────────────── Update available ───────────────────╮
+│ A newer Flower version is available: 1.31.0 -> 1.37.0 │
+│ Upgrade: python -m pip install -U flwr                │
+╰───────────────────────────────────────────────────────╯
+INFO :      Starting Flower SuperExec
+INFO :      SuperNode ID: 9609585178514733189
+INFO :
+INFO :      [RUN 14666149993997330410, ROUND dsflower-native-tree-v1]
+INFO :      Receiving: train message (ID: 84e013fd52fa8ce5559da72467e44062f59cd8a56499885306819c1aeda92292)
+INFO :      Received successfully
+INFO :      Start `flwr-clientapp` process
+Successfully installed dsflower-app to /dev/shm/dsflower/run_1bc811868c12acd4784b43b01f28024d/.flwr/apps/dsflower.dsflower-app.1.0.0.61068a10.
+INFO :
+INFO :
+INFO :      [RUN 14666149993997330410, ROUND dsflower-native-tree-v1]
+INFO :      Sending: train message (ID: 40622c63dc9ce2c104801f750ae2ff7351d4c66268bf0130c98b5eca313caa32)
+INFO :      Sent successfully
+INFO :      Starting Flower SuperNode
+WARNING :   Option `--insecure` was set. Starting insecure HTTP channel to 127.0.0.1:14744.
+INFO :      Flower Deployment Runtime: Starting ClientAppIo API on 127.0.0.1:51211
+╭────────────────── Update available ───────────────────╮
+│ A newer Flower version is available: 1.31.0 -> 1.37.0 │
+│ Upgrade: python -m pip install -U flwr                │
+╰───────────────────────────────────────────────────────╯
+INFO :      Starting Flower SuperExec
+INFO :      SuperNode ID: 64309794684598656
+INFO :
+INFO :      [RUN 14666149993997330410, ROUND dsflower-native-tree-v1]
+INFO :      Receiving: train message (ID: 233751066ff181864fc17ff14512c98b89e01fbc986183bd68f7bb4be45b7f9f)
+INFO :      Start `flwr-clientapp` process
+Successfully installed dsflower-app to /dev/shm/dsflower/run_49365f7410b30c0acd101d7bb092f202/.flwr/apps/dsflower.dsflower-app.1.0.0.61068a10.
+INFO :
+INFO :      Received successfully
+INFO :
+INFO :      [RUN 14666149993997330410, ROUND dsflower-native-tree-v1]
+INFO :      Sending: train message (ID: 8e83918552b4b0be2ded6e7a9ae93717119b2d4b4121662b437b3b89561020e1)
+INFO :      Sent successfully
+INFO :      Starting Flower SuperNode
+WARNING :   Option `--insecure` was set. Starting insecure HTTP channel to 127.0.0.1:33628.
+INFO :      Flower Deployment Runtime: Starting ClientAppIo API on 127.0.0.1:27821
+╭────────────────── Update available ───────────────────╮
+│ A newer Flower version is available: 1.31.0 -> 1.37.0 │
+│ Upgrade: python -m pip install -U flwr                │
+╰───────────────────────────────────────────────────────╯
+INFO :      Starting Flower SuperExec
+INFO :      SuperNode ID: 726490356366567927
+INFO :
+INFO :      [RUN 14666149993997330410, ROUND dsflower-native-tree-v1]
+INFO :      Receiving: train message (ID: 40126fa470a5c449d3556fde6e96ab376381e73be3c5ff4223166bc5d728ad70)
+INFO :      Start `flwr-clientapp` process
+Successfully installed dsflower-app to /dev/shm/dsflower/run_929b50f796bf651de049578e50aa1812/.flwr/apps/dsflower.dsflower-app.1.0.0.61068a10.
+INFO :      Received successfully
+INFO :
+INFO :
+INFO :      [RUN 14666149993997330410, ROUND dsflower-native-tree-v1]
+INFO :      Sending: train message (ID: 953afa3f28c4de81410f3a5473b8f3943ee48bf1c02ceba7dd54a6ecd95d2ea6)
+INFO :      Sent successfully

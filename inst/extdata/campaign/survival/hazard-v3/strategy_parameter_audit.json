@@ -1,0 +1,93 @@
+{
+  "status": "verified",
+  "verified_utc": "2026-09-22T01:56:18.527166+00:00",
+  "source": "Installed dsFlowerClient 0.5.0 .strategy_config_values versus installed Flower objects used by pooled twins",
+  "checked_configurations": [
+    {
+      "strategy": "fedavg",
+      "learning-rate": 0.02
+    },
+    {
+      "strategy": "fedavg",
+      "learning-rate": 0.05
+    },
+    {
+      "strategy": "fedavg",
+      "learning-rate": 0.1
+    },
+    {
+      "strategy": "fedavgm",
+      "strategy-server-learning-rate": 1,
+      "strategy-server-momentum": 0.9,
+      "learning-rate": 0.02
+    },
+    {
+      "strategy": "fedavgm",
+      "strategy-server-learning-rate": 1,
+      "strategy-server-momentum": 0.9,
+      "learning-rate": 0.05
+    },
+    {
+      "strategy": "fedavgm",
+      "strategy-server-learning-rate": 1,
+      "strategy-server-momentum": 0.9,
+      "learning-rate": 0.1
+    },
+    {
+      "strategy": "fedadam",
+      "strategy-eta": 0.1,
+      "strategy-beta-1": 0.9,
+      "strategy-beta-2": 0.99,
+      "strategy-tau": 0.001,
+      "strategy-eta-l": 0.02,
+      "learning-rate": 0.02
+    },
+    {
+      "strategy": "fedadam",
+      "strategy-eta": 0.1,
+      "strategy-beta-1": 0.9,
+      "strategy-beta-2": 0.99,
+      "strategy-tau": 0.001,
+      "strategy-eta-l": 0.05,
+      "learning-rate": 0.05
+    },
+    {
+      "strategy": "fedadam",
+      "strategy-eta": 0.1,
+      "strategy-beta-1": 0.9,
+      "strategy-beta-2": 0.99,
+      "strategy-tau": 0.001,
+      "strategy-eta-l": 0.1,
+      "learning-rate": 0.1
+    },
+    {
+      "strategy": "fedyogi",
+      "strategy-eta": 0.01,
+      "strategy-beta-1": 0.9,
+      "strategy-beta-2": 0.99,
+      "strategy-tau": 0.001,
+      "strategy-eta-l": 0.02,
+      "learning-rate": 0.02
+    },
+    {
+      "strategy": "fedyogi",
+      "strategy-eta": 0.01,
+      "strategy-beta-1": 0.9,
+      "strategy-beta-2": 0.99,
+      "strategy-tau": 0.001,
+      "strategy-eta-l": 0.05,
+      "learning-rate": 0.05
+    },
+    {
+      "strategy": "fedyogi",
+      "strategy-eta": 0.01,
+      "strategy-beta-1": 0.9,
+      "strategy-beta-2": 0.99,
+      "strategy-tau": 0.001,
+      "strategy-eta-l": 0.1,
+      "learning-rate": 0.1
+    }
+  ],
+  "repair": "Before confirmation, pooled adaptive eta_l was changed from Flower constructor defaults to the local learning rate, matching the R API. No completed development fit or score used pooled aggregation; the synthetic pilot used FedAvgM. No fit was repeated.",
+  "twins_sha256": "46a53f898b48684db959c0c82c33019bd0f8665f436946e94d3430106af28e96"
+}

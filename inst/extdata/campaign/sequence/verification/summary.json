@@ -1,0 +1,45 @@
+{
+  "schema": "dsflower-sequence-patch-verification-v1",
+  "patch_commit": "c4eaaf153db4a7204878bf1d8995c16faa615110",
+  "base_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+  "tests": {
+    "import_guard": {
+      "passed": 9,
+      "skipped": 0,
+      "lstm_and_gru_fresh_guarded_dp_update": true
+    },
+    "dpsgd_guards": {
+      "passed": 105
+    },
+    "dp_safety": {
+      "passed": 102
+    },
+    "runner_contracts": {
+      "passed": 16
+    },
+    "release_guard": {
+      "passed": 24
+    },
+    "R_python_dependency_contract": "passed",
+    "R_runtime": "passed"
+  },
+  "test_budget_minutes": 20,
+  "budget_exceeded": false,
+  "canonical_runner_changed": false,
+  "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+  "changed_package_versions": {
+    "dsFlower": "0.5.1"
+  },
+  "unchanged_package_versions": {
+    "dsFlowerClient": "0.5.0"
+  },
+  "log_sha256": {
+    "dp-safety-0.5.1.log": "dd2838b8538709421db8f2cfa09d9e298e4d72c80306544960d0e6f5c0754207",
+    "dpsgd-guards-0.5.1.log": "24b7b92d98d6549b4998526ca26cd5394d31b04d56fea9869889fcefd32aefcc",
+    "guard-regression-0.5.1.log": "b6ba7bb066fcec7f56a1204cace491ef42901d9f93f9cfcb13779004b2348d04",
+    "install-0.5.1.log": "4d3adf7d96e28d1a1fcc9acd97cd58339b8fa103796689225595e3ab8e49a7ca",
+    "python-env-runtime.log": "392185456d1d86d549d08cf0e313b6ddd2939143d047428f503fa00d5026d117",
+    "release-guard-0.5.1.log": "e24a74fd76cbe70cec0c58dd7405d9f1ca0bc741ddfdfd40bc8fc657340516b2",
+    "runner-contracts-0.5.1.log": "346c3c2e033e5c897ae2e1efd6fb7fc28c90627cd627ab60b0f422a340f88902"
+  }
+}

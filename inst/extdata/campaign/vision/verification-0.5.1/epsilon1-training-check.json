@@ -1,0 +1,33 @@
+{
+  "status": "verified",
+  "test_scoring_started": false,
+  "replicates": [
+    {
+      "seed": 20260919,
+      "node_rounds": 15,
+      "observed_optimizer_steps": 135,
+      "actual_accountant_history_matches_reported_mechanism": true,
+      "patient_accounting_population_per_site": 284,
+      "federation_elapsed_s": 1124.83748793602,
+      "max_peak_cuda_bytes": 269548544
+    },
+    {
+      "seed": 20260920,
+      "node_rounds": 15,
+      "observed_optimizer_steps": 135,
+      "actual_accountant_history_matches_reported_mechanism": true,
+      "patient_accounting_population_per_site": 284,
+      "federation_elapsed_s": 1120.91673326492,
+      "max_peak_cuda_bytes": 269548544
+    },
+    {
+      "seed": 20260921,
+      "node_rounds": 15,
+      "observed_optimizer_steps": 135,
+      "actual_accountant_history_matches_reported_mechanism": true,
+      "patient_accounting_population_per_site": 284,
+      "federation_elapsed_s": 1137.18397927284,
+      "max_peak_cuda_bytes": 269548544
+    }
+  ]
+}

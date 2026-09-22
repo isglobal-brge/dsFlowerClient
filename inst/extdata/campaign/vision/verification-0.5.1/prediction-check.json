@@ -1,0 +1,12 @@
+{
+  "status": "passed",
+  "fixture": "One synthetic all-zero RGB image, 224 x 224; no cohort data.",
+  "predictor": "Canonical ds.flower.predict via unchanged predict.R",
+  "columns": [
+    "benign",
+    "malignant"
+  ],
+  "valid_probability_matrix": true,
+  "test_data_accessed": false,
+  "pre_score_driver_fix": "Use federation-status output_dir, which contains the model-named subdirectory, rather than the artifact parent."
+}

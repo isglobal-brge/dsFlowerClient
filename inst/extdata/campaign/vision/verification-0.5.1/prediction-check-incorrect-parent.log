@@ -1,0 +1,2 @@
+Error: No native model file found in /workspace/cells-vision/runs/pytorch_resnet18-eps1-seed20260919/artifact. Expected model.pt or one released native-tree ensemble.
+Execution halted

@@ -1,0 +1,28 @@
+{
+  "verified_utc": "2026-09-22T03:50:36.807627+00:00",
+  "package_source_matches_v050": true,
+  "matched_file_counts": {
+    "dsFlower": 101,
+    "dsFlowerClient": 105
+  },
+  "pod_id": "x0w6ewmpinpsuk",
+  "platform": "Linux-6.8.0-100-generic-x86_64-with-glibc2.35",
+  "cpu_count": "32",
+  "memory_limit_bytes": "64000000000",
+  "cpu_quota": "max 100000",
+  "historical_device": "CUDA A40; packaged v2 used older package labels 0.4.5/0.4.4 and runner ac08384b65fe18eeb1a1bbc7c757f8103cb59990f164f32cc7b047405d8e4ac8",
+  "current_device": "CPU; 0.5.0 source fingerprint verified; no claim of byte-identical historical runner",
+  "initial_harness_commit_before_branch_rebase": "6047074d99ece82884e4d91d0474e1877611a48e",
+  "tools_revision_note": "Pod base HEAD retained from preprovisioned source. The shared evidence branch was rebased while additive tooling ran; per-cell, run-started, infrastructure-resume and final-tool hashes identify the actual files independently of rewritten commit IDs.",
+  "provisioning": "Reused existing environment. Matrix/lme4/jomo/mitml/mice installed in runtime/rlib; dsBase6.3.5 then canonical install_and_freeze.sh succeeded.",
+  "preflight": {
+    "campaign_tests": 5,
+    "survival_contract_tests": 30,
+    "dp_safety_checks": 102,
+    "synthetic_federation": "executed once, Adam + FedAvgM",
+    "repaired_harness_issues": [
+      "Unit-test import path and NumPy reference alias corrected before cohort fitting",
+      "Synthetic artifact export path corrected after successful fit; existing release copied without retraining"
+    ]
+  }
+}

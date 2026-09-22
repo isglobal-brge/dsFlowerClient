@@ -1,0 +1,94 @@
+{
+  "status": "trained_unscored",
+  "output_dir": "/workspace/cells-vision/r5/federations/adam_m0_lr0.03_e1_b227_wd0-eps8/artifact/pytorch_resnet18_FedAvg_5r_20260922_073435",
+  "model_sha256": "ed6e85830320e3b1d962f05dab2701308a6c79249d66c63915362336d66fb9e2",
+  "metadata": {
+    "model_id": "pytorch_resnet18_FedAvg_5r_20260922_073435",
+    "model": "pytorch_resnet18",
+    "framework": "pytorch_vision",
+    "track": "neural",
+    "model_spec": {
+      "kind": "sequential",
+      "layers": [
+        {
+          "op": "linear",
+          "out": "@out"
+        }
+      ]
+    },
+    "model_params": {
+      "learning_rate": 0.03,
+      "batch_size": 227,
+      "local_epochs": 1,
+      "weight_decay": 0,
+      "l1_penalty": 0,
+      "optimizer": "adam",
+      "scheduler": "none",
+      "n_classes": 2,
+      "volumetric": false,
+      "image_size": 224,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "optimizer_eps": 1e-08,
+      "amsgrad": false,
+      "backbone": "resnet18",
+      "vision_extractor_profile": "dsflower-resnet18-imagenet1k-v1-extractor-v1"
+    },
+    "loss_name": "cross_entropy",
+    "survival_config": {},
+    "target": "pathology",
+    "data_kind": "image",
+    "available": true,
+    "available_rounds": [1, 2, 3, 4, 5],
+    "strategy": "FedAvg",
+    "privacy": "server-enforced-dp",
+    "num_rounds": 5,
+    "requested_num_rounds": 5,
+    "n_clients": 3,
+    "features": {},
+    "feature_lower": {},
+    "feature_upper": {},
+    "target_levels": ["benign", "malignant"],
+    "target_bounds": {},
+    "created_at": "2026-09-22T07:34:35",
+    "holdout": {},
+    "holdout_contract": {},
+    "status": "success"
+  },
+  "history": [
+    {
+      "round": 1,
+      "n_failures": 0,
+      "available": true
+    },
+    {
+      "round": 2,
+      "n_failures": 0,
+      "available": true
+    },
+    {
+      "round": 3,
+      "n_failures": 0,
+      "available": true
+    },
+    {
+      "round": 4,
+      "n_failures": 0,
+      "available": true
+    },
+    {
+      "round": 5,
+      "n_failures": 0,
+      "available": true
+    }
+  ],
+  "cleanup_ok": true,
+  "elapsed_s": 1106.46826219559,
+  "epsilon": 8,
+  "split_sha256": "b44664c4f1e5cfc08c2e20fa48f49eaebee046c3cfee62745c444928b486b397",
+  "job_sha256": "2c1c9e446de13956e07e89b70c79c2a8f5d3eb9f9440152b43849891f221aca3",
+  "n_patients_per_site": [227, 227, 227],
+  "test_accessed": false,
+  "seed": 20260922,
+  "contract": "pytorch_resnet18"
+}

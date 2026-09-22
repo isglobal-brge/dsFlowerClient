@@ -1,0 +1,9 @@
+START pilot_breast_random_forest_eps1 registry defaults: {"task":"binary","n_estimators":8,"max_depth":4,"max_features":"auto"} 
+starting worker pid=8261 on localhost:11747 at 00:19:44.476
+starting worker pid=8262 on localhost:11747 at 00:19:44.499
+starting worker pid=8263 on localhost:11747 at 00:19:44.500
+SuperLink started (PID: 8312)
+  Fleet API (SuperNodes): 127.0.0.1:58874
+  Control API (flwr run): 127.0.0.1:50848
+Error: Saved native-tree ensemble violates its canonical container contract.
+Execution halted

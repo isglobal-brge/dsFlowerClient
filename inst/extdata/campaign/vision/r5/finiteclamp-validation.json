@@ -1,0 +1,101 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "name": "finite_clamp",
+      "candidate": {
+        "id": "sgd_m0_lr1_e1_b227_wd0",
+        "optimizer": "sgd",
+        "learning_rate": 1,
+        "local_epochs": 1,
+        "batch_size": 227,
+        "momentum": 0,
+        "weight_decay": 0,
+        "batch_mode": "full_site"
+      },
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 3.076171875,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 1,
+        "sample_rate": 1.0,
+        "expected_batch_size": 227,
+        "total_epochs": 5,
+        "total_steps": 5,
+        "policy_hash": "8ac4f358373308a95e6f1564791fbbbee35a0e436d85b868adf424d244cb085d"
+      },
+      "saturation_fraction_at_initialization": 0.5,
+      "cpu_parameter_max_abs": 2.2351741790771484e-08,
+      "cpu_probability_max_abs": 0.0,
+      "cuda_parameter_max_abs": 1.4901161193847656e-08,
+      "cuda_probability_max_abs": 0.0,
+      "passed": true
+    },
+    {
+      "name": "sgd_momentum_weight_decay",
+      "candidate": {
+        "id": "sgd_m0.9_lr0.3_e2_b64_wd0.0001",
+        "optimizer": "sgd",
+        "learning_rate": 0.3,
+        "local_epochs": 2,
+        "batch_size": 64,
+        "momentum": 0.9,
+        "weight_decay": 0.0001,
+        "batch_mode": "fixed"
+      },
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 2.5048828125,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 4,
+        "sample_rate": 0.25,
+        "expected_batch_size": 56,
+        "total_epochs": 10,
+        "total_steps": 40,
+        "policy_hash": "62da88f8ab6817e17faee26ec18cc3adec73c176d2d86c642ea44d3023b43fae"
+      },
+      "saturation_fraction_at_initialization": null,
+      "cpu_parameter_max_abs": 2.384185791015625e-07,
+      "cpu_probability_max_abs": 1.7881393432617188e-06,
+      "cuda_parameter_max_abs": 2.384185791015625e-07,
+      "cuda_probability_max_abs": 1.8477439880371094e-06,
+      "passed": true
+    },
+    {
+      "name": "adam_weight_decay",
+      "candidate": {
+        "id": "adam_m0_lr0.003_e2_b128_wd0.0001",
+        "optimizer": "adam",
+        "learning_rate": 0.003,
+        "local_epochs": 2,
+        "batch_size": 128,
+        "momentum": 0,
+        "weight_decay": 0.0001,
+        "batch_mode": "fixed"
+      },
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 3.349609375,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 2,
+        "sample_rate": 0.5,
+        "expected_batch_size": 113,
+        "total_epochs": 10,
+        "total_steps": 20,
+        "policy_hash": "d26549e904820df9231ba495202d495e7b4343c8dc4f64508fc75323a30d7c95"
+      },
+      "saturation_fraction_at_initialization": null,
+      "cpu_parameter_max_abs": 7.450580596923828e-09,
+      "cpu_probability_max_abs": 5.21540641784668e-08,
+      "cuda_parameter_max_abs": 7.450580596923828e-09,
+      "cuda_probability_max_abs": 4.470348358154297e-08,
+      "passed": true
+    }
+  ],
+  "tolerance_absolute": 0.0001,
+  "test_accessed": false,
+  "scope": "One full local round per case, identical secure sampling/noise; unchanged CUDA _dp_fit compared with CPU and CUDA emulator."
+}

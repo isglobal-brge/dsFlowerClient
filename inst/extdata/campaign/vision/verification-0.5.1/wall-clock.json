@@ -1,0 +1,16 @@
+{
+  "session_verification_started_at": "2026-09-22T01:17:53Z",
+  "training_started_at": "2026-09-22T01:23:04.330573+00:00",
+  "training_ended_at": "2026-09-22T04:22:46.136087+00:00",
+  "training_matrix_elapsed_s": 10781.805514,
+  "scoring": {
+    "started_at": "2026-09-22T04:22:58.207836+00:00",
+    "ended_at": "2026-09-22T04:30:09.058517+00:00",
+    "elapsed_s": 430.85068296827376,
+    "returncode": 0,
+    "scope": "Single foreground scoring process; three independent canonical epsilon predictions concurrently per seed; direct twin features and metrics included."
+  },
+  "verification_start_to_scores_elapsed_s": 11536.058517,
+  "evidence_packaged_at": "2026-09-22T04:31:43.825816+00:00",
+  "note": "Actual wall time; concurrent scoring durations are not summed. Central fits are reused across epsilons. Packaging and git delivery follow scoring."
+}

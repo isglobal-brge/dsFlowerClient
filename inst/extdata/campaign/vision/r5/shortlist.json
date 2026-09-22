@@ -1,0 +1,32 @@
+[
+  {
+    "id": "adam_m0_lr0.03_e1_b227_wd0",
+    "optimizer": "adam",
+    "learning_rate": 0.03,
+    "local_epochs": 1,
+    "batch_size": 227,
+    "momentum": 0,
+    "weight_decay": 0,
+    "batch_mode": "full_site"
+  },
+  {
+    "id": "sgd_m0.9_lr3_e2_b227_wd0",
+    "optimizer": "sgd",
+    "learning_rate": 3,
+    "local_epochs": 2,
+    "batch_size": 227,
+    "momentum": 0.9,
+    "weight_decay": 0,
+    "batch_mode": "full_site"
+  },
+  {
+    "id": "sgd_m0.9_lr3_e2_b227_wd0.0001",
+    "optimizer": "sgd",
+    "learning_rate": 3,
+    "local_epochs": 2,
+    "batch_size": 227,
+    "momentum": 0.9,
+    "weight_decay": 0.0001,
+    "batch_mode": "full_site"
+  }
+]

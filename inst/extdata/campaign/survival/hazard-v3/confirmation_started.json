@@ -1,0 +1,10 @@
+{
+  "started_utc": "2026-09-22T02:43:02.989100+00:00",
+  "selection_sha256": "ad6aee30a71b82c94cd97f633da547e409b21ce9e2630789c0351a314f749e0f",
+  "arms": [
+    "full",
+    "two-sites",
+    "heterogeneous",
+    "small600"
+  ]
+}

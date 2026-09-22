@@ -1,0 +1,10 @@
+{
+  "checked_at": "2026-09-22T04:30:54.358670+00:00",
+  "pod_id": "0nk8si7zupfczc",
+  "pod_name": "pod-flower-vision",
+  "root": "/workspace/cells-vision",
+  "state": "left_running",
+  "gpu": "NVIDIA A40, GPU-71ab6101-1d6b-147c-5ee3-af1fc7a677ee, 0 %, 0 MiB",
+  "remaining_flower_processes": [],
+  "cleanup_confirmed": true
+}

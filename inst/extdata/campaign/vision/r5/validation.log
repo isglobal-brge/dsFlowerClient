@@ -1,0 +1,22 @@
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+PARITY r3_registry_default {"round": 1, "cuda_parameter_max_abs": 3.725290298461914e-09, "cpu_parameter_max_abs": 3.725290298461914e-09, "cuda_probability_max_abs": 5.960464477539063e-08, "cpu_probability_max_abs": 5.960464477539063e-08}
+PARITY r3_registry_default {"round": 2, "cuda_parameter_max_abs": 3.725290298461914e-09, "cpu_parameter_max_abs": 3.725290298461914e-09, "cuda_probability_max_abs": 5.960464477539063e-08, "cpu_probability_max_abs": 5.960464477539063e-08}
+PARITY r3_registry_default {"round": 3, "cuda_parameter_max_abs": 3.725290298461914e-09, "cpu_parameter_max_abs": 5.587935447692871e-09, "cuda_probability_max_abs": 5.960464477539063e-08, "cpu_probability_max_abs": 5.960464477539063e-08}
+PARITY r3_registry_default {"round": 4, "cuda_parameter_max_abs": 5.587935447692871e-09, "cpu_parameter_max_abs": 7.450580596923828e-09, "cuda_probability_max_abs": 5.960464477539063e-08, "cpu_probability_max_abs": 8.940696716308594e-08}
+PARITY r3_registry_default {"round": 5, "cuda_parameter_max_abs": 7.450580596923828e-09, "cpu_parameter_max_abs": 7.450580596923828e-09, "cuda_probability_max_abs": 5.960464477539063e-08, "cpu_probability_max_abs": 5.960464477539063e-08}
+PARITY adam_lr0.003_e20_b32 {"round": 1, "cuda_parameter_max_abs": 1.4901161193847656e-08, "cpu_parameter_max_abs": 1.4901161193847656e-08, "cuda_probability_max_abs": 2.60770320892334e-08, "cpu_probability_max_abs": 2.9802322387695312e-08}
+PARITY adam_lr0.003_e20_b32 {"round": 2, "cuda_parameter_max_abs": 2.9802322387695312e-08, "cpu_parameter_max_abs": 2.9802322387695312e-08, "cuda_probability_max_abs": 1.7881393432617188e-07, "cpu_probability_max_abs": 2.086162567138672e-07}
+PARITY adam_lr0.003_e20_b32 {"round": 3, "cuda_parameter_max_abs": 4.470348358154297e-08, "cpu_parameter_max_abs": 2.9802322387695312e-08, "cuda_probability_max_abs": 1.043081283569336e-07, "cpu_probability_max_abs": 1.7881393432617188e-07}
+PARITY adam_lr0.003_e20_b32 {"round": 4, "cuda_parameter_max_abs": 5.960464477539063e-08, "cpu_parameter_max_abs": 5.960464477539063e-08, "cuda_probability_max_abs": 2.384185791015625e-07, "cpu_probability_max_abs": 1.7881393432617188e-07}
+PARITY adam_lr0.003_e20_b32 {"round": 5, "cuda_parameter_max_abs": 8.940696716308594e-08, "cpu_parameter_max_abs": 8.940696716308594e-08, "cuda_probability_max_abs": 3.5762786865234375e-07, "cpu_probability_max_abs": 4.172325134277344e-07}
+HISTORICAL_R4 adam_lr0.003_e20_b32 0.4948537095088819 [0.47962382445141066, 0.5100313479623825]
+PARITY adam_lr0.01_e20_b32 {"round": 1, "cuda_parameter_max_abs": 2.9802322387695312e-08, "cpu_parameter_max_abs": 5.960464477539063e-08, "cuda_probability_max_abs": 2.086162567138672e-07, "cpu_probability_max_abs": 1.7881393432617188e-07}
+PARITY adam_lr0.01_e20_b32 {"round": 2, "cuda_parameter_max_abs": 8.940696716308594e-08, "cpu_parameter_max_abs": 8.940696716308594e-08, "cuda_probability_max_abs": 3.8743019104003906e-07, "cpu_probability_max_abs": 3.5762786865234375e-07}
+PARITY adam_lr0.01_e20_b32 {"round": 3, "cuda_parameter_max_abs": 1.4901161193847656e-07, "cpu_parameter_max_abs": 2.086162567138672e-07, "cuda_probability_max_abs": 5.364418029785156e-07, "cpu_probability_max_abs": 1.1324882507324219e-06}
+PARITY adam_lr0.01_e20_b32 {"round": 4, "cuda_parameter_max_abs": 2.384185791015625e-07, "cpu_parameter_max_abs": 2.682209014892578e-07, "cuda_probability_max_abs": 9.5367431640625e-07, "cpu_probability_max_abs": 9.5367431640625e-07}
+PARITY adam_lr0.01_e20_b32 {"round": 5, "cuda_parameter_max_abs": 4.76837158203125e-07, "cpu_parameter_max_abs": 3.8743019104003906e-07, "cuda_probability_max_abs": 1.4901161193847656e-06, "cpu_probability_max_abs": 1.3709068298339844e-06}
+HISTORICAL_R4 adam_lr0.01_e20_b32 0.49878526645768034 [0.48040752351097177, 0.5241379310344828]
+VALIDATION True elapsed 146.5130100250244

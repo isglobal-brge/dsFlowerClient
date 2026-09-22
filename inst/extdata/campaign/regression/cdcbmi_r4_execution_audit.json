@@ -1,0 +1,122 @@
+{
+  "prefit_failure": {
+    "reason": "Missing staged central_public_units.py dependency; fixed by copying unchanged repository helper before any final model training or test scoring",
+    "guard_sha256": "ae791c80189edb53c3c48b4997e6bdf7dd639422faaba21379b3ccf67443e01c",
+    "log_sha256": "f2ca200bb37597dba5efc599a2bb6cc8f43a665c10d650ad432cab18a4c1ae47",
+    "final_fits_or_scores_before_restart": 0
+  },
+  "dependency_sha256": {
+    "central_public_units.py": "ad8be8eb36477994f65966af568eb37812d5683cadbe49b56437b8817905b3dc",
+    "central_train.py": "de3e96b8361674a3772a8a13c077a6ac6aefc60422b254216f2810b187f783e0",
+    "campaign_lib.R": "d6e8d3cadc7d70497b781cdbf8c60f3f17e478eba7a79d442dbd5f88808cfcec",
+    "cdcbmi_public_units_protocol.json": "ed78789be0fd48185ad291208c2afcf819c2bf3618100d67e8a91326e82ab4a5"
+  },
+  "model_files_sha256": {
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps1/rep1/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_065413/model.pt": "8500f05c1b2e284613c798ed031b5266905ab701dfd3d532b9be58c1d5684cb6",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps1/rep1/artifact/pytorch_linear_regression_FedAvg_5r_20260922_065536/model.pt": "7db306b5c3834f1358b68b5606080a770e347f63206cfc9be09057594a194c44",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps1/rep2/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_065713/model.pt": "018f8a7d3e06efc4b2e6f0b57b7b524aaef500170734ed6c423beee88c8e9b06",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps1/rep2/artifact/pytorch_linear_regression_FedAvg_5r_20260922_065833/model.pt": "2c98f87ac3ac24b440e4ba90f839b7599cebac11fc947c58dfbe5c55b78cdf3f",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps1/rep3/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_070010/model.pt": "43d88a25d6904dea38e7ae92bb0f1591839e36bb9a9b279e8ecd2a5a4aaaf9fd",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps1/rep3/artifact/pytorch_linear_regression_FedAvg_5r_20260922_070130/model.pt": "036435fe3ca8933f091cea02f0ef4429f0e165e9107086d181b9d05de57c7fe5",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep1/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_070323/model.pt": "4664bd490b4df30a20d17a74b96ec1f0c1149a1b3b4930e79eafd6bac0f56d34",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep1/artifact/pytorch_linear_regression_FedAvg_5r_20260922_070454/model.pt": "d646e7ba703de091cb865b9699fc245f1d947197a6e4ced360545fe676866b61",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep2/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_070634/model.pt": "3388fe1e38ac449e61ff4f9b1769109b6c2f3e56ed9961ba122c1a3b4676693b",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep2/artifact/pytorch_linear_regression_FedAvg_5r_20260922_070805/model.pt": "6d41040ba421b2f1ea03a7741c8a68913ace1253febe201e63b6b0d7c52784b3",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep3/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_070945/model.pt": "4565d807c365ab4732525e083e9f8fefbb511bb645dfc6e1883569635e98455f",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep3/artifact/pytorch_linear_regression_FedAvg_5r_20260922_071109/model.pt": "8718b93c592c663e196341841f9d4a5d3506cd306576a8b2fff132e79f3c5a4d",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps8/rep1/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_071311/model.pt": "52a22ce34047614f2ed643064ee8999083e5ee5c46126685b9db6887f5f03da7",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps8/rep1/artifact/pytorch_linear_regression_FedAvg_5r_20260922_071448/model.pt": "883005329467212ba743cc43b002ea1eb8957c28346253c0a3964241055a6ee0",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps8/rep2/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_071631/model.pt": "5e7a822858417a157727cf8561c30f04c636adfbb517c9b70b19626ac884e08b",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps8/rep2/artifact/pytorch_linear_regression_FedAvg_5r_20260922_071806/model.pt": "cc9e2027d216252ed6a041a9ea2decaad3c70a5f70f813a29d38cfd7aebcbaef",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps8/rep3/pooled/artifact/pytorch_linear_regression_FedAvg_5r_20260922_071952/model.pt": "0797819ddf0e0b8c4c86656cfeaabc5e9749057c06ffa596eb2a881306b8cd49",
+    "runs/cdcbmi_r4_pytorch_linear_regression_eps8/rep3/artifact/pytorch_linear_regression_FedAvg_5r_20260922_072129/model.pt": "4c6783b2899a67696afc251071e542827981ff27701b97670e626b2217e31be2"
+  },
+  "schema": "dsflower-regression-r4-execution-audit-v1",
+  "generated_at": "2026-09-22T07:21:55.647098+00:00",
+  "pod_id": "n4emgxhiqzy5i4",
+  "pod_name": "pod-flower-regression",
+  "left_running": true,
+  "declaration_commit": "1952d5f983a9a00aab1385bb09da641c34ef8e00",
+  "guards": [
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps1.started",
+      "value": "2026-09-22 06:52:41 UTC",
+      "sha256": "b136fad791fa0e6cbc3da2413825301e8cdbfe55f6a26a3c619982af2d66bf71"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps1/rep1/scoring.started",
+      "value": "2026-09-22 06:55:39 UTC",
+      "sha256": "17c338d47f6b3296ab05f226c05a3d827fa470025c36e8287e2e835c3b844e29"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps1/rep2/scoring.started",
+      "value": "2026-09-22 06:58:36 UTC",
+      "sha256": "f17ba018b111c490bc6b0df909d9cb36cc94bc28f76f6dc56c24a6234b3d16e5"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps1/rep3/scoring.started",
+      "value": "2026-09-22 07:01:38 UTC",
+      "sha256": "e31e389bec354414a77693f71233207017a7b8e04ca8f3ffa28532450a0bc80b"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps4.started",
+      "value": "2026-09-22 07:01:48 UTC",
+      "sha256": "c24229489ce9b3ceb8cca197bb365ab4239aff72ed9d6f80d64b7e40969c7a06"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep1/scoring.started",
+      "value": "2026-09-22 07:04:57 UTC",
+      "sha256": "0ba9695eb2a7f0488d33e0c80934fd14b484550fd2717d2c553fc8ec94093139"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep2/scoring.started",
+      "value": "2026-09-22 07:08:08 UTC",
+      "sha256": "2591734477e371fdc7c030e212f50794f78c0f52748d4a5b56c9c74e65b3678a"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps4/rep3/scoring.started",
+      "value": "2026-09-22 07:11:16 UTC",
+      "sha256": "499f52a3f4323fcc730e9354fbef3d5d77b0f7098ffa6bd3eee508b400337e0f"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps8.started",
+      "value": "2026-09-22 07:11:24 UTC",
+      "sha256": "a88ae005ffd02d7f195e3838a7120c675fe38aa46c38d2df9165b3daa7a9129a"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps8/rep1/scoring.started",
+      "value": "2026-09-22 07:14:51 UTC",
+      "sha256": "c75fa41a280fee5f96070f1d667aac613c49fa63188d67399ef0dd83bea033c2"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps8/rep2/scoring.started",
+      "value": "2026-09-22 07:18:09 UTC",
+      "sha256": "5ff406bb5d10c04aca34b79bc44535bc2f342a325f06247a6bf7a4f88da9896b"
+    },
+    {
+      "path": "runs/cdcbmi_r4_pytorch_linear_regression_eps8/rep3/scoring.started",
+      "value": "2026-09-22 07:21:42 UTC",
+      "sha256": "ff7b837082100d3ae5f4a236792c28dde6bd1b691bcac72203c0bf490f8dc6c7"
+    }
+  ],
+  "final_execution_started_at": "2026-09-22 06:52:41 UTC",
+  "final_records_completed_at": "2026-09-22T07:21:46Z",
+  "selection_federation_elapsed_s": 586.4759111404422,
+  "selection_trainings": 6,
+  "final_federated_trainings": 9,
+  "final_pooled_trainings": 9,
+  "final_scoring_callbacks": 9,
+  "nonprivate_training_and_scoring_per_seed_once": true,
+  "noiseless_comparator_files": {
+    "r4/comparators_seed20260820/comparators_frozen.json": "b04139d7225f9fbd7aa2dd578f4807afc75badc85aeb26ad839a484863d1e4f5",
+    "r4/comparators_seed20260821/comparators_frozen.json": "ee649b8b626c67cecdd79075d6e58fcfc36d99cc2788e80fd7988f6729f6c303",
+    "r4/comparators_seed20260822/comparators_frozen.json": "8bf420146ea160a96d5d6e00c9a71bb2241c2f2755b78647ffe09c6dc3ebcac6",
+    "r4/comparators_seed20260820/baselines.json": "aec73c838452792792d5d3a14074813e731b112b2b44b7b565459abf17bbeac8",
+    "r4/comparators_seed20260821/baselines.json": "2e135868a3080c830d04c4298ff581251c59cd35398a689a17c52bb6eae95f24",
+    "r4/comparators_seed20260822/baselines.json": "44c72b2884ab5a1210e6ebd0aa71c310ab8dbde2d66c9eaa631a660a7601efe5"
+  },
+  "summed_federation_elapsed_s": 856.4541032314295,
+  "summed_pooled_elapsed_s": 865.197625637054,
+  "summed_replicate_elapsed_s": 1736.7099442482013,
+  "interpretation": "Guard and saved-evidence audit only; no model predictions or metric recomputation. Sealed CSVs are reconstructed and opened within the guarded final scoring callback. All settings frozen before those callbacks. Each non-private comparator is scored once and reused across budgets."
+}

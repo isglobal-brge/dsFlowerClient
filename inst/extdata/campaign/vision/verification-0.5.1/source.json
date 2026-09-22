@@ -1,0 +1,20 @@
+{
+  "schema": "dsflower-vision-patch-install-v1",
+  "execution_token": "FLOWER_CELLS_VISION_2026-09-22",
+  "branch": "fix/import-guard-torch-generated-modules",
+  "commit": "c4eaaf153db4a7204878bf1d8995c16faa615110",
+  "server_version": "0.5.1",
+  "client_version": "0.5.0",
+  "git_guard_sha256": "3ae7c9ce6750c81c00e8c70e618d0bc52978486d7736587f39c716ff401fe98d",
+  "server_worktree_clean": true,
+  "server_branch_modified": false,
+  "client_reinstalled": false,
+  "canonical_runner_changed": false,
+  "source_transfer": "pod-flower-visioncp -rlzt --exclude=.git --exclude=*.o --exclude=*.so --exclude=__pycache__ dsFlower/ pod:/workspace/cells-vision/src/dsFlower/",
+  "install_command": "R CMD INSTALL --preclean --library=/workspace/cells-vision/Rlib /workspace/cells-vision/src/dsFlower",
+  "campaign_python": "/workspace/cells-vision/venvs/pytorch-gpu/bin/python",
+  "installation_notes": [
+    "Installer also provisioned its default /var/lib/dsflower/venvs; campaign explicitly retains the pre-existing /workspace/cells-vision/venvs runtime.",
+    "An early preflight ran while staged installation was incomplete; retained as preflight-during-install.json. Verification after installation is authoritative."
+  ]
+}

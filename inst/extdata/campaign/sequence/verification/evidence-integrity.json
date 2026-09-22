@@ -1,0 +1,15 @@
+{
+  "task_token": "FLOWER_CELLS_SEQUENCE_2026-09-22",
+  "cell_records": 3,
+  "replicates": 9,
+  "node_round_captures": 135,
+  "all_summary_file_hashes_verified": true,
+  "all_metrics_and_sample_sds_verified_from_frozen_scores": true,
+  "all_models_completed_before_scoring_marker": true,
+  "execution_audit_completed_before_test_access": true,
+  "scoring_invocations": 1,
+  "post_score_training_or_setting_changes": false,
+  "metadata_only_correction": "../reporting-correction.json",
+  "test_scoring_started_at": "2026-09-22T01:40:51.225249+00:00",
+  "all_replicate_cleanup_ok": true
+}

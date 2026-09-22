@@ -1,0 +1,41 @@
+{
+  "sources": [
+    {
+      "bytes": 133917740,
+      "filename": "BUSBRA.zip",
+      "publisher_md5": "1f8b2be6476d58fc97bfb5e5a1ea9bab",
+      "sha256": "ba3e6ed19cc37c682d8d39e25435bbf8a555a12cb7e641b5f2117685c95580ff",
+      "url": "https://zenodo.org/api/records/8231412/files/BUSBRA.zip/content"
+    },
+    {
+      "bytes": 5497,
+      "filename": "busbra-record.json",
+      "sha256": "5d95d744432a93661d645560eacaf88013287e17aa93964ec3f5d648056be8fa",
+      "url": "https://zenodo.org/api/records/8231412"
+    },
+    {
+      "bytes": 46830571,
+      "filename": "resnet18-f37072fd.pth",
+      "sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec",
+      "url": "https://download.pytorch.org/models/resnet18-f37072fd.pth"
+    },
+    {
+      "bytes": 18657,
+      "filename": "CC-BY-4.0.txt",
+      "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411",
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.txt"
+    },
+    {
+      "bytes": 1517,
+      "filename": "torchvision-LICENSE.txt",
+      "sha256": "6502f676851cfe25f8af75531dfb32375b7325b73c37e7b43741fa422893e71d",
+      "url": "https://raw.githubusercontent.com/pytorch/vision/v0.19.1/LICENSE"
+    },
+    {
+      "bytes": 1953,
+      "filename": "BUS-BRA-README.md",
+      "sha256": "5c3a175011ee81830e9e70e1775523c9a6c9fb6c1eff2ce41f917d811e455445",
+      "url": "https://raw.githubusercontent.com/wgomezf/BUS-BRA/main/README.md"
+    }
+  ]
+}

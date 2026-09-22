@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/workspace/cells-sequence/src/dsFlowerClient/tools/campaign/sequence/central_twins.py", line 116, in <module>
+    main(args.root, args.run)
+  File "/workspace/cells-sequence/src/dsFlowerClient/tools/campaign/sequence/central_twins.py", line 61, in main
+    captures, (x, y, subjects) = verify_captures(root, run, cfg)
+                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/cells-sequence/src/dsFlowerClient/tools/campaign/sequence/central_twins.py", line 39, in verify_captures
+    assert key in expected and capture["source_rows"] == expected[key]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

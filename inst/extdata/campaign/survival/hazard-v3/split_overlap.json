@@ -1,0 +1,36 @@
+{
+  "method": "Set differences of outer training subject IDs only; no test file, event, time, prediction or score read.",
+  "interpretation": "The same 9105 public subjects underlie all historical splits. IDs outside another replicate training set belong to its test set. Development training/validation is disjoint from its own replicate test, but not globally disjoint from other replicate tests. These are descriptive reused-holdout benchmark results, not independent nested validation.",
+  "rows": [
+    {
+      "development_seed": 1101,
+      "confirmation_seed": 1101,
+      "development_outer_training_subjects_outside_confirmation_training": 0
+    },
+    {
+      "development_seed": 1101,
+      "confirmation_seed": 1102,
+      "development_outer_training_subjects_outside_confirmation_training": 1469
+    },
+    {
+      "development_seed": 1101,
+      "confirmation_seed": 1103,
+      "development_outer_training_subjects_outside_confirmation_training": 1449
+    },
+    {
+      "development_seed": 1102,
+      "confirmation_seed": 1101,
+      "development_outer_training_subjects_outside_confirmation_training": 1469
+    },
+    {
+      "development_seed": 1102,
+      "confirmation_seed": 1102,
+      "development_outer_training_subjects_outside_confirmation_training": 0
+    },
+    {
+      "development_seed": 1102,
+      "confirmation_seed": 1103,
+      "development_outer_training_subjects_outside_confirmation_training": 1471
+    }
+  ]
+}

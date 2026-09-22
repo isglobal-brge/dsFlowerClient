@@ -1,0 +1,739 @@
+{
+  "protocol_version": 3,
+  "selected": {
+    "id": "g10",
+    "protocol_version": 3,
+    "K": 5,
+    "learning_rate": 0.05,
+    "optimizer": "sgd",
+    "strategy": "fedavgm",
+    "rounds": 20,
+    "local_epochs": 2,
+    "batch_size": 64,
+    "grid": "quantile",
+    "preprocessing": "declared public bounds to [-1,1]"
+  },
+  "ranked": [
+    {
+      "config": {
+        "id": "g10",
+        "protocol_version": 3,
+        "K": 5,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedavgm",
+        "rounds": 20,
+        "local_epochs": 2,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.633339392738132,
+        "1102": 0.646462636955188
+      },
+      "mean": 0.63990101484666
+    },
+    {
+      "config": {
+        "id": "g08",
+        "protocol_version": 3,
+        "K": 5,
+        "learning_rate": 0.02,
+        "optimizer": "adam",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 1,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.63804492209102,
+        "1102": 0.638318505781769
+      },
+      "mean": 0.6381817139363946
+    },
+    {
+      "config": {
+        "id": "g16",
+        "protocol_version": 3,
+        "K": 5,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 4,
+        "batch_size": 32,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.627455564668998,
+        "1102": 0.631209737397304
+      },
+      "mean": 0.629332651033151
+    },
+    {
+      "config": {
+        "id": "g12",
+        "protocol_version": 3,
+        "K": 5,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedadam",
+        "rounds": 20,
+        "local_epochs": 2,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.629412460399417,
+        "1102": 0.623812585241256
+      },
+      "mean": 0.6266125228203365
+    },
+    {
+      "config": {
+        "id": "g20",
+        "protocol_version": 3,
+        "K": 5,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 20,
+        "local_epochs": 4,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.625526045767487,
+        "1102": 0.622667723351063
+      },
+      "mean": 0.624096884559275
+    },
+    {
+      "config": {
+        "id": "g06",
+        "protocol_version": 3,
+        "K": 5,
+        "learning_rate": 0.1,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 4,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.625595035376338,
+        "1102": 0.617975524240499
+      },
+      "mean": 0.6217852798084185
+    },
+    {
+      "config": {
+        "id": "g09",
+        "protocol_version": 3,
+        "K": 8,
+        "learning_rate": 0.02,
+        "optimizer": "adam",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 1,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.62061245251489,
+        "1102": 0.61039081421797
+      },
+      "mean": 0.61550163336643
+    },
+    {
+      "config": {
+        "id": "g11",
+        "protocol_version": 3,
+        "K": 8,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedavgm",
+        "rounds": 20,
+        "local_epochs": 2,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.616044902379703,
+        "1102": 0.601154944480703
+      },
+      "mean": 0.608599923430203
+    },
+    {
+      "config": {
+        "id": "g18",
+        "protocol_version": 3,
+        "K": 5,
+        "learning_rate": 0.1,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 20,
+        "local_epochs": 1,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.609897161679886,
+        "1102": 0.592360323596948
+      },
+      "mean": 0.601128742638417
+    },
+    {
+      "config": {
+        "id": "g02",
+        "protocol_version": 3,
+        "K": 5,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 4,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.608676155110542,
+        "1102": 0.591759704764403
+      },
+      "mean": 0.6002179299374725
+    },
+    {
+      "config": {
+        "id": "g17",
+        "protocol_version": 3,
+        "K": 8,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 4,
+        "batch_size": 32,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.608234840628528,
+        "1102": 0.584539268979664
+      },
+      "mean": 0.5963870548040959
+    },
+    {
+      "config": {
+        "id": "g01",
+        "protocol_version": 3,
+        "K": 10,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 4,
+        "batch_size": 64,
+        "grid": "equal_width",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.598835827727471,
+        "1102": 0.592298527074466
+      },
+      "mean": 0.5955671774009685
+    },
+    {
+      "config": {
+        "id": "g07",
+        "protocol_version": 3,
+        "K": 8,
+        "learning_rate": 0.1,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 4,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.601795810469118,
+        "1102": 0.587181341353149
+      },
+      "mean": 0.5944885759111336
+    },
+    {
+      "config": {
+        "id": "g13",
+        "protocol_version": 3,
+        "K": 8,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedadam",
+        "rounds": 20,
+        "local_epochs": 2,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.590102619305483,
+        "1102": 0.583862759680913
+      },
+      "mean": 0.586982689493198
+    },
+    {
+      "config": {
+        "id": "g03",
+        "protocol_version": 3,
+        "K": 8,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 4,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.584995198104209,
+        "1102": 0.573747644685174
+      },
+      "mean": 0.5793714213946914
+    },
+    {
+      "config": {
+        "id": "g19",
+        "protocol_version": 3,
+        "K": 8,
+        "learning_rate": 0.1,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 20,
+        "local_epochs": 1,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.584362245819832,
+        "1102": 0.566377596267056
+      },
+      "mean": 0.575369921043444
+    },
+    {
+      "config": {
+        "id": "g05",
+        "protocol_version": 3,
+        "K": 10,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 4,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.57295705889632,
+        "1102": 0.559174506874592
+      },
+      "mean": 0.5660657828854561
+    },
+    {
+      "config": {
+        "id": "g04",
+        "protocol_version": 3,
+        "K": 12,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedavg",
+        "rounds": 10,
+        "local_epochs": 4,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.562238482841846,
+        "1102": 0.555660778289255
+      },
+      "mean": 0.5589496305655505
+    },
+    {
+      "config": {
+        "id": "g15",
+        "protocol_version": 3,
+        "K": 8,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedyogi",
+        "rounds": 20,
+        "local_epochs": 2,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.531395747392905,
+        "1102": 0.519158548193698
+      },
+      "mean": 0.5252771477933015
+    },
+    {
+      "config": {
+        "id": "g14",
+        "protocol_version": 3,
+        "K": 5,
+        "learning_rate": 0.05,
+        "optimizer": "sgd",
+        "strategy": "fedyogi",
+        "rounds": 20,
+        "local_epochs": 2,
+        "batch_size": 64,
+        "grid": "quantile",
+        "preprocessing": "declared public bounds to [-1,1]"
+      },
+      "scores": {
+        "1101": 0.525975135268912,
+        "1102": 0.509838114794087
+      },
+      "mean": 0.5179066250314995
+    }
+  ],
+  "selected_utc": "2026-09-22T02:43:02.980652+00:00",
+  "rule": "maximum mean inner-validation federated-DP C-index; total epochs; K; ID",
+  "per_seed_configs": {
+    "1101": {
+      "id": "g10",
+      "protocol_version": 3,
+      "K": 5,
+      "learning_rate": 0.05,
+      "optimizer": "sgd",
+      "strategy": "fedavgm",
+      "rounds": 20,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]",
+      "edges": [
+        0.0,
+        10.0,
+        30.0,
+        103.40000000000009,
+        327.2000000000003,
+        1825.0
+      ],
+      "grid_source": "inner-training events only; fixed before development fits; reused unchanged at confirmation",
+      "grid_source_sha256": "622538571afb97acb57faa64e1a8d7ce07ee4f704f3859baa435c3ac2562f4cb"
+    },
+    "1102": {
+      "id": "g10",
+      "protocol_version": 3,
+      "K": 5,
+      "learning_rate": 0.05,
+      "optimizer": "sgd",
+      "strategy": "fedavgm",
+      "rounds": 20,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]",
+      "edges": [
+        0.0,
+        10.0,
+        31.0,
+        106.0,
+        324.0,
+        1825.0
+      ],
+      "grid_source": "inner-training events only; fixed before development fits; reused unchanged at confirmation",
+      "grid_source_sha256": "1eaa1c0e5c9bfa49c8549f8c83e3544d239d5f25fea1df6df156111523f5aa4c"
+    },
+    "1103": {
+      "id": "g10",
+      "protocol_version": 3,
+      "K": 5,
+      "learning_rate": 0.05,
+      "optimizer": "sgd",
+      "strategy": "fedavgm",
+      "rounds": 20,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]",
+      "edges": [
+        0.0,
+        10.0,
+        31.0,
+        106.0,
+        334.8000000000002,
+        1825.0
+      ],
+      "grid_source": "inner-training events only; fixed before development fits; reused unchanged at confirmation",
+      "grid_source_sha256": "9f4a9df08822f2c79840fbb0653f5d86e7dee5430bc72e448c1a39bb2aa31196"
+    }
+  },
+  "confirmation_arms": [
+    "full",
+    "two-sites",
+    "heterogeneous",
+    "small600"
+  ],
+  "omitted_configurations": [
+    {
+      "id": "g21",
+      "protocol_version": 3,
+      "K": 8,
+      "learning_rate": 0.05,
+      "optimizer": "sgd",
+      "strategy": "fedavg",
+      "rounds": 20,
+      "local_epochs": 4,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g22",
+      "protocol_version": 3,
+      "K": 5,
+      "learning_rate": 0.05,
+      "optimizer": "adam",
+      "strategy": "fedavg",
+      "rounds": 10,
+      "local_epochs": 1,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g23",
+      "protocol_version": 3,
+      "K": 8,
+      "learning_rate": 0.05,
+      "optimizer": "adam",
+      "strategy": "fedavg",
+      "rounds": 10,
+      "local_epochs": 1,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g24",
+      "protocol_version": 3,
+      "K": 5,
+      "learning_rate": 0.1,
+      "optimizer": "adam",
+      "strategy": "fedavg",
+      "rounds": 10,
+      "local_epochs": 1,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g25",
+      "protocol_version": 3,
+      "K": 8,
+      "learning_rate": 0.1,
+      "optimizer": "adam",
+      "strategy": "fedavg",
+      "rounds": 10,
+      "local_epochs": 1,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g26",
+      "protocol_version": 3,
+      "K": 5,
+      "learning_rate": 0.02,
+      "optimizer": "sgd",
+      "strategy": "fedavg",
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g27",
+      "protocol_version": 3,
+      "K": 8,
+      "learning_rate": 0.02,
+      "optimizer": "sgd",
+      "strategy": "fedavg",
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g28",
+      "protocol_version": 3,
+      "K": 5,
+      "learning_rate": 0.02,
+      "optimizer": "adam",
+      "strategy": "fedavgm",
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g29",
+      "protocol_version": 3,
+      "K": 8,
+      "learning_rate": 0.02,
+      "optimizer": "adam",
+      "strategy": "fedavgm",
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g30",
+      "protocol_version": 3,
+      "K": 5,
+      "learning_rate": 0.02,
+      "optimizer": "adam",
+      "strategy": "fedadam",
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g31",
+      "protocol_version": 3,
+      "K": 8,
+      "learning_rate": 0.02,
+      "optimizer": "adam",
+      "strategy": "fedadam",
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g32",
+      "protocol_version": 3,
+      "K": 5,
+      "learning_rate": 0.02,
+      "optimizer": "adam",
+      "strategy": "fedyogi",
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g33",
+      "protocol_version": 3,
+      "K": 8,
+      "learning_rate": 0.02,
+      "optimizer": "adam",
+      "strategy": "fedyogi",
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g34",
+      "protocol_version": 3,
+      "K": 10,
+      "learning_rate": 0.02,
+      "optimizer": "adam",
+      "strategy": "fedavg",
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    },
+    {
+      "id": "g35",
+      "protocol_version": 3,
+      "K": 12,
+      "learning_rate": 0.02,
+      "optimizer": "adam",
+      "strategy": "fedavg",
+      "rounds": 10,
+      "local_epochs": 2,
+      "batch_size": 64,
+      "grid": "quantile",
+      "preprocessing": "declared public bounds to [-1,1]"
+    }
+  ],
+  "omission_rule": "unstarted suffix at predeclared wall-clock cutoff",
+  "development_sha256": {
+    "cell-dev-g01-seed1101.json": "20667b930c2a61ee041196dece254d211446fc125879dabfb03d40ed79514cb6",
+    "cell-dev-g01-seed1102-startup-recovery.json": "c47e64d79583a974c491742898eb02333b3271ae6853f273b21840f5c5a230f2",
+    "cell-dev-g02-seed1101.json": "73414ca8b9e0b6a7f0dcb903651ea9641ff9cc38ea2ce42e2b4a9ebc9cbc646d",
+    "cell-dev-g02-seed1102.json": "034becbf48f588be12432aa47a6eb99312c709cbba643fc0b2c77114a19a3a59",
+    "cell-dev-g03-seed1101.json": "dcab9044c45e35c3f3758fd333a1a3ed5f582a06a75268defdf18cc873f33e7c",
+    "cell-dev-g03-seed1102.json": "37dee6d536cef14dacdbed0c208f731526e4dafa7a4b7634c8026a822d11a844",
+    "cell-dev-g04-seed1101.json": "47a6d667e71db6ff01280119b1eb4bd85f27f03bdf49050607d3cdb34e57c134",
+    "cell-dev-g04-seed1102.json": "b49f8643a30c8a778f0839300cd96d1efb500cde7a89e57e21c1ff146a1b9687",
+    "cell-dev-g05-seed1101.json": "2a626d9548f363ae1aaeed35f2c9dd36a0fc822c1f272d670d338ced5d1c3c52",
+    "cell-dev-g05-seed1102.json": "7bd35e728d15f37bc6e0ae485d6d081813da6a43fb7468b39a5a54df46fb6177",
+    "cell-dev-g06-seed1101.json": "751677829c7538ef228bdb1ec1d7d29dde4700b478480b0c332a6c61ab6adfff",
+    "cell-dev-g06-seed1102.json": "3586ebfbf1b9ad880237dbf5fe54f7f9ac9ffd9877c8707d65d3f00a2907df72",
+    "cell-dev-g07-seed1101.json": "4adf81c1d820a906047da1a4f356867dd74e509ed9e5a1e4f7912cb6dab12c9c",
+    "cell-dev-g07-seed1102.json": "2bbc62709a8e56ae18d9b26a77c02a3c0e012a8faa2014ebfc20c3adc517b060",
+    "cell-dev-g08-seed1101.json": "8f0ea56dc1e4499b80449a7b920eacbc6c65f99e1547883d56ad0099d16b70f8",
+    "cell-dev-g08-seed1102.json": "b33bd539216bc252b3b3ba2377fc49c62b026fc425860fd261d42d597af56a85",
+    "cell-dev-g09-seed1101.json": "48a4d5dce50a83fea30503917ebe226d164dc5d30e5c7096086ade1ccda34a41",
+    "cell-dev-g09-seed1102.json": "e35490f80d6f48a1556f8cb919f93652d04665806c84ce0976633da0f18459b8",
+    "cell-dev-g10-seed1101.json": "6d5b932a8fdee9fb6d3891a18331ebf7cf515e51309fb47bb2889ef2945e3a0c",
+    "cell-dev-g10-seed1102.json": "db84f6bde3f639373bc276415d7d25cbb7d501db59e79a08dd164dd13111e59a",
+    "cell-dev-g11-seed1101.json": "4a594e1e333a8ee28beff1895609034b9d51cf59f942d4b7b51ddb43c42f4eb0",
+    "cell-dev-g11-seed1102.json": "4c7a4c182437a1fb25c887e0042b56a4914f5743a60b871dfb7c8eef104827ef",
+    "cell-dev-g12-seed1101.json": "e095b8bfc8cb4f3c77f8473bd529226f86e150996357388c37507eac2c18d00b",
+    "cell-dev-g12-seed1102.json": "fa13cc5b3a1ea4e543e809a2f02a6ec386aaed1699e898d2e47eaf5477df52fb",
+    "cell-dev-g13-seed1101.json": "04347677a8e5761e2dff1ae69c094899d171bf1325f38b9f493b87be0deab111",
+    "cell-dev-g13-seed1102.json": "84ed8f35771beff84aee32ef43ce5d2284a79b6c45adaa0c303b92d38729038f",
+    "cell-dev-g14-seed1101.json": "461914f33729e56e380a45b3d6fcd0ef5de1548590b3a03a443e1beae762ba3e",
+    "cell-dev-g14-seed1102.json": "4a2543d5220524e88bc7cf14eba9d54e477b3a718b17caa6f2fe9d5eeed49392",
+    "cell-dev-g15-seed1101.json": "001e89144b0edbf6067a8e9f53a433cd279bf6d0077e333c5e4d01e77bf5ba74",
+    "cell-dev-g15-seed1102.json": "9ffe4272f6f026f0e7b531c7ee91e60ed9b0b2d2415b0ee51a9b9c74f0700a20",
+    "cell-dev-g16-seed1101.json": "d0e0b151ff62fcc1263a11b19151fb36c6e6188ae2f3e4cf3743b8c95be966e8",
+    "cell-dev-g16-seed1102.json": "a355e926013a468f519b0b96d3211cbe89792b9ff99e47e73dd5566114509c1d",
+    "cell-dev-g17-seed1101.json": "d5bd100781b0e082ce8e1ef6742ae0cc60d46301591069975d5135380d0fb628",
+    "cell-dev-g17-seed1102.json": "1ee22cd52381a05aa400063f4b17f64e3c467967eb68ef0bf0946e785b0f33d0",
+    "cell-dev-g18-seed1101.json": "771c2d0b0259d733ca631107b63d65429905418360315722cd27c97e43d514fe",
+    "cell-dev-g18-seed1102.json": "41321526d465e2cb0cd3fd228aaf7c2ed3bcd983103bb8e6e896fbbd118f55b0",
+    "cell-dev-g19-seed1101.json": "edc4afcb069057bb4673968d48fe930cb43346a6cf9f3176834924f498ec6968",
+    "cell-dev-g19-seed1102.json": "99d19fcea30853142f9ee5b5997e739edc8a1499479482322daed999c7b17491",
+    "cell-dev-g20-seed1101.json": "f628767d1311bc03e50782a9aaf32bb266d1748da011e7b5e26409ea812c2011",
+    "cell-dev-g20-seed1102.json": "b9b6ea7cc03707750c32c8f3e0f4976699f0b46a0c126991c10eb388d20f3ef6"
+  },
+  "protocol_sha256": "44f445ab9c1e290b4d385d4ad3305b7a0d9aea25355791f79464e4f537244695",
+  "preregistration_sha256": "da78950d8e45123afcecee918eb9c43f3cce3ad6acb57b0f2f91f808c67c1842"
+}

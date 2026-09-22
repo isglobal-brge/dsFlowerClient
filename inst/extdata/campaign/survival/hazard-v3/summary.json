@@ -1,0 +1,1461 @@
+{
+  "schema_version": 1,
+  "record_type": "summary",
+  "task": "survival",
+  "protocol_version": 3,
+  "status": "executed",
+  "date_utc": "2026-09-22T03:49:12.260282+00:00",
+  "selected": {
+    "id": "g10",
+    "protocol_version": 3,
+    "K": 5,
+    "learning_rate": 0.05,
+    "optimizer": "sgd",
+    "strategy": "fedavgm",
+    "rounds": 20,
+    "local_epochs": 2,
+    "batch_size": 64,
+    "grid": "quantile",
+    "preprocessing": "declared public bounds to [-1,1]"
+  },
+  "selection_sha256": "ad6aee30a71b82c94cd97f633da547e409b21ce9e2630789c0351a314f749e0f",
+  "confirmation_number": 3,
+  "omitted_optional_arms": [],
+  "optional_arm_rule": "Include both optional arms only if selection locks before 2026-09-22T02:50:00+00:00",
+  "expected_matrix_cells": 18,
+  "observed_cells": 18,
+  "groups": [
+    {
+      "arm": "full",
+      "epsilon": 1,
+      "n_train": 7284,
+      "n_sites": 3,
+      "site_n": [
+        2428,
+        2428,
+        2428
+      ],
+      "c_index": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.6234748750733247,
+          "sd": 0.010064345939381728,
+          "ci95": [
+            0.5984736537812052,
+            0.6484760963654441
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.610166220798779,
+          "sd": 0.008382003629281199,
+          "ci95": [
+            0.5893441694832534,
+            0.6309882721143046
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.6417729488190159,
+          "sd": 0.00681508175713975,
+          "ci95": [
+            0.6248433472174434,
+            0.6587025504205885
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.5,
+          "sd": 0.0,
+          "ci95": [
+            0.5,
+            0.5
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "heldout_nll": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.3293235931142016,
+          "sd": 0.011118999679390963,
+          "ci95": [
+            0.3017024666936867,
+            0.3569447195347165
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.33673113834362733,
+          "sd": 0.02561054078085121,
+          "ci95": [
+            0.2731110281715951,
+            0.40035124851565956
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.287635673851406,
+          "sd": 0.0025075283621965325,
+          "ci95": [
+            0.28140662808359,
+            0.29386471961922195
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.32036335873920935,
+          "sd": 0.003929063584187921,
+          "ci95": [
+            0.3106030237178632,
+            0.3301236937605555
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "pooled_dp_minus_federated": {
+        "n": 3,
+        "mean": -0.013308654274545676,
+        "sd": 0.018252583201856815,
+        "ci95": [
+          -0.058650584543138776,
+          0.03203327599404743
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      },
+      "central_minus_federated": {
+        "n": 3,
+        "mean": 0.01829807374569133,
+        "sd": 0.004150235644177883,
+        "ci95": [
+          0.007988316869338626,
+          0.028607830622044035
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      }
+    },
+    {
+      "arm": "full",
+      "epsilon": 4,
+      "n_train": 7284,
+      "n_sites": 3,
+      "site_n": [
+        2428,
+        2428,
+        2428
+      ],
+      "c_index": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.6384333938738587,
+          "sd": 0.0017603505962277487,
+          "ci95": [
+            0.6340604405718672,
+            0.6428063471758502
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.642820646356525,
+          "sd": 0.0020948114417689576,
+          "ci95": [
+            0.6376168462550207,
+            0.6480244464580294
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.6417729488190159,
+          "sd": 0.00681508175713975,
+          "ci95": [
+            0.6248433472174434,
+            0.6587025504205885
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.5,
+          "sd": 0.0,
+          "ci95": [
+            0.5,
+            0.5
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "heldout_nll": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.2892976374244433,
+          "sd": 0.0015802709835675798,
+          "ci95": [
+            0.2853720266793783,
+            0.29322324816950834
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.29185546327471434,
+          "sd": 0.005648396774727564,
+          "ci95": [
+            0.2778240678356847,
+            0.305886858713744
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.287635673851406,
+          "sd": 0.0025075283621965325,
+          "ci95": [
+            0.28140662808359,
+            0.29386471961922195
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.32036335873920935,
+          "sd": 0.003929063584187921,
+          "ci95": [
+            0.3106030237178632,
+            0.3301236937605555
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "pooled_dp_minus_federated": {
+        "n": 3,
+        "mean": 0.0043872524826663595,
+        "sd": 0.00038917711373074763,
+        "ci95": [
+          0.003420482937897662,
+          0.005354022027435057
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      },
+      "central_minus_federated": {
+        "n": 3,
+        "mean": 0.0033395549451573268,
+        "sd": 0.005244031739900553,
+        "ci95": [
+          -0.009687342061545335,
+          0.016366451951859987
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      }
+    },
+    {
+      "arm": "full",
+      "epsilon": 8,
+      "n_train": 7284,
+      "n_sites": 3,
+      "site_n": [
+        2428,
+        2428,
+        2428
+      ],
+      "c_index": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.6411601754113043,
+          "sd": 0.0036844255755092837,
+          "ci95": [
+            0.6320075548930443,
+            0.6503127959295644
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.6428636260756934,
+          "sd": 0.00754152617968442,
+          "ci95": [
+            0.6241294364885869,
+            0.6615978156627998
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.6417729488190159,
+          "sd": 0.00681508175713975,
+          "ci95": [
+            0.6248433472174434,
+            0.6587025504205885
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.5,
+          "sd": 0.0,
+          "ci95": [
+            0.5,
+            0.5
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "heldout_nll": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.28733355148662265,
+          "sd": 0.001828052611303178,
+          "ci95": [
+            0.28279241705582076,
+            0.29187468591742455
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.28794868551718295,
+          "sd": 0.003037304481515763,
+          "ci95": [
+            0.2804036029125814,
+            0.2954937681217845
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.287635673851406,
+          "sd": 0.0025075283621965325,
+          "ci95": [
+            0.28140662808359,
+            0.29386471961922195
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.32036335873920935,
+          "sd": 0.003929063584187921,
+          "ci95": [
+            0.3106030237178632,
+            0.3301236937605555
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "pooled_dp_minus_federated": {
+        "n": 3,
+        "mean": 0.001703450664389002,
+        "sd": 0.004013803991150796,
+        "ci95": [
+          -0.008267391197602676,
+          0.011674292526380681
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      },
+      "central_minus_federated": {
+        "n": 3,
+        "mean": 0.0006127734077116717,
+        "sd": 0.004995658296468849,
+        "ci95": [
+          -0.011797129761565005,
+          0.01302267657698835
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      }
+    },
+    {
+      "arm": "heterogeneous",
+      "epsilon": 8,
+      "n_train": 7284,
+      "n_sites": 3,
+      "site_n": [
+        2428,
+        2428,
+        2428
+      ],
+      "c_index": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.6392997872160734,
+          "sd": 0.005644576454979859,
+          "ci95": [
+            0.6252778819774,
+            0.6533216924547468
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.6407555081589114,
+          "sd": 0.004946537757650122,
+          "ci95": [
+            0.6284676271725358,
+            0.6530433891452869
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.6438899999530516,
+          "sd": 0.006644650007168071,
+          "ci95": [
+            0.6273837742888633,
+            0.66039622561724
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.5,
+          "sd": 0.0,
+          "ci95": [
+            0.5,
+            0.5
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "heldout_nll": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.2883773247262733,
+          "sd": 0.0015751091089725832,
+          "ci95": [
+            0.28446453678855305,
+            0.2922901126639936
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.287736483034809,
+          "sd": 0.002970107464634507,
+          "ci95": [
+            0.28035832707395925,
+            0.2951146389956587
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.28924433285620693,
+          "sd": 0.0024661742616478334,
+          "ci95": [
+            0.2831180163690995,
+            0.29537064934331436
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.32151770174971667,
+          "sd": 0.004479089948045016,
+          "ci95": [
+            0.3103910254954562,
+            0.3326443780039771
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "pooled_dp_minus_federated": {
+        "n": 3,
+        "mean": 0.0014557209428380051,
+        "sd": 0.0012729381345475317,
+        "ci95": [
+          -0.0017064326819166344,
+          0.004617874567592645
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      },
+      "central_minus_federated": {
+        "n": 3,
+        "mean": 0.004590212736978312,
+        "sd": 0.002733666170303541,
+        "ci95": [
+          -0.0022005904880088136,
+          0.011381015961965439
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      }
+    },
+    {
+      "arm": "small600",
+      "epsilon": 8,
+      "n_train": 600,
+      "n_sites": 3,
+      "site_n": [
+        200,
+        200,
+        200
+      ],
+      "c_index": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.5727954306065676,
+          "sd": 0.018411671924684417,
+          "ci95": [
+            0.5270583020420843,
+            0.6185325591710509
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.6093574647081991,
+          "sd": 0.01482003718935353,
+          "ci95": [
+            0.5725424514365836,
+            0.6461724779798146
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.61000487175406,
+          "sd": 0.010790101426448796,
+          "ci95": [
+            0.5832007738870075,
+            0.6368089696211126
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.5,
+          "sd": 0.0,
+          "ci95": [
+            0.5,
+            0.5
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "heldout_nll": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.30569308059075234,
+          "sd": 0.003370225209162035,
+          "ci95": [
+            0.2973209770515813,
+            0.3140651841299234
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.30795308704535934,
+          "sd": 0.005257011874897218,
+          "ci95": [
+            0.29489394559580784,
+            0.32101222849491085
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.2960470669503567,
+          "sd": 0.0046567890223408095,
+          "ci95": [
+            0.28447896172429493,
+            0.3076151721764185
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.321475781700479,
+          "sd": 0.005545452605430725,
+          "ci95": [
+            0.30770011375460443,
+            0.3352514496463536
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "pooled_dp_minus_federated": {
+        "n": 3,
+        "mean": 0.036562034101631315,
+        "sd": 0.020997685856090416,
+        "ci95": [
+          -0.015599109192969404,
+          0.08872317739623203
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      },
+      "central_minus_federated": {
+        "n": 3,
+        "mean": 0.03720944114749233,
+        "sd": 0.028940412036406928,
+        "ci95": [
+          -0.03468252778573929,
+          0.10910141008072394
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      }
+    },
+    {
+      "arm": "two-sites",
+      "epsilon": 8,
+      "n_train": 7284,
+      "n_sites": 2,
+      "site_n": [
+        3642,
+        3642
+      ],
+      "c_index": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.6417771714024337,
+          "sd": 0.004733915410109899,
+          "ci95": [
+            0.6300174736079437,
+            0.6535368691969238
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.638713627215594,
+          "sd": 0.005710965398430075,
+          "ci95": [
+            0.6245268026988526,
+            0.6529004517323354
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.6417729488190159,
+          "sd": 0.00681508175713975,
+          "ci95": [
+            0.6248433472174434,
+            0.6587025504205885
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.5,
+          "sd": 0.0,
+          "ci95": [
+            0.5,
+            0.5
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "heldout_nll": {
+        "federated_dp": {
+          "n": 3,
+          "mean": 0.29698067157459634,
+          "sd": 0.0005084021583428081,
+          "ci95": [
+            0.2957177306003217,
+            0.298243612548871
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central_dp": {
+          "n": 3,
+          "mean": 0.29292369750077,
+          "sd": 0.004031300845495724,
+          "ci95": [
+            0.2829093910430631,
+            0.3029380039584769
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "central": {
+          "n": 3,
+          "mean": 0.287635673851406,
+          "sd": 0.0025075283621965325,
+          "ci95": [
+            0.28140662808359,
+            0.29386471961922195
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        },
+        "null": {
+          "n": 3,
+          "mean": 0.32036335873920935,
+          "sd": 0.003929063584187921,
+          "ci95": [
+            0.3106030237178632,
+            0.3301236937605555
+          ],
+          "method": "Student-t over matched public split replicates; overlapping splits"
+        }
+      },
+      "pooled_dp_minus_federated": {
+        "n": 3,
+        "mean": -0.0030635441868396653,
+        "sd": 0.0016097070576210914,
+        "ci95": [
+          -0.00706227819354688,
+          0.0009351898198675496
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      },
+      "central_minus_federated": {
+        "n": 3,
+        "mean": -4.222583417664201e-06,
+        "sd": 0.002164086742771894,
+        "ci95": [
+          -0.005380112072636262,
+          0.005371666905800934
+        ],
+        "method": "Student-t over matched public split replicates; overlapping splits"
+      }
+    }
+  ],
+  "failed_attempts": [],
+  "envelopes_by_arm": {
+    "full": {
+      "gap_sign": "G = central - federated (reversed from historic delta)",
+      "summaries": {
+        "1": {
+          "federated": {
+            "n": 3,
+            "mean": 0.6234748750733247,
+            "sd": 0.010064345939381728,
+            "ci95": [
+              0.5984736537812052,
+              0.6484760963654441
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central": {
+            "n": 3,
+            "mean": 0.6417729488190159,
+            "sd": 0.00681508175713975,
+            "ci95": [
+              0.6248433472174434,
+              0.6587025504205885
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central_dp": {
+            "n": 3,
+            "mean": 0.610166220798779,
+            "sd": 0.008382003629281199,
+            "ci95": [
+              0.5893441694832534,
+              0.6309882721143046
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "null": {
+            "n": 3,
+            "mean": 0.5,
+            "sd": 0.0,
+            "ci95": [
+              0.5,
+              0.5
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "heldout_nll": {
+            "federated_dp": {
+              "n": 3,
+              "mean": 0.3293235931142016,
+              "sd": 0.011118999679390963,
+              "ci95": [
+                0.3017024666936867,
+                0.3569447195347165
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central": {
+              "n": 3,
+              "mean": 0.287635673851406,
+              "sd": 0.0025075283621965325,
+              "ci95": [
+                0.28140662808359,
+                0.29386471961922195
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central_dp": {
+              "n": 3,
+              "mean": 0.33673113834362733,
+              "sd": 0.02561054078085121,
+              "ci95": [
+                0.2731110281715951,
+                0.40035124851565956
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "null": {
+              "n": 3,
+              "mean": 0.32036335873920935,
+              "sd": 0.003929063584187921,
+              "ci95": [
+                0.3106030237178632,
+                0.3301236937605555
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            }
+          },
+          "gap": {
+            "n": 3,
+            "mean": 0.01829807374569133,
+            "sd": 0.004150235644177883,
+            "ci95": [
+              0.007988316869338626,
+              0.028607830622044035
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          }
+        },
+        "4": {
+          "federated": {
+            "n": 3,
+            "mean": 0.6384333938738587,
+            "sd": 0.0017603505962277487,
+            "ci95": [
+              0.6340604405718672,
+              0.6428063471758502
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central": {
+            "n": 3,
+            "mean": 0.6417729488190159,
+            "sd": 0.00681508175713975,
+            "ci95": [
+              0.6248433472174434,
+              0.6587025504205885
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central_dp": {
+            "n": 3,
+            "mean": 0.642820646356525,
+            "sd": 0.0020948114417689576,
+            "ci95": [
+              0.6376168462550207,
+              0.6480244464580294
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "null": {
+            "n": 3,
+            "mean": 0.5,
+            "sd": 0.0,
+            "ci95": [
+              0.5,
+              0.5
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "heldout_nll": {
+            "federated_dp": {
+              "n": 3,
+              "mean": 0.2892976374244433,
+              "sd": 0.0015802709835675798,
+              "ci95": [
+                0.2853720266793783,
+                0.29322324816950834
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central": {
+              "n": 3,
+              "mean": 0.287635673851406,
+              "sd": 0.0025075283621965325,
+              "ci95": [
+                0.28140662808359,
+                0.29386471961922195
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central_dp": {
+              "n": 3,
+              "mean": 0.29185546327471434,
+              "sd": 0.005648396774727564,
+              "ci95": [
+                0.2778240678356847,
+                0.305886858713744
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "null": {
+              "n": 3,
+              "mean": 0.32036335873920935,
+              "sd": 0.003929063584187921,
+              "ci95": [
+                0.3106030237178632,
+                0.3301236937605555
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            }
+          },
+          "gap": {
+            "n": 3,
+            "mean": 0.0033395549451573268,
+            "sd": 0.005244031739900553,
+            "ci95": [
+              -0.009687342061545335,
+              0.016366451951859987
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          }
+        },
+        "8": {
+          "federated": {
+            "n": 3,
+            "mean": 0.6411601754113043,
+            "sd": 0.0036844255755092837,
+            "ci95": [
+              0.6320075548930443,
+              0.6503127959295644
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central": {
+            "n": 3,
+            "mean": 0.6417729488190159,
+            "sd": 0.00681508175713975,
+            "ci95": [
+              0.6248433472174434,
+              0.6587025504205885
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central_dp": {
+            "n": 3,
+            "mean": 0.6428636260756934,
+            "sd": 0.00754152617968442,
+            "ci95": [
+              0.6241294364885869,
+              0.6615978156627998
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "null": {
+            "n": 3,
+            "mean": 0.5,
+            "sd": 0.0,
+            "ci95": [
+              0.5,
+              0.5
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "heldout_nll": {
+            "federated_dp": {
+              "n": 3,
+              "mean": 0.28733355148662265,
+              "sd": 0.001828052611303178,
+              "ci95": [
+                0.28279241705582076,
+                0.29187468591742455
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central": {
+              "n": 3,
+              "mean": 0.287635673851406,
+              "sd": 0.0025075283621965325,
+              "ci95": [
+                0.28140662808359,
+                0.29386471961922195
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central_dp": {
+              "n": 3,
+              "mean": 0.28794868551718295,
+              "sd": 0.003037304481515763,
+              "ci95": [
+                0.2804036029125814,
+                0.2954937681217845
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "null": {
+              "n": 3,
+              "mean": 0.32036335873920935,
+              "sd": 0.003929063584187921,
+              "ci95": [
+                0.3106030237178632,
+                0.3301236937605555
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            }
+          },
+          "gap": {
+            "n": 3,
+            "mean": 0.0006127734077116717,
+            "sd": 0.004995658296468849,
+            "ci95": [
+              -0.011797129761565005,
+              0.01302267657698835
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          }
+        }
+      },
+      "epsilon_envelope": [
+        {
+          "from": 1,
+          "to": 4,
+          "flag": false
+        },
+        {
+          "from": 4,
+          "to": 8,
+          "flag": false
+        }
+      ],
+      "utility_floor": {
+        "pass": true,
+        "observed": 0.6411601754113043,
+        "absolute_floor": 0.6,
+        "null_margin": 0.05,
+        "null": 0.5
+      },
+      "small_n_trend": null,
+      "near_central": [
+        {
+          "epsilon": 1,
+          "seed": 1101,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 1,
+          "seed": 1102,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 1,
+          "seed": 1103,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 4,
+          "seed": 1101,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 4,
+          "seed": 1102,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 4,
+          "seed": 1103,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 8,
+          "seed": 1101,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 8,
+          "seed": 1102,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 8,
+          "seed": 1103,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        }
+      ]
+    },
+    "two-sites": {
+      "gap_sign": "G = central - federated (reversed from historic delta)",
+      "summaries": {
+        "8": {
+          "federated": {
+            "n": 3,
+            "mean": 0.6417771714024337,
+            "sd": 0.004733915410109899,
+            "ci95": [
+              0.6300174736079437,
+              0.6535368691969238
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central": {
+            "n": 3,
+            "mean": 0.6417729488190159,
+            "sd": 0.00681508175713975,
+            "ci95": [
+              0.6248433472174434,
+              0.6587025504205885
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central_dp": {
+            "n": 3,
+            "mean": 0.638713627215594,
+            "sd": 0.005710965398430075,
+            "ci95": [
+              0.6245268026988526,
+              0.6529004517323354
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "null": {
+            "n": 3,
+            "mean": 0.5,
+            "sd": 0.0,
+            "ci95": [
+              0.5,
+              0.5
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "heldout_nll": {
+            "federated_dp": {
+              "n": 3,
+              "mean": 0.29698067157459634,
+              "sd": 0.0005084021583428081,
+              "ci95": [
+                0.2957177306003217,
+                0.298243612548871
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central": {
+              "n": 3,
+              "mean": 0.287635673851406,
+              "sd": 0.0025075283621965325,
+              "ci95": [
+                0.28140662808359,
+                0.29386471961922195
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central_dp": {
+              "n": 3,
+              "mean": 0.29292369750077,
+              "sd": 0.004031300845495724,
+              "ci95": [
+                0.2829093910430631,
+                0.3029380039584769
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "null": {
+              "n": 3,
+              "mean": 0.32036335873920935,
+              "sd": 0.003929063584187921,
+              "ci95": [
+                0.3106030237178632,
+                0.3301236937605555
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            }
+          },
+          "gap": {
+            "n": 3,
+            "mean": -4.222583417664201e-06,
+            "sd": 0.002164086742771894,
+            "ci95": [
+              -0.005380112072636262,
+              0.005371666905800934
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          }
+        }
+      },
+      "epsilon_envelope": [],
+      "utility_floor": null,
+      "small_n_trend": null,
+      "near_central": [
+        {
+          "epsilon": 8,
+          "seed": 1101,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 8,
+          "seed": 1102,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 8,
+          "seed": 1103,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        }
+      ]
+    },
+    "heterogeneous": {
+      "gap_sign": "G = central - federated (reversed from historic delta)",
+      "summaries": {
+        "8": {
+          "federated": {
+            "n": 3,
+            "mean": 0.6392997872160734,
+            "sd": 0.005644576454979859,
+            "ci95": [
+              0.6252778819774,
+              0.6533216924547468
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central": {
+            "n": 3,
+            "mean": 0.6438899999530516,
+            "sd": 0.006644650007168071,
+            "ci95": [
+              0.6273837742888633,
+              0.66039622561724
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central_dp": {
+            "n": 3,
+            "mean": 0.6407555081589114,
+            "sd": 0.004946537757650122,
+            "ci95": [
+              0.6284676271725358,
+              0.6530433891452869
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "null": {
+            "n": 3,
+            "mean": 0.5,
+            "sd": 0.0,
+            "ci95": [
+              0.5,
+              0.5
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "heldout_nll": {
+            "federated_dp": {
+              "n": 3,
+              "mean": 0.2883773247262733,
+              "sd": 0.0015751091089725832,
+              "ci95": [
+                0.28446453678855305,
+                0.2922901126639936
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central": {
+              "n": 3,
+              "mean": 0.28924433285620693,
+              "sd": 0.0024661742616478334,
+              "ci95": [
+                0.2831180163690995,
+                0.29537064934331436
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central_dp": {
+              "n": 3,
+              "mean": 0.287736483034809,
+              "sd": 0.002970107464634507,
+              "ci95": [
+                0.28035832707395925,
+                0.2951146389956587
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "null": {
+              "n": 3,
+              "mean": 0.32151770174971667,
+              "sd": 0.004479089948045016,
+              "ci95": [
+                0.3103910254954562,
+                0.3326443780039771
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            }
+          },
+          "gap": {
+            "n": 3,
+            "mean": 0.004590212736978312,
+            "sd": 0.002733666170303541,
+            "ci95": [
+              -0.0022005904880088136,
+              0.011381015961965439
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          }
+        }
+      },
+      "epsilon_envelope": [],
+      "utility_floor": null,
+      "small_n_trend": null,
+      "near_central": [
+        {
+          "epsilon": 8,
+          "seed": 1101,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 8,
+          "seed": 1102,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 8,
+          "seed": 1103,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        }
+      ]
+    },
+    "small600": {
+      "gap_sign": "G = central - federated (reversed from historic delta)",
+      "summaries": {
+        "8": {
+          "federated": {
+            "n": 3,
+            "mean": 0.5727954306065676,
+            "sd": 0.018411671924684417,
+            "ci95": [
+              0.5270583020420843,
+              0.6185325591710509
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central": {
+            "n": 3,
+            "mean": 0.61000487175406,
+            "sd": 0.010790101426448796,
+            "ci95": [
+              0.5832007738870075,
+              0.6368089696211126
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "central_dp": {
+            "n": 3,
+            "mean": 0.6093574647081991,
+            "sd": 0.01482003718935353,
+            "ci95": [
+              0.5725424514365836,
+              0.6461724779798146
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "null": {
+            "n": 3,
+            "mean": 0.5,
+            "sd": 0.0,
+            "ci95": [
+              0.5,
+              0.5
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          },
+          "heldout_nll": {
+            "federated_dp": {
+              "n": 3,
+              "mean": 0.30569308059075234,
+              "sd": 0.003370225209162035,
+              "ci95": [
+                0.2973209770515813,
+                0.3140651841299234
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central": {
+              "n": 3,
+              "mean": 0.2960470669503567,
+              "sd": 0.0046567890223408095,
+              "ci95": [
+                0.28447896172429493,
+                0.3076151721764185
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "central_dp": {
+              "n": 3,
+              "mean": 0.30795308704535934,
+              "sd": 0.005257011874897218,
+              "ci95": [
+                0.29489394559580784,
+                0.32101222849491085
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            },
+            "null": {
+              "n": 3,
+              "mean": 0.321475781700479,
+              "sd": 0.005545452605430725,
+              "ci95": [
+                0.30770011375460443,
+                0.3352514496463536
+              ],
+              "method": "Student-t over matched public split replicates; overlapping splits"
+            }
+          },
+          "gap": {
+            "n": 3,
+            "mean": 0.03720944114749233,
+            "sd": 0.028940412036406928,
+            "ci95": [
+              -0.03468252778573929,
+              0.10910141008072394
+            ],
+            "method": "Student-t over matched public split replicates; overlapping splits"
+          }
+        }
+      },
+      "epsilon_envelope": [],
+      "utility_floor": null,
+      "small_n_trend": null,
+      "near_central": [
+        {
+          "epsilon": 8,
+          "seed": 1101,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 8,
+          "seed": 1102,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        },
+        {
+          "epsilon": 8,
+          "seed": 1103,
+          "historic_flag": false,
+          "minimum_site_companion_flag": false
+        }
+      ]
+    }
+  },
+  "small_n_trend": "Unavailable: the predeclared small600 arm runs epsilon8 only",
+  "development_failed_attempts": [
+    {
+      "file": "failures/cell-dev-g01-seed1102.json",
+      "error": "SuperNode startup failed or returned no ACK on: site1."
+    }
+  ],
+  "three_site_verdict": "PASS",
+  "absolute_floor": 0.6,
+  "null_margin": 0.05,
+  "caveat": "Third confirmation on reused outer holdouts; overlapping split replicates, not independent clinical validation; envelopes do not change admission."
+}

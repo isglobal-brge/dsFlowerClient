@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "/workspace/cells-sequence/src/dsFlowerClient/tools/campaign/sequence/central_twins.py", line 118, in <module>
+    main(args.root, args.run)
+  File "/workspace/cells-sequence/src/dsFlowerClient/tools/campaign/sequence/central_twins.py", line 99, in main
+    smoke = np.asarray(predict_pytorch_spec(str(checkpoint), x[:2], "prob",
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/cells-sequence/src/dsFlowerClient/inst/python/predict_helper.py", line 140, in predict_pytorch_spec
+    model.load_state_dict(state_dict, strict=True)
+  File "/opt/cells-sequence/venvs/pytorch-gpu/lib/python3.11/site-packages/torch/nn/modules/module.py", line 2581, in load_state_dict
+    raise RuntimeError(
+RuntimeError: Error(s) in loading state_dict for GraphModule:
+	Missing key(s) in state_dict: "_mods.h.rnn.l0.ih.weight", "_mods.h.rnn.l0.ih.bias", "_mods.h.rnn.l0.hh.weight", "_mods.h.rnn.l0.hh.bias". 

@@ -1,0 +1,36 @@
+id,protocol_version,K,learning_rate,optimizer,strategy,rounds,local_epochs,batch_size,grid,preprocessing,status,seed1101,seed1102,mean,rank,attempt_note
+g01,3,10,0.05,sgd,fedavg,10,4,64,equal_width,"declared public bounds to [-1,1]",executed,0.598835827727471,0.592298527074466,0.5955671774009685,12,seed1102 startup failure retained; one pre-training recovery
+g02,3,5,0.05,sgd,fedavg,10,4,64,quantile,"declared public bounds to [-1,1]",executed,0.608676155110542,0.591759704764403,0.6002179299374725,10,one fit per seed
+g03,3,8,0.05,sgd,fedavg,10,4,64,quantile,"declared public bounds to [-1,1]",executed,0.584995198104209,0.573747644685174,0.5793714213946914,15,one fit per seed
+g04,3,12,0.05,sgd,fedavg,10,4,64,quantile,"declared public bounds to [-1,1]",executed,0.562238482841846,0.555660778289255,0.5589496305655505,18,one fit per seed
+g05,3,10,0.05,sgd,fedavg,10,4,64,quantile,"declared public bounds to [-1,1]",executed,0.57295705889632,0.559174506874592,0.5660657828854561,17,one fit per seed
+g06,3,5,0.1,sgd,fedavg,10,4,64,quantile,"declared public bounds to [-1,1]",executed,0.625595035376338,0.617975524240499,0.6217852798084185,6,one fit per seed
+g07,3,8,0.1,sgd,fedavg,10,4,64,quantile,"declared public bounds to [-1,1]",executed,0.601795810469118,0.587181341353149,0.5944885759111336,13,one fit per seed
+g08,3,5,0.02,adam,fedavg,10,1,64,quantile,"declared public bounds to [-1,1]",executed,0.63804492209102,0.638318505781769,0.6381817139363946,2,one fit per seed
+g09,3,8,0.02,adam,fedavg,10,1,64,quantile,"declared public bounds to [-1,1]",executed,0.62061245251489,0.61039081421797,0.61550163336643,7,one fit per seed
+g10,3,5,0.05,sgd,fedavgm,20,2,64,quantile,"declared public bounds to [-1,1]",executed,0.633339392738132,0.646462636955188,0.63990101484666,1,one fit per seed
+g11,3,8,0.05,sgd,fedavgm,20,2,64,quantile,"declared public bounds to [-1,1]",executed,0.616044902379703,0.601154944480703,0.608599923430203,8,one fit per seed
+g12,3,5,0.05,sgd,fedadam,20,2,64,quantile,"declared public bounds to [-1,1]",executed,0.629412460399417,0.623812585241256,0.6266125228203365,4,one fit per seed
+g13,3,8,0.05,sgd,fedadam,20,2,64,quantile,"declared public bounds to [-1,1]",executed,0.590102619305483,0.583862759680913,0.586982689493198,14,one fit per seed
+g14,3,5,0.05,sgd,fedyogi,20,2,64,quantile,"declared public bounds to [-1,1]",executed,0.525975135268912,0.509838114794087,0.5179066250314995,20,one fit per seed
+g15,3,8,0.05,sgd,fedyogi,20,2,64,quantile,"declared public bounds to [-1,1]",executed,0.531395747392905,0.519158548193698,0.5252771477933015,19,one fit per seed
+g16,3,5,0.05,sgd,fedavg,10,4,32,quantile,"declared public bounds to [-1,1]",executed,0.627455564668998,0.631209737397304,0.629332651033151,3,one fit per seed
+g17,3,8,0.05,sgd,fedavg,10,4,32,quantile,"declared public bounds to [-1,1]",executed,0.608234840628528,0.584539268979664,0.5963870548040959,11,one fit per seed
+g18,3,5,0.1,sgd,fedavg,20,1,64,quantile,"declared public bounds to [-1,1]",executed,0.609897161679886,0.592360323596948,0.601128742638417,9,one fit per seed
+g19,3,8,0.1,sgd,fedavg,20,1,64,quantile,"declared public bounds to [-1,1]",executed,0.584362245819832,0.566377596267056,0.575369921043444,16,one fit per seed
+g20,3,5,0.05,sgd,fedavg,20,4,64,quantile,"declared public bounds to [-1,1]",executed,0.625526045767487,0.622667723351063,0.624096884559275,5,one fit per seed
+g21,3,8,0.05,sgd,fedavg,20,4,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g22,3,5,0.05,adam,fedavg,10,1,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g23,3,8,0.05,adam,fedavg,10,1,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g24,3,5,0.1,adam,fedavg,10,1,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g25,3,8,0.1,adam,fedavg,10,1,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g26,3,5,0.02,sgd,fedavg,10,2,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g27,3,8,0.02,sgd,fedavg,10,2,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g28,3,5,0.02,adam,fedavgm,10,2,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g29,3,8,0.02,adam,fedavgm,10,2,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g30,3,5,0.02,adam,fedadam,10,2,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g31,3,8,0.02,adam,fedadam,10,2,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g32,3,5,0.02,adam,fedyogi,10,2,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g33,3,8,0.02,adam,fedyogi,10,2,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g34,3,10,0.02,adam,fedavg,10,2,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started
+g35,3,12,0.02,adam,fedavg,10,2,64,quantile,"declared public bounds to [-1,1]",omitted_by_predeclared_cutoff,,,,,not started

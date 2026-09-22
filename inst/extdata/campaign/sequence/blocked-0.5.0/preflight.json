@@ -1,0 +1,27 @@
+{
+  "schema": "dsflower-sequence-preflight-v1",
+  "synthetic_only": true,
+  "test_accessed": false,
+  "torch": "2.6.0+cu124",
+  "gpu": "NVIDIA A40",
+  "attempts": [
+    {
+      "contract": "pytorch_lstm",
+      "status": "passed",
+      "phase": "dp_fit",
+      "elapsed_s": 26.908968307077885,
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 19.375,
+        "clipping_norm": 1.0,
+        "accounting_population": 7,
+        "steps_per_epoch": 1,
+        "sample_rate": 1.0,
+        "expected_batch_size": 7,
+        "total_epochs": 5,
+        "total_steps": 5,
+        "policy_hash": "b7b08d76c3790553ef4761864c16972db57f76294eddab1741a3425f49626921"
+      }
+    }
+  ]
+}

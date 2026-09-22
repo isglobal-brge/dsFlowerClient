@@ -1,0 +1,120 @@
+{
+  "status": "passed",
+  "checked_at": "2026-09-22T04:22:53.292755+00:00",
+  "scoring_started": false,
+  "test_data_read": false,
+  "replicates": [
+    {
+      "epsilon": 1,
+      "seed": 20260919,
+      "rounds": 5,
+      "node_rounds": 15,
+      "observed_node_steps": 135,
+      "cleanup_ok": true,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "model_sha256": "4f88f4c1752e1fe6d9a5d2cdf5281a16a035b9d9fbac481a331658729cc02103",
+      "federation_elapsed_s": 1124.83748793602,
+      "driver_elapsed_s": 1226.0088705196977
+    },
+    {
+      "epsilon": 1,
+      "seed": 20260920,
+      "rounds": 5,
+      "node_rounds": 15,
+      "observed_node_steps": 135,
+      "cleanup_ok": true,
+      "split_sha256": "6198d99eb33342cbfb78fedbed75dfe7d57e494921523d39560bae7d3f313873",
+      "model_sha256": "0045e08814dd67411315c179f851d92d3b91202b299b4db952e85b16e77cee3d",
+      "federation_elapsed_s": 1120.91673326492,
+      "driver_elapsed_s": 1221.517554488033
+    },
+    {
+      "epsilon": 1,
+      "seed": 20260921,
+      "rounds": 5,
+      "node_rounds": 15,
+      "observed_node_steps": 135,
+      "cleanup_ok": true,
+      "split_sha256": "2a89fb47ee0a269843e1562d7f5a08aa339d806519ad90a0a5b796e0711491bd",
+      "model_sha256": "49c2341f897bcb0f0c4f90951541718e08971b659320d505cf37669a4a821b8c",
+      "federation_elapsed_s": 1137.18397927284,
+      "driver_elapsed_s": 1234.381606142968
+    },
+    {
+      "epsilon": 8,
+      "seed": 20260919,
+      "rounds": 5,
+      "node_rounds": 15,
+      "observed_node_steps": 135,
+      "cleanup_ok": true,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "model_sha256": "1d31dbaf7d4d47cb3843c626307d0f457de309390436afef7501858afed80df8",
+      "federation_elapsed_s": 1149.52875638008,
+      "driver_elapsed_s": 1214.5349553320557
+    },
+    {
+      "epsilon": 8,
+      "seed": 20260920,
+      "rounds": 5,
+      "node_rounds": 15,
+      "observed_node_steps": 135,
+      "cleanup_ok": true,
+      "split_sha256": "6198d99eb33342cbfb78fedbed75dfe7d57e494921523d39560bae7d3f313873",
+      "model_sha256": "3fa4d388f964604232a055eeb6f40318b1356aa79c9e87eb7cae70216470335e",
+      "federation_elapsed_s": 1145.66159415245,
+      "driver_elapsed_s": 1212.0144385956228
+    },
+    {
+      "epsilon": 8,
+      "seed": 20260921,
+      "rounds": 5,
+      "node_rounds": 15,
+      "observed_node_steps": 135,
+      "cleanup_ok": true,
+      "split_sha256": "2a89fb47ee0a269843e1562d7f5a08aa339d806519ad90a0a5b796e0711491bd",
+      "model_sha256": "33d9ed5071d38c97a5baf2e2008e1af524326710b50404b859cf4e41a27fc324",
+      "federation_elapsed_s": 1124.93961954117,
+      "driver_elapsed_s": 1193.0849682558328
+    },
+    {
+      "epsilon": 4,
+      "seed": 20260919,
+      "rounds": 5,
+      "node_rounds": 15,
+      "observed_node_steps": 135,
+      "cleanup_ok": true,
+      "split_sha256": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "model_sha256": "29cd641f766239e5d9123b6d2b9de4e7c32a566573c9fb7cd79bab0464733d1f",
+      "federation_elapsed_s": 1046.51282906532,
+      "driver_elapsed_s": 1116.0812557674944
+    },
+    {
+      "epsilon": 4,
+      "seed": 20260920,
+      "rounds": 5,
+      "node_rounds": 15,
+      "observed_node_steps": 135,
+      "cleanup_ok": true,
+      "split_sha256": "6198d99eb33342cbfb78fedbed75dfe7d57e494921523d39560bae7d3f313873",
+      "model_sha256": "39555ad9d1192f6cc7210346c1662dcfcb6a7d076aa1314f9eb2e23a9564ca27",
+      "federation_elapsed_s": 1105.44142222404,
+      "driver_elapsed_s": 1160.8358493950218
+    },
+    {
+      "epsilon": 4,
+      "seed": 20260921,
+      "rounds": 5,
+      "node_rounds": 15,
+      "observed_node_steps": 135,
+      "cleanup_ok": true,
+      "split_sha256": "2a89fb47ee0a269843e1562d7f5a08aa339d806519ad90a0a5b796e0711491bd",
+      "model_sha256": "299404fc5d08e263ec8dddd493b1199ad87256f25b0818859e5cbe06fe29da27",
+      "federation_elapsed_s": 1135.58186364174,
+      "driver_elapsed_s": 1203.266480192542
+    }
+  ],
+  "total_node_rounds": 135,
+  "total_observed_node_steps": 1215,
+  "central_reuse_verified": true,
+  "protocol_sha256": "7bd9ade83e17f617c9dc153835ebab46cb41acceb0a9802f9bbdd328586950a8"
+}

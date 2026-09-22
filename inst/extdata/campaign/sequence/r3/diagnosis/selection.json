@@ -1,0 +1,14 @@
+{
+  "learning_rate": 0.01,
+  "optimizer": "adam",
+  "local_epochs": 4,
+  "rounds": 5,
+  "batch_size": 256,
+  "n_tokens": 128,
+  "n_features": 9,
+  "hidden": 32,
+  "n_classes": 6,
+  "scheduler": "none",
+  "test_accessed": false,
+  "selection_rule": "Largest final inner-validation macro AUC among Adam lr .003 and .01; 20 epochs, batch 256, optimizer reset every four epochs; tie lower learning rate."
+}

@@ -1,0 +1,10 @@
+{
+  "status": "verified_unscored",
+  "federations": 9,
+  "node_round_captures": 135,
+  "new_noiseless_twins": 6,
+  "central": "Reuse frozen R3 central model identities and held-out metrics, identical split and seeds.",
+  "central_source_sha256": "35e2fc4b299db780246da40e0342b90123cda6cbf38f3348885c9880c3d30188",
+  "test_accessed": false,
+  "protocol_sha256": "548d406245dab7e263eded1e0faeffe7e01ad5f2a98ec0deed12bb25e16d8b9e"
+}

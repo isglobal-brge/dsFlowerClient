@@ -1,0 +1,27 @@
+{
+  "test_accessed": false,
+  "diagnostic_only": true,
+  "seed": 20260922,
+  "auc": {
+    "full_central": 0.9889998115142878,
+    "a_finite_central": 0.9186021951141292,
+    "central_poisson_bridge": 0.9615053879663752,
+    "b_unclipped_federated": 0.9533935568202407,
+    "c_clipped_noiseless_federated": 0.8766244103959554,
+    "d_real_dp": 0.7900454798025013
+  },
+  "ordered_terms": {
+    "schedule": -0.07039761640015862,
+    "federation_path_net": 0.03479136170611152,
+    "clipping": -0.07676914642428534,
+    "noise_marginal_estimate": -0.08657893059345412
+  },
+  "sampling_normalization_bridge": 0.042903192852245975,
+  "federation_after_sampling_bridge": -0.008111831146134452,
+  "total_gap": -0.19895433171178656,
+  "historical_held_out_gap_reallocated": false,
+  "candidate_ranking_complete": true,
+  "verification_passed": true,
+  "proceed": true,
+  "completed_at": "2026-09-22T06:48:17.281230+00:00"
+}

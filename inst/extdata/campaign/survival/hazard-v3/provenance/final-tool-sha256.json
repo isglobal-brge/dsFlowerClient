@@ -1,0 +1,22 @@
+{
+  "PROTOCOL.md": "44f445ab9c1e290b4d385d4ad3305b7a0d9aea25355791f79464e4f537244695",
+  "README.md": "1e6620ca84053c52a9ae25d798782b7f69eab2dcd15ac56558e8f95dc1b47392",
+  "assemble_summary.py": "d557ba80171ed36edd3d9a5a1593e7adcca08fb73ee33c155bedfb3b58ad3e63",
+  "audit_strategy_parameters.py": "af97efe797294446b300803fb0790c11f705caeb6067801f9fd4858092a1c024",
+  "capture_provenance.py": "3a4eb1ac76fd92e62a28f759bad842aaa8f3f62b737cf53ddf4a1c58232708ba",
+  "central_and_score.py": "46a53f898b48684db959c0c82c33019bd0f8665f436946e94d3430106af28e96",
+  "diagnose_development.py": "d1649fcf4ea355e7ff83141969d7659f21a366be05cf9389ba610de4892b9111",
+  "gradient_geometry.py": "c1851a4ed79bcee92722d345574757a0901b2ecbd463f22c3e011e307e1c07b5",
+  "install_r.R": "64ea90b06a56dc61a671138fa126afbe82e23dee125e4f95492d49031dc84049",
+  "protocol.py": "fbb16a866db8b49a5c48c9e1e5a262652340ec7652d38f8e1abfc81ea66cfcac",
+  "provision.sh": "a7ce04ae473ad0fcb5bdbd7fc7d716b59ca3b6af51fe9004cdfbdb12dd0adac5",
+  "recover_startup.py": "84fa44bb4488318a239e7f34f5f5e90d3ed3f6aaabc6139b24229f532c954afd",
+  "report.py": "2b2249f849d290a68895bf8c68a8c9ef276c279d8892bd777ee44f20f156fd29",
+  "requirements-cpu.txt": "777f30fdff691ba7c4e783bdd45333c52bc29412e56f845714a5002325bf9ce2",
+  "resume_environment.sh": "26ba785b88d270128ded77660b87408dadfbe0e1c30db01689c2887709d384ee",
+  "run.py": "81cfb5d5c775a2f9e6efa1dda564d143f54b279280b7b577f73f8fbbb72c1d22",
+  "run_cell.R": "3324831e60512b4f30336af60cc733a2038c80cbc09801fe2824229b605821b6",
+  "split_overlap.py": "16dfb18b5480e98a15b3e5b3d444f5eb6d266de467c49e01bcf793d8c7bcab27",
+  "test_protocol.py": "9e435488a6b2ad2ad129f6d45a37a93d7f9af0172ef431c7ab48aab04a1b8766",
+  "verify_artifacts.py": "cb2fd798636ce449e003af6c15cd3f7ea272b3e95fbd157144e8d30244254720"
+}

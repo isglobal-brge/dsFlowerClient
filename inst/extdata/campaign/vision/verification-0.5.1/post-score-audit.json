@@ -1,0 +1,58 @@
+{
+  "status": "passed",
+  "checked_at": "2026-09-22T04:30:37.440512+00:00",
+  "scored_replicates": 9,
+  "canonical_prediction_files": 9,
+  "all_locked_artifact_hashes_unchanged": true,
+  "scoring_driver_hashes_unchanged": true,
+  "all_training_finished_before_scoring_lock": true,
+  "scoring_lock_sha256": "9d70a7384b7f4b90c431cc42030a3d7fe611aab1493aba0c3ea8a6ce19caf1be",
+  "test_predictions_recomputed": false,
+  "results": [
+    {
+      "epsilon": 1,
+      "seed": 20260919,
+      "prediction_sha256": "48442873d71a0b923ad97c572512491db1da40cf03ddf6b1a52561bbdc60dbee"
+    },
+    {
+      "epsilon": 1,
+      "seed": 20260920,
+      "prediction_sha256": "1dc54228ec55a6c0915e29367a3384747d7727feaddb81785a8a5182b03bba75"
+    },
+    {
+      "epsilon": 1,
+      "seed": 20260921,
+      "prediction_sha256": "572fcbc0a78ada2b6cd2ce1ed64790ee37472921a3e558b20f3497bacd935ec4"
+    },
+    {
+      "epsilon": 8,
+      "seed": 20260919,
+      "prediction_sha256": "7bd746cbac06c952579f607aaf9b877185d38ca3dfdbb6a589dafc3e069c4b3a"
+    },
+    {
+      "epsilon": 8,
+      "seed": 20260920,
+      "prediction_sha256": "802110d25b81f12346295ad0e89504e621bcc29f8ceb16d8fe230ff565111831"
+    },
+    {
+      "epsilon": 8,
+      "seed": 20260921,
+      "prediction_sha256": "e2306f77252b17ba4c1d6ff70831c8242db6cc3cb8c3243b4fd5fa3ddb17aebb"
+    },
+    {
+      "epsilon": 4,
+      "seed": 20260919,
+      "prediction_sha256": "d1922a2b4e4dbab3207ebd72dd39fd097b7f199f32030eac025d18c51adb8ecb"
+    },
+    {
+      "epsilon": 4,
+      "seed": 20260920,
+      "prediction_sha256": "fb61799c082db6b61655e05bdf6ed868fd86aeec5aa3f8595fff7f573e0d56c6"
+    },
+    {
+      "epsilon": 4,
+      "seed": 20260921,
+      "prediction_sha256": "342bda83c6c6dd5309cb3a76e373642ba8b45f306a1df594b2545952f2e7c0dd"
+    }
+  ]
+}

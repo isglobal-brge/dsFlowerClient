@@ -1,0 +1,77 @@
+{
+  "schema": "dsflower-sequence-benchmark-accountant-v1",
+  "public_fixture_only": true,
+  "dataset": "uci_har",
+  "round": 5,
+  "source_rows": 2029,
+  "mechanism": {
+    "adjacency": "replace_one",
+    "noise_multiplier": 3.3203125,
+    "clipping_norm": 1.0,
+    "accounting_population": 2029,
+    "steps_per_epoch": 4,
+    "sample_rate": 0.25,
+    "expected_batch_size": 507,
+    "total_epochs": 20,
+    "total_steps": 80,
+    "policy_hash": "dec066a5dfc4ca70fbc30676df30155a56d1d56c29c99a5bbeafe651790749e5"
+  },
+  "privacy_config": {
+    "epsilon": 8.0,
+    "delta": 1e-06,
+    "clipping_norm": 1.0,
+    "policy_hash": "a6b33539cf78f8d475c621a6600edb17bac85a86514e1c7fb461a7a31fbcfd3d",
+    "adjacency": "replace_one",
+    "sample_aggregate": false,
+    "sa_blocks": 8,
+    "egress_time_pad": 0.0,
+    "egress_timeout": 900,
+    "egress_memory_mb": 8192,
+    "egress_file_mb": 1024,
+    "egress_processes": 128,
+    "hook_enabled": false,
+    "allow_per_node_metrics": false,
+    "allow_exact_num_examples": false,
+    "n_samples": 2029
+  },
+  "training_pins": {
+    "loss_name": "cross_entropy",
+    "batch_size": 512,
+    "local_epochs": 4,
+    "num_rounds": 5,
+    "n_classes": 6,
+    "learning_rate": 0.01,
+    "optimizer": {
+      "name": "adam",
+      "weight_decay": 0.0,
+      "l1_penalty": 0.0,
+      "momentum": 0.0,
+      "nesterov": false,
+      "beta1": 0.9,
+      "beta2": 0.999,
+      "eps": 1e-08,
+      "amsgrad": false,
+      "rmsprop_alpha": 0.99
+    },
+    "scheduler": {
+      "name": "none",
+      "step_size": 1,
+      "gamma": 0.1,
+      "min_lr": 0.0
+    },
+    "round_index": 5
+  },
+  "observed_round_steps": 16,
+  "accountant_type": "PRVAccountant",
+  "accountant_history": [
+    [
+      3.3203125,
+      0.25,
+      16
+    ]
+  ],
+  "elapsed_s": 4.547298904042691,
+  "peak_cuda_bytes": 167820288,
+  "features_sha256": "ee07c09ef05cbe6e32c6120c501265e302d1d28c94f79138a810aa5b68e4366e",
+  "targets_sha256": "6cb708aae843bdeaa289a2330fec70fb4ebbe3655e734ab749186dac3e231abd"
+}

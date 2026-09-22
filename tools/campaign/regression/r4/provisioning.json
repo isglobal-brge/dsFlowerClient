@@ -1,0 +1,109 @@
+{
+  "pod": "pod-flower-regression",
+  "root": "/workspace/cells",
+  "before": {
+    "r_version": "4.6.1",
+    "uv_version": "0.11.33",
+    "python_3_11_installed": false,
+    "package_sources_extracted": false,
+    "r_dependencies_installed": true,
+    "r_arrow_roundtrip_verified": true,
+    "python_venvs_present": false,
+    "source_tag_archives_present": true,
+    "wheel_transfer_incomplete": true
+  },
+  "cpu_count": 32,
+  "cgroup_memory_bytes": 64000000000,
+  "nvidia_devices": [],
+  "uv_version": "uv 0.11.33 (x86_64-unknown-linux-gnu)",
+  "r": {
+    "version": "R version 4.6.1 (2026-06-24)",
+    "packages": {
+      "dsFlower": "0.5.0",
+      "dsFlowerClient": "0.5.0",
+      "DSI": "1.8.0",
+      "DSLite": "1.4.1",
+      "resourcer": "1.5.1",
+      "arrow": "25.0.1",
+      "digest": "0.6.39",
+      "jsonlite": "2.0.0",
+      "processx": "3.9.0",
+      "ps": "1.9.3",
+      "filelock": "1.0.3"
+    },
+    "server_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "client_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "health": {
+      "native_tree": true,
+      "pytorch": true,
+      "client": true
+    }
+  },
+  "python": {
+    "native_tree": {
+      "path": "/workspace/cells/venvs/native-tree/bin/python",
+      "version": "3.11.15 (main, Jul 18 2026, 17:02:49) [Clang 22.1.3 ]",
+      "packages": {
+        "flwr": "1.31.0",
+        "numpy": "2.4.6",
+        "pandas": "3.0.3",
+        "pyarrow": "23.0.1",
+        "cryptography": "46.0.7"
+      }
+    },
+    "pytorch": {
+      "path": "/workspace/cells/venvs/pytorch/bin/python",
+      "version": "3.11.15 (main, Jul 18 2026, 17:02:49) [Clang 22.1.3 ]",
+      "packages": {
+        "flwr": "1.31.0",
+        "numpy": "2.4.6",
+        "pandas": "3.0.3",
+        "pyarrow": "23.0.1",
+        "cryptography": "46.0.7",
+        "torch": "2.14.0+cpu",
+        "opacus": "1.6.0",
+        "scipy": "1.17.1"
+      }
+    },
+    "client": {
+      "path": "/workspace/cells/client/venv/bin/python",
+      "version": "3.11.15 (main, Jul 18 2026, 17:02:49) [Clang 22.1.3 ]",
+      "packages": {
+        "flwr": "1.31.0",
+        "numpy": "2.4.6",
+        "pandas": "3.0.3",
+        "pyarrow": "23.0.1",
+        "cryptography": "46.0.7",
+        "torch": "2.14.0+cpu",
+        "opacus": "1.6.0",
+        "optuna": "4.8.0",
+        "scipy": "1.17.1"
+      }
+    }
+  },
+  "tags": {
+    "dsFlower": {
+      "tag": "v0.5.0",
+      "commit": "408f08c539329e2711260050ab40a6567aa4d89e"
+    },
+    "dsFlowerClient": {
+      "tag": "v0.5.0",
+      "commit": "50dda000a32ffcbdd039c2b74c909df451392bfb"
+    }
+  },
+  "sha256": {
+    "regression-r4-server-v050.tar": "16f0f9b53ad9d666716b6ae6d7ed5bfa8e1fc886c418bf6613d78f83c509a410",
+    "regression-r4-client-v050.tar": "cf19fe6d5d0b9ad7e474bb470fb1e864be5f732aaaae39b4170d64e70394aedd",
+    "wheels.tar": "828008601d2717d4da5f616209e97b76beb652a6d2713e2626ec3c6b3d7dbdf6",
+    "wheels/CHECKSUMS.sha256": "a15cc25061f3632b9c7bb6629b748359826c16d8975919b4e405a6c033080ed1",
+    "dsFlowerClient/tools/campaign/regression/runtime-constraints.txt": "5c188827b3a1eaa45f3830e20bb478caf840d8b6aa9cec6ed50f199b380e95e3",
+    "dsFlowerClient/tools/campaign/regression/pylock.toml": "2c6aa3fe62e2b630eeec55a7122f8b0b351be438543f61b5e62c90beed581e69"
+  },
+  "times": {
+    "start": "2026-09-22T06:08:09Z",
+    "resume": "2026-09-22T06:24:40Z",
+    "end": "2026-09-22T06:25:20Z"
+  },
+  "status": "complete",
+  "left_running": true
+}
