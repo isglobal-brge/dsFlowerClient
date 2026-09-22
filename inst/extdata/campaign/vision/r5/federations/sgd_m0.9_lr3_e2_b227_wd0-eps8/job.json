@@ -1,0 +1,26 @@
+{
+  "run_dir": "/workspace/cells-vision/r5/federations/sgd_m0.9_lr3_e2_b227_wd0-eps8",
+  "collection_root": "/tmp/cells-vision-r4/inner-training",
+  "epsilon": 8,
+  "seed": 20260922,
+  "model_params": {
+    "batch_size": 227,
+    "image_size": 224,
+    "l1_penalty": 0,
+    "learning_rate": 3,
+    "local_epochs": 2,
+    "n_classes": 2,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "volumetric": false,
+    "weight_decay": 0,
+    "momentum": 0.9
+  },
+  "n_patients_per_site": [
+    227,
+    227,
+    227
+  ],
+  "split_sha256": "b44664c4f1e5cfc08c2e20fa48f49eaebee046c3cfee62745c444928b486b397",
+  "candidate_id": "sgd_m0.9_lr3_e2_b227_wd0"
+}

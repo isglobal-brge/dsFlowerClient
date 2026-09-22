@@ -1,0 +1,45 @@
+{
+  "candidate": {
+    "id": "adam_m0_lr0.03_e1_b227_wd0",
+    "optimizer": "adam",
+    "learning_rate": 0.03,
+    "local_epochs": 1,
+    "batch_size": 227,
+    "momentum": 0,
+    "weight_decay": 0,
+    "batch_mode": "full_site"
+  },
+  "inner_validation": {
+    "auc": 0.6700626959247649,
+    "accuracy": 0.6783625730994152,
+    "brier": 0.32131069848550037,
+    "log_loss": 2.4915224762281754
+  },
+  "n_fit_patients": 681,
+  "n_validation_patients": 171,
+  "actual_federation": true,
+  "epsilon": 8,
+  "delta": 1e-06,
+  "clipping_norm": 1,
+  "rounds": 5,
+  "sites": 3,
+  "mechanism": {
+    "adjacency": "replace_one",
+    "noise_multiplier": 3.076171875,
+    "clipping_norm": 1.0,
+    "accounting_population": 227,
+    "steps_per_epoch": 1,
+    "sample_rate": 1.0,
+    "expected_batch_size": 227,
+    "total_epochs": 5,
+    "total_steps": 5,
+    "policy_hash": "8ac4f358373308a95e6f1564791fbbbee35a0e436d85b868adf424d244cb085d"
+  },
+  "feature_parity": true,
+  "elapsed_s": 1106.46826219559,
+  "test_accessed": false,
+  "federation_status_sha256": "3a5185b4bf291aca75b16a5f5883cde8171dc3cb6fe2f313b9a68d1ae98640a2",
+  "model_sha256": "ed6e85830320e3b1d962f05dab2701308a6c79249d66c63915362336d66fb9e2",
+  "run_dir": "/workspace/cells-vision/r5/federations/adam_m0_lr0.03_e1_b227_wd0-eps8",
+  "initialization_seed": 20260922
+}

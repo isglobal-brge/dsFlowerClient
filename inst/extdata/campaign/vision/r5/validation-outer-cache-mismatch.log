@@ -1,0 +1,19 @@
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/accountants/analysis/rdp.py:332: UserWarning: Optimal order is the largest alpha. Please consider expanding the range of alphas to get a tighter privacy bound.
+  warnings.warn(
+/workspace/cells-vision/venvs/pytorch-gpu/lib/python3.11/site-packages/opacus/privacy_engine.py:98: UserWarning: Secure RNG turned off. This is perfectly fine for experimentation as it allows for much faster training performance, but remember to turn it on and retrain one last time before production with ``secure_mode`` turned on.
+  warnings.warn(
+PARITY r3_registry_default {"round": 1, "cuda_parameter_max_abs": 3.725290298461914e-09, "cpu_parameter_max_abs": 3.725290298461914e-09, "cuda_probability_max_abs": 5.960464477539063e-08, "cpu_probability_max_abs": 5.960464477539063e-08}
+PARITY r3_registry_default {"round": 2, "cuda_parameter_max_abs": 3.725290298461914e-09, "cpu_parameter_max_abs": 3.725290298461914e-09, "cuda_probability_max_abs": 5.960464477539063e-08, "cpu_probability_max_abs": 5.960464477539063e-08}
+PARITY r3_registry_default {"round": 3, "cuda_parameter_max_abs": 3.725290298461914e-09, "cpu_parameter_max_abs": 5.587935447692871e-09, "cuda_probability_max_abs": 5.960464477539063e-08, "cpu_probability_max_abs": 5.960464477539063e-08}
+PARITY r3_registry_default {"round": 4, "cuda_parameter_max_abs": 5.587935447692871e-09, "cpu_parameter_max_abs": 7.450580596923828e-09, "cuda_probability_max_abs": 5.960464477539063e-08, "cpu_probability_max_abs": 8.940696716308594e-08}
+PARITY r3_registry_default {"round": 5, "cuda_parameter_max_abs": 7.450580596923828e-09, "cpu_parameter_max_abs": 7.450580596923828e-09, "cuda_probability_max_abs": 5.960464477539063e-08, "cpu_probability_max_abs": 5.960464477539063e-08}
+Traceback (most recent call last):
+  File "/workspace/cells-vision/src/dsFlowerClient/tools/campaign/vision/r5/validate.py", line 156, in <module>
+    main(parser.parse_args().root)
+  File "/workspace/cells-vision/src/dsFlowerClient/tools/campaign/vision/r5/validate.py", line 124, in main
+    check = parity(name, cfg, initial, captures, data['xs'], data['ys'], data['vx'])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/cells-vision/src/dsFlowerClient/tools/campaign/vision/r5/validate.py", line 58, in parity
+    assert expected_hashes == observed_hashes
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

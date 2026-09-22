@@ -1,0 +1,45 @@
+{
+  "candidate": {
+    "id": "sgd_m0.9_lr3_e2_b227_wd0",
+    "optimizer": "sgd",
+    "learning_rate": 3,
+    "local_epochs": 2,
+    "batch_size": 227,
+    "momentum": 0.9,
+    "weight_decay": 0,
+    "batch_mode": "full_site"
+  },
+  "inner_validation": {
+    "auc": 0.7054858934169279,
+    "accuracy": 0.6783625730994152,
+    "brier": 0.32163742690058456,
+    "log_loss": 11.076007552498325
+  },
+  "n_fit_patients": 681,
+  "n_validation_patients": 171,
+  "actual_federation": true,
+  "epsilon": 8,
+  "delta": 1e-06,
+  "clipping_norm": 1,
+  "rounds": 5,
+  "sites": 3,
+  "mechanism": {
+    "adjacency": "replace_one",
+    "noise_multiplier": 4.35546875,
+    "clipping_norm": 1.0,
+    "accounting_population": 227,
+    "steps_per_epoch": 1,
+    "sample_rate": 1.0,
+    "expected_batch_size": 227,
+    "total_epochs": 10,
+    "total_steps": 10,
+    "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"
+  },
+  "feature_parity": true,
+  "elapsed_s": 1060.33093690872,
+  "test_accessed": false,
+  "federation_status_sha256": "6c80bfb978e479a931a2f7e9e0b3eb09215ff46c2a577180da4f405a3910ec43",
+  "model_sha256": "030889f5eeb9e4c600fa7a01b372ad0c681722cd9ea7239a859beccac71ed8aa",
+  "run_dir": "/workspace/cells-vision/r5/federations/sgd_m0.9_lr3_e2_b227_wd0-eps8",
+  "initialization_seed": 20260922
+}

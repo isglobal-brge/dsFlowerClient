@@ -1,0 +1,34 @@
+{
+  "config": {
+    "backbone": "resnet18",
+    "batch-size": 227,
+    "data-kind": "image",
+    "dp-track": "neural",
+    "image-size": 224,
+    "l1-penalty": 0,
+    "learning-rate": 3,
+    "local-epochs": 2,
+    "loss-name": "cross_entropy",
+    "min-train-nodes": 3,
+    "model-spec-b64": "eyJraW5kIjoic2VxdWVudGlhbCIsImxheWVycyI6W3sib3AiOiJsaW5lYXIiLCJvdXQiOiJAb3V0In1dfQ==",
+    "num-classes": 2,
+    "num-features": 512,
+    "num-labels": 2,
+    "num-server-rounds": 5,
+    "optimizer-momentum": 0.9,
+    "optimizer-name": "sgd",
+    "optimizer-nesterov": false,
+    "results-dir": "/tmp/RtmpSoshcV/dsflower_results/20260922_080102_aa386b9d01c",
+    "scheduler-name": "none",
+    "strategy": "fedavg",
+    "task-type": "classification",
+    "vision-extractor-profile": "dsflower-resnet18-imagenet1k-v1-extractor-v1",
+    "weight-decay": 0.0001
+  },
+  "model_spec_b64": "eyJraW5kIjoic2VxdWVudGlhbCIsImxheWVycyI6W3sib3AiOiJsaW5lYXIiLCJvdXQiOiJAb3V0In1dfQ==",
+  "seed": 20260922,
+  "tensor_sha256": [
+    "9757a0c45652351284e94f37cc2711e6bb04efde73967e66179fb55935acd57e",
+    "965b0a6d050f7251ec8490779ecd739c57ec96426264e10c212744519a8f2610"
+  ]
+}

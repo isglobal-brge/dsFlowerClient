@@ -1,0 +1,19 @@
+{
+  "directory": "tools/campaign/vision/r5",
+  "sha256": {
+    "README.md": "1a8ccc8372e8c6b784ebdb82133cda7b1ef19cea853c7907015fb75e2d7d9c15",
+    "confirm.py": "d224ccb0e051f3d7af8eaeb7b93bbf61db72647ea8c4baf98535669dc7172a31",
+    "contract-audit.md": "b3b71c2a7d4bb5ed4bd074fa86887a00918788c1b17b54cda35668b7bac6f76a",
+    "emulate.py": "8b6cafd9abbd0bf944c045809ad922a99ee9b0a9a185d3ed8da995beb4180276",
+    "package_evidence.py": "aa1073ca0729b999305729fc12c6e1b74dbd916c51912f8a74dc023efa8b078f",
+    "pod_state.py": "9e7e70262691b970a3635bfb91c6eb70419aa90d5ce0303eac90fc86002a554e",
+    "prepare_inner.py": "60a77ecb18533c86aee640e851686ca458c43189e835923bca952cf05b8368fb",
+    "report.py": "76934c39eda063dc9414d89811ae6ab951d5d1a4955dd70b7aff50d1d5eba0a5",
+    "run_federated.R": "6705c1b343303446c1b251736e134c032f07126678c0b101ae8b99fe74eaf5ab",
+    "saturation_check.py": "d9515e54fd15f7a76d07237177d089cb278cfacfefb48260e16bccc36f7e5746",
+    "validate.py": "971a12920b1d4f26ab11c3105d3196191c463d841b9d2f38e61a4622ae74b32d",
+    "validate_aggregation.py": "d81c326e22a336799022f0e1a15d1536bb1fa29b374b684b8da1047cf321f6dc",
+    "validate_shortlist.py": "bc9ccdcdcb0142147c4c8702d321cb3c07a41fb157bc609ef97220fc2a2b8830",
+    "verify_finish.py": "d74a6dd3bc90b2a2dea243b70f35c7fa7f94e5ed81c098b59895c47363041308"
+  }
+}

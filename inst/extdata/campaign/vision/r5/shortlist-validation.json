@@ -1,0 +1,2986 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "candidate": {
+        "id": "adam_m0_lr0.03_e1_b227_wd0",
+        "optimizer": "adam",
+        "learning_rate": 0.03,
+        "local_epochs": 1,
+        "batch_size": 227,
+        "momentum": 0,
+        "weight_decay": 0,
+        "batch_mode": "full_site"
+      },
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 3.076171875,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 1,
+        "sample_rate": 1.0,
+        "expected_batch_size": 227,
+        "total_epochs": 5,
+        "total_steps": 5,
+        "policy_hash": "8ac4f358373308a95e6f1564791fbbbee35a0e436d85b868adf424d244cb085d"
+      },
+      "replications": [
+        {
+          "seed": 20260923,
+          "rounds": [
+            {
+              "round": 1,
+              "cpu": {
+                "parameter_max_abs": 7.450580596923828e-09,
+                "probability_max_abs": 5.238689482212067e-10,
+                "log_probability_max_abs": 1.0063483468769618e-06,
+                "actual_metrics": {
+                  "auc": 0.6731974921630094,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.321295475855947,
+                  "log_loss": 2.4844823668662115
+                },
+                "emulator_metrics": {
+                  "auc": 0.6731974921630094,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3212954758159147,
+                  "log_loss": 2.4844823284679483
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  6.25825923634693e-05,
+                  0.0019395373528823256
+                ],
+                "emulator_probability_range": [
+                  6.25825923634693e-05,
+                  0.0019395373528823256
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 7.450580596923828e-09,
+                "probability_max_abs": 6.984919309616089e-10,
+                "log_probability_max_abs": 1.0005813386726459e-06,
+                "actual_metrics": {
+                  "auc": 0.6731974921630094,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.321295475855947,
+                  "log_loss": 2.4844823668662115
+                },
+                "emulator_metrics": {
+                  "auc": 0.6731974921630094,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32129547584336887,
+                  "log_loss": 2.484482359264637
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  6.25825923634693e-05,
+                  0.0019395373528823256
+                ],
+                "emulator_probability_range": [
+                  6.25825923634693e-05,
+                  0.0019395373528823256
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 2,
+              "cpu": {
+                "parameter_max_abs": 1.862645149230957e-08,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 3.079268532379942e-07,
+                "actual_metrics": {
+                  "auc": 0.5722570532915361,
+                  "accuracy": 0.6257309941520468,
+                  "brier": 0.23601767446066335,
+                  "log_loss": 0.6648597922659052
+                },
+                "emulator_metrics": {
+                  "auc": 0.5722570532915361,
+                  "accuracy": 0.6257309941520468,
+                  "brier": 0.23601767579101884,
+                  "log_loss": 0.664859795041164
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.332620769739151,
+                  0.6431199312210083
+                ],
+                "emulator_probability_range": [
+                  0.332620769739151,
+                  0.6431199312210083
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.2351741790771484e-08,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 2.597651456159866e-07,
+                "actual_metrics": {
+                  "auc": 0.5722570532915361,
+                  "accuracy": 0.6257309941520468,
+                  "brier": 0.23601767446066335,
+                  "log_loss": 0.6648597922659052
+                },
+                "emulator_metrics": {
+                  "auc": 0.5722570532915361,
+                  "accuracy": 0.6257309941520468,
+                  "brier": 0.23601767504263585,
+                  "log_loss": 0.664859793482985
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.332620769739151,
+                  0.6431199312210083
+                ],
+                "emulator_probability_range": [
+                  0.332620769739151,
+                  0.6431199312210083
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 3,
+              "cpu": {
+                "parameter_max_abs": 2.2351741790771484e-08,
+                "probability_max_abs": 8.731149137020111e-10,
+                "log_probability_max_abs": 1.8847423515211403e-06,
+                "actual_metrics": {
+                  "auc": 0.7045454545454546,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3212545975674106,
+                  "log_loss": 2.4511936087030626
+                },
+                "emulator_metrics": {
+                  "auc": 0.7045454545454546,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32125459752847674,
+                  "log_loss": 2.451193572741981
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  9.291827882407233e-05,
+                  0.0026470478624105453
+                ],
+                "emulator_probability_range": [
+                  9.291827882407233e-05,
+                  0.0026470478624105453
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.60770320892334e-08,
+                "probability_max_abs": 8.149072527885437e-10,
+                "log_probability_max_abs": 1.0194719610723268e-06,
+                "actual_metrics": {
+                  "auc": 0.7045454545454546,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3212545975674106,
+                  "log_loss": 2.4511936087030626
+                },
+                "emulator_metrics": {
+                  "auc": 0.7045454545454546,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3212545975453015,
+                  "log_loss": 2.451193592805767
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  9.291827882407233e-05,
+                  0.0026470478624105453
+                ],
+                "emulator_probability_range": [
+                  9.291827882407233e-05,
+                  0.0026470478624105453
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 4,
+              "cpu": {
+                "parameter_max_abs": 1.6391277313232422e-07,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 2.2871712790362153e-07,
+                "actual_metrics": {
+                  "auc": 0.54858934169279,
+                  "accuracy": 0.5555555555555556,
+                  "brier": 0.25194996468813946,
+                  "log_loss": 0.6976830408320954
+                },
+                "emulator_metrics": {
+                  "auc": 0.54858934169279,
+                  "accuracy": 0.5555555555555556,
+                  "brier": 0.25194996276221737,
+                  "log_loss": 0.6976830368598735
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.3290817439556122,
+                  0.7581439018249512
+                ],
+                "emulator_probability_range": [
+                  0.3290817141532898,
+                  0.758143961429596
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.30385160446167e-07,
+                "probability_max_abs": 8.940696716308594e-08,
+                "log_probability_max_abs": 2.032281641861644e-07,
+                "actual_metrics": {
+                  "auc": 0.54858934169279,
+                  "accuracy": 0.5555555555555556,
+                  "brier": 0.25194996468813946,
+                  "log_loss": 0.6976830408320954
+                },
+                "emulator_metrics": {
+                  "auc": 0.54858934169279,
+                  "accuracy": 0.5555555555555556,
+                  "brier": 0.25194996063740066,
+                  "log_loss": 0.6976830325148916
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.3290817439556122,
+                  0.7581439018249512
+                ],
+                "emulator_probability_range": [
+                  0.3290817141532898,
+                  0.7581439018249512
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 5,
+              "cpu": {
+                "parameter_max_abs": 1.7136335372924805e-07,
+                "probability_max_abs": 1.862645149230957e-09,
+                "log_probability_max_abs": 1.9146502268085897e-06,
+                "actual_metrics": {
+                  "auc": 0.704858934169279,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32136579719577585,
+                  "log_loss": 2.557846995713283
+                },
+                "emulator_metrics": {
+                  "auc": 0.704858934169279,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32136579720885095,
+                  "log_loss": 2.5578469903619996
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  7.83148716436699e-05,
+                  0.001913943444378674
+                ],
+                "emulator_probability_range": [
+                  7.831479160813615e-05,
+                  0.0019139415817335248
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.341104507446289e-07,
+                "probability_max_abs": 9.313225746154785e-10,
+                "log_probability_max_abs": 1.9146502268085897e-06,
+                "actual_metrics": {
+                  "auc": 0.704858934169279,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32136579719577585,
+                  "log_loss": 2.557846995713283
+                },
+                "emulator_metrics": {
+                  "auc": 0.704858934169279,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32136579720801445,
+                  "log_loss": 2.5578469950839926
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  7.83148716436699e-05,
+                  0.001913943444378674
+                ],
+                "emulator_probability_range": [
+                  7.83148716436699e-05,
+                  0.0019139425130560994
+                ],
+                "passed": true
+              }
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260924,
+          "rounds": [
+            {
+              "round": 1,
+              "cpu": {
+                "parameter_max_abs": 1.4901161193847656e-08,
+                "probability_max_abs": 5.238689482212067e-10,
+                "log_probability_max_abs": 9.952576416338843e-07,
+                "actual_metrics": {
+                  "auc": 0.6647335423197492,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32134916712394684,
+                  "log_loss": 2.5441356591282513
+                },
+                "emulator_metrics": {
+                  "auc": 0.6647335423197492,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32134916712512984,
+                  "log_loss": 2.5441356536985245
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  5.6958513596327975e-05,
+                  0.001595854526385665
+                ],
+                "emulator_probability_range": [
+                  5.6958513596327975e-05,
+                  0.001595854526385665
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 7.450580596923828e-09,
+                "probability_max_abs": 6.984919309616089e-10,
+                "log_probability_max_abs": 1.0096301554796128e-06,
+                "actual_metrics": {
+                  "auc": 0.6647335423197492,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32134916712394684,
+                  "log_loss": 2.5441356591282513
+                },
+                "emulator_metrics": {
+                  "auc": 0.6647335423197492,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3213491671266671,
+                  "log_loss": 2.544135662121973
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  5.6958513596327975e-05,
+                  0.001595854526385665
+                ],
+                "emulator_probability_range": [
+                  5.6958513596327975e-05,
+                  0.001595854526385665
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 2,
+              "cpu": {
+                "parameter_max_abs": 1.4901161193847656e-08,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 2.465282809005487e-07,
+                "actual_metrics": {
+                  "auc": 0.538871473354232,
+                  "accuracy": 0.5321637426900585,
+                  "brier": 0.25054033119726987,
+                  "log_loss": 0.6949999856995536
+                },
+                "emulator_metrics": {
+                  "auc": 0.538871473354232,
+                  "accuracy": 0.5321637426900585,
+                  "brier": 0.250540331197633,
+                  "log_loss": 0.6949999857428302
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.3177873194217682,
+                  0.7572845816612244
+                ],
+                "emulator_probability_range": [
+                  0.3177873194217682,
+                  0.7572845816612244
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.4901161193847656e-08,
+                "probability_max_abs": 8.940696716308594e-08,
+                "log_probability_max_abs": 2.236494787144494e-07,
+                "actual_metrics": {
+                  "auc": 0.538871473354232,
+                  "accuracy": 0.5321637426900585,
+                  "brier": 0.25054033119726987,
+                  "log_loss": 0.6949999856995536
+                },
+                "emulator_metrics": {
+                  "auc": 0.538871473354232,
+                  "accuracy": 0.5321637426900585,
+                  "brier": 0.25054032898990025,
+                  "log_loss": 0.6949999813785935
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.3177873194217682,
+                  0.7572845816612244
+                ],
+                "emulator_probability_range": [
+                  0.3177872896194458,
+                  0.7572845816612244
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 3,
+              "cpu": {
+                "parameter_max_abs": 2.2351741790771484e-08,
+                "probability_max_abs": 8.149072527885437e-10,
+                "log_probability_max_abs": 1.9015648256015538e-06,
+                "actual_metrics": {
+                  "auc": 0.7155172413793104,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3213374494635202,
+                  "log_loss": 2.5212397324734943
+                },
+                "emulator_metrics": {
+                  "auc": 0.7155172413793104,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32133744941656833,
+                  "log_loss": 2.5212396763098286
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.00010147789726033807,
+                  0.0017146742902696133
+                ],
+                "emulator_probability_range": [
+                  0.00010147799184778705,
+                  0.0017146734753623605
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.2351741790771484e-08,
+                "probability_max_abs": 5.820766091346741e-10,
+                "log_probability_max_abs": 1.038575401679509e-06,
+                "actual_metrics": {
+                  "auc": 0.7155172413793104,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3213374494635202,
+                  "log_loss": 2.5212397324734943
+                },
+                "emulator_metrics": {
+                  "auc": 0.7155172413793104,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32133744945364606,
+                  "log_loss": 2.5212397265836235
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.00010147789726033807,
+                  0.0017146742902696133
+                ],
+                "emulator_probability_range": [
+                  0.00010147799184778705,
+                  0.0017146742902696133
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 4,
+              "cpu": {
+                "parameter_max_abs": 2.9802322387695312e-08,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 2.813834131254467e-07,
+                "actual_metrics": {
+                  "auc": 0.5666144200626959,
+                  "accuracy": 0.52046783625731,
+                  "brier": 0.2561309340468661,
+                  "log_loss": 0.7071007017246527
+                },
+                "emulator_metrics": {
+                  "auc": 0.5666144200626959,
+                  "accuracy": 0.52046783625731,
+                  "brier": 0.2561309381257814,
+                  "log_loss": 0.7071007098652842
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.36171555519104004,
+                  0.8506553769111633
+                ],
+                "emulator_probability_range": [
+                  0.3617155849933624,
+                  0.8506553769111633
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.9802322387695312e-08,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 2.2835581725555443e-07,
+                "actual_metrics": {
+                  "auc": 0.5666144200626959,
+                  "accuracy": 0.52046783625731,
+                  "brier": 0.2561309340468661,
+                  "log_loss": 0.7071007017246527
+                },
+                "emulator_metrics": {
+                  "auc": 0.5666144200626959,
+                  "accuracy": 0.52046783625731,
+                  "brier": 0.2561309263372087,
+                  "log_loss": 0.7071006855074401
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.36171555519104004,
+                  0.8506553769111633
+                ],
+                "emulator_probability_range": [
+                  0.3617155849933624,
+                  0.8506553769111633
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 5,
+              "cpu": {
+                "parameter_max_abs": 2.9802322387695312e-08,
+                "probability_max_abs": 1.0477378964424133e-09,
+                "log_probability_max_abs": 1.9458147626494338e-06,
+                "actual_metrics": {
+                  "auc": 0.7401253918495297,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3213430566205952,
+                  "log_loss": 2.5248056136323442
+                },
+                "emulator_metrics": {
+                  "auc": 0.7401253918495297,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3213430565940633,
+                  "log_loss": 2.5248055946170487
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.00010120354272658005,
+                  0.0018105694325640798
+                ],
+                "emulator_probability_range": [
+                  0.00010120354272658005,
+                  0.0018105694325640798
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.9802322387695312e-08,
+                "probability_max_abs": 5.820766091346741e-10,
+                "log_probability_max_abs": 1.94955212862169e-06,
+                "actual_metrics": {
+                  "auc": 0.7401253918495297,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3213430566205952,
+                  "log_loss": 2.5248056136323442
+                },
+                "emulator_metrics": {
+                  "auc": 0.7401253918495297,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3213430566310328,
+                  "log_loss": 2.524805617027853
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.00010120354272658005,
+                  0.0018105694325640798
+                ],
+                "emulator_probability_range": [
+                  0.00010120354272658005,
+                  0.0018105694325640798
+                ],
+                "passed": true
+              }
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260925,
+          "rounds": [
+            {
+              "round": 1,
+              "cpu": {
+                "parameter_max_abs": 2.2724270820617676e-07,
+                "probability_max_abs": 1.0477378964424133e-09,
+                "log_probability_max_abs": 1.029655432915888e-06,
+                "actual_metrics": {
+                  "auc": 0.6547021943573668,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32138306671952527,
+                  "log_loss": 2.5871966040760683
+                },
+                "emulator_metrics": {
+                  "auc": 0.6547021943573668,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3213830667642418,
+                  "log_loss": 2.587196649889242
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  5.066650192020461e-05,
+                  0.0015418373513966799
+                ],
+                "emulator_probability_range": [
+                  5.066650192020461e-05,
+                  0.0015418373513966799
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 7.450580596923828e-09,
+                "probability_max_abs": 8.149072527885437e-10,
+                "log_probability_max_abs": 1.0079237249271955e-06,
+                "actual_metrics": {
+                  "auc": 0.6547021943573668,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32138306671952527,
+                  "log_loss": 2.5871966040760683
+                },
+                "emulator_metrics": {
+                  "auc": 0.6547021943573668,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.321383066758802,
+                  "log_loss": 2.5871966466815772
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  5.066650192020461e-05,
+                  0.0015418373513966799
+                ],
+                "emulator_probability_range": [
+                  5.066650192020461e-05,
+                  0.001541836536489427
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 2,
+              "cpu": {
+                "parameter_max_abs": 2.7194619178771973e-07,
+                "probability_max_abs": 1.4901161193847656e-07,
+                "log_probability_max_abs": 4.908859898566931e-07,
+                "actual_metrics": {
+                  "auc": 0.50141065830721,
+                  "accuracy": 0.672514619883041,
+                  "brier": 0.22334966593989228,
+                  "log_loss": 0.6388253589900793
+                },
+                "emulator_metrics": {
+                  "auc": 0.50141065830721,
+                  "accuracy": 0.672514619883041,
+                  "brier": 0.22334966522575872,
+                  "log_loss": 0.6388253573076754
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.2466820776462555,
+                  0.5034051537513733
+                ],
+                "emulator_probability_range": [
+                  0.2466820776462555,
+                  0.5034051537513733
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.682209014892578e-07,
+                "probability_max_abs": 1.4901161193847656e-07,
+                "log_probability_max_abs": 4.7874059050379e-07,
+                "actual_metrics": {
+                  "auc": 0.50141065830721,
+                  "accuracy": 0.672514619883041,
+                  "brier": 0.22334966593989228,
+                  "log_loss": 0.6388253589900793
+                },
+                "emulator_metrics": {
+                  "auc": 0.50141065830721,
+                  "accuracy": 0.672514619883041,
+                  "brier": 0.22334966653581742,
+                  "log_loss": 0.638825359972461
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.2466820776462555,
+                  0.5034051537513733
+                ],
+                "emulator_probability_range": [
+                  0.2466820478439331,
+                  0.5034051537513733
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 3,
+              "cpu": {
+                "parameter_max_abs": 2.738088369369507e-07,
+                "probability_max_abs": 1.5133991837501526e-09,
+                "log_probability_max_abs": 1.9933239148173243e-06,
+                "actual_metrics": {
+                  "auc": 0.6716300940438872,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.321294882189781,
+                  "log_loss": 2.481291073265066
+                },
+                "emulator_metrics": {
+                  "auc": 0.6716300940438872,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32129488228937325,
+                  "log_loss": 2.4812911621133518
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.00010157296492252499,
+                  0.0019580675289034843
+                ],
+                "emulator_probability_range": [
+                  0.00010157296492252499,
+                  0.0019580675289034843
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.682209014892578e-07,
+                "probability_max_abs": 1.862645149230957e-09,
+                "log_probability_max_abs": 1.9155549768612445e-06,
+                "actual_metrics": {
+                  "auc": 0.6716300940438872,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.321294882189781,
+                  "log_loss": 2.481291073265066
+                },
+                "emulator_metrics": {
+                  "auc": 0.6716300940438872,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32129488226819314,
+                  "log_loss": 2.481291116865497
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.00010157296492252499,
+                  0.0019580675289034843
+                ],
+                "emulator_probability_range": [
+                  0.00010157305950997397,
+                  0.0019580665975809097
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 4,
+              "cpu": {
+                "parameter_max_abs": 2.7194619178771973e-07,
+                "probability_max_abs": 1.7881393432617188e-07,
+                "log_probability_max_abs": 3.2500878577312875e-07,
+                "actual_metrics": {
+                  "auc": 0.48667711598746083,
+                  "accuracy": 0.5964912280701754,
+                  "brier": 0.24304800122074238,
+                  "log_loss": 0.6795967380124469
+                },
+                "emulator_metrics": {
+                  "auc": 0.48667711598746083,
+                  "accuracy": 0.5964912280701754,
+                  "brier": 0.24304798530322402,
+                  "log_loss": 0.6795967045615308
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.2749023735523224,
+                  0.7471060752868652
+                ],
+                "emulator_probability_range": [
+                  0.27490234375,
+                  0.7471060156822205
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.682209014892578e-07,
+                "probability_max_abs": 1.4901161193847656e-07,
+                "log_probability_max_abs": 3.622845416995091e-07,
+                "actual_metrics": {
+                  "auc": 0.48667711598746083,
+                  "accuracy": 0.5964912280701754,
+                  "brier": 0.24304800122074238,
+                  "log_loss": 0.6795967380124469
+                },
+                "emulator_metrics": {
+                  "auc": 0.48667711598746083,
+                  "accuracy": 0.5964912280701754,
+                  "brier": 0.24304798557750115,
+                  "log_loss": 0.6795967052756555
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.2749023735523224,
+                  0.7471060752868652
+                ],
+                "emulator_probability_range": [
+                  0.2749023735523224,
+                  0.7471060156822205
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 5,
+              "cpu": {
+                "parameter_max_abs": 2.721790224313736e-07,
+                "probability_max_abs": 1.1641532182693481e-09,
+                "log_probability_max_abs": 1.891513768725872e-06,
+                "actual_metrics": {
+                  "auc": 0.6849529780564263,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32142187407907896,
+                  "log_loss": 2.6226777725211337
+                },
+                "emulator_metrics": {
+                  "auc": 0.6849529780564263,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3214218741105969,
+                  "log_loss": 2.6226778113489924
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  6.81359160807915e-05,
+                  0.001248102285899222
+                ],
+                "emulator_probability_range": [
+                  6.813585059717298e-05,
+                  0.0012481011217460036
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.682209014892578e-07,
+                "probability_max_abs": 1.1641532182693481e-09,
+                "log_probability_max_abs": 1.9544526530523854e-06,
+                "actual_metrics": {
+                  "auc": 0.6849529780564263,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32142187407907896,
+                  "log_loss": 2.6226777725211337
+                },
+                "emulator_metrics": {
+                  "auc": 0.6849529780564263,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3214218741281953,
+                  "log_loss": 2.622677845749521
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  6.81359160807915e-05,
+                  0.001248102285899222
+                ],
+                "emulator_probability_range": [
+                  6.813598156441003e-05,
+                  0.0012481011217460036
+                ],
+                "passed": true
+              }
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "candidate": {
+        "id": "sgd_m0.9_lr3_e2_b227_wd0",
+        "optimizer": "sgd",
+        "learning_rate": 3,
+        "local_epochs": 2,
+        "batch_size": 227,
+        "momentum": 0.9,
+        "weight_decay": 0,
+        "batch_mode": "full_site"
+      },
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 4.35546875,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 1,
+        "sample_rate": 1.0,
+        "expected_batch_size": 227,
+        "total_epochs": 10,
+        "total_steps": 10,
+        "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"
+      },
+      "replications": [
+        {
+          "seed": 20260923,
+          "rounds": [
+            {
+              "round": 1,
+              "cpu": {
+                "parameter_max_abs": 5.960464477539063e-08,
+                "probability_max_abs": 3.197442310920451e-14,
+                "log_probability_max_abs": 3.85259154711548e-06,
+                "actual_metrics": {
+                  "auc": 0.6909090909090909,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374262375826,
+                  "log_loss": 7.13411898898264
+                },
+                "emulator_metrics": {
+                  "auc": 0.6909090909090909,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742623758346,
+                  "log_loss": 7.1341191346862125
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  2.4081622113092394e-12,
+                  1.610279554142835e-08
+                ],
+                "emulator_probability_range": [
+                  2.4081622113092394e-12,
+                  1.610276356700524e-08
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.9802322387695312e-08,
+                "probability_max_abs": 3.197442310920451e-14,
+                "log_probability_max_abs": 3.840053210524275e-06,
+                "actual_metrics": {
+                  "auc": 0.6909090909090909,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374262375826,
+                  "log_loss": 7.13411898898264
+                },
+                "emulator_metrics": {
+                  "auc": 0.6909090909090909,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374262375828,
+                  "log_loss": 7.134118743647056
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  2.4081622113092394e-12,
+                  1.610279554142835e-08
+                ],
+                "emulator_probability_range": [
+                  2.4081669817987983e-12,
+                  1.610276356700524e-08
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 2,
+              "cpu": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.47492163009404387,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783552464491949,
+                  "log_loss": 10.200883892400661
+                },
+                "emulator_metrics": {
+                  "auc": 0.47492163009404387,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783552464491949,
+                  "log_loss": 10.200883892400661
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999082088470459,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999082088470459,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.2293457984924316e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.47492163009404387,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783552464491949,
+                  "log_loss": 10.200883892400661
+                },
+                "emulator_metrics": {
+                  "auc": 0.47492163009404387,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783552464491949,
+                  "log_loss": 10.200883892400661
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999082088470459,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999082088470459,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 3,
+              "cpu": {
+                "parameter_max_abs": 1.4901161193847656e-07,
+                "probability_max_abs": 5.082197683525802e-20,
+                "log_probability_max_abs": 1.9120109925552242e-05,
+                "actual_metrics": {
+                  "auc": 0.7089341692789969,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.08911172887976
+                },
+                "emulator_metrics": {
+                  "auc": 0.7089341692789969,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089111884796743
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  2.3711101966573778e-21,
+                  6.684374479300941e-15
+                ],
+                "emulator_probability_range": [
+                  2.371083135572885e-21,
+                  6.6843236573241056e-15
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 3.3034284942917713e-20,
+                "log_probability_max_abs": 1.5293843695474152e-05,
+                "actual_metrics": {
+                  "auc": 0.7089341692789969,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.08911172887976
+                },
+                "emulator_metrics": {
+                  "auc": 0.7089341692789969,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089111840224676
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  2.3711101966573778e-21,
+                  6.684374479300941e-15
+                ],
+                "emulator_probability_range": [
+                  2.3710922232505132e-21,
+                  6.684349068312523e-15
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 4,
+              "cpu": {
+                "parameter_max_abs": 1.564621925354004e-07,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 1.1942393951980441e-07,
+                "actual_metrics": {
+                  "auc": 0.5130877742946709,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6780455709460743,
+                  "log_loss": 6.989981012056478
+                },
+                "emulator_metrics": {
+                  "auc": 0.5130877742946709,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6780455681616017,
+                  "log_loss": 6.989979994165282
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 0.9999999999999999,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9958534240722656,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9958534240722656,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.4901161193847656e-07,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 1.1942393951980441e-07,
+                "actual_metrics": {
+                  "auc": 0.5130877742946709,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6780455709460743,
+                  "log_loss": 6.989981012056478
+                },
+                "emulator_metrics": {
+                  "auc": 0.5130877742946709,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6780455681616017,
+                  "log_loss": 6.989979994165282
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 0.9999999999999999,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9958534240722656,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9958534240722656,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 5,
+              "cpu": {
+                "parameter_max_abs": 1.7881393432617188e-07,
+                "probability_max_abs": 1.9058241313221758e-21,
+                "log_probability_max_abs": 1.1503974725712851e-05,
+                "actual_metrics": {
+                  "auc": 0.7040752351097179,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005848,
+                  "log_loss": 11.108963167953728
+                },
+                "emulator_metrics": {
+                  "auc": 0.7040752351097179,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005848,
+                  "log_loss": 11.108963167953728
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.2829191890156484e-22,
+                  4.998195308564225e-16
+                ],
+                "emulator_probability_range": [
+                  1.2829191890156484e-22,
+                  4.998176250322912e-16
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.4901161193847656e-07,
+                "probability_max_abs": 8.205631676526035e-22,
+                "log_probability_max_abs": 7.64776724793137e-06,
+                "actual_metrics": {
+                  "auc": 0.7040752351097179,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005848,
+                  "log_loss": 11.108963167953728
+                },
+                "emulator_metrics": {
+                  "auc": 0.7040752351097179,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005848,
+                  "log_loss": 11.108963167953728
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.2829191890156484e-22,
+                  4.998195308564225e-16
+                ],
+                "emulator_probability_range": [
+                  1.2829143927413447e-22,
+                  4.998195308564225e-16
+                ],
+                "passed": true
+              }
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260924,
+          "rounds": [
+            {
+              "round": 1,
+              "cpu": {
+                "parameter_max_abs": 4.470348358154297e-08,
+                "probability_max_abs": 3.375077994860476e-14,
+                "log_probability_max_abs": 3.8523355776476365e-06,
+                "actual_metrics": {
+                  "auc": 0.6760188087774295,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374257544024,
+                  "log_loss": 6.9578343894983785
+                },
+                "emulator_metrics": {
+                  "auc": 0.6760188087774295,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742575440313,
+                  "log_loss": 6.957834501214904
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  5.521187673718231e-12,
+                  1.8859175554553076e-08
+                ],
+                "emulator_probability_range": [
+                  5.521187673718231e-12,
+                  1.8859175554553076e-08
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.9802322387695312e-08,
+                "probability_max_abs": 3.197442310920451e-14,
+                "log_probability_max_abs": 3.880935189215506e-06,
+                "actual_metrics": {
+                  "auc": 0.6760188087774295,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374257544024,
+                  "log_loss": 6.9578343894983785
+                },
+                "emulator_metrics": {
+                  "auc": 0.6760188087774295,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.321637425754402,
+                  "log_loss": 6.957834343789575
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  5.521187673718231e-12,
+                  1.8859175554553076e-08
+                ],
+                "emulator_probability_range": [
+                  5.521187673718231e-12,
+                  1.8859175554553076e-08
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 2,
+              "cpu": {
+                "parameter_max_abs": 7.450580596923828e-08,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 1.1948920991544654e-07,
+                "actual_metrics": {
+                  "auc": 0.4736677115987461,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6776444569232707,
+                  "log_loss": 6.255436454851572
+                },
+                "emulator_metrics": {
+                  "auc": 0.4736677115987461,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6776444541407701,
+                  "log_loss": 6.255435804397613
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9917945265769958,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9917945265769958,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 1.1948920991544654e-07,
+                "actual_metrics": {
+                  "auc": 0.4736677115987461,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6776444569232707,
+                  "log_loss": 6.255436454851572
+                },
+                "emulator_metrics": {
+                  "auc": 0.4736677115987461,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6776444541407701,
+                  "log_loss": 6.255435804397613
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9917945265769958,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9917945265769958,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 3,
+              "cpu": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 9.740878893424454e-21,
+                "log_probability_max_abs": 1.1470087862619494e-05,
+                "actual_metrics": {
+                  "auc": 0.7355799373040752,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.083293780166839
+                },
+                "emulator_metrics": {
+                  "auc": 0.7355799373040752,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.08329380246613
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.7541590715924793e-21,
+                  4.605838212451245e-15
+                ],
+                "emulator_probability_range": [
+                  1.7541457429986247e-21,
+                  4.605838212451245e-15
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 2.752857078576476e-20,
+                "log_probability_max_abs": 7.711977104918333e-06,
+                "actual_metrics": {
+                  "auc": 0.7355799373040752,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.083293780166839
+                },
+                "emulator_metrics": {
+                  "auc": 0.7355799373040752,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.083293735625087
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.7541590715924793e-21,
+                  4.605838212451245e-15
+                ],
+                "emulator_probability_range": [
+                  1.7541590715924793e-21,
+                  4.605838212451245e-15
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 4,
+              "cpu": {
+                "parameter_max_abs": 1.341104507446289e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.5012539184952978,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783056913119454,
+                  "log_loss": 9.474873499077415
+                },
+                "emulator_metrics": {
+                  "auc": 0.5012539184952978,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783056913119454,
+                  "log_loss": 9.474873499077415
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 0.9999999999999999,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9991201758384705,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9991201758384705,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.5012539184952978,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783056913119454,
+                  "log_loss": 9.474873499077415
+                },
+                "emulator_metrics": {
+                  "auc": 0.5012539184952978,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783056913119454,
+                  "log_loss": 9.474873499077415
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 0.9999999999999999,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9991201758384705,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9991201758384705,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 5,
+              "cpu": {
+                "parameter_max_abs": 1.6391277313232422e-07,
+                "probability_max_abs": 2.668153783851046e-20,
+                "log_probability_max_abs": 7.7304812151624e-06,
+                "actual_metrics": {
+                  "auc": 0.7191222570532916,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.077277087418485
+                },
+                "emulator_metrics": {
+                  "auc": 0.7191222570532916,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.077277109967893
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.970794967911668e-21,
+                  6.919591293588724e-15
+                ],
+                "emulator_probability_range": [
+                  1.9707874958211737e-21,
+                  6.919564612050885e-15
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.4901161193847656e-07,
+                "probability_max_abs": 2.625802136488331e-20,
+                "log_probability_max_abs": 1.1389040324161215e-05,
+                "actual_metrics": {
+                  "auc": 0.7191222570532916,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.077277087418485
+                },
+                "emulator_metrics": {
+                  "auc": 0.7191222570532916,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.077277043327486
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.970794967911668e-21,
+                  6.919591293588724e-15
+                ],
+                "emulator_probability_range": [
+                  1.970794967911668e-21,
+                  6.919617551610089e-15
+                ],
+                "passed": true
+              }
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260925,
+          "rounds": [
+            {
+              "round": 1,
+              "cpu": {
+                "parameter_max_abs": 4.470348358154297e-08,
+                "probability_max_abs": 1.509903313490213e-14,
+                "log_probability_max_abs": 3.880106699938324e-06,
+                "actual_metrics": {
+                  "auc": 0.6321316614420063,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.321637426615532,
+                  "log_loss": 7.633461767958311
+                },
+                "emulator_metrics": {
+                  "auc": 0.6321316614420063,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742661553174,
+                  "log_loss": 7.633461835500668
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  9.217964933028178e-13,
+                  9.146213564292793e-09
+                ],
+                "emulator_probability_range": [
+                  9.217982280262937e-13,
+                  9.146213564292793e-09
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 4.470348358154297e-08,
+                "probability_max_abs": 1.1379786002407855e-15,
+                "log_probability_max_abs": 3.860426467383604e-06,
+                "actual_metrics": {
+                  "auc": 0.6321316614420063,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.321637426615532,
+                  "log_loss": 7.633461767958311
+                },
+                "emulator_metrics": {
+                  "auc": 0.6321316614420063,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742661553196,
+                  "log_loss": 7.633461578700007
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  9.217964933028178e-13,
+                  9.146213564292793e-09
+                ],
+                "emulator_probability_range": [
+                  9.217982280262937e-13,
+                  9.146213564292793e-09
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 2,
+              "cpu": {
+                "parameter_max_abs": 1.2665987014770508e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.44177115987460813,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783625605510721,
+                  "log_loss": 22.556258146218855
+                },
+                "emulator_metrics": {
+                  "auc": 0.44177115987460813,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783625605510721,
+                  "log_loss": 22.556258146218855
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999996423721313,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999996423721313,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.1175870895385742e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.44177115987460813,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783625605510721,
+                  "log_loss": 22.556258146218855
+                },
+                "emulator_metrics": {
+                  "auc": 0.44177115987460813,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783625605510721,
+                  "log_loss": 22.556258146218855
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999996423721313,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999996423721313,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 3,
+              "cpu": {
+                "parameter_max_abs": 1.7881393432617188e-07,
+                "probability_max_abs": 3.2959746043559335e-17,
+                "log_probability_max_abs": 1.532061173747934e-05,
+                "actual_metrics": {
+                  "auc": 0.6885579937304075,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742690045133,
+                  "log_loss": 10.589216277801007
+                },
+                "emulator_metrics": {
+                  "auc": 0.6885579937304075,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742690045133,
+                  "log_loss": 10.589217883362956
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  4.555420118130595e-18,
+                  5.748237823233193e-12
+                ],
+                "emulator_probability_range": [
+                  4.5553853765448674e-18,
+                  5.74820486348715e-12
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.043081283569336e-07,
+                "probability_max_abs": 2.168404344971009e-17,
+                "log_probability_max_abs": 7.717872819057447e-06,
+                "actual_metrics": {
+                  "auc": 0.6885579937304075,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742690045133,
+                  "log_loss": 10.589216277801007
+                },
+                "emulator_metrics": {
+                  "auc": 0.6885579937304075,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742690045133,
+                  "log_loss": 10.589217155857678
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  4.555420118130595e-18,
+                  5.748237823233193e-12
+                ],
+                "emulator_probability_range": [
+                  4.555402747337731e-18,
+                  5.7482161391897435e-12
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 4,
+              "cpu": {
+                "parameter_max_abs": 1.7136335372924805e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.43189655172413793,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783591125945753,
+                  "log_loss": 11.536702802101825
+                },
+                "emulator_metrics": {
+                  "auc": 0.43189655172413793,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783591125945753,
+                  "log_loss": 11.536702802101825
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999607801437378,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999607801437378,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.0989606380462646e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.43189655172413793,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783591125945753,
+                  "log_loss": 11.536702802101825
+                },
+                "emulator_metrics": {
+                  "auc": 0.43189655172413793,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783591125945753,
+                  "log_loss": 11.536702802101825
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999607801437378,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999607801437378,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 5,
+              "cpu": {
+                "parameter_max_abs": 2.086162567138672e-07,
+                "probability_max_abs": 1.9481757786848908e-20,
+                "log_probability_max_abs": 1.5270292912816785e-05,
+                "actual_metrics": {
+                  "auc": 0.7042319749216301,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089172472931805
+                },
+                "emulator_metrics": {
+                  "auc": 0.7042319749216301,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089172608149566
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.4844426560924647e-21,
+                  5.04070577460455e-15
+                ],
+                "emulator_probability_range": [
+                  1.484437001537496e-21,
+                  5.040686292846763e-15
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 1.9481757786848908e-20,
+                "log_probability_max_abs": 1.1537030886188404e-05,
+                "actual_metrics": {
+                  "auc": 0.7042319749216301,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089172472931805
+                },
+                "emulator_metrics": {
+                  "auc": 0.7042319749216301,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089172563631609
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.4844426560924647e-21,
+                  5.04070577460455e-15
+                ],
+                "emulator_probability_range": [
+                  1.4844426560924647e-21,
+                  5.040686292846763e-15
+                ],
+                "passed": true
+              }
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "passed": true
+    },
+    {
+      "candidate": {
+        "id": "sgd_m0.9_lr3_e2_b227_wd0.0001",
+        "optimizer": "sgd",
+        "learning_rate": 3,
+        "local_epochs": 2,
+        "batch_size": 227,
+        "momentum": 0.9,
+        "weight_decay": 0.0001,
+        "batch_mode": "full_site"
+      },
+      "mechanism": {
+        "adjacency": "replace_one",
+        "noise_multiplier": 4.35546875,
+        "clipping_norm": 1.0,
+        "accounting_population": 227,
+        "steps_per_epoch": 1,
+        "sample_rate": 1.0,
+        "expected_batch_size": 227,
+        "total_epochs": 10,
+        "total_steps": 10,
+        "policy_hash": "1dda79e5891d3934e2452d405a965928fab2bf77b5b51357b8e6058e82db71f7"
+      },
+      "replications": [
+        {
+          "seed": 20260923,
+          "rounds": [
+            {
+              "round": 1,
+              "cpu": {
+                "parameter_max_abs": 5.960464477539063e-08,
+                "probability_max_abs": 2.5757174171303632e-14,
+                "log_probability_max_abs": 3.864721623614287e-06,
+                "actual_metrics": {
+                  "auc": 0.6909090909090909,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374262342002,
+                  "log_loss": 7.132216192137142
+                },
+                "emulator_metrics": {
+                  "auc": 0.6909090909090909,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374262341996,
+                  "log_loss": 7.132216069766753
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  2.4245189189642247e-12,
+                  1.6176027628489464e-08
+                ],
+                "emulator_probability_range": [
+                  2.424523472613349e-12,
+                  1.6176027628489464e-08
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 5.960464477539063e-08,
+                "probability_max_abs": 2.5757174171303632e-14,
+                "log_probability_max_abs": 3.872155176054548e-06,
+                "actual_metrics": {
+                  "auc": 0.6909090909090909,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374262342002,
+                  "log_loss": 7.132216192137142
+                },
+                "emulator_metrics": {
+                  "auc": 0.6909090909090909,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374262341995,
+                  "log_loss": 7.132215836165137
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  2.4245189189642247e-12,
+                  1.6176027628489464e-08
+                ],
+                "emulator_probability_range": [
+                  2.4245280262624735e-12,
+                  1.6176027628489464e-08
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 2,
+              "cpu": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.4744514106583072,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783553050050432,
+                  "log_loss": 10.207434891779595
+                },
+                "emulator_metrics": {
+                  "auc": 0.4744514106583072,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783553050050432,
+                  "log_loss": 10.207434891779595
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999090433120728,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999090433120728,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.4744514106583072,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783553050050432,
+                  "log_loss": 10.207434891779595
+                },
+                "emulator_metrics": {
+                  "auc": 0.4744514106583072,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783553050050432,
+                  "log_loss": 10.207434891779595
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999090433120728,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999090433120728,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 3,
+              "cpu": {
+                "parameter_max_abs": 1.4901161193847656e-07,
+                "probability_max_abs": 5.124549330888517e-20,
+                "log_probability_max_abs": 1.5347627197570546e-05,
+                "actual_metrics": {
+                  "auc": 0.7087774294670847,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.08903795562628
+                },
+                "emulator_metrics": {
+                  "auc": 0.7087774294670847,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089038089578489
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  2.3941141379600915e-21,
+                  6.701480733187215e-15
+                ],
+                "emulator_probability_range": [
+                  2.394077585301187e-21,
+                  6.701429487693906e-15
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 3.3457801416544863e-20,
+                "log_probability_max_abs": 1.5269549074048427e-05,
+                "actual_metrics": {
+                  "auc": 0.7087774294670847,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.08903795562628
+                },
+                "emulator_metrics": {
+                  "auc": 0.7087774294670847,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089038067403818
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  2.3941141379600915e-21,
+                  6.701480733187215e-15
+                ],
+                "emulator_probability_range": [
+                  2.394086874927207e-21,
+                  6.701454898682324e-15
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 4,
+              "cpu": {
+                "parameter_max_abs": 1.4901161193847656e-07,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 1.1934418935803486e-07,
+                "actual_metrics": {
+                  "auc": 0.5123824451410658,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6780582521956998,
+                  "log_loss": 7.013490612532162
+                },
+                "emulator_metrics": {
+                  "auc": 0.5123824451410658,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6780582521986556,
+                  "log_loss": 7.013490613927901
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9960260391235352,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9960260391235352,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.2293457984924316e-07,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 1.1934418935803486e-07,
+                "actual_metrics": {
+                  "auc": 0.5123824451410658,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6780582521956998,
+                  "log_loss": 7.013490612532162
+                },
+                "emulator_metrics": {
+                  "auc": 0.5123824451410658,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6780582521986556,
+                  "log_loss": 7.013490613927901
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9960260391235352,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9960260391235352,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 5,
+              "cpu": {
+                "parameter_max_abs": 1.7881393432617188e-07,
+                "probability_max_abs": 7.543887186483612e-22,
+                "log_probability_max_abs": 1.1491041071565178e-05,
+                "actual_metrics": {
+                  "auc": 0.7039184952978056,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005848,
+                  "log_loss": 11.108963167953728
+                },
+                "emulator_metrics": {
+                  "auc": 0.7039184952978056,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005848,
+                  "log_loss": 11.108963167953728
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.326317267311115e-22,
+                  5.115709483292734e-16
+                ],
+                "emulator_probability_range": [
+                  1.326317267311115e-22,
+                  5.115709483292734e-16
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.7881393432617188e-07,
+                "probability_max_abs": 1.6940658945086007e-21,
+                "log_probability_max_abs": 7.70101306812876e-06,
+                "actual_metrics": {
+                  "auc": 0.7039184952978056,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005848,
+                  "log_loss": 11.108963167953728
+                },
+                "emulator_metrics": {
+                  "auc": 0.7039184952978056,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005848,
+                  "log_loss": 11.108963167953728
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.326317267311115e-22,
+                  5.115709483292734e-16
+                ],
+                "emulator_probability_range": [
+                  1.326317267311115e-22,
+                  5.115709483292734e-16
+                ],
+                "passed": true
+              }
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260924,
+          "rounds": [
+            {
+              "round": 1,
+              "cpu": {
+                "parameter_max_abs": 4.470348358154297e-08,
+                "probability_max_abs": 3.552713678800501e-14,
+                "log_probability_max_abs": 3.871657980880627e-06,
+                "actual_metrics": {
+                  "auc": 0.6760188087774295,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742574850007,
+                  "log_loss": 6.955955338622508
+                },
+                "emulator_metrics": {
+                  "auc": 0.6760188087774295,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374257485006,
+                  "log_loss": 6.955955327639084
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  5.559080539646599e-12,
+                  1.8955823577471165e-08
+                ],
+                "emulator_probability_range": [
+                  5.559070131305743e-12,
+                  1.8955788050334377e-08
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.9802322387695312e-08,
+                "probability_max_abs": 3.552713678800501e-14,
+                "log_probability_max_abs": 3.8475446935137825e-06,
+                "actual_metrics": {
+                  "auc": 0.6760188087774295,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742574850007,
+                  "log_loss": 6.955955338622508
+                },
+                "emulator_metrics": {
+                  "auc": 0.6760188087774295,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742574850035,
+                  "log_loss": 6.955955249068979
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  5.559080539646599e-12,
+                  1.8955823577471165e-08
+                ],
+                "emulator_probability_range": [
+                  5.559070131305743e-12,
+                  1.8955788050334377e-08
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 2,
+              "cpu": {
+                "parameter_max_abs": 1.4901161193847656e-07,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 1.1944015057096906e-07,
+                "actual_metrics": {
+                  "auc": 0.47405956112852665,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6776115487590816,
+                  "log_loss": 6.223826784478392
+                },
+                "emulator_metrics": {
+                  "auc": 0.47405956112852665,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.67761154389381,
+                  "log_loss": 6.223825232517616
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9914268255233765,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9914268255233765,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.4901161193847656e-07,
+                "probability_max_abs": 1.1920928955078125e-07,
+                "log_probability_max_abs": 1.1944015057096906e-07,
+                "actual_metrics": {
+                  "auc": 0.47405956112852665,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6776115487590816,
+                  "log_loss": 6.223826784478392
+                },
+                "emulator_metrics": {
+                  "auc": 0.47405956112852665,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.67761154389381,
+                  "log_loss": 6.223825232517616
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9914268255233765,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9914268255233765,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 3,
+              "cpu": {
+                "parameter_max_abs": 2.1606683731079102e-07,
+                "probability_max_abs": 2.6893296075324036e-20,
+                "log_probability_max_abs": 7.726206654012913e-06,
+                "actual_metrics": {
+                  "auc": 0.7357366771159874,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.083934828059865
+                },
+                "emulator_metrics": {
+                  "auc": 0.7357366771159874,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.083934805121917
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.696088811548626e-21,
+                  4.480475642191714e-15
+                ],
+                "emulator_probability_range": [
+                  1.6960823492000904e-21,
+                  4.480475642191714e-15
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.9371509552001953e-07,
+                "probability_max_abs": 2.6893296075324036e-20,
+                "log_probability_max_abs": 1.1439313922778638e-05,
+                "actual_metrics": {
+                  "auc": 0.7357366771159874,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.083934828059865
+                },
+                "emulator_metrics": {
+                  "auc": 0.7357366771159874,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.083934716134278
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.696088811548626e-21,
+                  4.480475642191714e-15
+                ],
+                "emulator_probability_range": [
+                  1.696101736245697e-21,
+                  4.480492582850659e-15
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 4,
+              "cpu": {
+                "parameter_max_abs": 2.086162567138672e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.5011755485893417,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783059421286574,
+                  "log_loss": 9.475480474339252
+                },
+                "emulator_metrics": {
+                  "auc": 0.5011755485893417,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783059421286574,
+                  "log_loss": 9.475480474339252
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 0.9999999999999999,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.999126136302948,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.999126136302948,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 1.7881393432617188e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.5011755485893417,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783059421286574,
+                  "log_loss": 9.475480474339252
+                },
+                "emulator_metrics": {
+                  "auc": 0.5011755485893417,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783059421286574,
+                  "log_loss": 9.475480474339252
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 0.9999999999999999,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.999126136302948,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.999126136302948,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 5,
+              "cpu": {
+                "parameter_max_abs": 2.8312206268310547e-07,
+                "probability_max_abs": 1.6093625997831706e-20,
+                "log_probability_max_abs": 7.673772216776342e-06,
+                "actual_metrics": {
+                  "auc": 0.7192789968652038,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.077378144569458
+                },
+                "emulator_metrics": {
+                  "auc": 0.7192789968652038,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.077378166990076
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.977195722187759e-21,
+                  6.862129001963466e-15
+                ],
+                "emulator_probability_range": [
+                  1.977195722187759e-21,
+                  6.862129001963466e-15
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 2.384185791015625e-07,
+                "probability_max_abs": 2.625802136488331e-20,
+                "log_probability_max_abs": 1.1456153480082776e-05,
+                "actual_metrics": {
+                  "auc": 0.7192789968652038,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.077378144569458
+                },
+                "emulator_metrics": {
+                  "auc": 0.7192789968652038,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.077378077158937
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.977195722187759e-21,
+                  6.862129001963466e-15
+                ],
+                "emulator_probability_range": [
+                  1.977210868317139e-21,
+                  6.8621552599848305e-15
+                ],
+                "passed": true
+              }
+            }
+          ],
+          "passed": true
+        },
+        {
+          "seed": 20260925,
+          "rounds": [
+            {
+              "round": 1,
+              "cpu": {
+                "parameter_max_abs": 4.470348358154297e-08,
+                "probability_max_abs": 1.7208456881689926e-15,
+                "log_probability_max_abs": 3.8966465254475224e-06,
+                "actual_metrics": {
+                  "auc": 0.6322884012539185,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374266140657,
+                  "log_loss": 7.631441807360451
+                },
+                "emulator_metrics": {
+                  "auc": 0.6322884012539185,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374266140657,
+                  "log_loss": 7.63144197540658
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  9.2860278928103e-13,
+                  9.190035399342378e-09
+                ],
+                "emulator_probability_range": [
+                  9.286046324247232e-13,
+                  9.190035399342378e-09
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 4.470348358154297e-08,
+                "probability_max_abs": 1.0547118733938987e-15,
+                "log_probability_max_abs": 3.841209796462408e-06,
+                "actual_metrics": {
+                  "auc": 0.6322884012539185,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374266140657,
+                  "log_loss": 7.631441807360451
+                },
+                "emulator_metrics": {
+                  "auc": 0.6322884012539185,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.32163742661406564,
+                  "log_loss": 7.631441731472975
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  9.2860278928103e-13,
+                  9.190035399342378e-09
+                ],
+                "emulator_probability_range": [
+                  9.286046324247232e-13,
+                  9.190035399342378e-09
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 2,
+              "cpu": {
+                "parameter_max_abs": 9.685754776000977e-08,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.4416144200626959,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783625605510729,
+                  "log_loss": 22.556258147613118
+                },
+                "emulator_metrics": {
+                  "auc": 0.4416144200626959,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783625605510729,
+                  "log_loss": 22.556258147613118
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999996423721313,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999996423721313,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 8.940696716308594e-08,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.4416144200626959,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783625605510729,
+                  "log_loss": 22.556258147613118
+                },
+                "emulator_metrics": {
+                  "auc": 0.4416144200626959,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783625605510729,
+                  "log_loss": 22.556258147613118
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999996423721313,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999996423721313,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 3,
+              "cpu": {
+                "parameter_max_abs": 1.1920928955078125e-07,
+                "probability_max_abs": 4.2500725161431774e-17,
+                "log_probability_max_abs": 1.530929129245351e-05,
+                "actual_metrics": {
+                  "auc": 0.6885579937304075,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269004557,
+                  "log_loss": 10.597220860465564
+                },
+                "emulator_metrics": {
+                  "auc": 0.6885579937304075,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269004557,
+                  "log_loss": 10.597222322697224
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  4.378565594444307e-18,
+                  5.562315365248427e-12
+                ],
+                "emulator_probability_range": [
+                  4.378515550017248e-18,
+                  5.5622728645232655e-12
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 8.940696716308594e-08,
+                "probability_max_abs": 1.6046192152785466e-17,
+                "log_probability_max_abs": 7.7139546874605e-06,
+                "actual_metrics": {
+                  "auc": 0.6885579937304075,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269004557,
+                  "log_loss": 10.597220860465564
+                },
+                "emulator_metrics": {
+                  "auc": 0.6885579937304075,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269004557,
+                  "log_loss": 10.597221428544113
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  4.378565594444307e-18,
+                  5.562315365248427e-12
+                ],
+                "emulator_probability_range": [
+                  4.378565594444307e-18,
+                  5.562304956907571e-12
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 4,
+              "cpu": {
+                "parameter_max_abs": 1.4901161193847656e-07,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.43009404388714734,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783590735561166,
+                  "log_loss": 11.528201166447305
+                },
+                "emulator_metrics": {
+                  "auc": 0.43009404388714734,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783590735561166,
+                  "log_loss": 11.528201166447305
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999606609344482,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999606609344482,
+                  1.0
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 9.12696123123169e-08,
+                "probability_max_abs": 0.0,
+                "log_probability_max_abs": 0.0,
+                "actual_metrics": {
+                  "auc": 0.43009404388714734,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783590735561166,
+                  "log_loss": 11.528201166447305
+                },
+                "emulator_metrics": {
+                  "auc": 0.43009404388714734,
+                  "accuracy": 0.3216374269005848,
+                  "brier": 0.6783590735561166,
+                  "log_loss": 11.528201166447305
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  0.9999606609344482,
+                  1.0
+                ],
+                "emulator_probability_range": [
+                  0.9999606609344482,
+                  1.0
+                ],
+                "passed": true
+              }
+            },
+            {
+              "round": 5,
+              "cpu": {
+                "parameter_max_abs": 1.7881393432617188e-07,
+                "probability_max_abs": 4.828087799349512e-20,
+                "log_probability_max_abs": 1.530014665007684e-05,
+                "actual_metrics": {
+                  "auc": 0.7039184952978056,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089497593546609
+                },
+                "emulator_metrics": {
+                  "auc": 0.7039184952978056,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089497771978511
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.468665841884828e-21,
+                  4.965510848228523e-15
+                ],
+                "emulator_probability_range": [
+                  1.4686490801683138e-21,
+                  4.96549178998721e-15
+                ],
+                "passed": true
+              },
+              "cuda": {
+                "parameter_max_abs": 8.940696716308594e-08,
+                "probability_max_abs": 4.828087799349512e-20,
+                "log_probability_max_abs": 1.5287942709107938e-05,
+                "actual_metrics": {
+                  "auc": 0.7039184952978056,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089497593546609
+                },
+                "emulator_metrics": {
+                  "auc": 0.7039184952978056,
+                  "accuracy": 0.6783625730994152,
+                  "brier": 0.3216374269005846,
+                  "log_loss": 11.089497704974084
+                },
+                "auc_abs_difference": 0.0,
+                "spearman_rank_correlation": 1.0,
+                "pair_order_disagreements": 0,
+                "cross_class_pair_order_disagreements": 0,
+                "actual_probability_range": [
+                  1.468665841884828e-21,
+                  4.965510848228523e-15
+                ],
+                "emulator_probability_range": [
+                  1.4686546337490866e-21,
+                  4.96549178998721e-15
+                ],
+                "passed": true
+              }
+            }
+          ],
+          "passed": true
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "feature_hash_parity_with_all_15_r4_captures": true,
+  "test_accessed": false,
+  "parameter_probability_absolute_tolerance": 0.0001,
+  "auc_absolute_tolerance": 0.001,
+  "noise_seeds": [
+    20260923,
+    20260924,
+    20260925
+  ],
+  "elapsed_s": 49.5293975584209,
+  "scope": "All three shortlisted schedules, all three search noise seeds, all five FedAvg rounds; unchanged CUDA _dp_fit versus CPU and CUDA analytical emulator, with shared secure sampling/noise streams."
+}
