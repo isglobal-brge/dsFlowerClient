@@ -1,4 +1,58 @@
-# Regression track: Parkinsons boundary and CDC BMI
+# Regression track: Parkinsons, raw BMI and public-unit BMI
+
+## Third cell declared before execution — 2026-09-22
+
+`cdcbmi_public_units` is the final cell: `pytorch_linear_regression` on the same
+**cdc45k** cohort (45,000 respondents), same prepared 36,000/9,000 train/test
+rows and seeds **20260820/20260821/20260822**, three sites of 12,000 rows,
+respondent-row privacy, five FedAvg rounds, epsilon **1/4/8**, delta **1e-6**,
+unit clipping, and all registry defaults: learning rate **.01**, batch size
+**32**, **one local epoch**, SGD, no scheduler or penalties. No longer schedule
+is declared: 1,875 local steps give a nominal clipped-signal intercept-motion
+budget of 18.75, versus public target magnitude at most 1. This reachability
+check uses source and saved metadata only, and does not prove convergence.
+
+In the client harness, set `y'=(clip(BMI,12,98)-55)/43`, and supply target bounds
+**[-1,1]** to the unchanged runner. Its target bounds clip but do not normalize.
+Features retain the declared public bounds below and the unchanged runner's
+clipped affine transform to [-1,1]. Prediction is mapped back as
+`BMI_hat=55+43*y'_hat`, with no prediction clipping. Zero on the target axis
+means BMI 55; the package's random linear initialization remains unchanged.
+No cohort mean, variance or empirical extrema are used for these transforms.
+The reused [12,98] interval is a public declared clipping policy, not a claim
+that the BRFSS codebook defines those universal endpoints.
+
+Central twin: OLS with intercept on the identical training rows and public-unit
+variables, scored after inverse transformation. Trivial: raw training BMI mean.
+Score RMSE and MAE in BMI units and dimensionless R²; paired gap is DP minus
+central RMSE. RMSE below trivial and R²>0 at epsilon 8 remain annotations.
+Each replicate trains and scores exactly once; the held-out CSV is first opened
+inside the final scoring callback. Existing cell/start guards stay intact; new
+prefix `cdcbmi_public_units_` guards prevent reruns. No fallback, tuning or
+further alternative. The prepared cohort and split files are reused unchanged.
+
+The pre-execution [diagnosis](../../../inst/extdata/campaign/regression/REGRESSION_DIAGNOSIS.md)
+records the old epsilon-independent plateaus, their bias-shaped excess error
+(and its identifiability limit), the release source audit and schedule decision.
+Parkinson is the subject-privacy boundary; raw BMI is optimization-limited, not
+a privacy-cost estimate; public-unit BMI is the operational privacy-cost cell,
+with remaining clipping/optimization/federation effects explicitly included.
+The full declaration is `cdcbmi_public_units_protocol.json`. Its commit is
+recorded in `cdcbmi_public_units_declaration_commit.txt` before execution.
+
+Provenance: [UCI CDC Diabetes Health Indicators](https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators),
+thesis key **`uci_cdc_diabetes_health_indicators`**, original source/cohort/split
+checksums in the unchanged `cdcbmi_provenance.json`.
+
+```sh
+bash /workspace/cells/dsFlowerClient/tools/campaign/regression/run_cdcbmi_public_units.sh /workspace/cells
+python3 tools/campaign/regression/summarize_public_units.py inst/extdata/campaign/regression
+```
+
+The prior declarations/results below are historical records. Their “no further
+alternative” statements applied to those completed sessions; this third cell is
+separately authorized and declared before execution.
+
 
 ## CDC BMI alternative declared before execution — 2026-09-22
 
