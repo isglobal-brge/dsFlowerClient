@@ -113,6 +113,8 @@ def main():
     summary=dict(schema_version=1,record_type='summary',task='survival',protocol_version=3,
         status='executed' if seen==expected and not failures else 'incomplete',date_utc=datetime.now(timezone.utc).isoformat(),
         selected=selection['selected'],selection_sha256=sha(root/'selection.json'),confirmation_number=3,
+        omitted_optional_arms=[arm for arm in ('heterogeneous','small600') if arm not in selection['confirmation_arms']],
+        optional_arm_rule='Include both optional arms only if selection locks before 2026-09-22T02:50:00+00:00',
         expected_matrix_cells=len(expected),observed_cells=len(seen),groups=output,failed_attempts=failures,
         envelopes_by_arm=envelopes_by_arm,small_n_trend='Unavailable: the predeclared small600 arm runs epsilon8 only',
         development_failed_attempts=[dict(file=str(p.relative_to(root)),error=json.loads(p.read_text()).get('error'))

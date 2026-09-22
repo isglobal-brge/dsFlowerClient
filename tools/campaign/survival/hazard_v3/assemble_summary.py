@@ -64,6 +64,9 @@ def main():
         'All 35 planned configurations and per-seed quantile boundaries are in `frozen_configurations.json`; '
         '`sweep.csv` and `development/` retain the full executed table and cell records; `sweep-full.csv` also marks every unstarted planned configuration. '
         f'{len(selection["omitted_configurations"])} configurations were omitted by the predeclared time cutoff.', '',
+        'No new wave starts at or after 02:40 UTC; every started pair and wave must finish. '
+        'The optional envelope arms are included only when selection locks before 02:50 UTC. '
+        'Both time rules were fixed before the sweep and operate before any confirmation outcome is available.', '',
         'Selection: maximum mean federated-DP inner C; exact ties use fewer total epochs, smaller K, then ID. '
         'No pooled/control score or outer confirmation metric entered selection. Public-bound scaling was already enabled and remains fixed. '
         'Quantile edges use each seed’s inner-training events, never validation events; the resulting public grids remain unchanged at confirmation.', '',
@@ -72,13 +75,23 @@ def main():
     for rank,row in enumerate(selection['ranked'],1):
         c=row['config']
         text.append(f'| {rank} | {c["id"]} | {c["K"]}/{c["grid"]} | {c["strategy"]} | {c["optimizer"]}/{c["learning_rate"]} | {c["rounds"]} × {c["local_epochs"]} | {c["batch_size"]} | {row["scores"]["1101"]:.6f} | {row["scores"]["1102"]:.6f} | {row["mean"]:.6f} |')
+    dev={row['config']['id']:row['mean'] for row in selection['ranked']}
+    if all(key in dev for key in ('g02','g06','g16','g18','g20')):
+        text+=['',f'For the same K5 quantile grid and plain SGD, the baseline mean is {dev["g02"]:.6f}. '
+            f'Doubling learning rate gives {dev["g06"]:.6f}; halving batch size gives {dev["g16"]:.6f}; '
+            f'doubling total epochs gives {dev["g20"]:.6f}. '
+            f'Doubling learning rate while halving total epochs leaves learning rate × update count unchanged and gives {dev["g18"]:.6f}. '
+            'These development comparisons support the update-count diagnosis, together with the unnoised controls. '
+            'Batch/epoch changes also change calibrated noise, and all DP draws are independent; these are not isolated noise-only effects.']
     text+=['','## One confirmation pass','',
         f'Selected **{cfg["id"]}: K={cfg["K"]}, {cfg["grid"]}, {cfg["strategy"]}, '
         f'{cfg["optimizer"]} LR {cfg["learning_rate"]}, {cfg["rounds"]} rounds × {cfg["local_epochs"]} local epochs, '
         f'batch {cfg["batch_size"]}**. Selection locked at {selection["selected_utc"]}. '
         f'Aggregation settings: {strategy_settings[cfg["strategy"]]}. '
-        'Each twin matches the grid, architecture, public feature transform, initialization 0, local optimizer reset schedule and server post-processing; '
+        'Each twin matches the grid, architecture, public feature transform, fixed initialization seed 0, local optimizer reset schedule and server post-processing; '
         'pooled q and sequential step counts differ by population. Seeds define subject splits, not published DP noise seeds.', '',
+        'Optional envelope arms omitted by the predeclared time rule: '+
+        (', '.join(arm for arm in ('heterogeneous','small600') if arm not in selection['confirmation_arms']) or 'none')+'.', '',
         '**This is the third confirmation of the hazard contract, after the v1 matrix and v2 schedule h06.** '
         'The historical holdouts are reused, not new independent validation. Development opens only the training files for each split. '
         'This is disjointness within each seed, not global disjointness across seeds: another seed’s training set can include a held-out patient. '
