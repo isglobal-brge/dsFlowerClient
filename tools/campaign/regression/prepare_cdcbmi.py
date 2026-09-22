@@ -41,7 +41,7 @@ full <- utils::read.csv(source_path)
 labels <- as.integer(full$Diabetes_binary)
 set.seed(original$CAMPAIGN_COHORT_SEED)
 idx <- unlist(lapply(split(seq_len(nrow(full)), labels), function(ix) {
-  take <- round(p$dataset$n_total * length(ix) / nrow(full))
+  take <- round(as.numeric(p$dataset$n_total) * length(ix) / nrow(full))
   sample(ix, take)
 }), use.names = FALSE)
 idx <- sort(idx)
