@@ -1,0 +1,53 @@
+{
+  "cells": [
+    {
+      "completed_replicates": 0,
+      "epsilon": 1,
+      "file": "pilot_busbra_pytorch_resnet18_eps1.json",
+      "sha256": "0501678d8a5359be9d4c59b312be1e92a41636c07a204ba41faa15bf92663ce6",
+      "status": "blocked"
+    },
+    {
+      "completed_replicates": 0,
+      "epsilon": 4,
+      "file": "pilot_busbra_pytorch_resnet18_eps4.json",
+      "sha256": "2961b0ff6463f71134d5ee4197721b56f851a2fdaee359f1615701de0753dea5",
+      "status": "blocked"
+    },
+    {
+      "completed_replicates": 0,
+      "epsilon": 8,
+      "file": "pilot_busbra_pytorch_resnet18_eps8.json",
+      "sha256": "ab785fb5ef789ca2537fb8e6257b186fefc1f9a5807235b85faafc73fbc5d2f1",
+      "status": "blocked"
+    }
+  ],
+  "completed_replicates": 0,
+  "contract": "pytorch_resnet18",
+  "dataset": "BUS-BRA",
+  "diagnostic_assessed": false,
+  "generated_at": "2026-09-22T00:11:22.170221+00:00",
+  "installed_release_verified": false,
+  "limitations": [
+    "No measured utility cell.",
+    "Runtime version and runner hash could not be checked on the pod.",
+    "Dataset and split byte identities on the pod could not be reverified.",
+    "Only runtime preflight tooling was implemented; federation, twins and scoring remain unexecuted."
+  ],
+  "planned_replicates": 9,
+  "pod_left_running": true,
+  "primary_or_alternative_training_started": false,
+  "protocol": {
+    "file": "../../../../tools/campaign/vision/protocol.json",
+    "sha256": "ea50ef523288b93d4d4cf78909fd9170003b667b1112225a5caa06c125e66a49"
+  },
+  "reason": "Cannot access /workspace, the installed release, or prepared BUS-BRA; runtime verification and training cannot start.",
+  "runtime_preflight": {
+    "file": "runtime_preflight.json",
+    "sha256": "b6643e784dda8c33e214db536712bc22bf8769e5d6948e3f3ec1d74b13c50da5"
+  },
+  "schema": "dsflower-vision-summary-v1",
+  "scoring_runs": 0,
+  "status": "blocked",
+  "training_driver_implemented": false
+}

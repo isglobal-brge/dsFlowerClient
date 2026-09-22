@@ -1,0 +1,214 @@
+{
+  "acceptance_diagnostic": {
+    "accuracy_above": "held-out majority-class rate",
+    "assessed": false,
+    "auc_above": 0.5,
+    "epsilon": 8,
+    "passed": null
+  },
+  "alternative": {
+    "attempted": false,
+    "reason": "Primary training never started; infrastructure blocker."
+  },
+  "blocker": {
+    "diagnostics": "runtime_preflight.json",
+    "diagnostics_sha256": "b6643e784dda8c33e214db536712bc22bf8769e5d6948e3f3ec1d74b13c50da5",
+    "error": "Cannot access /workspace, the installed release, or prepared BUS-BRA; runtime verification and training cannot start.",
+    "kind": "workspace_unavailable",
+    "stage": "runtime_preflight"
+  },
+  "contract": "pytorch_resnet18",
+  "dataset": {
+    "archive_bytes": 133917740,
+    "archive_sha256": "ba3e6ed19cc37c682d8d39e25435bbf8a555a12cb7e641b5f2117685c95580ff",
+    "archive_url": "https://zenodo.org/api/records/8231412/files/BUSBRA.zip/content",
+    "archive_verification": "Previously archived segmentation provenance; inaccessible pod archive not rehashed.",
+    "citation_reference": "G\u00f3mez-Flores W, Gregorio-Calas MJ, Pereira WCA (2024). BUS-BRA: A Breast Ultrasound Dataset for Assessing Computer-aided Diagnosis Systems. Medical Physics 51:3110\u20133123. doi:10.1002/mp.16812.",
+    "citation_url": "https://doi.org/10.1002/mp.16812",
+    "dataset_doi": "10.5281/zenodo.8231412",
+    "licence": "Zenodo declares CC BY 4.0; archive also contains permissive attribution licence requiring citation.",
+    "licence_archive_path": "../segmentation/provenance/BUS-BRA-LICENSE.txt",
+    "name": "BUS-BRA",
+    "patient_audit_sha256": "2bbee3a014a328a117b5a5c99d9a276ec574a89f15e7abe75235719c64ef695c",
+    "provenance_sha256": "3e227fa8c41d6674e2a3c94b9803ad34e6d5ff1914ef42ad41e1dc68cae9967a",
+    "provenance_source": "../segmentation/provenance/release-manifest.json",
+    "source_url": "https://zenodo.org/records/8231412",
+    "version": "1.0"
+  },
+  "declared_model": {
+    "backbone": "resnet18",
+    "bounds_policy": "Released image transform and fixed feature totalization; no data-derived feature bounds.",
+    "extractor_profile": "dsflower-resnet18-imagenet1k-v1-extractor-v1",
+    "feature_domain": [
+      -1000000,
+      1000000
+    ],
+    "feature_shape": [
+      512
+    ],
+    "frozen": true,
+    "head": "linear 512 to 2; cross_entropy",
+    "image_shape": [
+      3,
+      224,
+      224
+    ],
+    "trainable_parameters": 1026,
+    "weights": "IMAGENET1K_V1"
+  },
+  "epsilon": 4,
+  "generated_at": "2026-09-22T00:11:22.170221+00:00",
+  "host": {
+    "gpu": [
+      {
+        "memory.total [MiB]": "46068 MiB",
+        "memory.used [MiB]": "0 MiB",
+        "name": "NVIDIA A40",
+        "uuid": "GPU-268ecfda-8ff1-5212-148b-596526101dfb"
+      }
+    ],
+    "hostname": "7591502daeb8",
+    "pod_id": "7g8bohjp2o5ufh",
+    "pod_name": "thesis-dsflower-2",
+    "state_at_end": "left_running"
+  },
+  "model_params": {
+    "batch_size": 32,
+    "image_size": 224,
+    "l1_penalty": 0,
+    "learning_rate": 0.001,
+    "local_epochs": 1,
+    "n_classes": 2,
+    "optimizer": "sgd",
+    "scheduler": "none",
+    "volumetric": false,
+    "weight_decay": 0
+  },
+  "per_replicate": [
+    {
+      "central": null,
+      "federated_dp": null,
+      "gap_auc": null,
+      "n_per_site_patients_planned": [
+        284,
+        284,
+        284
+      ],
+      "n_test_images_observed": null,
+      "n_test_patients_planned": 212,
+      "n_train_images_observed": null,
+      "n_train_patients_planned": 852,
+      "pooled_dp": null,
+      "seed": 20260919,
+      "status": "not_started",
+      "trivial": null,
+      "wall_clock_s": null
+    },
+    {
+      "central": null,
+      "federated_dp": null,
+      "gap_auc": null,
+      "n_per_site_patients_planned": [
+        284,
+        284,
+        284
+      ],
+      "n_test_images_observed": null,
+      "n_test_patients_planned": 212,
+      "n_train_images_observed": null,
+      "n_train_patients_planned": 852,
+      "pooled_dp": null,
+      "seed": 20260920,
+      "status": "not_started",
+      "trivial": null,
+      "wall_clock_s": null
+    },
+    {
+      "central": null,
+      "federated_dp": null,
+      "gap_auc": null,
+      "n_per_site_patients_planned": [
+        284,
+        284,
+        284
+      ],
+      "n_test_images_observed": null,
+      "n_test_patients_planned": 212,
+      "n_train_images_observed": null,
+      "n_train_patients_planned": 852,
+      "pooled_dp": null,
+      "seed": 20260921,
+      "status": "not_started",
+      "trivial": null,
+      "wall_clock_s": null
+    }
+  ],
+  "privacy": {
+    "reason": "Node preparation could not start.",
+    "reported_by_node": null,
+    "requested": {
+      "clipping_norm": 1.0,
+      "delta": 1e-06,
+      "epsilon": 4,
+      "patient_column": "subject_id",
+      "unit": "patient"
+    }
+  },
+  "protocol_sha256": "ea50ef523288b93d4d4cf78909fd9170003b667b1112225a5caa06c125e66a49",
+  "rounds": 5,
+  "schema": "dsflower-vision-cell-v1",
+  "seeds": [
+    20260919,
+    20260920,
+    20260921
+  ],
+  "split": {
+    "n_per_site_patients": [
+      284,
+      284,
+      284
+    ],
+    "n_test_patients": 212,
+    "n_total_images": 1875,
+    "n_total_patients": 1064,
+    "n_train_patients": 852,
+    "policy": "Reuse byte-identical segmentation split JSON for each seed; split-v1 SHA256 patient ordering, first floor(n/5) patients held out, sites-v1 hash ordering dealt across three sites.",
+    "sha256_by_seed": {
+      "20260919": "99af89943e5083db5f88a3723b147c129786acd763f99d85c298da5dc579463d",
+      "20260920": "6198d99eb33342cbfb78fedbed75dfe7d57e494921523d39560bae7d3f313873",
+      "20260921": "2a89fb47ee0a269843e1562d7f5a08aa339d806519ad90a0a5b796e0711491bd"
+    },
+    "source_directory": "/workspace/segmentation/prepared/busbra",
+    "split_source": "Archived segmentation provenance; pod files not yet verified."
+  },
+  "status": "blocked",
+  "summary": {
+    "central_mean_sd": null,
+    "federated_dp_mean_sd": null,
+    "gap_auc_mean_sd": null,
+    "n_completed_replicates": 0,
+    "pooled_dp_mean_sd": null,
+    "trivial_mean_sd": null
+  },
+  "test_access": {
+    "held_out_images_read": false,
+    "held_out_pathology_labels_read": false,
+    "scoring_runs": 0
+  },
+  "versions": {
+    "dsFlowerClient_tag_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+    "dsFlowerClient_tag_object": "0b01e040e652389c0e9ba75fa45049be27fbbda1",
+    "dsFlower_tag_commit": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlower_tag_object": "4fa783eb0c464dfd6d0ca2ce8f283978d03724c2",
+    "installed_runner_sha256": null,
+    "installed_versions": null,
+    "local_package_code_matches_v0_5_0": true,
+    "local_source_heads": {
+      "dsFlower": "408f08c539329e2711260050ab40a6567aa4d89e",
+      "dsFlowerClient": "50dda000a32ffcbdd039c2b74c909df451392bfb"
+    },
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "runtime_verification": "Blocked before R could run; v0.5.0 is verified locally only.",
+    "version": "0.5.0"
+  }
+}

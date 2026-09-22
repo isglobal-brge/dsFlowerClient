@@ -1,0 +1,81 @@
+{
+  "blocker_kind": "workspace_unavailable",
+  "elapsed_s": 30.059,
+  "error": "Cannot access /workspace, the installed release, or prepared BUS-BRA; runtime verification and training cannot start.",
+  "expected_runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+  "expected_version": "0.5.0",
+  "filesystem_probes": [
+    {
+      "argv": [
+        "stat",
+        "--",
+        "/workspace"
+      ],
+      "elapsed_s": 10.011,
+      "returncode": null,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": true,
+      "timeout_s": 10
+    },
+    {
+      "argv": [
+        "stat",
+        "--",
+        "/workspace/segmentation/rlib/dsFlower/DESCRIPTION"
+      ],
+      "elapsed_s": 10.008,
+      "returncode": null,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": true,
+      "timeout_s": 10
+    },
+    {
+      "argv": [
+        "stat",
+        "--",
+        "/workspace/segmentation/prepared/busbra/audit.json"
+      ],
+      "elapsed_s": 10.012,
+      "returncode": null,
+      "stderr": "",
+      "stdout": "",
+      "timed_out": true,
+      "timeout_s": 10
+    }
+  ],
+  "generated_at": "2026-09-22T00:09:35.208614+00:00",
+  "gpu_probe": {
+    "argv": [
+      "nvidia-smi",
+      "--query-gpu=name,uuid,memory.total,memory.used",
+      "--format=csv"
+    ],
+    "elapsed_s": 0.027,
+    "returncode": 0,
+    "stderr": "",
+    "stdout": "name, uuid, memory.total [MiB], memory.used [MiB]\nNVIDIA A40, GPU-268ecfda-8ff1-5212-148b-596526101dfb, 46068 MiB, 0 MiB\n",
+    "timed_out": false,
+    "timeout_s": 10
+  },
+  "gpus": [
+    {
+      "memory.total [MiB]": "46068 MiB",
+      "memory.used [MiB]": "0 MiB",
+      "name": "NVIDIA A40",
+      "uuid": "GPU-268ecfda-8ff1-5212-148b-596526101dfb"
+    }
+  ],
+  "hostname": "7591502daeb8",
+  "installed_runner_sha256": null,
+  "installed_versions": null,
+  "release_probe": null,
+  "schema": "dsflower-vision-runtime-preflight-v1",
+  "scoring_started": false,
+  "status": "blocked",
+  "training_started": false,
+  "workspace_mount": [
+    "3324 3247 0:71 /podvolumes/9wm7bokphdme/7g8bohjp2o5ufh /workspace rw,nosuid,nodev,relatime - fuse mfs\\043ca-mtl-1.runpod.net:9421 rw,user_id=0,group_id=0,allow_other"
+  ]
+}
