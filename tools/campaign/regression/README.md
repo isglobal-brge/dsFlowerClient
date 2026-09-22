@@ -54,6 +54,26 @@ alternative” statements applied to those completed sessions; this third cell i
 separately authorized and declared before execution.
 
 
+## Public-unit cell: retained measured result
+
+The declared nine executions completed once with all defaults intact and no
+node failures. Mean DP RMSE at epsilon 1/4/8 is **6.752820 / 7.096150 / 6.866393**
+BMI units. At epsilon 8, central RMSE is **6.195724**, trivial **6.580037**, DP
+R² **-0.092664**, and paired gap **0.670670 ± 0.437716**. Both mean annotations
+are false; one of three epsilon-8 replicates meets both. Signed residual means
+across the full grid are between -0.535610 and +0.414520 BMI, so the location
+mismatch is addressed, but the measured default protocol still trails trivial
+on average and shows no monotonic epsilon response. No schedule change, retry,
+or further alternative followed these scores.
+
+Execution declaration `66dc822` was published unchanged after ordinary rebase
+as `15aa3bd`. Full comparisons, RMSE/MAE/R² summaries, provenance and execution
+audit are in [the evidence README](../../../inst/extdata/campaign/regression/README.md).
+The [diagnosis](../../../inst/extdata/campaign/regression/REGRESSION_DIAGNOSIS.md)
+remains the frozen pre-execution document. The public-unit gap is an operational
+privacy-cost measurement against OLS, including residual optimization, clipping,
+initialization and federation effects rather than an isolated noise estimate.
+
 ## CDC BMI alternative declared before execution — 2026-09-22
 
 The only alternative is `pytorch_linear_regression` on **cdc45k**, the exact

@@ -36,7 +36,7 @@
           "sd": 5.9158763173107
         }
       },
-      "interpretation": "Boundary measurement: subject-level privacy with tens of units per site is outside the useful regime observed in this epsilon grid. The 42-subject cohort nominally gives 14 subjects per site; the held-out-subject split leaves 12/11/11 training units. Frozen federated results are unchanged.",
+      "interpretation": "Subject-level privacy with 12/11/11 training units per site is outside the useful regime observed here. Its approximately epsilon-independent raw-target error is also consistent with the diagnosed scale and optimization limit. The corrected recording-level OLS reference differs from the subject-mean DP fitting unit.",
       "budgets": [
         {
           "epsilon": 1,
@@ -300,7 +300,7 @@
       },
       "metric_units": "Original BMI units for RMSE/MAE; dimensionless R2",
       "central_scope_note": "OLS with intercept on all 36000 training rows, using the runner's public feature transform and target clipping. The RMSE gap includes optimizer/convergence differences as well as differential privacy.",
-      "interpretation": "The predeclared one-row-per-respondent alternative uses the exact fixed logistic cdc45k cohort. At epsilon 8, mean federated RMSE is not below the trivial RMSE and mean R2 is nonpositive. These are annotations only; settings were frozen before scoring and no further alternative was run.",
+      "interpretation": "Raw BMI units produce an optimization-limited, approximately epsilon-independent error. This gap is not a privacy-cost measurement; the declared public-unit cell addresses the target-scale artifact.",
       "budgets": [
         {
           "epsilon": 1,
@@ -549,6 +549,292 @@
           }
         }
       ]
+    },
+    {
+      "id": "cdcbmi_public_units",
+      "contract": "pytorch_linear_regression",
+      "dataset": "CDC Diabetes Health Indicators: BMI regression in public units",
+      "uci_id": 891,
+      "cohort": "cdc45k",
+      "n": 45000,
+      "n_privacy_units": 45000,
+      "privacy_unit": "respondent row",
+      "training_privacy_units_per_site": [
+        12000,
+        12000,
+        12000
+      ],
+      "delta": 1e-06,
+      "provenance": {
+        "file": "cdcbmi_provenance.json",
+        "sha256": "869b2c4ec57f6b14e3b167a384ddb2271c2a164e65fd17fd5acb0798ccda2f39"
+      },
+      "target": "BMI",
+      "target_bounds": {
+        "lower": -1,
+        "upper": 1
+      },
+      "original_target_bounds": {
+        "lower": 12,
+        "upper": 98
+      },
+      "public_target_transform": {
+        "center": 55,
+        "scale": 43,
+        "forward": "(clip(BMI,12,98)-55)/43",
+        "inverse": "55+43*prediction"
+      },
+      "metric_units": "Original BMI units for RMSE/MAE; dimensionless R2",
+      "central_scope_note": "OLS with intercept on the same 36000 training rows in the same public feature and target units, with predictions mapped back to BMI units.",
+      "interpretation": "The declared public-unit cell is the operational privacy-cost measurement against OLS. Its federated-DP minus central RMSE gap also contains residual optimization, clipping and federation effects; it is not an isolated causal estimate of privacy noise. Diagnostic outcomes are annotations only and do not trigger another cell.",
+      "budgets": [
+        {
+          "epsilon": 1,
+          "evidence": {
+            "file": "cdcbmi_public_units_pytorch_linear_regression_eps1.json",
+            "sha256": "af21ff1704f83fe3fbaadac77c92c9b1b975b0a00c5dc09cf2bc33860f9aa9db"
+          },
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 6.19572360888088,
+                "sd": 0.0509245340237168
+              },
+              "mae": {
+                "mean": 4.34988591467331,
+                "sd": 0.0441464018999181
+              },
+              "r2": {
+                "mean": 0.113335395892527,
+                "sd": 0.00369479460643721
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 6.75281977924162,
+                "sd": 0.0588119440419867
+              },
+              "mae": {
+                "mean": 4.78287359824232,
+                "sd": 0.0496968697587154
+              },
+              "r2": {
+                "mean": -0.0532736422699416,
+                "sd": 0.00197498982533358
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 6.58003665360331,
+                "sd": 0.0617645325071567
+              },
+              "mae": {
+                "mean": 4.70445747942387,
+                "sd": 0.0445734835994525
+              },
+              "r2": {
+                "mean": -5.40371143760154e-05,
+                "sd": 4.60553579360934e-05
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 0.55709617036074,
+              "sd": 0.010385922494472
+            },
+            "diagnostics": {
+              "rmse_below_trivial": false,
+              "r2_positive": false,
+              "role": "annotation_only"
+            }
+          },
+          "diagnostics": {
+            "role": "Annotations only; not acceptance criteria or rerun triggers",
+            "federated_rmse_below_trivial": false,
+            "federated_r2_positive": false,
+            "per_seed": [
+              {
+                "seed": 20260820,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260821,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260822,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              }
+            ]
+          }
+        },
+        {
+          "epsilon": 4,
+          "evidence": {
+            "file": "cdcbmi_public_units_pytorch_linear_regression_eps4.json",
+            "sha256": "b90c46dacb782e2522619115c9aa160399f08e51ad28975c219ad55ffcc1f62d"
+          },
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 6.19572360888088,
+                "sd": 0.0509245340237168
+              },
+              "mae": {
+                "mean": 4.34988591467331,
+                "sd": 0.0441464018999181
+              },
+              "r2": {
+                "mean": 0.113335395892527,
+                "sd": 0.00369479460643721
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 7.09614951777992,
+                "sd": 0.501409137674915
+              },
+              "mae": {
+                "mean": 4.98594582794669,
+                "sd": 0.337625095388435
+              },
+              "r2": {
+                "mean": -0.168634164359839,
+                "sd": 0.178670431336818
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 6.58003665360331,
+                "sd": 0.0617645325071567
+              },
+              "mae": {
+                "mean": 4.70445747942387,
+                "sd": 0.0445734835994525
+              },
+              "r2": {
+                "mean": -5.40371143760154e-05,
+                "sd": 4.60553579360934e-05
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 0.90042590889904,
+              "sd": 0.5457502320333
+            },
+            "diagnostics": {
+              "rmse_below_trivial": false,
+              "r2_positive": false,
+              "role": "annotation_only"
+            }
+          },
+          "diagnostics": {
+            "role": "Annotations only; not acceptance criteria or rerun triggers",
+            "federated_rmse_below_trivial": false,
+            "federated_r2_positive": false,
+            "per_seed": [
+              {
+                "seed": 20260820,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260821,
+                "federated_rmse_below_trivial": true,
+                "federated_r2_positive": true
+              },
+              {
+                "seed": 20260822,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              }
+            ]
+          }
+        },
+        {
+          "epsilon": 8,
+          "evidence": {
+            "file": "cdcbmi_public_units_pytorch_linear_regression_eps8.json",
+            "sha256": "23e5275f6a8e2b0f89661093360ca5f6115149263c67955ca0b8d3ac66b77104"
+          },
+          "summary": {
+            "central_mean_sd": {
+              "rmse": {
+                "mean": 6.19572360888088,
+                "sd": 0.0509245340237168
+              },
+              "mae": {
+                "mean": 4.34988591467331,
+                "sd": 0.0441464018999181
+              },
+              "r2": {
+                "mean": 0.113335395892527,
+                "sd": 0.00369479460643721
+              }
+            },
+            "federated_mean_sd": {
+              "rmse": {
+                "mean": 6.86639313633807,
+                "sd": 0.423674361630295
+              },
+              "mae": {
+                "mean": 4.7940265506665,
+                "sd": 0.258124956933192
+              },
+              "r2": {
+                "mean": -0.0926639562170033,
+                "sd": 0.14671199613074
+              }
+            },
+            "trivial_mean_sd": {
+              "rmse": {
+                "mean": 6.58003665360331,
+                "sd": 0.0617645325071567
+              },
+              "mae": {
+                "mean": 4.70445747942387,
+                "sd": 0.0445734835994525
+              },
+              "r2": {
+                "mean": -5.40371143760154e-05,
+                "sd": 4.60553579360934e-05
+              }
+            },
+            "gap_rmse_mean_sd": {
+              "mean": 0.670669527457195,
+              "sd": 0.437715620422769
+            },
+            "diagnostics": {
+              "rmse_below_trivial": false,
+              "r2_positive": false,
+              "role": "annotation_only"
+            }
+          },
+          "diagnostics": {
+            "role": "Annotations only; not acceptance criteria or rerun triggers",
+            "federated_rmse_below_trivial": false,
+            "federated_r2_positive": false,
+            "per_seed": [
+              {
+                "seed": 20260820,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260821,
+                "federated_rmse_below_trivial": false,
+                "federated_r2_positive": false
+              },
+              {
+                "seed": 20260822,
+                "federated_rmse_below_trivial": true,
+                "federated_r2_positive": true
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
   "rounds": 5,
@@ -565,5 +851,5 @@
   ],
   "diagnostics_epsilon": 8,
   "diagnostics_role": "Annotations only; no acceptance gate",
-  "policy": "Original Parkinson federated scores are retained unchanged. Only its central reference and associated gaps are corrected. CDC settings were predeclared and each replicate was scored once; no further alternative."
+  "policy": "Original Parkinson and raw-BMI evidence is retained unchanged, with the existing Parkinson central correction preserved. The public-unit cell was declared before training and each epsilon/seed was scored once; no scored cell was rerun and no further alternative was selected."
 }

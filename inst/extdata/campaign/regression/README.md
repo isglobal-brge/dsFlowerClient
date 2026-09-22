@@ -1,4 +1,112 @@
-# Regression evidence: Parkinsons boundary and CDC BMI
+# Regression evidence: target scale and public-unit BMI
+
+The track contains three cells: Parkinson subject-level privacy, raw-unit CDC
+BMI, and the separately declared public-unit CDC BMI cell. All use unchanged
+`pytorch_linear_regression`, dsFlower/dsFlowerClient 0.5.0, three sites, five
+FedAvg rounds, three seeds, epsilon 1/4/8, delta 1e-6 and unit clipping.
+
+The [pre-execution diagnosis](REGRESSION_DIAGNOSIS.md) uses only existing scores
+and release source. The raw cells show approximately epsilon-independent RMSE,
+with excess-error scales around 27.5 UPDRS and 8 BMI units. The previous runs
+passed target bounds, but the runner only clips targets while scaling features;
+it does not normalize targets or invert their units. Exact old signed bias is
+not identifiable from the saved scalar metrics. Parkinson has only 12/11/11
+training subjects/site and remains outside the measured useful regime. The raw
+BMI gap is optimization-limited and must not be called a privacy cost.
+
+The [third-cell declaration](../../../../tools/campaign/regression/README.md)
+was committed before execution as `66dc8222be3ad8b9f33ddf15b15b620586d325a5`,
+published unchanged after a required rebase as
+`15aa3bdf6c417f6df6a5407b72bb7b73452e5bcf`. The public-unit target is
+`y'=(clip(BMI,12,98)-55)/43`; predictions return to BMI as `55+43*y'_hat`.
+The client harness transforms training targets and passes [-1,1] target bounds;
+the unchanged runner scales features through their original public bounds.
+The public coordinate origin is BMI 55; random linear initialization remains
+unchanged. All model defaults remain .01 learning rate, batch 32, one local
+epoch, SGD, no scheduler or penalties. No extension was needed for the
+intercept-motion reachability bound, and no convergence claim follows from it.
+
+The same cdc45k cohort and prepared splits/seeds are reused: 45,000 respondents,
+36,000 training rows, 9,000 held-out rows, three sites of 12,000. OLS fits the
+same training rows in the same public units; both model predictions are scored
+in original BMI units. Trivial predicts the raw training mean. Held-out files
+are first opened inside each guarded final scoring callback. RMSE below trivial
+and R²>0 at epsilon 8 are annotations only. This is the operational privacy-cost
+measurement after addressing target scale; the DP-minus-OLS gap still includes
+optimization, clipping and federation effects and is not a noise-only estimate.
+
+Provenance: [UCI CDC Diabetes Health Indicators, ID 891](https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators),
+DOI [10.24432/C53919](https://doi.org/10.24432/C53919), thesis key
+**`uci_cdc_diabetes_health_indicators`**. The reused BMI interval [12,98] is a
+public declared clipping policy, not empirical cohort bounds or a claim about
+universal BRFSS endpoints. Original cohort/split checksums remain unchanged.
+
+## Completed three-cell comparison
+
+| Contract | Dataset/cell | n | Privacy unit | ε | Central RMSE | DP RMSE | Trivial RMSE | DP R² | Gap mean ± SD | Diagnostics |
+|---|---|---:|---|---:|---:|---:|---:|---:|---:|---|
+| pytorch_linear_regression | Parkinson | 5,875 | subject | 1 | 11.309447 | 29.503164 | 10.771196 | -6.879554 | 18.193717 ± 3.082866 | No/No |
+| pytorch_linear_regression | Parkinson | 5,875 | subject | 4 | 11.309447 | 29.456259 | 10.771196 | -6.883872 | 18.146812 ± 4.167444 | No/No |
+| pytorch_linear_regression | Parkinson | 5,875 | subject | 8 | 11.309447 | 29.549561 | 10.771196 | -6.919012 | 18.240114 ± 3.516164 | No/No |
+| pytorch_linear_regression | CDC BMI raw units | 45,000 | respondent row | 1 | 6.195724 | 10.371563 | 6.580037 | -1.484565 | 4.175839 ± 0.070229 | No/No |
+| pytorch_linear_regression | CDC BMI raw units | 45,000 | respondent row | 4 | 6.195724 | 10.398831 | 6.580037 | -1.497708 | 4.203107 ± 0.110651 | No/No |
+| pytorch_linear_regression | CDC BMI raw units | 45,000 | respondent row | 8 | 6.195724 | 10.414030 | 6.580037 | -1.504846 | 4.218306 ± 0.120771 | No/No |
+| pytorch_linear_regression | CDC BMI public units | 45,000 | respondent row | 1 | 6.195724 | 6.752820 | 6.580037 | -0.053274 | 0.557096 ± 0.010386 | No/No |
+| pytorch_linear_regression | CDC BMI public units | 45,000 | respondent row | 4 | 6.195724 | 7.096150 | 6.580037 | -0.168634 | 0.900426 ± 0.545750 | No/No |
+| pytorch_linear_regression | CDC BMI public units | 45,000 | respondent row | 8 | 6.195724 | 6.866393 | 6.580037 | -0.092664 | 0.670670 ± 0.437716 | No/No |
+
+Diagnostics report the mean RMSE-below-trivial / mean R²-positive annotations.
+SD is the sample SD over three split replicates, not a confidence interval.
+Parkinson has 42 subjects in total and 12/11/11 training subjects per site.
+
+The public-unit cell completed all nine prescribed executions once. Its mean
+DP RMSEs are **6.752820 / 7.096150 / 6.866393** at epsilon 1/4/8, compared with
+raw-unit **10.371563 / 10.398831 / 10.414030**. Central OLS remains **6.195724**;
+the public transform changes this comparator by less than 1e-9 RMSE. Trivial
+remains **6.580037**. At epsilon 8 the paired gap is **0.670670 ± 0.437716**,
+and mean DP R² is **-0.092664**: both mean diagnostic annotations are false.
+One of three epsilon-8 replicates meets both annotations (seed 20260822);
+all three are retained. No setting was selected from these results.
+
+The signed residual mean (prediction minus BMI) ranges from **-0.535610 to
++0.414520 BMI** across all nine new runs; the model reaches the target's mean
+location. Exact residual decompositions are saved and checked without rescoring.
+Removing the raw-unit scale mismatch substantially reduces error, but mean
+utility still trails the trivial predictor and there is no monotonic epsilon
+response. The public-unit gap is the requested operational privacy-cost
+measurement, with remaining optimization, clipping, initialization variability
+and federation effects; these data do not isolate the causal cost of noise.
+
+| Public-unit ε | DP RMSE mean ± SD | DP MAE mean ± SD | DP R² mean ± SD |
+|---:|---:|---:|---:|
+| 1 | 6.752820 ± 0.058812 | 4.782874 ± 0.049697 | -0.053274 ± 0.001975 |
+| 4 | 7.096150 ± 0.501409 | 4.985946 ± 0.337625 | -0.168634 ± 0.178670 |
+| 8 | 6.866393 ± 0.423674 | 4.794027 ± 0.258125 | -0.092664 ± 0.146712 |
+
+Runs took 85.56–96.14 seconds each (13.48 minutes summed runtime).
+All 45 federation rounds completed with three clients and no failures; cleanup
+passed. The pod remains running. Privacy accounting is per training, with no
+combined-epsilon claim for the grid; split seeds do not fix cryptographic DP
+randomness or model initialization.
+
+`cdcbmi_public_units_pytorch_linear_regression_eps*.json` contain the scores,
+residual decompositions, node settings, histories and model/tooling hashes.
+`cdcbmi_public_units_execution_audit.json` records the execution-to-publication
+commit mapping, 3 started-cell guards, 9 scoring guards, verified saved model
+hashes, immutable original files and preflight. `summary.json` lists all three
+cells and their interpretations. `summarize_public_units.py` checks all nine
+budget artifacts, original preservation, cohort/split identity, bounds/defaults,
+privacy, rounds, baselines, metrics, means/SDs/gaps and residual identities.
+No held-out values were read outside scoring, no scored cell was rerun, and no
+further alternative was run. Source package code and previous harnesses remain
+unchanged. Raw rows, model artifacts and node credentials stay on the pod.
+
+## Historical cells and original declarations
+
+The prior “no further alternative” statements below describe their completed
+sessions. The third public-unit cell is separately declared and authorized.
+Original scored JSONs and the Parkinson central correction remain unchanged.
+
 
 Both cells use `pytorch_linear_regression`, unchanged dsFlower/dsFlowerClient
 0.5.0, three sites, five FedAvg rounds, seeds 20260820/20260821/20260822,

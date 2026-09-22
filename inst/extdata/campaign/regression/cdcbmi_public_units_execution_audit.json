@@ -1,0 +1,238 @@
+{
+  "schema": "dsflower-public-units-execution-audit-v1",
+  "status": "completed",
+  "execution_declaration_commit": "66dc8222be3ad8b9f33ddf15b15b620586d325a5",
+  "published_declaration_commit": "15aa3bdf6c417f6df6a5407b72bb7b73452e5bcf",
+  "declaration_rebase_reason": "A concurrent shared-branch update required ordinary pull --rebase before publication. Regression declaration and harness content are identical in the execution and published commits.",
+  "declaration_unchanged_by_rebase": true,
+  "foreground_command": "bash /workspace/cells/dsFlowerClient/tools/campaign/regression/run_cdcbmi_public_units.sh /workspace/cells",
+  "pod": "pod-flower-regression",
+  "pod_left_running": true,
+  "prepared_cohort_reused": true,
+  "test_policy": "No prepared held-out CSV read for diagnosis, implementation, schedule selection or preflight. Each replicate first opens test.csv inside its guarded final scoring callback, after federated training. Central OLS independently fits training rows before opening its test input.",
+  "preflight": [
+    "R parse",
+    "Python compile",
+    "shell syntax",
+    "synthetic public affine endpoints and roundtrip",
+    "synthetic public-unit OLS equivalence to original-unit OLS; no cohort files opened"
+  ],
+  "schedule": "All registry defaults retained after source-only intercept-motion analysis; no training pilot, schedule search or extension.",
+  "release_code_changed": false,
+  "scores_rerun": false,
+  "further_alternative": false,
+  "preserved_original_evidence": [
+    {
+      "file": "cdcbmi_CHECKSUMS.sha256",
+      "sha256": "f9eff4d1d57c864f9f14a195d853d126f7c24d75608eef7fd248f80d8f776efa"
+    },
+    {
+      "file": "cdcbmi_execution_audit.json",
+      "sha256": "ae518d9807ea71aa1d4752df70e1b7f3064411b17b3ea8f6e4eaccc62c509c3b"
+    },
+    {
+      "file": "cdcbmi_provenance.json",
+      "sha256": "869b2c4ec57f6b14e3b167a384ddb2271c2a164e65fd17fd5acb0798ccda2f39"
+    },
+    {
+      "file": "cdcbmi_pytorch_linear_regression_eps1.json",
+      "sha256": "c5a29ea8b3f61a58f46d203b5375e2913b68ec39d753e99ad83ddb4a89a6c405"
+    },
+    {
+      "file": "cdcbmi_pytorch_linear_regression_eps4.json",
+      "sha256": "a3a4d0d321797161da63192caf57fda71ae782226f56d0b64c7e933f5472a87f"
+    },
+    {
+      "file": "cdcbmi_pytorch_linear_regression_eps8.json",
+      "sha256": "64d4a989f9f1581fef20b02c9cc1c6d73b4858e013a6f30e7047539af3f575a7"
+    },
+    {
+      "file": "cdcbmi_split_seed20260820.json",
+      "sha256": "06e64a86fc14927dc861156d58495a5b5c082d4f3a53b567ec532442137025e6"
+    },
+    {
+      "file": "cdcbmi_split_seed20260821.json",
+      "sha256": "8ed7999946072883402244c5427aa69544f174f933fd69f3112dc91a61298ff7"
+    },
+    {
+      "file": "cdcbmi_split_seed20260822.json",
+      "sha256": "c614e1549024eebed476516913765d42349a787a800081ccf94f97b51cb51767"
+    },
+    {
+      "file": "parkinsons_corrected_central_twin.json",
+      "sha256": "c4c327ad9207abfea4cd521fb9301091cc8377f31816f66e00f522eced44409f"
+    },
+    {
+      "file": "pilot_parkinsons_pytorch_linear_regression_eps1.json",
+      "sha256": "300d9a91acfcac23a9958fedc96567d6e8cd0ee41e6cb0008f4ac9a5104e099f"
+    },
+    {
+      "file": "pilot_parkinsons_pytorch_linear_regression_eps4.json",
+      "sha256": "aaceba52c95f92f497a70cbf31fdc639754c10ea7c1675130ef85ca3e89fcba5"
+    },
+    {
+      "file": "pilot_parkinsons_pytorch_linear_regression_eps8.json",
+      "sha256": "b6f6be14f238c8dfd8da9173a13f103cb1bcc82640ca825e4e32afcdc9c98fb4"
+    },
+    {
+      "file": "runtime.json",
+      "sha256": "389b01bb03983351f5382900e3965289e9d8eeb53701d6dd16047565fd6e0898"
+    }
+  ],
+  "execution": {
+    "cell_guards": 3,
+    "scoring_guards": 9,
+    "records": [
+      {
+        "cell_id": "cdcbmi_public_units_pytorch_linear_regression_eps1",
+        "cell_started_utc": "2026-09-22 01:49:00 UTC",
+        "replicates": [
+          {
+            "seed": 20260820,
+            "scoring_started_utc": "2026-09-22 01:50:29 UTC",
+            "elapsed_s": 92.461288690567,
+            "model_sha256": "8a0c54022e791a49ade44c01ff7eadfe9838a4b0b10f6da449a5c9e19bd746a3",
+            "model_hash_verified": true,
+            "history": {
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds": 5,
+              "cleanup_ok": true
+            }
+          },
+          {
+            "seed": 20260821,
+            "scoring_started_utc": "2026-09-22 01:51:55 UTC",
+            "elapsed_s": 86.3692164421082,
+            "model_sha256": "432cd01e7699efa4ebdcf522837ee247714673643e92134bfe719aa204ab3387",
+            "model_hash_verified": true,
+            "history": {
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds": 5,
+              "cleanup_ok": true
+            }
+          },
+          {
+            "seed": 20260822,
+            "scoring_started_utc": "2026-09-22 01:53:24 UTC",
+            "elapsed_s": 89.1952283382416,
+            "model_sha256": "8abc6cd8f67d5b8b096253759f583389f5ba9bb40cd28c54724054a19ac72318",
+            "model_hash_verified": true,
+            "history": {
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds": 5,
+              "cleanup_ok": true
+            }
+          }
+        ]
+      },
+      {
+        "cell_id": "cdcbmi_public_units_pytorch_linear_regression_eps4",
+        "cell_started_utc": "2026-09-22 01:53:32 UTC",
+        "replicates": [
+          {
+            "seed": 20260820,
+            "scoring_started_utc": "2026-09-22 01:55:02 UTC",
+            "elapsed_s": 93.2605392932892,
+            "model_sha256": "2cec05bb1a01fb0375ae99d7091a74074ca1e39599522b165660b7e29082bc20",
+            "model_hash_verified": true,
+            "history": {
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds": 5,
+              "cleanup_ok": true
+            }
+          },
+          {
+            "seed": 20260821,
+            "scoring_started_utc": "2026-09-22 01:56:38 UTC",
+            "elapsed_s": 96.1446011066437,
+            "model_sha256": "f6393e652386af3e02570ada100f5ddb8dd89b50e94f64e068f240fcfb3187c1",
+            "model_hash_verified": true,
+            "history": {
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds": 5,
+              "cleanup_ok": true
+            }
+          },
+          {
+            "seed": 20260822,
+            "scoring_started_utc": "2026-09-22 01:58:04 UTC",
+            "elapsed_s": 85.5566420555115,
+            "model_sha256": "25068c6aac7eef351d24e8423ac564273b7028d1a67913a080c79d276ff9c04a",
+            "model_hash_verified": true,
+            "history": {
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds": 5,
+              "cleanup_ok": true
+            }
+          }
+        ]
+      },
+      {
+        "cell_id": "cdcbmi_public_units_pytorch_linear_regression_eps8",
+        "cell_started_utc": "2026-09-22 01:58:11 UTC",
+        "replicates": [
+          {
+            "seed": 20260820,
+            "scoring_started_utc": "2026-09-22 01:59:39 UTC",
+            "elapsed_s": 91.0557286739349,
+            "model_sha256": "84412ca869a2c596c28f62ba72a1f78a28625ef6a9d263c2cc8173153031674e",
+            "model_hash_verified": true,
+            "history": {
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds": 5,
+              "cleanup_ok": true
+            }
+          },
+          {
+            "seed": 20260821,
+            "scoring_started_utc": "2026-09-22 02:01:06 UTC",
+            "elapsed_s": 87.3462719917297,
+            "model_sha256": "0493aef085431dd1a970eccff3c66d164a619c8874f629ae165c6bc18d05da12",
+            "model_hash_verified": true,
+            "history": {
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds": 5,
+              "cleanup_ok": true
+            }
+          },
+          {
+            "seed": 20260822,
+            "scoring_started_utc": "2026-09-22 02:02:34 UTC",
+            "elapsed_s": 87.659282207489,
+            "model_sha256": "82bfd3584f9ad2877ef1b9cd73c5a2b4cef457e1bae0ed37acc33c36e90e88fb",
+            "model_hash_verified": true,
+            "history": {
+              "n_clients": 3,
+              "n_failures": 0,
+              "n_rounds": 5,
+              "cleanup_ok": true
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "validation": "summarize_public_units.py passed: three cells, nine budget artifacts, 27 saved replicates including the 9 new executions; original evidence preserved; settings, cohort/splits, metrics, residual decomposition and hashes checked.",
+  "new_scored_evidence": [
+    {
+      "file": "cdcbmi_public_units_pytorch_linear_regression_eps1.json",
+      "sha256": "af21ff1704f83fe3fbaadac77c92c9b1b975b0a00c5dc09cf2bc33860f9aa9db"
+    },
+    {
+      "file": "cdcbmi_public_units_pytorch_linear_regression_eps4.json",
+      "sha256": "b90c46dacb782e2522619115c9aa160399f08e51ad28975c219ad55ffcc1f62d"
+    },
+    {
+      "file": "cdcbmi_public_units_pytorch_linear_regression_eps8.json",
+      "sha256": "23e5275f6a8e2b0f89661093360ca5f6115149263c67955ca0b8d3ac66b77104"
+    }
+  ]
+}
