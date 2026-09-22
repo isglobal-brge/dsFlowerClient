@@ -1,4 +1,23 @@
-# Parkinsons subject-private regression evidence
+# Regression evidence: Parkinsons and CDC BMI
+
+The CDC BMI alternative is predeclared before execution in
+[`tools/campaign/regression/README.md`](../../../../tools/campaign/regression/README.md):
+exact thesis **cdc45k** cohort, 20 public-bounded indicators, BMI target
+clipped to [12,98], row privacy, three stratified sites, five rounds, three
+split seeds, epsilon 1/4/8, delta 1e-6, unit clipping and registry defaults.
+The two epsilon-8 utility checks are annotations, not pass/fail gates.
+
+The original Parkinsons central calculation is retained as a documented
+**twin-computation error for the requested all-recording OLS reference**.
+Corrected OLS will use all training recordings from the same saved splits;
+the original federated-DP evidence remains unchanged. The released runner
+actually pools within subjects, so the all-recording reference is not an
+exact match to that pooled representation. The actual training site counts
+are 12/11/11 subjects after holdout. This cell documents a utility boundary
+for subject privacy with tens of units per site under the measured defaults,
+not a dsFlower defect or a universal claim about all training protocols.
+
+## Original Parkinsons report (historical; central reference superseded)
 
 The pre-declared epsilon-8 diagnostic **fails**: mean federated-DP RMSE is
 29.55 versus 10.77 for the training-mean baseline, and mean R² is −6.92.

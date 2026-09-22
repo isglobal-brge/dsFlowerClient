@@ -1,4 +1,87 @@
-# Subject-private Parkinsons regression
+# Regression track: Parkinsons boundary and CDC BMI
+
+## CDC BMI alternative declared before execution — 2026-09-22
+
+The only alternative is `pytorch_linear_regression` on **cdc45k**, the exact
+45,000-respondent cohort from the thesis logistic n-scaling arm. Its existing
+preparation is reusable: R seed 20260819 samples proportionately within the
+binary diabetes strata and sorts the selected source rows. The original
+prepared logistic cohort SHA-256 is
+`5f521899386021fd6670d166f4f5ef9a4dcaa80e11d8df10942e60bd18724d3b`.
+The diabetes label is used solely for cohort/split stratification and is
+excluded from model inputs. Each source row is one respondent and one privacy
+unit; there is no patient pooling.
+
+Target: continuous BMI, with public, predeclared clipping bounds **[12,98]**.
+This is an admissible clipping policy, not an empirical range or a claim that
+the BRFSS codebook defines 98 as a universal maximum. The released neural
+regression contract clips targets and retains original units; it does not
+require target standardization. Features use the contract's bounded affine
+transform to [-1,1], with these public bounds:
+
+| Features | Bounds |
+|---|---|
+| HighBP, HighChol, CholCheck, Smoker, Stroke, HeartDiseaseorAttack, PhysActivity, Fruits, Veggies, HvyAlcoholConsump, AnyHealthcare, NoDocbcCost, DiffWalk, Sex | [0,1] |
+| GenHlth | [1,5] |
+| MentHlth, PhysHlth | [0,30] |
+| Age | [1,13] |
+| Education | [1,6] |
+| Income | [1,8] |
+
+The existing logistic 80/20 split and stratified round-robin site assignment
+are reused for seeds **20260820, 20260821, 20260822**: 36,000 training rows,
+9,000 held-out rows, and three sites of 12,000 training respondents.
+Protocol: five FedAvg rounds; epsilon **1,4,8** in that execution order;
+delta **1e-6**; default row privacy; clipping norm **1**; unmodified 0.5.0
+packages and registry defaults (learning rate .01, batch size 32, one local
+epoch, SGD, no scheduler, no L1/L2 penalties). No model overrides or tuning.
+
+OLS with an intercept is fitted on every training row of the same split,
+using the same public feature transform and clipped training targets.
+The trivial baseline predicts the raw training target mean. Held-out metrics
+are RMSE, MAE, and R² in BMI units; gap = federated-DP RMSE minus OLS RMSE.
+At epsilon 8, RMSE below the trivial RMSE and R² > 0 are annotations, not
+acceptance gates. Each replicate is scored once after training; held-out values
+are routed during preparation but never inspected or used for choices.
+Completed scores are immutable. No additional alternative will be run.
+
+If a cdc45k replicate exceeds about 15 minutes on the provisioned 32-vCPU pod,
+the pre-authorized cdc9k size fallback may be selected solely on elapsed time,
+before inspecting scores; any started attempt will be retained and documented.
+The selected cohort and any fallback are recorded in the execution evidence.
+
+Source: [UCI CDC Diabetes Health Indicators, ID 891](https://archive.ics.uci.edu/dataset/891/cdc+diabetes+health+indicators),
+[source CSV](https://archive.ics.uci.edu/static/public/891/data.csv),
+dataset DOI [10.24432/C53919](https://doi.org/10.24432/C53919), thesis citation
+key **`uci_cdc_diabetes_health_indicators`**. Public coding references:
+[CDC BRFSS 2015 documentation](https://www.cdc.gov/brfss/annual_data/annual_2015.html).
+Source, cohort, split, protocol and tooling checksums accompany the results.
+
+## Parkinsons correction and boundary interpretation
+
+The original `pilot_parkinsons_*.json`, `protocol.json`, and runner scripts are
+retained unchanged. Their 34-subject-mean central OLS is annotated as a
+**twin-computation error relative to the requested all-recording OLS reference**.
+The added corrected twin fits all training recordings on the same saved
+splits and seeds; only its central metrics and corresponding gaps are new.
+Federated-DP models and scores are preserved byte for byte.
+
+The source audit also matters: the released patient-mode runner really does
+pool each subject's features and continuous target before DP-SGD. Therefore
+the requested all-recording OLS is a recording-level reference, rather than an
+exact twin of that pooled training representation. The original 34-row OLS
+matched the pooled representation but was unsuitable for the requested
+recording-level comparison. Neither central calculation isolates DP noise.
+
+The cohort provides only 42 privacy units. After the eight-subject holdout,
+the actual training sites contain **12/11/11 subjects**, rather than 14 each.
+Subject privacy with only tens of units per site is outside the useful regime
+of this measured five-round, unit-clipped, registry-default protocol across
+epsilon 1/4/8. This is a documented utility boundary, not evidence of a
+dsFlower implementation defect. The measurement does not establish that
+every possible optimizer or protocol must fail at those privacy budgets.
+
+## Original Parkinsons declaration (historical; central reference superseded above)
 
 The frozen design is in `protocol.json`. It uses the unchanged dsFlower and
 dsFlowerClient 0.5.0 packages, `pytorch_linear_regression` registry defaults,
