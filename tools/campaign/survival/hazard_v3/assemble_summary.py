@@ -26,7 +26,17 @@ def main():
         group=[r for r in rows if r['config']==cid]
         values=[statistics.mean(r['controls'][k]['c_index'] for r in group) for k in group[0]['controls']]
         text.append('| '+('K10 equal-width' if cid=='g01' else 'K5 event quantiles')+' | '+' | '.join(f'{v:.6f}' for v in values)+' |')
-    text+=['',
+    geometry=json.loads((root/'gradient_geometry.json').read_text())['rows']
+    text+=['', 'Initial gradient geometry on the same inner training splits (1942 patients/site):', '',
+        '| Contract | Parameters | Patients clipped at initialization | Norm of mean clipped gradient | Site noise RMS L2 per update |',
+        '|---|---:|---:|---:|---:|']
+    for name in ('hazard','lognormal','weibull'):
+        entries=[r for r in geometry if r['variant']==name]
+        avg=lambda key:statistics.mean(r[key] for r in entries)
+        text.append(f'| {name} | {entries[0]["n_parameters"]} | {100*avg("fraction_clipped_at_initialization"):.2f}% | {avg("norm_of_mean_clipped_gradient"):.6f} | {avg("site_noise_rms_l2"):.6f} |')
+    text+=['', 'This is an initial geometry diagnostic, not a final-model signal-to-noise decomposition. '
+        'AFT clips far more patients initially yet has denser, stronger mean signal and much smaller total noise magnitude. '
+        'The hazard problem is weak /K signal relative to fixed unit-clip noise across many coordinates, not large raw covariate scales.', '',
         'For h06, reducing only the pooled sequential update count explains a 0.028008 C-index drop on these development splits; '
         'equal-site averaging differs from that step-matched pooled control by +0.000072. '
         'The h06 initial mean gradient norm is 0.3070/0.3081 and maximum 0.7664/0.7647; no sampled gradient exceeds 1 throughout these unnoised controls. '
@@ -41,7 +51,7 @@ def main():
         'three sites of 1942 inner-training patients and 1458 pooled validation patients. '
         'Every selected score comes from actual isolated DSLite federation with patient DP. '
         'All 35 planned configurations and per-seed quantile boundaries are in `frozen_configurations.json`; '
-        '`sweep.csv` and `development/` retain the full executed table and cell records. '
+        '`sweep.csv` and `development/` retain the full executed table and cell records; `sweep-full.csv` also marks every unstarted planned configuration. '
         f'{len(selection["omitted_configurations"])} configurations were omitted by the predeclared time cutoff.', '',
         'Selection: maximum mean federated-DP inner C; exact ties use fewer total epochs, smaller K, then ID. '
         'No pooled/control score or outer confirmation metric entered selection. Public-bound scaling was already enabled and remains fixed. '
@@ -66,6 +76,15 @@ def main():
     for row in summary['groups']:
         values=' | '.join(f'{row["c_index"][b]["mean"]:.6f} ± {row["c_index"][b]["sd"]:.6f}' for b in ('federated_dp','central_dp','central','null'))
         text.append(f'| {row["arm"]} ({row["n_sites"]} sites; '+','.join(map(str,row['site_n']))+f'/site) | {row["epsilon"]} | {values} |')
+    text+=['', 'Epsilon 8 accounting geometry (seed 1101; the other seeds have the same population/schedule geometry):', '',
+        '| Arm / population | Patients | Poisson q | Total sequential steps | Noise multiplier | Gradient noise SD per coordinate |',
+        '|---|---:|---:|---:|---:|---:|']
+    for arm in selection['confirmation_arms']:
+        record=json.loads((root/f'cell-support2-{arm}-hazard-v3-eps8-seed1101.json').read_text())
+        for label,m in [('site',record['results']['site_mechanisms'][0]),('pooled',record['results']['pooled_mechanism'])]:
+            text.append(f'| {arm} / {label} | {m["accounting_population"]} | {m["sample_rate"]:.8f} | {m["total_steps"]} | {m["noise_multiplier"]:.8f} | {m["noise_multiplier"]/m["expected_batch_size"]:.8f} |')
+    text+=['', 'The two-site envelope changes per-site sampling, calibrated noise and sequential optimization steps together; '
+        'it does not isolate a noise-only effect. Fixed unit weights remain equal patient weights for these equal-size partitions.']
     primary=next(r for r in summary['groups'] if r['arm']=='full' and r['epsilon']==8)
     c=primary['c_index']['federated_dp'];null=primary['c_index']['null']['mean']
     text+=['',f'**Three-site verdict: {summary["three_site_verdict"]}.** Mean epsilon 8 C={c["mean"]:.6f}; '
