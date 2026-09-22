@@ -1,5 +1,13 @@
 # UCI HAR sequence utility cell
 
+**Execution status (2026-09-22): blocked; no HAR utility scores.** All three
+nodes aborted with `DSFLOWER SECURITY: package '_remote_module_non_scriptable'
+is not in pinned_packages.json (default-deny).` No package or guard was patched.
+See the [evidence summary](../../../inst/extdata/campaign/sequence/summary.json).
+The synthetic GPU preflight passed, but full federation, central twins and
+held-out scoring did not complete. The prepared scoring workflow below remains
+unvalidated end to end; the test split was never read.
+
 This driver evaluates the unchanged dsFlower/dsFlowerClient 0.5.0
 `pytorch_lstm` contract on the official UCI HAR subject-disjoint split.
 `protocol.json` is the binding design recorded before scoring. No test members
@@ -40,6 +48,10 @@ The provisioner keeps environments and the R library on local POSIX storage
 under `/opt/cells-sequence`, with aliases in the work root. Importing Flower
 from the network volume exceeded the release's fixed 15-second SuperLink
 readiness deadline in an initial attempt, before any model initialization.
+For the observed recovery, existing environments were copied and their console
+interpreter paths relocated with `relocate_console_scripts.py`; Python bodies
+were checked unchanged. Both the startup failure and subsequent guard failure
+are retained. No GRU run was attempted for the shared import failure.
 
 ```sh
 ROOT=/workspace/cells-sequence
@@ -57,6 +69,12 @@ PYTHON=$(realpath "$ROOT/venvs")/pytorch-gpu/bin/python
 "$PYTHON" "$TOOLS/capture_runtime.py" "$ROOT"
 "$PYTHON" "$TOOLS/run_matrix.py" --root "$ROOT"
 "$PYTHON" "$TOOLS/score_and_assemble.py" --root "$ROOT" --out "$ROOT/evidence"
+```
+
+The observed blocked archive can be reassembled without running or scoring:
+
+```sh
+python assemble_blocked.py --raw /path/to/archived/raw-jsons --out /path/to/evidence
 ```
 
 Run in the foreground. `logs/` retains provisioning and per-replicate output;
