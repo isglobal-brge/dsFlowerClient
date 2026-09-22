@@ -27,5 +27,5 @@ R CMD INSTALL --library="$ROOT/Rlib" "$ROOT/dsFlowerClient"
 uv pip install --python "$ROOT/client/venv/bin/python" --torch-backend cpu \
   'torch>=2.0.0,<3.0.0' 'numpy>=1.21.0' 'pandas>=1.3.0' \
   'pyarrow>=10.0.0' 'opacus>=1.4.0,<2.0.0' 'cryptography>=42.0.0'
+Rscript -e 'stopifnot(getRversion()>="4.4", packageVersion("dsFlower")=="0.5.0", packageVersion("dsFlowerClient")=="0.5.0", dsFlower:::.venv_is_healthy(file.path(Sys.getenv("DSFLOWER_VENV_ROOT"),"native-tree"),"native-tree"), dsFlower:::.venv_is_healthy(file.path(Sys.getenv("DSFLOWER_VENV_ROOT"),"pytorch"),"pytorch"), dsFlowerClient:::.client_venv_is_healthy()); cat(R.version.string,"\n"); cat(dsFlowerClient:::.compute_local_runner_hash(),"\n")'
 date -u +%FT%TZ > "$ROOT/logs/provision-end.txt"
-Rscript -e 'stopifnot(getRversion()>="4.4", packageVersion("dsFlower")=="0.5.0", packageVersion("dsFlowerClient")=="0.5.0"); cat(R.version.string,"\n"); cat(dsFlowerClient:::.compute_local_runner_hash(),"\n")'

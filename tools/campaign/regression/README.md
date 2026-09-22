@@ -65,6 +65,9 @@ default least-squares rank determination. Both predict individual recordings
 from held-out subjects. Metrics are recording-weighted RMSE, MAE and R² in
 original UPDRS units. The trivial baseline predicts the recording-weighted
 training target mean. No prediction clipping is added.
+The gap compares the requested five-round federated DP-SGD protocol with
+converged noiseless OLS; it does not isolate the causal effect of DP noise from
+optimization and federation. Subject pooling leaves only 34 OLS training rows.
 
 The acceptance diagnostic is mean federated-DP RMSE below mean trivial RMSE
 and mean federated-DP R² above zero at epsilon 8. Per-seed decisions are also

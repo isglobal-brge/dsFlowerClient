@@ -28,16 +28,24 @@ def main():
             assert split["n_train"] + split["n_test"] == 5875
             assert sum(split["n_per_site"]) == split["n_train"]
             assert rep["history"] == dict(n_clients=3, n_failures=0, n_rounds=5, cleanup_ok=True)
-            for node in rep["node_privacy"]:
+            for site_index, node in enumerate(rep["node_privacy"]):
                 assert node["policy"]["dp_unit"] == "patient"
                 assert node["policy"]["patient_column"] == "subject#"
                 assert node["policy"]["per_training_epsilon"] == evidence["privacy"]["epsilon"]
                 assert node["policy"]["per_training_delta"] == 1e-6
                 assert node["clipping_norm"] == 1
                 assert node["staged_configurations"]
+                for configuration in node["staged_configurations"]:
+                    assert configuration["dp-unit"] == "patient"
+                    assert configuration["patient_column"] == "subject#"
+                    assert configuration["n_units"] == split["n_subjects_per_site"][site_index]
+                    assert configuration["privacy-epsilon"] == evidence["privacy"]["epsilon"]
+                    assert configuration["privacy-delta"] == 1e-6
+                    assert configuration["privacy-clipping_norm"] == 1
             for branch in ("central", "federated_dp", "trivial"):
                 assert all(math.isfinite(rep[branch][metric]) for metric in ("rmse", "mae", "r2"))
             assert math.isclose(rep["gap_rmse"], rep["federated_dp"]["rmse"] - rep["central"]["rmse"])
+            assert rep["diagnostic_pass"] == (rep["federated_dp"]["rmse"] < rep["trivial"]["rmse"] and rep["federated_dp"]["r2"] > 0)
             baseline = {key: rep[key] for key in ("central", "trivial", "split")}
             assert baselines.setdefault(rep["seed"], baseline) == baseline
         for branch, key in (("central", "central_mean_sd"), ("federated_dp", "federated_mean_sd"), ("trivial", "trivial_mean_sd")):
@@ -45,6 +53,9 @@ def main():
                 values = [rep[branch][metric] for rep in evidence["per_replicate"]]
                 assert math.isclose(statistics.mean(values), evidence["summary"][key][metric]["mean"])
                 assert math.isclose(statistics.stdev(values), evidence["summary"][key][metric]["sd"])
+        gaps = [rep["gap_rmse"] for rep in evidence["per_replicate"]]
+        assert math.isclose(statistics.mean(gaps), evidence["summary"]["gap_rmse_mean_sd"]["mean"])
+        assert math.isclose(statistics.stdev(gaps), evidence["summary"]["gap_rmse_mean_sd"]["sd"])
         cells.append(dict(file=path.name, sha256=hashlib.sha256(path.read_bytes()).hexdigest(),
                           contract=evidence["contract"], epsilon=evidence["privacy"]["epsilon"],
                           n=5875, n_subjects=42, summary=evidence["summary"]))
