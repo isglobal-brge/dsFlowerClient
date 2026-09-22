@@ -5,6 +5,11 @@
   so client-side container validation accepts genuine ensembles. Add regression
   tests for real training output and malformed containers.
 
+* Package one representative utility cell per contract track (native trees,
+  multiclass, regression, sequence and vision classification), with preceding
+  cells and declarations, plus the hazard-v3 development sweep and single
+  confirmation under `inst/extdata/campaign/`.
+
 # dsFlowerClient 0.5.0
 
 * Admit the subject-level Weibull and log-normal AFT survival contracts and
