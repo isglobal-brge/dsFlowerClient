@@ -1,0 +1,19 @@
+{
+  "created_utc": "2026-09-22T00:32:12.334126+00:00",
+  "seeds": [
+    1101,
+    1102
+  ],
+  "configurations": [
+    "g01",
+    "g02"
+  ],
+  "controls": [
+    "pooled_full_steps",
+    "pooled_site_step_count",
+    "three_site_unclipped",
+    "three_site_clipped_noiseless"
+  ],
+  "purpose": "Public unnoised mechanism diagnostics only; no scores enter selection; no DP claim",
+  "script_sha256": "d1649fcf4ea355e7ff83141969d7659f21a366be05cf9389ba610de4892b9111"
+}

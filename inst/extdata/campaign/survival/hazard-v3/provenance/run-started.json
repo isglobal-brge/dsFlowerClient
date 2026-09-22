@@ -1,0 +1,19 @@
+{
+  "started_utc": "2026-09-22T00:30:16.206023+00:00",
+  "sweep_cutoff": "2026-09-22T02:40:00+00:00",
+  "jobs": 4,
+  "tool_sha256": {
+    "PROTOCOL.md": "44f445ab9c1e290b4d385d4ad3305b7a0d9aea25355791f79464e4f537244695",
+    "README.md": "427fd3012ea2b7f997c29b08aeb623a74c06f9441f4f2bcdea317a2661368922",
+    "central_and_score.py": "2a631d1238492c77223b7304243e7e111afd01dd105d0af54e15fc2d4618bdce",
+    "install_r.R": "64ea90b06a56dc61a671138fa126afbe82e23dee125e4f95492d49031dc84049",
+    "protocol.py": "fbb16a866db8b49a5c48c9e1e5a262652340ec7652d38f8e1abfc81ea66cfcac",
+    "provision.sh": "a7ce04ae473ad0fcb5bdbd7fc7d716b59ca3b6af51fe9004cdfbdb12dd0adac5",
+    "report.py": "56aa33117e710f6edd74af8cf3b40c81d35d74ab32a8964fcc2d6266686aff11",
+    "requirements-cpu.txt": "777f30fdff691ba7c4e783bdd45333c52bc29412e56f845714a5002325bf9ce2",
+    "resume_environment.sh": "26ba785b88d270128ded77660b87408dadfbe0e1c30db01689c2887709d384ee",
+    "run.py": "d40ae4dfd8ebcd46cbc2b81147fe87ffa5a5d8beb5a07bd95a9cf313ff271731",
+    "run_cell.R": "3324831e60512b4f30336af60cc733a2038c80cbc09801fe2824229b605821b6",
+    "test_protocol.py": "9e435488a6b2ad2ad129f6d45a37a93d7f9af0172ef431c7ab48aab04a1b8766"
+  }
+}

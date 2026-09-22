@@ -1,0 +1,16 @@
+{
+  "recorded_utc": "2026-09-22T00:51:21.750597+00:00",
+  "recovery_identity": "dev-g01-seed1102",
+  "failure_file": "failures/cell-dev-g01-seed1102.json",
+  "failure_sha256": "a3d118dab282371f477035e87f9e16c470cfb41208ef03d3472853b87e646d97",
+  "phase": "SuperNode startup before server training submission",
+  "scored_model_returned": false,
+  "exact_low_level_cause": "Unavailable: package masks the underlying startup exception; no site1 SuperNode log was captured.",
+  "observed": "Three other federations launched simultaneously. No OOM events. Shared spawn lock timeout10 seconds; 2-second spawn checks under lock. Trusted environment strips OMP/BLAS variables.",
+  "interpretation": "Concurrent startup lock contention is plausible, not proven. Separately verified CPU oversubscription explains slow first-wave runtime.",
+  "resource_repair": "30-second launch spacing and one-CPU OS affinity per federation; no package or privacy change.",
+  "thread_probe": "Pinned CPU0, clean default PyTorch reports get_num_threads()==1; original affinity has32 CPUs.",
+  "scope": "Reuse seven successful first-wave cells; recover only this pre-training failure once in a new directory; no candidate omission or score-driven retry.",
+  "original_configuration_and_split_unchanged": true,
+  "original_failure_unchanged": true
+}

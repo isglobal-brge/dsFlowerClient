@@ -1,0 +1,138 @@
+{
+  "seed": 1101,
+  "n_train": 7284,
+  "minimum_site_n": 2428,
+  "federated_dp": {
+    "c_index": 0.6418440953596503,
+    "heldout_nll": 0.2901545413386016,
+    "n_evaluated_public_subjects": 1821,
+    "n_invalid_public_subjects": 0
+  },
+  "model_sha256": "570321865c03c0e1612383114393356e0ff4c74623a0664a95d87345021ab7fe",
+  "site_mechanisms": [
+    {
+      "site": 1,
+      "adjacency": "replace_one",
+      "noise_multiplier": 1.52587890625,
+      "clipping_norm": 1.0,
+      "accounting_population": 2428,
+      "steps_per_epoch": 38,
+      "sample_rate": 0.02631578947368421,
+      "expected_batch_size": 63,
+      "total_epochs": 40,
+      "total_steps": 1520,
+      "policy_hash": "90077a4c2f7a3f23c5b82c10880713efeaed06f5a1a02405704b62394269dd15",
+      "calibration": "trusted PRV with RDP fallback",
+      "verification_accountant": "PRV",
+      "add_remove_delta": 1.798620996209156e-07,
+      "independently_recomputed_replace_one_epsilon": 7.985580970147554,
+      "independently_recomputed_replace_one_delta": 9.929456168188932e-06
+    },
+    {
+      "site": 2,
+      "adjacency": "replace_one",
+      "noise_multiplier": 1.52587890625,
+      "clipping_norm": 1.0,
+      "accounting_population": 2428,
+      "steps_per_epoch": 38,
+      "sample_rate": 0.02631578947368421,
+      "expected_batch_size": 63,
+      "total_epochs": 40,
+      "total_steps": 1520,
+      "policy_hash": "90077a4c2f7a3f23c5b82c10880713efeaed06f5a1a02405704b62394269dd15",
+      "calibration": "trusted PRV with RDP fallback",
+      "verification_accountant": "PRV",
+      "add_remove_delta": 1.798620996209156e-07,
+      "independently_recomputed_replace_one_epsilon": 7.985580970147554,
+      "independently_recomputed_replace_one_delta": 9.929456168188932e-06
+    },
+    {
+      "site": 3,
+      "adjacency": "replace_one",
+      "noise_multiplier": 1.52587890625,
+      "clipping_norm": 1.0,
+      "accounting_population": 2428,
+      "steps_per_epoch": 38,
+      "sample_rate": 0.02631578947368421,
+      "expected_batch_size": 63,
+      "total_epochs": 40,
+      "total_steps": 1520,
+      "policy_hash": "90077a4c2f7a3f23c5b82c10880713efeaed06f5a1a02405704b62394269dd15",
+      "calibration": "trusted PRV with RDP fallback",
+      "verification_accountant": "PRV",
+      "add_remove_delta": 1.798620996209156e-07,
+      "independently_recomputed_replace_one_epsilon": 7.985580970147554,
+      "independently_recomputed_replace_one_delta": 9.929456168188932e-06
+    }
+  ],
+  "central": {
+    "c_index": 0.6437561452515915,
+    "heldout_nll": 0.2920803230267424,
+    "n_evaluated_public_subjects": 1821,
+    "n_invalid_public_subjects": 0
+  },
+  "central_model_sha256": "f6a5cc61d54d5de500e8f2898a4911a347c4baf38638d7f9615c3a1bb99162bb",
+  "central_dp": {
+    "c_index": 0.6418859650653133,
+    "heldout_nll": 0.2907068843700492,
+    "n_evaluated_public_subjects": 1821,
+    "n_invalid_public_subjects": 0
+  },
+  "central_dp_model_sha256": "2731a22c2aeb8fa2bfb4165dbd6be223adbe59097a4162a79ce41191a496e679",
+  "pooled_mechanism": {
+    "adjacency": "replace_one",
+    "noise_multiplier": 1.0302734375,
+    "clipping_norm": 1.0,
+    "accounting_population": 7284,
+    "steps_per_epoch": 114,
+    "sample_rate": 0.008771929824561403,
+    "expected_batch_size": 63,
+    "total_epochs": 40,
+    "total_steps": 4560,
+    "policy_hash": "56d5735d371af93af5637bb97d916b4acdfde6870c52ab23ca83b039e3cc2282",
+    "calibration": "trusted PRV with RDP fallback",
+    "verification_accountant": "PRV",
+    "add_remove_delta": 1.798620996209156e-07,
+    "independently_recomputed_replace_one_epsilon": 7.9862945248346575,
+    "independently_recomputed_replace_one_delta": 9.932935223048495e-06,
+    "execution_device": "cpu"
+  },
+  "null": {
+    "c_index": 0.5,
+    "heldout_nll": 0.32302657907803206,
+    "n_evaluated_public_subjects": 1821,
+    "n_invalid_public_subjects": 0
+  },
+  "null_model_sha256": "c51168bb7caa5218c5d421961fc7a4226be758990e789e0232fece68d0448ebf",
+  "versions": {
+    "python": "3.11.10",
+    "torch": "2.4.1+cpu",
+    "opacus": "1.5.2",
+    "flwr": "1.31.0",
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "pandas": "3.0.6",
+    "cuda_available": false,
+    "platform": "Linux-6.8.0-100-generic-x86_64-with-glibc2.35",
+    "deterministic_algorithms": true,
+    "nonprivate_twin_device": "cpu",
+    "dp_twin_device": "cpu",
+    "heldout_evaluation_device": "cpu",
+    "federation_device_rule": "Frozen _dp_fit; verified CPU-only pod"
+  },
+  "twin_matching": {
+    "architecture_loss_preprocessing_initialization_optimizer_schedule": "exact",
+    "initialization_seed": 0,
+    "pooled_epochs": 40,
+    "aggregation": "fedavgm",
+    "aggregation_implementation": "Flower 1.31.0 same strategy, one pooled endpoint",
+    "differences": "Pooled population changes q and sequential step count; nonprivate removes clipping/noise; fixed unit site weights; independent unrecorded DP secrets; development omits twins."
+  },
+  "elapsed_s": 22.765034031122923,
+  "max_rss_native_units": 774100,
+  "memory_measurement": {
+    "scope": "central/scoring process peak resident memory",
+    "native_unit": "KiB",
+    "federation_peak_memory_measured": false
+  }
+}

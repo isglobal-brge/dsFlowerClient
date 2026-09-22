@@ -1,0 +1,20 @@
+{
+  "learning-rate": 0.05,
+  "weight-decay": 0,
+  "l1-penalty": 0,
+  "optimizer-name": "sgd",
+  "scheduler-name": "none",
+  "survival-config-b64": "eyJzY2hlbWFfdmVyc2lvbiI6MSwidGltZV91bml0IjoiZGF5cyIsInRpbWVfb3JpZ2luIjoiYmFzZWxpbmUiLCJ0X21pbiI6MSwiaG9yaXpvbiI6MTgyNSwiZWRnZXMiOlswLDcsMTQsMjYsNTYsMTE4LDI0Nyw1MjAsMTgyNV19",
+  "optimizer-momentum": 0,
+  "optimizer-nesterov": false,
+  "model-spec-b64": "eyJraW5kIjoic2VxdWVudGlhbCIsImxheWVycyI6W3sib3AiOiJsaW5lYXIiLCJvdXQiOiJAb3V0In1dfQ==",
+  "loss-name": "discrete_hazard_nll",
+  "num-features": 15,
+  "num-classes": 2,
+  "num-labels": 2,
+  "num-server-rounds": 20,
+  "batch-size": 64,
+  "local-epochs": 2,
+  "strategy": "fedavgm",
+  "strategy-server-momentum": 0.9
+}

@@ -1,0 +1,60 @@
+{
+  "model_id": "pytorch_discrete_hazard_FedAvg_10r_20260922_011255",
+  "model": "pytorch_discrete_hazard",
+  "framework": "pytorch",
+  "track": "neural",
+  "model_spec": {
+    "kind": "sequential",
+    "layers": [
+      {
+        "op": "linear",
+        "out": "@out"
+      }
+    ]
+  },
+  "model_params": {
+    "learning_rate": 0.02,
+    "batch_size": 64,
+    "local_epochs": 1,
+    "weight_decay": 0,
+    "l1_penalty": 0,
+    "optimizer": "adam",
+    "scheduler": "none",
+    "hidden_layers": [],
+    "t_min": 1,
+    "time_unit": "days",
+    "time_origin": "baseline",
+    "beta1": 0.90000000000000002,
+    "beta2": 0.999,
+    "optimizer_eps": 1e-08,
+    "amsgrad": false,
+    "edges": [0, 10, 30, 103.40000000000009, 327.20000000000027, 1825]
+  },
+  "loss_name": "discrete_hazard_nll",
+  "survival_config": {
+    "schema_version": 1,
+    "time_unit": "days",
+    "time_origin": "baseline",
+    "t_min": 1,
+    "horizon": 1825,
+    "edges": [0, 10, 30, 103.40000000000009, 327.20000000000027, 1825]
+  },
+  "target": ["time", "event"],
+  "data_kind": "tabular",
+  "available": true,
+  "available_rounds": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "strategy": "FedAvg",
+  "privacy": "server-enforced-dp",
+  "num_rounds": 10,
+  "requested_num_rounds": 10,
+  "n_clients": 3,
+  "features": ["age", "male", "comorbidities", "diabetes", "dementia", "cancer_0", "cancer_1", "disease_0", "disease_1", "disease_2", "disease_3", "disease_4", "disease_5", "disease_6", "disease_7"],
+  "feature_lower": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+  "feature_upper": [100, 1, 10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  "target_levels": {},
+  "target_bounds": {},
+  "created_at": "2026-09-22T01:12:55",
+  "holdout": {},
+  "holdout_contract": {},
+  "status": "success"
+}

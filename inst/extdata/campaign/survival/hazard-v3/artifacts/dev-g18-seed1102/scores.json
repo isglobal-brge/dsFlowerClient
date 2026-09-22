@@ -1,0 +1,99 @@
+{
+  "seed": 1102,
+  "n_train": 5826,
+  "minimum_site_n": 1942,
+  "federated_dp": {
+    "c_index": 0.5923603235969479,
+    "heldout_nll": 0.2966963965400039,
+    "n_evaluated_public_subjects": 1458,
+    "n_invalid_public_subjects": 0
+  },
+  "model_sha256": "c12d90fbfce23ac0f79f4242fe1260394d5d04e39f0e79180c1785fe801ed1b6",
+  "site_mechanisms": [
+    {
+      "site": 1,
+      "adjacency": "replace_one",
+      "noise_multiplier": 1.30126953125,
+      "clipping_norm": 1.0,
+      "accounting_population": 1942,
+      "steps_per_epoch": 31,
+      "sample_rate": 0.03225806451612903,
+      "expected_batch_size": 62,
+      "total_epochs": 20,
+      "total_steps": 620,
+      "policy_hash": "546eaeeaa22042436a68fdb15ee692260e02230bda8f803af4c35e09ad53eeed",
+      "calibration": "trusted PRV with RDP fallback",
+      "verification_accountant": "PRV",
+      "add_remove_delta": 1.798620996209156e-07,
+      "independently_recomputed_replace_one_epsilon": 7.987655899245088,
+      "independently_recomputed_replace_one_delta": 9.93957627511831e-06
+    },
+    {
+      "site": 2,
+      "adjacency": "replace_one",
+      "noise_multiplier": 1.30126953125,
+      "clipping_norm": 1.0,
+      "accounting_population": 1942,
+      "steps_per_epoch": 31,
+      "sample_rate": 0.03225806451612903,
+      "expected_batch_size": 62,
+      "total_epochs": 20,
+      "total_steps": 620,
+      "policy_hash": "546eaeeaa22042436a68fdb15ee692260e02230bda8f803af4c35e09ad53eeed",
+      "calibration": "trusted PRV with RDP fallback",
+      "verification_accountant": "PRV",
+      "add_remove_delta": 1.798620996209156e-07,
+      "independently_recomputed_replace_one_epsilon": 7.987655899245088,
+      "independently_recomputed_replace_one_delta": 9.93957627511831e-06
+    },
+    {
+      "site": 3,
+      "adjacency": "replace_one",
+      "noise_multiplier": 1.30126953125,
+      "clipping_norm": 1.0,
+      "accounting_population": 1942,
+      "steps_per_epoch": 31,
+      "sample_rate": 0.03225806451612903,
+      "expected_batch_size": 62,
+      "total_epochs": 20,
+      "total_steps": 620,
+      "policy_hash": "546eaeeaa22042436a68fdb15ee692260e02230bda8f803af4c35e09ad53eeed",
+      "calibration": "trusted PRV with RDP fallback",
+      "verification_accountant": "PRV",
+      "add_remove_delta": 1.798620996209156e-07,
+      "independently_recomputed_replace_one_epsilon": 7.987655899245088,
+      "independently_recomputed_replace_one_delta": 9.93957627511831e-06
+    }
+  ],
+  "versions": {
+    "python": "3.11.10",
+    "torch": "2.4.1+cpu",
+    "opacus": "1.5.2",
+    "flwr": "1.31.0",
+    "numpy": "1.26.4",
+    "scipy": "1.17.1",
+    "pandas": "3.0.6",
+    "cuda_available": false,
+    "platform": "Linux-6.8.0-100-generic-x86_64-with-glibc2.35",
+    "deterministic_algorithms": true,
+    "nonprivate_twin_device": "cpu",
+    "dp_twin_device": "cpu",
+    "heldout_evaluation_device": "cpu",
+    "federation_device_rule": "Frozen _dp_fit; verified CPU-only pod"
+  },
+  "twin_matching": {
+    "architecture_loss_preprocessing_initialization_optimizer_schedule": "exact",
+    "initialization_seed": 0,
+    "pooled_epochs": 20,
+    "aggregation": "fedavg",
+    "aggregation_implementation": "Flower 1.31.0 same strategy, one pooled endpoint",
+    "differences": "Pooled population changes q and sequential step count; nonprivate removes clipping/noise; fixed unit site weights; independent unrecorded DP secrets; development omits twins."
+  },
+  "elapsed_s": 2.396806586533785,
+  "max_rss_native_units": 524368,
+  "memory_measurement": {
+    "scope": "central/scoring process peak resident memory",
+    "native_unit": "KiB",
+    "federation_peak_memory_measured": false
+  }
+}

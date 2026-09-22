@@ -1,0 +1,336 @@
+{
+  "schema_version": 1,
+  "record_type": "cell",
+  "task": "survival",
+  "status": "executed",
+  "started_utc": "2026-09-22T02:27:18Z",
+  "dataset": {
+    "schema_version": 1,
+    "dataset": "support2",
+    "source": {
+      "url": "https://archive.ics.uci.edu/static/public/880/data.csv",
+      "sha256": "9da794bbd5c3a6a816e677cc17535e58c122d9ef4cbefd404489330a9f9cd2de",
+      "licence": "CC BY 4.0",
+      "licence_url": "https://archive-beta.ics.uci.edu/dataset/880/support2",
+      "release": "UCI 880 metadata last_updated 2024-09-09",
+      "attribution": "Frank Harrell and SUPPORT investigators (1995)"
+    },
+    "seed": 1102,
+    "subset": "full",
+    "public_fixture": true,
+    "n_original_rows": 9105,
+    "time_origin": "study_entry",
+    "subject_provenance": "One public release row per stable subject ID",
+    "split_rule": "Within each outer site SHA256(hazard-v3-inner:seed:id), floor(0.8*N) train",
+    "features": [
+      "age",
+      "male",
+      "comorbidities",
+      "diabetes",
+      "dementia",
+      "cancer_0",
+      "cancer_1",
+      "disease_0",
+      "disease_1",
+      "disease_2",
+      "disease_3",
+      "disease_4",
+      "disease_5",
+      "disease_6",
+      "disease_7"
+    ],
+    "feature_bounds": {
+      "lower": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "upper": [
+        100,
+        1,
+        10,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    "evaluation_role": "inner validation",
+    "protocol_version": 3,
+    "protocol_sha256": "44f445ab9c1e290b4d385d4ad3305b7a0d9aea25355791f79464e4f537244695",
+    "n_train": 5826,
+    "n_test": 1458,
+    "train_sha256": "1eaa1c0e5c9bfa49c8549f8c83e3544d239d5f25fea1df6df156111523f5aa4c",
+    "test_sha256": "8441cda5bfc36f31584b8f39ae48fba4e5235cf5ae79f97a9830b76693e2d02b",
+    "sites": [
+      {
+        "site": 1,
+        "source_rows": 1942,
+        "n_subjects": 1942,
+        "split_sha256": "c84f1b651d2e7429ae3cca45bff3cbf7c24c9221f2604ce4d766e0d4d35ae58e"
+      },
+      {
+        "site": 2,
+        "source_rows": 1942,
+        "n_subjects": 1942,
+        "split_sha256": "906155b2a7f1481ae890e13e693fe1691cae9d344ca29d544118cad515105af0"
+      },
+      {
+        "site": 3,
+        "source_rows": 1942,
+        "n_subjects": 1942,
+        "split_sha256": "36a937f42aa9538301736700ce30634fc569d521515eaa516ec1903e5996e503"
+      }
+    ],
+    "outer_manifest_sha256": "129db5d96e50a72058cccccfbdca7e8c5dae172ccb71ab4f2eff63e3f2e9cab8",
+    "outer_train_sha256": "1acb274c27f7f97c2abd36e801c8657ba495743a1beceebb1e264f54b823ae98"
+  },
+  "variant": "hazard",
+  "contract": "pytorch_discrete_hazard",
+  "epsilon": 8,
+  "delta": 1e-05,
+  "clip": 1,
+  "adjacency": "replace_one",
+  "privacy_unit": "patient",
+  "site_count": 3,
+  "package_commits": {
+    "dsFlower": "408f08c539329e2711260050ab40a6567aa4d89e",
+    "dsFlowerClient": "50dda000a32ffcbdd039c2b74c909df451392bfb"
+  },
+  "installed_build": {
+    "commits": {
+      "dsFlower": "408f08c539329e2711260050ab40a6567aa4d89e",
+      "dsFlowerClient": "50dda000a32ffcbdd039c2b74c909df451392bfb"
+    },
+    "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+    "built_utc": "2026-09-22T00:25:09Z",
+    "package_versions": [
+      "0.5.0",
+      "0.5.0"
+    ]
+  },
+  "campaign_tools_commit": "50dda000a32ffcbdd039c2b74c909df451392bfb",
+  "package_versions": {
+    "dsFlower": "0.5.0",
+    "dsFlowerClient": "0.5.0",
+    "R": "R version 4.6.1 (2026-06-24)",
+    "DSI": "1.8.0",
+    "DSLite": "1.4.1",
+    "dsBase": "6.3.5",
+    "resourcer": "1.5.1"
+  },
+  "runner_sha256": "2135902bc710825b77b2f6a397c0040e051fe042fe1707b148b7e88ae71d2724",
+  "public_config": {
+    "learning-rate": 0.05,
+    "weight-decay": 0,
+    "l1-penalty": 0,
+    "optimizer-name": "sgd",
+    "scheduler-name": "none",
+    "survival-config-b64": "eyJzY2hlbWFfdmVyc2lvbiI6MSwidGltZV91bml0IjoiZGF5cyIsInRpbWVfb3JpZ2luIjoiYmFzZWxpbmUiLCJ0X21pbiI6MSwiaG9yaXpvbiI6MTgyNSwiZWRnZXMiOlswLDEwLDMxLDEwNiwzMjQsMTgyNV19",
+    "optimizer-momentum": 0,
+    "optimizer-nesterov": false,
+    "model-spec-b64": "eyJraW5kIjoic2VxdWVudGlhbCIsImxheWVycyI6W3sib3AiOiJsaW5lYXIiLCJvdXQiOiJAb3V0In1dfQ==",
+    "loss-name": "discrete_hazard_nll",
+    "num-features": 15,
+    "num-classes": 2,
+    "num-labels": 2,
+    "num-server-rounds": 20,
+    "batch-size": 64,
+    "local-epochs": 4,
+    "strategy": "fedavg"
+  },
+  "mechanism_provenance": "Effective sigma/q/steps recomputed from public fixture subject census using audited unchanged runtime; independent PRV verification. No new private endpoint.",
+  "evaluation": "inner validation",
+  "outcome_semantics": {
+    "target_order": [
+      "time",
+      "event"
+    ],
+    "event": 1,
+    "censored": 0,
+    "time_unit": "days",
+    "baseline": "study_entry",
+    "administrative_censor": "time>1825 => time1825,event0; event at1825 retained",
+    "invalid": "time below1 or nonfinite/event not0or1/duplicate => valid0, never dropped",
+    "preprocessing": "fixed public bounds scaled to[-1,1]; safe placeholders; no private fitted moments",
+    "interval_convention": "event(left,right]; censor completed periods only"
+  },
+  "score_conventions": {
+    "time_ties": "excluded",
+    "risk_ties": 0.5,
+    "hazard_risk": "negative left-endpoint restricted mean",
+    "gap": "central minus federated (historic sign reversed)"
+  },
+  "protocol_version": 3,
+  "hazard_v3_config": {
+    "id": "g20",
+    "protocol_version": 3,
+    "K": 5,
+    "learning_rate": 0.05,
+    "optimizer": "sgd",
+    "strategy": "fedavg",
+    "rounds": 20,
+    "local_epochs": 4,
+    "batch_size": 64,
+    "grid": "quantile",
+    "preprocessing": "declared public bounds to [-1,1]",
+    "edges": [
+      0.0,
+      10.0,
+      31.0,
+      106.0,
+      324.0,
+      1825.0
+    ],
+    "grid_source": "inner-training events only; fixed before development fits; reused unchanged at confirmation",
+    "grid_source_sha256": "1eaa1c0e5c9bfa49c8549f8c83e3544d239d5f25fea1df6df156111523f5aa4c"
+  },
+  "hazard_v3_phase": "development",
+  "pod_id": "x0w6ewmpinpsuk",
+  "results": {
+    "seed": 1102,
+    "n_train": 5826,
+    "minimum_site_n": 1942,
+    "federated_dp": {
+      "c_index": 0.622667723351063,
+      "heldout_nll": 0.291314398273978,
+      "n_evaluated_public_subjects": 1458,
+      "n_invalid_public_subjects": 0
+    },
+    "model_sha256": "5021edd63aecb7dac6f20557b97bd244ade0917c331a0e329fc0fbced0cf50af",
+    "site_mechanisms": [
+      {
+        "site": 1,
+        "adjacency": "replace_one",
+        "noise_multiplier": 2.2021484375,
+        "clipping_norm": 1,
+        "accounting_population": 1942,
+        "steps_per_epoch": 31,
+        "sample_rate": 0.032258064516129,
+        "expected_batch_size": 62,
+        "total_epochs": 80,
+        "total_steps": 2480,
+        "policy_hash": "3e2175dc376f07173c36925696986d4c0505d85f831d8e606816e5e190a91c05",
+        "calibration": "trusted PRV with RDP fallback",
+        "verification_accountant": "PRV",
+        "add_remove_delta": 1.79862099620916e-07,
+        "independently_recomputed_replace_one_epsilon": 7.9922450642684,
+        "independently_recomputed_replace_one_delta": 9.961996457226e-06
+      },
+      {
+        "site": 2,
+        "adjacency": "replace_one",
+        "noise_multiplier": 2.2021484375,
+        "clipping_norm": 1,
+        "accounting_population": 1942,
+        "steps_per_epoch": 31,
+        "sample_rate": 0.032258064516129,
+        "expected_batch_size": 62,
+        "total_epochs": 80,
+        "total_steps": 2480,
+        "policy_hash": "3e2175dc376f07173c36925696986d4c0505d85f831d8e606816e5e190a91c05",
+        "calibration": "trusted PRV with RDP fallback",
+        "verification_accountant": "PRV",
+        "add_remove_delta": 1.79862099620916e-07,
+        "independently_recomputed_replace_one_epsilon": 7.9922450642684,
+        "independently_recomputed_replace_one_delta": 9.961996457226e-06
+      },
+      {
+        "site": 3,
+        "adjacency": "replace_one",
+        "noise_multiplier": 2.2021484375,
+        "clipping_norm": 1,
+        "accounting_population": 1942,
+        "steps_per_epoch": 31,
+        "sample_rate": 0.032258064516129,
+        "expected_batch_size": 62,
+        "total_epochs": 80,
+        "total_steps": 2480,
+        "policy_hash": "3e2175dc376f07173c36925696986d4c0505d85f831d8e606816e5e190a91c05",
+        "calibration": "trusted PRV with RDP fallback",
+        "verification_accountant": "PRV",
+        "add_remove_delta": 1.79862099620916e-07,
+        "independently_recomputed_replace_one_epsilon": 7.9922450642684,
+        "independently_recomputed_replace_one_delta": 9.961996457226e-06
+      }
+    ],
+    "versions": {
+      "python": "3.11.10",
+      "torch": "2.4.1+cpu",
+      "opacus": "1.5.2",
+      "flwr": "1.31.0",
+      "numpy": "1.26.4",
+      "scipy": "1.17.1",
+      "pandas": "3.0.6",
+      "cuda_available": false,
+      "platform": "Linux-6.8.0-100-generic-x86_64-with-glibc2.35",
+      "deterministic_algorithms": true,
+      "nonprivate_twin_device": "cpu",
+      "dp_twin_device": "cpu",
+      "heldout_evaluation_device": "cpu",
+      "federation_device_rule": "Frozen _dp_fit; verified CPU-only pod"
+    },
+    "twin_matching": {
+      "architecture_loss_preprocessing_initialization_optimizer_schedule": "exact",
+      "initialization_seed": 0,
+      "pooled_epochs": 80,
+      "aggregation": "fedavg",
+      "aggregation_implementation": "Flower 1.31.0 same strategy, one pooled endpoint",
+      "differences": "Pooled population changes q and sequential step count; nonprivate removes clipping/noise; fixed unit site weights; independent unrecorded DP secrets; development omits twins."
+    },
+    "elapsed_s": 2.82683131843805,
+    "max_rss_native_units": 608160,
+    "memory_measurement": {
+      "scope": "central/scoring process peak resident memory",
+      "native_unit": "KiB",
+      "federation_peak_memory_measured": false
+    }
+  },
+  "federation": {
+    "cleanup_ok": true,
+    "n_clients": 3,
+    "n_failures": 0,
+    "n_rounds_run": 20,
+    "model_sha256": "5021edd63aecb7dac6f20557b97bd244ade0917c331a0e329fc0fbced0cf50af",
+    "elapsed_s": 936.992862701416
+  },
+  "artifact_checksum": "5021edd63aecb7dac6f20557b97bd244ade0917c331a0e329fc0fbced0cf50af",
+  "campaign_tool_sha256": {
+    "campaign_lib.R": "f0d8ed207a29f66b2280294e49a3d76894a3cb9d484a997b76342a19bb910a0a",
+    "run_cell.R": "3324831e60512b4f30336af60cc733a2038c80cbc09801fe2824229b605821b6",
+    "central_and_score.py": "46a53f898b48684db959c0c82c33019bd0f8665f436946e94d3430106af28e96",
+    "metrics.py": "d60fe85744bc49a4d819e90fa27b87f947734872c8ad22ea9e30f1248049962a"
+  },
+  "topology": "3 isolated DSLite custodian workers and local Flower transport",
+  "cleanup_ok": true,
+  "finished_utc": "2026-09-22T02:43:02Z",
+  "elapsed_s": 943.984093904495,
+  "driver_returncode": 0,
+  "resource_policy": {
+    "cpu_affinity": [
+      0
+    ],
+    "startup_spacing_seconds": 30,
+    "reason": "OS resource scheduling; package thread environment is intentionally sanitized"
+  }
+}
