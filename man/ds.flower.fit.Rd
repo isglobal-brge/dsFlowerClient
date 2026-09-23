@@ -133,3 +133,9 @@ DataSHIELD data, build a recipe, run Flower, clean up server-side handles,
 and return the trained run object. Advanced users can call
 \code{ds.flower.submit()} directly for finer control.
 }
+\details{
+Segmentation accepts \code{model_params} with
+  \code{decoder_init = "public:<checkpoint-id>"} and a matching
+  \code{decoder}; each node must install and allowlist that checkpoint.
+  See \code{ds.flower.model.pytorch_resnet18_segmentation()}.
+}

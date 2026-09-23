@@ -9,7 +9,11 @@ ds.flower.model(name = "pytorch_logreg", ...)
 \arguments{
 \item{name}{Character model name or a \code{dsflower_model} object.}
 
-\item{...}{Arguments passed to the selected concrete model constructor.}
+\item{...}{Arguments passed to the selected concrete model constructor.
+For \code{pytorch_resnet18_segmentation}, \code{decoder_init = "random"}
+is the default; \code{"public:<checkpoint-id>"} requests a checkpoint
+installed and allowlisted by each custodian. See
+\code{ds.flower.model.pytorch_resnet18_segmentation()}.}
 }
 \value{
 A \code{dsflower_model} object.

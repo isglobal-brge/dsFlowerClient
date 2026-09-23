@@ -48,10 +48,12 @@ options(
 )
 ```
 
-Only the dedicated 256-bit node secret persists across service sessions. It must
+The dedicated 256-bit node secret persists across service sessions. It must
 remain writable only by the service account and be protected against cloning.
-There is no privacy database, historical counter or admission decision based on
-earlier trainings. `datashield.seed` is not used as the DP key.
+Gated-Hook release-cache entries also persist, while bounded coordinate claims
+protect active runs. This retry state is separate from cumulative privacy-budget
+accounting: there is no cross-training budget balance. Cache-capacity checks
+still govern storage admission. `datashield.seed` is not used as the DP key.
 
 ### Survival requires custodian patient privacy
 

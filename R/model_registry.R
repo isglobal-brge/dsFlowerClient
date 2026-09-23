@@ -544,6 +544,9 @@ ds.flower.register_model <- function(name, track, generate, loss = NULL,
   if (identical(model$name, "pytorch_discrete_hazard")) {
     .survival_config(resolved, "discrete_hazard_nll")
   }
+  if (identical(model$name, "pytorch_resnet18_segmentation")) {
+    .segmentation_decoder_init(resolved$decoder_init)
+  }
   shape_dims <- switch(model$name,
     pytorch_cnn = 3L,
     pytorch_resnet = 3L,
@@ -1088,10 +1091,12 @@ ds.flower.model_parameters <- function(name) {
       loss = "segmentation_bce_dice",
       defaults = utils::modifyList(neural_defaults, list(
         learning_rate = 0.001, batch_size = 8L, alpha = 0.5, decoder = "current",
+        decoder_init = "random",
         mask_values = "0,255", image_asset = "images", mask_asset = "masks",
         image_path_col = "relative_path", sample_id_col = "image_id")),
       parameter_types = with_common(
         alpha = "number", mask_values = "character", decoder = "character",
+        decoder_init = "character",
         image_asset = "character", mask_asset = "character",
         image_path_col = "character", sample_id_col = "character",
         mask_empty_col = "character", subject_id_col = "character"),

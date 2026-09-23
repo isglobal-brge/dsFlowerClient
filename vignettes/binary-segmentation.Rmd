@@ -84,15 +84,81 @@ The loss mixes per-image mean BCE and smoothed Dice with `alpha=0.5` and
 smoothing 1. `alpha=1` is the declared BCE ablation. There is no batch-wide Dice,
 trainable encoder, mixed precision, or image augmentation in this first profile.
 
-The constructor defaults to random initialization and the 41,537-parameter
+The constructor defaults to `decoder_init="random"` and the 41,537-parameter
 `decoder="current"`. It also supports `decoder="narrow"` (9,521 parameters;
 convolution channels 128 to 8, 8 to 4, 4 to 1) and `decoder="pointwise"` (129
-parameters). Selecting the narrow architecture does not load a public decoder
-checkpoint. The v5 benchmark used the narrow decoder with a BUSI-pretrained
-checkpoint applied by campaign-only tooling outside the trusted DP runner.
-That tooling replaced both the live decoder parameters and the initial arrays
-transmitted by Flower. The constructor has no public-checkpoint loading
-argument, so the example above does not reproduce the v5 initialization.
+parameters). Selecting the narrow architecture alone retains random
+initialization.
+
+## Custodian-enabled public decoder initialization
+
+The registry also accepts `decoder_init="public:<checkpoint-id>"`. Each node
+must have the named public checkpoint installed under its protected state and
+admitted by its custodian. The ID is a 1--64 character lowercase ASCII identifier
+starting with a letter or digit; subsequent characters may also be dots,
+underscores or hyphens. Paths, URLs and uploaded weights are not accepted.
+Select the checkpoint's decoder architecture explicitly:
+
+```r
+model <- ds.flower.model.pytorch_resnet18_segmentation(
+  decoder = "narrow",
+  decoder_init = "public:busi-v5-epochs60-seed20260919"
+)
+# The generic constructor uses the same validation.
+model <- ds.flower.model(
+  "pytorch_resnet18_segmentation", decoder = "narrow",
+  decoder_init = "public:busi-v5-epochs60-seed20260919"
+)
+# Or supply the contract through fit's model_params.
+fit <- ds.flower.fit(
+  conns, symbol = "samples", target = "mask_path",
+  model = "pytorch_resnet18_segmentation",
+  model_params = list(
+    decoder = "narrow", decoder_init = "public:busi-v5-epochs60-seed20260919"
+  ),
+  task = "segmentation", data_kind = "image", rounds = 5L,
+  output_dir = "segmentation-public-model"
+)
+```
+
+On each node, an administrator installs a checkpoint directory containing
+`manifest.json`, the decoder checkpoint and its provenance evidence under
+`dirname(node_secret_path)/segmentation-public-checkpoints/<checkpoint-id>/`.
+The custodian sets `dsflower.segmentation_public_checkpoints` to a named character
+vector mapping admitted IDs to their exact manifest SHA-256 values; the default
+allowlist is empty. Installation, file permissions, the three BUSI epochs60
+checkpoints and their manifest hashes are documented in the node package's
+`inst/extdata/segmentation-public-checkpoints/README.md`, also available at
+`system.file("extdata", "segmentation-public-checkpoints", "README.md", package="dsFlower")`.
+The manifests and evidence are included; the three original NPZ binaries remain
+pending reviewer recovery from the evaluation pod. The documented installer
+verifies the recovered bytes before making them available in node storage.
+Only the custodian sets this policy. The analyst supplies the checkpoint ID,
+never provenance, digest pins or filesystem locations.
+
+Before reading private metadata or images, the trusted node verifies the
+allowlisted manifest, its dataset and licence evidence, the pretraining
+protocol, the checkpoint and every decoder tensor digest. It also checks the
+frozen encoder identity and decoder architecture. Missing, mismatched or
+unapproved checkpoints fail without a random fallback. The runner repeats
+verification, binds the selected ID and verified hashes into request-selection
+v2 and its semantic seed contract, and records the provenance in the node run manifest and release
+record. The first round starts from the public weights; subsequent rounds
+continue from the federated decoder. The private DP budget pays for adaptation:
+the accountant, clipping, sampler, encoder and training path are unchanged.
+
+The node returns only the verified public checkpoint bytes and provenance in
+its preparation status. The client checks that all nodes agree, verifies the
+checkpoint digest, and initializes the aggregation server from those same
+weights. This also gives momentum and adaptive aggregation strategies the
+correct starting model. The analyst needs no separately installed checkpoint
+copy. Saved model metadata retains the public provenance without duplicating
+the checkpoint bytes.
+
+The historical v5 benchmark applied the same public BUSI checkpoints through
+campaign tooling. This registry route makes custodian enablement independent
+of that tooling; selecting an initialization alone does not reproduce the
+benchmark's full schedule or establish a new utility claim.
 
 ## Local prediction and public evaluation
 
@@ -186,7 +252,9 @@ The dataset ZIP SHA256 is
 `7fffc86a517934da55021f66641d81383058d26a30adb0ffab3780ca7e52d57d`;
 the pretraining audit SHA256 is
 `d59334151e074de56afaaec81e92930ddaad8371f7f2665577096ce4ff7d9d57`.
-Dataset and checkpoint tensors are not distributed with the package.
+Dataset images are not distributed with the package. The node's public
+checkpoint bundle instructions describe the separately installed decoder tensors
+and preserve the mirror's licence declaration and rights-attribution limitation.
 
 Selection excluded outer-test subjects, but confirmation reused previously
 inspected public outer splits. These results describe public benchmark

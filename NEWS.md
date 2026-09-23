@@ -1,5 +1,8 @@
 # dsFlowerClient 0.6.0
 
+This release combines request-selection identity v2, the durable gated-Hook
+release cache and custodian-approved public segmentation initialisation.
+
 * Synchronize the canonical runner's durable gated-Hook release cache. Exact
   retries replay the original arrays and constant metrics for deterministic and
   nondeterministic applications, using a domain-separated key from the v2
@@ -10,6 +13,17 @@
   before private work, serialize identical requests and pin active-run entries;
   cross-run replay is guaranteed only while entries remain retained. Declarative
   tracks and the existing minimum-duration envelope are unchanged.
+
+* Expose segmentation `decoder_init = "random"` (the unchanged default) or
+  `"public:<checkpoint-id>"` through the registry, named constructor and fit
+  routes. Public initialization requires a matching decoder architecture and
+  a checkpoint installed and allowlisted by every custodian. The trusted runner
+  verifies provenance and tensor digests before private access, binds the
+  checkpoint to semantic randomness, and records it in node manifests and
+  release records. The client relays the nodes' agreed public weights to
+  initialize every aggregation strategy and saves node-verified provenance in
+  model metadata; analyst parameters cannot set node-owned digest pins or policy.
+  The DP training contract and encoder pin are unchanged.
 
 # dsFlowerClient 0.5.3
 

@@ -402,6 +402,9 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       created_at = Sys.time(),
       n_clients  = length(conns)
     )
+    if (!is.null(recipe$segmentation_public_initialization)) {
+      model_data$segmentation_public_initialization <- recipe$segmentation_public_initialization
+    }
     saved_file_name <- if (atomic_native_holdout) {
       basename(save_name)
     } else {
@@ -468,10 +471,15 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
           "failed"
         })
     }
+    if (!is.null(recipe$segmentation_public_initialization)) {
+      meta$segmentation_public_initialization <- recipe$segmentation_public_initialization
+    }
     jsonlite::write_json(meta, file.path(output_dir, "metadata.json"),
                          auto_unbox = TRUE, pretty = TRUE,
-                         digits = if (!is.null(recipe$survival_config)) I(17) else 4,
-                         null = if (native_tree && available) "null" else "list")
+                         digits = if (!is.null(recipe$survival_config) ||
+                           !is.null(recipe$segmentation_public_initialization)) I(17) else 4,
+                         null = if ((native_tree && available) ||
+                           !is.null(recipe$segmentation_public_initialization)) "null" else "list")
 
     if (atomic_native_holdout) {
       destination_exists <- file.exists(final_output_dir) ||

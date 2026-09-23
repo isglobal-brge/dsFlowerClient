@@ -159,10 +159,13 @@ count.
 
 Noise and training randomness are derived from a canonical semantic identity
 with HMAC-SHA256 under the node's dedicated 256-bit secret. Equivalent declarative
-trainings recompute the same streams without a query database; gated HookApps
+trainings derive the same streams directly from that identity; gated HookApps
 add a durable node-owned cache of exact releases. The v2 identity binds effective
 data, node-authored source/column selections, public model, mechanism, bounds and
-round. The secret is not a client seed, R RNG state or `datashield.seed`.
+round. Public segmentation initialisation additionally binds the node-verified
+checkpoint ID, manifest digest and checkpoint digest. Distinct selections remain
+separate even when their private tensors or statistics coincide. The secret is
+not a client seed, R RNG state or `datashield.seed`.
 
 The clipping, sensitivity and accounting contracts implement the standard
 `(epsilon, delta)` mechanisms under their mathematical model. The shipped
@@ -658,6 +661,23 @@ See the [binary segmentation guide](https://isglobal-brge.github.io/dsFlowerClie
 for schema roles, fixed preprocessing, loss and channel-B evaluation boundaries.
 Utility claims require the executed benchmark evidence; adding the contract does
 not establish a Dice floor.
+
+`decoder_init = "random"` remains the default. To use public initialisation,
+select `decoder = "narrow"` and
+`decoder_init = "public:busi-v5-epochs60-seed20260919"` (or another admitted ID).
+Every participating custodian must install the original checkpoint and allowlist
+its exact manifest digest. Nodes verify its evidence, weights and tensor hashes
+before private staging; the coordinator starts from their agreed public weights.
+Verified identity enters request-selection v2 and the seed contract, with
+provenance saved in node release records and client model metadata. The existing
+DP accountant, clipping, sampler and training loop remain unchanged.
+
+The server's `inst/extdata/segmentation-public-checkpoints/README.md` describes
+the three epochs60 manifests and recovery/installation instructions.
+The original binaries remain unavailable until reviewer recovery from the
+evaluation pod; public initialisation fails closed until installation and
+verification succeed. No campaign tooling is required. This declarative
+segmentation route does not use the gated-Hook release cache.
 
 ## Authors
 

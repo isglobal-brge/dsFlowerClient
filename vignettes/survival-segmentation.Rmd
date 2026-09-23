@@ -231,6 +231,15 @@ The campaign's audited benchmark binding loads public decoder tensors before
 private training. These results do not describe the default random decoder
 initialisation or a general analyst checkpoint-upload API.
 
+The segmentation registry now exposes `decoder_init="public:<checkpoint-id>"`
+with a matching `decoder="narrow"` for these checkpoints. Each custodian must
+install the provenance-bound public bundle and allowlist its exact manifest
+digest. The trusted runner verifies every digest before private access and
+records checkpoint provenance in the node manifest and release record. The
+default remains `decoder_init="random"`; the private training and accounting
+contract is unchanged. The [binary segmentation guide](binary-segmentation.html#custodian-enabled-public-decoder-initialization)
+documents installation and named, generic and fit examples.
+
 The original packaged batch files were exact v3 copies. `RECONCILE_V5.md` and
 `audit-results.json` record the stale-file finding and fresh artifact-inference
 checks. Current `batch16/` and `batch64/` records now contain the actual v5
