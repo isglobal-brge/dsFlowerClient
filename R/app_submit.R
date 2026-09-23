@@ -413,6 +413,9 @@
 #'   binary/regression native-tree models. It returns one pooled DP OOF result
 #'   and never saves fold models or predictions. Prefer the user-facing
 #'   \code{ds.flower.cross_validate()} wrapper.
+#' @param public_checkpoint_file Local public checkpoint NPZ or complete bundle for
+#'   the coordinator when using \code{decoder_init = "resource:<handle-symbol>"}.
+#'   It must match every node's admitted identity and grants no node authorization.
 #' @return A \code{dsflower_run}, or a \code{dsflower_cv} when
 #'   \code{cross_validation} is set.
 #' @export
@@ -430,7 +433,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              cross_validation = NULL,
                              allow_insecure_http = getOption(
                                "dsflower.dsi_allow_insecure_http", character()),
-                             resource_kind = "imaging") {
+                             resource_kind = "imaging",
+                             public_checkpoint_file = NULL) {
   holdout_spec <- .normalize_holdout(holdout)
   cv_spec <- .normalize_cross_validation(cross_validation)
   if (!is.null(holdout_spec) && !is.null(cv_spec)) {
@@ -486,6 +490,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   model$params <- .dsflower_resolve_model_params(
     registered_model, model_params)
   sub <- .emit_submission(model)
+  if (!identical(sub$loss, "segmentation_bce_dice") && !is.null(public_checkpoint_file)) {
+    stop("public_checkpoint_file is supported only for segmentation initialization.", call. = FALSE)
+  }
   if (.is_survival_loss(sub$loss) && isTRUE(.DSFLOWER_HPO_CONTEXT$active)) {
     stop("Survival training inside HPO is unsupported; use a preregistered ",
          "public training schedule.", call. = FALSE)
@@ -695,6 +702,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   } else {
     preflight_capabilities
   }
+  segmentation_input <- if (identical(sub$loss, "segmentation_bce_dice")) {
+    .segmentation_client_initialization(conns, sub$params, public_checkpoint_file)
+  } else NULL
+  if (!is.null(segmentation_input$uploads)) {
+    on.exit(.segmentation_abort_uploads(conns, segmentation_input$uploads), add = TRUE)
+  }
   # Tabular runs need a non-empty feature set. The symbol path auto-detects above; data=/
   # resource= inputs must pass `features` explicitly -- fail with a clear message rather than
   # the downstream "num-features must be set" from the node.
@@ -801,11 +814,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       privacy_clipping_norm = cv_capabilities$privacy_clipping_norm)
     prepare_config[["cv-job-sha256"]] <- cv_job_sha256
   }
-  prepared <- ds.flower.nodes.prepare(
-    conns, hsym, target_column = target, feature_columns = features,
-    run_config = prepare_config)
+  prepared <- .segmentation_prepare_nodes(
+    conns, hsym, target, features, prepare_config, segmentation_input)
   segmentation_initialization <- if (identical(sub$loss, "segmentation_bce_dice")) {
-    .segmentation_server_initialization(prepared, sub$params, names(conns))
+    .segmentation_server_initialization(prepared, sub$params, names(conns), segmentation_input)
   } else NULL
 
   if (!is.null(up)) {
@@ -888,6 +900,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     if (identical(sub$loss, "segmentation_bce_dice")) {
       segmentation_config <- .segmentation_public_config(p)
       if (!is.null(segmentation_initialization)) {
+        segmentation_config[["segmentation-decoder-init"]] <- if (
+          startsWith(sub$params$decoder_init, "client:")) "client" else "resource"
         segmentation_config[["segmentation-public-initialization-b64"]] <-
           segmentation_initialization$b64
       }

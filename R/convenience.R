@@ -58,8 +58,8 @@
 #' @param name Character model name or a \code{dsflower_model} object.
 #' @param ... Arguments passed to the selected concrete model constructor.
 #'   For \code{pytorch_resnet18_segmentation}, \code{decoder_init = "random"}
-#'   is the default; \code{"public:<checkpoint-id>"} requests a checkpoint
-#'   installed and allowlisted by each custodian. See
+#'   is the default; \code{"client:<bundle-path>"} declares public material and
+#'   \code{"resource:<handle-symbol>"} selects custodian-admitted material. See
 #'   \code{ds.flower.model.pytorch_resnet18_segmentation()}.
 #' @return A \code{dsflower_model} object.
 #' @export
@@ -246,9 +246,12 @@ ds.flower.task <- function(name = "classification") {
 #'   required single round per fold; an explicit value is never overwritten.
 #'   Prefer \code{ds.flower.cross_validate()} for this workflow.
 #' @details Segmentation accepts \code{model_params} with
-#'   \code{decoder_init = "public:<checkpoint-id>"} and a matching
-#'   \code{decoder}; each node must install and allowlist that checkpoint.
+#'   \code{decoder_init = "client:<bundle-path>"} for declared public material, or
+#'   \code{"resource:<handle-symbol>"} for a custodian-admitted checkpoint.
+#'   The selected \code{decoder} must match the bundle.
 #'   See \code{ds.flower.model.pytorch_resnet18_segmentation()}.
+#' @param public_checkpoint_file Local public checkpoint NPZ or complete bundle for
+#'   resource initialization; it is checked against each node's admitted identity.
 #' @return A \code{dsflower_run} object, or a \code{dsflower_cv} when
 #'   \code{cross_validation} is set.
 #' @export
@@ -278,7 +281,8 @@ ds.flower.fit <- function(conns,
                           data_kind = NULL,
                           holdout = NULL,
                           cross_validation = NULL,
-                          resource_kind = "imaging") {
+                          resource_kind = "imaging",
+                          public_checkpoint_file = NULL) {
   # Set the progress-verbosity option at the outermost entry point so it stays
   # active through every nested step, including the connection teardown that runs
   # in the submission pipeline's on.exit cleanup.
@@ -406,6 +410,7 @@ ds.flower.fit <- function(conns,
     holdout = holdout,
     cross_validation = cross_validation,
     resource_kind = resource_kind,
+    public_checkpoint_file = public_checkpoint_file,
     output_dir = output_dir, output_name = output_name,
     verbose = verbose, silent = silent)
 }

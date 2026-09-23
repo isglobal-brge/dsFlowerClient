@@ -30,7 +30,8 @@ ds.flower.fit(
   data_kind = NULL,
   holdout = NULL,
   cross_validation = NULL,
-  resource_kind = "imaging"
+  resource_kind = "imaging",
+  public_checkpoint_file = NULL
 )
 }
 \arguments{
@@ -122,6 +123,9 @@ Prefer \code{ds.flower.cross_validate()} for this workflow.}
 
 \item{resource_kind}{Explicit Resource route, exactly
 \code{"imaging"} or \code{"tabular"}.}
+
+\item{public_checkpoint_file}{Local public checkpoint NPZ or complete bundle for
+resource initialization; it is checked against each node's admitted identity.}
 }
 \value{
 A \code{dsflower_run} object, or a \code{dsflower_cv} when
@@ -135,7 +139,8 @@ and return the trained run object. Advanced users can call
 }
 \details{
 Segmentation accepts \code{model_params} with
-  \code{decoder_init = "public:<checkpoint-id>"} and a matching
-  \code{decoder}; each node must install and allowlist that checkpoint.
+  \code{decoder_init = "client:<bundle-path>"} for declared public material, or
+  \code{"resource:<handle-symbol>"} for a custodian-admitted checkpoint.
+  The selected \code{decoder} must match the bundle.
   See \code{ds.flower.model.pytorch_resnet18_segmentation()}.
 }

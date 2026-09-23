@@ -28,7 +28,8 @@ ds.flower.submit(
   holdout = NULL,
   cross_validation = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
-  resource_kind = "imaging"
+  resource_kind = "imaging",
+  public_checkpoint_file = NULL
 )
 }
 \arguments{
@@ -104,6 +105,10 @@ transport security; use it only behind an independently trusted network.}
 
 \item{resource_kind}{Explicit Resource route, exactly
 \code{"imaging"} or \code{"tabular"}.}
+
+\item{public_checkpoint_file}{Local public checkpoint NPZ or complete bundle for
+the coordinator when using \code{decoder_init = "resource:<handle-symbol>"}.
+It must match every node's admitted identity and grants no node authorization.}
 }
 \value{
 A \code{dsflower_run}, or a \code{dsflower_cv} when

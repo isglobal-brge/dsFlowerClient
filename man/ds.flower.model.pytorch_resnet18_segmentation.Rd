@@ -16,13 +16,13 @@ ds.flower.model.pytorch_resnet18_segmentation(
 
 \item{mask_values}{Declared binary PNG vocabulary: "0,255" or "0,1".}
 
-\item{decoder_init}{Decoder initialization: \code{"random"} (default), or
-\code{"public:<checkpoint-id>"} for an administrator-installed checkpoint
-admitted by each node's custodian allowlist. IDs contain 1--64 lowercase
-ASCII letters, digits, dots, underscores or hyphens, starting with a letter
-or digit. The selected \code{decoder} architecture must match the checkpoint.
-Nodes verify checkpoint and provenance digests before private data access;
-an unavailable, unapproved or invalid checkpoint fails without fallback.}
+\item{decoder_init}{Decoder initialization: \code{"random"} (default),
+\code{"client:<local-bundle-path>"} for analyst-declared public material, or
+\code{"resource:<handle-symbol>"} for a checkpoint admitted server-side by
+\code{flowerCheckpointInitDS()}. Resources require an independent local
+\code{public_checkpoint_file} in \code{ds.flower.fit()} or
+\code{ds.flower.submit()}. The selected decoder must match the bundle.
+Nodes verify the content before private staging and execution, without fallback.}
 
 \item{...}{Additional typed parameters accepted by
 \code{ds.flower.model("pytorch_resnet18_segmentation")}, including
@@ -40,9 +40,11 @@ column supplies relative PNG mask paths; images may be PNG or JPEG.
 }
 \details{
 Public initialization changes the starting decoder weights. The
-  frozen encoder and private DP training contract are unchanged. Custodians
-  install the public bundle and set \code{dsflower.segmentation_public_checkpoints}
-  on each node; see the bundle's \code{README.md} under
-  \code{system.file("extdata", "segmentation-public-checkpoints", package = "dsFlower")}.
-  The binary-segmentation vignette shows named, generic and fit routes.
+  frozen encoder and private DP training contract remain pinned. Bundles include
+  the verified encoder and provenance evidence. Custodians set
+  \code{dsflower.public_initialisation} to \code{"analyst_or_resource"},
+  \code{"resource_only"}, or \code{"none"}; a per-contract option may override
+  the default. Resource registration controls institutional material, large
+  artifacts and nodes that admit no analyst-supplied weights. The client route
+  supports research iteration with declared public material.
 }

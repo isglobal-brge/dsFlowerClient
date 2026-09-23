@@ -11,8 +11,8 @@ ds.flower.model(name = "pytorch_logreg", ...)
 
 \item{...}{Arguments passed to the selected concrete model constructor.
 For \code{pytorch_resnet18_segmentation}, \code{decoder_init = "random"}
-is the default; \code{"public:<checkpoint-id>"} requests a checkpoint
-installed and allowlisted by each custodian. See
+is the default; \code{"client:<bundle-path>"} declares public material and
+\code{"resource:<handle-symbol>"} selects custodian-admitted material. See
 \code{ds.flower.model.pytorch_resnet18_segmentation()}.}
 }
 \value{

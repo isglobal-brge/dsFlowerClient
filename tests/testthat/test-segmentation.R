@@ -13,17 +13,20 @@ segmentation_model_fixture <- function() {
   path
 }
 
-segmentation_initialization_fixture <- function(id = "busi-v5-epochs60-seed20260919") {
-  bytes <- as.raw(1:8)
+segmentation_initialization_fixture <- function() {
   list(provenance = list(
     manifest_sha256 = strrep("a", 64L),
-    manifest = list(checkpoint_id = id, model_id = "pytorch_resnet18_segmentation",
-      decoder = "narrow", dataset = list(publisher_md5 = NULL,
-        numeric_provenance = 0.12345678901234567),
-      checkpoint = list(file = "decoder.npz",
-        sha256 = digest::digest(bytes, algo = "sha256", serialize = FALSE),
-        size_bytes = length(bytes)))),
-    checkpoint_base64 = jsonlite::base64_enc(bytes))
+    manifest = list(checkpoint_id = "synthetic", model_id = "pytorch_resnet18_segmentation",
+      decoder = "narrow", dataset = list(numeric_provenance = 0.12345678901234567))),
+    checkpoint_sha256 = strrep("b", 64L), encoder_sha256 = strrep("c", 64L),
+    tensor_schema = list(list(name = "0", shape = list(1L), dtype = "float32", sha256 = strrep("d", 64L))),
+    identity_version = "dsflower-public-init-v1")
+}
+
+segmentation_local_fixture <- function(summary = segmentation_initialization_fixture()) {
+  list(summary = summary,
+    payload = c(summary, list(local_arrays_b64 = jsonlite::base64_enc(as.raw(1:8)))),
+    uploads = NULL, origin = paste0("resource:", summary$provenance$manifest_sha256))
 }
 
 test_that("segmentation named, generic and recipe routes agree", {
@@ -71,7 +74,7 @@ test_that("segmentation codegen pins the decoder and spatial extractor", {
 })
 
 test_that("public decoder initialization has one validated constructor contract", {
-  init <- "public:busi-v5-epochs60-seed20260919"
+  init <- "resource:CKPT"
   named <- ds.flower.model.pytorch_resnet18_segmentation(
     decoder = "narrow", decoder_init = init)
   generic <- ds.flower.model("pytorch_resnet18_segmentation",
@@ -97,28 +100,31 @@ test_that("public decoder initialization has one validated constructor contract"
         ds.flower.model.pytorch_resnet18_segmentation())$params))
 })
 
-test_that("public decoder ids reject paths, malformed values and node-owned pins", {
-  invalid <- list("", "public:", "PUBLIC:valid", "public:Upper", "public:-id",
-    "public:a/b", "public:../checkpoint", "public:https://example.org/a",
-    "public:a b", "public:id\n", "public:caf\u00e9", " random",
-    paste0("public:", strrep("a", 65L)), NA_character_, TRUE, 1,
-    c("random", "public:id"), list("public:id"), NULL)
+test_that("public decoder selectors separate local bundles from assigned handles", {
+  invalid <- list("", "public:old-registry", "client:", "client:https://example.org/a",
+    "resource:", "resource:/private/checkpoint", "resource:../checkpoint",
+    "resource:https://example.org/a", "resource:a b", "resource:id\n", " random",
+    paste0("resource:", strrep("a", 129L)), NA_character_, TRUE, 1,
+    c("random", "resource:id"), list("resource:id"), NULL)
   for (value in invalid) {
     expect_error(ds.flower.model.pytorch_resnet18_segmentation(decoder_init = value),
                  "decoder_init")
   }
-  for (value in c("public:a", "public:0._-", paste0("public:", strrep("a", 64L)))) {
+  for (value in c("resource:CKPT", "resource:checkpoint_1", "client:/tmp/public bundle",
+                  "client:./checkpoint.zip")) {
     expect_identical(ds.flower.model.pytorch_resnet18_segmentation(
       decoder_init = value)$params$decoder_init, value)
   }
+  model <- ds.flower.model.pytorch_resnet18_segmentation(decoder_init = "client:/local/model.zip")
+  config <- dsFlowerClient:::.segmentation_public_config(dsFlowerClient:::.emit_submission(model)$params)
+  expect_identical(config[["segmentation-decoder-init"]], "client")
+  expect_false(any(grepl("/local/", unlist(config), fixed = TRUE)))
   for (key in c("segmentation_public_checkpoint", "segmentation_public_provenance",
-                "segmentation_public_manifest_sha256", "segmentation_checkpoint_sha256")) {
+                "segmentation_public_manifest_sha256", "segmentation_checkpoint_sha256",
+                "dsflower.public_initialisation")) {
     expect_error(do.call(ds.flower.model, c(list("pytorch_resnet18_segmentation"),
       setNames(list("analyst-supplied"), key))), "Unknown parameter")
   }
-  altered <- ds.flower.model.pytorch_resnet18_segmentation()
-  altered$params$decoder_init <- "public:../../untrusted"
-  expect_error(ds.flower.model(altered), "decoder_init")
 })
 
 test_that("segmentation mask target and unsupported private scoring fail in public preflight", {
@@ -160,9 +166,9 @@ test_that("segmentation fit dispatch preserves image roles and task", {
   ds.flower.fit(conns = list(site = TRUE), symbol = "D", target = "mask_path",
     model = "pytorch_resnet18_segmentation", task = "segmentation", data_kind = "image",
     model_params = list(decoder = "narrow",
-      decoder_init = "public:busi-v5-epochs60-seed20260919"))
+      decoder_init = "resource:CKPT"))
   expect_identical(seen$model$params$decoder, "narrow")
-  expect_identical(seen$model$params$decoder_init, "public:busi-v5-epochs60-seed20260919")
+  expect_identical(seen$model$params$decoder_init, "resource:CKPT")
 })
 
 test_that("saved segmentation pins are required before local input reads", {
@@ -193,6 +199,7 @@ test_that("segmentation submit stages only the pinned public image and mask role
   prepared <- NULL
   local_mocked_bindings(
     .require_flwr_cli = function(...) TRUE,
+    .segmentation_client_initialization = function(...) NULL,
     .validate_dsi_transport_security = function(...) TRUE,
     .validate_declarative_model_preflight = function(...) TRUE,
     ds.flower.connect = function(conns, ...) list(conns = conns, symbol = "flower"),
@@ -229,9 +236,9 @@ test_that("segmentation submit stages only the pinned public image and mask role
     conns = list(site = TRUE), model = "pytorch_resnet18_segmentation",
     symbol = "D", target = "mask_path", data_kind = "image",
     model_params = list(decoder = "narrow",
-      decoder_init = "public:busi-v5-epochs60-seed20260919")), "captured prepare")
+      decoder_init = "resource:CKPT")), "captured prepare")
   expect_identical(prepared$config[["segmentation-decoder-init"]],
-                   "public:busi-v5-epochs60-seed20260919")
+                   "resource:CKPT")
 })
 
 test_that("local segmentation transport emits canonical arrays and masks paths in failures", {
@@ -350,47 +357,51 @@ test_that("saved decoder initialization accepts legacy defaults and validates pu
   expect_false("segmentation-decoder-init" %in% names(contract$segmentation_config))
   meta$model_params$decoder <- "narrow"
   meta$model_spec <- dsFlowerClient:::.segmentation_decoder_spec("narrow")
-  meta$model_params$decoder_init <- "public:busi-v5-epochs60-seed20260919"
+  meta$model_params$decoder_init <- "resource:CKPT"
   jsonlite::write_json(meta, meta_path, auto_unbox = TRUE)
   contract <- dsFlowerClient:::.resolve_segmentation_prediction_contract(path)
-  expect_identical(contract$segmentation_config[["segmentation-decoder-init"]],
-                   meta$model_params$decoder_init)
+  expect_false("segmentation-decoder-init" %in% names(contract$segmentation_config))
+  meta$model_params$decoder_init <- "client:/analyst/research/checkpoint.zip"
+  jsonlite::write_json(meta, meta_path, auto_unbox = TRUE)
+  contract <- dsFlowerClient:::.resolve_segmentation_prediction_contract(path)
+  expect_false("segmentation-decoder-init" %in% names(contract$segmentation_config))
   meta$model_params$decoder_init <- "public:../untrusted"
   jsonlite::write_json(meta, meta_path, auto_unbox = TRUE)
   expect_error(ds.flower.predict(path, "private/path.png"), "decoder_init")
 })
 
-test_that("public initialization relays only identical verified node checkpoint bytes", {
-  payload <- segmentation_initialization_fixture()
-  params <- list(decoder = "narrow", decoder_init = "public:busi-v5-epochs60-seed20260919")
-  prepared <- list(per_site = list(a = list(segmentation_public_initialization = payload),
-                                  b = list(segmentation_public_initialization = payload)))
-  relay <- function(value = prepared) dsFlowerClient:::.segmentation_server_initialization(
-    value, params, c("a", "b"))
-  value <- relay()
+test_that("public initialization compares identities without node weight export", {
+  summary <- segmentation_initialization_fixture()
+  local <- segmentation_local_fixture(summary)
+  params <- list(decoder = "narrow", decoder_init = "resource:CKPT")
+  prepared <- list(per_site = list(a = list(public_initialisation = summary),
+                                  b = list(public_initialisation = summary)))
+  compare <- function(value = prepared) dsFlowerClient:::.segmentation_server_initialization(
+    value, params, c("a", "b"), local)
+  value <- compare()
   expect_identical(jsonlite::fromJSON(rawToChar(jsonlite::base64_dec(value$b64)),
-    simplifyVector = FALSE), payload)
-  expect_identical(value$provenance, payload$provenance)
+    simplifyVector = FALSE), jsonlite::fromJSON(jsonlite::toJSON(local$payload,
+      auto_unbox = TRUE, digits = I(17)), simplifyVector = FALSE))
+  expect_identical(value$provenance$initialisation, local$origin)
   expect_null(dsFlowerClient:::.segmentation_server_initialization(NULL,
     list(decoder_init = "random"), "site"))
   missing <- prepared
   missing$per_site$b <- NULL
-  expect_error(relay(missing), "every node")
+  expect_error(compare(missing), "every node")
+  for (key in c("checkpoint_sha256", "encoder_sha256")) {
+    bad <- prepared
+    bad$per_site$b$public_initialisation[[key]] <- strrep("e", 64L)
+    expect_error(compare(bad), "disagree")
+  }
   bad <- prepared
-  bad$per_site$b$segmentation_public_initialization$checkpoint_base64 <- "AQIDBA=="
-  expect_error(relay(bad), "digest mismatch")
+  bad$per_site$b$public_initialisation$provenance$manifest_sha256 <- strrep("e", 64L)
+  expect_error(compare(bad), "disagree")
   bad <- prepared
-  bad$per_site$b$segmentation_public_initialization$provenance$manifest_sha256 <- strrep("b", 64L)
-  expect_error(relay(bad), "disagree")
+  bad$per_site$b$public_initialisation$checkpoint_base64 <- "AQIDBA=="
+  expect_error(compare(bad), "invalid")
   bad <- prepared
-  bad$per_site$b$segmentation_public_initialization$provenance$manifest$checkpoint_id <- "another"
-  expect_error(relay(bad), "invalid")
-  bad <- prepared
-  bad$per_site$b$segmentation_public_initialization <- NULL
-  expect_error(relay(bad), "invalid")
-  bad <- prepared
-  bad$per_site$b$segmentation_public_initialization$checkpoint_base64 <- "invalid%"
-  expect_error(relay(bad), "invalid")
+  bad$per_site$b$public_initialisation <- NULL
+  expect_error(compare(bad), "invalid")
 })
 
 test_that("public submission initializes aggregation and persists node provenance", {
@@ -404,13 +415,14 @@ test_that("public submission initializes aggregation and persists node provenanc
   app_dir <- withr::local_tempdir()
   local_mocked_bindings(
     .require_flwr_cli = function(...) TRUE,
+    .segmentation_client_initialization = function(...) segmentation_local_fixture(payload),
     .validate_dsi_transport_security = function(...) TRUE,
     .validate_declarative_model_preflight = function(...) TRUE,
     ds.flower.connect = function(conns, ...) list(conns = conns, symbol = "flower"),
     .assert_runner_compatibility = function(...) list(),
     ds.flower.nodes.prepare = function(..., run_config) {
       prepared <<- run_config
-      list(per_site = list(site = list(segmentation_public_initialization = payload)))
+      list(per_site = list(site = list(public_initialisation = payload)))
     },
     .build_submission_app = function(sub, config_lines, ...) {
       app_config <<- config_lines
@@ -432,14 +444,14 @@ test_that("public submission initializes aggregation and persists node provenanc
   run <- ds.flower.submit(list(site = TRUE), symbol = "D", target = "mask_path",
     model = "pytorch_resnet18_segmentation", data_kind = "image", num_rounds = 1L,
     model_params = list(decoder = "narrow",
-      decoder_init = "public:busi-v5-epochs60-seed20260919"), strategy = "fedadam",
+      decoder_init = "resource:CKPT"), strategy = "fedadam",
     output_dir = withr::local_tempdir(), output_name = "public-decoder", silent = TRUE)
   expect_false("segmentation-public-initialization-b64" %in% names(prepared))
   expect_true(any(startsWith(app_config, "segmentation-public-initialization-b64 = ")))
   metadata <- jsonlite::fromJSON(file.path(run$output_dir, "metadata.json"),
                                 simplifyVector = FALSE)
-  expect_identical(metadata$segmentation_public_initialization, payload$provenance)
+  expect_identical(metadata$segmentation_public_initialization$provenance, payload$provenance)
   saved <- readRDS(file.path(run$output_dir, "public-decoder.rds"))
-  expect_identical(saved$segmentation_public_initialization, payload$provenance)
+  expect_identical(saved$segmentation_public_initialization$provenance, payload$provenance)
   expect_false("checkpoint_base64" %in% names(metadata$segmentation_public_initialization))
 })

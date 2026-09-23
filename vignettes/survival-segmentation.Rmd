@@ -231,14 +231,17 @@ The campaign's audited benchmark binding loads public decoder tensors before
 private training. These results do not describe the default random decoder
 initialisation or a general analyst checkpoint-upload API.
 
-The segmentation registry now exposes `decoder_init="public:<checkpoint-id>"`
-with a matching `decoder="narrow"` for these checkpoints. Each custodian must
-install the provenance-bound public bundle and allowlist its exact manifest
-digest. The trusted runner verifies every digest before private access and
-records checkpoint provenance in the node manifest and release record. The
-default remains `decoder_init="random"`; the private training and accounting
-contract is unchanged. The [binary segmentation guide](binary-segmentation.html#custodian-enabled-public-decoder-initialization)
-documents installation and named, generic and fit examples.
+Version 0.7.0 supports `decoder_init="client:<local-bundle>"` for declared public
+material and `decoder_init="resource:<admitted-handle>"` for custodian resources.
+The latter requires native resource assignment, `flowerCheckpointInitDS()` and an
+independent local `public_checkpoint_file` for the coordinator. Nodes expose no
+checkpoint bytes. The custodian controls admission through
+`dsflower.public_initialisation`; both routes verify before private staging and
+again before private access. The default remains `decoder_init="random"`; the DP
+training and accounting contract is unchanged. The
+[binary segmentation guide](binary-segmentation.html#public-decoder-initialisation)
+documents analyst calls. These product routes do not rewrite the historical
+campaign's provenance.
 
 The original packaged batch files were exact v3 copies. `RECONCILE_V5.md` and
 `audit-results.json` record the stale-file finding and fresh artifact-inference

@@ -90,70 +90,58 @@ convolution channels 128 to 8, 8 to 4, 4 to 1) and `decoder="pointwise"` (129
 parameters). Selecting the narrow architecture alone retains random
 initialization.
 
-## Custodian-enabled public decoder initialization
+## Public decoder initialisation
 
-The registry also accepts `decoder_init="public:<checkpoint-id>"`. Each node
-must have the named public checkpoint installed under its protected state and
-admitted by its custodian. The ID is a 1--64 character lowercase ASCII identifier
-starting with a letter or digit; subsequent characters may also be dots,
-underscores or hyphens. Paths, URLs and uploaded weights are not accepted.
-Select the checkpoint's decoder architecture explicitly:
+The two 0.7.0 routes share a complete digest-bound bundle including the encoder,
+decoder and evidence. Use researcher-local material for an analyst declaration:
 
 ```r
 model <- ds.flower.model.pytorch_resnet18_segmentation(
-  decoder = "narrow",
-  decoder_init = "public:busi-v5-epochs60-seed20260919"
+  decoder = "narrow", decoder_init = "client:/analyst/public/busi_bundle.zip"
 )
-# The generic constructor uses the same validation.
-model <- ds.flower.model(
-  "pytorch_resnet18_segmentation", decoder = "narrow",
-  decoder_init = "public:busi-v5-epochs60-seed20260919"
-)
-# Or supply the contract through fit's model_params.
 fit <- ds.flower.fit(
-  conns, symbol = "samples", target = "mask_path",
-  model = "pytorch_resnet18_segmentation",
-  model_params = list(
-    decoder = "narrow", decoder_init = "public:busi-v5-epochs60-seed20260919"
-  ),
-  task = "segmentation", data_kind = "image", rounds = 5L,
+  conns, symbol = "samples", target = "mask_path", model = model,
+  task = "segmentation", data_kind = "image", rounds = 2L,
   output_dir = "segmentation-public-model"
 )
 ```
 
-On each node, an administrator installs a checkpoint directory containing
-`manifest.json`, the decoder checkpoint and its provenance evidence under
-`dirname(node_secret_path)/segmentation-public-checkpoints/<checkpoint-id>/`.
-The custodian sets `dsflower.segmentation_public_checkpoints` to a named character
-vector mapping admitted IDs to their exact manifest SHA-256 values; the default
-allowlist is empty. Installation, file permissions, the three BUSI epochs60
-checkpoints and their manifest hashes are documented in the node package's
-`inst/extdata/segmentation-public-checkpoints/README.md`, also available at
-`system.file("extdata", "segmentation-public-checkpoints", "README.md", package="dsFlower")`.
-The manifests and evidence are included; the three original NPZ binaries remain
-pending reviewer recovery from the evaluation pod. The documented installer
-verifies the recovered bytes before making them available in node storage.
-Only the custodian sets this policy. The analyst supplies the checkpoint ID,
-never provenance, digest pins or filesystem locations.
+For custodian-registered material, first assign and admit the authorized resource:
 
-Before reading private metadata or images, the trusted node verifies the
-allowlisted manifest, its dataset and licence evidence, the pretraining
-protocol, the checkpoint and every decoder tensor digest. It also checks the
-frozen encoder identity and decoder architecture. Missing, mismatched or
-unapproved checkpoints fail without a random fallback. The runner repeats
-verification, binds the selected ID and verified hashes into request-selection
-v2 and its semantic seed contract, and records the provenance in the node run manifest and release
-record. The first round starts from the public weights; subsequent rounds
-continue from the federated decoder. The private DP budget pays for adaptation:
-the accountant, clipping, sampler, encoder and training path are unchanged.
+```r
+DSI::datashield.assign.resource(
+  conns, symbol = "CKPT_R", resource = "PublicModels.busi"
+)
+DSI::datashield.assign.expr(
+  conns, symbol = "CKPT", expr = quote(flowerCheckpointInitDS("CKPT_R"))
+)
+model <- ds.flower.model.pytorch_resnet18_segmentation(
+  decoder = "narrow", decoder_init = "resource:CKPT"
+)
+fit <- ds.flower.fit(
+  conns, symbol = "samples", target = "mask_path", model = model,
+  public_checkpoint_file = "/analyst/public/checkpoint.npz",
+  task = "segmentation", data_kind = "image", rounds = 2L,
+  output_dir = "segmentation-resource-model"
+)
+```
 
-The node returns only the verified public checkpoint bytes and provenance in
-its preparation status. The client checks that all nodes agree, verifies the
-checkpoint digest, and initializes the aggregation server from those same
-weights. This also gives momentum and adaptive aggregation strategies the
-correct starting model. The analyst needs no separately installed checkpoint
-copy. Saved model metadata retains the public provenance without duplicating
-the checkpoint bytes.
+The local coordinator copy must match every node's admitted identity; it grants
+no resource authority. Nodes never return checkpoint bytes. A typed handle binds
+the snapshot to its session; raw URLs, paths, lists and unassigned symbols are
+refused. The custodian option `dsflower.public_initialisation` accepts
+`analyst_or_resource` (default), `resource_only`, or `none`, with an optional
+`.pytorch_resnet18_segmentation` suffix. Both admission and execution fail closed
+on missing, altered or incompatible artifacts. The first round compares received
+public tensors with the admitted checkpoint; later rounds use federated updates.
+
+The node package's `PUBLIC_INITIALISATION.md` documents exact Opal, Armadillo and
+DSLite registration commands. Its `inst/extdata/segmentation-public-checkpoints/`
+contains the unchanged BUSI reference evidence and recovery instructions; original
+NPZ binaries remain unavailable. No 0.6.0 registry installation authorizes the new
+routes. Request-selection v2 retains its mechanism and binds canonical content
+identity and origin, excluding resource aliases and archive packaging. The
+accountant, clipping, sampler and private training path are unchanged.
 
 The historical v5 benchmark applied the same public BUSI checkpoints through
 campaign tooling. This registry route makes custodian enablement independent
