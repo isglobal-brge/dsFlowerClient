@@ -28,7 +28,8 @@ test_that("fit exposes only its executable argument contract", {
     "task", "output_dir", "output_name", "silent", "verbose",
     "feature_bounds", "feature_cuts", "target_levels", "target_bounds",
     "allow_insecure_http", "data_kind", "holdout", "cross_validation",
-    "resource_kind", "public_checkpoint_file"))
+    "resource_kind", "public_checkpoint_file", "public_initialisation",
+    "survival_horizons", "survival_nll_bound"))
 })
 
 test_that("fit resolves strategy_params into the executable strategy", {

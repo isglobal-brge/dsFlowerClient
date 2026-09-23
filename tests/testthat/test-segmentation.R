@@ -127,27 +127,28 @@ test_that("public decoder selectors separate local bundles from assigned handles
   }
 })
 
-test_that("segmentation mask target and unsupported private scoring fail in public preflight", {
+test_that("segmentation accepts fixed private scoring and rejects invalid mask targets", {
   sub <- dsFlowerClient:::.emit_submission(
     ds.flower.model.pytorch_resnet18_segmentation())
   expect_identical(dsFlowerClient:::.validate_submission_target(sub, "mask_path"), "mask_path")
   expect_error(dsFlowerClient:::.validate_submission_target(sub, c("a", "b")), "one target")
   expect_error(dsFlowerClient:::.validate_public_target_spec(c(0, 1), NULL, "segmentation"), "mask-path")
-  expect_error(dsFlowerClient:::.assert_holdout_supported(sub, "image"), "unsupported")
-  expect_error(dsFlowerClient:::.assert_cross_validation_supported(sub, "image"), "unsupported")
+  expect_true(dsFlowerClient:::.assert_holdout_supported(sub, "image"))
+  expect_true(dsFlowerClient:::.assert_cross_validation_supported(sub, "image"))
   local_mocked_bindings(
     .require_flwr_cli = function(...) stop("CLI must not run"),
     .validate_dsi_transport_security = function(...) stop("DSI must not run"),
     .package = "dsFlowerClient")
   expect_error(ds.flower.submit(list(), model = "pytorch_resnet18_segmentation",
-    target = "mask_path", data_kind = "image", holdout = .2), "unsupported")
+    target = "mask_path", data_kind = "image", holdout = .2), "CLI must not run|DSI must not run")
   expect_error(ds.flower.submit(list(), model = "pytorch_resnet18_segmentation",
-    target = "mask_path", data_kind = "image", cross_validation = 3), "unsupported")
+    target = "mask_path", data_kind = "image", cross_validation = 3), "CLI must not run|DSI must not run")
   expect_error(ds.flower.submit(list(), model = "pytorch_resnet18_segmentation",
     target = "mask_path", data_kind = "image", target_levels = c(0, 1)), "mask-path")
   path <- segmentation_model_fixture()
   on.exit(unlink(path, recursive = TRUE), add = TRUE)
-  expect_error(ds.flower.validate(list(), path), "Private segmentation")
+  expect_identical(dsFlowerClient:::.resolve_validation_contract(path, 32L)$task,
+                   "segmentation")
 })
 
 test_that("segmentation fit dispatch preserves image roles and task", {
@@ -228,7 +229,7 @@ test_that("segmentation submit stages only the pinned public image and mask role
   expect_identical(prepared$config[["mask_empty_col"]], "normal")
   expect_identical(prepared$config[["subject_id_col"]], "subject")
   expect_identical(prepared$config[["mask-vocabulary"]], "0,1")
-  expect_false("num-labels" %in% names(prepared$config))
+  expect_identical(prepared$config[["num-labels"]], 2L)
   expect_false(any(c("epsilon", "delta", "noise-multiplier", "max-grad-norm") %in%
                      names(prepared$config)))
   expect_false("segmentation-decoder-init" %in% names(prepared$config))

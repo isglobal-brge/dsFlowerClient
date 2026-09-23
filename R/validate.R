@@ -554,6 +554,9 @@
 }
 
 .resolve_validation_contract <- function(model, bins) {
+  if (.is_validation_checkpoint(model)) {
+    return(.resolve_checkpoint_validation_contract(model, bins))
+  }
   model_dir <- .validation_model_dir(model)
   metadata_path <- file.path(model_dir, "metadata.json")
   metadata_info <- file.info(metadata_path)
@@ -577,10 +580,16 @@
   if (!is.list(meta)) {
     stop("Saved model metadata is unreadable.", call. = FALSE)
   }
-  .reject_survival_private_evaluation(.validation_atomic(meta$loss_name))
   if (identical(meta$loss_name, "segmentation_bce_dice")) {
-    stop("Private segmentation validation and HPO are unsupported; ",
-         "score public or authorized local data instead.", call. = FALSE)
+    contract <- .resolve_segmentation_prediction_contract(model_dir)
+    contract$model_dir <- model_dir
+    contract$bins <- .validation_scalar_integer(bins, "bins", 4L, 512L)
+    p <- meta$model_params
+    for (key in c("image_asset", "mask_asset", "image_path_col", "sample_id_col",
+                  "mask_empty_col", "subject_id_col")) {
+      contract$segmentation_config[[key]] <- p[[key]]
+    }
+    return(contract)
   }
   track <- tolower(as.character(.validation_atomic(meta$track %||% "")))
   if (length(track) != 1L || !track %in% c("neural", "native_tree")) {
@@ -774,18 +783,12 @@
     stop("Neural private validation needs the saved declarative spec and loss.",
          call. = FALSE)
   }
-  task <- switch(loss,
-    bce_logits = "binary",
-    cross_entropy = if (n_classes > 2L) "multiclass" else "binary",
-    hinge = if (n_classes > 2L) "multiclass" else "binary",
-    ordinal = "ordinal", multilabel_bce = "multilabel",
-    mse = "regression", huber = "regression", quantile = "regression",
-    gamma_nll = "regression",
-    poisson_nll = "count", negbin_nll = "count", NULL)
-  if (is.null(task)) {
-    stop("Saved neural loss has no trusted validation semantics: ", loss, ".",
-         call. = FALSE)
-  }
+  task <- .validation_task_for_loss(loss, n_classes)
+  survival_config <- if (.is_survival_loss(loss)) {
+    config <- jsonlite::fromJSON(jsonlite::toJSON(meta$survival_config,
+      auto_unbox = TRUE, null = "null", digits = I(17)), simplifyVector = TRUE)
+    .validate_survival_config(config, loss)
+  } else NULL
   if (identical(loss, "bce_logits") && n_classes != 2L) {
     stop("Saved bce_logits model is not a valid multiclass artifact; use cross_entropy.",
          call. = FALSE)
@@ -812,7 +815,9 @@
     feature_bounds = feature_bounds, target_bounds = target_bounds,
     target_levels = public_levels,
     model_spec = spec, loss_name = loss,
-    n_classes = n_classes, n_labels = n_labels, data_kind = data_kind)
+    n_classes = n_classes, n_labels = n_labels, data_kind = data_kind,
+    survival_config = survival_config,
+    loss_config = .validation_loss_config(loss, params))
 }
 
 .validation_model_path_b64 <- function(path) {
@@ -820,6 +825,7 @@
 }
 
 .validate_validation_artifact_preflight <- function(contract) {
+  if (!is.null(contract$checkpoint)) return(invisible(TRUE))
   if (identical(contract$track, "native_tree")) {
     script <- system.file(
       "python", "native_tree_predict_helper.py", package = "dsFlowerClient")
@@ -864,6 +870,8 @@
   }
   config <- list(
     "validation-model-track" = contract$track,
+    "task-type" = if (contract$task %in% c("segmentation", "survival", "regression", "count"))
+      contract$task else "classification",
     "validation-model-path-b64" = .validation_model_path_b64(contract$artifact),
     "num-features" = if (identical(contract$data_kind, "image")) {
       contract$feature_dim
@@ -874,6 +882,11 @@
     "num-labels" = contract$n_labels,
     "loss-name" = contract$loss_name)
   config[["model-spec-b64"]] <- .spec_to_b64(contract$model_spec)
+  if (!is.null(contract$survival_config)) {
+    config[["survival-config-b64"]] <- .survival_json_b64(contract$survival_config)
+  }
+  config <- c(config, contract$segmentation_config %||% list(),
+              contract$loss_config %||% list())
   if (identical(contract$data_kind, "image")) {
     config[["data-kind"]] <- "image"
     config[["validation-task"]] <- contract$task
@@ -988,6 +1001,8 @@
     payload$public_schema_sha256 <-
       run_config[["validation-public-schema-sha256"]]
   }
+  extension <- .validationCvContractExtension(run_config)
+  if (length(extension)) payload$validation_cv <- extension
   canonical <- as.character(jsonlite::toJSON(
     payload, auto_unbox = TRUE, null = "null", na = "null",
     digits = NA, always_decimal = TRUE, pretty = FALSE))
@@ -1036,7 +1051,7 @@
         identical(value$available, FALSE)) ||
       !task_is_scalar || !value$task %in% c(
         "binary", "multiclass", "ordinal", "multilabel",
-        "regression", "count") ||
+        "regression", "count", "segmentation", "survival") ||
       length(value$n_nodes) != 1L || !is.numeric(value$n_nodes) ||
       !is.finite(value$n_nodes) || value$n_nodes < 1 ||
       value$n_nodes != floor(value$n_nodes)) {
@@ -1060,7 +1075,8 @@
 #' Differentially-private federated model validation
 #'
 #' Evaluates a released tabular declarative neural model, saved native dsFlower
-#' ResNet-18 or DenseNet-121 vision classifier, sanitized native-tree ensemble,
+#' ResNet-18 or DenseNet-121 vision classifier, segmentation decoder, survival
+#' model, sanitized native-tree ensemble,
 #' or explicitly external-unverified imported XGBoost bundle on the dataset
 #' assigned for this call inside each data node.
 #' The native request, ensemble and prediction-profile sidecar are pinned into
@@ -1076,12 +1092,16 @@
 #' federated validation, image paths and pixels remain node-private. Local
 #' researcher-side image prediction is separately available through
 #' \code{ds.flower.predict()}; native dsFlower image holdout is supported, while
-#' image cross-validation is not. Reusing the training dataset is resubstitution
+#' the trusted segmentation contract also supports image cross-validation. Reusing the training dataset is resubstitution
 #' validation; assigning an independent dataset is external
 #' validation. Each protected row/patient contributes one bounded sufficient-statistic
 #' vector, the node releases it once through the server-owned Gaussian mechanism,
 #' and only pooled post-processed metrics are returned. Exact predictions,
 #' labels, counts and per-node metrics never leave the node.
+#' Segmentation releases clipped per-patient foreground Dice statistics; survival
+#' releases bounded likelihood and Brier errors at public fixed horizons.
+#' Concordance is pairwise and remains a public-split metric. Private HPO for
+#' these two contracts remains unsupported.
 #' All nodes must declare the same row- or patient-level estimand. Privacy is
 #' guaranteed per node; if one person occurs in multiple nodes, those node
 #' releases compose for that person and deployments should account for the
@@ -1093,7 +1113,10 @@
 #'
 #' @param conns DSI connections.
 #' @param model A successful \code{dsflower_run}, saved model directory, or
-#'   path returned by \code{ds.flower.import_xgboost()}.
+#'   path returned by \code{ds.flower.import_xgboost()}, or an analyst-declared
+#'   complete checkpoint bundle (directory, ZIP, or \code{client:<bundle>}).
+#'   Bundle content and geometry are verified locally and again on every node;
+#'   the custodian policy must admit analyst-declared material.
 #' @param target Target column name(s); multilabel validation requires one per
 #'   saved label. Vision validation requires the saved public class vocabulary.
 #' @param data Optional server-side data symbol.
@@ -1101,6 +1124,10 @@
 #' @param resource_kind Explicit Resource route, exactly
 #'   \code{"imaging"} or \code{"tabular"}.
 #' @param symbol Optional server-side handle symbol.
+#' @param survival_horizons Public fixed horizons for observed-status Brier scores;
+#'   defaults to the fitted administrative horizon.
+#' @param survival_nll_bound Symmetric per-patient negative-log-likelihood bound,
+#'   default 20. Concordance is pairwise and is not released by this track.
 #' @param bins Public number of probability bins in \code{[4,512]}.
 #' @param torch_backend Node torch backend selection for neural artifacts,
 #'   including vision. Native-tree validation does not provision Torch.
@@ -1119,13 +1146,22 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
                                silent = FALSE,
                                allow_insecure_http = getOption(
                                  "dsflower.dsi_allow_insecure_http", character()),
-                               resource_kind = "imaging") {
+                               resource_kind = "imaging",
+                               survival_horizons = NULL,
+                               survival_nll_bound = 20) {
   torch_backend <- .validate_torch_backend(torch_backend)
   contract <- .resolve_validation_contract(model, bins)
+  if (contract$task %in% c("segmentation", "survival") &&
+      isTRUE(.DSFLOWER_HPO_CONTEXT$active)) {
+    stop("Private segmentation and survival HPO are unsupported; use a preregistered evaluation.",
+         call. = FALSE)
+  }
   .validate_validation_artifact_preflight(contract)
+  metric_config <- .private_survival_metric_config(
+    contract$survival_config, survival_horizons, survival_nll_bound)
   expected_targets <- if (identical(contract$task, "multilabel")) {
     contract$n_labels
-  } else 1L
+  } else if (identical(contract$task, "survival")) 2L else 1L
   if (!is.character(target) || length(target) != expected_targets || anyNA(target) ||
       any(!nzchar(target)) || anyDuplicated(target)) {
     stop("'target' must contain exactly ", expected_targets,
@@ -1152,7 +1188,7 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
   capabilities <- .assert_runner_compatibility(conns)
   privacy_unit <- .validation_common_privacy_unit(capabilities)
 
-  task_type <- if (contract$task %in% c("regression", "count")) {
+  task_type <- if (contract$task %in% c("regression", "count", "segmentation", "survival")) {
     contract$task
   } else "classification"
   model_num_features <- if (identical(contract$data_kind, "image")) {
@@ -1200,6 +1236,23 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
         contract$artifact_size_bytes
     }
   }
+  prepare <- c(prepare, contract$segmentation_config %||% list(),
+               contract$loss_config %||% list(), metric_config)
+  if (identical(contract$task, "segmentation")) {
+    prepare[["mask_path_col"]] <- target
+  }
+  if (!is.null(contract$survival_config)) {
+    prepare[["survival-config-b64"]] <- .survival_json_b64(contract$survival_config)
+  }
+  checkpoint_input <- NULL
+  if (!is.null(contract$checkpoint)) {
+    checkpoint_input <- .segmentation_client_initialization(conns,
+      list(decoder_init = paste0("client:", contract$checkpoint$path)),
+      model_spec = contract$model_spec)
+    on.exit(.segmentation_abort_uploads(conns, checkpoint_input$uploads), add = TRUE)
+    prepare[["segmentation-decoder-init"]] <- "client"
+    prepare <- c(prepare, .public_initialisation_identity(checkpoint_input$summary))
+  }
   if (!is.null(contract$feature_bounds)) {
     prepare[["feature-bounds"]] <- contract$feature_bounds
   }
@@ -1212,9 +1265,14 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
   contract_sha256 <- .validation_contract_sha256(
     prepare, contract$features, target, privacy_unit)
   prepare[["validation-contract-sha256"]] <- contract_sha256
-  ds.flower.nodes.prepare(
-    conns, hsym, target_column = target,
-    feature_columns = contract$features, run_config = prepare)
+  prepare[grep("^public-initialisation-", names(prepare))] <- NULL
+  prepared <- .segmentation_prepare_nodes(
+    conns, hsym, target, contract$features, prepare, checkpoint_input)
+  initialization <- if (!is.null(checkpoint_input)) {
+    .segmentation_server_initialization(prepared,
+      list(decoder_init = paste0("client:", contract$checkpoint$path)),
+      names(conns), checkpoint_input)
+  } else NULL
 
   results_dir <- tempfile(
     pattern = "validation_", tmpdir = file.path(tempdir(), "dsflower_results"))
@@ -1223,6 +1281,7 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
     .toml_kv("dp-track", "validation"),
     .toml_kv("validation-model-track", contract$track),
     .toml_kv("validation-task", contract$task),
+    .toml_kv("task-type", task_type),
     .toml_kv("validation-contract-sha256", contract_sha256),
     paste0("validation-bins = ", contract$bins),
     paste0("num-features = ", model_num_features),
@@ -1263,12 +1322,24 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
         paste0("image-size = ", contract$image_size),
         .toml_kv("vision-extractor-profile",
                  contract$vision_extractor_profile),
-        .toml_kv("validation-artifact-format", contract$artifact_format),
-        .toml_kv("validation-artifact-sha256", contract$artifact_sha256),
-        paste0("validation-artifact-size-bytes = ",
-               contract$artifact_size_bytes))
+        if (!is.null(contract$artifact_format)) c(
+          .toml_kv("validation-artifact-format", contract$artifact_format),
+          .toml_kv("validation-artifact-sha256", contract$artifact_sha256),
+          paste0("validation-artifact-size-bytes = ", contract$artifact_size_bytes)))
     }
   }
+  extra_config <- c(contract$segmentation_config %||% list(),
+                    contract$loss_config %||% list(), metric_config)
+  if (!is.null(contract$survival_config)) {
+    extra_config[["survival-config-b64"]] <- .survival_json_b64(contract$survival_config)
+  }
+  if (!is.null(initialization)) {
+    extra_config[["segmentation-decoder-init"]] <- "client"
+    extra_config[["segmentation-public-initialization-b64"]] <- initialization$b64
+  }
+  config <- c(config, unname(vapply(names(extra_config), function(key) {
+    .toml_kv(key, extra_config[[key]])
+  }, character(1))))
   if (!is.null(contract$target_bounds)) {
     config <- c(config,
       paste0("validation-target-lower = ", contract$target_bounds$lower),

@@ -141,7 +141,8 @@
   uploads
 }
 
-.segmentation_client_initialization <- function(conns, params, public_checkpoint_file = NULL) {
+.segmentation_client_initialization <- function(conns, params, public_checkpoint_file = NULL,
+                                                 model_spec = NULL) {
   init <- .segmentation_decoder_init(params$decoder_init %||% "random")
   if (identical(init, "random")) {
     if (!is.null(public_checkpoint_file)) {
@@ -160,7 +161,7 @@
          "requires public_checkpoint_file for the independent coordinator copy.", call. = FALSE)
   }
   path <- normalizePath(path.expand(path), winslash = "/", mustWork = TRUE)
-  spec <- .segmentation_decoder_spec(params$decoder %||% "current")
+  spec <- model_spec %||% .segmentation_decoder_spec(params$decoder %||% "current")
   .ensure_client_framework("pytorch")
   if (analyst) {
     payload <- .segmentation_checkpoint_python("local", path, spec)

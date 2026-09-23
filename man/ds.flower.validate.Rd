@@ -16,14 +16,19 @@ ds.flower.validate(
   verbose = FALSE,
   silent = FALSE,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
-  resource_kind = "imaging"
+  resource_kind = "imaging",
+  survival_horizons = NULL,
+  survival_nll_bound = 20
 )
 }
 \arguments{
 \item{conns}{DSI connections.}
 
 \item{model}{A successful \code{dsflower_run}, saved model directory, or
-path returned by \code{ds.flower.import_xgboost()}.}
+path returned by \code{ds.flower.import_xgboost()}, or an analyst-declared
+complete checkpoint bundle (directory, ZIP, or \code{client:<bundle>}).
+Bundle content and geometry are verified locally and again on every node;
+the custodian policy must admit analyst-declared material.}
 
 \item{target}{Target column name(s); multilabel validation requires one per
 saved label. Vision validation requires the saved public class vocabulary.}
@@ -47,6 +52,12 @@ including vision. Native-tree validation does not provision Torch.}
 
 \item{resource_kind}{Explicit Resource route, exactly
 \code{"imaging"} or \code{"tabular"}.}
+
+\item{survival_horizons}{Public fixed horizons for observed-status Brier scores;
+defaults to the fitted administrative horizon.}
+
+\item{survival_nll_bound}{Symmetric per-patient negative-log-likelihood bound,
+default 20. Concordance is pairwise and is not released by this track.}
 }
 \value{
 A \code{dsflower_validation}. Its \code{available} field is false
@@ -57,7 +68,8 @@ A \code{dsflower_validation}. Its \code{available} field is false
 }
 \description{
 Evaluates a released tabular declarative neural model, saved native dsFlower
-ResNet-18 or DenseNet-121 vision classifier, sanitized native-tree ensemble,
+ResNet-18 or DenseNet-121 vision classifier, segmentation decoder, survival
+model, sanitized native-tree ensemble,
 or explicitly external-unverified imported XGBoost bundle on the dataset
 assigned for this call inside each data node.
 The native request, ensemble and prediction-profile sidecar are pinned into
@@ -73,12 +85,16 @@ and semantic implementation/dependency changes require a profile bump. During
 federated validation, image paths and pixels remain node-private. Local
 researcher-side image prediction is separately available through
 \code{ds.flower.predict()}; native dsFlower image holdout is supported, while
-image cross-validation is not. Reusing the training dataset is resubstitution
+the trusted segmentation contract also supports image cross-validation. Reusing the training dataset is resubstitution
 validation; assigning an independent dataset is external
 validation. Each protected row/patient contributes one bounded sufficient-statistic
 vector, the node releases it once through the server-owned Gaussian mechanism,
 and only pooled post-processed metrics are returned. Exact predictions,
 labels, counts and per-node metrics never leave the node.
+Segmentation releases clipped per-patient foreground Dice statistics; survival
+releases bounded likelihood and Brier errors at public fixed horizons.
+Concordance is pairwise and remains a public-split metric. Private HPO for
+these two contracts remains unsupported.
 All nodes must declare the same row- or patient-level estimand. Privacy is
 guaranteed per node; if one person occurs in multiple nodes, those node
 releases compose for that person and deployments should account for the

@@ -46,6 +46,8 @@
     rmse = "minimize",
     r_squared = "maximize"
   ),
+  segmentation = c(foreground_dice = "maximize"),
+  survival = c(negative_log_likelihood = "minimize"),
   count = c(
     mae = "minimize",
     mse = "minimize",
@@ -199,6 +201,26 @@
       finite_scalar(metrics$macro_f1, 0, 1, nullable = TRUE))
   }
 
+  if (identical(task, "segmentation")) {
+    return(exact_object(metrics, c("n", "foreground_dice")) &&
+      finite_scalar(metrics$n, lower = 0) &&
+      finite_scalar(metrics$foreground_dice, 0, 1, nullable = TRUE))
+  }
+  if (identical(task, "survival")) {
+    brier <- metrics$brier
+    horizons <- if (is.list(brier)) array_values(brier$horizons) else NULL
+    scores <- if (is.list(brier)) brier$scores else NULL
+    return(exact_object(metrics, c("n", "negative_log_likelihood", "brier", "brier_method")) &&
+      finite_scalar(metrics$n, lower = 0) &&
+      finite_scalar(metrics$negative_log_likelihood, nullable = TRUE) &&
+      identical(metrics$brier_method, "observed-status") &&
+      exact_object(brier, c("horizons", "scores", "eligible_n")) &&
+      !is.null(horizons) && length(horizons) >= 1L && length(horizons) <= 64L &&
+      all(is.finite(horizons)) && all(horizons > 0) && all(diff(horizons) > 0) &&
+      length(scores) == length(horizons) &&
+      all(vapply(as.list(scores), finite_scalar, logical(1), 0, 1, nullable = TRUE)) &&
+      finite_array(brier$eligible_n, length(horizons), lower = 0))
+  }
   if (task %in% c("regression", "count")) {
     fields <- c(
       "n", "mae", "mse", "rmse", "r_squared",

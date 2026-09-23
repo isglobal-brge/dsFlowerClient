@@ -238,10 +238,11 @@ ds.flower.task <- function(name = "classification") {
 #'   with at most six decimal places. The node assigns complete privacy units
 #'   before training, trains only on the complement, and returns the final model
 #'   together with one pooled differentially-private test metric release. This
-#'   supports tabular neural/native-tree models and native dsFlower vision.
+#'   supports tabular neural/native-tree models, survival and native dsFlower
+#'   vision including segmentation.
 #' @param cross_validation Optional integer in \code{[2, 10]}. This runs a
-#'   dedicated metrics-only tabular CV job for neural or binary/regression
-#'   native-tree models. It releases one pooled DP OOF result and saves no fold
+#'   dedicated metrics-only CV job for tabular neural, survival, segmentation
+#'   or binary/regression native-tree models. It releases one pooled DP OOF result and saves no fold
 #'   model or prediction. When \code{rounds} is omitted, native-tree CV uses its
 #'   required single round per fold; an explicit value is never overwritten.
 #'   Prefer \code{ds.flower.cross_validate()} for this workflow.
@@ -250,6 +251,15 @@ ds.flower.task <- function(name = "classification") {
 #'   \code{"resource:<handle-symbol>"} for a custodian-admitted checkpoint.
 #'   The selected \code{decoder} must match the bundle.
 #'   See \code{ds.flower.model.pytorch_resnet18_segmentation()}.
+#' @param survival_horizons Public fixed Brier horizons for survival holdout/CV;
+#'   defaults to the fitted administrative horizon. Right-censored subjects
+#'   with unknown status at a horizon do not enter its observed-status Brier mean.
+#' @param survival_nll_bound Positive public bound (default 20) for clipping
+#'   each patient's negative log-likelihood to its symmetric interval.
+#' @param public_initialisation For tabular neural models, an admitted public bundle
+#'   selector \code{client:<local-bundle>} or \code{resource:<handle-symbol>}.
+#'   Every CV fold starts from the same verified material. Segmentation uses
+#'   its model's \code{decoder_init} selector.
 #' @param public_checkpoint_file Local public checkpoint NPZ or complete bundle for
 #'   resource initialization; it is checked against each node's admitted identity.
 #' @return A \code{dsflower_run} object, or a \code{dsflower_cv} when
@@ -282,7 +292,10 @@ ds.flower.fit <- function(conns,
                           holdout = NULL,
                           cross_validation = NULL,
                           resource_kind = "imaging",
-                          public_checkpoint_file = NULL) {
+                          public_checkpoint_file = NULL,
+                          public_initialisation = NULL,
+                          survival_horizons = NULL,
+                          survival_nll_bound = 20) {
   # Set the progress-verbosity option at the outermost entry point so it stays
   # active through every nested step, including the connection teardown that runs
   # in the submission pipeline's on.exit cleanup.
@@ -411,6 +424,8 @@ ds.flower.fit <- function(conns,
     cross_validation = cross_validation,
     resource_kind = resource_kind,
     public_checkpoint_file = public_checkpoint_file,
+    public_initialisation = public_initialisation,
+    survival_horizons = survival_horizons, survival_nll_bound = survival_nll_bound,
     output_dir = output_dir, output_name = output_name,
     verbose = verbose, silent = silent)
 }

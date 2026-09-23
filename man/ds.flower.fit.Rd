@@ -31,7 +31,10 @@ ds.flower.fit(
   holdout = NULL,
   cross_validation = NULL,
   resource_kind = "imaging",
-  public_checkpoint_file = NULL
+  public_checkpoint_file = NULL,
+  public_initialisation = NULL,
+  survival_horizons = NULL,
+  survival_nll_bound = 20
 )
 }
 \arguments{
@@ -112,11 +115,12 @@ registered for both require an explicit choice.}
 with at most six decimal places. The node assigns complete privacy units
 before training, trains only on the complement, and returns the final model
 together with one pooled differentially-private test metric release. This
-supports tabular neural/native-tree models and native dsFlower vision.}
+supports tabular neural/native-tree models, survival and native dsFlower
+vision including segmentation.}
 
 \item{cross_validation}{Optional integer in \code{[2, 10]}. This runs a
-dedicated metrics-only tabular CV job for neural or binary/regression
-native-tree models. It releases one pooled DP OOF result and saves no fold
+dedicated metrics-only CV job for tabular neural, survival, segmentation
+or binary/regression native-tree models. It releases one pooled DP OOF result and saves no fold
 model or prediction. When \code{rounds} is omitted, native-tree CV uses its
 required single round per fold; an explicit value is never overwritten.
 Prefer \code{ds.flower.cross_validate()} for this workflow.}
@@ -126,6 +130,18 @@ Prefer \code{ds.flower.cross_validate()} for this workflow.}
 
 \item{public_checkpoint_file}{Local public checkpoint NPZ or complete bundle for
 resource initialization; it is checked against each node's admitted identity.}
+
+\item{public_initialisation}{For tabular neural models, an admitted public bundle
+selector \code{client:<local-bundle>} or \code{resource:<handle-symbol>}.
+Every CV fold starts from the same verified material. Segmentation uses
+its model's \code{decoder_init} selector.}
+
+\item{survival_horizons}{Public fixed Brier horizons for survival holdout/CV;
+defaults to the fitted administrative horizon. Right-censored subjects
+with unknown status at a horizon do not enter its observed-status Brier mean.}
+
+\item{survival_nll_bound}{Positive public bound (default 20) for clipping
+each patient's negative log-likelihood to its symmetric interval.}
 }
 \value{
 A \code{dsflower_run} object, or a \code{dsflower_cv} when

@@ -61,7 +61,8 @@ ds.flower.task.survival <- function() {
 #' Create a binary image segmentation task specification
 #'
 #' Requires the custodian patient privacy unit and one selected image per subject.
-#' Private validation, holdout and cross-validation are unsupported.
+#' Private validation, holdout and cross-validation use a fixed bounded
+#' foreground Dice layout with one contribution per patient.
 #' @return A \code{dsflower_task} object with type = "segmentation".
 #' @export
 ds.flower.task.segmentation <- function() {

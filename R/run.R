@@ -580,7 +580,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       !identical(value$method, "holdout") ||
       !task_is_scalar || !value$task %in% c(
         "binary", "multiclass", "ordinal", "multilabel",
-        "regression", "count") ||
+        "regression", "count", "segmentation", "survival") ||
       length(value$n_nodes) != 1L || !is.numeric(value$n_nodes) ||
       !is.finite(value$n_nodes) || value$n_nodes < 1 ||
       value$n_nodes != floor(value$n_nodes) || !is.list(value$metrics) ||
@@ -621,7 +621,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       !identical(value$method, "cross_validation") ||
       !task_is_scalar || !value$task %in% c(
         "binary", "multiclass", "ordinal", "multilabel",
-        "regression", "count") ||
+        "regression", "count", "segmentation", "survival") ||
       length(value$n_nodes) != 1L || !is.numeric(value$n_nodes) ||
       !is.finite(value$n_nodes) || value$n_nodes < 1 ||
       value$n_nodes != floor(value$n_nodes) ||

@@ -201,9 +201,12 @@ foreground-positive and empty-mask strata separately. Both-empty Dice is 1;
 exactly one empty mask gives Dice 0. Neither images nor predictions are returned
 from a private node for evaluation.
 
-Private `ds.flower.validate()`, holdout, cross-validation and private-score HPO
-are unsupported for this contract and fail public preflight. The local HPO
-callback API does not create a private segmentation scoring route. Any public
+Private `ds.flower.validate()`, holdout and cross-validation release pooled
+foreground Dice from bounded per-patient intersection/prediction/reference
+statistics. This differs from mean subject Dice on a public split. Both admitted
+public-initialisation routes support holdout and fresh starts for each CV fold.
+See [private validation and CV](../PRIVATE_VALIDATION_CV.md) for calls and sensitivities.
+Private-score HPO remains unsupported; the local HPO callback does not authorize it. Any public
 benchmark utility claim must cite an executed subject-disjoint protocol, exact
 central twins and the recorded gate results; the constructor alone establishes
 no utility claim.

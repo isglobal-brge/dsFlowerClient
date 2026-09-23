@@ -11,5 +11,6 @@ A \code{dsflower_task} object with type = "segmentation".
 }
 \description{
 Requires the custodian patient privacy unit and one selected image per subject.
-Private validation, holdout and cross-validation are unsupported.
+Private validation, holdout and cross-validation use a fixed bounded
+foreground Dice layout with one contribution per patient.
 }

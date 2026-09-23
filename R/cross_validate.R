@@ -1,8 +1,9 @@
 # Module: Federated cross-validation
 
-#' Cross-validate a tabular neural or native-tree model across federated data
+#' Cross-validate a neural or native-tree model across federated data
 #'
-#' Runs \code{folds} complete, clean-initialized federated trainings. Each node
+#' Runs \code{folds} complete federated trainings, each independently initialized
+#' from random weights or the same admitted public checkpoint. Each node
 #' assigns whole privacy units to folds with its custodial HMAC, trains every
 #' fold only on the complement, and keeps held-out sufficient statistics in
 #' namespaced Flower runtime memory. Only one pooled differentially-private OOF metric vector is
@@ -49,7 +50,12 @@ ds.flower.cross_validate <- function(
     target_bounds = NULL,
     allow_insecure_http = getOption(
       "dsflower.dsi_allow_insecure_http", character()),
-    resource_kind = "imaging") {
+    resource_kind = "imaging",
+    data_kind = NULL,
+    public_checkpoint_file = NULL,
+    public_initialisation = NULL,
+    survival_horizons = NULL,
+    survival_nll_bound = 20) {
   folds <- .normalize_cross_validation(folds)$folds
   if (missing(rounds)) {
     registered <- if (inherits(model, "dsflower_model")) {
@@ -69,7 +75,10 @@ ds.flower.cross_validate <- function(
     silent = silent, verbose = verbose, feature_bounds = feature_bounds,
     feature_cuts = feature_cuts,
     target_levels = target_levels, target_bounds = target_bounds,
-    allow_insecure_http = allow_insecure_http, data_kind = "tabular",
+    allow_insecure_http = allow_insecure_http, data_kind = data_kind,
+    public_checkpoint_file = public_checkpoint_file,
+    public_initialisation = public_initialisation,
+    survival_horizons = survival_horizons, survival_nll_bound = survival_nll_bound,
     cross_validation = folds)
 }
 

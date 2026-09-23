@@ -194,7 +194,7 @@ test_that("cross_validate defaults to three real folds and forwards one job", {
     conns = list(site = TRUE), symbol = "D", target = "y", features = "x")
   expect_s3_class(result, "dsflower_cv")
   expect_identical(seen$cross_validation, 3L)
-  expect_identical(seen$data_kind, "tabular")
+  expect_null(seen$data_kind)
   expect_false("holdout" %in% names(seen))
 })
 

@@ -29,7 +29,10 @@ ds.flower.submit(
   cross_validation = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
   resource_kind = "imaging",
-  public_checkpoint_file = NULL
+  public_checkpoint_file = NULL,
+  public_initialisation = NULL,
+  survival_horizons = NULL,
+  survival_nll_bound = 20
 )
 }
 \arguments{
@@ -94,8 +97,8 @@ native-tree or native dsFlower vision holdout validation. Unsupported
 tracks fail before private preparation.}
 
 \item{cross_validation}{Optional integer in \code{[2, 10]} selecting a
-dedicated metrics-only tabular cross-validation job for neural models or
-binary/regression native-tree models. It returns one pooled DP OOF result
+dedicated metrics-only cross-validation job for tabular neural, survival,
+segmentation or binary/regression native-tree models. It returns one pooled DP OOF result
 and never saves fold models or predictions. Prefer the user-facing
 \code{ds.flower.cross_validate()} wrapper.}
 
@@ -107,8 +110,14 @@ transport security; use it only behind an independently trusted network.}
 \code{"imaging"} or \code{"tabular"}.}
 
 \item{public_checkpoint_file}{Local public checkpoint NPZ or complete bundle for
-the coordinator when using \code{decoder_init = "resource:<handle-symbol>"}.
+the coordinator when using a \code{resource:<handle-symbol>} initialization.
 It must match every node's admitted identity and grants no node authorization.}
+
+\item{public_initialisation}{Public tabular initialization selector; see
+\code{ds.flower.fit()}.}
+
+\item{survival_horizons, survival_nll_bound}{Public survival metric contract;
+see \code{ds.flower.fit()}.}
 }
 \value{
 A \code{dsflower_run}, or a \code{dsflower_cv} when

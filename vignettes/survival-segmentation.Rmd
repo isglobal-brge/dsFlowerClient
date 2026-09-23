@@ -117,9 +117,11 @@ awards half credit to exact risk ties. Its likelihood score uses original-time
 AFT density or hazard NLL divided by K. These are different likelihood scales;
 compare each contract with its own exact twin.
 
-`ds.flower.validate`, private holdout, cross-validation and survival training
-inside HPO reject at public preflight. No private training losses, concordance,
-event counts or validity summaries are returned. This work does not implement
+`ds.flower.validate`, private holdout and cross-validation release pooled
+observed-status Brier at fixed public horizons and bounded fitted NLL. Concordance
+is pairwise and remains a public-split metric. Survival training inside HPO
+remains unsupported; no exact event counts or validity summaries are returned.
+See [private validation and CV](../PRIVATE_VALIDATION_CV.md) for calls and sensitivities. This work does not implement
 competing risks, delayed entry, interval censoring or time-varying covariates.
 
 ## Public evidence and preregistration
@@ -216,8 +218,9 @@ compatibility gates pass.
 The contract uses one selected image per subject, a frozen ImageNet ResNet-18
 encoder, canonical 128 by 128 masks, and a subject-separable BCE/Dice loss.
 Invalid subjects remain in the privacy census with zero loss validity.
-Private validation, holdout, cross-validation and private-score HPO are
-unsupported. The [binary segmentation guide](binary-segmentation.html) describes
+Private validation, holdout and cross-validation release bounded pooled
+foreground Dice. Private-score HPO remains unsupported. Both public-initialisation
+routes may start holdout or each CV fold. The [binary segmentation guide](binary-segmentation.html) describes
 the complete schema, prediction mapping and fail-closed boundaries.
 
 Current results come from **protocol v5**, whose SHA256 begins `28a713f8`.

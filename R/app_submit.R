@@ -409,12 +409,16 @@
 #'   native-tree or native dsFlower vision holdout validation. Unsupported
 #'   tracks fail before private preparation.
 #' @param cross_validation Optional integer in \code{[2, 10]} selecting a
-#'   dedicated metrics-only tabular cross-validation job for neural models or
-#'   binary/regression native-tree models. It returns one pooled DP OOF result
+#'   dedicated metrics-only cross-validation job for tabular neural, survival,
+#'   segmentation or binary/regression native-tree models. It returns one pooled DP OOF result
 #'   and never saves fold models or predictions. Prefer the user-facing
 #'   \code{ds.flower.cross_validate()} wrapper.
+#' @param survival_horizons,survival_nll_bound Public survival metric contract;
+#'   see \code{ds.flower.fit()}.
+#' @param public_initialisation Public tabular initialization selector; see
+#'   \code{ds.flower.fit()}.
 #' @param public_checkpoint_file Local public checkpoint NPZ or complete bundle for
-#'   the coordinator when using \code{decoder_init = "resource:<handle-symbol>"}.
+#'   the coordinator when using a \code{resource:<handle-symbol>} initialization.
 #'   It must match every node's admitted identity and grants no node authorization.
 #' @return A \code{dsflower_run}, or a \code{dsflower_cv} when
 #'   \code{cross_validation} is set.
@@ -434,7 +438,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
                              allow_insecure_http = getOption(
                                "dsflower.dsi_allow_insecure_http", character()),
                              resource_kind = "imaging",
-                             public_checkpoint_file = NULL) {
+                             public_checkpoint_file = NULL,
+                             public_initialisation = NULL,
+                             survival_horizons = NULL,
+                             survival_nll_bound = 20) {
   holdout_spec <- .normalize_holdout(holdout)
   cv_spec <- .normalize_cross_validation(cross_validation)
   if (!is.null(holdout_spec) && !is.null(cv_spec)) {
@@ -490,8 +497,17 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   model$params <- .dsflower_resolve_model_params(
     registered_model, model_params)
   sub <- .emit_submission(model)
-  if (!identical(sub$loss, "segmentation_bce_dice") && !is.null(public_checkpoint_file)) {
-    stop("public_checkpoint_file is supported only for segmentation initialization.", call. = FALSE)
+  if (!is.null(public_initialisation)) {
+    public_initialisation <- .segmentation_decoder_init(public_initialisation)
+    if (identical(public_initialisation, "random") ||
+        !identical(sub$track, "neural") || !identical(data_kind, "tabular")) {
+      stop("public_initialisation requires a client/resource bundle and a tabular neural model.",
+           call. = FALSE)
+    }
+  }
+  if (!identical(sub$loss, "segmentation_bce_dice") &&
+      is.null(public_initialisation) && !is.null(public_checkpoint_file)) {
+    stop("public_checkpoint_file requires public initialization.", call. = FALSE)
   }
   if (.is_survival_loss(sub$loss) && isTRUE(.DSFLOWER_HPO_CONTEXT$active)) {
     stop("Survival training inside HPO is unsupported; use a preregistered ",
@@ -504,6 +520,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   if (!is.null(cv_spec)) {
     .assert_cross_validation_supported(sub, data_kind)
   }
+  metric_config <- .private_survival_metric_config(
+    if (!is.null(holdout_spec) || !is.null(cv_spec)) .survival_config(sub$params, sub$loss) else NULL,
+    survival_horizons, survival_nll_bound)
   target <- .validate_submission_target(sub, target)
   if (.is_survival_loss(sub$loss)) {
     if (is.null(features) || !length(features) ||
@@ -704,6 +723,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   }
   segmentation_input <- if (identical(sub$loss, "segmentation_bce_dice")) {
     .segmentation_client_initialization(conns, sub$params, public_checkpoint_file)
+  } else if (!is.null(public_initialisation)) {
+    .segmentation_client_initialization(conns,
+      list(decoder_init = public_initialisation), public_checkpoint_file,
+      model_spec = sub$spec)
   } else NULL
   if (!is.null(segmentation_input$uploads)) {
     on.exit(.segmentation_abort_uploads(conns, segmentation_input$uploads), add = TRUE)
@@ -777,7 +800,6 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         "vision-extractor-profile" = p[["vision_extractor_profile"]]))
     }
     if (identical(sub$loss, "segmentation_bce_dice")) {
-      prepare_config[["num-labels"]] <- NULL
       prepare_config <- c(prepare_config, .segmentation_public_config(p), list(
         image_asset = p[["image_asset"]], mask_asset = p[["mask_asset"]],
         image_path_col = p[["image_path_col"]], mask_path_col = target,
@@ -800,6 +822,23 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   if (!is.null(public_target$bounds)) {
     prepare_config[["target-bounds"]] <- public_target$bounds
   }
+  prepare_config <- c(prepare_config, metric_config)
+  if (!is.null(segmentation_input)) {
+    if (!is.null(public_initialisation)) {
+      prepare_config[["segmentation-decoder-init"]] <- if (
+        startsWith(public_initialisation, "client:")) "client" else public_initialisation
+    }
+    prepare_config[["public-initialisation-manifest-sha256"]] <-
+      segmentation_input$summary$provenance$manifest_sha256
+    prepare_config[["public-initialisation-checkpoint-sha256"]] <-
+      segmentation_input$summary$checkpoint_sha256
+    prepare_config[["public-initialisation-encoder-sha256"]] <-
+      segmentation_input$summary$encoder_sha256
+    prepare_config[["public-initialisation-identity-version"]] <-
+      segmentation_input$summary$identity_version
+    prepare_config[["public-initialisation-origin"]] <- if (
+      startsWith(segmentation_input$origin, "resource:")) "resource" else "analyst-declared"
+  }
   if (!is.null(cv_contract)) {
     if (identical(sub$track, "neural")) {
       prepare_config <- c(prepare_config, strategy_config)
@@ -814,10 +853,13 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       privacy_clipping_norm = cv_capabilities$privacy_clipping_norm)
     prepare_config[["cv-job-sha256"]] <- cv_job_sha256
   }
+  prepare_config[grep("^public-initialisation-", names(prepare_config))] <- NULL
   prepared <- .segmentation_prepare_nodes(
     conns, hsym, target, features, prepare_config, segmentation_input)
-  segmentation_initialization <- if (identical(sub$loss, "segmentation_bce_dice")) {
-    .segmentation_server_initialization(prepared, sub$params, names(conns), segmentation_input)
+  segmentation_initialization <- if (!is.null(segmentation_input)) {
+    .segmentation_server_initialization(prepared,
+      if (is.null(public_initialisation)) sub$params else
+        list(decoder_init = public_initialisation), names(conns), segmentation_input)
   } else NULL
 
   if (!is.null(up)) {
@@ -879,8 +921,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       .toml_kv("loss-name", sub$loss %||% "bce_logits"),
       paste0("num-classes = ", as.integer(
         p[["n_classes"]] %||% p[["num_classes"]] %||% 2L)),
-      if (!identical(sub$loss, "segmentation_bce_dice"))
-        paste0("num-labels = ", as.integer(p[["num_labels"]] %||% 2L)),
+      paste0("num-labels = ", as.integer(p[["num_labels"]] %||% 2L)),
       paste0("local-epochs = ", as.integer(p[["local_epochs"]] %||% 1L)),
       paste0("batch-size = ", as.integer(p[["batch_size"]] %||% 32L)),
       unname(vapply(names(training_config), function(key) {
@@ -909,6 +950,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         .toml_kv(key, segmentation_config[[key]])
       }, character(1))))
     }
+    if (!is.null(public_initialisation)) {
+      cfg <- c(cfg,
+        .toml_kv("segmentation-decoder-init", if (
+          startsWith(public_initialisation, "client:")) "client" else "resource"),
+        .toml_kv("segmentation-public-initialization-b64", segmentation_initialization$b64))
+    }
   } else if (identical(sub$track, "native_tree")) {
     cfg <- c(
       cfg,
@@ -916,6 +963,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       .toml_kv("native-tree-request-sha256", request$sha256))
   }
 
+  cfg <- c(cfg, unname(vapply(names(metric_config), function(key) {
+    .toml_kv(key, metric_config[[key]])
+  }, character(1))))
   app_dir <- .build_submission_app(sub, cfg, results_dir,
                                    vision = identical(data_kind, "image"))
   if (!identical(sub$track, "native_tree")) {

@@ -271,8 +271,9 @@ shape or log-normal sigma) and `pytorch_discrete_hazard` (a fixed public grid,
 K <= 64). Both require the custodian's patient privacy policy, an explicit
 baseline feature list, and ordered `target = c("time", "event")` with event
 coding 1/0. Supply an explicit AFT horizon or hazard grid before training.
-Private validation, holdout, CV and survival training inside HPO are rejected
-at public preflight. Released artifacts support local survival curves, medians
+Private validation, holdout and CV provide observed-status Brier at public
+horizons and bounded fitted NLL. Concordance remains a public-split metric and
+survival training inside HPO is unsupported. Released artifacts support local survival curves, medians
 and risk scores on public or independently authorized held-out data. See the
 [survival contracts and evidence article](https://isglobal-brge.github.io/dsFlowerClient/articles/survival-segmentation.html)
 for the time convention, prediction definitions and campaign status.
@@ -283,7 +284,8 @@ native dsFlower ResNet-18/DenseNet-121 binary or multiclass releases, including
 the volumetric variants. Local prediction takes explicit image or volume paths
 and does not contact DSI. Atomic holdout for native dsFlower vision uses the
 same row/patient split, fixed 80/20 privacy allocation and single pooled DP test
-release as neural tabular holdout; image cross-validation is not implemented.
+release as neural tabular holdout. Image classification CV remains unsupported;
+the patient segmentation contract supports CV.
 These boundaries are explicit rather than silently treating images as a numeric
 table. Each image release carries a
 `vision-extractor-profile`: a versioned public semantic ABI for its frozen
@@ -431,6 +433,13 @@ HookApps use the same `target_levels`/`target_bounds` contract and must declare
 
 ## Private model validation
 
+Analyst-supplied `model = "client:/analyst/public/bundle.zip"` is also accepted
+under the custodian's analyst-material policy. Complete trusted tabular and
+segmentation bundles bind model, feature/loss geometry and tensor digests before
+private access. Both public-initialisation routes support CV and atomic holdout;
+each fold starts from the same admitted material. See
+[exact calls, metric layouts and sensitivities](PRIVATE_VALIDATION_CV.md).
+
 `ds.flower.validate()` evaluates a saved declarative neural, native dsFlower vision,
 or sanitized native-tree model inside the nodes and releases one fixed,
 Gaussian-noised vector of bounded sufficient statistics per node. Vision is
@@ -472,8 +481,8 @@ probabilities <- ds.flower.predict(
 )
 ```
 
-Native dsFlower vision supports atomic holdout; image cross-validation remains
-unsupported.
+Native dsFlower vision supports atomic holdout; image classification CV remains
+unsupported. Patient segmentation supports validation, holdout and CV.
 
 Binary validation provides threshold metrics, ROC/PR AUC, Brier score,
 calibration and decision-curve summaries; multiclass/ordinal/multilabel use
@@ -497,8 +506,8 @@ canonical, has no analyst seed, and retries recreate the same secret-keyed split
 The returned `fit$holdout` contains only pooled DP metrics; no predictions,
 unit assignments or site metrics leave the nodes. Native-tree releases are
 accepted only when the holdout provenance exactly binds the resampling contract,
-tree request, public schema, sanitized artifact and node count. Image and
-non-training tracks fail explicitly instead of pretending to support this protocol.
+tree request, public schema, sanitized artifact and node count. Native image,
+patient segmentation and survival contracts also support atomic holdout.
 
 For honest K-fold validation, use the dedicated metrics-only workflow:
 
@@ -656,7 +665,8 @@ mask decoder over frozen, checkpoint-pinned ResNet18 layer2 features. Use
 configure patient privacy and paired image/mask roots. One canonical image is
 selected per subject and invalid pairs remain in the privacy census with zero
 validity. Local prediction returns `[image, channel, row, column]` probabilities
-or masks. Private validation, holdout, CV and private-score HPO are unsupported.
+or masks. Private validation, holdout and CV release pooled foreground Dice;
+private-score HPO remains unsupported.
 See the [binary segmentation guide](https://isglobal-brge.github.io/dsFlowerClient/articles/binary-segmentation.html)
 for schema roles, fixed preprocessing, loss and channel-B evaluation boundaries.
 Utility claims require the executed benchmark evidence; adding the contract does

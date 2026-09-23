@@ -41,6 +41,7 @@ A `dsflower_model` specification.
 Each privacy unit is one subject under the custodian's patient policy.
 Supply ordered targets `c(time_column, event_column)`, where event is 1 and
 right censoring is 0. The public horizon must be chosen before inspecting
-private outcomes. Location is bounded to [-10, 10]. Private evaluation is
-unsupported; use public or authorized analyst-local held-out data.
+private outcomes. Location is bounded to [-10, 10]. Private validation,
+holdout and cross-validation release bounded likelihood and observed-status
+Brier metrics. Pairwise concordance remains a public-split metric.
 }

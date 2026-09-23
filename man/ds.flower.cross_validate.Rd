@@ -2,7 +2,7 @@
 % Please edit documentation in R/cross_validate.R
 \name{ds.flower.cross_validate}
 \alias{ds.flower.cross_validate}
-\title{Cross-validate a tabular neural or native-tree model across federated data}
+\title{Cross-validate a neural or native-tree model across federated data}
 \usage{
 ds.flower.cross_validate(
   conns,
@@ -28,7 +28,12 @@ ds.flower.cross_validate(
   target_levels = NULL,
   target_bounds = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
-  resource_kind = "imaging"
+  resource_kind = "imaging",
+  data_kind = NULL,
+  public_checkpoint_file = NULL,
+  public_initialisation = NULL,
+  survival_horizons = NULL,
+  survival_nll_bound = 20
 )
 }
 \arguments{
@@ -105,13 +110,33 @@ transport security; use it only behind an independently trusted network.}
 
 \item{resource_kind}{Explicit Resource route, exactly
 \code{"imaging"} or \code{"tabular"}.}
+
+\item{data_kind}{Optional input kind, \code{"tabular"} or \code{"image"}.
+It is inferred when the registered model supports exactly one kind; models
+registered for both require an explicit choice.}
+
+\item{public_checkpoint_file}{Local public checkpoint NPZ or complete bundle for
+resource initialization; it is checked against each node's admitted identity.}
+
+\item{public_initialisation}{For tabular neural models, an admitted public bundle
+selector \code{client:<local-bundle>} or \code{resource:<handle-symbol>}.
+Every CV fold starts from the same verified material. Segmentation uses
+its model's \code{decoder_init} selector.}
+
+\item{survival_horizons}{Public fixed Brier horizons for survival holdout/CV;
+defaults to the fitted administrative horizon. Right-censored subjects
+with unknown status at a horizon do not enter its observed-status Brier mean.}
+
+\item{survival_nll_bound}{Positive public bound (default 20) for clipping
+each patient's negative log-likelihood to its symmetric interval.}
 }
 \value{
 A \code{dsflower_cv} object containing only pooled OOF metrics and
   public job metadata.
 }
 \description{
-Runs \code{folds} complete, clean-initialized federated trainings. Each node
+Runs \code{folds} complete federated trainings, each independently initialized
+from random weights or the same admitted public checkpoint. Each node
 assigns whole privacy units to folds with its custodial HMAC, trains every
 fold only on the complement, and keeps held-out sufficient statistics in
 namespaced Flower runtime memory. Only one pooled differentially-private OOF metric vector is

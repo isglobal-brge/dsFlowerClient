@@ -64,6 +64,8 @@ SELECTION_VALUES = {
     "validation-model-track": ("neural", "native_tree"),
     "validation-task": ("binary", "multiclass"), "validation-bins": (8, 16),
     "validation-contract-sha256": ("a" * 64, "b" * 64),
+    "validation-survival-horizons": ("[5]", "[10]"),
+    "validation-survival-nll-bound": (10, 20),
     "validation-artifact-format": ("torch-v1", "torch-v2"),
     "validation-artifact-sha256": ("a" * 64, "b" * 64),
     "validation-profile-sha256": ("a" * 64, "b" * 64),

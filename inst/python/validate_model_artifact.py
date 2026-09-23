@@ -23,7 +23,7 @@ def main():
     arrays = validation.public_model_arrays(config)
     if not isinstance(arrays, list) or not arrays:
         raise ValueError("validation artifact produced no public model arrays")
-    if config.get("data-kind") == "image":
+    if config.get("data-kind") == "image" and config.get("validation-task") != "segmentation":
         encoder, _size, _is_3d, _device = vision.prepare_backbone(
             config.get("backbone"),
             config.get("vision-extractor-profile"),

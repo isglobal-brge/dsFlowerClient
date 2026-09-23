@@ -46,13 +46,12 @@ test_that("survival public domain and role failures happen before transport", {
   expect_error(ds.flower.submit(list(), model, target = c("t", "e"),
                                features = "x", target_levels = c(0, 1)),
                "target_levels")
-  expect_error(ds.flower.submit(list(), model, target = c("t", "e"),
-                               features = "x", holdout = 0.2), "Survival private")
-  expect_error(ds.flower.fit(list(), model = model, target = c("t", "e"),
-                            features = "x", cross_validation = 3), "Survival private")
+  sub <- dsFlowerClient:::.emit_submission(model)
+  expect_true(dsFlowerClient:::.assert_holdout_supported(sub, "tabular"))
+  expect_true(dsFlowerClient:::.assert_cross_validation_supported(sub, "tabular"))
 })
 
-test_that("survival artifact metadata supports local inference and rejects private metrics", {
+test_that("survival artifact metadata supports local inference and private metric contracts", {
   model <- ds.flower.model.pytorch_aft(10, distribution = "lognormal")
   sub <- dsFlowerClient:::.emit_submission(model)
   config <- dsFlowerClient:::.survival_config(sub$params, sub$loss)
@@ -66,11 +65,10 @@ test_that("survival artifact metadata supports local inference and rejects priva
   contract <- dsFlowerClient:::.read_meta_model_contract(model_dir)
   expect_identical(contract$loss_name, "aft_lognormal_nll")
   expect_equal(contract$survival_config, config)
-  expect_error(dsFlowerClient:::.resolve_validation_contract(model_dir, 32),
-               "Survival private")
-  # A local HPO objective cannot bypass the nested private-evaluation preflight.
-  objective <- function(params) dsFlowerClient:::.resolve_validation_contract(model_dir, 32)
-  expect_error(objective(list()), "private HPO")
+  writeBin(charToRaw("public artifact"), file.path(model_dir, "model.pt"))
+  validation <- dsFlowerClient:::.resolve_validation_contract(model_dir, 32)
+  expect_identical(validation$task, "survival")
+  expect_equal(validation$survival_config, config)
 })
 
 test_that("fit accepts survival task and preserves ordered target roles", {
@@ -98,10 +96,8 @@ test_that("hazard public grids preserve subjects and exact target semantics", {
     expect_false(any(c("distribution", "dispersion", "time_scale") %in% names(config)))
     expect_identical(ds.flower.recipe(model, target = c("t", "e"))$task$type,
                      "survival")
-    expect_error(dsFlowerClient:::.assert_holdout_supported(sub, "tabular"),
-                 "Survival private")
-    expect_error(dsFlowerClient:::.assert_cross_validation_supported(sub, "tabular"),
-                 "Survival private")
+    expect_true(dsFlowerClient:::.assert_holdout_supported(sub, "tabular"))
+    expect_true(dsFlowerClient:::.assert_cross_validation_supported(sub, "tabular"))
     expect_identical(dsFlowerClient:::.validate_submission_target(sub, c("t", "e")),
                      c("t", "e"))
   }
