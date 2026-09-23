@@ -57,6 +57,10 @@
 #'
 #' @param name Character model name or a \code{dsflower_model} object.
 #' @param ... Arguments passed to the selected concrete model constructor.
+#'   For \code{pytorch_resnet18_segmentation}, \code{decoder_init = "random"}
+#'   is the default; \code{"public:<checkpoint-id>"} requests a checkpoint
+#'   installed and allowlisted by each custodian. See
+#'   \code{ds.flower.model.pytorch_resnet18_segmentation()}.
 #' @return A \code{dsflower_model} object.
 #' @export
 ds.flower.model <- function(name = "pytorch_logreg", ...) {
@@ -241,6 +245,10 @@ ds.flower.task <- function(name = "classification") {
 #'   model or prediction. When \code{rounds} is omitted, native-tree CV uses its
 #'   required single round per fold; an explicit value is never overwritten.
 #'   Prefer \code{ds.flower.cross_validate()} for this workflow.
+#' @details Segmentation accepts \code{model_params} with
+#'   \code{decoder_init = "public:<checkpoint-id>"} and a matching
+#'   \code{decoder}; each node must install and allowlist that checkpoint.
+#'   See \code{ds.flower.model.pytorch_resnet18_segmentation()}.
 #' @return A \code{dsflower_run} object, or a \code{dsflower_cv} when
 #'   \code{cross_validation} is set.
 #' @export

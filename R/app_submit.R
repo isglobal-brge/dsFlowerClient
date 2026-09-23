@@ -801,9 +801,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       privacy_clipping_norm = cv_capabilities$privacy_clipping_norm)
     prepare_config[["cv-job-sha256"]] <- cv_job_sha256
   }
-  ds.flower.nodes.prepare(
+  prepared <- ds.flower.nodes.prepare(
     conns, hsym, target_column = target, feature_columns = features,
     run_config = prepare_config)
+  segmentation_initialization <- if (identical(sub$loss, "segmentation_bce_dice")) {
+    .segmentation_server_initialization(prepared, sub$params, names(conns))
+  } else NULL
 
   if (!is.null(up)) {
     pin <- .pin_user_module(conns, hsym, up)
@@ -884,6 +887,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     }
     if (identical(sub$loss, "segmentation_bce_dice")) {
       segmentation_config <- .segmentation_public_config(p)
+      if (!is.null(segmentation_initialization)) {
+        segmentation_config[["segmentation-public-initialization-b64"]] <-
+          segmentation_initialization$b64
+      }
       cfg <- c(cfg, unname(vapply(names(segmentation_config), function(key) {
         .toml_kv(key, segmentation_config[[key]])
       }, character(1))))
@@ -944,6 +951,9 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     cross_validation_n_nodes = if (!is.null(cv_contract))
       as.integer(n_clients) else NULL,
     cross_validation_job_sha256 = cv_job_sha256), class = "dsflower_recipe")
+  if (!is.null(segmentation_initialization)) {
+    recipe$segmentation_public_initialization <- segmentation_initialization$provenance
+  }
 
   # Cleanup (tunnel/handle/app/connection) is guaranteed by the on.exit above, on both a
   # run error and normal completion.

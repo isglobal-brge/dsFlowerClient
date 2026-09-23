@@ -1,13 +1,88 @@
 # Public binary segmentation pins and local artifact reconstruction.
 .SEGMENTATION_CHECKPOINT_SHA256 <- "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
 
+.segmentation_decoder_init <- function(value = "random") {
+  if (!is.character(value) || length(value) != 1L || is.na(value) ||
+      !(identical(value, "random") ||
+        grepl("\\Apublic:[a-z0-9][a-z0-9._-]{0,63}\\z", value, perl = TRUE))) {
+    stop("decoder_init must be 'random' or 'public:<checkpoint-id>' with a ",
+         "1-64 character lowercase ASCII checkpoint id.", call. = FALSE)
+  }
+  value
+}
+
 .segmentation_public_config <- function(params) {
-  list(
+  decoder_init <- .segmentation_decoder_init(params$decoder_init %||% "random")
+  config <- list(
     "segmentation-checkpoint-sha256" = params$segmentation_checkpoint_sha256,
     "segmentation-selection" = params$segmentation_selection,
     "segmentation-preprocessing" = params$segmentation_preprocessing,
     "segmentation-output-shape" = params$segmentation_output_shape,
     "mask-vocabulary" = params$mask_values)
+  if (!identical(decoder_init, "random")) {
+    config[["segmentation-decoder-init"]] <- decoder_init
+  }
+  config
+}
+
+.segmentation_server_initialization <- function(prepared, params, node_names) {
+  init <- .segmentation_decoder_init(params$decoder_init %||% "random")
+  if (identical(init, "random")) return(NULL)
+  sites <- prepared$per_site
+  if (!is.list(sites) || !length(sites) || anyDuplicated(names(sites)) ||
+      !setequal(names(sites), node_names)) {
+    stop("Public decoder initialization requires every node's verified checkpoint.",
+         call. = FALSE)
+  }
+  payloads <- lapply(sites, function(site) {
+    if (!is.list(site) || !is.list(site$segmentation_public_initialization)) {
+      stop("Node public decoder initialization payload is invalid.", call. = FALSE)
+    }
+    payload <- site$segmentation_public_initialization
+    if (!is.list(payload$provenance) || !is.list(payload$provenance$manifest)) {
+      stop("Node public decoder initialization payload is invalid.", call. = FALSE)
+    }
+    provenance <- payload$provenance
+    manifest <- provenance$manifest
+    checkpoint <- manifest$checkpoint
+    scalar <- function(value) is.character(value) && length(value) == 1L && !is.na(value)
+    sha256 <- function(value) scalar(value) && grepl("\\A[0-9a-f]{64}\\z", value, perl = TRUE)
+    if (!is.list(payload) || !setequal(names(payload), c("provenance", "checkpoint_base64")) ||
+        !is.list(provenance) || !is.list(manifest) || !is.list(checkpoint) ||
+        !sha256(provenance$manifest_sha256) || !sha256(checkpoint$sha256) ||
+        !identical(manifest$checkpoint_id, substring(init, 8L)) ||
+        !identical(manifest$model_id, "pytorch_resnet18_segmentation") ||
+        !identical(manifest$decoder, params$decoder) ||
+        !is.numeric(checkpoint$size_bytes) || length(checkpoint$size_bytes) != 1L ||
+        is.na(checkpoint$size_bytes) || checkpoint$size_bytes < 1 ||
+        checkpoint$size_bytes > 2 * 1024^2 ||
+        !scalar(payload$checkpoint_base64) ||
+        nchar(payload$checkpoint_base64, type = "bytes") > 3 * 1024^2 ||
+        nchar(payload$checkpoint_base64, type = "bytes") %% 4L != 0L ||
+        !grepl("\\A[A-Za-z0-9+/]*={0,2}\\z", payload$checkpoint_base64, perl = TRUE)) {
+      stop("Node public decoder initialization payload is invalid.", call. = FALSE)
+    }
+    bytes <- tryCatch(jsonlite::base64_dec(payload$checkpoint_base64),
+                      error = function(e) raw())
+    if (length(bytes) != checkpoint$size_bytes ||
+        !identical(digest::digest(bytes, algo = "sha256", serialize = FALSE),
+                   checkpoint$sha256)) {
+      stop("Node public decoder checkpoint digest mismatch.", call. = FALSE)
+    }
+    encoded <- gsub("[\r\n]", "", jsonlite::base64_enc(charToRaw(enc2utf8(
+      as.character(jsonlite::toJSON(payload, auto_unbox = TRUE,
+                                    null = "null", digits = I(17)))))))
+    if (nchar(encoded, type = "bytes") > 4 * 1024^2) {
+      stop("Node public decoder initialization payload exceeds its byte limit.",
+           call. = FALSE)
+    }
+    list(b64 = encoded, provenance = provenance)
+  })
+  first <- payloads[[1L]]
+  if (!all(vapply(payloads, function(value) identical(value$b64, first$b64), logical(1)))) {
+    stop("Nodes disagree on the public decoder checkpoint or its provenance.", call. = FALSE)
+  }
+  first
 }
 
 .resolve_segmentation_prediction_contract <- function(model_dir) {
@@ -40,6 +115,7 @@
     }
   }
   decoder <- if (is.null(p$decoder)) "current" else p$decoder
+  .segmentation_decoder_init(p$decoder_init %||% "random")
   if (!is.character(decoder) || length(decoder) != 1L ||
       !decoder %in% c("current", "narrow", "pointwise") ||
       !is.numeric(p$alpha) || length(p$alpha) != 1L ||

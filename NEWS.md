@@ -1,5 +1,16 @@
 # dsFlowerClient 0.5.3
 
+* Expose segmentation `decoder_init = "random"` (the unchanged default) or
+  `"public:<checkpoint-id>"` through the registry, named constructor and fit
+  routes. Public initialization requires a matching decoder architecture and
+  a checkpoint installed and allowlisted by every custodian. The trusted runner
+  verifies provenance and tensor digests before private access, binds the
+  checkpoint to semantic randomness, and records it in node manifests and
+  release records. The client relays the nodes' agreed public weights to
+  initialize every aggregation strategy and saves node-verified provenance in
+  model metadata; analyst parameters cannot set node-owned digest pins or policy.
+  The DP training contract and encoder pin are unchanged.
+
 * Synchronize the canonical runner's corrected deterministic release identity,
   which includes server-authored source and request selections under semantic randomness
   contract v2. Identical selections and data still replay; different selections

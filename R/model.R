@@ -592,14 +592,28 @@ print.dsflower_model <- function(x, ...) {
 #'
 #' @param alpha Public BCE mixture weight: 0.5 (BCE/Dice) or 1 (BCE ablation).
 #' @param mask_values Declared binary PNG vocabulary: "0,255" or "0,1".
+#' @param decoder_init Decoder initialization: \code{"random"} (default), or
+#'   \code{"public:<checkpoint-id>"} for an administrator-installed checkpoint
+#'   admitted by each node's custodian allowlist. IDs contain 1--64 lowercase
+#'   ASCII letters, digits, dots, underscores or hyphens, starting with a letter
+#'   or digit. The selected \code{decoder} architecture must match the checkpoint.
+#'   Nodes verify checkpoint and provenance digests before private data access;
+#'   an unavailable, unapproved or invalid checkpoint fails without fallback.
 #' @param ... Additional typed parameters accepted by
 #'   \code{ds.flower.model("pytorch_resnet18_segmentation")}, including
 #'   \code{sample_id_col}, \code{image_path_col}, optional
-#'   \code{mask_empty_col}, and public training parameters.
+#'   \code{mask_empty_col}, \code{decoder}, and public training parameters.
+#' @details Public initialization changes the starting decoder weights. The
+#'   frozen encoder and private DP training contract are unchanged. Custodians
+#'   install the public bundle and set \code{dsflower.segmentation_public_checkpoints}
+#'   on each node; see the bundle's \code{README.md} under
+#'   \code{system.file("extdata", "segmentation-public-checkpoints", package = "dsFlower")}.
+#'   The binary-segmentation vignette shows named, generic and fit routes.
 #' @return A \code{dsflower_model} object.
 #' @export
 ds.flower.model.pytorch_resnet18_segmentation <- function(
-    alpha = 0.5, mask_values = "0,255", ...) {
+    alpha = 0.5, mask_values = "0,255", decoder_init = "random", ...) {
   ds.flower.model("pytorch_resnet18_segmentation",
-                  alpha = alpha, mask_values = mask_values, ...)
+                  alpha = alpha, mask_values = mask_values,
+                  decoder_init = decoder_init, ...)
 }
