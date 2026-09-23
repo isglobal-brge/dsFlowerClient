@@ -85,3 +85,11 @@ SD and 95% Student-t intervals (df=2). Privacy mechanisms, exact twins,
 artifact hashes, trivial baselines and envelope diagnostics remain in the
 original records. The formal v5 utility floor is for BUS-BRA; applying its
 threshold to BrEaST is descriptive.
+
+## Zero-shot baseline of the public decoder (packaged in 0.5.2)
+
+`reconciliation-v5-20260920/ZERO_SHOT.md` and `zero_shot.json` record a fresh CPU-only
+zero-shot scoring of the three epochs60 BUSI public-pretraining checkpoints (strict
+state-dict load, 9,521 parameters, no private training) on the same outer test splits
+as the v5 confirmation: mean foreground Dice 0.423 on BUS-BRA and 0.482 on BrEaST,
+both below the floor, so the released fedDP models are not the public decoder relabelled.

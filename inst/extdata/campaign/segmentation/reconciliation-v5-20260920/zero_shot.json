@@ -1,0 +1,180 @@
+{
+  "title": "v5 public-pretrained decoder zero-shot baseline",
+  "method": {
+    "inference": "fresh_cpu",
+    "threshold": 0.5,
+    "foreground_dice": "subject-macro foreground_positive Dice",
+    "model": "pytorch_resnet18_segmentation",
+    "frozen_encoder": "existing frozen ResNet-18 public feature tensors",
+    "decoder": "narrow",
+    "decoder_parameters": 9521,
+    "private_fine_tuning": false,
+    "state_dict_loading": "strict"
+  },
+  "checkpoints": [
+    {
+      "seed": 20260919,
+      "manifest_path": "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260919.json",
+      "manifest_sha256": "7d4152fab1052a7696ccfa722a5661836f455a648a96e6f99654b8e734f5c55d",
+      "checkpoint_path": "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260919.npz",
+      "checkpoint_sha256": "b6db994dbb3a922b7b62e60a97a6dac5ce56757015d8e3756b1788e08673d311",
+      "manifest_checkpoint_sha256": "b6db994dbb3a922b7b62e60a97a6dac5ce56757015d8e3756b1788e08673d311",
+      "tensor_sha256": [
+        "847ed66bf4b58b583a749f715ea3fd07b045ae2cd954a783a663c1962dd721a7",
+        "ea0f77eea3c456f354a7c22b839524ccb6eec52fe34a35ad30d33e43684aa67d",
+        "3d726afb30137bab2ee5b4637f3ed43173e9880bb47e807881563064c2c17c6e",
+        "5ee02c9669a907b0fed3ef1fa74d5e83ffa7b2d31f66a09154431686d0cafa91",
+        "9fee0996194b6af39010b4478c574468184220d0561de538a45868b3ee84dbfd",
+        "ac768ad5b7afd7e79a0afa6b21b111fef1e303e6e0cd7b92eb1309e434746e9d"
+      ],
+      "combined_tensor_sha256": "c73cab8750abef0ee9350b17dc8eed930493c52f2193019b3a574d15afcac02a",
+      "strict_state_dict_load": true,
+      "decoder_parameters": 9521,
+      "frozen_encoder_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
+    },
+    {
+      "seed": 20260920,
+      "manifest_path": "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260920.json",
+      "manifest_sha256": "3f3e9d6ceca5dda443c8e0f52d882f5d23b041685eff4b954bbd95449a9523db",
+      "checkpoint_path": "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260920.npz",
+      "checkpoint_sha256": "b49b39a40ac00287ba5292f053aafff4c8ef042d09ac9c3a51d88ef2d94e07ed",
+      "manifest_checkpoint_sha256": "b49b39a40ac00287ba5292f053aafff4c8ef042d09ac9c3a51d88ef2d94e07ed",
+      "tensor_sha256": [
+        "a35c40fed8524bbf1eb3501fe1f8fb5031e931f1bbc59ec90e14417579d4ebf5",
+        "18dab6f1d852107637f6617ce37b1871d523dfbb206f53f20580c1527dcb7bd2",
+        "9e325067225a66fe4d66cb2c525f6b3739a628b60a4463b42676ae6be4a7b3ca",
+        "3e983f9c033cf42c00e9964a325edaeee201a11843003e2c0d758f7d2e77942a",
+        "08956a3db1a369b04abf1f10e3718ae7e3a80950b0f10694f4f0e0c488ae0cfe",
+        "0a4d1482d0b9c4d6a0dd7f9c0e5b1921cb2a40ff47d502afba2361363e7cda8a"
+      ],
+      "combined_tensor_sha256": "d92d726853a1fc82432f0bdf0696ae99b8644ce55ea3d9ec6ad3466e5d7dc867",
+      "strict_state_dict_load": true,
+      "decoder_parameters": 9521,
+      "frozen_encoder_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
+    },
+    {
+      "seed": 20260921,
+      "manifest_path": "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260921.json",
+      "manifest_sha256": "d7bfadb69b4c539669783e566a6185424f748102b612b48710d1a03cb46f7b1d",
+      "checkpoint_path": "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260921.npz",
+      "checkpoint_sha256": "54a83fc0751d6a3fba2f461db5a9b1e06ef7b828beed30bc0fc2fc7530452abb",
+      "manifest_checkpoint_sha256": "54a83fc0751d6a3fba2f461db5a9b1e06ef7b828beed30bc0fc2fc7530452abb",
+      "tensor_sha256": [
+        "36b5ad511c8c1f9ca31b33dc3dba36ab6c260641372ee1bdea7f005fbf59401b",
+        "81ce40b360fd963799f9007b74144e5a6f8d171bb6ec8b58884f5e1c3041bc19",
+        "9fcb06517ae0cfeb66591b5a21085a69853355e14dfa4836b08b0723ec01002b",
+        "2877ff65114ee59d775b215893eee10c927c910b282e6ec82a26ae010f192565",
+        "c028dc6e529bbf5f88e04a6fd6e2a42f5293ac354ac2e1868e3e5fd100e0945e",
+        "bdef24857304686441056fa0c132604d11a519a06f66a686ae0b7e264bf6ea1b"
+      ],
+      "combined_tensor_sha256": "376ee989fb7d3062b434c4145f1b6a1c155689f2529598fdd1dbaee8a366c618",
+      "strict_state_dict_load": true,
+      "decoder_parameters": 9521,
+      "frozen_encoder_sha256": "f37072fd47e89c5e827621c5baffa7500819f7896bbacec160b1a16c560e07ec"
+    }
+  ],
+  "cohorts": {
+    "busbra": {
+      "label": "BUS-BRA",
+      "n_outer_test": 212,
+      "released_feddp_epsilon8": 0.646,
+      "per_seed": [
+        {
+          "seed": 20260919,
+          "n_outer_train": 852,
+          "n_outer_test": 212,
+          "effective_split_sha256": "84bd935e2d956a412a03a92928529f10fdba801741bb57df7940057fe0cb4de0",
+          "foreground_dice": 0.4134345138826185,
+          "strongest_trivial": {
+            "mask": "square_64",
+            "all_subject_dice": 0.30600943092365357
+          }
+        },
+        {
+          "seed": 20260920,
+          "n_outer_train": 852,
+          "n_outer_test": 212,
+          "effective_split_sha256": "dd1f4c67d8830b1dee1bdf8171284f00743607450245e53b77ee36208af575a9",
+          "foreground_dice": 0.36246532795986924,
+          "strongest_trivial": {
+            "mask": "square_64",
+            "all_subject_dice": 0.30928670744809
+          }
+        },
+        {
+          "seed": 20260921,
+          "n_outer_train": 852,
+          "n_outer_test": 212,
+          "effective_split_sha256": "7ccc855a036fefaeb8496d8f3e4404faf352d845aab49c85ea84c396f0e83c01",
+          "foreground_dice": 0.4918355227473362,
+          "strongest_trivial": {
+            "mask": "square_64",
+            "all_subject_dice": 0.27130502222471187
+          }
+        }
+      ],
+      "mean_foreground_dice": 0.42257845486327467,
+      "mean_strongest_trivial_all_subject_dice": 0.29553372019881846
+    },
+    "breast": {
+      "label": "BrEaST",
+      "n_outer_test": 51,
+      "released_feddp_epsilon8": 0.526,
+      "per_seed": [
+        {
+          "seed": 20260919,
+          "n_outer_train": 205,
+          "n_outer_test": 51,
+          "effective_split_sha256": "b2c48809b4af05d2e10a8b4cf8bae47362926a7cbefe3c57a1f5193feb27b2d9",
+          "foreground_dice": 0.46973570671731646,
+          "strongest_trivial": {
+            "mask": "disk_r32",
+            "all_subject_dice": 0.27020498810661414
+          }
+        },
+        {
+          "seed": 20260920,
+          "n_outer_train": 205,
+          "n_outer_test": 51,
+          "effective_split_sha256": "2e7b63a1990dd85b94fe15d925eab47c6809f8c9c25967ff678866a09e24c89d",
+          "foreground_dice": 0.4641126286152004,
+          "strongest_trivial": {
+            "mask": "disk_r32",
+            "all_subject_dice": 0.23556413670640866
+          }
+        },
+        {
+          "seed": 20260921,
+          "n_outer_train": 205,
+          "n_outer_test": 51,
+          "effective_split_sha256": "d9ac7518ed19ee5703793a1e12fa198eaea0f47b4801cca26a1a5c66e7f0c661",
+          "foreground_dice": 0.5116955132499021,
+          "strongest_trivial": {
+            "mask": "disk_r32",
+            "all_subject_dice": 0.3204215766719773
+          }
+        }
+      ],
+      "mean_foreground_dice": 0.481847949527473,
+      "mean_strongest_trivial_all_subject_dice": 0.27539690049500004
+    }
+  },
+  "protected_inputs": {
+    "/workspace/segmentation/v5/runs-batch16/busbra-full-eps8-seed20260919/public-capture/public-initial.json": "04e6de686c83e694b3778aa0531d3eeadb74f2a1c41336022eb77cb59b90ace5",
+    "/workspace/segmentation/features/busbra/public-subject-tensors.npz": "dc67080126d98253e4f82d5ec9494e3d9513b971da691cf918d3405898ceeaca",
+    "/workspace/segmentation/features/breast/public-subject-tensors.npz": "ac935d31074c66fec2a93109c968629519326678eb7378b954be21a892d93afa",
+    "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260919.json": "7d4152fab1052a7696ccfa722a5661836f455a648a96e6f99654b8e734f5c55d",
+    "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260919.npz": "b6db994dbb3a922b7b62e60a97a6dac5ce56757015d8e3756b1788e08673d311",
+    "/workspace/segmentation/v5/runs-batch16/busbra-full-eps8-seed20260919/effective-split.json": "84bd935e2d956a412a03a92928529f10fdba801741bb57df7940057fe0cb4de0",
+    "/workspace/segmentation/v5/runs-batch16/breast-full-eps8-seed20260919/effective-split.json": "b2c48809b4af05d2e10a8b4cf8bae47362926a7cbefe3c57a1f5193feb27b2d9",
+    "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260920.json": "3f3e9d6ceca5dda443c8e0f52d882f5d23b041685eff4b954bbd95449a9523db",
+    "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260920.npz": "b49b39a40ac00287ba5292f053aafff4c8ef042d09ac9c3a51d88ef2d94e07ed",
+    "/workspace/segmentation/v5/runs-batch16/busbra-full-eps8-seed20260920/effective-split.json": "dd1f4c67d8830b1dee1bdf8171284f00743607450245e53b77ee36208af575a9",
+    "/workspace/segmentation/v5/runs-batch16/breast-full-eps8-seed20260920/effective-split.json": "2e7b63a1990dd85b94fe15d925eab47c6809f8c9c25967ff678866a09e24c89d",
+    "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260921.json": "d7bfadb69b4c539669783e566a6185424f748102b612b48710d1a03cb46f7b1d",
+    "/workspace/segmentation/v5/public-pretraining/epochs60/seed20260921.npz": "54a83fc0751d6a3fba2f461db5a9b1e06ef7b828beed30bc0fc2fc7530452abb",
+    "/workspace/segmentation/v5/runs-batch16/busbra-full-eps8-seed20260921/effective-split.json": "7ccc855a036fefaeb8496d8f3e4404faf352d845aab49c85ea84c396f0e83c01",
+    "/workspace/segmentation/v5/runs-batch16/breast-full-eps8-seed20260921/effective-split.json": "d9ac7518ed19ee5703793a1e12fa198eaea0f47b4801cca26a1a5c66e7f0c661"
+  },
+  "protected_inputs_unchanged": true
+}

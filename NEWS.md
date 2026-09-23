@@ -1,3 +1,12 @@
+# dsFlowerClient 0.5.2
+
+* Evidence-only release: package the zero-shot baseline of the v5 public-pretrained
+  segmentation decoders (`inst/extdata/campaign/segmentation/reconciliation-v5-20260920/ZERO_SHOT.md`
+  and `zero_shot.json`): the BUSI-pretrained narrow decoder scored with strict checkpoint
+  loading and no private training on the BUS-BRA and BrEaST outer test splits (mean
+  foreground Dice 0.423 and 0.482 across the three seeds, below the segmentation floor).
+  No code, runner, contract or test change.
+
 # dsFlowerClient 0.5.1
 
 * Write native-tree ensemble containers with an isolated canonical writer that
