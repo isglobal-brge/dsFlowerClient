@@ -1,3 +1,16 @@
+# dsFlowerClient 0.6.0
+
+* Synchronize the canonical runner's durable gated-Hook release cache. Exact
+  retries replay the original arrays and constant metrics for deterministic and
+  nondeterministic applications, using a domain-separated key from the v2
+  semantic request identity. Verified Hook contents, effective private data and
+  node-authored source/column selections are bound; changed data or selections
+  miss and cannot reopen a committed release coordinate.
+* Reject analyst cache directory and capacity overrides. Nodes reserve storage
+  before private work, serialize identical requests and pin active-run entries;
+  cross-run replay is guaranteed only while entries remain retained. Declarative
+  tracks and the existing minimum-duration envelope are unchanged.
+
 # dsFlowerClient 0.5.3
 
 * Synchronize the canonical runner's corrected deterministic release identity,

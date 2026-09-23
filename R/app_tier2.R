@@ -16,6 +16,17 @@
 .HOOK_APP_PARAMS_MAX_KEY_BYTES <- 128L
 .HOOK_APP_PARAMS_MAX_STRING_BYTES <- 4096L
 
+.reject_release_cache_controls <- function(run_config) {
+  keys <- names(run_config)
+  normalized <- gsub("([a-z0-9])([A-Z])", "\\1_\\2", keys, perl = TRUE)
+  normalized <- gsub("[-.]", "_", tolower(normalized))
+  if (any(grepl("(^|_)(cache|deadline)($|_)", normalized, perl = TRUE))) {
+    stop("Cache and deadline controls belong to the node administrator.",
+         call. = FALSE)
+  }
+  invisible(NULL)
+}
+
 #' @keywords internal
 .hook_app_reserved_key <- function(key) {
   normalized <- gsub("([a-z0-9])([A-Z])", "\\1_\\2", key, perl = TRUE)
@@ -34,7 +45,7 @@
       normalized, perl = TRUE
     ) ||
     grepl(
-      "(^|_)(privacy|dp|epsilon|delta|noise|sensitivity|accountant|clip|clipping)($|_)",
+      "(^|_)(privacy|dp|epsilon|delta|noise|sensitivity|accountant|clip|clipping|cache|deadline)($|_)",
       normalized, perl = TRUE
     )
 }

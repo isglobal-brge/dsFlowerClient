@@ -212,6 +212,7 @@ ds.flower.nodes.prepare <- function(conns, symbol = "flower",
                                      run_config = list()) {
   # The per-training DP contract and mechanism pins are set entirely by the
   # node before private staging. The client never injects privacy parameters.
+  .reject_release_cache_controls(run_config)
 
   feat_enc <- .ds_encode(feature_columns)
   config_enc <- .ds_encode(run_config)

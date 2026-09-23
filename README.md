@@ -132,9 +132,11 @@ encoded as integers from `0` to `n_classes - 1`.
 
 Each node applies one administrator-pinned epsilon/delta contract to every
 training. Its accountant composes that contract across the training's own
-rounds. There is no historical database, quota or resource-specific balance;
-one training never reduces or blocks the next. Distinct trainings compose in
-the standard way when they are analysed together.
+rounds. There is no historical privacy-budget database, query quota or
+resource-specific privacy balance; one training never reduces the next
+training's privacy budget. Gated-Hook cache capacity is a separate storage
+admission limit. Distinct trainings compose in the standard way when they are
+analysed together.
 
 When atomic holdout is requested, that same per-training pair is the total job
 budget: the node applies a fixed split between composed training and one pooled
@@ -156,10 +158,11 @@ This is not an unbounded add/remove membership guarantee for a changing unit
 count.
 
 Noise and training randomness are derived from a canonical semantic identity
-with HMAC-SHA256 under the node's dedicated 256-bit secret. Equivalent effective
-trainings recompute the same streams without a query database; changes to data,
-model, mechanism, bounds or round change the identity. The secret is not a
-client seed, R RNG state or `datashield.seed`.
+with HMAC-SHA256 under the node's dedicated 256-bit secret. Equivalent declarative
+trainings recompute the same streams without a query database; gated HookApps
+add a durable node-owned cache of exact releases. The v2 identity binds effective
+data, node-authored source/column selections, public model, mechanism, bounds and
+round. The secret is not a client seed, R RNG state or `datashield.seed`.
 
 The clipping, sensitivity and accounting contracts implement the standard
 `(epsilon, delta)` mechanisms under their mathematical model. The shipped
@@ -397,6 +400,15 @@ pinned number of disjoint data-independent blocks.
 
 That envelope is timing defense in depth, not a formal constant-time proof;
 cleanup, availability and storage behavior remain outside the numeric DP claim.
+
+Every admitted HookApp uses the node's durable release cache, so an identical
+request replays the exact released arrays and constant metrics even when the
+application is nondeterministic. Changed data or selections miss, and a committed
+round coordinate cannot authorize a second release. Entries stay pinned during
+active runs; cross-run replay lasts only while an entry remains retained. Cache
+directory and capacity are administrator settings, rejected in analyst
+configuration, application parameters and manifest overrides. This cache does
+not introduce a fixed-duration deadline or a cross-training privacy budget.
 
 The client checks the public Hook readiness flags before upload and fails with a
 clear deployment error when an administrator gate is absent. If a public gate

@@ -33,6 +33,7 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                  results_dir = NULL,
                                  symbol = "flower",
                                  verbose = FALSE, silent = FALSE) {
+  .reject_release_cache_controls(run_config)
   if (!inherits(recipe, "dsflower_recipe")) {
     stop("'recipe' must be a dsflower_recipe object.", call. = FALSE)
   }
