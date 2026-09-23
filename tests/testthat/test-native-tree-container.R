@@ -41,13 +41,14 @@ test_that("native containers retain exact canonical bytes and identity checks", 
     duplicate = sub('"version":1}', '"version":1,"version":1}', original, fixed = TRUE),
     reordered = sub('"aggregation":"mean_prediction","contract":"dsflower-forest-ensemble-v1"',
       '"contract":"dsflower-forest-ensemble-v1","aggregation":"mean_prediction"', original, fixed = TRUE),
-    float_spelling = sub("0.0038312680927895396", "0.00383126809278953960", original, fixed = TRUE),
+    float_spelling = sub("0.03969938043260646", "0.039699380432606460", original, fixed = TRUE),
     version = sub('"task":"binary","version":1}', '"task":"binary","version":1.0}', original, fixed = TRUE),
     extra_field = sub('"aggregation":', '"added":0,"aggregation":', original, fixed = TRUE),
     engine = sub('"engine":"random_forest"', '"engine":"extra_trees"', original, fixed = TRUE),
     task = sub('"task":"binary","version":1}', '"task":"regression","version":1}', original, fixed = TRUE),
     contract = sub("dsflower-forest-ensemble-v1", "wrong", original, fixed = TRUE))
   for (name in names(mutations)) {
+    expect_false(identical(mutations[[name]], original), info = name)
     bytes <- charToRaw(mutations[[name]])
     writeBin(bytes, path)
     meta <- fixture$meta

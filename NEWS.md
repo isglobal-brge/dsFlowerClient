@@ -1,3 +1,13 @@
+# dsFlowerClient 0.5.3
+
+* Synchronize the canonical runner's corrected deterministic release identity,
+  which includes server-authored source and request selections under semantic randomness
+  contract v2. Identical selections and data still replay; different selections
+  receive separate keys even when private tensors or statistics coincide.
+* Noise distribution, calibration and training paths are unchanged. Evidence
+  produced under earlier runners remains valid as measurements of the same
+  mechanism; exact noise realizations change under the corrected identity.
+
 # dsFlowerClient 0.5.2
 
 * Evidence-only release: package the zero-shot baseline of the v5 public-pretrained
