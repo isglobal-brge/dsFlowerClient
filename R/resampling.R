@@ -35,14 +35,14 @@
     stop("Holdout needs one common row/patient privacy unit.", call. = FALSE)
   }
   payload <- list(
-    assignment = "hmac-sha256-threshold-v1",
+    assignment = "hmac-sha256-threshold-v2",
     method = "holdout",
     privacy_unit = unit,
     test_denominator = .HOLDOUT_DENOMINATOR,
     test_numerator = as.integer(numerator),
     unit_canonicalization = if (identical(unit, "patient"))
-      "trim-utf8-v2" else "row-ordinal-v1",
-    version = "dsflower-resampling-v1"
+      "trim-utf8-v2" else "row-content-occurrence-v1",
+    version = "dsflower-resampling-v2"
   )
   wire <- jsonlite::toJSON(
     payload, auto_unbox = TRUE, null = "null", digits = NA,
@@ -117,13 +117,13 @@
     stop("Invalid cross-validation fold count.", call. = FALSE)
   }
   payload <- list(
-    assignment = "hmac-sha256-score-v1",
+    assignment = "hmac-sha256-score-v2",
     folds = as.integer(folds),
     method = "cross_validation",
     privacy_unit = unit,
     unit_canonicalization = if (identical(unit, "patient"))
-      "trim-utf8-v2" else "row-ordinal-v1",
-    version = "dsflower-cross-validation-v1"
+      "trim-utf8-v2" else "row-content-occurrence-v1",
+    version = "dsflower-cross-validation-v2"
   )
   wire <- jsonlite::toJSON(
     payload, auto_unbox = TRUE, null = "null", digits = NA,
