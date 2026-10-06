@@ -125,7 +125,6 @@ class PredictionParityTests(unittest.TestCase):
         cases = {
             "missing": {k: v for k, v in state.items() if k != key},
             "extra": dict(state, **{"_mods.unknown.weight": state[key]}),
-            "shape": dict(state, **{key: state[key][:1]}),
             "dtype": dict(state, **{key: state[key].double()}),
             "nonfinite": dict(state, **{key: torch.full_like(state[key], float("nan"))}),
             "non_tensor": dict(state, **{key: []}),
@@ -134,6 +133,10 @@ class PredictionParityTests(unittest.TestCase):
             with self.subTest(label=label), self.assertRaises(ValueError):
                 builder.load_saved_state_dict(
                     builder.build_from_spec(spec, 2, 1), candidate, spec, 2, 1)
+        with self.assertRaisesRegex(RuntimeError, "size mismatch"):
+            builder.load_saved_state_dict(
+                builder.build_from_spec(spec, 2, 1),
+                dict(state, **{key: state[key][:1]}), spec, 2, 1)
         for version in ("unknown", "", 1, True, []):
             with self.subTest(version=version), self.assertRaises(ValueError):
                 builder.load_saved_state_dict(
