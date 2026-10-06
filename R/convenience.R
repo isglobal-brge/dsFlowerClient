@@ -124,13 +124,15 @@ ds.flower.strategy <- function(name = "fedavg", ...) {
   }
 
   key <- .dsflower_choice_key(name)
-  if (key %in% c("fedprox", "prox", "fedbn")) {
+  if (key %in% c("fedbn")) {
     stop("Strategy '", name, "' is not supported by the enforced-DP runtime. ",
-         "Supported strategies: fedavg, fedadam, fedadagrad, fedyogi, fedavgm.",
+         "Supported strategies: fedavg, fedprox, fedadam, fedadagrad, fedyogi, fedavgm.",
          call. = FALSE)
   }
 
   choices <- c(
+    fedprox = "ds.flower.strategy.fedprox",
+    prox = "ds.flower.strategy.fedprox",
     avg = "ds.flower.strategy.fedavg",
     fedavg = "ds.flower.strategy.fedavg",
     fed_average = "ds.flower.strategy.fedavg",
@@ -408,9 +410,9 @@ ds.flower.fit <- function(conns,
          call. = FALSE)
   }
 
-  # The submission pipeline owns connect/upload/pin/run/cleanup. The aggregation
-  # strategy runs server-side (researcher SuperLink) over already-DP updates, so
-  # any supported strategy is DP-safe post-processing.
+  # The submission pipeline owns connect/upload/pin/run/cleanup. Aggregation
+  # processes released node updates; FedProx additionally processes the private
+  # optimizer output at each node before the next training step.
   ds.flower.submit(
     conns, model = model_spec, target = target, features = features,
     data = data, resource = resource, symbol = symbol,

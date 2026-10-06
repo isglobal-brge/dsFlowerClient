@@ -16,10 +16,13 @@ ds.flower.hook.run(
   target_levels = NULL,
   target_bounds = NULL,
   allow_insecure_http = getOption("dsflower.dsi_allow_insecure_http", character()),
-  app_params = list()
+  app_params = list(),
+  strategy = ds.flower.strategy.fedavg()
 )
 }
 \arguments{
+\item{strategy}{FedAvg or FedProx. FedProx relaxes the complete gated update with step size one. Zero equals FedAvg.}
+
 \item{conns}{DSI connections object.}
 
 \item{user_app_dir}{Character; path to the researcher's training package dir

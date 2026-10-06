@@ -9,7 +9,7 @@ test_that("generic strategy constructor resolves aliases", {
 
   expect_equal(ds.flower.strategy("fed-average")$name, "FedAvg")
   expect_equal(ds.flower.strategy("avgm")$name, "FedAvgM")
-  expect_error(ds.flower.strategy("fedprox"), "not supported")
+  expect_identical(ds.flower.strategy("fedprox")$name, "FedProx")
   expect_error(ds.flower.strategy("fedbn"), "not supported")
   expect_error(ds.flower.strategy("not_a_strategy"), "Unknown strategy")
 })

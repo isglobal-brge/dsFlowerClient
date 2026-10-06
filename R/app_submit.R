@@ -585,14 +585,15 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     stop("learning_rate must be one finite value in (0, 10].", call. = FALSE)
   }
 
-  # Aggregation strategy. All of these run ONLY on the researcher-side SuperLink,
-  # over the already-DP client updates -> pure post-processing, so the (epsilon,
-  # delta) guarantee is unchanged whichever is chosen (it is never a privacy knob).
+  # Aggregation uses already-private updates. FedProx also pins a public local
+  # proximal step, applied after the DP optimizer and L1 prox.
   strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
     .canonicalize_strategy(strategy)
   } else {
     ds.flower.strategy(strategy)
   }
+  strategy_spec <- .effective_strategy(strategy_spec, sub$track)
+  .validate_fedprox_horizon(strategy_spec, sub, num_rounds)
   local_learning_rate <- as.numeric(
     (sub$params %||% list())[["learning_rate"]] %||% 0.01)
   strategy_config <- .strategy_config_values(
@@ -839,10 +840,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     prepare_config[["public-initialisation-origin"]] <- if (
       startsWith(segmentation_input$origin, "resource:")) "resource" else "analyst-declared"
   }
+  if (identical(sub$track, "neural")) {
+    prepare_config <- c(prepare_config, strategy_config)
+  }
   if (!is.null(cv_contract)) {
-    if (identical(sub$track, "neural")) {
-      prepare_config <- c(prepare_config, strategy_config)
-    }
     prepare_config <- c(
       prepare_config, list("cv-n-nodes" = as.integer(n_clients)))
     cv_job_sha256 <- .cv_job_sha256(

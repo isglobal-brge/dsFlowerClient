@@ -38,6 +38,7 @@ ds.flower.recipe <- function(model,
   } else {
     ds.flower.strategy(strategy)
   }
+  strategy <- .effective_strategy(strategy, model$track %||% "neural")
   inferred_type <- if (.is_survival_loss(model$loss)) {
     "survival"
   } else if (identical(model$loss, "segmentation_bce_dice")) {

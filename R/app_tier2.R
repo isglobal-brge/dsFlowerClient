@@ -304,7 +304,8 @@
 #' @keywords internal
 .build_tier2_app <- function(user_module, user_pkg_dir, n_features, results_dir,
                              n_nodes, num_rounds, task, num_classes,
-                             app_params_b64, app_params_sha256) {
+                             app_params_b64, app_params_sha256,
+                             strategy = ds.flower.strategy.fedavg()) {
   user_module <- .validate_user_module_name(user_module)
   app_dir <- file.path(tempdir(), "dsflower_tier2_app", "dsflower-tier2")
   if (dir.exists(app_dir)) unlink(app_dir, recursive = TRUE)
@@ -315,6 +316,7 @@
          recursive = TRUE)
 
   config_lines <- c(
+    .strategy_config_lines(.effective_strategy(strategy, "egress")),
     paste0("num-server-rounds = ", as.integer(num_rounds)),
     paste0("num-features = ", as.integer(n_features)),
     paste0("num-classes = ", as.integer(num_classes)),
@@ -377,6 +379,8 @@
 #'   Values may contain bounded nested objects/arrays and finite scalars. Privacy,
 #'   runtime, dependency, credential and filesystem-path fields are reserved. The
 #'   canonical value is hash-pinned and supplied to both app hooks.
+#' @param strategy FedAvg or FedProx. FedProx relaxes the complete gated update
+#'   with step size one; zero is identical to FedAvg.
 #' @return A \code{dsflower_run} object. A public readiness failure is rejected
 #'   before upload. If no private release is available, the completed object has
 #'   \code{available = FALSE} and contains no fallback model artifact.
@@ -388,7 +392,9 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
                                target_bounds = NULL,
                                allow_insecure_http = getOption(
                                  "dsflower.dsi_allow_insecure_http", character()),
-                               app_params = list()) {
+                               app_params = list(),
+                               strategy = ds.flower.strategy.fedavg()) {
+  strategy <- .effective_strategy(strategy, "egress")
   task <- match.arg(task)
   public_app_params <- .canonical_hook_app_params(app_params)
   n_target_classes <- if (is.null(target_levels)) 2L else length(target_levels)
@@ -457,6 +463,7 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
   if (!is.null(public_target$bounds)) {
     prepare_config[["target-bounds"]] <- public_target$bounds
   }
+  prepare_config <- c(prepare_config, .strategy_config_values(strategy))
   ds.flower.nodes.prepare(
     conns, hsym, target_column = target, feature_columns = features,
     run_config = prepare_config)
@@ -473,14 +480,14 @@ ds.flower.hook.run <- function(conns, user_app_dir, target, features,
   app_dir <- .build_tier2_app(
     up$package, user_app_dir, n_features, results_dir,
     n_clients, num_rounds, task, n_target_classes,
-    public_app_params$b64, public_app_params$sha256)
+    public_app_params$b64, public_app_params$sha256, strategy)
   .ensure_client_framework("pytorch")
 
   # link.up owns the local SuperLink + DSI tunnel lifecycle; on.exit reverses it.
   ds.flower.link.up(conns, allow_insecure_http = allow_insecure_http)
   recipe <- structure(list(
     model = list(name = "tier2", framework = "pytorch", track = "egress"),
-    strategy = list(name = "FedAvg", params = list()),
+    strategy = list(name = strategy$name, params = strategy$params),
     num_rounds = as.integer(num_rounds),
     features = features, target_levels = public_target$levels,
     target_bounds = public_target$bounds,
