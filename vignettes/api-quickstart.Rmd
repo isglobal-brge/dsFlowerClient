@@ -86,8 +86,26 @@ fit <- ds.flower.submit(
 )
 ```
 
-Aggregation strategy is post-processing of already-private node updates and is
-not an analyst privacy knob.
+Server aggregation uses already-private node updates. FedProx additionally applies
+a trusted node-side proximal step after the DP optimizer and L1 prox:
+
+```r
+strategy <- ds.flower.strategy.fedprox(mu = 0.01)
+```
+
+Pass this strategy to neural `ds.flower.fit()` or `ds.flower.cross_validate()`.
+`mu` is finite in `[0,1]`, and positive neural mu requires scheduled
+`learning_rate * mu <= 1`. Zero is exactly FedAvg. The Hook API applies one
+post-gate relaxation with eta=1, not per-step changes inside arbitrary Hook code.
+All native-tree engines, association and standalone validation reject FedProx,
+including zero. Strategy is not an analyst privacy-budget control.
+
+Default neural starts are specification-seeded and isolated from process RNG
+state; all CV folds share that model. Canonical private-unit ordering makes
+row shuffles and symbol aliases exact semantic retries. Different incoming models
+or selected source content remain separately bound. Comparing related prepared
+datasets can still reveal a no-op through exact release equality; this residual
+is outside the per-release DP guarantee and is not fixed by 0.7.1.
 
 ## Right-censored survival
 

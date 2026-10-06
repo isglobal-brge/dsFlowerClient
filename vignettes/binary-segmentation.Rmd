@@ -92,7 +92,7 @@ initialization.
 
 ## Public decoder initialisation
 
-The two 0.7.0 routes share a complete digest-bound bundle including the encoder,
+The two current routes share a complete digest-bound bundle including the encoder,
 decoder and evidence. Use researcher-local material for an analyst declaration:
 
 ```r
@@ -139,9 +139,11 @@ The node package's `PUBLIC_INITIALISATION.md` documents exact Opal, Armadillo an
 DSLite registration commands. Its `inst/extdata/segmentation-public-checkpoints/`
 contains the unchanged BUSI reference evidence and recovery instructions; original
 NPZ binaries remain unavailable. No 0.6.0 registry installation authorizes the new
-routes. Request-selection v2 retains its mechanism and binds canonical content
+routes. Request identity v3 retains its mechanism and binds canonical content
 identity and origin, excluding resource aliases and archive packaging. The
-accountant, clipping, sampler and private training path are unchanged.
+accountant, clipping and sampler are unchanged. The 0.7.1 release additionally
+canonicalizes unit order and provides isolated specification-seeded default starts;
+it documents the residual equality channel for related prepared inputs.
 
 The historical v5 benchmark applied the same public BUSI checkpoints through
 campaign tooling. This registry route makes custodian enablement independent

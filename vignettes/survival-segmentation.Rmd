@@ -234,7 +234,7 @@ The campaign's audited benchmark binding loads public decoder tensors before
 private training. These results do not describe the default random decoder
 initialisation or a general analyst checkpoint-upload API.
 
-Version 0.7.0 supports `decoder_init="client:<local-bundle>"` for declared public
+Version 0.7.1 supports `decoder_init="client:<local-bundle>"` for declared public
 material and `decoder_init="resource:<admitted-handle>"` for custodian resources.
 The latter requires native resource assignment, `flowerCheckpointInitDS()` and an
 independent local `public_checkpoint_file` for the coordinator. Nodes expose no
