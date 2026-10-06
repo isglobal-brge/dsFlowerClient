@@ -128,6 +128,18 @@ S3/MinIO objects only inside each data node. The ordered
 `target_levels` vocabulary is public; it can be omitted when labels are already
 encoded as integers from `0` to `n_classes - 1`.
 
+### Admitted radiomics tables
+
+A complete radiomics data frame or Arrow table retrieved through dsImaging can
+be passed to `ds.flower.fit()` by its session symbol, including an unchanged
+Parquet round trip. This requires the coordinated dsImaging companion that
+registers exports against its private admitted patient roster. Row permutations
+preserve that authority; changed values, subsets, duplicate/missing sample keys,
+unregistered generic dsHPC tables and revoked sources fail closed. Patient
+identity comes from the protected roster, never from caller-added attributes.
+The companion prerequisite also applies when the public container has no
+patient-ID column.
+
 ## Privacy is server-authoritative
 
 Each node applies one administrator-pinned epsilon/delta contract to every

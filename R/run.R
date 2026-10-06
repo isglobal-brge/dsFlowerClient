@@ -475,12 +475,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     if (!is.null(recipe$segmentation_public_initialization)) {
       meta$segmentation_public_initialization <- recipe$segmentation_public_initialization
     }
+    # This is the saved reconstruction/validation contract: absent bounds must
+    # remain JSON null, and declared bounds must retain their exact doubles.
+    # An empty object is a malformed bound contract, not an absent one.
     jsonlite::write_json(meta, file.path(output_dir, "metadata.json"),
                          auto_unbox = TRUE, pretty = TRUE,
-                         digits = if (!is.null(recipe$survival_config) ||
-                           !is.null(recipe$segmentation_public_initialization)) I(17) else 4,
-                         null = if ((native_tree && available) ||
-                           !is.null(recipe$segmentation_public_initialization)) "null" else "list")
+                         digits = I(17), null = "null")
 
     if (atomic_native_holdout) {
       destination_exists <- file.exists(final_output_dir) ||
