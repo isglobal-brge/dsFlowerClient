@@ -1,0 +1,48 @@
+{
+  "producer": "dsFlower/dsFlowerClient 0.7.0 (main)",
+  "builder_sha256": "94a8be2b81f9e142817cc67ff9084f572d0bb64fbfbb6d9c051ce08bd30ccf82",
+  "predictor_sha256": "ad98578288c24b8794ebaadea97ee3af09fd5899a5a4e45a8b209f4ce55f48e7",
+  "artifact_sha256": "694593a6b81ade2fe0f5ba129bf6fed65bb8dfa1fc55fe2749f3841d2be944e2",
+  "model_spec": {
+    "kind": "graph",
+    "nodes": [
+      {
+        "name": "hidden",
+        "op": "linear",
+        "out": 3,
+        "in": [
+          "@in"
+        ]
+      },
+      {
+        "name": "head",
+        "op": "linear",
+        "in": [
+          "hidden"
+        ]
+      }
+    ],
+    "output": "head"
+  },
+  "loss_name": "bce_logits",
+  "inputs": [
+    [
+      1.0,
+      2.0
+    ],
+    [
+      3.0,
+      4.0
+    ]
+  ],
+  "predictions": [
+    0.2760967016220093,
+    0.31566882133483887
+  ],
+  "state_keys": [
+    "_mods.hidden.weight",
+    "_mods.hidden.bias",
+    "_mods.head.weight",
+    "_mods.head.bias"
+  ]
+}

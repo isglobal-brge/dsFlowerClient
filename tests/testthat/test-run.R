@@ -175,6 +175,134 @@ test_that("run.start persists the exact public model reconstruction contract", {
   expect_identical(listed$model, "pytorch_logreg")
 })
 
+test_that("saved neural bounds round-trip through the validation contract", {
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(
+    process = list(is_alive = function() TRUE),
+    flwr_home = withr::local_tempdir())
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .ensure_client_framework = function(...) TRUE,
+    .client_flwr_cmd = function() "flwr",
+    .client_venv_env = function(...) character(),
+    .run_flwr_with_artifact_watchdog = function(results_dir, ...) {
+      writeBin(charToRaw("public-model"), file.path(results_dir, "model.pt"))
+      list(status = 0L, stdout = "run_id=saved-bounds", stderr = "")
+    },
+    .read_model_weights = function(...) list(coef = c(0, 0), intercept = 0),
+    .read_training_history = function(...) data.frame(round = 1L, n_failures = 0L),
+    .package = "dsFlowerClient")
+  feature_bounds <- list(lower = c(-0.12345678901234567, 0),
+                         upper = c(1.2345678901234567, 10))
+  target_bounds <- list(lower = -2.345678901234567, upper = 8.765432109876543)
+  output_root <- withr::local_tempdir()
+
+  for (task in c("binary", "regression")) {
+    model <- if (task == "binary") ds.flower.model.pytorch_logreg() else
+      ds.flower.model.pytorch_linear_regression()
+    recipe <- ds.flower.recipe(model, num_rounds = 1L,
+                               target = "outcome", features = c("a", "b"))
+    recipe$model_spec <- list(kind = "sequential", layers = list(
+      list(op = "linear", out = "@out")))
+    recipe$model_params <- model$params
+    recipe$loss_name <- model$loss
+    recipe$data_kind <- "tabular"
+    recipe$feature_lower <- feature_bounds$lower
+    recipe$feature_upper <- feature_bounds$upper
+    recipe$target_levels <- if (task == "binary") c("control", "case") else NULL
+    recipe$target_bounds <- if (task == "regression") target_bounds else NULL
+    run <- ds.flower.run.start(
+      recipe, conns = list(site = TRUE), app_dir = withr::local_tempdir(),
+      output_dir = output_root, output_name = task, silent = TRUE)
+    metadata_path <- file.path(run$output_dir, "metadata.json")
+    meta <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
+    contract <- dsFlowerClient:::.resolve_validation_contract(run, 16L)
+    expect_identical(contract$task, task)
+    expect_identical(contract$feature_bounds, feature_bounds)
+    expect_identical(contract$target_bounds, recipe$target_bounds)
+    if (task == "binary") {
+      expect_true("target_bounds" %in% names(meta))
+      expect_null(meta$target_bounds)
+      expect_match(paste(readLines(metadata_path), collapse = "\n"),
+                   '"target_bounds": null', fixed = TRUE)
+      expect_identical(contract$target_levels, c("control", "case"))
+    } else {
+      expect_identical(meta$target_bounds, target_bounds)
+      expect_null(meta$target_levels)
+    }
+
+    # Repairing persistence must not make empty/partial bounds acceptable.
+    for (bad_bounds in list(list(), list(lower = 0), list(lower = 2, upper = 1))) {
+      meta$target_bounds <- bad_bounds
+      jsonlite::write_json(meta, metadata_path, auto_unbox = TRUE,
+                           null = "null", digits = I(17))
+      expect_error(dsFlowerClient:::.resolve_validation_contract(run, 16L),
+                   "invalid public target bound contract")
+    }
+  }
+})
+
+test_that("saved graphs version parameter names and order in every saved contract", {
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(
+    process = list(is_alive = function() TRUE),
+    flwr_home = withr::local_tempdir())
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .ensure_client_framework = function(...) TRUE,
+    .client_flwr_cmd = function() "flwr",
+    .client_venv_env = function(...) character(),
+    .run_flwr_with_artifact_watchdog = function(results_dir, ...) {
+      writeBin(charToRaw("public-model"), file.path(results_dir, "model.pt"))
+      list(status = 0L, stdout = "run_id=saved-graph", stderr = "")
+    },
+    .read_model_weights = function(...) list(coef = c(0, 0), intercept = 0),
+    .read_training_history = function(...) data.frame(round = 1L, n_failures = 0L),
+    .package = "dsFlowerClient")
+  recipe <- ds.flower.recipe(ds.flower.model.pytorch_logreg(),
+    num_rounds = 1L, target = "outcome", features = c("a", "b"))
+  recipe$model_spec <- list(kind = "graph", nodes = list(
+    list(name = "n1", op = "linear", out = 2L, `in` = list("@in")),
+    list(name = "n0", op = "linear", `in` = list("n1"))), output = "n0")
+  recipe$model_params <- recipe$model$params
+  recipe$loss_name <- "bce_logits"
+  recipe$data_kind <- "tabular"
+  recipe$target_levels <- c("control", "case")
+  run <- ds.flower.run.start(recipe, conns = list(site = TRUE),
+    app_dir = withr::local_tempdir(), output_dir = withr::local_tempdir(),
+    output_name = "graph", silent = TRUE)
+  metadata_path <- file.path(run$output_dir, "metadata.json")
+  meta <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
+  loaded <- ds.flower.load_model(run$output_dir)
+  expect_identical(loaded$graph_parameter_format, "canonical-v1")
+  expect_identical(meta$graph_parameter_format, "canonical-v1")
+  expect_identical(meta$model_spec, recipe$model_spec)
+  expect_identical(dsFlowerClient:::.read_meta_model_contract(
+    run$output_dir)$graph_parameter_format, "canonical-v1")
+  expect_identical(dsFlowerClient:::.resolve_validation_contract(
+    run, 16L)$graph_parameter_format, "canonical-v1")
+
+  # Missing versions identify the original-name format, including n0/n1 names.
+  meta$graph_parameter_format <- NULL
+  jsonlite::write_json(meta, metadata_path, auto_unbox = TRUE, null = "null")
+  expect_null(dsFlowerClient:::.read_meta_model_contract(
+    run$output_dir)$graph_parameter_format)
+  expect_null(dsFlowerClient:::.resolve_validation_contract(
+    run, 16L)$graph_parameter_format)
+  for (version in list("future-v2", "", 1L, TRUE, list())) {
+    meta$graph_parameter_format <- version
+    jsonlite::write_json(meta, metadata_path, auto_unbox = TRUE, null = "null")
+    expect_error(dsFlowerClient:::.read_meta_model_contract(run$output_dir),
+      "Unsupported saved graph parameter format")
+    expect_error(dsFlowerClient:::.resolve_validation_contract(run, 16L),
+      "Unsupported saved graph parameter format")
+  }
+})
+
 test_that("load_model retains the relocated bundle directory for prediction", {
   model_dir <- withr::local_tempdir()
   saveRDS(list(model_id = "m", model = "pytorch_logreg"),

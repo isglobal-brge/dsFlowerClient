@@ -111,7 +111,7 @@ class SegmentationPredictionTests(unittest.TestCase):
             "kind": "sequential", "layers": [{"op": "linear", "out": "@out"}]
         }).encode()).decode()
         with mock.patch.object(segmentation, "extract_prediction_features") as extract:
-            with self.assertRaisesRegex(ValueError, "pinned convolutional decoder"):
+            with self.assertRaisesRegex(ValueError, r"spec output shape .* != required \(1, 128, 128\)"):
                 helper.predict_pytorch_vision(cfg, ["secret/path.png"], "prob")
             extract.assert_not_called()
 

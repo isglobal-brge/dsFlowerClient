@@ -84,6 +84,123 @@ test_that("fit accepts survival task and preserves ordered target roles", {
   expect_identical(seen$target, c("time", "event"))
 })
 
+test_that("public survival horizon shorthand matches explicit prepared fit and CV contracts", {
+  seen <- NULL
+  conns <- list(site = structure(list(), class = "DSLiteConnection"))
+  capability <- list(privacy_unit = "patient", runner_abi = 3L,
+    runner_sha256 = strrep("a", 64L), privacy_policy_sha256 = strrep("b", 64L),
+    privacy_clipping_norm = 1)
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .validate_declarative_model_preflight = function(...) TRUE,
+    ds.flower.connect = function(...) {
+      structure(list(conns = conns, symbol = "flower"), class = "dsflower_connection")
+    },
+    .assert_runner_compatibility = function(...) list(site = capability),
+    .segmentation_prepare_nodes = function(conns, symbol, target, features, config, local) {
+      seen <<- list(target = target, features = features, config = config)
+      stop("captured validated survival preparation", call. = FALSE)
+    },
+    ds.flower.link.down = function(...) invisible(TRUE),
+    ds.flower.nodes.cleanup = function(...) invisible(TRUE),
+    .dsflower_disconnect_on_exit = function(...) invisible(TRUE),
+    .package = "dsFlowerClient")
+  capture <- function(model, params, mode, horizons = c(5, 10, 20)) {
+    args <- list(conns = conns, symbol = "D", features = "x",
+      target = c("time", "event"), task = ds.flower.task.survival(),
+      model = model, model_params = params, survival_horizons = horizons,
+      rounds = 1L, feature_bounds = list(lower = -1, upper = 1), silent = TRUE)
+    if (identical(mode, "holdout")) args$holdout <- 0.2
+    if (identical(mode, "cv")) args$folds <- 3L
+    seen <<- NULL
+    expect_error(do.call(if (identical(mode, "cv")) ds.flower.cross_validate else
+      ds.flower.fit, args), "captured validated survival preparation")
+    expect_type(seen$config, "list")
+    seen
+  }
+  for (model in c("pytorch_aft", "pytorch_discrete_hazard")) {
+    explicit <- if (model == "pytorch_aft") list(horizon = 20) else
+      list(edges = c(0, 5, 10, 20))
+    for (mode in c("ordinary", "holdout", "cv")) {
+      inferred <- capture(model, list(), mode)
+      declared <- capture(model, explicit, mode)
+      expect_identical(inferred, declared)
+      expect_identical(inferred$target, c("time", "event"))
+      config <- inferred$config
+      survival <- jsonlite::fromJSON(rawToChar(jsonlite::base64_dec(
+        config[["survival-config-b64"]])))
+      expect_equal(survival$horizon, 20)
+      if (model == "pytorch_discrete_hazard") {
+        expect_equal(survival$edges, c(0, 5, 10, 20))
+        expect_identical(length(survival$edges) - 1L, 3L)
+      }
+      fields <- grep("^validation-", names(config), value = TRUE)
+      if (mode == "ordinary") {
+        expect_length(fields, 0L)
+        expect_false(any(grepl("^(holdout|cv)-", names(config))))
+      } else {
+        expect_identical(jsonlite::fromJSON(config[["validation-survival-horizons"]]),
+                         c(5L, 10L, 20L))
+        expect_identical(config[["validation-survival-nll-bound"]], 20)
+      }
+    }
+  }
+  # Explicit domains, distributions and concrete-model overrides retain precedence.
+  aft <- capture("pytorch_aft", list(horizon = 30, distribution = "lognormal"), "ordinary")
+  aft_config <- jsonlite::fromJSON(rawToChar(jsonlite::base64_dec(
+    aft$config[["survival-config-b64"]])))
+  expect_equal(aft_config$horizon, 30)
+  expect_identical(aft$config[["loss-name"]], "aft_lognormal_nll")
+  hazard <- capture("pytorch_discrete_hazard", list(edges = c(0, 10, 30)), "ordinary")
+  expect_equal(jsonlite::fromJSON(rawToChar(jsonlite::base64_dec(
+    hazard$config[["survival-config-b64"]])))$edges, c(0, 10, 30))
+  concrete <- capture(ds.flower.model.pytorch_aft(40), list(horizon = 50), "ordinary")
+  expect_equal(jsonlite::fromJSON(rawToChar(jsonlite::base64_dec(
+    concrete$config[["survival-config-b64"]])))$horizon, 50)
+  one_interval <- capture("pytorch_discrete_hazard", list(), "ordinary", horizons = 20)
+  expect_equal(jsonlite::fromJSON(rawToChar(jsonlite::base64_dec(
+    one_interval$config[["survival-config-b64"]])))$edges, c(0, 20))
+  fractional <- capture("pytorch_aft", list(t_min = 0.1), "ordinary", horizons = c(0.5, 1))
+  expect_equal(jsonlite::fromJSON(rawToChar(jsonlite::base64_dec(
+    fractional$config[["survival-config-b64"]])))$t_min, 0.1)
+  expect_identical(capture("pytorch-aft", list(), "ordinary"),
+                   capture("pytorch_aft", list(), "ordinary"))
+})
+
+test_that("survival shorthand cannot repair invalid public domains before transport", {
+  transport <- 0L
+  local_mocked_bindings(.require_flwr_cli = function() {
+    transport <<- transport + 1L
+    stop("unexpected transport")
+  }, ds.flower.connect = function(...) {
+    transport <<- transport + 1L
+    stop("unexpected transport")
+  }, .package = "dsFlowerClient")
+  fit <- function(model, horizons = c(5, 10, 20), params = list()) {
+    ds.flower.fit(list(site = TRUE), model = model, model_params = params,
+      target = c("time", "event"), features = "x", survival_horizons = horizons)
+  }
+  for (model in c("pytorch_aft", "pytorch_discrete_hazard")) {
+    for (bad in list(numeric(), TRUE, "20", c(5, NA), c(5, Inf), c(5, 5),
+                     c(10, 5), c(0, 5), c(-1, 5), 1:65, c(5, 1e6 + 1))) {
+      expect_error(fit(model, bad), "survival_horizons")
+    }
+    expect_error(fit(model, NULL), "requires parameter")
+    expect_error(fit(model, c(0.5, 1)), "survival_horizons")
+    parameter <- if (model == "pytorch_aft") "horizon" else "edges"
+    expect_error(fit(model, params = stats::setNames(list(NULL), parameter)),
+                 "cannot be NULL")
+    expect_error(fit(model, params = stats::setNames(list(-1), parameter)),
+                 "Invalid parameter|edges|horizon")
+  }
+  expect_error(ds.flower.model("pytorch_aft"), "requires parameter")
+  expect_error(ds.flower.model("pytorch_discrete_hazard"), "requires parameter")
+  expect_error(fit("pytorch_aft", params = list(horizon = 10)), "survival_horizons")
+  expect_error(fit(ds.flower.model.pytorch_aft(10)), "survival_horizons")
+  expect_error(fit("pytorch_logreg"), "Survival metric options require a survival model")
+  expect_identical(transport, 0L)
+})
+
 test_that("hazard public grids preserve subjects and exact target semantics", {
   for (edges in list(c(0, 10), c(0, 5, 10), 0:64)) {
     model <- ds.flower.model.pytorch_discrete_hazard(edges)

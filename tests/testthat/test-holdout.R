@@ -41,7 +41,7 @@ test_that("holdout fraction has one canonical seed-free contract", {
   expect_identical(contract$privacy_unit, "patient")
   expect_identical(
     contract$sha256,
-    "00b0a490eb3d92fec7ce532e452523a32cbf73d19953372194faffc21eb4c75b")
+    "186917c9bc324525e7c7563c5cb8339fee755bc856a1fecd0af59b5e5488c703")
   expect_false(any(grepl("seed|salt|nonce", names(contract), ignore.case = TRUE)))
 })
 

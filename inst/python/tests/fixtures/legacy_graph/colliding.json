@@ -1,0 +1,66 @@
+{
+  "producer": "dsFlower/dsFlowerClient 0.7.0 (main)",
+  "builder_sha256": "94a8be2b81f9e142817cc67ff9084f572d0bb64fbfbb6d9c051ce08bd30ccf82",
+  "predictor_sha256": "ad98578288c24b8794ebaadea97ee3af09fd5899a5a4e45a8b209f4ce55f48e7",
+  "artifact_sha256": "553e3d633855a0cf2b7c4ace1b4e3dd90095fca473baaaeca5459f7fee1150a1",
+  "model_spec": {
+    "kind": "graph",
+    "nodes": [
+      {
+        "name": "n0",
+        "op": "linear",
+        "out": 2,
+        "in": [
+          "@in"
+        ]
+      },
+      {
+        "name": "n1",
+        "op": "linear",
+        "out": 2,
+        "in": [
+          "@in"
+        ]
+      },
+      {
+        "name": "n2",
+        "op": "concat",
+        "in": [
+          "n1",
+          "n0"
+        ]
+      },
+      {
+        "name": "n3",
+        "op": "linear",
+        "in": [
+          "n2"
+        ]
+      }
+    ],
+    "output": "n3"
+  },
+  "loss_name": "bce_logits",
+  "inputs": [
+    [
+      1.0,
+      2.0
+    ],
+    [
+      3.0,
+      4.0
+    ]
+  ],
+  "predictions": [
+    0.6316121220588684,
+    0.6913260221481323
+  ],
+  "state_keys": [
+    "_mods.n0.weight",
+    "_mods.n0.bias",
+    "_mods.n1.weight",
+    "_mods.n1.bias",
+    "_mods.n3.weight",
+    "_mods.n3.bias"
+  ]
+}

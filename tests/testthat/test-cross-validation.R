@@ -12,7 +12,7 @@ test_that("client CV contract is canonical, bounded, and seed-free", {
   expect_identical(contract$folds, 3L)
   expect_identical(
     contract$sha256,
-    "b0ef0610df2006b87a348929a3f903a4e90d87c860d829063a897b2a40a21390")
+    "e833c10c960ae339143feed3154f3b92893546456ae07cdf695fd050e085e5a1")
   expect_false(any(grepl(
     "seed|salt|nonce", names(contract), ignore.case = TRUE)))
 })
@@ -54,7 +54,7 @@ test_that("CV job provenance has a mirrored golden and binds every public group"
   baseline <- hash()
   expect_identical(
     baseline,
-    "5a5dc6cac8b3407895a656fa834862d2dd7615203b0fca5fcdaddf8990ce739e")
+    "742ca3a7fc56b3d78441943fdda514ae3069c5c783627cb3f5bc4e243f6a7563")
 
   mutations <- list(
     cv_contract = c(config[-match("cv-contract-sha256", names(config))],
@@ -126,7 +126,7 @@ test_that("native-tree CV provenance binds its request without neural fields", {
   baseline <- hash()
   expect_identical(
     baseline,
-    "1f8d5520eb02029caad12b3a8e40e929ab58a142edd494b4cfe751dec826982c")
+    "f8eb8b8980d57f3ad287224f48c098ea3bedef3a4c02379562dd9aa6c5bce6ec")
 
   changed_request <- build_request(c("case", "control"))
   changed <- config

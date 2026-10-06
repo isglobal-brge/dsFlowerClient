@@ -22,6 +22,8 @@ from dsflower_runner import (client_app, dp_harness, params, seeding, segmentati
                              segmentation_checkpoints as checkpoints,
                              server_app, task)
 
+from v3_test_support import fixture_node_secret, fixture_key, tagged_arrays
+
 torch.set_num_threads(1)
 
 
@@ -105,7 +107,7 @@ def registry(tmp_path, monkeypatch):
     node = dict(cfg, data_type="image", **{
         "run_token": "run_" + "a" * 32, "dp-unit": "patient", "dp-track": "neural",
         checkpoints.MANIFEST_KEY: provenance["manifest_sha256"],
-        checkpoints.CHECKPOINT_KEY: checkpoint["sha256"],
+        checkpoints.CHECKPOINT_KEY: summary["checkpoint_sha256"],
         checkpoints.PROVENANCE_KEY: summary,
         checkpoints.ORIGIN_KEY: "analyst-declared", checkpoints.POLICY_KEY: "analyst_or_resource",
         checkpoints.DIRECTORY_KEY: str(directory),
@@ -164,15 +166,66 @@ def test_verified_public_payload_initializes_server_and_node_exactly(registry):
         assert expected.tobytes() == server_value.tobytes() == node_value.tobytes()
 
 
-def test_later_round_uses_federated_arrays_and_first_round_refuses_substitution(registry):
+@pytest.mark.parametrize("round_index", [1, 2])
+def test_checkpoint_training_uses_actual_admitted_arrays_in_every_round(registry, round_index):
+    # Reviewer A: a different valid initial model is a semantic input, so the
+    # node verifies the checkpoint artifact but does not overwrite or compare
+    # the incoming training parameters to its tensor bytes.
     changed = [a + np.float32(.25) for a in registry.arrays]
     cfg = pinned(registry)
-    with pytest.raises(ValueError, match="public model differs from its admitted checkpoint"):
-        client_app._prepare_neural_model(message(changed), registry.context, cfg, {}, pins())
-    model, _, _ = client_app._prepare_neural_model(
-        message(changed), registry.context, cfg, {}, pins(2))
-    for expected, value in zip(changed, params.get_torch_params(model)):
+    with mock.patch.object(checkpoints, "verify_node_checkpoint",
+                           wraps=checkpoints.verify_node_checkpoint) as verify_checkpoint, \
+            mock.patch.object(seg, "verified_encoder_bytes",
+                              wraps=seg.verified_encoder_bytes) as verify_encoder:
+        model, _, _ = client_app._prepare_neural_model(
+            message(changed), registry.context, cfg, {}, pins(round_index))
+    verify_checkpoint.assert_called_once()
+    verify_encoder.assert_called_once_with(cfg)
+    actual = params.get_torch_params(model)
+    for expected, value in zip(changed, actual):
         np.testing.assert_array_equal(expected, value)
+    def identity(arrays):
+        selected, _ = client_app._neural_seed_contract(cfg, pins(round_index), {},
+                                                      manifest=registry.node)
+        selected["initial-model-sha256"] = seeding.public_array_identity(arrays)["sha256"]
+        return seeding.request_identity("neural-dpsgd/v3", selected,
+            {"epsilon": 1., "delta": 1e-6, "clipping_norm": 1.}, round_index,
+            public_arrays=arrays, manifest=registry.node)
+    before, after = identity(registry.arrays), identity(actual)
+    assert before.sha256 != after.sha256
+    assert after == identity([a.copy() for a in actual])
+    request = json.loads(after.canonical_json)
+    assert request["public_arrays"]["sha256"] == seeding.public_array_identity(changed)["sha256"]
+    assert request["initialisation"]["initial_model_sha256"] == request["public_arrays"]["sha256"]
+
+
+@pytest.mark.parametrize("kind", ["shape", "dtype", "nan", "infinity", "magnitude", "count"])
+def test_checkpoint_training_keeps_incoming_array_admission(registry, kind):
+    arrays = [a.copy() for a in registry.arrays]
+    if kind == "shape": arrays[0] = arrays[0].reshape(-1)
+    elif kind == "dtype": arrays[0] = arrays[0].astype(np.float64)
+    elif kind == "nan": arrays[0].flat[0] = np.nan
+    elif kind == "infinity": arrays[0].flat[0] = np.inf
+    elif kind == "magnitude": arrays[0].flat[0] = np.float32(1e13)
+    else: arrays.pop()
+    with mock.patch.object(seg, "load_subject_tensors") as read:
+        with pytest.raises((ValueError, RuntimeError),
+                           match="shape mismatch|dtype mismatch|finite|magnitude cap|count mismatch"):
+            client_app._prepare_neural_model(message(arrays), registry.context,
+                                             pinned(registry), {}, pins())
+    read.assert_not_called()
+
+
+def test_standalone_checkpoint_validation_still_requires_the_fixed_public_model(registry):
+    from dsflower_runner import validation
+    changed = [a + np.float32(.25) for a in registry.arrays]
+    cfg = dict(pinned(registry), **{"validation-task": "segmentation",
+                                  "validation-model-track": "neural"})
+    with mock.patch.object(seg, "load_subject_tensors") as read:
+        with pytest.raises(ValueError, match="admitted checkpoint"):
+            validation.private_model_validation(registry.context, cfg,
+                {"epsilon": 1., "delta": 1e-6}, 1, changed)
+    read.assert_not_called()
 
 
 def test_encoder_mismatch_refused_before_decoder_weights_are_loaded(registry):
@@ -324,11 +377,11 @@ def test_every_public_identity_changes_semantic_seed_and_replays(registry, key):
     cfg = pinned(registry)
     def derive(config, node):
         selected, _ = client_app._neural_seed_contract(config, pins(), {}, manifest=node)
-        return seeding.master_seed("neural-dpsgd/v1", selected,
-                                   {"sigma": 1., "policy_hash": "1" * 64}, 1,
+        return fixture_key("neural-dpsgd/v3", selected,
+                                   {"sigma": 1., "policy_hash": "1" * 64, "epsilon": 1., "delta": 1e-6, "clipping_norm": 1.}, 1,
                                    public_arrays=registry.arrays,
                                    private_arrays=(np.zeros((1, 2), np.float32),),
-                                   execution_fingerprint={})
+                                   execution_fingerprint="fixed-test-execution-v3")
     before = derive(cfg, registry.node)
     value = "resource" if key == checkpoints.ORIGIN_KEY else "f" * 64
     assert before != derive(dict(cfg, **{key: value}), dict(registry.node, **{key: value}))
@@ -380,11 +433,12 @@ def test_public_decoder_runs_two_real_dp_rounds_with_unchanged_budget(registry, 
     X = np.zeros((2, seg.FEATURE_DIM), np.float32)
     y = np.zeros((2, 2, 128, 128), np.float32)
     y[:, 1] = 1
+    X, y, ids = tagged_arrays(X, y, ["a", "b"])
     policy = {"epsilon": 4., "delta": 1e-5, "clipping_norm": 1., "n_samples": 2}
     initial = [a.copy() for a in registry.arrays]
     arrays = initial
     with mock.patch.object(seg, "prepare_encoder", return_value=(object(), "cpu")), \
-            mock.patch.object(seg, "load_subject_tensors", return_value=(X, y, ["a", "b"], 2)), \
+            mock.patch.object(seg, "load_subject_tensors", return_value=(X, y, ids, 2)), \
             mock.patch.object(client_app, "load_privacy_config", return_value=policy), \
             mock.patch.object(client_app.release_cache.ReleaseCache, "from_env",
                               side_effect=AssertionError("segmentation must not open the Hook cache")) as cache, \
@@ -515,7 +569,113 @@ def test_repack_alias_and_administrative_metadata_do_not_change_noise_identity(r
     alias["bundle_sha256"] = sha(second.read_bytes())
     assert seeding.request_selection(alias) == seeding.request_selection(registry.node)
     changed = dict(registry.node, **{checkpoints.MANIFEST_KEY: "b" * 64})
-    assert seeding.request_selection(changed) != seeding.request_selection(registry.node)
+    def identity(node):
+        selected, _ = client_app._neural_seed_contract(dict(registry.cfg, **{
+            checkpoints.MANIFEST_KEY: node[checkpoints.MANIFEST_KEY]}), pins(), {}, manifest=node)
+        return seeding.request_identity("neural-dpsgd/v3", selected, {"epsilon": 1., "delta": 1e-6, "clipping_norm": 1.}, 1,
+                                        public_arrays=registry.arrays, execution_fingerprint="fixed-test-execution-v3").digest
+    assert identity(changed) != identity(registry.node)
+
+
+@pytest.mark.parametrize("change", ["timestamps", "member-order", "evidence-format",
+                                    "tensor", "scientific-metadata"])
+def test_fully_admitted_checkpoint_semantics_bind_content_not_packaging(registry, tmp_path, change):
+    from dsflower_runner import canonical_units, initialisation
+
+    before = checkpoints.inspect_bundle(registry.local_directory)
+    manifest = copy.deepcopy(before["provenance"]["manifest"])
+    path = registry.local_directory
+    original_payload = (path / "checkpoint.npz").read_bytes()
+    stream = io.BytesIO()
+    changed_arrays = [a.copy() for a in registry.arrays]
+    if change == "tensor":
+        changed_arrays[0].flat[0] += np.float32(.125)
+        np.savez(stream, **{str(i): a for i, a in enumerate(changed_arrays)})
+        manifest["tensors"][0]["sha256"] = sha(changed_arrays[0].tobytes())
+    else:
+        with zipfile.ZipFile(io.BytesIO(original_payload)) as source, \
+                zipfile.ZipFile(stream, "w", compression=zipfile.ZIP_STORED) as target:
+            entries = source.infolist()
+            if change == "member-order":
+                entries.reverse()
+            for entry in entries:
+                if change == "timestamps":
+                    entry.date_time = (2001, 1, 1, 0, 0, 0)
+                target.writestr(entry, source.read(entry.filename))
+
+    def repin_artifact(record, data):
+        (path / record["file"]).write_bytes(data)
+        record.update(size_bytes=len(data), sha256=sha(data))
+
+    repin_artifact(manifest["checkpoint"], stream.getvalue())
+    if change == "scientific-metadata":
+        manifest["dataset"]["release"] = "v2"
+    # JSON formatting and the original evidence's required NPZ reference are
+    # transport changes too; all evidence and content checks still run below.
+    repin_artifact(manifest["evidence"]["provenance"],
+                   json.dumps(manifest["dataset"], indent=4).encode())
+    original = json.loads((path / manifest["evidence"]["original_manifest"]["file"]).read_bytes())
+    original.update(checkpoint_sha256=manifest["checkpoint"]["sha256"],
+                    tensor_sha256=[t["sha256"] for t in manifest["tensors"]],
+                    provenance_sha256=manifest["evidence"]["provenance"]["sha256"])
+    repin_artifact(manifest["evidence"]["original_manifest"],
+                   json.dumps(original, indent=4, sort_keys=True).encode())
+    (path / "manifest.json").write_text(json.dumps(manifest, indent=4))
+    archive = tmp_path / "repacked.zip"
+    with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_STORED) as target:
+        for member in reversed(sorted(path.iterdir())):
+            target.writestr(zipfile.ZipInfo(member.name, date_time=(2002, 1, 1, 0, 0, 0)),
+                            member.read_bytes())
+    after = checkpoints.admit_bundle(archive, tmp_path / "second-cache",
+                                     expected_bundle_sha256=sha(archive.read_bytes()))
+    arrays_before = checkpoints._decode_arrays(original_payload, before["provenance"]["manifest"])
+    arrays_after = checkpoints._decode_arrays(stream.getvalue(), after["provenance"]["manifest"])
+    for expected, actual in zip(changed_arrays, arrays_after):
+        assert expected.dtype == actual.dtype and expected.shape == actual.shape
+        assert expected.tobytes() == actual.tobytes()
+
+    def node(summary):
+        return dict(registry.node, **{
+            checkpoints.MANIFEST_KEY: summary["provenance"]["manifest_sha256"],
+            checkpoints.CHECKPOINT_KEY: summary["checkpoint_sha256"],
+            checkpoints.PROVENANCE_KEY: summary})
+
+    def request(summary, arrays):
+        return seeding.request_identity("neural-dpsgd/v3", {},
+            {"epsilon": 1., "delta": 1e-6, "clipping_norm": 1.},
+            public_arrays=arrays, manifest=node(summary))
+
+    first, second = request(before, arrays_before), request(after, arrays_after)
+    units = canonical_units.canonicalize_arrays(np.zeros((1, 2)), np.zeros(1), secret=b"s" * 32)
+    bindings = [seeding.bind_private_data(r, units,
+        effective_tensors=(np.zeros((1, 2)), np.zeros(1))) for r in (first, second)]
+    assert bindings[0].digest == bindings[1].digest
+    same = change in ("timestamps", "member-order", "evidence-format")
+    assert (first.digest == second.digest) == same
+    assert (seeding.release_key(first, bindings[0]) == seeding.release_key(second, bindings[1])) == same
+    assert (initialisation.initialisation_spec_sha256(node(before)) ==
+            initialisation.initialisation_spec_sha256(node(after))) == same
+    if same:
+        assert before["tensor_schema"] == after["tensor_schema"]
+        assert before["checkpoint_sha256"] == after["checkpoint_sha256"]
+        assert json.loads(first.canonical_json)["public_arrays"] == json.loads(second.canonical_json)["public_arrays"]
+        assert json.loads(first.canonical_json)["initialisation"]["initial_model_sha256"] == \
+            json.loads(second.canonical_json)["initialisation"]["initial_model_sha256"]
+        payload = checkpoints.coordinator_payload(archive, before)
+        cfg = dict(registry.cfg, **{checkpoints.TRANSPORT_KEY:
+                   base64.b64encode(json.dumps(payload).encode()).decode()})
+        for expected, actual in zip(arrays_before, checkpoints.server_initialization(cfg)):
+            assert expected.tobytes() == actual.tobytes()
+    else:
+        # Checkpoint semantics change even if the coordinator supplies unchanged
+        # current arrays, which independently remain bound to the request.
+        assert first.digest != request(after, arrays_before).digest
+        with pytest.raises(ValueError, match="differs from node-admitted identity"):
+            checkpoints.coordinator_payload(archive, before)
+    if change in ("timestamps", "member-order"):
+        assert before["provenance"]["manifest"]["checkpoint"]["sha256"] != manifest["checkpoint"]["sha256"]
+    assert before["provenance"]["manifest"]["evidence"]["original_manifest"]["sha256"] != \
+        manifest["evidence"]["original_manifest"]["sha256"]
 
 
 @pytest.mark.parametrize("route,policy", [("client", "resource_only"), ("client", "none"), ("resource", "none")])
@@ -580,135 +740,3 @@ def test_archive_directory_bound_checked_before_zipfile_objects(registry, tmp_pa
     with mock.patch.object(zipfile, "ZipFile", side_effect=AssertionError("central directory allocated")):
         with pytest.raises(ValueError, match="archive"):
             checkpoints.inspect_bundle(archive)
-
-
-def tabular_bundle(registry, tmp_path, survival=False):
-    """Reuse complete evidence but supply a small generic trusted tabular head."""
-    directory = tmp_path / "tabular"
-    directory.mkdir()
-    manifest = copy.deepcopy(registry.manifest)
-    for key in ("decoder", "decoder_spec_sha256", "encoder", "encoder_sha256"):
-        manifest.pop(key)
-    manifest.update(role="tabular_model", model_id="declarative_neural")
-    spec = {"kind": "sequential", "layers": [{"op": "linear", "out": "@out"}]}
-    manifest["model_spec"] = spec
-    manifest["model_spec_sha256"] = sha(checkpoints._canonical(spec))
-    config = {"loss-name": "bce_logits", "num-features": 2, "num-classes": 2, "num-labels": 2}
-    if survival:
-        config["loss-name"] = "aft_weibull_nll"
-        public = {"schema_version": 1, "time_unit": "days", "time_origin": "baseline",
-                  "t_min": 1, "horizon": 10, "time_scale": 1,
-                  "distribution": "weibull", "dispersion": 1}
-        config["survival-config-b64"] = base64.b64encode(json.dumps(public).encode()).decode()
-    manifest["model_config"] = config
-    manifest["feature_contract"] = {"features": ["x", "z"], "feature_lower": [-1, -1],
-                                    "feature_upper": [1, 1], "target_levels": None if survival else [0, 1],
-                                    "target_bounds": None}
-    arrays = [np.array([[0.25, -0.1]], np.float32), np.array([0.1], np.float32)]
-    stream = io.BytesIO()
-    np.savez(stream, **{str(i): array for i, array in enumerate(arrays)})
-    data = stream.getvalue()
-    (directory / "checkpoint.npz").write_bytes(data)
-    manifest["checkpoint"].update(sha256=sha(data), size_bytes=len(data))
-    manifest["tensors"] = [{"name": str(i), "shape": list(array.shape), "dtype": "float32",
-                            "sha256": sha(array.tobytes())} for i, array in enumerate(arrays)]
-    for key, record in manifest["evidence"].items():
-        data = (registry.local_directory / record["file"]).read_bytes()
-        if key == "original_manifest":
-            original = json.loads(data)
-            original.pop("decoder")
-            original.pop("encoder_sha256")
-            original.update(checkpoint_sha256=manifest["checkpoint"]["sha256"],
-                            tensor_sha256=[tensor["sha256"] for tensor in manifest["tensors"]],
-                            model_spec_sha256=manifest["model_spec_sha256"])
-            data = json.dumps(original).encode()
-            record.update(sha256=sha(data), size_bytes=len(data))
-        (directory / record["file"]).write_bytes(data)
-    (directory / "manifest.json").write_text(json.dumps(manifest))
-    return directory, manifest, arrays
-
-
-def test_tabular_bundle_admits_and_uses_exact_arrays(registry, tmp_path):
-    directory, manifest, arrays = tabular_bundle(registry, tmp_path)
-    payload = checkpoints.client_payload(directory, manifest["model_spec"])
-    config = dict(manifest["model_config"], **{
-        checkpoints.INIT_KEY: "client",
-        "model-spec-b64": base64.b64encode(json.dumps(manifest["model_spec"]).encode()).decode(),
-        checkpoints.TRANSPORT_KEY: base64.b64encode(json.dumps(payload).encode()).decode()})
-    actual = checkpoints.server_initialization(config)
-    for a, b in zip(actual, arrays):
-        np.testing.assert_array_equal(a, b)
-    assert payload["encoder_sha256"] == sha(b"")
-    config["num-features"] = 3
-    with pytest.raises(ValueError, match="contract mismatch"):
-        checkpoints.server_initialization(config)
-    with pytest.raises(ValueError, match="model spec"):
-        checkpoints.client_payload(directory, {"kind": "sequential", "layers": []})
-
-
-def test_tabular_feature_contract_cannot_change_after_admission(registry, tmp_path):
-    _directory, manifest, _arrays = tabular_bundle(registry, tmp_path)
-    node = {"feature_columns": ["x", "z"], "feature-bounds": {"lower": [-1, -1], "upper": [1, 1]},
-            "target-levels": {"type": "numeric", "values": [0, 1]}}
-    checkpoints.verify_model_config(manifest, manifest["model_config"], node)
-    for key, changed in (("feature_columns", ["z", "x"]),
-                         ("feature-bounds", {"lower": [0, 0], "upper": [1, 1]}),
-                         ("target-levels", {"type": "numeric", "values": [1, 0]})):
-        with pytest.raises(ValueError, match="feature/target"):
-            checkpoints.verify_model_config(manifest, manifest["model_config"], dict(node, **{key: changed}))
-
-
-def test_survival_bundle_identity_uses_decoded_public_configuration(registry, tmp_path):
-    directory, manifest, _arrays = tabular_bundle(registry, tmp_path, survival=True)
-    payload = checkpoints.client_payload(directory)
-    changed = copy.deepcopy(manifest)
-    config = changed["model_config"]
-    public = json.loads(base64.b64decode(config["survival-config-b64"]))
-    config["survival-config-b64"] = base64.b64encode(json.dumps(
-        public, sort_keys=True, separators=(",", ":")).encode()).decode()
-    assert checkpoints.canonical_manifest_sha256(changed) == payload["provenance"]["manifest_sha256"]
-    checkpoints.verify_model_config(manifest, config)
-    public["dispersion"] = 2
-    config["survival-config-b64"] = base64.b64encode(json.dumps(public).encode()).decode()
-    assert checkpoints.canonical_manifest_sha256(changed) != payload["provenance"]["manifest_sha256"]
-    with pytest.raises(ValueError, match="contract mismatch"):
-        checkpoints.verify_model_config(manifest, config)
-
-
-def test_public_release_records_preserve_all_fold_coordinates(registry):
-    checkpoints.record_release(registry.context, registry.node, 1, registry.arrays)
-    for fold in (1, 2):
-        checkpoints.record_release(registry.context, registry.node, 1, registry.arrays, fold=fold)
-        filename = registry.run / ("segmentation-public-init-release-fold-%02d-000001.json" % fold)
-        record = json.loads(filename.read_text())
-        assert record["fold"] == fold
-        assert record["round"] == 1
-        assert record["public_initialisation"] == registry.summary
-    assert len(list(registry.run.glob("segmentation-public-init-release-*.json"))) == 3
-
-
-@pytest.mark.parametrize("loss,key,default,changed,invalid", [
-    ("negbin_nll", "nb-dispersion", 1., 2., 0.),
-    ("gamma_nll", "gamma-shape", 1., 2., 1e13),
-    ("huber", "huber-delta", 1., 2., 1e7),
-    ("quantile", "quantile-level", .5, .75, 1.)])
-def test_tabular_loss_parameter_defaults_and_mismatches(registry, tmp_path, loss, key, default, changed, invalid):
-    _directory, manifest, _arrays = tabular_bundle(registry, tmp_path)
-    manifest["model_config"]["loss-name"] = loss
-    checkpoints._validate_manifest(manifest)
-    implicit = checkpoints.canonical_manifest_sha256(manifest)
-    manifest["model_config"][key] = default
-    assert checkpoints.canonical_manifest_sha256(manifest) == implicit
-    checkpoints.verify_model_config(manifest, manifest["model_config"])
-    bad_config = dict(manifest["model_config"], **{key: changed})
-    with pytest.raises(ValueError, match="contract mismatch"):
-        checkpoints.verify_model_config(manifest, bad_config)
-    manifest["model_config"][key] = changed
-    assert checkpoints.canonical_manifest_sha256(manifest) != implicit
-    manifest["model_config"][key] = invalid
-    with pytest.raises(ValueError, match="loss parameter"):
-        checkpoints._validate_manifest(manifest)
-    manifest["model_config"].pop(key)
-    manifest["model_config"]["inactive-loss-field"] = 1
-    with pytest.raises(ValueError, match="model geometry"):
-        checkpoints._validate_manifest(manifest)

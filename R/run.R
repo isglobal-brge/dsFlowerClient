@@ -25,7 +25,8 @@
 #' @param verbose Logical; print flwr output (default FALSE).
 #' @param silent Logical; suppress progress feedback.
 #' @return A \code{dsflower_run} object with run status and identifiers, model
-#'   metadata, weights, history, output paths, and captured CLI output.
+#'   metadata, weights, history, output paths, and captured CLI output. Native
+#'   tree runs include the verified artifact digest and sanitization metadata.
 #' @export
 ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                  run_config = list(), output_dir = NULL,
@@ -376,6 +377,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       framework  = recipe$model$framework,
       track      = recipe$model$track %||% NULL,
       model_spec = recipe$model_spec %||% NULL,
+      graph_parameter_format = if (identical(recipe$model_spec$kind, "graph"))
+        "canonical-v1" else NULL,
       model_params = recipe$model_params %||% list(),
       loss_name  = recipe$loss_name %||% NULL,
       survival_config = recipe$survival_config %||% NULL,
@@ -445,6 +448,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
         framework  = recipe$model$framework,
         track      = recipe$model$track %||% NULL,
         model_spec = recipe$model_spec %||% NULL,
+        graph_parameter_format = if (identical(recipe$model_spec$kind, "graph"))
+          "canonical-v1" else NULL,
         model_params = recipe$model_params %||% list(),
         loss_name  = recipe$loss_name %||% NULL,
         survival_config = recipe$survival_config %||% NULL,
@@ -474,12 +479,12 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
     if (!is.null(recipe$segmentation_public_initialization)) {
       meta$segmentation_public_initialization <- recipe$segmentation_public_initialization
     }
+    # This is the saved reconstruction/validation contract: absent bounds must
+    # remain JSON null, and declared bounds must retain their exact doubles.
+    # An empty object is a malformed bound contract, not an absent one.
     jsonlite::write_json(meta, file.path(output_dir, "metadata.json"),
                          auto_unbox = TRUE, pretty = TRUE,
-                         digits = if (!is.null(recipe$survival_config) ||
-                           !is.null(recipe$segmentation_public_initialization)) I(17) else 4,
-                         null = if ((native_tree && available) ||
-                           !is.null(recipe$segmentation_public_initialization)) "null" else "list")
+                         digits = I(17), null = "null")
 
     if (atomic_native_holdout) {
       destination_exists <- file.exists(final_output_dir) ||
@@ -512,6 +517,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       available_rounds = as.integer(available_rounds),
       strategy    = recipe$strategy$name,
       weights     = weights,
+      artifact    = native_release$artifact %||% NULL,
+      sanitization = native_release$sanitization %||% NULL,
       history     = history,
       output_dir  = output_dir,
       saved_path  = saved_path,

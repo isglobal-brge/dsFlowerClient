@@ -547,6 +547,7 @@
     bins = bins, features = NULL, feature_bounds = NULL,
     target_bounds = NULL, target_levels = public_levels,
     model_spec = spec, loss_name = loss,
+    graph_parameter_format = .saved_graph_parameter_format(meta),
     n_classes = n_classes, n_labels = 2L, data_kind = "image",
     backbone = backbone, image_size = image_size,
     volumetric = isTRUE(volumetric), feature_dim = as.integer(feature_dim),
@@ -815,6 +816,7 @@
     feature_bounds = feature_bounds, target_bounds = target_bounds,
     target_levels = public_levels,
     model_spec = spec, loss_name = loss,
+    graph_parameter_format = .saved_graph_parameter_format(meta),
     n_classes = n_classes, n_labels = n_labels, data_kind = data_kind,
     survival_config = survival_config,
     loss_config = .validation_loss_config(loss, params))
@@ -882,6 +884,9 @@
     "num-labels" = contract$n_labels,
     "loss-name" = contract$loss_name)
   config[["model-spec-b64"]] <- .spec_to_b64(contract$model_spec)
+  if (!is.null(contract$graph_parameter_format)) {
+    config[["graph-parameter-format"]] <- contract$graph_parameter_format
+  }
   if (!is.null(contract$survival_config)) {
     config[["survival-config-b64"]] <- .survival_json_b64(contract$survival_config)
   }
@@ -1315,6 +1320,10 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
   } else {
     config <- c(config,
       .toml_kv("model-spec-b64", .spec_to_b64(contract$model_spec)))
+    if (!is.null(contract$graph_parameter_format)) {
+      config <- c(config, .toml_kv(
+        "graph-parameter-format", contract$graph_parameter_format))
+    }
     if (identical(contract$data_kind, "image")) {
       config <- c(config,
         .toml_kv("data-kind", "image"),

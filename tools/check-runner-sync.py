@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Fail CI when the client-bundled runner differs from dsFlower's canonical copy."""
+"""Fail the local check when the client-bundled runner differs from dsFlower's canonical copy."""
 
 import argparse
 import hashlib
@@ -31,7 +31,7 @@ def main():
         parser.error("canonical server runner not found: %s" % server)
     left, right = tree(server), tree(client)
     if left == right:
-        print("dsflower_runner trees are byte-identical")
+        print("OK: dsflower_runner trees are byte-identical")
         return 0
     for name in sorted(set(left) | set(right)):
         if left.get(name) != right.get(name):

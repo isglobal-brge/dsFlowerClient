@@ -110,6 +110,57 @@ ds.flower.strategy.fedavgm <- function(server_learning_rate = 1.0,
   ))
 }
 
+#' Create a FedProx strategy spec
+#'
+#' FedProx applies a public proximal step after the private optimizer step and
+#' L1 proximal step. HookApps instead relax the complete gated update with
+#' step size one. Aggregation remains equal-weight FedAvg.
+#' @param mu One finite numeric proximal coefficient in \code{[0, 1]}.
+#' @return A \code{dsflower_strategy} object.
+#' @export
+ds.flower.strategy.fedprox <- function(mu = 0.01) {
+  if (!is.numeric(mu) || is.logical(mu) || length(mu) != 1L ||
+      is.na(mu) || !is.finite(mu) || mu < 0 || mu > 1) {
+    stop("'mu' must be one finite numeric value in [0, 1].", call. = FALSE)
+  }
+  .new_strategy("FedProx", list(mu = as.numeric(mu)))
+}
+
+.effective_strategy <- function(strategy, track = "neural") {
+  if (!inherits(strategy, "dsflower_strategy")) strategy <- ds.flower.strategy(strategy)
+  strategy <- .canonicalize_strategy(strategy)
+  key <- .dsflower_choice_key(strategy$name)
+  if (identical(key, "fedprox")) {
+    if (!track %in% c("neural", "egress")) {
+      stop("FedProx is unsupported for trees, association and standalone validation.", call. = FALSE)
+    }
+    if (strategy$params$mu == 0) return(ds.flower.strategy.fedavg())
+  }
+  if (identical(track, "egress") && !key %in% c("fedavg", "fedprox")) {
+    stop("HookApp supports only FedAvg or FedProx.", call. = FALSE)
+  }
+  strategy
+}
+
+.validate_fedprox_horizon <- function(strategy, sub, num_rounds) {
+  if (!identical(strategy$name, "FedProx") || strategy$params$mu == 0) return(invisible(NULL))
+  p <- sub$params %||% list()
+  base <- as.numeric(p$learning_rate %||% 0.01)
+  last <- as.integer(num_rounds) * as.integer(p$local_epochs %||% 1L) - 1L
+  scheduler <- tolower(p$scheduler %||% p$scheduler_name %||% "none")
+  largest <- base
+  if (scheduler %in% c("step", "exponential")) {
+    exponent <- if (scheduler == "step") last %/% as.integer(p$scheduler_step_size %||% 1L) else last
+    largest <- max(base, base * as.numeric(p$scheduler_gamma %||% 0.1)^exponent)
+  } else if (scheduler == "cosine") {
+    largest <- max(base, as.numeric(p$scheduler_min_lr %||% 0))
+  }
+  if (!is.finite(largest) || largest * strategy$params$mu > 1) {
+    stop("FedProx requires scheduled learning_rate * mu <= 1 for every step.", call. = FALSE)
+  }
+  invisible(NULL)
+}
+
 .canonicalize_strategy <- function(strategy) {
   if (!inherits(strategy, "dsflower_strategy") || !is.list(strategy) ||
       !is.character(strategy$name) || length(strategy$name) != 1L ||
@@ -126,6 +177,7 @@ ds.flower.strategy.fedavgm <- function(server_learning_rate = 1.0,
   key <- .dsflower_choice_key(strategy$name)
   allowed <- switch(key,
     fedavg = character(),
+    fedprox = c("mu"),
     fedadam = c("eta", "beta_1", "beta_2", "tau"),
     fedadagrad = c("eta", "tau"),
     fedyogi = c("eta", "beta_1", "beta_2", "tau"),
@@ -142,6 +194,7 @@ ds.flower.strategy.fedavgm <- function(server_learning_rate = 1.0,
   }
   switch(key,
     fedavg = ds.flower.strategy.fedavg(),
+    fedprox = ds.flower.strategy.fedprox(params$mu %||% 0.01),
     fedadam = ds.flower.strategy.fedadam(
       server_learning_rate = params$eta %||% 0.1,
       beta_1 = params$beta_1 %||% 0.9,
@@ -164,15 +217,15 @@ ds.flower.strategy.fedavgm <- function(server_learning_rate = 1.0,
   if (!inherits(strategy, "dsflower_strategy")) {
     strategy <- ds.flower.strategy(strategy)
   }
-  strategy <- .canonicalize_strategy(strategy)
+  strategy <- .effective_strategy(strategy)
   key <- .dsflower_choice_key(strategy$name)
-  allowed <- c("fedavg", "fedadam", "fedadagrad", "fedyogi", "fedavgm")
+  allowed <- c("fedprox", "fedavg", "fedadam", "fedadagrad", "fedyogi", "fedavgm")
   if (!key %in% allowed) {
     stop("Strategy '", strategy$name, "' is not supported by the enforced-DP runtime.",
          call. = FALSE)
   }
   keys <- c(
-    eta = "strategy-eta",
+    mu = "strategy-mu", eta = "strategy-eta",
     beta_1 = "strategy-beta-1", beta_2 = "strategy-beta-2",
     tau = "strategy-tau", server_learning_rate = "strategy-server-learning-rate",
     server_momentum = "strategy-server-momentum"

@@ -723,6 +723,40 @@ test_that("vision preflight has a bounded cold-start window", {
   expect_identical(timeouts, c(300, 60))
 })
 
+test_that("saved graph format reaches prediction and validation preflight", {
+  path <- validation_model_fixture()
+  metadata_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
+  meta$model_spec <- list(kind = "graph", nodes = list(
+    list(name = "head", op = "linear", `in` = list("@in"))), output = "head")
+  meta$framework <- "pytorch"
+  meta$graph_parameter_format <- "canonical-v1"
+  jsonlite::write_json(meta, metadata_path, auto_unbox = TRUE, null = "null")
+  seen <- list()
+  local_mocked_bindings(
+    .ensure_client_framework = function(...) TRUE,
+    .client_python_cmd = function() "python",
+    .client_venv_env = function(...) character(),
+    .package = "dsFlowerClient")
+  local_mocked_bindings(
+    run = function(command, args, ...) {
+      if (grepl("validate_model_artifact.py$", args[[1L]])) {
+        seen$validation <<- jsonlite::fromJSON(args[[2L]])
+      } else {
+        seen$prediction <<- args
+      }
+      list(status = 0L, stderr = "", stdout = "[0.5]")
+    }, .package = "processx")
+  contract <- dsFlowerClient:::.resolve_validation_contract(path, 32L)
+  dsFlowerClient:::.validate_validation_artifact_preflight(contract)
+  expect_identical(seen$validation[["graph-parameter-format"]], "canonical-v1")
+  expect_equal(ds.flower.predict(path, data.frame(age = 40, marker = 0),
+    type = "prob"), 0.5)
+  index <- match("--graph-parameter-format", seen$prediction)
+  expect_false(is.na(index))
+  expect_identical(seen$prediction[[index + 1L]], "canonical-v1")
+})
+
 test_that("local vision prediction sends only the strict public contract and paths", {
   path <- vision_validation_model_fixture(n_classes = 2L, volumetric = TRUE)
   ensured <- character()
@@ -976,6 +1010,21 @@ test_that("ds.flower.validate stages one validation release and returns pooled m
     app_config, fixed = TRUE)))
   expect_true(any(grepl("num-server-rounds = 1", app_config, fixed = TRUE)))
   expect_false("per_node" %in% names(result))
+
+  metadata_path <- file.path(path, "metadata.json")
+  meta <- jsonlite::fromJSON(metadata_path, simplifyVector = FALSE)
+  meta$model_spec <- list(kind = "graph", nodes = list(
+    list(name = "head", op = "linear", `in` = list("@in"))), output = "head")
+  meta$graph_parameter_format <- "canonical-v1"
+  jsonlite::write_json(meta, metadata_path, auto_unbox = TRUE, null = "null")
+  graph_result <- ds.flower.validate(
+    list(site_a = TRUE, site_b = TRUE), model = path,
+    target = "outcome", symbol = "D", bins = 16L, silent = TRUE)
+  expect_true(graph_result$available)
+  expect_true(any(grepl('graph-parameter-format = "canonical-v1"',
+    app_config, fixed = TRUE)))
+  # The ServerApp migrates once, then sends canonical arrays to the nodes.
+  expect_false("graph-parameter-format" %in% names(prepared))
 
   release_available <- FALSE
   unavailable <- ds.flower.validate(

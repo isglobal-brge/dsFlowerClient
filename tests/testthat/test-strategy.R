@@ -8,7 +8,7 @@ test_that("fedavg creates correct strategy with defaults", {
 })
 
 test_that("unsupported local-training strategies fail at construction", {
-  expect_error(ds.flower.strategy("fedprox"), "not supported")
+  expect_identical(ds.flower.strategy("fedprox")$name, "FedProx")
   expect_error(ds.flower.strategy("fedbn"), "not supported")
 })
 

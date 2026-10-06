@@ -142,6 +142,8 @@ ds.flower.predict <- function(
              "--type", type,
              "--framework", framework,
              "--spec-b64", spec_b64,
+             if (!is.null(contract$graph_parameter_format))
+               c("--graph-parameter-format", contract$graph_parameter_format),
              "--loss-name", contract$loss_name,
              "--num-classes", as.character(contract$num_classes %||% 2L),
              "--num-labels", as.character(contract$num_labels %||% 2L),
@@ -261,6 +263,9 @@ ds.flower.predict <- function(
     "validation-artifact-format" = contract$artifact_format,
     "validation-artifact-sha256" = contract$artifact_sha256,
     "validation-artifact-size-bytes" = contract$artifact_size_bytes)
+  if (!is.null(contract$graph_parameter_format)) {
+    config[["graph-parameter-format"]] <- contract$graph_parameter_format
+  }
   if (segmentation) config <- c(config, contract$segmentation_config)
   transport_dir <- tempfile(pattern = "vision_predict_")
   if (!dir.create(transport_dir, mode = "0700", showWarnings = FALSE)) {
@@ -576,6 +581,15 @@ ds.flower.predict <- function(
 
 #' Read the public, data-only model contract required for exact reconstruction
 #' @keywords internal
+.saved_graph_parameter_format <- function(meta) {
+  version <- meta$graph_parameter_format
+  if (!is.null(version) && (!is.character(version) || length(version) != 1L ||
+      is.na(version) || !identical(version, "canonical-v1"))) {
+    stop("Unsupported saved graph parameter format.", call. = FALSE)
+  }
+  version
+}
+
 .read_meta_model_contract <- function(model_dir) {
   empty <- list(model_spec = NULL, loss_name = NULL,
                 num_classes = 2L, num_labels = 2L, data_kind = NULL)
@@ -610,6 +624,7 @@ ds.flower.predict <- function(
       meta$survival_config$edges, use.names = FALSE)
   }
   list(model_spec = if (is.list(meta$model_spec)) meta$model_spec else NULL,
+       graph_parameter_format = .saved_graph_parameter_format(meta),
        loss_name = loss, num_classes = n_classes, num_labels = n_labels,
        data_kind = data_kind, survival_config = meta$survival_config)
 }

@@ -414,7 +414,9 @@
 #'   and never saves fold models or predictions. Prefer the user-facing
 #'   \code{ds.flower.cross_validate()} wrapper.
 #' @param survival_horizons,survival_nll_bound Public survival metric contract;
-#'   see \code{ds.flower.fit()}.
+#'   see \code{ds.flower.fit()}. Horizons are validated against the model even
+#'   for ordinary training, which does not emit metric fields or a metric release.
+#'   The named-model horizon/grid shorthand is provided by \code{ds.flower.fit()}.
 #' @param public_initialisation Public tabular initialization selector; see
 #'   \code{ds.flower.fit()}.
 #' @param public_checkpoint_file Local public checkpoint NPZ or complete bundle for
@@ -480,7 +482,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     stop("feature_bounds applies only to tabular features and cannot be used ",
          "with data_kind = 'image'.", call. = FALSE)
   }
-  if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
+  if (!inherits(model, "dsflower_model")) {
+    model <- do.call(ds.flower.model, c(list(name = model), model_params))
+    model_params <- list()
+  }
   registered_model <- .dsflower_get_model(model$name)
   if (!data_kind %in% (registered_model$data_kinds %||% "tabular")) {
     stop("Model '", model$name, "' does not support data_kind = '", data_kind,
@@ -494,6 +499,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   base_params <- .dsflower_resolve_model_params(
     registered_model, model$params %||% list())
   registered_model$defaults <- base_params
+  # Task-specific defaults belong to construction, not concrete-model overrides.
+  registered_model$task_defaults <- NULL
   model$params <- .dsflower_resolve_model_params(
     registered_model, model_params)
   sub <- .emit_submission(model)
@@ -521,8 +528,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     .assert_cross_validation_supported(sub, data_kind)
   }
   metric_config <- .private_survival_metric_config(
-    if (!is.null(holdout_spec) || !is.null(cv_spec)) .survival_config(sub$params, sub$loss) else NULL,
+    .survival_config(sub$params, sub$loss),
     survival_horizons, survival_nll_bound)
+  # Public horizons may declare a named survival model's time domain in fit().
+  # Validate them above even for ordinary training, but release metrics only
+  # through the requested holdout/CV mechanism.
+  if (is.null(holdout_spec) && is.null(cv_spec)) metric_config <- list()
   target <- .validate_submission_target(sub, target)
   if (.is_survival_loss(sub$loss)) {
     if (is.null(features) || !length(features) ||
@@ -585,14 +596,15 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     stop("learning_rate must be one finite value in (0, 10].", call. = FALSE)
   }
 
-  # Aggregation strategy. All of these run ONLY on the researcher-side SuperLink,
-  # over the already-DP client updates -> pure post-processing, so the (epsilon,
-  # delta) guarantee is unchanged whichever is chosen (it is never a privacy knob).
+  # Aggregation uses already-private updates. FedProx also pins a public local
+  # proximal step, applied after the DP optimizer and L1 prox.
   strategy_spec <- if (inherits(strategy, "dsflower_strategy")) {
     .canonicalize_strategy(strategy)
   } else {
     ds.flower.strategy(strategy)
   }
+  strategy_spec <- .effective_strategy(strategy_spec, sub$track)
+  .validate_fedprox_horizon(strategy_spec, sub, num_rounds)
   local_learning_rate <- as.numeric(
     (sub$params %||% list())[["learning_rate"]] %||% 0.01)
   strategy_config <- .strategy_config_values(
@@ -839,10 +851,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     prepare_config[["public-initialisation-origin"]] <- if (
       startsWith(segmentation_input$origin, "resource:")) "resource" else "analyst-declared"
   }
+  if (identical(sub$track, "neural")) {
+    prepare_config <- c(prepare_config, strategy_config)
+  }
   if (!is.null(cv_contract)) {
-    if (identical(sub$track, "neural")) {
-      prepare_config <- c(prepare_config, strategy_config)
-    }
     prepare_config <- c(
       prepare_config, list("cv-n-nodes" = as.integer(n_clients)))
     cv_job_sha256 <- .cv_job_sha256(

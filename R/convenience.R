@@ -124,13 +124,15 @@ ds.flower.strategy <- function(name = "fedavg", ...) {
   }
 
   key <- .dsflower_choice_key(name)
-  if (key %in% c("fedprox", "prox", "fedbn")) {
+  if (key %in% c("fedbn")) {
     stop("Strategy '", name, "' is not supported by the enforced-DP runtime. ",
-         "Supported strategies: fedavg, fedadam, fedadagrad, fedyogi, fedavgm.",
+         "Supported strategies: fedavg, fedprox, fedadam, fedadagrad, fedyogi, fedavgm.",
          call. = FALSE)
   }
 
   choices <- c(
+    fedprox = "ds.flower.strategy.fedprox",
+    prox = "ds.flower.strategy.fedprox",
     avg = "ds.flower.strategy.fedavg",
     fedavg = "ds.flower.strategy.fedavg",
     fed_average = "ds.flower.strategy.fedavg",
@@ -254,6 +256,12 @@ ds.flower.task <- function(name = "classification") {
 #' @param survival_horizons Public fixed Brier horizons for survival holdout/CV;
 #'   defaults to the fitted administrative horizon. Right-censored subjects
 #'   with unknown status at a horizon do not enter its observed-status Brier mean.
+#'   With a model name and no corresponding \code{model_params} entry, an
+#'   explicitly supplied grid also sets the AFT \code{horizon} to its last
+#'   value or discrete-hazard \code{edges} to \code{c(0, survival_horizons)}.
+#'   Explicit model parameters and concrete model objects take precedence.
+#'   The grid must be strictly increasing within the public time domain; no
+#'   private times are inspected. Ordinary training emits no metric release.
 #' @param survival_nll_bound Positive public bound (default 20) for clipping
 #'   each patient's negative log-likelihood to its symmetric interval.
 #' @param public_initialisation For tabular neural models, an admitted public bundle
@@ -343,6 +351,7 @@ ds.flower.fit <- function(conns,
     stop("Provide only one of 'data', 'resource', or 'symbol'.", call. = FALSE)
   }
 
+  model_params <- .survival_fit_model_params(model, model_params, survival_horizons)
   model_spec <- if (inherits(model, "dsflower_model")) {
     ds.flower.model(model)
   } else {
@@ -351,6 +360,8 @@ ds.flower.fit <- function(conns,
   if (inherits(model, "dsflower_model") && length(model_params)) {
     registered <- .dsflower_get_model(model_spec$name)
     registered$defaults <- model_spec$params %||% list()
+    # A concrete model already resolved task defaults; preserve its values.
+    registered$task_defaults <- NULL
     model_spec$params <- .dsflower_resolve_model_params(
       registered, model_params)
     model_spec$loss <- .dsflower_model_loss(registered, model_spec$params)
@@ -408,9 +419,9 @@ ds.flower.fit <- function(conns,
          call. = FALSE)
   }
 
-  # The submission pipeline owns connect/upload/pin/run/cleanup. The aggregation
-  # strategy runs server-side (researcher SuperLink) over already-DP updates, so
-  # any supported strategy is DP-safe post-processing.
+  # The submission pipeline owns connect/upload/pin/run/cleanup. Aggregation
+  # processes released node updates; FedProx additionally processes the private
+  # optimizer output at each node before the next training step.
   ds.flower.submit(
     conns, model = model_spec, target = target, features = features,
     data = data, resource = resource, symbol = symbol,

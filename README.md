@@ -128,6 +128,18 @@ S3/MinIO objects only inside each data node. The ordered
 `target_levels` vocabulary is public; it can be omitted when labels are already
 encoded as integers from `0` to `n_classes - 1`.
 
+### Admitted radiomics tables
+
+A complete radiomics data frame or Arrow table retrieved through dsImaging can
+be passed to `ds.flower.fit()` by its session symbol, including an unchanged
+Parquet round trip. This requires the coordinated dsImaging companion that
+registers exports against its private admitted patient roster. Row permutations
+preserve that authority; changed values, subsets, duplicate/missing sample keys,
+unregistered generic dsHPC tables and revoked sources fail closed. Patient
+identity comes from the protected roster, never from caller-added attributes.
+The companion prerequisite also applies when the public container has no
+patient-ID column.
+
 ## Privacy is server-authoritative
 
 Each node applies one administrator-pinned epsilon/delta contract to every
@@ -157,15 +169,27 @@ configured patient.
 This is not an unbounded add/remove membership guarantee for a changing unit
 count.
 
-Noise and training randomness are derived from a canonical semantic identity
-with HMAC-SHA256 under the node's dedicated 256-bit secret. Equivalent declarative
-trainings derive the same streams directly from that identity; gated HookApps
-add a durable node-owned cache of exact releases. The v2 identity binds effective
-data, node-authored source/column selections, public model, mechanism, bounds and
-round. Public segmentation initialisation additionally binds the node-verified
-checkpoint ID, manifest digest and checkpoint digest. Distinct selections remain
-separate even when their private tensors or statistics coincide. The secret is
-not a client seed, R RNG state or `datashield.seed`.
+Noise and training randomness use the v3 two-layer identity: a public semantic
+request and a private binding to complete selected source units plus effective
+tensors. Initial/current model contents, selected roles, raw policy and runtime
+remain bound; symbols, handles, paths, row order and session/run tokens do not.
+Canonical keyed unit order precedes computation. Default neural initialization
+is specification-seeded with isolated RNG state, and all CV folds share one
+initial model. Nodes retain existing array admission without recomputing default
+round-one arrays. A nondeterministic Hook `initial_arrays` output changes the
+incoming-array hash and creates a new release per run. The node secret is not a
+client seed, R RNG state or `datashield.seed`.
+
+Exact semantic retries return the same released model or statistic. In 0.7.1,
+the node's secret noise key also binds the effective private data. This prevents
+reuse of one noise stream for different data, but comparing related prepared
+datasets can reveal whether a preparation changed the effective input: a no-op
+gives the same release, while changed inputs usually give different releases.
+This equality pattern is outside the per-release DP guarantee. DataSHIELD
+admission and disclosure controls can restrict such preparations; they do not
+supply a general transcript-DP proof. Distinct analyses still compose when their
+conditional mechanisms satisfy DP, and dsFlower does not impose a lifetime
+privacy budget.
 
 The clipping, sensitivity and accounting contracts implement the standard
 `(epsilon, delta)` mechanisms under their mathematical model. The shipped
@@ -271,6 +295,14 @@ shape or log-normal sigma) and `pytorch_discrete_hazard` (a fixed public grid,
 K <= 64). Both require the custodian's patient privacy policy, an explicit
 baseline feature list, and ordered `target = c("time", "event")` with event
 coding 1/0. Supply an explicit AFT horizon or hazard grid before training.
+With a model name, `ds.flower.fit()` and `ds.flower.cross_validate()` also accept
+public `survival_horizons` as shorthand when the corresponding model parameter
+is absent: AFT uses its last value as `horizon`, and discrete hazard uses
+`edges = c(0, survival_horizons)`. The grid must be finite, strictly increasing,
+contain at most 64 horizons and lie within the public time domain. Explicit
+model parameters and concrete model objects retain precedence. No private
+times are used to choose a domain or grid; ordinary training emits no metric
+release merely because these public horizons were supplied.
 Private validation, holdout and CV provide observed-status Brier at public
 horizons and bounded fitted NLL. Concordance remains a public-split metric and
 survival training inside HPO is unsupported. Released artifacts support local survival curves, medians
@@ -308,7 +340,13 @@ only after a fresh executable end-to-end probe; this is operational readiness,
 not a model catalogue used as a privacy permission list. ExtraTrees, Random
 Forest and the two dsFlower-style boosters use the small runtime provisioned by
 the server package. XGBoost remains unavailable on a clean install until the
-custodian supplies its separately built and verified platform bundle.
+custodian supplies its separately built and verified platform bundle and sets
+`dsflower.xgboost_bundle_root` on every selected node (or the service environment
+variable `DSFLOWER_XGBOOST_BUNDLE_ROOT`, which takes precedence). See the
+[server bundle setup](https://github.com/isglobal-brge/dsFlower#configure-the-curated-xgboost-bundle).
+The legacy native status suffix `internal-only` is an ABI identifier, not a
+restriction on the public R constructor; availability depends on the node's
+complete executable capability probe.
 
 An already-trained XGBoost 3.4.0 JSON model can instead be admitted locally as
 a data-only prediction/validation bundle without installing or executing the
@@ -701,3 +739,32 @@ that prohibit analyst-supplied material. The DP mechanism is unchanged.
 - **Juan R González** — juanr.gonzalez@isglobal.org
 
 [Barcelona Institute for Global Health (ISGlobal)](https://www.isglobal.org/)
+
+## FedProx
+
+```r
+strategy <- ds.flower.strategy.fedprox(mu = 0.01)
+# Pass strategy to ds.flower.fit(), ds.flower.cross_validate(),
+# or the admitted Hook training API.
+```
+
+`mu` must be one finite numeric value in `[0,1]`. For positive neural mu, every
+scheduled learning rate must satisfy `learning_rate * mu <= 1`. Each proximal
+step follows the private optimizer and L1 prox and uses the incoming round
+weights as reference. Server aggregation uses the existing equal-weight FedAvg.
+The Hook API applies one post-gate update relaxation with eta=1; it does not
+change or inspect the Hook's internal optimizer. `mu = 0` is normalized to
+FedAvg with byte-identical release/cache identity and no extra arithmetic.
+Native trees (including XGBoost), association and standalone validation reject
+FedProx, even with zero mu. Positive mu is a semantic request change, not a
+privacy-budget control.
+
+## Local release checks
+
+GitHub Actions workflows have been removed. The local R/Python suites and
+native/integration scripts remain supported; see
+[the multi-node harness instructions](tools/integration/README.md). A real
+federation is verified by a local multi-node integration harness. Drain active
+jobs before upgrading both packages/runners to 0.7.1, preserve node secrets and
+retained Hook cache entries, and restage under the v3 randomness contract.
+Changing the runtime or key creates a new release domain.

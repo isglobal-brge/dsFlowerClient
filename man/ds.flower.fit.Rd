@@ -138,7 +138,13 @@ its model's \code{decoder_init} selector.}
 
 \item{survival_horizons}{Public fixed Brier horizons for survival holdout/CV;
 defaults to the fitted administrative horizon. Right-censored subjects
-with unknown status at a horizon do not enter its observed-status Brier mean.}
+with unknown status at a horizon do not enter its observed-status Brier mean.
+With a model name and no corresponding \code{model_params} entry, an
+explicitly supplied grid also sets the AFT \code{horizon} to its last
+value or discrete-hazard \code{edges} to \code{c(0, survival_horizons)}.
+Explicit model parameters and concrete model objects take precedence.
+The grid must be strictly increasing within the public time domain; no
+private times are inspected. Ordinary training emits no metric release.}
 
 \item{survival_nll_bound}{Positive public bound (default 20) for clipping
 each patient's negative log-likelihood to its symmetric interval.}
