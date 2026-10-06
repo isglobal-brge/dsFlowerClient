@@ -123,7 +123,8 @@ def _load_state_dict_safely(model_path):
 
 
 def predict_pytorch_spec(model_path, X, pred_type, spec_b64, loss_name,
-                         num_classes=2, num_labels=2, survival_config=None, times=None):
+                         num_classes=2, num_labels=2, survival_config=None, times=None,
+                         graph_parameter_format=None):
     """Rebuild the exact declarative architecture, then load its state_dict."""
     import torch
     builder = _load_model_spec_module()
@@ -137,7 +138,9 @@ def predict_pytorch_spec(model_path, X, pred_type, spec_b64, loss_name,
         num_labels=int(num_labels),
         output_limit=builder.output_limit_for_loss(str(loss_name)))
     state_dict = _load_state_dict_safely(model_path)
-    model.load_state_dict(state_dict, strict=True)
+    builder.load_saved_state_dict(
+        model, state_dict, public_spec, int(X.shape[1]), int(out_dim),
+        num_labels=int(num_labels), graph_parameter_format=graph_parameter_format)
     model.eval()
     with torch.no_grad():
         logits = model(torch.tensor(X, dtype=torch.float32))
@@ -344,6 +347,7 @@ def main():
                         default=None)
     parser.add_argument("--config", default=None)
     parser.add_argument("--spec-b64", dest="spec_b64", default=None)
+    parser.add_argument("--graph-parameter-format", default=None)
     parser.add_argument("--loss-name", dest="loss_name", default=None)
     parser.add_argument("--num-classes", dest="num_classes", type=int, default=2)
     parser.add_argument("--num-labels", dest="num_labels", type=int, default=2)
@@ -401,7 +405,8 @@ def main():
             num_classes=args.num_classes, num_labels=args.num_labels,
             survival_config=(_decode_b64_json(args.survival_config_b64)
                              if args.survival_config_b64 else None),
-            times=_decode_b64_json(args.times_b64) if args.times_b64 else None)
+            times=_decode_b64_json(args.times_b64) if args.times_b64 else None,
+            graph_parameter_format=args.graph_parameter_format)
     else:
         print(json.dumps({"error": f"Unknown framework: {framework}"}),
               file=sys.stderr)

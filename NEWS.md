@@ -1,5 +1,8 @@
 # dsFlowerClient 0.7.1
 
+* Version the saved graph parameter layout and migrate unversioned 0.7.0 graph
+  artifacts through their original specifications. Local prediction and private
+  validation share the same checked mapping, including colliding node names.
 * Use the v3 public-request/private-source identity across all release families.
   Canonical source units and computation order remove symbol/path/session/row
   nuisances while preserving initial/current model contents, selected source data,
