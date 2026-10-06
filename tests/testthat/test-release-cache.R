@@ -1,6 +1,8 @@
-test_that("analysts cannot supply cache or deadline controls", {
+test_that("analysts cannot supply cache, deadline or neighbourhood controls", {
   controls <- c("release_cache_dir", "release-cache-bytes", "releaseCacheBytes",
-                "cache", "hook-deadline", "deadlineSeconds")
+                "cache", "hook-deadline", "deadlineSeconds",
+                "neighbourhood_k", "neighbourhood-max-anchors",
+                "neighbourhoodStoreBytes", "neighbourhood.store.id")
   for (key in controls) {
     config <- setNames(list(1024), key)
     expect_error(ds.flower.nodes.prepare(
