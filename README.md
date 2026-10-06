@@ -831,3 +831,17 @@ jobs before upgrading both packages/runners to 0.7.2, preserve node secrets,
 neighbourhood stores, UUID pins/locks and retained Hook cache entries, and
 restage under the v3 randomness contract.
 Changing the runtime or key creates a new release domain.
+
+### Running the tests locally
+
+R, with dsFlowerClient (and, for the integration tests, dsFlower) installed:
+
+```sh
+R CMD INSTALL .
+Rscript -e 'testthat::test_dir("tests/testthat", package = "dsFlowerClient", load_package = "installed")'
+```
+
+Python helpers: run each file under `inst/python/tests/` with the analyst or node runtime, e.g.
+`python -m pytest inst/python/tests/<file>.py` (native-tree helper files also with the native-tree runtime). Check that
+the bundled runner matches the server's: `python3 tools/check-runner-sync.py --server ../dsFlower`. The multi-node
+DSLite harness is described in [tools/integration/README.md](tools/integration/README.md).
