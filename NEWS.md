@@ -1,3 +1,16 @@
+# dsFlowerClient 0.7.3
+
+* Bundle the explicit `validation-vector-v4` numeric holdout layout, subtracting
+  the fixed public value 1/4 from bounded sufficient coordinates and retaining
+  the unit-count coordinate. Regression/gamma and native-tree regression recover
+  sensitivity 2 (from sqrt(5)); count recovers sqrt(5) (from sqrt(6)), including
+  rows or patients entering or leaving the content-based test split.
+* Recover original sufficient sums by affine post-processing of the same noisy
+  count and shifted sums, preserving the pooled metric interface. Require the
+  matching 0.7.3 server; saved-model validation, pooled CV, other layouts, privacy
+  budgets, accountants, sticky replay, v3 identity and FedProx remain unchanged.
+  Document recovery, noise covariance and the DP proof in `PRIVATE_VALIDATION_CV.md`.
+
 # dsFlowerClient 0.7.2
 
 * Mitigate [isglobal-brge/dsFlower#7](https://github.com/isglobal-brge/dsFlower/issues/7)
