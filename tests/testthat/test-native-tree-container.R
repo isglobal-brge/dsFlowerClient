@@ -35,13 +35,19 @@ test_that("native containers retain exact canonical bytes and identity checks", 
   fixture <- native_tree_training_fixture()
   path <- file.path(fixture$path, fixture$meta$artifact$file)
   original <- readChar(path, file.info(path)$size, useBytes = TRUE)
+  first_leaf <- regmatches(original, regexpr('"leaf_values":\\[[^,]+', original))
+  spelling <- sub('"leaf_values":\\[', "", first_leaf)
+  noncanonical <- if (grepl("[eE]", spelling)) {
+    sub("([eE])", "0\\1", spelling)
+  } else if (grepl(".", spelling, fixed = TRUE)) paste0(spelling, "0") else paste0(spelling, ".0")
+  expect_equal(as.numeric(spelling), as.numeric(noncanonical))
   mutations <- list(
     whitespace = paste0(" ", original),
     newline = paste0(original, "\n"),
     duplicate = sub('"version":1}', '"version":1,"version":1}', original, fixed = TRUE),
     reordered = sub('"aggregation":"mean_prediction","contract":"dsflower-forest-ensemble-v1"',
       '"contract":"dsflower-forest-ensemble-v1","aggregation":"mean_prediction"', original, fixed = TRUE),
-    float_spelling = sub("0.03969938043260646", "0.039699380432606460", original, fixed = TRUE),
+    float_spelling = sub(first_leaf, paste0('"leaf_values":[', noncanonical), original, fixed = TRUE),
     version = sub('"task":"binary","version":1}', '"task":"binary","version":1.0}', original, fixed = TRUE),
     extra_field = sub('"aggregation":', '"added":0,"aggregation":', original, fixed = TRUE),
     engine = sub('"engine":"random_forest"', '"engine":"extra_trees"', original, fixed = TRUE),
@@ -68,4 +74,76 @@ test_that("native containers retain exact canonical bytes and identity checks", 
       meta, fixture$path, "binary", "random_forest"),
       "SHA-256|size|attestation", info = name)
   }
+})
+
+test_that("run wrapper returns the verified released native bytes across replay", {
+  fixture <- native_tree_training_fixture()
+  client_env <- getFromNamespace(".dsflower_client_env", "dsFlowerClient")
+  old_superlink <- client_env$.superlink
+  withr::defer(client_env$.superlink <- old_superlink)
+  client_env$.superlink <- list(process = list(is_alive = function() TRUE),
+                              flwr_home = withr::local_tempdir())
+  recipe <- fixture$recipe
+  recipe$model <- c(recipe$model, list(
+    name = "random_forest", framework = "native_tree", track = "native_tree"))
+  recipe$strategy <- list(name = "mean_prediction", params = list())
+  recipe$num_rounds <- 1L
+  recipe$data_kind <- "tabular"
+  recipe$features <- "x"
+  recipe$feature_lower <- -1
+  recipe$feature_upper <- 1
+  recipe$target_levels <- c("no", "yes")
+  class(recipe) <- "dsflower_recipe"
+  output_root <- withr::local_tempdir()
+  count <- 0L
+  tamper <- FALSE
+  available <- TRUE
+  local_mocked_bindings(
+    .require_flwr_cli = function() TRUE,
+    .client_flwr_cmd = function() "flwr",
+    .client_venv_env = function(...) character(),
+    .run_flwr_with_artifact_watchdog = function(..., results_dir) {
+      count <<- count + 1L
+      if (available) {
+        file.copy(list.files(fixture$path, full.names = TRUE), results_dir)
+        if (tamper) {
+          path <- file.path(results_dir, fixture$meta$artifact$file)
+          bytes <- readBin(path, "raw", n = file.info(path)$size)
+          writeBin(c(bytes, charToRaw("\n")), path)
+        }
+      }
+      jsonlite::write_json(data.frame(round = 1L, available = available),
+        file.path(results_dir, "history.json"), auto_unbox = TRUE)
+      list(status = 0L, stdout = paste0("run_id=replay-", count), stderr = "")
+    }, .package = "dsFlowerClient")
+  run <- function(name) ds.flower.run.start(
+    recipe, conns = list(site = TRUE), app_dir = withr::local_tempdir(),
+    output_dir = output_root, output_name = name, silent = TRUE)
+  first <- run("first")
+  replay <- run("replay")
+  expect_true(first$available)
+  expect_null(first$weights)
+  expect_type(first$artifact$sha256, "character")
+  expect_identical(first$artifact, replay$artifact)
+  expect_identical(first$sanitization, replay$sanitization)
+  expect_false(identical(first$run_id, replay$run_id))
+  expect_false(identical(first$output_dir, replay$output_dir))
+  for (result in list(first, replay)) {
+    path <- file.path(result$output_dir, result$artifact$file)
+    bytes <- readBin(path, "raw", n = file.info(path)$size)
+    expect_identical(result$artifact$sha256,
+      digest::digest(bytes, algo = "sha256", serialize = FALSE))
+    expect_identical(result$artifact$size_bytes, as.integer(length(bytes)))
+    saved <- readRDS(result$saved_path)
+    expect_identical(result$artifact, saved$artifact)
+    expect_identical(result$sanitization, saved$sanitization)
+  }
+  tamper <- TRUE
+  expect_error(run("tampered"), "canonical container")
+  expect_false(dir.exists(file.path(output_root, "tampered")))
+  available <- FALSE
+  unavailable <- run("unavailable")
+  expect_false(unavailable$available)
+  expect_null(unavailable$artifact)
+  expect_null(unavailable$sanitization)
 })

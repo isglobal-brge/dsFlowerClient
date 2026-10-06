@@ -352,6 +352,11 @@ test_that("association API sends only the frozen prepare and FAB pins", {
     outcome_levels = c("no", "yes"), exposure_levels = c(0, 1),
     symbol = "D")
   expect_s3_class(result, "dsflower_association")
+  expect_true(result$available)
+  expect_identical(unname(result$table_dp), matrix(1, 3, 3))
+  expect_identical(dimnames(result$table_dp), list(
+    exposure = c("reference", "positive", "unknown"),
+    outcome = c("reference", "positive", "unknown")))
   expect_identical(captured_capability_handle, "flower")
   expect_identical(captured_prepare$target, "outcome")
   expect_identical(captured_prepare$feature, "exposure")

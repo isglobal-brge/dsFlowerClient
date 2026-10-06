@@ -25,7 +25,8 @@
 #' @param verbose Logical; print flwr output (default FALSE).
 #' @param silent Logical; suppress progress feedback.
 #' @return A \code{dsflower_run} object with run status and identifiers, model
-#'   metadata, weights, history, output paths, and captured CLI output.
+#'   metadata, weights, history, output paths, and captured CLI output. Native
+#'   tree runs include the verified artifact digest and sanitization metadata.
 #' @export
 ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
                                  run_config = list(), output_dir = NULL,
@@ -512,6 +513,8 @@ ds.flower.run.start <- function(recipe, conns = NULL, app_dir = NULL,
       available_rounds = as.integer(available_rounds),
       strategy    = recipe$strategy$name,
       weights     = weights,
+      artifact    = native_release$artifact %||% NULL,
+      sanitization = native_release$sanitization %||% NULL,
       history     = history,
       output_dir  = output_dir,
       saved_path  = saved_path,

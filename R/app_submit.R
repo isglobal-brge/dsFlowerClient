@@ -480,7 +480,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     stop("feature_bounds applies only to tabular features and cannot be used ",
          "with data_kind = 'image'.", call. = FALSE)
   }
-  if (!inherits(model, "dsflower_model")) model <- ds.flower.model(model)
+  if (!inherits(model, "dsflower_model")) {
+    model <- do.call(ds.flower.model, c(list(name = model), model_params))
+    model_params <- list()
+  }
   registered_model <- .dsflower_get_model(model$name)
   if (!data_kind %in% (registered_model$data_kinds %||% "tabular")) {
     stop("Model '", model$name, "' does not support data_kind = '", data_kind,
@@ -494,6 +497,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
   base_params <- .dsflower_resolve_model_params(
     registered_model, model$params %||% list())
   registered_model$defaults <- base_params
+  # Task-specific defaults belong to construction, not concrete-model overrides.
+  registered_model$task_defaults <- NULL
   model$params <- .dsflower_resolve_model_params(
     registered_model, model_params)
   sub <- .emit_submission(model)

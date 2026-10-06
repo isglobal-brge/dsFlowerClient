@@ -353,6 +353,8 @@ ds.flower.fit <- function(conns,
   if (inherits(model, "dsflower_model") && length(model_params)) {
     registered <- .dsflower_get_model(model_spec$name)
     registered$defaults <- model_spec$params %||% list()
+    # A concrete model already resolved task defaults; preserve its values.
+    registered$task_defaults <- NULL
     model_spec$params <- .dsflower_resolve_model_params(
       registered, model_params)
     model_spec$loss <- .dsflower_model_loss(registered, model_spec$params)

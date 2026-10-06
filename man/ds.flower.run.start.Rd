@@ -47,7 +47,8 @@ that initialise the default handle can leave this as \code{"flower"}.}
 }
 \value{
 A \code{dsflower_run} object with run status and identifiers, model
-  metadata, weights, history, output paths, and captured CLI output.
+metadata, weights, history, output paths, and captured CLI output. Native
+tree runs include the verified artifact digest and sanitization metadata.
 }
 \description{
 Invokes \code{flwr run} for a pre-built Flower App against the running
