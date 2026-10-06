@@ -8,6 +8,26 @@
     loss %in% .SURVIVAL_LOSSES
 }
 
+# A supplied public evaluation grid also provides an explicit training time
+# domain for the high-level named-model shorthand. Never infer it from data,
+# overwrite a concrete model, or repair an explicitly invalid model parameter.
+.survival_fit_model_params <- function(model, params, horizons) {
+  if (!is.character(model) || length(model) != 1L || is.na(model) ||
+      is.null(horizons)) return(params)
+  model <- .dsflower_canonical_model_name(model)
+  parameter <- switch(model,
+    pytorch_aft = "horizon", pytorch_discrete_hazard = "edges", NULL)
+  if (is.null(parameter) || parameter %in% names(params)) return(params)
+  # Reuse the strict public metric-grid contract before model construction;
+  # submit validates again against the resolved model's actual t_min/horizon.
+  .private_survival_metric_config(
+    list(t_min = 1e-6, horizon = 1e6), horizons)
+  params[[parameter]] <- if (identical(parameter, "horizon")) {
+    unname(utils::tail(horizons, 1L))
+  } else c(0, unname(horizons))
+  params
+}
+
 .survival_json_b64 <- function(value) {
   json <- jsonlite::toJSON(value, auto_unbox = TRUE, null = "null",
                           digits = I(17))

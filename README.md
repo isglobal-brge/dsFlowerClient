@@ -295,6 +295,14 @@ shape or log-normal sigma) and `pytorch_discrete_hazard` (a fixed public grid,
 K <= 64). Both require the custodian's patient privacy policy, an explicit
 baseline feature list, and ordered `target = c("time", "event")` with event
 coding 1/0. Supply an explicit AFT horizon or hazard grid before training.
+With a model name, `ds.flower.fit()` and `ds.flower.cross_validate()` also accept
+public `survival_horizons` as shorthand when the corresponding model parameter
+is absent: AFT uses its last value as `horizon`, and discrete hazard uses
+`edges = c(0, survival_horizons)`. The grid must be finite, strictly increasing,
+contain at most 64 horizons and lie within the public time domain. Explicit
+model parameters and concrete model objects retain precedence. No private
+times are used to choose a domain or grid; ordinary training emits no metric
+release merely because these public horizons were supplied.
 Private validation, holdout and CV provide observed-status Brier at public
 horizons and bounded fitted NLL. Concordance remains a public-split metric and
 survival training inside HPO is unsupported. Released artifacts support local survival curves, medians

@@ -256,6 +256,12 @@ ds.flower.task <- function(name = "classification") {
 #' @param survival_horizons Public fixed Brier horizons for survival holdout/CV;
 #'   defaults to the fitted administrative horizon. Right-censored subjects
 #'   with unknown status at a horizon do not enter its observed-status Brier mean.
+#'   With a model name and no corresponding \code{model_params} entry, an
+#'   explicitly supplied grid also sets the AFT \code{horizon} to its last
+#'   value or discrete-hazard \code{edges} to \code{c(0, survival_horizons)}.
+#'   Explicit model parameters and concrete model objects take precedence.
+#'   The grid must be strictly increasing within the public time domain; no
+#'   private times are inspected. Ordinary training emits no metric release.
 #' @param survival_nll_bound Positive public bound (default 20) for clipping
 #'   each patient's negative log-likelihood to its symmetric interval.
 #' @param public_initialisation For tabular neural models, an admitted public bundle
@@ -345,6 +351,7 @@ ds.flower.fit <- function(conns,
     stop("Provide only one of 'data', 'resource', or 'symbol'.", call. = FALSE)
   }
 
+  model_params <- .survival_fit_model_params(model, model_params, survival_horizons)
   model_spec <- if (inherits(model, "dsflower_model")) {
     ds.flower.model(model)
   } else {

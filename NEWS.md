@@ -21,6 +21,10 @@
   verified released artifact digest in run results. Accept admitted radiomics
   data-frame/Arrow exports through the private dsImaging registry (requires the
   coordinated export-registration companion); unregistered/changed data fail closed.
+* Allow named survival models in fit/CV to use an explicitly supplied public
+  `survival_horizons` grid for a missing AFT horizon or hazard interval grid.
+  Explicit model domains retain precedence; invalid public grids fail before
+  transport. Ordinary training validates horizons without releasing metrics.
 * Document the residual equality channel for related prepared inputs, the curated
   XGBoost bundle setup, local federation verification and runtime migration.
   Remove GitHub Actions workflows while retaining local tests and requirements.

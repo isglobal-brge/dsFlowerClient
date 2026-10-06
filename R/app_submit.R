@@ -414,7 +414,9 @@
 #'   and never saves fold models or predictions. Prefer the user-facing
 #'   \code{ds.flower.cross_validate()} wrapper.
 #' @param survival_horizons,survival_nll_bound Public survival metric contract;
-#'   see \code{ds.flower.fit()}.
+#'   see \code{ds.flower.fit()}. Horizons are validated against the model even
+#'   for ordinary training, which does not emit metric fields or a metric release.
+#'   The named-model horizon/grid shorthand is provided by \code{ds.flower.fit()}.
 #' @param public_initialisation Public tabular initialization selector; see
 #'   \code{ds.flower.fit()}.
 #' @param public_checkpoint_file Local public checkpoint NPZ or complete bundle for
@@ -526,8 +528,12 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     .assert_cross_validation_supported(sub, data_kind)
   }
   metric_config <- .private_survival_metric_config(
-    if (!is.null(holdout_spec) || !is.null(cv_spec)) .survival_config(sub$params, sub$loss) else NULL,
+    .survival_config(sub$params, sub$loss),
     survival_horizons, survival_nll_bound)
+  # Public horizons may declare a named survival model's time domain in fit().
+  # Validate them above even for ordinary training, but release metrics only
+  # through the requested holdout/CV mechanism.
+  if (is.null(holdout_spec) && is.null(cv_spec)) metric_config <- list()
   target <- .validate_submission_target(sub, target)
   if (.is_survival_loss(sub$loss)) {
     if (is.null(features) || !length(features) ||

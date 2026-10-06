@@ -117,7 +117,9 @@ It must match every node's admitted identity and grants no node authorization.}
 \code{ds.flower.fit()}.}
 
 \item{survival_horizons, survival_nll_bound}{Public survival metric contract;
-see \code{ds.flower.fit()}.}
+see \code{ds.flower.fit()}. Horizons are validated against the model even
+for ordinary training, which does not emit metric fields or a metric release.
+The named-model horizon/grid shorthand is provided by \code{ds.flower.fit()}.}
 }
 \value{
 A \code{dsflower_run}, or a \code{dsflower_cv} when
