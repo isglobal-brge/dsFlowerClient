@@ -146,9 +146,9 @@ Each node applies one administrator-pinned epsilon/delta contract to every
 training. Its accountant composes that contract across the training's own
 rounds. There is no historical privacy-budget database, query quota or
 resource-specific privacy balance; one training never reduces the next
-training's privacy budget. Gated-Hook cache capacity is a separate storage
-admission limit. Distinct trainings compose in the standard way when they are
-analysed together.
+training's privacy budget. Neighbourhood-store and gated-Hook cache capacities
+are separate storage admission limits. Fresh trainings compose under the usual
+conditional DP assumptions; repeated or nearby inputs can replay an anchor.
 
 When atomic holdout is requested, that same per-training pair is the total job
 budget: the node applies a fixed split between composed training and one pooled
@@ -180,16 +180,74 @@ round-one arrays. A nondeterministic Hook `initial_arrays` output changes the
 incoming-array hash and creates a new release per run. The node secret is not a
 client seed, R RNG state or `datashield.seed`.
 
-Exact semantic retries return the same released model or statistic. In 0.7.1,
-the node's secret noise key also binds the effective private data. This prevents
-reuse of one noise stream for different data, but comparing related prepared
-datasets can reveal whether a preparation changed the effective input: a no-op
-gives the same release, while changed inputs usually give different releases.
-This equality pattern is outside the per-release DP guarantee. DataSHIELD
-admission and disclosure controls can restrict such preparations; they do not
-supply a general transcript-DP proof. Distinct analyses still compose when their
-conditional mechanisms satisfy DP, and dsFlower does not impose a lifetime
-privacy budget.
+Version 0.7.2 mitigates the equality oracle described in
+[isglobal-brge/dsFlower#7](https://github.com/isglobal-brge/dsFlower/issues/7)
+with immutable neighbourhood anchors. For each public request R (including its
+incoming model and round), the node scans **all** retained anchors and returns
+the complete stored payload of the **oldest** anchor at distance `d < k`. If none
+is eligible, it computes the unchanged v3 content-bound release and appends one
+new anchor. Near inputs never become anchors. Newer anchors cannot displace an
+older eligible anchor, so replay is stable without per-input bindings.
+
+Distance counts unordered canonical privacy units with multiplicity:
+`d = max(|M| - c, |N| - c)`, where `c = sum(min(M[t], N[t]))`. One insertion,
+deletion or replacement counts once; in patient mode a patient's complete
+selected records form one unit. The default `k` is the node's `nfilter.subset`
+(or its `default.` option), otherwise 3, with a floor of 2. Custodians can set
+`dsflower.neighbourhood_k` (or `default.dsflower.neighbourhood_k`); the effective
+value is frozen per R. Analysts cannot change it or force refresh.
+
+An analyst can no longer test a one-unit difference against an existing release
+by obtaining a fresh answer inside that anchor's neighbourhood. This is a
+**mitigation, not transcript DP**: the hard `k-1`/`k` boundary and boundaries
+between anchors still distinguish some one-unit neighbours. An input must be
+at least k from **every** anchor to receive a fresh release. Small updates can
+therefore return stale models or statistics; uncertainty intervals do not
+include this staleness. No hit/near/fresh status, distance or anchor identifier is
+returned. Timing and availability remain outside the guarantee.
+
+The rule covers every neural DP-SGD round, gated Hook release, all five native
+tree engines, private validation, holdout, CV fold training and OOF output, and
+association. Each round/fold/evaluation has its own R. Completed federation
+trajectories replay when the same incoming public models and eligible anchor
+choices recur; this is not a universal neighbouring-world transcript claim.
+Calibration, sensitivities, accounting, FedProx and the fresh R/B/K identity
+remain unchanged. Conditional DP mechanisms compose under their existing
+assumptions; no lifetime privacy budget is introduced.
+
+The permanent node-local store defaults to `<node-secret-path>.neighbourhood`.
+First release initializes it automatically and pins its random UUID at
+`<node-secret-path>.neighbourhood-id`, beside the secret rather than inside the
+store. The store uses owner-only directories/files (`0700`/`0600`), keyed unit
+fingerprints, MAC-authenticated records and complete payload bytes; it never
+stores raw source records or noise seeds. Records are verified before decoding,
+and a per-R lock serializes selection and durable anchor commit before release.
+There is no eviction, expiry or per-attempt ticket.
+
+The default limits are 256 anchors per R and 64 GiB of store capacity. Fresh
+commits must fit both logical retained bytes (payloads, fingerprints and record
+overhead) and SQLite allocated pages plus fixed state headroom. Provision extra
+physical disk space for transient SQLite journals and filesystem allocation slack. Only an
+input that would create a new anchor is refused at a limit, with one stable
+error; exact and near replays remain available. A refusal substitutes for a
+fresh release and reveals the same fact that the input is far from every anchor.
+The shared byte cap also exposes a weak cross-user aggregate signal about prior
+store growth. These resource settings are not privacy parameters. Increase
+capacity with all retained state intact; never delete anchors to make space.
+
+Missing or corrupt established state, missing original keys, unsafe permissions
+or a mismatched UUID fail closed. The permanent
+`<node-secret-path>.neighbourhood-id.lock` also detects loss of both the store
+and local UUID pin. Optional `dsflower.neighbourhood_store_id` externally pins
+the UUID and detects loss of all local store markers; without it, losing the
+store, UUID pin and initialization lock together can resemble first use. Stop
+all workers before restoring a consistent backup of the secret, store, UUID pin,
+permanent locks and retained Hook cache. MACs do not detect rollback to an older
+complete valid snapshot: avoiding rollback remains a custodian/storage assumption.
+Runtime upgrades create new public request domains, so drain jobs and upgrade
+both packages together; retain old state and treat new domains as additional
+releases. Existing per-release DP does not prove the private anchor-selection
+transcript DP.
 
 The clipping, sensitivity and accounting contracts implement the standard
 `(epsilon, delta)` mechanisms under their mathematical model. The shipped
@@ -446,9 +504,12 @@ cleanup, availability and storage behavior remain outside the numeric DP claim.
 
 Every admitted HookApp uses the node's durable release cache, so an identical
 request replays the exact released arrays and constant metrics even when the
-application is nondeterministic. Changed data or selections miss, and a committed
-round coordinate cannot authorize a second release. Entries stay pinned during
-active runs; cross-run replay lasts only while an entry remains retained. Cache
+application is nondeterministic. Neighbourhood anchors decide first and retain
+complete released payloads without eviction. Fresh inputs still use the existing
+exact Hook cache, whose active-run pinning and retention policy are unchanged.
+Only would-be-fresh anchors reserve the complete public run horizon before Hook
+execution; exact/near replays remain available when the inner Hook cache is full.
+A committed round coordinate cannot authorize a second release. Cache
 directory and capacity are administrator settings, rejected in analyst
 configuration, application parameters and manifest overrides. This cache does
 not introduce a fixed-duration deadline or a cross-training privacy budget.
@@ -575,9 +636,10 @@ in namespaced Flower `Context.state` backed by the pinned in-memory node
 runtime—never a file or database. If every fold succeeds, the nodes make one final DP
 release and the client accepts only `cv.json`, pinned to the submitted
 CV-job and resampling-contract hashes. No fold model, prediction, fold/site
-metric, profile, or history is returned or saved. A failed or restarted job
-publishes nothing and recomputes
-the whole deterministic job.
+metric, profile, or history is returned or saved in the analyst result. Nodes
+retain released fold models and OOF payloads as neighbourhood anchors. A failed
+or restarted job publishes no completed result and repeats the full protocol,
+replaying eligible anchors.
 
 Metric selection is local post-processing of that one release. Inspect the
 scoreable metrics for the task, including their optimization direction, with
@@ -765,6 +827,7 @@ GitHub Actions workflows have been removed. The local R/Python suites and
 native/integration scripts remain supported; see
 [the multi-node harness instructions](tools/integration/README.md). A real
 federation is verified by a local multi-node integration harness. Drain active
-jobs before upgrading both packages/runners to 0.7.1, preserve node secrets and
-retained Hook cache entries, and restage under the v3 randomness contract.
+jobs before upgrading both packages/runners to 0.7.2, preserve node secrets,
+neighbourhood stores, UUID pins/locks and retained Hook cache entries, and
+restage under the v3 randomness contract.
 Changing the runtime or key creates a new release domain.

@@ -16,7 +16,7 @@ import numpy as np
 
 ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(ROOT / "inst" / "flower_app"))
-from dsflower_runner import native_tree_engine, native_tree_request, seeding, tree_release
+from dsflower_runner import native_tree_engine, native_tree_request, probe_state, seeding, tree_release
 from dsflower_runner.native_tree_runtime_probe import _request
 
 
@@ -50,7 +50,10 @@ def training_release():
         "machine": "x86_64", "numpy": "2.4.6",
         "rng": "chacha20-box-muller-four-sample/v2", "system": "linux"}
     try:
-        member = native_tree_engine.train_model(manifest, features, target)
+        # Fixed public fixture data uses its own disposable key/store domain;
+        # generation must never create anchors in a custodian's retained store.
+        with probe_state.synthetic_node():
+            member = native_tree_engine.train_model(manifest, features, target)
     finally:
         seeding._node_secret = original
         seeding._runtime_fingerprint = original_runtime

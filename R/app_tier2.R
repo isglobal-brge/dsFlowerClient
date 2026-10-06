@@ -20,8 +20,8 @@
   keys <- names(run_config)
   normalized <- gsub("([a-z0-9])([A-Z])", "\\1_\\2", keys, perl = TRUE)
   normalized <- gsub("[-.]", "_", tolower(normalized))
-  if (any(grepl("(^|_)(cache|deadline)($|_)", normalized, perl = TRUE))) {
-    stop("Cache and deadline controls belong to the node administrator.",
+  if (any(grepl("(^|_)(cache|deadline|neighbourhood)($|_)", normalized, perl = TRUE))) {
+    stop("Cache, deadline and neighbourhood controls belong to the node administrator.",
          call. = FALSE)
   }
   invisible(NULL)
@@ -45,7 +45,7 @@
       normalized, perl = TRUE
     ) ||
     grepl(
-      "(^|_)(privacy|dp|epsilon|delta|noise|sensitivity|accountant|clip|clipping|cache|deadline)($|_)",
+      "(^|_)(privacy|dp|epsilon|delta|noise|sensitivity|accountant|clip|clipping|cache|deadline|neighbourhood)($|_)",
       normalized, perl = TRUE
     )
 }
