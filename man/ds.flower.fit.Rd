@@ -34,7 +34,8 @@ ds.flower.fit(
   public_checkpoint_file = NULL,
   public_initialisation = NULL,
   survival_horizons = NULL,
-  survival_nll_bound = 20
+  survival_nll_bound = 20,
+  backbone = "frozen"
 )
 }
 \arguments{
@@ -58,6 +59,18 @@ model-specific auto handling.}
 
 \item{model_params}{Named list passed to \code{ds.flower.model()} when
 \code{model} is a character value.}
+
+\item{backbone}{For the ResNet-18 and DenseNet-121 classification contracts,
+exactly \code{"frozen"} (default), \code{"finetune"}, or \code{"scratch"}.
+Fine-tuning starts from verified public weights; scratch uses a fixed public
+seed shared by all nodes. Both train the entire network with patient-level
+DP-SGD and require \code{dsflower.allow_trainable_backbone = TRUE}
+at every data node. With few patients the frozen backbone usually performs
+best. An omitted argument preserves a mode supplied through the model.
+Trainable modes require \code{image_size <= 64} in 2D (128 in 3D),
+\code{batch_size <= 8}, \code{local_epochs <= 5}, and \code{rounds <= 20}.
+Set smaller model parameters explicitly; private validation, holdout and
+cross-validation for these modes are not supported in 0.7.4.}
 
 \item{torch_backend}{Character; requested node-side torch backend
 (\code{"auto"}, \code{"cpu"}, or a GPU selector).}

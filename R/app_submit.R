@@ -475,7 +475,7 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
     features <- enc2utf8(features)
   }
   if (identical(data_kind, "image") && !is.null(features)) {
-    stop("Image training derives frozen-backbone features node-side; ",
+    stop("Image training uses the trusted node-side backbone; ",
          "do not pass tabular 'features'.", call. = FALSE)
   }
   if (identical(data_kind, "image") && !is.null(feature_bounds)) {
@@ -809,7 +809,8 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
       prepare_config <- c(prepare_config, list(
         "backbone" = p[["backbone"]],
         "image-size" = as.integer(p[["image_size"]]),
-        "vision-extractor-profile" = p[["vision_extractor_profile"]]))
+        "vision-extractor-profile" = p[["vision_extractor_profile"]]),
+        .vision_backbone_config(p))
     }
     if (identical(sub$loss, "segmentation_bce_dice")) {
       prepare_config <- c(prepare_config, .segmentation_public_config(p), list(
@@ -949,6 +950,10 @@ ds.flower.submit <- function(conns, model, target, features = NULL,
         paste0("image-size = ", as.integer(p[["image_size"]] %||% 224L)),
         .toml_kv("vision-extractor-profile",
                  p[["vision_extractor_profile"]]))
+      backbone_config <- .vision_backbone_config(p)
+      if (length(backbone_config)) {
+        cfg <- c(cfg, .toml_kv("backbone-mode", backbone_config[["backbone-mode"]]))
+      }
     }
     if (identical(sub$loss, "segmentation_bce_dice")) {
       segmentation_config <- .segmentation_public_config(p)

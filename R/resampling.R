@@ -66,6 +66,11 @@
 }
 
 .assert_holdout_supported <- function(sub, data_kind) {
+  if (is.list(sub) &&
+      !identical(sub$params$backbone_mode %||% "frozen", "frozen")) {
+    stop("Trainable vision backbones do not support holdout in 0.7.4.",
+         call. = FALSE)
+  }
   track <- if (is.list(sub)) sub$track %||% "" else ""
   if (!is.character(track) || length(track) != 1L || is.na(track) ||
       !track %in% c("neural", "native_tree")) {
@@ -146,6 +151,11 @@
 }
 
 .assert_cross_validation_supported <- function(sub, data_kind) {
+  if (is.list(sub) &&
+      !identical(sub$params$backbone_mode %||% "frozen", "frozen")) {
+    stop("Trainable vision backbones do not support cross-validation in 0.7.4.",
+         call. = FALSE)
+  }
   track <- if (is.list(sub)) sub$track %||% NULL else NULL
   if (!is.character(track) || length(track) != 1L || is.na(track) ||
       !track %in% c("neural", "native_tree")) {

@@ -263,6 +263,7 @@ ds.flower.predict <- function(
     "validation-artifact-format" = contract$artifact_format,
     "validation-artifact-sha256" = contract$artifact_sha256,
     "validation-artifact-size-bytes" = contract$artifact_size_bytes)
+  config <- c(config, .vision_backbone_config(contract))
   if (!is.null(contract$graph_parameter_format)) {
     config[["graph-parameter-format"]] <- contract$graph_parameter_format
   }

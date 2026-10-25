@@ -449,6 +449,7 @@
   }
 
   backbone <- scalar_string(params$backbone)
+  backbone_mode <- .vision_backbone_mode(params$backbone_mode %||% "frozen")
   volumetric <- params$volumetric
   if (!is.logical(volumetric) || length(volumetric) != 1L ||
       is.na(volumetric)) {
@@ -549,7 +550,7 @@
     model_spec = spec, loss_name = loss,
     graph_parameter_format = .saved_graph_parameter_format(meta),
     n_classes = n_classes, n_labels = 2L, data_kind = "image",
-    backbone = backbone, image_size = image_size,
+    backbone = backbone, backbone_mode = backbone_mode, image_size = image_size,
     volumetric = isTRUE(volumetric), feature_dim = as.integer(feature_dim),
     vision_extractor_profile = extractor_profile)
 }
@@ -896,6 +897,7 @@
     config[["data-kind"]] <- "image"
     config[["validation-task"]] <- contract$task
     config[["backbone"]] <- contract$backbone
+    config <- c(config, .vision_backbone_config(contract))
     config[["image-size"]] <- contract$image_size
     config[["vision-extractor-profile"]] <-
       contract$vision_extractor_profile
@@ -1156,6 +1158,10 @@ ds.flower.validate <- function(conns, model, target, data = NULL,
                                survival_nll_bound = 20) {
   torch_backend <- .validate_torch_backend(torch_backend)
   contract <- .resolve_validation_contract(model, bins)
+  if (!identical(contract$backbone_mode %||% "frozen", "frozen")) {
+    stop("Private validation of a trainable vision backbone is not supported in ",
+         "0.7.4. Use ds.flower.predict() on local public images.", call. = FALSE)
+  }
   if (contract$task %in% c("segmentation", "survival") &&
       isTRUE(.DSFLOWER_HPO_CONTEXT$active)) {
     stop("Private segmentation and survival HPO are unsupported; use a preregistered evaluation.",

@@ -1,3 +1,15 @@
+# dsFlowerClient 0.7.4
+
+* Add opt-in `backbone = "finetune"` and `backbone = "scratch"` to
+  `ds.flower.fit()` and the ResNet-18/DenseNet-121 model constructors. The default
+  frozen backbone and its request configuration remain unchanged. Trainable
+  requests require each custodian to enable `dsflower.allow_trainable_backbone`.
+* Trainable releases contain the complete patient-level DP-SGD model, use
+  per-sample-safe GroupNorm, and support saved-model local prediction. Private
+  validation, holdout and cross-validation for these modes fail closed in 0.7.4.
+* Pin the training mode in the public request and document the public seed,
+  full-network update size, CPU resource bounds and small-cohort utility limits.
+
 # dsFlowerClient 0.7.3
 
 * Bundle the explicit `validation-vector-v4` numeric holdout layout, subtracting

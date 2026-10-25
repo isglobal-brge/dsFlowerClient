@@ -770,3 +770,47 @@ test_that("image helper fallbacks keep canonical public schemas", {
   expect_equal(nrow(ds.flower.features(flower)), 0L)
   expect_equal(nrow(ds.flower.masks(flower)), 0L)
 })
+
+
+test_that("trainable vision mode is opt-in and reaches the pinned contract", {
+  submitted <- NULL
+  local_mocked_bindings(
+    ds.flower.submit = function(...) {
+      submitted <<- list(...)
+      structure(list(), class = "dsflower_run")
+    },
+    .package = "dsFlowerClient"
+  )
+  default <- dsFlowerClient:::.emit_submission(ds.flower.model("resnet18"))
+  explicit <- dsFlowerClient:::.emit_submission(
+    ds.flower.model.pytorch_resnet18(backbone = "frozen"))
+  expect_identical(default, explicit)
+  expect_identical(dsFlowerClient:::.vision_backbone_config(default$params), list())
+  for (mode in c("finetune", "scratch")) {
+    ds.flower.fit(list(site = NULL), symbol = "img", target = "label",
+                  model = "pytorch_resnet18", backbone = mode)
+    expect_identical(submitted$model$params$backbone_mode, mode)
+    sub <- dsFlowerClient:::.emit_submission(submitted$model)
+    expect_identical(dsFlowerClient:::.vision_backbone_config(sub$params),
+                     list("backbone-mode" = mode))
+    expect_error(dsFlowerClient:::.assert_holdout_supported(sub, "image"),
+                 "do not support holdout")
+    expect_error(dsFlowerClient:::.assert_cross_validation_supported(sub, "image"),
+                 "do not support cross-validation")
+    ds.flower.fit(list(site = NULL), target = "label",
+                  model = ds.flower.model.pytorch_resnet18(backbone = mode))
+    expect_identical(submitted$model$params$backbone_mode, mode)
+    ds.flower.fit(list(site = NULL), target = "label", model = "resnet18",
+                  model_params = list(backbone = mode))
+    expect_identical(submitted$model$params$backbone_mode, mode)
+  }
+  expect_error(ds.flower.fit(list(site = NULL), target = "label", backbone = "scratch"),
+               "only for pytorch_resnet18")
+  for (bad in list("unknown", NA_character_, c("scratch", "finetune"), TRUE)) {
+    expect_error(ds.flower.model.pytorch_resnet18(backbone = bad), "backbone")
+  }
+  expect_error(ds.flower.model("resnet18", backbone = "unknown"), "expected one of")
+  expect_error(ds.flower.fit(list(site = NULL), target = "label", model = "resnet18",
+                             backbone = "scratch", model_params = list(backbone = "finetune")),
+               "not both")
+})

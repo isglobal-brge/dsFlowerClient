@@ -199,6 +199,17 @@ ds.flower.task <- function(name = "classification") {
 #' @param model Character model name or \code{dsflower_model} object.
 #' @param model_params Named list passed to \code{ds.flower.model()} when
 #'   \code{model} is a character value.
+#' @param backbone For the ResNet-18 and DenseNet-121 classification contracts,
+#'   exactly \code{"frozen"} (default), \code{"finetune"}, or \code{"scratch"}.
+#'   Fine-tuning starts from verified public weights; scratch uses a fixed public
+#'   seed shared by all nodes. Both train the entire network with patient-level
+#'   DP-SGD and require \code{dsflower.allow_trainable_backbone = TRUE}
+#'   at every data node. With few patients the frozen backbone usually performs
+#'   best. An omitted argument preserves a mode supplied through the model.
+#'   Trainable modes require \code{image_size <= 64} in 2D (128 in 3D),
+#'   \code{batch_size <= 8}, \code{local_epochs <= 5}, and \code{rounds <= 20}.
+#'   Set smaller model parameters explicitly; private validation, holdout and
+#'   cross-validation for these modes are not supported in 0.7.4.
 #' @param torch_backend Character; requested node-side torch backend
 #'   (\code{"auto"}, \code{"cpu"}, or a GPU selector).
 #' @param strategy Character strategy name or \code{dsflower_strategy} object.
@@ -303,7 +314,8 @@ ds.flower.fit <- function(conns,
                           public_checkpoint_file = NULL,
                           public_initialisation = NULL,
                           survival_horizons = NULL,
-                          survival_nll_bound = 20) {
+                          survival_nll_bound = 20,
+                          backbone = "frozen") {
   # Set the progress-verbosity option at the outermost entry point so it stays
   # active through every nested step, including the connection teardown that runs
   # in the submission pipeline's on.exit cleanup.
@@ -365,6 +377,24 @@ ds.flower.fit <- function(conns,
     model_spec$params <- .dsflower_resolve_model_params(
       registered, model_params)
     model_spec$loss <- .dsflower_model_loss(registered, model_spec$params)
+  }
+
+  backbone_supplied <- !missing(backbone)
+  backbone <- .vision_backbone_mode(backbone)
+  if (backbone_supplied) {
+    vision_model <- model_spec$name %in% c("pytorch_resnet18", "pytorch_densenet121")
+    if (!vision_model && !identical(backbone, "frozen")) {
+      stop("Trainable 'backbone' is supported only for pytorch_resnet18 and ",
+           "pytorch_densenet121 classification.", call. = FALSE)
+    }
+    if (vision_model) {
+      if (any(c("backbone", "backbone_mode") %in% names(model_params))) {
+        stop("Set 'backbone' either directly or in 'model_params', not both.",
+             call. = FALSE)
+      }
+      model_spec$params$backbone_mode <- if (identical(backbone, "frozen")) NULL else backbone
+      model_spec <- ds.flower.model(model_spec)
+    }
   }
 
   .assert_segmentation_hpo_supported(model_spec$loss)
