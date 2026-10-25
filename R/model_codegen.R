@@ -18,6 +18,20 @@
   resnet18 = 1L, resnet18_3d = 1L,
   densenet121 = 29L, densenet121_3d = 128L)
 
+.vision_backbone_mode <- function(value = "frozen") {
+  if (!is.character(value) || length(value) != 1L || is.na(value) ||
+      !value %in% c("frozen", "finetune", "scratch")) {
+    stop("'backbone' must be exactly one of: frozen, finetune, scratch.",
+         call. = FALSE)
+  }
+  value
+}
+
+.vision_backbone_config <- function(params) {
+  mode <- .vision_backbone_mode(params$backbone_mode %||% "frozen")
+  if (identical(mode, "frozen")) list() else list("backbone-mode" = mode)
+}
+
 .vision_extractor_profile <- function(backbone) {
   profile <- unname(.VISION_EXTRACTOR_PROFILES[[as.character(backbone)]])
   if (is.null(profile)) {
@@ -60,6 +74,8 @@
   m <- .dsflower_get_model(model$name)
   params <- utils::modifyList(m$defaults %||% list(), model$params %||% list())
   if (model$name %in% c("pytorch_resnet18", "pytorch_densenet121")) {
+    mode <- .vision_backbone_mode(params$backbone_mode %||% "frozen")
+    if (identical(mode, "frozen")) params$backbone_mode <- NULL
     params[["backbone"]] <- paste0(
       sub("^pytorch_", "", model$name),
       if (isTRUE(params[["volumetric"]])) "_3d" else "")

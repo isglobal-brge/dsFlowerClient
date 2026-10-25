@@ -166,13 +166,44 @@ def predict_pytorch_spec(model_path, X, pred_type, spec_b64, loss_name,
 
 
 def _load_vision_runner_modules():
-    """Import the trusted artifact and frozen-extractor implementation."""
+    """Import the trusted artifact and vision implementation."""
     flower_app = Path(__file__).resolve().parents[1] / "flower_app"
     if not flower_app.is_dir():
         raise RuntimeError("bundled vision runner is unavailable")
     sys.path.insert(0, str(flower_app))
     from dsflower_runner import model_spec, params, validation, vision
     return validation, vision, model_spec, params
+
+
+def load_trainable_vision_model(config, validation, vision):
+    """Verify a complete DP release and restore its exact per-sample-safe model.
+
+    The full checkpoint carries every inference weight, so reconstruction uses
+    the public scratch architecture and needs no pretrained-weight download.
+    This local-only loader does not admit private node validation jobs.
+    """
+    import torch
+    from dsflower_runner.initialisation import build_initial_model
+
+    vision.validate_trainable_config(config)
+    validation._vision_geometry_from_config(config)
+    path = validation._public_model_path(config)
+    state = validation._load_public_state(path, config, image=True)
+    if isinstance(state, dict) and "state_dict" in state:
+        state = state["state_dict"]
+    if (not isinstance(state, dict) or not state or len(state) > 2048
+            or any(not isinstance(value, torch.Tensor)
+                   or value.dtype != torch.float32
+                   or not bool(torch.all(torch.isfinite(value)).item())
+                   or bool(torch.any(torch.abs(value) > 1.0e6).item())
+                   for value in state.values())
+            or sum(value.numel() * value.element_size()
+                   for value in state.values()) > 256 * 1024 * 1024):
+        raise ValueError("trainable vision artifact contains invalid parameters")
+    model = build_initial_model(dict(config, **{"backbone-mode": "scratch"}))
+    model.load_state_dict(state, strict=True)
+    model.eval()
+    return model
 
 
 def predict_pytorch_vision(config, paths, pred_type):
@@ -194,29 +225,42 @@ def predict_pytorch_vision(config, paths, pred_type):
     validation, vision, model_spec, params = _load_vision_runner_modules()
 
     # Both public preflights happen before paths reach an image reader.
-    arrays = validation.public_model_arrays(config)
-    encoder, image_size, is_3d, device = vision.prepare_backbone(
-        config.get("backbone"), config.get("vision-extractor-profile"),
-        config.get("num-features"), config.get("image-size"))
-
     loss_name = config.get("loss-name")
-    public_spec = model_spec.read_spec(config)
-    out_dim = model_spec.output_width(loss_name, config)
-    head = model_spec.build_from_spec(
-        public_spec, in_dim=int(config["num-features"]),
-        out_dim=int(out_dim), num_labels=int(config.get("num-labels", 2)),
-        output_limit=model_spec.output_limit_for_loss(loss_name))
-    params.set_torch_params(head, arrays)
+    if config.get("backbone-mode", "frozen") != "frozen":
+        model = load_trainable_vision_model(config, validation, vision)
+        encoder, head = model.backbone, model.head
+        image_size = config["image-size"]
+        is_3d = vision.is_3d_backbone(config["backbone"])
+        device = vision.pick_device()
+    else:
+        arrays = validation.public_model_arrays(config)
+        encoder, image_size, is_3d, device = vision.prepare_backbone(
+            config.get("backbone"), config.get("vision-extractor-profile"),
+            config.get("num-features"), config.get("image-size"))
+        public_spec = model_spec.read_spec(config)
+        out_dim = model_spec.output_width(loss_name, config)
+        head = model_spec.build_from_spec(
+            public_spec, in_dim=int(config["num-features"]),
+            out_dim=int(out_dim), num_labels=int(config.get("num-labels", 2)),
+            output_limit=model_spec.output_limit_for_loss(loss_name))
+        params.set_torch_params(head, arrays)
 
     n_classes = int(config.get("num-classes"))
     output_width = n_classes if pred_type == "prob" else 1
     if len(paths) * output_width > _MAX_VISION_PREDICTION_CELLS:
         raise ValueError("vision prediction output exceeds the local cell ceiling")
     predictions = []
-    for start in range(0, len(paths), _VISION_PREDICT_BATCH_ROWS):
-        chunk = paths[start:start + _VISION_PREDICT_BATCH_ROWS]
+    batch_rows = (1 if config.get("backbone-mode", "frozen") != "frozen"
+                  else _VISION_PREDICT_BATCH_ROWS)
+    for start in range(0, len(paths), batch_rows):
+        chunk = paths[start:start + batch_rows]
         features = vision.extract_features_from_paths(
             encoder, chunk, image_size, is_3d, device)
+        if config.get("backbone-mode", "frozen") != "frozen":
+            # Match the trusted training forward even if DP-noised encoder
+            # activations overflow; this is post-processing of released weights.
+            features = np.clip(np.nan_to_num(
+                features, nan=0.0, posinf=1.0e6, neginf=-1.0e6), -1.0e6, 1.0e6)
         probabilities = np.asarray(
             validation.neural_predictions(head, features, loss_name))
         if (probabilities.shape != (len(chunk), n_classes)

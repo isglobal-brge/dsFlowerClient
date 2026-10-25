@@ -1066,8 +1066,8 @@ ds.flower.model_parameters <- function(name) {
       required_parameters = "edges",
       description = "Subject-level discrete hazard with a fixed public grid (K <= 64).")
 
-  # ---- neural: vision head (frozen backbone is node-resident; the spec is the
-  #      trainable head, with @in injected node-side from the backbone feature dim).
+  # ---- neural: vision head spec; the default backbone is frozen and resident.
+  #      Opt-in backbone training wraps this head in the trusted full network.
   #      local() forces a fresh nm per iteration (no lazy loop-variable capture). ----
   for (nm in c("pytorch_resnet18", "pytorch_densenet121")) local({
     nm <- nm
@@ -1079,10 +1079,13 @@ ds.flower.model_parameters <- function(name) {
                         batch_size = 32L, local_epochs = 1L, image_size = 224L),
         parameter_types = with_common(
           n_classes = "positive_integer", volumetric = "logical",
-          image_size = "positive_integer"),
-        parameter_aliases = class_aliases,
+          image_size = "positive_integer", backbone_mode = "character"),
+        parameter_choices = c(neural_choices, list(
+          backbone_mode = c("frozen", "finetune", "scratch"))),
+        parameter_aliases = c(class_aliases, backbone = "backbone_mode"),
         data_kinds = "image",
-        description = paste0("Vision classifier head on a frozen ", nm, " backbone."))
+        description = paste0("Vision classifier with a frozen (default) or DP-trained ",
+                             nm, " backbone."))
   })
 
   ds.flower.register_model("pytorch_resnet18_segmentation", "neural",

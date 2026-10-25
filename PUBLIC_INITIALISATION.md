@@ -281,3 +281,21 @@ and [DenseNet source](https://docs.pytorch.org/vision/stable/_modules/torchvisio
 Full hashes were verified during development; a missing, changed or unpinned file
 fails closed. Public segmentation bundles always carry their own pinned encoder
 snapshot and never fall back to a separately found cache file.
+
+## Vision backbone training in 0.7.4
+
+The ResNet-18 and DenseNet-121 classification contracts additionally accept
+`backbone-mode = "finetune" | "scratch"`, gated by the custodian option
+`dsflower.allow_trainable_backbone` (default `FALSE`). The existing
+frozen mode is unchanged. Fine-tuning admits the same verified public backbone
+material before replacing BatchNorm with per-sample-safe GroupNorm. For 2D
+fine-tuning the verified checkpoint must be preseeded on the analyst/coordinator
+as well as every node; runtime downloads are disabled. Scratch and local
+prediction from a saved complete model require no pretrained checkpoint. Scratch uses
+a fixed public seed, independent of all private data, with identical initial
+parameters across nodes. These modes do not accept arbitrary analyst weights.
+Every trainable parameter belongs to the same jointly clipped patient gradient
+and receives Gaussian noise. The complete released state is DP-SGD output;
+FedAvg and local prediction are post-processing, with no additional statistics
+or site metrics. Existing segmentation/public-bundle admission stays unchanged.
+Trainable classification private validation, holdout and CV remain unsupported.

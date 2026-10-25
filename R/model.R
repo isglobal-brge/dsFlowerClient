@@ -363,6 +363,12 @@ ds.flower.model.pytorch_multiclass <- function(hidden_layers = integer(0),
 #' @param volumetric Logical; if TRUE use a true-3D backbone (MONAI) for
 #'   volumetric collections. Default FALSE: the 2D backbone auto-handles both 2D
 #'   images and 3D volumes (via a representative slice), the plug-and-play path.
+#' @param backbone Exactly \code{"frozen"} (default), \code{"finetune"}, or
+#'   \code{"scratch"}. Trainable modes require custodian permission and apply
+#'   patient-level DP-SGD jointly to the entire network. With few patients the
+#'   frozen backbone usually performs best. Trainable modes require
+#'   \code{image_size <= 64} in 2D (128 in 3D), \code{batch_size <= 8},
+#'   and \code{local_epochs <= 5}; adjust the frozen defaults explicitly.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
@@ -370,7 +376,8 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
                                               batch_size = 32L,
                                               local_epochs = 1L,
                                               image_size = 224L,
-                                              volumetric = FALSE) {
+                                              volumetric = FALSE,
+                                              backbone = "frozen") {
   obj <- list(
     name      = "pytorch_resnet18",
     framework = "pytorch_vision",
@@ -383,6 +390,8 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
       volumetric    = .model_exact_logical(volumetric, "volumetric")
     )
   )
+  mode <- .vision_backbone_mode(backbone)
+  if (!identical(mode, "frozen")) obj$params$backbone_mode <- mode
   class(obj) <- "dsflower_model"
   ds.flower.model(obj)
 }
@@ -399,6 +408,12 @@ ds.flower.model.pytorch_resnet18 <- function(n_classes = 2L,
 #' @param volumetric Logical; if TRUE use a true-3D backbone (MONAI) for
 #'   volumetric collections. Default FALSE: the 2D backbone auto-handles both 2D
 #'   images and 3D volumes (via a representative slice), the plug-and-play path.
+#' @param backbone Exactly \code{"frozen"} (default), \code{"finetune"}, or
+#'   \code{"scratch"}. Trainable modes require custodian permission and apply
+#'   patient-level DP-SGD jointly to the entire network. With few patients the
+#'   frozen backbone usually performs best. Trainable modes require
+#'   \code{image_size <= 64} in 2D (128 in 3D), \code{batch_size <= 8},
+#'   and \code{local_epochs <= 5}; adjust the frozen defaults explicitly.
 #' @return A \code{dsflower_model} S3 object.
 #' @export
 ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
@@ -406,7 +421,8 @@ ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
                                                  batch_size = 32L,
                                                  local_epochs = 1L,
                                                  image_size = 224L,
-                                                 volumetric = FALSE) {
+                                                 volumetric = FALSE,
+                                              backbone = "frozen") {
   obj <- list(
     name      = "pytorch_densenet121",
     framework = "pytorch_vision",
@@ -419,6 +435,8 @@ ds.flower.model.pytorch_densenet121 <- function(n_classes = 2L,
       volumetric    = .model_exact_logical(volumetric, "volumetric")
     )
   )
+  mode <- .vision_backbone_mode(backbone)
+  if (!identical(mode, "frozen")) obj$params$backbone_mode <- mode
   class(obj) <- "dsflower_model"
   ds.flower.model(obj)
 }

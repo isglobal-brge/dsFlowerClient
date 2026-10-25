@@ -339,8 +339,8 @@ fit <- ds.flower.fit(
 The first-party suite covers binary, multiclass, multilabel and ordinal
 classification; linear SVM; MLP, CNN, residual, recurrent, temporal and
 Transformer specifications; linear, ridge, lasso, elastic-net and robust Huber
-regression; Poisson, negative-binomial and Gamma outcomes; frozen-backbone
-medical-image classification; and bounded conditional-quantile regression.
+regression; Poisson, negative-binomial and Gamma outcomes; medical-image
+classification with a frozen or opt-in trainable backbone; and bounded conditional-quantile regression.
 Neural contracts expose
 SGD, Adam, AdamW and RMSprop plus none/step/exponential/cosine learning-rate
 schedules. Parameters that are unknown, incompatible with the selected
@@ -368,20 +368,53 @@ and risk scores on public or independently authorized held-out data. See the
 [survival contracts and evidence article](https://isglobal-brge.github.io/dsFlowerClient/articles/survival-segmentation.html)
 for the time convention, prediction definitions and campaign status.
 
-The image classification contracts cover private federated training of their frozen-backbone
-heads, private validation, and local researcher-side prediction for saved
-native dsFlower ResNet-18/DenseNet-121 binary or multiclass releases, including
-the volumetric variants. Local prediction takes explicit image or volume paths
-and does not contact DSI. Atomic holdout for native dsFlower vision uses the
-same row/patient split, fixed 80/20 privacy allocation and single pooled DP test
-release as neural tabular holdout. Image classification CV remains unsupported;
-the patient segmentation contract supports CV.
-These boundaries are explicit rather than silently treating images as a numeric
-table. Each image release carries a
-`vision-extractor-profile`: a versioned public semantic ABI for its frozen
-extractor, not a cryptographic signature of extractor state. Releases without
-that profile fail closed; implementation or dependency changes that alter
-features require a profile bump.
+The image classification contracts support ResNet-18 and DenseNet-121 in 2D
+and volumetric mode. `backbone = "frozen"` is the unchanged default: only the
+DP-SGD head is trained and communicated. With few patients this usually performs
+best. To train every parameter, every custodian must first set
+`options(dsflower.allow_trainable_backbone = TRUE)` on their data node:
+
+```r
+fit <- ds.flower.fit(
+  conns, symbol = "D", target = "diagnosis",
+  model = "pytorch_resnet18", backbone = "scratch",
+  model_params = list(image_size = 32L, batch_size = 1L),
+  target_levels = c("control", "case"), rounds = 1L
+)
+```
+
+Use `backbone = "finetune"` to start from the verified public weights (ImageNet1K
+V1 in 2D; the fixed MONAI seed-0 initialisation in 3D). For 2D fine-tuning,
+preseed the digest-verified checkpoint on the analyst/coordinator as well as every
+data node; runtime downloads remain disabled. Scratch and prediction from a
+saved complete model need no pretrained checkpoint. `"scratch"` uses a fixed
+public seed and identical initial weights at every node. Both modes replace
+BatchNorm with GroupNorm, pool images within each patient, and clip the joint
+patient gradient over the entire network before adding Gaussian noise to every
+trainable parameter. The patient privacy unit, accountant and release policy are
+unchanged. The complete DP-trained state is released; aggregation and local
+prediction are post-processing. No raw gradients, image statistics or additional
+site metrics are released.
+
+The same choice is available through `model_params = list(backbone = "scratch")`
+or `ds.flower.model.pytorch_resnet18(backbone = "finetune")` (and DenseNet-121).
+Full-network DP-SGD is substantially slower and uses more memory on CPU. It has
+stricter public geometry and work limits: `image_size <= 64` in 2D and
+`<= 128` in 3D, `batch_size <= 8`, `local_epochs <= 5`, and `rounds <= 20`.
+Set these explicitly when the usual defaults exceed a limit; oversize requests
+fail before private training. Each full 2D update is roughly 45 MiB for ResNet-18 and 31 MiB for
+DenseNet-121 in float32, before protocol overhead; 3D updates can be larger.
+Use small images and short schedules when checking feasibility.
+
+Saved native vision models support local researcher-side prediction from explicit
+image or volume paths without contacting DSI. Frozen releases also support
+private validation and atomic holdout with the existing pooled DP test release.
+Trainable-backbone private validation, holdout and classification CV are not
+supported in 0.7.4 and are rejected explicitly. Each image release carries a
+`vision-extractor-profile`, the versioned public geometry/preprocessing ABI, and
+trainable releases also pin `backbone-mode`. The frozen extractor's digest and
+BatchNorm-in-eval behaviour are unchanged. The patient segmentation contract
+continues to support its own validation, holdout and CV paths.
 
 The first-party native-tree constructors are `xgboost`, `extra_trees`,
 `random_forest`, `lightgbm` and `catboost`. They run only in the dedicated
@@ -543,7 +576,7 @@ each fold starts from the same admitted material. See
 or sanitized native-tree model inside the nodes and releases one fixed,
 Gaussian-noised vector of bounded sufficient statistics per node. Vision is
 limited to saved `pytorch_resnet18` and `pytorch_densenet121` binary/multiclass
-releases (2D or `volumetric = TRUE`). The client pins the canonical backbone,
+frozen-backbone releases (2D or `volumetric = TRUE`). The client pins the canonical backbone,
 image size, frozen feature dimension, exact public class levels, declarative
 head, and bounded `model.pt` digest before any DSI call; the server verifies the
 same public contract before private staging. The researcher-side ServerApp

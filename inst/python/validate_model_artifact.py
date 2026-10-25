@@ -20,6 +20,11 @@ def main():
     sys.path.insert(0, str(flower_app))
     from dsflower_runner import validation, vision
 
+    if config.get("backbone-mode", "frozen") != "frozen":
+        from predict_helper import load_trainable_vision_model
+        load_trainable_vision_model(config, validation, vision)
+        return
+
     arrays = validation.public_model_arrays(config)
     if not isinstance(arrays, list) or not arrays:
         raise ValueError("validation artifact produced no public model arrays")

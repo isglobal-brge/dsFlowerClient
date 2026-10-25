@@ -10,7 +10,8 @@ ds.flower.model.pytorch_densenet121(
   batch_size = 32L,
   local_epochs = 1L,
   image_size = 224L,
-  volumetric = FALSE
+  volumetric = FALSE,
+  backbone = "frozen"
 )
 }
 \arguments{
@@ -27,6 +28,13 @@ ds.flower.model.pytorch_densenet121(
 \item{volumetric}{Logical; if TRUE use a true-3D backbone (MONAI) for
 volumetric collections. Default FALSE: the 2D backbone auto-handles both 2D
 images and 3D volumes (via a representative slice), the plug-and-play path.}
+
+\item{backbone}{Exactly \code{"frozen"} (default), \code{"finetune"}, or
+\code{"scratch"}. Trainable modes require custodian permission and apply
+patient-level DP-SGD jointly to the entire network. With few patients the
+frozen backbone usually performs best. Trainable modes require
+\code{image_size <= 64} in 2D (128 in 3D), \code{batch_size <= 8},
+and \code{local_epochs <= 5}; adjust the frozen defaults explicitly.}
 }
 \value{
 A \code{dsflower_model} S3 object.

@@ -503,3 +503,10 @@ Runtime upgrades create new public request domains, so drain jobs and upgrade
 both packages together; retain old state and treat new domains as additional
 releases. Existing per-release DP does not prove the private anchor-selection
 transcript DP.
+
+### Trainable vision backbones (0.7.4)
+
+Private validation, holdout and cross-validation do not yet accept
+`backbone = "finetune"` or `"scratch"`; these requests fail before private data
+access. Local `ds.flower.predict()` supports their complete DP-trained artifacts.
+Existing frozen-backbone and segmentation validation behaviour is unchanged.
